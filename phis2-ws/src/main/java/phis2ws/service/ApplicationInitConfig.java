@@ -44,9 +44,9 @@ public class ApplicationInitConfig extends ResourceConfig {
     
     public ApplicationInitConfig() {
         packages("io.swagger.jaxrs.listing;"
-                + "wsphisfield.service.resources;"
-                + "wsphisfield.service.json;"
-                + "wsphisfield.service.resources.request.filters");
+                + "phis2ws.service.resources;"
+                + "phis2ws.service.json;"
+                + "phis2ws.service.resources.request.filters");
         
         //Swagger
         BeanConfig beanConfig = new BeanConfig();
@@ -56,7 +56,7 @@ public class ApplicationInitConfig extends ResourceConfig {
         beanConfig.setHost(PropertiesFileManager.getConfigFileProperty("service", "host"));
         beanConfig.setBasePath(PropertiesFileManager.getConfigFileProperty("service", "basePath"));
        
-        beanConfig.setResourcePackage("wsphisfield.service.resources");
+        beanConfig.setResourcePackage("phis2ws.service.resources");
         beanConfig.setScan(true);
         // Annotation SessionInject pour obtenir la session en cours et l'utilisateur
         // Liaison entre le createur d'objet a partir de la requete du client et l'application

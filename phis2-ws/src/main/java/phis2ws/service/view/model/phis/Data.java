@@ -1,0 +1,61 @@
+//**********************************************************************************************
+//                                       Data.java 
+//
+// Author(s): Morgane VIDAL
+// PHIS-SILEX version 1.0
+// Copyright © - INRA - 2017
+// Creation date: September 2017
+// Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Last modification date:  September, 14 2017
+// Subject: Represents the data view 
+//***********************************************************************************************
+package phis2ws.service.view.model.phis;
+
+public class Data {
+    private String agronomicalObject;
+    private String date;
+    private String value;
+    private String variable; //Used only for the get phenotypes
+    
+    public Data() {
+        
+    }
+    
+    public Data(Data data) {
+        agronomicalObject = data.getAgronomicalObject();
+        date = data.getDate();
+        value = data.getValue();
+    }
+
+    public String getAgronomicalObject() {
+        return agronomicalObject;
+    }
+
+    public void setAgronomicalObject(String agronomicalObject) {
+        this.agronomicalObject = agronomicalObject;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    public String getVariable() {
+        return variable;
+    }
+
+    public void setVariable(String variable) {
+        this.variable = variable;
+    }
+}

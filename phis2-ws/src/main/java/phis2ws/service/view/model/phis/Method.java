@@ -1,0 +1,21 @@
+//**********************************************************************************************
+//                                       Method.java 
+//
+// Author(s): Morgane VIDAL
+// PHIS-SILEX version 1.0
+// Copyright © - INRA - 2017
+// Creation date: November, 17 2017
+// Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Last modification date:  November, 17 2017
+// Subject: Represents the instance of definition view
+//***********************************************************************************************
+package phis2ws.service.view.model.phis;
+
+public class Method extends InstanceDefinition {
+    public Method() {
+        
+    }
+    public Method(String uri) {
+        super(uri);
+    }
+}

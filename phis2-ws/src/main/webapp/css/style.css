@@ -1,0 +1,16 @@
+ /*AJout AC fond phis*/
+.cover {
+    background: url('../imgs/wallpaper_leaf.jpg') no-repeat center center fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    background-size: cover;
+    -o-background-size: cover;
+}
+ /*AJout AC fond phis léger*/
+.coverLight {
+    background: url('../imgs/wallpaper_leaf.png') no-repeat center center fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    background-size: cover;
+    -o-background-size: cover;
+}

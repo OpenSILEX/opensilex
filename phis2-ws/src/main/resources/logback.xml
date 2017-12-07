@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="true">
+    <!-- variables de configuration-->
+    <property resource="service.properties" />
+     <!-- Sortie -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>${logPattern}</pattern>
+        </layout>
+    </appender>
+    <!--Sortie informatives-->
+    <appender name="INFOLOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+         <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <file>${logDirectory}/phenomeApiInfo.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <maxHistory>30</maxHistory>
+            <fileNamePattern>${logDirectory}/phenomeApiInfo-%d{yyyy-MM-dd}.log.zip</fileNamePattern>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${logPattern}</pattern>
+        </encoder>
+    </appender> 
+    
+     <!--Sortie informatives-->
+    <appender name="DEBUGLOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+         <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>DEBUG</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <file>${logDirectory}/phenomeApiDebug.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <maxHistory>30</maxHistory>
+            <fileNamePattern>${logDirectory}/phenomeApiDebug-%d{yyyy-MM-dd}.log.zip</fileNamePattern>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${logPattern}</pattern>
+        </encoder>
+    </appender> 
+    
+    <!--Sortie erreur-->
+    <appender name="ERRORLOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <file>${logDirectory}/phenomeApiError.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+             <!-- keep 30 days' worth of history -->
+            <maxHistory>30</maxHistory>
+            <fileNamePattern>${logDirectory}/phenomeApiError-%d{yyyy-MM-dd}.log.zip</fileNamePattern>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${logPattern}</pattern>
+        </encoder>
+    </appender> 
+    
+     <!--Sortie Trace-->
+    <appender name="DBLOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.core.filter.EvaluatorFilter">      
+            <evaluator> <!-- defaults to type ch.qos.logback.classic.boolex.JaninoEventEvaluator -->
+                <expression> return (logger.contains("DaoPhisBrapi") || logger.contains("DaoEnvironment") || logger.contains("SQLDAO"));</expression>
+            </evaluator>
+            <OnMismatch>DENY</OnMismatch>
+            <OnMatch>ACCEPT</OnMatch>
+        </filter>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>TRACE</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <file>${logDirectory}/phenomeApiDB.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>${logDirectory}/phenomeApiDB-%i.log.zip</fileNamePattern>
+            <minIndex>1</minIndex>
+            <maxIndex>10</maxIndex>
+        </rollingPolicy>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>200MB</maxFileSize>
+        </triggeringPolicy>
+        <encoder>
+          <pattern>${logPattern}</pattern>
+        </encoder>
+    </appender> 
+    
+     <!--Sortie Trace-->
+    <appender name="SPARQLLOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.core.filter.EvaluatorFilter">      
+            <evaluator> <!-- defaults to type ch.qos.logback.classic.boolex.JaninoEventEvaluator -->
+                <expression>return logger.contains("DaoSesame");</expression>
+            </evaluator>
+            <OnMismatch>DENY</OnMismatch>
+            <OnMatch>ACCEPT</OnMatch>
+        </filter>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>TRACE</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <file>${logDirectory}/phenomeApiSPARQL.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>${logDirectory}/phenomeApiSPARQL-%i.log.zip</fileNamePattern>
+            <minIndex>1</minIndex>
+            <maxIndex>10</maxIndex>
+        </rollingPolicy>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>200MB</maxFileSize>
+        </triggeringPolicy>
+        <encoder>
+          <pattern>${logPattern}</pattern>
+        </encoder>
+    </appender> 
+    
+    <!--definit le niveau de sortie des logs d'un pacakge en particulier-->
+    <logger name="org.mongodb.driver" level="INFO"/>
+    <logger name="org.apache" level="INFO"/>
+    <logger name="org.apache.tomcat" level="INFO"/>
+    <logger name="org.glassfish.jersey" level="DEBUG"/>
+    <!--<logger name="i.s.c.ModelConverterContextImpl" level="ERROR"/>-->
+<!--    <logger name="io.swagger.jackson" level="ERROR"/>
+    <logger name="io.swagger.jaxrs" level="ERROR"/>-->
+    <logger name="org.openrdf" level="ERROR"/>
+    
+    <!--ensembles des logs définis-->
+    <root level="ALL">
+        <appender-ref ref="DBLOG" />
+        <appender-ref ref="SPARQLLOG" />
+        <appender-ref ref="ERRORLOG" />
+        <appender-ref ref="INFOLOG" />
+        <appender-ref ref="DEBUGLOG" />
+        <appender-ref ref="STDOUT" />
+    </root>
+</configuration>

@@ -1,12 +1,12 @@
 //**********************************************************************************************
 //                                       DocumentationAnnotation.java 
 //
-// Author(s): Arnaud CHARLEROY, Morgane VIDAL
+// Author(s): Arnaud CHARLEROY, Morgane VIDAL, Eloan LAGIER
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2016
 // Creation date: august 2016
-// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  February, 2017
+// Contact: eloan.lagier@inra.fr, arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Last modification date:  December, 8 2017
 // Subject: A class which group documentation informations ( try message bundle for the next version)
 //***********************************************************************************************
 package phis2ws.service.documentation;
@@ -91,6 +91,9 @@ public final class DocumentationAnnotation {
     public static final String LAYER_POST_DATA_DEFINITION = "JSON format of requested layer";
     
     public static final String RAW_DATA_POST_DATA_DEFINITION = "JSON format of raw data";
+    
+    public static final String DEEP ="true or false deppending if you want instances of concept progenity";
+    public static final String CONCEPT ="name of the concept you want the instances";
     
     // Exemples de variables
     public static final String EXAMPLE_EXPERIMENT_URI = "http://phenome-fppn.fr/diaphen/DIA2012-1";

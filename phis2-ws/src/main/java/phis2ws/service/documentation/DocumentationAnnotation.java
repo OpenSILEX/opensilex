@@ -102,6 +102,10 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_EXPERIMENT_KEYWORDS = "keywords";  
     public static final String EXAMPLE_EXPERIMENT_CAMPAIGN = "2012";
     
+    public static final String EXAMPLE_FILE_INFORMATION_CHECKSUM = "106fa487baa1728083747de1c6df73e9";
+    
+    public static final String EXAMPLE_IMAGE_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#HemisphericalImage";
+    
     public static final String EXAMPLE_AGRONOMICAL_OBJECT_URI = "http://phenome-fppn.fr/phis_field/ao1";
     
     public static final String EXAMPLE_PROJECT_URI = "http://phenome-fppn.fr/phis_field/projectTest";
@@ -145,6 +149,10 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_DOCUMENT_TITLE = "title";
     public static final String EXAMPLE_DOCUMENT_CONCERNED_TYPE_URI = "http://www.phenome-fppn.fr/vocabulary/2017#Experiment";
     public static final String EXAMPLE_DOCUMENT_STATUS = "linked";
+    
+    public static final String EXAMPLE_SHOOTING_CONFIGURATION_TIMESTAMP = "1512744238";
+    public static final String EXAMPLE_SHOOTING_CONFIGURATION_POSITION = "POINT(0, 0)";
+    public static final String EXAMPLE_SHOOTING_CONFIGURATION_DATE = EXAMPLE_EXPERIMENT_START_DATE;
     
     public static final String EXAMPLE_TRAIT_URI = "http://www.phenome-fppn.fr/phis_field/id/traits/t001";
     public static final String EXAMPLE_TRAIT_LABEL = "Height";

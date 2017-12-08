@@ -12,7 +12,14 @@
 package phis2ws.service.view.model.phis;
 
 
-public class Instance {
-    String uri;
+public class Instance extends InstanceDefinition {
+
     String type;
+    public Instance() {
+        
+    }
+    
+    public Instance(String uri) {
+        super(uri);
+    }
 }

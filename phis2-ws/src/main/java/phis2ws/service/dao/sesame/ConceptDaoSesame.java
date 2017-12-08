@@ -34,10 +34,9 @@ import phis2ws.service.view.model.phis.OntologyReference;
 public class ConceptDaoSesame extends DAOSesame<Concept>{
     final static Logger LOGGER = LoggerFactory.getLogger(ConceptDaoSesame.class);
     public String uri;
-    public String label;
-    public String comment;
-    public String deep;
-    public ArrayList<OntologyReference> ontologiesReferences = new ArrayList<>();
+    public String type;
+    public Boolean deep;
+
 
     public ConceptDaoSesame() {
     }
@@ -47,7 +46,7 @@ public class ConceptDaoSesame extends DAOSesame<Concept>{
         final URINamespaces uriNamespaces = new URINamespaces();
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
-        query.appendGraph(uriNamespaces.getContextsProperty("pVoc2017"));
+
         String contextURI;
 
         if (uri != null) {
@@ -57,10 +56,15 @@ public class ConceptDaoSesame extends DAOSesame<Concept>{
             query.appendSelect("?uri");
         }
         
-        if (deep == "true" ) {
+        if (deep == true ) {
             query.appendSelect("?instance");
-            query.appendSelect("?subclass");
+            query.appendSelect(" ?subclass");
             query.appendTriplet("?subclass", "rdfs:subClassOf*", contextURI, null);
+            query.appendTriplet(  "?instance", "rdf:type", "?subclass", null);
+        }else if (deep = false) {
+            query.appendSelect(" ?instance");
+            query.appendSelect(" ?subclass");
+            query.appendTriplet("?subclass", "rdfs:subClassOf", contextURI, null);
             query.appendTriplet(  "?instance", "rdf:type", "?subclass", null);
         }
         LOGGER.trace("sparql select query : " + query.toString());
@@ -73,51 +77,31 @@ public class ConceptDaoSesame extends DAOSesame<Concept>{
     }
   
     public ArrayList<Instance> allPaginate() {
+        LOGGER.debug("bssfkhsedlkfhlisugh");
         SPARQLQueryBuilder query = prepareSearchQuery();
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         ArrayList<Instance> instances = new ArrayList<>();
-        
+
         try (TupleQueryResult result = tupleQuery.evaluate()) {
+            LOGGER.debug("bs2 =", result);
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
+                LOGGER.debug("uri = ", bindingSet.getValue("uri").stringValue());
+                LOGGER.debug("type = ", bindingSet.getValue("type").stringValue());
+                LOGGER.debug("all = ", bindingSet.getBindingNames());
                 Instance instance = new Instance();
-                
                 if (uri != null) {
                     instance.setUri(uri);
                 } else {
                     instance.setUri(bindingSet.getValue("uri").stringValue());
                 }
                 
-                if (label != null) {
-                    instance.setLabel(label);
+                if (type != null) {
+                    instance.setType(type);
                 } else {
-                    instance.setLabel(bindingSet.getValue("label").stringValue());
+                    instance.setType(bindingSet.getValue("Subclass").stringValue());
                 }
-                
-                if (comment != null) {
-                    instance.setComment(comment);
-                } else {
-                    instance.setComment(bindingSet.getValue("comment").stringValue());
-                }
-                
-                //On récupère maintenant la liste des références vers des ontologies... 
-                SPARQLQueryBuilder queryOntologiesReferences = prepareSearchOntologiesReferencesQuery(instance.getUri());
-                TupleQuery tupleQueryOntologiesReferences = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryOntologiesReferences.toString());
-                TupleQueryResult resultOntologiesReferences = tupleQueryOntologiesReferences.evaluate();
-                while (resultOntologiesReferences.hasNext()) {
-                    BindingSet bindingSetOntologiesReferences = resultOntologiesReferences.next();
-                    if (bindingSetOntologiesReferences.getValue("object") != null
-                            && bindingSetOntologiesReferences.getValue("property") != null) {
-                        OntologyReference ontologyReference = new OntologyReference();
-                        ontologyReference.setObject(bindingSetOntologiesReferences.getValue("object").toString());
-                        ontologyReference.setProperty(bindingSetOntologiesReferences.getValue("property").toString());
-                        if (bindingSetOntologiesReferences.getValue("seeAlso") != null) {
-                            ontologyReference.setSeeAlso(bindingSetOntologiesReferences.getValue("seeAlso").toString());
-                        }
-                        
-                        instance.addOntologyReference(ontologyReference);
-                    }
-                }
+
                 
                 instances.add(instance);
             }
@@ -125,35 +109,5 @@ public class ConceptDaoSesame extends DAOSesame<Concept>{
         
         return instances;
     }
-    
-        /**
-     * 
-     * @param uri
-     * @return la liste des liens vers d'autres ontologies
-     */
-    private SPARQLQueryBuilder prepareSearchOntologiesReferencesQuery(String uri) {
-        final URINamespaces uriNamespaces = new URINamespaces();
-        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
-        
-        query.appendDistinct(Boolean.TRUE);
-        query.appendGraph(uriNamespaces.getContextsProperty("variables"));
-        
-        if (ontologiesReferences.isEmpty()) {
-            query.appendSelect(" ?property ?object ?seeAlso");
-            query.appendTriplet(uri, "?property", "?object", null);
-            query.appendOptional("{?object rdfs:seeAlso ?seeAlso}");
-            query.appendFilter("?property IN(<" + uriNamespaces.getRelationsProperty("rCloseMatch") + ">, <"
-                                               + uriNamespaces.getRelationsProperty("rExactMatch") + ">, <"
-                                               + uriNamespaces.getRelationsProperty("rNarrower") + ">, <"
-                                               + uriNamespaces.getRelationsProperty("rBroader") + ">)");
-        } else {
-            for (OntologyReference ontologyReference : ontologiesReferences) {
-                query.appendTriplet(uri, ontologyReference.getProperty(), ontologyReference.getObject(), null);
-                query.appendTriplet(ontologyReference.getObject(), "rdfs:seeAlso", ontologyReference.getSeeAlso(), null);
-            }
-        }
-        
-        LOGGER.trace("SPARQL select query : " + query.toString());
-        return query;
-    }
+
 }

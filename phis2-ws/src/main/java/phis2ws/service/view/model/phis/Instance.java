@@ -15,11 +15,18 @@ package phis2ws.service.view.model.phis;
 public class Instance extends InstanceDefinition {
 
     String type;
+    
     public Instance() {
         
     }
     
-    public Instance(String uri) {
+    public Instance(String uri,String type) {
         super(uri);
+        this.type = type;
+        
+    }
+    
+    public void setType(String type) {
+        this.type = type;
     }
 }

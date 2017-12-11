@@ -13,7 +13,6 @@ package phis2ws.service.view.brapi.form;
 import java.util.ArrayList;
 import phis2ws.service.view.brapi.Metadata;
 import phis2ws.service.view.brapi.results.ResultatInstance;
-import phis2ws.service.view.brapi.results.ResultatUnit;
 import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Instance;
 

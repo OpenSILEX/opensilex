@@ -10,10 +10,15 @@
 // Subject: A class of Instance for the service call
 //***********************************************************************************************
 package phis2ws.service.view.model.phis;
+import io.swagger.annotations.ApiModelProperty;
 
 
-public class Instance extends InstanceDefinition {
-
+public class Instance {
+        /**
+     * @param uri ex. http://www.phenome-fppn.fr/phenovia/documents/document90fb96ace2894cdb9f4575173d8ed4c9
+     * @param type ex. http://www.phenome-fppn.fr/vocabulary/2017#ScientificDocument
+     */
+    String uri;
     String type;
     
     public Instance() {
@@ -21,11 +26,17 @@ public class Instance extends InstanceDefinition {
     }
     
     public Instance(String uri,String type) {
-        super(uri);
+        this.uri = uri;
         this.type = type;
         
     }
     
+    @ApiModelProperty(example = "http://www.phenome-fppn.fr/phenovia/documents/document90fb96ace2894cdb9f4575173d8ed4c9")
+    public void setUri(String uri) {
+        this.uri = uri;
+    }
+    
+    @ApiModelProperty(example = "http://www.phenome-fppn.fr/phenovia/documents/document90fb96ace2894cdb9f4575173d8ed4c9")
     public void setType(String type) {
         this.type = type;
     }

@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -30,23 +29,16 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.authentication.Session;
-import static phis2ws.service.authentication.TokenManager.Instance;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.phis.ExperimentDao;
 import phis2ws.service.dao.sesame.ConceptDaoSesame;
-import phis2ws.service.dao.sesame.UnitDaoSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.view.brapi.Status;
-import phis2ws.service.view.brapi.form.ResponseFormGET;
 import phis2ws.service.view.brapi.form.ResponseFormInstance;
-import phis2ws.service.view.brapi.form.ResponseFormUnit;
 import phis2ws.service.view.model.phis.Concept;
-import phis2ws.service.view.model.phis.Experiment;
 import phis2ws.service.view.model.phis.Instance;
-import phis2ws.service.view.model.phis.Unit;
 
 @Api("/concepts")
 @Path("concepts")
@@ -133,7 +125,7 @@ public class ConceptResourceService {
     @ApiOperation(value = "Get all the instances of a concept", 
                   notes = "Retrieve all instances of subClass too, if deep=true")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve instances", response = Concept.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Retrieve instances", response = Instance.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
@@ -150,11 +142,7 @@ public class ConceptResourceService {
             @ApiParam(value = DocumentationAnnotation.DEEP) @QueryParam("deep") @DefaultValue(DocumentationAnnotation.EXAMPLE_DEEP) String deep,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
-     /*   if (conceptURI == null) {
-            final Status status = new Status("Access error", StatusCodeMsg.ERR, "Empty concept URI");
-            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
-        }
-*/        
+        
         ConceptDaoSesame conceptDaoSesame = new ConceptDaoSesame();
         if (conceptURI != null) {
             conceptDaoSesame.uri = conceptURI;

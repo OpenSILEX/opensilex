@@ -20,14 +20,12 @@ import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 public class ShootingConfigurationDTO extends AbstractVerifiedClass {
 
     private String date;
-    private String timestamp;
     private String position;
     
     @Override
     public Map rules() {
         Map<String, Boolean> rules = new HashMap<>();
         rules.put("date", Boolean.TRUE);
-        rules.put("timestamp", Boolean.TRUE);
         rules.put("position", Boolean.FALSE);
         return rules;
     }
@@ -44,15 +42,6 @@ public class ShootingConfigurationDTO extends AbstractVerifiedClass {
 
     public void setDate(String date) {
         this.date = date;
-    }
-    
-    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SHOOTING_CONFIGURATION_TIMESTAMP)
-    public String getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(String timestamp) {
-        this.timestamp = timestamp;
     }
 
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SHOOTING_CONFIGURATION_POSITION)

@@ -22,8 +22,8 @@ public class ImageMetadataDTO extends AbstractVerifiedClass {
     
     private String rdfType;
     private List<ConcernItemDTO> concern;
-    private List<ShootingConfigurationDTO> configuration;
-    private List<FileInformationDTO> fileInfo;
+    private ShootingConfigurationDTO configuration;
+    private FileInformationDTO fileInfo;
 
     @Override
     public Map rules() {
@@ -54,19 +54,19 @@ public class ImageMetadataDTO extends AbstractVerifiedClass {
         this.concern = concern;
     }
 
-    public List<ShootingConfigurationDTO> getConfiguration() {
+    public ShootingConfigurationDTO getConfiguration() {
         return configuration;
     }
 
-    public void setConfiguration(List<ShootingConfigurationDTO> configuration) {
+    public void setConfiguration(ShootingConfigurationDTO configuration) {
         this.configuration = configuration;
     }
 
-    public List<FileInformationDTO> getFileInfo() {
+    public FileInformationDTO getFileInfo() {
         return fileInfo;
     }
 
-    public void setFileInfo(List<FileInformationDTO> fileInfo) {
+    public void setFileInfo(FileInformationDTO fileInfo) {
         this.fileInfo = fileInfo;
     }
 }

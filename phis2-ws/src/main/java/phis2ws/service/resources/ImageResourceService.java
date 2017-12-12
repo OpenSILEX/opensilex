@@ -11,40 +11,69 @@
 //***********************************************************************************************
 package phis2ws.service.resources;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import java.time.Year;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
+import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.eclipse.rdf4j.repository.RepositoryException;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.GlobalWebserviceValues;
+import phis2ws.service.configuration.URINamespaces;
+import phis2ws.service.dao.mongo.ImageMetadataDaoMongo;
 import phis2ws.service.documentation.DocumentationAnnotation;
+import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.ImageMetadataDTO;
+import phis2ws.service.utils.ImageWaitingCheck;
+import phis2ws.service.utils.POSTResultsReturn;
+import phis2ws.service.view.brapi.Status;
+import phis2ws.service.view.brapi.form.AbstractResultForm;
+import phis2ws.service.view.brapi.form.ResponseFormPOST;
 
+@Api("/images")
+@Path("/images")
 public class ImageResourceService {
     final static Logger LOGGER = LoggerFactory.getLogger(ImageResourceService.class);
+    
+    @Context
+    UriInfo uri;
     
     //Session Utilisateur
     @SessionInject
     Session userSession;
     
+     // Gère les annotations en attene
+    public final static ExecutorService threadPool = Executors.newCachedThreadPool();
+    // Deux Maps qui contiennent les informations sur les annotations en attentes
+    public final static Map<String, Boolean> waitingAnnotFileCheck = new HashMap<>();
+    public final static Map<String, ImageMetadataDTO> waitingAnnotInformation = new HashMap<>();
+    
     @POST
     @ApiOperation(value = "Save a file", notes = DocumentationAnnotation.ADMIN_ONLY_NOTES) 
     @ApiResponses(value = {
-        @ApiResponse(code = 202, message = "Metadata verified and correct", response = ImageDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 202, message = "Metadata verified and correct", response = ImageMetadataDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)})
@@ -57,7 +86,50 @@ public class ImageResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postImagesMetadata(@Context HttpHeaders headers,
-            @ApiParam(value = "JSON Image metadata", required = true) List<ImageMetadataDTO> imagesAnnotations) throws RepositoryException {
-        //TODO - metadonnées images
+            @ApiParam(value = "JSON Image metadata", required = true) List<ImageMetadataDTO> imagesMetadata) {
+        AbstractResultForm postResponse;
+        if (imagesMetadata != null && !imagesMetadata.isEmpty()) {
+            ImageMetadataDaoMongo imageDaoMongo = new ImageMetadataDaoMongo();
+            imageDaoMongo.user = userSession.getUser();
+            
+            //Vérification des métadonnées
+            final POSTResultsReturn checkImageMetadata = imageDaoMongo.check(imagesMetadata); 
+            
+            if (checkImageMetadata.statusList == null) { //Les métadonnées ne sont pas bonnes
+                postResponse = new ResponseFormPOST();
+            } else if (checkImageMetadata.getDataState()) {//Les métadonnées sont bonnes
+                ArrayList<String> imagesUploadLinks = new ArrayList<>();
+                long imagesNumber = imageDaoMongo.getNbImagesYear();
+                URINamespaces uriNamespaces = new URINamespaces();
+                for (ImageMetadataDTO imageMetadata : imagesMetadata) {
+                    final UriBuilder uploadPath = uri.getBaseUriBuilder();
+                    
+                    //Calcul du nombre de 0 à ajouter devant le numéro de l'image
+                    String nbImagesByYear = Long.toString(imagesNumber);
+                    while (nbImagesByYear.length() < 10) {
+                        nbImagesByYear = "0" + nbImagesByYear;
+                    }
+                    
+                    String uniqueId = "i" + Year.now().toString().substring(2, 4) + nbImagesByYear;
+                    final String imageUri = uriNamespaces.getContextsProperty("pxPlatform") + "/" + Year.now().toString() + "/" + uniqueId;
+                    final String uploadLink = uploadPath.path("images").path("upload").queryParam("uri", imageUri).toString();
+                    imagesUploadLinks.add(uploadLink);
+                    
+                    waitingAnnotFileCheck.put(imageUri, false); // fichier en attente
+                    waitingAnnotInformation.put(imageUri, imageMetadata);
+                        //Lancement THREAD pour le fichier en attente
+                    threadPool.submit(new ImageWaitingCheck(imageUri));
+                }
+                final Status waitingTimeStatus = new Status("Timeout", StatusCodeMsg.INFO, " Timeout :" + PropertiesFileManager.getConfigFileProperty("service", "waitingFileTime") + " seconds");
+                checkImageMetadata.statusList.add(waitingTimeStatus);
+                postResponse = new ResponseFormPOST(checkImageMetadata.statusList);
+                postResponse.getMetadata().setDatafiles(imagesUploadLinks);
+            } else {
+                postResponse = new ResponseFormPOST(checkImageMetadata.statusList);
+            }
+            return Response.status(checkImageMetadata.getHttpStatus()).entity(postResponse).build();
+        } else {
+            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormPOST()).build();
+        }
     }
 }

@@ -103,6 +103,7 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_EXPERIMENT_CAMPAIGN = "2012";
     
     public static final String EXAMPLE_FILE_INFORMATION_CHECKSUM = "106fa487baa1728083747de1c6df73e9";
+    public static final String EXAMPLE_FILE_INFORMATION_EXTENSION = "jpg";
     
     public static final String EXAMPLE_IMAGE_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#HemisphericalImage";
     

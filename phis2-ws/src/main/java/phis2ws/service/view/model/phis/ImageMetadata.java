@@ -15,6 +15,7 @@ import java.util.ArrayList;
 
 public class ImageMetadata {
     private String uri;
+    private String rdfType;
     private ArrayList<ConcernItem> concernedItems = new ArrayList<>();
     private ShootingConfiguration configuration;
     private FileInformations fileInformations;
@@ -56,5 +57,13 @@ public class ImageMetadata {
 
     public void setFileInformations(FileInformations fileInformations) {
         this.fileInformations = fileInformations;
+    }
+
+    public String getRdfType() {
+        return rdfType;
+    }
+
+    public void setRdfType(String rdfType) {
+        this.rdfType = rdfType;
     }
 }

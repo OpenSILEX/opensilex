@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.view.model.phis.ShootingConfiguration;
 
 public class ShootingConfigurationDTO extends AbstractVerifiedClass {
 
@@ -31,8 +32,12 @@ public class ShootingConfigurationDTO extends AbstractVerifiedClass {
     }
 
     @Override
-    public Object createObjectFromDTO() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public ShootingConfiguration createObjectFromDTO() {
+        ShootingConfiguration shootingConfiguration = new ShootingConfiguration();
+        shootingConfiguration.setDate(date);
+        shootingConfiguration.setPosition(position);
+        
+        return shootingConfiguration;
     }
     
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SHOOTING_CONFIGURATION_DATE)

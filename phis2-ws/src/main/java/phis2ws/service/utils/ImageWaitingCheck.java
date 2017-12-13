@@ -49,14 +49,14 @@ public class ImageWaitingCheck implements Callable<Boolean> {
         // Si l'uri n'est pas présente dans la Map ou si sa valeur est à false 
 //        (aucun envoi de fichier en cours), on la supprime.
 //         Sinon on ne fait rien
-        boolean find = ImageResourceService.waitingAnnotFileCheck.containsKey(annotationsUri);
+        boolean find = ImageResourceService.waitingMetadataFileCheck.containsKey(annotationsUri);
         if(find){
-            final Boolean running = ImageResourceService.waitingAnnotFileCheck.get(annotationsUri);
+            final Boolean running = ImageResourceService.waitingMetadataFileCheck.get(annotationsUri);
             if(!running){
                 // Suppression tableau d'attente
-                ImageResourceService.waitingAnnotFileCheck.remove(annotationsUri);
+                ImageResourceService.waitingMetadataFileCheck.remove(annotationsUri);
                 //Suppression de l'information
-                ImageResourceService.waitingAnnotInformation.remove(annotationsUri);
+                ImageResourceService.waitingMetadataInformation.remove(annotationsUri);
             } 
         }
         return null;

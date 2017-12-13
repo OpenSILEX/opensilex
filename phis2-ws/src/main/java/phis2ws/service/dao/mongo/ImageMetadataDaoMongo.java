@@ -12,13 +12,15 @@
 package phis2ws.service.dao.mongo;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.Year;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.Response;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +40,7 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata>{
 
     final static Logger LOGGER = LoggerFactory.getLogger(ImageMetadataDaoMongo.class);
     
-    private final MongoCollection<Document> imagesCollection = database.getCollection(PropertiesFileManager.getConfigFileProperty("mongodb_nosql_config", "data"));
+    private final MongoCollection<Document> imagesCollection = database.getCollection(PropertiesFileManager.getConfigFileProperty("mongodb_nosql_config", "images"));
 
     public ImageMetadataDaoMongo() {
         super();
@@ -87,13 +89,16 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata>{
         return imagesMetadataCheck;
     }
     
-    private BasicDBObject prepareGetNbImagesYearQuery() {                
-        BasicDBObject queryUris = new BasicDBObject();
-        URINamespaces uriNamespaces = new URINamespaces();
-        String imageUriQuery = uriNamespaces.getContextsProperty("pxPlatform") + "/" + Year.now().toString() + "/i/";
-        queryUris.append("uri", imageUriQuery.replaceAll("/", "\\/"));
+    private Document prepareGetNbImagesYearQuery() {        
+          Document regQuery = new Document();
+          URINamespaces uriNamespaces = new URINamespaces();
+          String regex = uriNamespaces.getContextsProperty("pxPlatform") + "/" + Year.now().toString() + "*";
+          regQuery.append("$regex", regex);
+          
+          Document findQuery = new Document();
+          findQuery.append("uri", regQuery);
         
-        return queryUris;
+          return findQuery;
     }
     
     /**
@@ -101,9 +106,64 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata>{
      * @return un entier correspondant au nombre d'images dans le système pour cette année.
      */
     public long getNbImagesYear() {
-        BasicDBObject query = prepareGetNbImagesYearQuery();
+        Document query = prepareGetNbImagesYearQuery();
         
         LOGGER.trace(getTraceabilityLogs() + " query : " + query.toString());
         return imagesCollection.count(query);
+    }
+    
+    public POSTResultsReturn insert(List<ImageMetadata> imagesMetadata) throws ParseException {
+        List<Status> insertStatus = new ArrayList<>();
+        POSTResultsReturn result;
+        List<String> createdResourcesUris = new ArrayList<>();
+        
+       //SILEX:todo
+       //transactions
+       //\SILEX:todo
+//       SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.Z");
+       SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ");
+       for (ImageMetadata imageMetadata : imagesMetadata) {
+           Document metadata = new Document();
+           metadata.append("uri", imageMetadata.getUri());
+           metadata.append("rdfType", imageMetadata.getRdfType());
+           
+           //Concern
+           ArrayList<Document> concernedItems = new ArrayList<>();
+           for (ConcernItem concernItem : imageMetadata.getConcernedItems()) {
+               Document concern = new Document();
+               concern.append("uri", concernItem.getUri());
+               concern.append("rdfType", concernItem.getTypeURI());
+               concernedItems.add(concern);
+           }
+           metadata.append("concern", concernedItems);
+           
+           //Configuration
+           Document configuration = new Document();
+           Date date = df.parse(imageMetadata.getConfiguration().getDate());
+           configuration.append("date", date);
+           Timestamp timestamp = new Timestamp(new Date().getTime());
+           configuration.append("timestamp", timestamp.getTime());
+           configuration.append("sensorPosition", imageMetadata.getConfiguration().getPosition());
+           metadata.append("shootingConfiguration", configuration);
+           
+           //FileInformations (Storage)
+           Document storage = new Document();
+           storage.append("extension", imageMetadata.getFileInformations().getExtension());
+           storage.append("md5sum", imageMetadata.getFileInformations().getChecksum());
+           storage.append("serverFilePath", imageMetadata.getFileInformations().getServerFilePath());
+           metadata.append("storage", storage);
+           
+           LOGGER.trace("MongoDB insert : " + metadata.toJson());
+           imagesCollection.insertOne(metadata);
+           createdResourcesUris.add(imageMetadata.getUri());
+       }
+       
+       insertStatus.add(new Status("Resource created", StatusCodeMsg.INFO, "images inserted"));;
+       result = new POSTResultsReturn(Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
+       result.setHttpStatus(Response.Status.CREATED);
+       result.statusList = insertStatus;
+       result.createdResources = createdResourcesUris;
+       
+       return result;
     }
 }

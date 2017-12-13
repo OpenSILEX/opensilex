@@ -13,6 +13,8 @@ package phis2ws.service.view.model.phis;
 
 public class FileInformations {
     private String checksum;
+    private String extension;
+    private String serverFilePath;
 
     public FileInformations() {
     }
@@ -23,5 +25,21 @@ public class FileInformations {
 
     public void setChecksum(String checksum) {
         this.checksum = checksum;
+    }
+
+    public String getExtension() {
+        return extension;
+    }
+
+    public void setExtension(String extension) {
+        this.extension = extension;
+    }
+
+    public String getServerFilePath() {
+        return serverFilePath;
+    }
+
+    public void setServerFilePath(String serverFilePath) {
+        this.serverFilePath = serverFilePath;
     }
 }

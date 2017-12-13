@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.view.model.phis.ImageMetadata;
 
 public class ImageMetadataDTO extends AbstractVerifiedClass {
     
@@ -33,8 +34,17 @@ public class ImageMetadataDTO extends AbstractVerifiedClass {
     }
 
     @Override
-    public Object createObjectFromDTO() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public ImageMetadata createObjectFromDTO() {
+       ImageMetadata imageMetadata = new ImageMetadata();
+       imageMetadata.setRdfType(rdfType);
+       for (ConcernItemDTO concernItemDTO : concern) {
+           imageMetadata.addConcernedItem(concernItemDTO.createObjectFromDTO());
+       }
+       
+       imageMetadata.setConfiguration(configuration.createObjectFromDTO());
+       imageMetadata.setFileInformations(fileInfo.createObjectFromDTO());
+       
+       return imageMetadata;
     }
     
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_IMAGE_TYPE)

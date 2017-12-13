@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.view.model.phis.ConcernItem;
 
 public class ConcernItemDTO extends AbstractVerifiedClass{
     private String uri;
@@ -30,8 +31,12 @@ public class ConcernItemDTO extends AbstractVerifiedClass{
     }
 
     @Override
-    public Object createObjectFromDTO() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public ConcernItem createObjectFromDTO() {
+        ConcernItem concernedItem = new ConcernItem();
+        concernedItem.setTypeURI(typeURI);
+        concernedItem.setUri(uri);
+        
+        return concernedItem;
     }
 
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI)

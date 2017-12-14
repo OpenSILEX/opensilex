@@ -21,20 +21,15 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOSesame;
-import static phis2ws.service.dao.sesame.UnitDaoSesame.LOGGER;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.model.phis.Concept;
-import phis2ws.service.view.model.phis.Document;
 import phis2ws.service.view.model.phis.Instance;
-import phis2ws.service.view.model.phis.OntologyReference;
 
 
-public class ConceptDaoSesame extends DAOSesame<Concept>{
+public class ConceptDaoSesame extends DAOSesame<Instance>{
     final static Logger LOGGER = LoggerFactory.getLogger(ConceptDaoSesame.class);
     public String uri;
-    public String type;
     public Boolean deep;
 
 
@@ -43,7 +38,6 @@ public class ConceptDaoSesame extends DAOSesame<Concept>{
     
     @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
-        final URINamespaces uriNamespaces = new URINamespaces();
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
 
@@ -57,7 +51,7 @@ public class ConceptDaoSesame extends DAOSesame<Concept>{
         }
         
         if (deep == true ) {
-            query.appendSelect("?instance");
+            query.appendSelect(" ?instance");
             query.appendSelect(" ?subclass");
             query.appendTriplet("?subclass", "rdfs:subClassOf*", contextURI, null);
             query.appendTriplet(  "?instance", "rdf:type", "?subclass", null);
@@ -77,32 +71,23 @@ public class ConceptDaoSesame extends DAOSesame<Concept>{
     }
   
     public ArrayList<Instance> allPaginate() {
-        LOGGER.debug("bssfkhsedlkfhlisugh");
+
         SPARQLQueryBuilder query = prepareSearchQuery();
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+
         ArrayList<Instance> instances = new ArrayList<>();
 
+        LOGGER.debug(instances.toString());
         try (TupleQueryResult result = tupleQuery.evaluate()) {
-            LOGGER.debug("bs2 =", result);
+
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
-                LOGGER.debug("uri = ", bindingSet.getValue("uri").stringValue());
-                LOGGER.debug("type = ", bindingSet.getValue("type").stringValue());
-                LOGGER.debug("all = ", bindingSet.getBindingNames());
-                Instance instance = new Instance();
-                if (uri != null) {
-                    instance.setUri(uri);
-                } else {
-                    instance.setUri(bindingSet.getValue("uri").stringValue());
-                }
-                
-                if (type != null) {
-                    instance.setType(type);
-                } else {
-                    instance.setType(bindingSet.getValue("Subclass").stringValue());
-                }
 
-                
+                Instance instance = new Instance();
+
+                instance.setUri(bindingSet.getValue("instance").stringValue());
+                instance.setType(bindingSet.getValue("subclass").stringValue());
+    
                 instances.add(instance);
             }
         }

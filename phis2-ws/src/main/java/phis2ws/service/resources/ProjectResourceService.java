@@ -48,6 +48,7 @@ import phis2ws.service.view.brapi.form.AbstractResultForm;
 import phis2ws.service.view.brapi.form.ResponseFormGET;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
 import phis2ws.service.view.brapi.form.ResponseFormProject;
+import phis2ws.service.view.model.phis.Instance;
 import phis2ws.service.view.model.phis.Project;
 
 @Api("/projects")

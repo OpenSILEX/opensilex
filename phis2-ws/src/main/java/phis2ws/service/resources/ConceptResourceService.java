@@ -51,12 +51,11 @@ public class ConceptResourceService {
     Session userSession;
     
     /**
-     * @param <error>
-     * @param conceptURI
-     * @param r
      * @param limit
      * @param page
      * @param deep
+     * @param uri
+     * @param ConceptURI
      * @return liste des expérimentations correspondant aux différents critères de recherche 
      *                                                              (ou toutes les expérimentations si pas de critères)
      *         Le retour (dans "data") est de la forme : 
@@ -79,7 +78,7 @@ public class ConceptResourceService {
         ResponseFormInstance getResponse;
         
         instances = conceptDaoSesame.allPaginate();
-        
+        LOGGER.debug("instances liste :"+instances.toString());
         if (instances == null) {
             getResponse = new ResponseFormInstance(0, 0, instances, true);
             return noResultFound(getResponse, statusList);
@@ -120,6 +119,14 @@ public class ConceptResourceService {
         return Object o;
     }
 */
+    /**
+     *
+     * @param conceptURI
+     * @param limit
+     * @param deep
+     * @param page
+     * @return
+     */
    @GET
     @Path("{uri}/instances")
     @ApiOperation(value = "Get all the instances of a concept", 

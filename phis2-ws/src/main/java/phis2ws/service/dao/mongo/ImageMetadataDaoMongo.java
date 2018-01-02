@@ -11,8 +11,12 @@
 //***********************************************************************************************
 package phis2ws.service.dao.mongo;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
+import java.sql.Array;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -20,6 +24,7 @@ import java.time.Year;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
 import javax.ws.rs.core.Response;
 import org.bson.Document;
 import org.slf4j.Logger;
@@ -34,11 +39,21 @@ import phis2ws.service.resources.dto.ImageMetadataDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.ConcernItem;
+import phis2ws.service.view.model.phis.FileInformations;
 import phis2ws.service.view.model.phis.ImageMetadata;
+import phis2ws.service.view.model.phis.ShootingConfiguration;
 
+/**
+ * Represents the MongoDB Data Access Object for the images
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata>{
 
     final static Logger LOGGER = LoggerFactory.getLogger(ImageMetadataDaoMongo.class);
+    public String uri;
+    public String rdfType;
+    public String date;
+    public ArrayList<String> concernedItems = new ArrayList<>();
     
     private final MongoCollection<Document> imagesCollection = database.getCollection(PropertiesFileManager.getConfigFileProperty("mongodb_nosql_config", "images"));
 
@@ -48,12 +63,79 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata>{
     
     @Override
     protected BasicDBObject prepareSearchQuery() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+       BasicDBObject query = new BasicDBObject();
+       
+       if (uri != null) {
+           query.append("uri", uri);
+       }
+       if (rdfType != null) {
+           query.append("rdfType", rdfType);
+       }
+       if (concernedItems != null && !concernedItems.isEmpty()) {
+           BasicDBList and = new BasicDBList();
+           for (String concernedItem : concernedItems) {
+               BasicDBObject clause = new BasicDBObject("concern", new BasicDBObject("$elemMatch", new BasicDBObject("uri", concernedItem)));
+               and.add(clause);
+           }
+           query.append("$and", and);
+       }
+       if (date != null) {
+           try {
+               SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ");
+               Date dateSearch = df.parse(date);
+               query.append("shootingConfiguration.date", dateSearch);
+           } catch (ParseException ex) {
+               java.util.logging.Logger.getLogger(ImageMetadataDaoMongo.class.getName()).log(Level.SEVERE, null, ex);
+           }
+       }
+       
+       return query;
     }
 
     @Override
     public ArrayList<ImageMetadata> allPaginate() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        BasicDBObject query = prepareSearchQuery();
+        LOGGER.trace(getTraceabilityLogs() + " query : " + query.toString());
+        
+        FindIterable<Document> imagesMetadataMongo = imagesCollection.find(query);
+        
+        ArrayList<ImageMetadata> imagesMetadata = new ArrayList<>();
+        
+        try (MongoCursor<Document> imagesMetadataCursor = imagesMetadataMongo.iterator()) {
+            while (imagesMetadataCursor.hasNext()) {
+                Document imageMetadataDocument = imagesMetadataCursor.next();
+                
+                ImageMetadata imageMetadata = new ImageMetadata();
+                imageMetadata.setUri(imageMetadataDocument.getString("uri"));
+                imageMetadata.setRdfType(imageMetadataDocument.getString("rdfType"));
+                
+                List<Document> concernedItemDocuments = (List<Document>) imageMetadataDocument.get("concern");
+                for (Document concernedItemDocument : concernedItemDocuments) {
+                    ConcernItem concernedItem = new ConcernItem();
+                    concernedItem.setUri(concernedItemDocument.getString("uri"));
+                    concernedItem.setRdfType(concernedItemDocument.getString("rdfType"));
+                    imageMetadata.addConcernedItem(concernedItem);
+                }
+                
+                Document shootingConfigurationDocument = (Document) imageMetadataDocument.get("shootingConfiguration");
+                ShootingConfiguration shootingConfiguration = new ShootingConfiguration();
+                shootingConfiguration.setDate(new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ").format(shootingConfigurationDocument.getDate("date")));
+                shootingConfiguration.setPosition(shootingConfigurationDocument.getString("sensorPosition"));
+                shootingConfiguration.setTimestamp(Long.toString(shootingConfigurationDocument.getLong("timestamp")));
+                imageMetadata.setConfiguration(shootingConfiguration);
+                
+                Document fileInformationsDocument = (Document) imageMetadataDocument.get("storage");
+                FileInformations fileInformations = new FileInformations();
+                fileInformations.setChecksum(fileInformationsDocument.getString("md5sum"));
+                fileInformations.setExtension(fileInformationsDocument.getString("extension"));
+                fileInformations.setServerFilePath(fileInformationsDocument.getString("serverFilePath"));
+                imageMetadata.setFileInformations(fileInformations);
+                
+                imagesMetadata.add(imageMetadata);
+            }
+        }
+        
+        return imagesMetadata;
     }
     
     public POSTResultsReturn check(List<ImageMetadataDTO> imagesMetadata) {
@@ -120,7 +202,6 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata>{
        //SILEX:todo
        //transactions
        //\SILEX:todo
-//       SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.Z");
        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ");
        for (ImageMetadata imageMetadata : imagesMetadata) {
            Document metadata = new Document();
@@ -132,15 +213,15 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata>{
            for (ConcernItem concernItem : imageMetadata.getConcernedItems()) {
                Document concern = new Document();
                concern.append("uri", concernItem.getUri());
-               concern.append("rdfType", concernItem.getTypeURI());
+               concern.append("rdfType", concernItem.getRdfType());
                concernedItems.add(concern);
            }
            metadata.append("concern", concernedItems);
            
            //Configuration
            Document configuration = new Document();
-           Date date = df.parse(imageMetadata.getConfiguration().getDate());
-           configuration.append("date", date);
+           Date dateImage = df.parse(imageMetadata.getConfiguration().getDate());
+           configuration.append("date", dateImage);
            Timestamp timestamp = new Timestamp(new Date().getTime());
            configuration.append("timestamp", timestamp.getTime());
            configuration.append("sensorPosition", imageMetadata.getConfiguration().getPosition());

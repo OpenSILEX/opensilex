@@ -33,7 +33,7 @@ public class ConcernItemDTO extends AbstractVerifiedClass{
     @Override
     public ConcernItem createObjectFromDTO() {
         ConcernItem concernedItem = new ConcernItem();
-        concernedItem.setTypeURI(typeURI);
+        concernedItem.setRdfType(typeURI);
         concernedItem.setUri(uri);
         
         return concernedItem;

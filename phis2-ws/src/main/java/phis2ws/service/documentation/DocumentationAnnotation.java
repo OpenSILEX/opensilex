@@ -105,9 +105,12 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_FILE_INFORMATION_CHECKSUM = "106fa487baa1728083747de1c6df73e9";
     public static final String EXAMPLE_FILE_INFORMATION_EXTENSION = "jpg";
     
-    public static final String EXAMPLE_IMAGE_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#HemisphericalImage";
-    
     public static final String EXAMPLE_AGRONOMICAL_OBJECT_URI = "http://phenome-fppn.fr/phis_field/ao1";
+    
+    public static final String EXAMPLE_IMAGE_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#HemisphericalImage";
+    public static final String EXAMPLE_IMAGE_URI = "http://www.phenome-fppn.fr/phis_field/2017/i170000000000";
+    public static final String EXAMPLE_IMAGE_DATE = EXAMPLE_EXPERIMENT_START_DATE;
+    public static final String EXAMPLE_IMAGE_CONCERNED_ITEMS = EXAMPLE_AGRONOMICAL_OBJECT_URI + ";" + EXAMPLE_AGRONOMICAL_OBJECT_URI;
     
     public static final String EXAMPLE_PROJECT_URI = "http://phenome-fppn.fr/phis_field/projectTest";
     public static final String EXAMPLE_PROJECT_NAME = "projectTest";

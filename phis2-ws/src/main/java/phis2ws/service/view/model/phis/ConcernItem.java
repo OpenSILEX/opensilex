@@ -13,7 +13,7 @@ package phis2ws.service.view.model.phis;
 
 public class ConcernItem {
     private String uri;
-    private String typeURI;
+    private String rdfType;
 
     public ConcernItem() {
     }
@@ -26,11 +26,11 @@ public class ConcernItem {
         this.uri = uri;
     }
 
-    public String getTypeURI() {
-        return typeURI;
+    public String getRdfType() {
+        return rdfType;
     }
 
-    public void setTypeURI(String typeURI) {
-        this.typeURI = typeURI;
+    public void setRdfType(String rdfType) {
+        this.rdfType = rdfType;
     }
 }

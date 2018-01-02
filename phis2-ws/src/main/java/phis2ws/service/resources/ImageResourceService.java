@@ -6,7 +6,7 @@
 // Copyright © - INRA - 2017
 // Creation date: December, 8 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  December, 8 2017
+// Last modification date:  January, 02 2018
 // Subject: Represents the images data service
 //***********************************************************************************************
 package phis2ws.service.resources;
@@ -35,6 +35,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -49,6 +51,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.authentication.Session;
+import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.mongo.ImageMetadataDaoMongo;
@@ -61,9 +64,14 @@ import phis2ws.service.utils.ImageWaitingCheck;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
+import phis2ws.service.view.brapi.form.ResponseFormImageMetadata;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
 import phis2ws.service.view.model.phis.ImageMetadata;
 
+/**
+ * Represents the images service
+ * @author Morgane Vidal 
+ */
 @Api("/images")
 @Path("/images")
 public class ImageResourceService {
@@ -83,10 +91,28 @@ public class ImageResourceService {
     public final static Map<String, ImageMetadata> waitingMetadataInformation = new HashMap<>();
     
     /**
-     * Vérifie un ensemble de métadonnées d'images
+     * check images metadata
      * @param headers
-     * @param imagesMetadata
-     * @return 
+     * @param imagesMetadata 
+     * metadata wanted for each image : 
+     *              { 
+     *                  rdfType,
+     *                  concern [
+     *                      {
+     *                          uri,
+     *                          typeURI
+     *                      }
+     *                  ],
+     *                  shootingConfigurations {
+     *                      date,
+     *                      position
+     *                  },
+     *                  storage {
+     *                      checksum,
+     *                      extension
+     *                  }
+     *              }
+     * @return the url to save the image(s) if metadata are corrects
      */
     @POST
     @ApiOperation(value = "Save a file", notes = DocumentationAnnotation.ADMIN_ONLY_NOTES) 
@@ -169,6 +195,12 @@ public class ImageResourceService {
                 + Year.now().toString();
     }
     
+    private String getWebAccessImagesDirectory(String imageUri) {
+        return PropertiesFileManager.getConfigFileProperty("service", "imageFileServerDirectory") + "/"
+                + PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "platform") + "/" 
+                + Year.now().toString();
+    }
+    
     /**
      * 
      * @param imageUri
@@ -237,6 +269,7 @@ public class ImageResourceService {
         
         final String serverFileName = getImageName(imageUri) + "." + waitingMetadataInformation.get(imageUri).getFileInformations().getExtension();
         final String serverImagesDirectory = getServerImagesDirectory(imageUri);
+        final String webAccessImagesDirectory = getWebAccessImagesDirectory(imageUri);
         
         try {
             waitingMetadataFileCheck.put(imageUri, Boolean.TRUE); //Traitement en cours du fichier
@@ -257,7 +290,7 @@ public class ImageResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
         
-        waitingMetadataInformation.get(imageUri).getFileInformations().setServerFilePath(serverImagesDirectory + serverFileName);
+        waitingMetadataInformation.get(imageUri).getFileInformations().setServerFilePath(webAccessImagesDirectory + "/" + serverFileName);
         
         ImageMetadataDaoMongo imageMetadataDaoMongo = new ImageMetadataDaoMongo();
         imageMetadataDaoMongo.user = userSession.getUser();
@@ -278,5 +311,122 @@ public class ImageResourceService {
             }
         }
         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(new ResponseFormPOST()).build();
+    }
+    
+    private Response noResultFound(ResponseFormImageMetadata getResponse, ArrayList<Status> insertStatusList) {
+        insertStatusList.add(new Status("No results", StatusCodeMsg.INFO, "No results for the images metadata"));
+        getResponse.setStatus(insertStatusList);
+        return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
+    }
+    
+    /**
+     * Search images metadata corresponding to a user search
+     * @param imageMetadataDaoMongo
+     * @return the images corresponding to the search
+     */
+    private Response getImagesData(ImageMetadataDaoMongo imageMetadataDaoMongo) {
+        ArrayList<ImageMetadata> imagesMetadata;
+        ArrayList<Status> statusList = new ArrayList<>();
+        ResponseFormImageMetadata getResponse;
+        
+        imagesMetadata = imageMetadataDaoMongo.allPaginate();
+        
+        if (imagesMetadata == null) {
+            getResponse = new ResponseFormImageMetadata(0, 0, imagesMetadata, true);
+            return noResultFound(getResponse, statusList);
+        } else if (!imagesMetadata.isEmpty()) {
+            getResponse = new ResponseFormImageMetadata(imageMetadataDaoMongo.getPageSize(), imageMetadataDaoMongo.getPage(), imagesMetadata, false);
+            if (getResponse.getResult().dataSize() == 0) {
+                return noResultFound(getResponse, statusList);
+            } else {
+                getResponse.setStatus(statusList);
+                return Response.status(Response.Status.OK).entity(getResponse).build();
+            }
+        } else {
+            getResponse = new ResponseFormImageMetadata(0, 0, imagesMetadata, true);
+            return noResultFound(getResponse, statusList);
+        }
+    }
+    
+    /**
+     * 
+     * @param pageSize
+     * @param page
+     * @param uri image uri (e.g http://www.phenome-fppn.fr/phis_field/2017/i170000000000)
+     * @param rdfType image type (e.g http://www.phenome-fppn.fr/vocabulary/2017#HemisphericalImage)
+     * @param concernedItems uris of the items concerned by the searched image(s), separated by ";". (e.g http://phenome-fppn.fr/phis_field/ao1;http://phenome-fppn.fr/phis_field/ao2)
+     * @param date date of the shooting, with timezone (e.g 2015-07-07 00:00:00+02)
+     * @return the images list corresponding to the search params given (all the images if no search param) /!\ there is a pagination 
+     *         JSON returned : 
+     *          [
+     *              { //first image description
+     *                  uri,
+     *                  rdfType,
+     *                  concern [
+     *                      {
+     *                          uri,
+     *                          rdfType
+     *                      }
+     *                  ],
+     *                  shootingConfigurations {
+     *                      date,
+     *                      timestamp,
+     *                      sensorPosition
+     *                  },
+     *                  storage {
+     *                      extension,
+     *                      md5sum,
+     *                      serverFilePath
+     *                  }
+     *              },
+     *              ...
+     *          ]
+     */
+    @GET
+    @ApiOperation(value = "Get all images corresponding to the search params given")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Retrieve all images", response = ImageMetadata.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "Authorization", required = true,
+                          dataType = "string", paramType = "header",
+                          value = DocumentationAnnotation.ACCES_TOKEN,
+                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getImagesBySearch(
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int pageSize,
+        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
+        @ApiParam(value = "Search by image uri", example = DocumentationAnnotation.EXAMPLE_IMAGE_URI) @QueryParam("uri") String uri,
+        @ApiParam(value = "Search by image type", example = DocumentationAnnotation.EXAMPLE_IMAGE_TYPE) @QueryParam("rdfType") String rdfType,
+        @ApiParam(value = "Search by concerned item uri - each concerned item uri must be separated by ;", example = DocumentationAnnotation.EXAMPLE_IMAGE_CONCERNED_ITEMS) @QueryParam("concernedItems") String concernedItems,
+        @ApiParam(value = "Search by date", example = DocumentationAnnotation.EXAMPLE_IMAGE_DATE) @QueryParam("date") String date) {
+        
+        ImageMetadataDaoMongo imageMetadataDaoMongo = new ImageMetadataDaoMongo();
+        
+        if (uri != null) {
+            imageMetadataDaoMongo.uri = uri;
+        }
+        if (rdfType != null) {
+            imageMetadataDaoMongo.rdfType = rdfType;
+        }
+        if (concernedItems != null) {
+            imageMetadataDaoMongo.concernedItems = new ArrayList<>(Arrays.asList(concernedItems.split(";")));
+        }
+        if (date != null) {
+            //SILEX:todo
+            //check date format
+            imageMetadataDaoMongo.date = date;
+            //\SILEX:todo
+        }
+        
+        imageMetadataDaoMongo.user = userSession.getUser();
+        imageMetadataDaoMongo.setPage(page);
+        imageMetadataDaoMongo.setPageSize(pageSize);
+        
+        return getImagesData(imageMetadataDaoMongo);
     }
 }

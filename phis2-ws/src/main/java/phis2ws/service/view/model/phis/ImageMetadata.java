@@ -6,14 +6,19 @@
 // Copyright © - INRA - 2017
 // Creation date: December, 11 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  December, 11 2017
+// Last modification date:  January, 03 2018
 // Subject: Represents the image metadata view
 //***********************************************************************************************
 package phis2ws.service.view.model.phis;
 
 import java.util.ArrayList;
 
+/**
+ * Represents the image metadata view
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class ImageMetadata {
+    
     private String uri;
     private String rdfType;
     private ArrayList<ConcernItem> concernedItems = new ArrayList<>();

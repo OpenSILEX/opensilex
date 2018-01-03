@@ -11,7 +11,12 @@
 //***********************************************************************************************
 package phis2ws.service.view.model.phis;
 
+/**
+ * the file informations view
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class FileInformations {
+    
     private String checksum;
     private String extension;
     private String serverFilePath;

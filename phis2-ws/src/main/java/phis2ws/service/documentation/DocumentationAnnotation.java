@@ -6,7 +6,7 @@
 // Copyright © - INRA - 2016
 // Creation date: august 2016
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  February, 2017
+// Last modification date:  January, 03 2018
 // Subject: A class which group documentation informations ( try message bundle for the next version)
 //***********************************************************************************************
 package phis2ws.service.documentation;
@@ -14,16 +14,17 @@ package phis2ws.service.documentation;
 import javax.inject.Singleton;
 import phis2ws.service.PropertiesFileManager;
 
+/**
+ * A class which group documentation informations
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 @Singleton
 public final class DocumentationAnnotation {
 
-    /**
-     * Par defaut la page est 0
-     */
+    //Default page number is 0
     public static final String PAGE = "Current page number";
     /**
-     * A mettre a jour si changement de la variable dans service properties
-     *
+     * To be updated if the variable in service.properties is updated
      * @see service.properties
      */
     public static final String PAGE_SIZE = "Number of elements per page (limited to 150000)";
@@ -53,7 +54,6 @@ public final class DocumentationAnnotation {
             + "<b>The token also include the response object header. </b>"
             + "For more information, the <b>Response object definition</b> is available at <b><a href=\"http://docs.brapi.apiary.io/#introduction/structure-of-the-response-object:\">Brapi response object</a></b>.";
 
-    // defintions des variables    
     public static final String EXPERIMENT_URI_DEFINITION = "An experiment URI (Unique Resource Identifier)";
     public static final String EXPERIMENT_POST_DATA_DEFINITION = "JSON format of experiment data";
     
@@ -92,10 +92,9 @@ public final class DocumentationAnnotation {
     
     public static final String RAW_DATA_POST_DATA_DEFINITION = "JSON format of raw data";
     
-    // Exemples de variables
     public static final String EXAMPLE_EXPERIMENT_URI = "http://phenome-fppn.fr/diaphen/DIA2012-1";
-    public static final String EXAMPLE_EXPERIMENT_START_DATE = "2015-07-07 00:00:00+02";
-    public static final String EXAMPLE_EXPERIMENT_END_DATE = "2015-08-07 00:00:00+02";
+    public static final String EXAMPLE_EXPERIMENT_START_DATE = "2017-06-15 10:51:00+0200";
+    public static final String EXAMPLE_EXPERIMENT_END_DATE = "2017-07-15 10:51:00+0200";
     public static final String EXAMPLE_EXPERIMENT_FIELD = "field";
     public static final String EXAMPLE_EXPERIMENT_PLACE = "place";
     public static final String EXAMPLE_EXPERIMENT_ALIAS = "alias";

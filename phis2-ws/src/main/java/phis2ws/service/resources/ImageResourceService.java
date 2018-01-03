@@ -6,7 +6,7 @@
 // Copyright © - INRA - 2017
 // Creation date: December, 8 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  January, 02 2018
+// Last modification date:  January, 03 2018
 // Subject: Represents the images data service
 //***********************************************************************************************
 package phis2ws.service.resources;
@@ -80,15 +80,15 @@ public class ImageResourceService {
     @Context
     UriInfo uri;
     
-    //Session Utilisateur
     @SessionInject
     Session userSession;
     
-     // Gère les annotations en attene
-    public final static ExecutorService threadPool = Executors.newCachedThreadPool();
-    // Deux Maps qui contiennent les informations sur les annotations en attentes
-    public final static Map<String, Boolean> waitingMetadataFileCheck = new HashMap<>();
-    public final static Map<String, ImageMetadata> waitingMetadataInformation = new HashMap<>();
+    // For the waiting annotations
+    public final static ExecutorService THREAD_POOL = Executors.newCachedThreadPool();
+    // contains the informations abour the waiting annotations
+    public final static Map<String, Boolean> WAITING_METADATA_FILE_CHECK = new HashMap<>();
+    // contains the informations abour the waiting annotations
+    public final static Map<String, ImageMetadata> WAITING_METADATA_INFORMATION = new HashMap<>();
     
     /**
      * check images metadata
@@ -136,19 +136,18 @@ public class ImageResourceService {
             ImageMetadataDaoMongo imageDaoMongo = new ImageMetadataDaoMongo();
             imageDaoMongo.user = userSession.getUser();
             
-            //Vérification des métadonnées
             final POSTResultsReturn checkImageMetadata = imageDaoMongo.check(imagesMetadata); 
             
-            if (checkImageMetadata.statusList == null) { //Les métadonnées ne sont pas bonnes
+            if (checkImageMetadata.statusList == null) { //bad metadata
                 postResponse = new ResponseFormPOST();
-            } else if (checkImageMetadata.getDataState()) {//Les métadonnées sont bonnes
+            } else if (checkImageMetadata.getDataState()) {//metadata ok
                 ArrayList<String> imagesUploadLinks = new ArrayList<>();
                 long imagesNumber = imageDaoMongo.getNbImagesYear();
                 URINamespaces uriNamespaces = new URINamespaces();
                 for (ImageMetadataDTO imageMetadata : imagesMetadata) {
                     final UriBuilder uploadPath = uri.getBaseUriBuilder();
                     
-                    //Calcul du nombre de 0 à ajouter devant le numéro de l'image
+                    //calculate the number of 0 to add before the number of the image
                     String nbImagesByYear = Long.toString(imagesNumber);
                     while (nbImagesByYear.length() < 10) {
                         nbImagesByYear = "0" + nbImagesByYear;
@@ -159,12 +158,12 @@ public class ImageResourceService {
                     final String uploadLink = uploadPath.path("images").path("upload").queryParam("uri", imageUri).toString();
                     imagesUploadLinks.add(uploadLink);
                     
-                    waitingMetadataFileCheck.put(imageUri, false); // fichier en attente
+                    WAITING_METADATA_FILE_CHECK.put(imageUri, false); // file waiting
                     ImageMetadata imageMetadataToSave = imageMetadata.createObjectFromDTO();
                     imageMetadataToSave.setUri(imageUri);
-                    waitingMetadataInformation.put(imageUri, imageMetadataToSave);
-                        //Lancement THREAD pour le fichier en attente
-                    threadPool.submit(new ImageWaitingCheck(imageUri));
+                    WAITING_METADATA_INFORMATION.put(imageUri, imageMetadataToSave);
+                    //Launch the thread for the expected file
+                    THREAD_POOL.submit(new ImageWaitingCheck(imageUri));
                 }
                 final Status waitingTimeStatus = new Status("Timeout", StatusCodeMsg.INFO, " Timeout :" + PropertiesFileManager.getConfigFileProperty("service", "waitingFileTime") + " seconds");
                 checkImageMetadata.statusList.add(waitingTimeStatus);
@@ -179,6 +178,11 @@ public class ImageResourceService {
         }
     }
     
+    /**
+     * calculate the hash of a file
+     * @param in the file we want the hash
+     * @return the hash file
+     */
     private String getHash(File in) {
         String hash = null;
         try {
@@ -189,13 +193,25 @@ public class ImageResourceService {
         return hash;
     }
     
-    private String getServerImagesDirectory(String imageUri) {
+    /**
+     * calculate the server image directory for an image
+     * @return the server image directory of the image. 
+     *         The images are saved by year of insertion.
+     *         (e.g http://www.phenome-fppn.fr/platform/2017/i170000000000)
+     * 
+     */
+    private String getServerImagesDirectory() {
         return PropertiesFileManager.getConfigFileProperty("service", "uploadImageServerDirectory") + "/"
                 + PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "platform") + "/" 
                 + Year.now().toString();
     }
     
-    private String getWebAccessImagesDirectory(String imageUri) {
+    /**
+     * 
+     * @return the web access image directory
+     *         (e.g http://localhost/images/platform/2017/i170000000000)
+     */
+    private String getWebAccessImagesDirectory() {
         return PropertiesFileManager.getConfigFileProperty("service", "imageFileServerDirectory") + "/"
                 + PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "platform") + "/" 
                 + Year.now().toString();
@@ -204,25 +220,27 @@ public class ImageResourceService {
     /**
      * 
      * @param imageUri
-     * @return le nom de l'image. Il est utilise l'identifiant de l'image présent dans l'uri. 
-     *              ex. i170000000009
+     * @return the image name, extracted from the image uri. 
+     *         It corresponds to the image id from the uri 
+     *         (e.g i170000000000)
      */
     private String getImageName(String imageUri) {
         return imageUri.substring(imageUri.lastIndexOf("/") + 1, imageUri.length());
     }
     
     /**
-     * Adresse du fichier à envoyer
      * @param in File
      * @param imageUri Metadata uri
      * @param headers
      * @param request
      * @return
      * @throws URISyntaxException 
+     * @throws java.text.ParseException 
      */
     @POST
     @Path("upload")
-    @ApiOperation(value = "Post data file", notes = DocumentationAnnotation.USER_ONLY_NOTES + " Not working from this documentation. Implement a client or use Postman application.")
+    @ApiOperation(value = "Post data file", notes = DocumentationAnnotation.USER_ONLY_NOTES 
+                            + " Not working from this documentation. Implement a client or use Postman application.")
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Image file and image metadata saved", response = ResponseFormPOST.class),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
@@ -241,11 +259,11 @@ public class ImageResourceService {
         @ApiParam(value = "Uri given from \"images\" path for upload") @QueryParam("uri") String imageUri,
         @Context HttpHeaders headers,
         @Context HttpServletRequest request) throws URISyntaxException, ParseException {
-        ResponseFormPOST postResponse = null;
+        ResponseFormPOST postResponse;
         List<Status> statusList = new ArrayList<>();
         
-        //Métadonnées associées présentes
-        if (!waitingMetadataFileCheck.containsKey(imageUri)) {
+        //The file metadata exists
+        if (!WAITING_METADATA_FILE_CHECK.containsKey(imageUri)) {
             statusList.add(new Status("No waiting image", StatusCodeMsg.ERR, "No waiting file for the following uri : " + imageUri));
             postResponse = new ResponseFormPOST(statusList);
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
@@ -257,9 +275,9 @@ public class ImageResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
         
-        //Vérification du checksum
+        //check the checksum
         String hash = getHash(in);
-        if (hash != null && !waitingMetadataInformation.get(imageUri).getFileInformations().getChecksum().equals(hash)) {
+        if (hash != null && !WAITING_METADATA_INFORMATION.get(imageUri).getFileInformations().getChecksum().equals(hash)) {
             statusList.add(new Status("MD5 error", StatusCodeMsg.ERR, "Checksum MD5 doesn't match. Corrupted File."));
             postResponse = new ResponseFormPOST(statusList);
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
@@ -267,12 +285,12 @@ public class ImageResourceService {
         
         FileUploader jsch = new FileUploader();
         
-        final String serverFileName = getImageName(imageUri) + "." + waitingMetadataInformation.get(imageUri).getFileInformations().getExtension();
-        final String serverImagesDirectory = getServerImagesDirectory(imageUri);
-        final String webAccessImagesDirectory = getWebAccessImagesDirectory(imageUri);
+        final String serverFileName = getImageName(imageUri) + "." + WAITING_METADATA_INFORMATION.get(imageUri).getFileInformations().getExtension();
+        final String serverImagesDirectory = getServerImagesDirectory();
+        final String webAccessImagesDirectory = getWebAccessImagesDirectory();
         
         try {
-            waitingMetadataFileCheck.put(imageUri, Boolean.TRUE); //Traitement en cours du fichier
+            WAITING_METADATA_FILE_CHECK.put(imageUri, Boolean.TRUE);
             //SILEX:test
             jsch.getChannelSftp().cd(serverImagesDirectory);
             //\SILEX:test
@@ -284,23 +302,23 @@ public class ImageResourceService {
         boolean fileTransfered = jsch.fileTransfer(in, serverFileName);
         jsch.closeConnection();
         
-        if (!fileTransfered) { //Si l'image n'a pas été enregistrée
+        if (!fileTransfered) { //If the image has not been register
             statusList.add(new Status("Image upload error", StatusCodeMsg.ERR, "An error occurred during file upload. Try to submit it again " + imageUri));
             postResponse = new ResponseFormPOST(statusList);
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
         
-        waitingMetadataInformation.get(imageUri).getFileInformations().setServerFilePath(webAccessImagesDirectory + "/" + serverFileName);
+        WAITING_METADATA_INFORMATION.get(imageUri).getFileInformations().setServerFilePath(webAccessImagesDirectory + "/" + serverFileName);
         
         ImageMetadataDaoMongo imageMetadataDaoMongo = new ImageMetadataDaoMongo();
         imageMetadataDaoMongo.user = userSession.getUser();
         
-        final POSTResultsReturn insertMetadata = imageMetadataDaoMongo.insert(Arrays.asList(waitingMetadataInformation.get(imageUri)));
+        final POSTResultsReturn insertMetadata = imageMetadataDaoMongo.insert(Arrays.asList(WAITING_METADATA_INFORMATION.get(imageUri)));
         postResponse = new ResponseFormPOST(insertMetadata.statusList);
         
         if (insertMetadata.getDataState()) {
-            waitingMetadataFileCheck.remove(imageUri);
-            waitingMetadataInformation.remove(imageUri);
+            WAITING_METADATA_FILE_CHECK.remove(imageUri);
+            WAITING_METADATA_INFORMATION.remove(imageUri);
             
             if (insertMetadata.getHttpStatus() == Response.Status.CREATED) {
                 postResponse.getMetadata().setDatafiles((ArrayList) insertMetadata.createdResources);
@@ -313,6 +331,12 @@ public class ImageResourceService {
         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(new ResponseFormPOST()).build();
     }
     
+    /**
+     * 
+     * @param getResponse
+     * @param insertStatusList
+     * @return the response "no result found" for the service
+     */
     private Response noResultFound(ResponseFormImageMetadata getResponse, ArrayList<Status> insertStatusList) {
         insertStatusList.add(new Status("No results", StatusCodeMsg.INFO, "No results for the images metadata"));
         getResponse.setStatus(insertStatusList);

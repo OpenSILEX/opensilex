@@ -11,7 +11,12 @@
 //***********************************************************************************************
 package phis2ws.service.view.model.phis;
 
+/**
+ * represents the concern item view
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class ConcernItem {
+    
     private String uri;
     private String rdfType;
 

@@ -19,6 +19,10 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.view.model.phis.ImageMetadata;
 
+/**
+ * corresponds to the submitted JSON for the images metadata
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class ImageMetadataDTO extends AbstractVerifiedClass {
     
     private String rdfType;

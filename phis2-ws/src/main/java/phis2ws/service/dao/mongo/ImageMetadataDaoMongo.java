@@ -16,7 +16,6 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
-import java.sql.Array;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -47,7 +46,7 @@ import phis2ws.service.view.model.phis.ShootingConfiguration;
  * Represents the MongoDB Data Access Object for the images
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata>{
+public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(ImageMetadataDaoMongo.class);
     public String uri;
@@ -61,6 +60,35 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata>{
         super();
     }
     
+    /**
+     * search images metadata by uri, rdfType, date, concernedItems
+     * @return the search query.
+     *         Query example :
+     *         { 
+     *              "uri" : "http://www.phenome-fppn.fr/phis_field/2017/i170000000000" , 
+     *              "rdfType" : "http://www.phenome-fppn.fr/vocabulary/2017#HemisphericalImage" , 
+     *              "$and" : 
+     *                  [ 
+     *                      { 
+     *                          "concern" : { 
+     *                              "$elemMatch" : { 
+     *                                  "uri" : "http://phenome-fppn.fr/phis_field/ao1"
+     *                              }
+     *                          }
+     *                      },
+     *                      { 
+     *                          "concern" : { 
+     *                              "$elemMatch" : { 
+     *                                  "uri" : "http://phenome-fppn.fr/phis_field/ao1"
+     *                              }
+     *                          }
+     *                      }
+     *                  ] , 
+     *                  "shootingConfiguration.date" : { 
+     *                      "$date" : "2017-06-15T08:51:00.000Z"
+     *                  }
+     *              }
+     */
     @Override
     protected BasicDBObject prepareSearchQuery() {
        BasicDBObject query = new BasicDBObject();
@@ -138,21 +166,26 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata>{
         return imagesMetadata;
     }
     
+    /**
+     * check if the images metadata are correct.
+     * @param imagesMetadata
+     * @return the result of the check of the images metadata. 
+     */
     public POSTResultsReturn check(List<ImageMetadataDTO> imagesMetadata) {
-        List<Status> checkStatusList = new ArrayList<>(); //Liste des status retrounés
+        List<Status> checkStatusList = new ArrayList<>(); //Status to be returned
         
         boolean dataOk = true;
         
         for (ImageMetadataDTO imageMetadata : imagesMetadata) {
-            if ((boolean) imageMetadata.isOk().get("state")) { //Données reçues correctes
-                //1. Vérification de l'existance du type d'image
+            if ((boolean) imageMetadata.isOk().get("state")) { //Metadata correct
+                //1. Check if the image type exist
                 ImageMetadataDaoSesame imageMetadataDaoSesame = new ImageMetadataDaoSesame();
                 if (!imageMetadataDaoSesame.existObject(imageMetadata.getRdfType())) {
                     dataOk = false;
                     checkStatusList.add(new Status("Wrong value", StatusCodeMsg.ERR, "Wrong image type given : " + imageMetadata.getRdfType()));
                 }
                 
-                //2. Vérification de l'existance des entités concernées, dans le triplestore (?)
+                //2. Check if the concerned items exist in the triplestore
                 for (ConcernItemDTO concernedItem : imageMetadata.getConcern()) {
                     if (!imageMetadataDaoSesame.existObject(concernedItem.getUri())) {
                         dataOk = false;
@@ -171,6 +204,12 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata>{
         return imagesMetadataCheck;
     }
     
+    /**
+     * Prepare the query of getting the number of images by year.
+     * @return query to get the number of images by year. 
+     *         Query example : 
+     *         {uri: {$regex: "http://www.phenome-fppn.fr/diaphen/2017*"}}    
+     */
     private Document prepareGetNbImagesYearQuery() {        
           Document regQuery = new Document();
           URINamespaces uriNamespaces = new URINamespaces();
@@ -185,15 +224,22 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata>{
     
     /**
      * 
-     * @return un entier correspondant au nombre d'images dans le système pour cette année.
+     * @return the number of images in the database for the actual year
      */
     public long getNbImagesYear() {
         Document query = prepareGetNbImagesYearQuery();
         
-        LOGGER.trace(getTraceabilityLogs() + " query : " + query.toString());
+        LOGGER.debug(getTraceabilityLogs() + " query : " + query.toString());
         return imagesCollection.count(query);
     }
     
+    /**
+     * insert the images metadata in the nosql database
+     * @param imagesMetadata
+     * @return the result of the insert
+     * @throws ParseException 
+     */
+    @SuppressWarnings("empty-statement")
     public POSTResultsReturn insert(List<ImageMetadata> imagesMetadata) throws ParseException {
         List<Status> insertStatus = new ArrayList<>();
         POSTResultsReturn result;
@@ -209,14 +255,14 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata>{
            metadata.append("rdfType", imageMetadata.getRdfType());
            
            //Concern
-           ArrayList<Document> concernedItems = new ArrayList<>();
+           ArrayList<Document> concernedItemsToSave = new ArrayList<>();
            for (ConcernItem concernItem : imageMetadata.getConcernedItems()) {
                Document concern = new Document();
                concern.append("uri", concernItem.getUri());
                concern.append("rdfType", concernItem.getRdfType());
-               concernedItems.add(concern);
+               concernedItemsToSave.add(concern);
            }
-           metadata.append("concern", concernedItems);
+           metadata.append("concern", concernedItemsToSave);
            
            //Configuration
            Document configuration = new Document();
@@ -234,12 +280,12 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata>{
            storage.append("serverFilePath", imageMetadata.getFileInformations().getServerFilePath());
            metadata.append("storage", storage);
            
-           LOGGER.trace("MongoDB insert : " + metadata.toJson());
+           LOGGER.debug("MongoDB insert : " + metadata.toJson());
            imagesCollection.insertOne(metadata);
            createdResourcesUris.add(imageMetadata.getUri());
        }
        
-       insertStatus.add(new Status("Resource created", StatusCodeMsg.INFO, "images inserted"));;
+       insertStatus.add(new Status("Resource created", StatusCodeMsg.INFO, "images metadata inserted"));;
        result = new POSTResultsReturn(Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
        result.setHttpStatus(Response.Status.CREATED);
        result.statusList = insertStatus;

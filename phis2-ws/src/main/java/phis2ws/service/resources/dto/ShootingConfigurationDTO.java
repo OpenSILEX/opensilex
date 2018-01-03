@@ -18,8 +18,12 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.view.model.phis.ShootingConfiguration;
 
+/**
+ * corresponds to the submitted JSON for an image shooting configuration
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class ShootingConfigurationDTO extends AbstractVerifiedClass {
-
+    
     private String date;
     private String position;
     

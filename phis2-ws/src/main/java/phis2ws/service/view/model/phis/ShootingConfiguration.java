@@ -11,7 +11,12 @@
 //***********************************************************************************************
 package phis2ws.service.view.model.phis;
 
+/**
+ * the shooting configuration view
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class ShootingConfiguration {
+    
     private String date;
     private String timestamp;
     private String position;

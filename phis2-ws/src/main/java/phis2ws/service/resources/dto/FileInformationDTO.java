@@ -18,6 +18,10 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.view.model.phis.FileInformations;
 
+/**
+ * corresponds to the submitted JSON for a file information
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class FileInformationDTO extends AbstractVerifiedClass {
 
     private String checksum;

@@ -92,9 +92,13 @@ public final class DocumentationAnnotation {
     
     public static final String RAW_DATA_POST_DATA_DEFINITION = "JSON format of raw data";
     
+    //Global examples
+    public static final String EXAMPLE_DATETIME = "2017-06-15 10:51:00+0200";
+    
+    //Specific examples
     public static final String EXAMPLE_EXPERIMENT_URI = "http://phenome-fppn.fr/diaphen/DIA2012-1";
-    public static final String EXAMPLE_EXPERIMENT_START_DATE = "2017-06-15 10:51:00+0200";
-    public static final String EXAMPLE_EXPERIMENT_END_DATE = "2017-07-15 10:51:00+0200";
+    public static final String EXAMPLE_EXPERIMENT_START_DATE = EXAMPLE_DATETIME;
+    public static final String EXAMPLE_EXPERIMENT_END_DATE = EXAMPLE_DATETIME;
     public static final String EXAMPLE_EXPERIMENT_FIELD = "field";
     public static final String EXAMPLE_EXPERIMENT_PLACE = "place";
     public static final String EXAMPLE_EXPERIMENT_ALIAS = "alias";
@@ -104,11 +108,11 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_FILE_INFORMATION_CHECKSUM = "106fa487baa1728083747de1c6df73e9";
     public static final String EXAMPLE_FILE_INFORMATION_EXTENSION = "jpg";
     
-    public static final String EXAMPLE_AGRONOMICAL_OBJECT_URI = "http://phenome-fppn.fr/phis_field/ao1";
+    public static final String EXAMPLE_AGRONOMICAL_OBJECT_URI = "http://www.phenome-fppn.fr/phenovia/2017/o1032481";
     
     public static final String EXAMPLE_IMAGE_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#HemisphericalImage";
     public static final String EXAMPLE_IMAGE_URI = "http://www.phenome-fppn.fr/phis_field/2017/i170000000000";
-    public static final String EXAMPLE_IMAGE_DATE = EXAMPLE_EXPERIMENT_START_DATE;
+    public static final String EXAMPLE_IMAGE_DATE = EXAMPLE_DATETIME;
     public static final String EXAMPLE_IMAGE_CONCERNED_ITEMS = EXAMPLE_AGRONOMICAL_OBJECT_URI + ";" + EXAMPLE_AGRONOMICAL_OBJECT_URI;
     
     public static final String EXAMPLE_PROJECT_URI = "http://phenome-fppn.fr/phis_field/projectTest";
@@ -142,6 +146,8 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_USER_ORCID = "orcid";
     public static final String EXAMPLE_USER_ADMIN = "true";
     public static final String EXAMPLE_USER_AVAILABLE = "true";
+    
+    public static final String EXAMPLE_DATA_VALUE = "3.0000000";
     
     public static final String EXAMPLE_DOCUMENT_URI = "http://www.phenome-fppn.fr/phis_field/documents/documente597f57ba71d421a86277d830f4b9885";
     public static final String EXAMPLE_DOCUMENT_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#ScientificDocument";

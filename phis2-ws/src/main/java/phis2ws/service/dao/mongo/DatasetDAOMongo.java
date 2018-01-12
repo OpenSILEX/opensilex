@@ -1,12 +1,13 @@
 //**********************************************************************************************
-//                                       PhenotypeDaoMongo.java 
+//                                       DatasetDaoMongo.java 
 //
 // Author(s): Morgane VIDAL
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2017
 // Creation date: September 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  September, 14 2017
+// Last modification date:  January, 12 2018 update insert data : add 
+// possibility to add a dataset with an already existing provenance  
 // Subject: A specific Dao to retrieve data on phenotypes. 
 //***********************************************************************************************
 package phis2ws.service.dao.mongo;
@@ -32,17 +33,23 @@ import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.dao.manager.DAOMongo;
 import phis2ws.service.dao.phis.AgronomicalObjectDao;
 import phis2ws.service.dao.sesame.AgronomicalObjectDaoSesame;
+import phis2ws.service.dao.sesame.VariableDaoSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.resources.dto.PhenotypeDTO;
+import phis2ws.service.resources.dto.DataDTO;
+import phis2ws.service.resources.dto.DatasetDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.AgronomicalObject;
 import phis2ws.service.view.model.phis.Data;
-import phis2ws.service.view.model.phis.Phenotype;
+import phis2ws.service.view.model.phis.Dataset;
 
-public class PhenotypeDaoMongo extends DAOMongo<Phenotype> {
+/**
+ * Represents the MongoDB Data Access Object for the datasets
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
+public class DatasetDAOMongo extends DAOMongo<Dataset> {
     
-    final static Logger LOGGER = LoggerFactory.getLogger(PhenotypeDaoMongo.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(DatasetDAOMongo.class);
     
     private final MongoCollection<Document> provenanceCollection = database.getCollection(PropertiesFileManager.getConfigFileProperty("mongodb_nosql_config", "provenance"));
     private final MongoCollection<Document> dataCollection = database.getCollection(PropertiesFileManager.getConfigFileProperty("mongodb_nosql_config", "data"));
@@ -52,8 +59,9 @@ public class PhenotypeDaoMongo extends DAOMongo<Phenotype> {
     public ArrayList<String> agronomicalObjects = new ArrayList<>();
     public String startDate;
     public String endDate;
+    public String provenance;
     
-    public PhenotypeDaoMongo() {
+    public DatasetDAOMongo() {
         super();
     }    
     
@@ -74,7 +82,7 @@ public class PhenotypeDaoMongo extends DAOMongo<Phenotype> {
                 query.append("date", BasicDBObjectBuilder.start("$gte", start).add("$lte", end).get());
 
             } catch (ParseException ex) {
-                java.util.logging.Logger.getLogger(PhenotypeDaoMongo.class.getName()).log(Level.SEVERE, null, ex);
+                java.util.logging.Logger.getLogger(DatasetDAOMongo.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         
@@ -93,31 +101,42 @@ public class PhenotypeDaoMongo extends DAOMongo<Phenotype> {
         
         return query;
     }
+    
+    /**
+     * prepare a provenance search query for mongodb. Search by uri
+     * @return 
+     */
+    protected BasicDBObject prepareSearchProvenance() {
+        BasicDBObject query = new BasicDBObject();
+        if (provenance != null) {
+            query.append("uri", provenance);
+        }
+        return query;
+    }
 
     /**
-     * @action récupère la liste des objets agronomiques de l'expérimentation pour
-     *         les ajouter à la liste des objets agronomiques recherchés.
-     * @param experiment 
+     * get experiment's agronomical objects and add them to the searched 
+     * agronomical objects list 
      */
     private void updateAgronomicalObjectsWithExperimentsAgronomicalObjects() {
         AgronomicalObjectDaoSesame agronomicalObjectDaoSesame = new AgronomicalObjectDaoSesame();
         agronomicalObjectDaoSesame.experiment = experiment;
         
-        ArrayList<AgronomicalObject> agronomicalObjects = agronomicalObjectDaoSesame.allPaginate();
+        ArrayList<AgronomicalObject> agronomicalObjectsSearched = agronomicalObjectDaoSesame.allPaginate();
         
-        for (AgronomicalObject agronomicalObject : agronomicalObjects) {
+        for (AgronomicalObject agronomicalObject : agronomicalObjectsSearched) {
             this.agronomicalObjects.add(agronomicalObject.getUri());
         }
     }
     
     /**
-     * 
-     * @return liste de phénotypes, résultats de la recherche, vide si pas de résultats
+     * get all datasets corresponding to search params (experiment, agronomical
+     * objects, variable, date start, date end)
+     * @return datasets list, empty if no search result
      */
     @Override
-    public ArrayList<Phenotype> allPaginate() {
-        //Si on a une expérimentation, il faut récupérer la liste des objets agronomiques
-        //pour la requête mongo
+    public ArrayList<Dataset> allPaginate() {
+        //If search by experiment, get experiment's agronomical objects.
         if (experiment != null) {
             updateAgronomicalObjectsWithExperimentsAgronomicalObjects();
         }
@@ -127,17 +146,10 @@ public class PhenotypeDaoMongo extends DAOMongo<Phenotype> {
         LOGGER.trace(getTraceabilityLogs() + " query : " + query.toString());
         FindIterable<Document> phenotypesMongo = dataCollection.find(query);
 
-        ArrayList<Phenotype> phenotypes = new ArrayList<>();
-        Phenotype phenotype = new Phenotype();
+        ArrayList<Dataset> phenotypes = new ArrayList<>();
+        Dataset phenotype = new Dataset();
         phenotype.setExperiment(experiment);
         phenotype.setVariableURI(variable);
-        
-        //SILEX:todo
-        //récupérer les valeurs en fonction de la pagination...
-        //il faut faire cette pagination sur les objets agronomiques..
-        //en discuter avec Anne ?
-        //pour l'instant, j'ai enlevé la pagination
-        //\SILEX:todo
         
         try (MongoCursor<Document> phenotypesCursor = phenotypesMongo.iterator()) {
             while (phenotypesCursor.hasNext()) {
@@ -145,7 +157,7 @@ public class PhenotypeDaoMongo extends DAOMongo<Phenotype> {
                 
                 Data data = new Data();
                 data.setAgronomicalObject(phenotypeDocument.getString("agronomicalObject"));
-                data.setDate(new SimpleDateFormat("yyyy-MM-dd").format(phenotypeDocument.getDate("date"))); // TODO: changer le format de la date pour le retour
+                data.setDate(new SimpleDateFormat("yyyy-MM-dd").format(phenotypeDocument.getDate("date")));
                 data.setValue(phenotypeDocument.getString("value"));
                 data.setVariable(phenotypeDocument.getString("variable"));
                 
@@ -157,25 +169,38 @@ public class PhenotypeDaoMongo extends DAOMongo<Phenotype> {
         return phenotypes;
     }
     
-    private boolean isElementValid(PhenotypeDTO phenotypeDTO) {
-        Map<String, Object> phenotypeOk = phenotypeDTO.isOk();
+    /**
+     * check if a dataset is valid (follows rules).
+     * @param datasetDTO
+     * @return 
+     */
+    private boolean isElementValid(DatasetDTO datasetDTO) {
+        Map<String, Object> phenotypeOk = datasetDTO.isOk();
         return (boolean) phenotypeOk.get("state");
     }
     
     //SILEX:todo
-    //Faire une fonction "check" commune entre l'insert et le update
+    //- Separate the check and the insert actions
+    //- The check function must be also used in the update
     //\SILEX:todo
-    private POSTResultsReturn checkAndInsertPhenotypesList(ArrayList<PhenotypeDTO> phenotypesDTO) throws Exception {
+    /**
+     * check and insert in the mongodb database a list of datasets
+     * @param datasetsDTO datasets to insert
+     * @return the insertion result
+     * @throws Exception 
+     */
+    private POSTResultsReturn checkAndInsertDatasets(ArrayList<DatasetDTO> datasetsDTO) throws Exception {
         List<Status> insertStatusList = new ArrayList<>();
+        List<String> createdProvenances = new ArrayList<>();
         POSTResultsReturn result = null;
         
-        ArrayList<Phenotype> phenotypes = new ArrayList<>();
+        ArrayList<Dataset> datasets = new ArrayList<>();
         boolean dataState = true;
         
         
-        for (PhenotypeDTO phenotypeDTO : phenotypesDTO) {
-            if (isElementValid(phenotypeDTO)) {                
-                for (Data data : phenotypeDTO.getData()) {
+        for (DatasetDTO datasetDTO : datasetsDTO) {
+            if (isElementValid(datasetDTO)) {                
+                for (DataDTO data : datasetDTO.getData()) {
                     AgronomicalObjectDao agronomicalObjectDao = new AgronomicalObjectDao();
                     if (!agronomicalObjectDao.existInDB(new AgronomicalObject(data.getAgronomicalObject()))) {
                         dataState = false;
@@ -183,8 +208,14 @@ public class PhenotypeDaoMongo extends DAOMongo<Phenotype> {
                     }
                 }
                 
-                Phenotype phenotype = phenotypeDTO.createObjectFromDTO();
-                phenotypes.add(phenotype);
+                VariableDaoSesame variableDaoSesame = new VariableDaoSesame();
+                if (!variableDaoSesame.existObject(datasetDTO.getVariableUri())) {
+                    dataState = false;
+                    insertStatusList.add(new Status("Data error", StatusCodeMsg.ERR, "Unknown Variable : " + datasetDTO.getVariableUri()));
+                }
+                
+                Dataset phenotype = datasetDTO.createObjectFromDTO();
+                datasets.add(phenotype);
                 
             } else {
                 dataState = false;
@@ -195,39 +226,61 @@ public class PhenotypeDaoMongo extends DAOMongo<Phenotype> {
         if (dataState) {
             SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
             //SILEX:todo
-            //FAIRE UN TRUC EQUIVALENT AUX TRANSACTIONS
-            //On doit faire l'insertion dans mongoDb
-            for (Phenotype phenotype : phenotypes) {
-                //1. Insertion de la provenance
-                Document provenance = new Document();
-                Date creationDate = df.parse(phenotype.getProvenance().getCreationDate());
-                
-                provenance.append("creationDate", creationDate);
-                provenance.append("wasGeneratedBy", phenotype.getProvenance().getWasGeneratedBy().getWasGeneratedBy());
-                provenance.append("wasGeneratedByDescription", phenotype.getProvenance().getWasGeneratedBy().getWasGeneratedByDescription());
-                provenance.append("documents", phenotype.getProvenance().getDocumentsUris());
-                provenance.append("uri", phenotype.getProvenance().getUri());
-                
-                LOGGER.trace("MongoDB insert : " + provenance.toJson());
-                
-                provenanceCollection.insertOne(provenance);
+            //transactions
+            //mongodb insertion
+            for (Dataset dataset : datasets) {
+                //1. provenance creation if needed
+                Object provenanceId = null;
+                if (dataset.getProvenance().getCreationDate() != null) {
+                    Document provenanceDocument = new Document();
+                    Date creationDate = df.parse(dataset.getProvenance().getCreationDate());
+
+                    provenanceDocument.append("creationDate", creationDate);
+                    provenanceDocument.append("wasGeneratedBy", dataset.getProvenance().getWasGeneratedBy().getWasGeneratedBy());
+                    provenanceDocument.append("wasGeneratedByDescription", dataset.getProvenance().getWasGeneratedBy().getWasGeneratedByDescription());
+                    provenanceDocument.append("documents", dataset.getProvenance().getDocumentsUris());
+                    provenanceDocument.append("uri", dataset.getProvenance().getUri());
+
+                    LOGGER.debug("MongoDB insert : " + provenanceDocument.toJson());
+
+                    provenanceCollection.insertOne(provenanceDocument);
+                    provenanceId = provenanceDocument.get("_id");
+                } else { //get provenance id
+                    provenance = dataset.getProvenance().getUri();
+                    BasicDBObject provenanceQuery = prepareSearchProvenance();
+                    LOGGER.debug("MongoDB query provenance : " + provenanceQuery.toJson());
+                    
+                    FindIterable<Document> provenances = provenanceCollection.find(provenanceQuery);
+                    try (MongoCursor<Document> provenancesCursor = provenances.iterator()) {
+                        while (provenancesCursor.hasNext()) {
+                            Document provenanceDocument = provenancesCursor.next();
+                            provenanceId = provenanceDocument.get("_id");
+                        }
+                    }
+                }
+                createdProvenances.add(dataset.getProvenance().getUri());
                 
                 ArrayList<Document> dataToInsert = new ArrayList<>();
-                //2. Insertion des data
-                for (Data data : phenotype.getData()) {
+                //2. Data insertion
+                for (Data data : dataset.getData()) {
                     Document d = new Document();
                     Date date = df.parse(data.getDate());
                     
                     d.append("date", date);
-                    d.append("variable", phenotype.getVariableURI());
-                    d.append("value", data.getValue());
+                    d.append("variable", dataset.getVariableURI());
+                    //SILEX:todo
+                    //choose the type of the value with the variable type 
+                    //(string or double)
+                    d.append("value", Double.parseDouble(data.getValue()));
+                    //\SILEX:todo
                     d.append("agronomicalObject", data.getAgronomicalObject());
                     //SILEX:todo
-                    //Regarder DBRef (https://docs.mongodb.com/manual/reference/database-references/#dbref-explanation)
-                    d.append("provenance", provenance.get("_id"));
+                    //DBRef (https://docs.mongodb.com/manual/reference/database-references/#dbref-explanation)
+                    d.append("provenanceId", provenanceId);
+                    d.append("provenanceUri", dataset.getProvenance().getUri());
                     //\SILEX:todo
                     
-                    LOGGER.trace("MongoDB insert : " + d.toJson());
+                    LOGGER.debug("MongoDB insert : " + d.toJson());
                    
                     dataToInsert.add(d);
                 }
@@ -235,9 +288,10 @@ public class PhenotypeDaoMongo extends DAOMongo<Phenotype> {
                 dataCollection.insertMany(dataToInsert);
             }
             
-            insertStatusList.add(new Status("Resource created", StatusCodeMsg.INFO, "phenotypes inserted"));;
+            insertStatusList.add(new Status("Resource created", StatusCodeMsg.INFO, "datasets inserted"));;
             result = new POSTResultsReturn(dataState);
             result.setHttpStatus(Response.Status.CREATED);
+            result.createdResources = createdProvenances;
             result.statusList = insertStatusList;
             //\SILEX:todo
         } else {
@@ -250,15 +304,15 @@ public class PhenotypeDaoMongo extends DAOMongo<Phenotype> {
     }
     
     /**
-     * @action enregistre les données dans MongoDB
-     * @param phenotypesDTO liste de phénotypes à enregistrer en BD
-     * @return le résultat de l'insertion
+     * register datasets in MongoDB
+     * @param datasetsDTO datasets to save
+     * @return insertion result
      */
-    public POSTResultsReturn checkAndInsert(ArrayList<PhenotypeDTO> phenotypesDTO) {
+    public POSTResultsReturn checkAndInsert(ArrayList<DatasetDTO> datasetsDTO) {
         POSTResultsReturn postResult;
         
         try {
-            postResult = this.checkAndInsertPhenotypesList(phenotypesDTO);
+            postResult = this.checkAndInsertDatasets(datasetsDTO);
         } catch (Exception ex) {
             LOGGER.error(ex.getMessage(), ex);
             postResult = new POSTResultsReturn(false, Response.Status.INTERNAL_SERVER_ERROR, ex.toString());
@@ -266,7 +320,4 @@ public class PhenotypeDaoMongo extends DAOMongo<Phenotype> {
         
         return postResult;
     }
-
-//TODO
-    
 }

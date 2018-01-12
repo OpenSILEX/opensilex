@@ -15,7 +15,7 @@ public class Data {
     private String agronomicalObject;
     private String date;
     private String value;
-    private String variable; //Used only for the get phenotypes
+    private String variable; 
     
     public Data() {
         

@@ -6,7 +6,7 @@
 // Copyright © - INRA - 2016
 // Creation date: august 2016
 // Contact: eloan.lagier@inra.fr, arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  December, 8 2017
+// Last modification date:  Janvier, 25 2018
 // Subject: A class which group documentation informations ( try message bundle for the next version)
 //***********************************************************************************************
 package phis2ws.service.documentation;
@@ -163,4 +163,9 @@ public final class DocumentationAnnotation {
     
     public static final String EXAMPLE_CONCEPT_URI = "http://www.phenome-fppn.fr/vocabulary/2017#Document";
     public static final String EXAMPLE_DEEP ="true";
+    public static final String EXAMPLE_SIBLING_URI = "http://www.phenome-fppn.fr/vocabulary/2017#ScientificDocument";
+
+    
+    public static final String EXAMPLE_RDFTYPE_URI = "http://www.phenome-fppn.fr/vocabulary/2017#ScientificDocument";
+    public static final String EXAMPLE_INSTANCE_URI = "http://www.phenome-fppn.fr/phenovia/documents/document90fb96ace2894cdb9f4575173d8ed4c9";
 }

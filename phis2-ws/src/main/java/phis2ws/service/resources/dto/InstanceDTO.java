@@ -29,7 +29,7 @@ public class InstanceDTO extends AbstractVerifiedClass{
     private String page;
     private String deep;
     private String uri;
-    private String type;
+    private String rdfType;
     
 
     
@@ -46,19 +46,19 @@ public class InstanceDTO extends AbstractVerifiedClass{
     @Override
     public Instance createObjectFromDTO() {
         Instance instance = new Instance();
-        instance.setType(type);
+        instance.setType(rdfType);
         instance.setUri(uri);
         return instance;
     }
     
     
     @ApiModelProperty(example = "http://www.phenome-fppn.fr/vocabulary/2017#ScientificDocument")
-    public String getType() {
-        return type;
+    public String getRdfType() {
+        return rdfType;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setRdfType(String rdfType) {
+        this.rdfType = rdfType;
     }
     
     @ApiModelProperty(example = "http://www.phenome-fppn.fr/phenovia/documents/document90fb96ace2894cdb9f4575173d8ed4c9")

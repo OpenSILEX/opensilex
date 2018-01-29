@@ -140,6 +140,9 @@ public class ConceptDaoSesame extends DAOSesame<Concept>{
      * @return SPARQLQueryBuilder
      */
     
+    /*probleme : Siblings take ScientificDocument for exemple but it's different that all the other concept GET
+    where could this can be change?
+    */
     protected SPARQLQueryBuilder prepareSiblingsQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);

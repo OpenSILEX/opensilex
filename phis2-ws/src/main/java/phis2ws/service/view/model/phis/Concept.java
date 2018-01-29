@@ -45,6 +45,10 @@ public class Concept {
         this.uri = uri;
     }
     
+    @ApiModelProperty(example = "{ Map<String, String> }")
+    public Map<String, String> getInfos () {
+        return infos;
+    }
     public void addInfos (String key, String value){
         infos.put(key, value);
 

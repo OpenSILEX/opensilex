@@ -52,7 +52,7 @@ public class InstanceDTO extends AbstractVerifiedClass{
     }
     
     
-    @ApiModelProperty(example = "http://www.phenome-fppn.fr/vocabulary/2017#ScientificDocument")
+   // @ApiModelProperty(example = "http://www.phenome-fppn.fr/vocabulary/2017#ScientificDocument")
     public String getRdfType() {
         return rdfType;
     }
@@ -61,7 +61,7 @@ public class InstanceDTO extends AbstractVerifiedClass{
         this.rdfType = rdfType;
     }
     
-    @ApiModelProperty(example = "http://www.phenome-fppn.fr/phenovia/documents/document90fb96ace2894cdb9f4575173d8ed4c9")
+   // @ApiModelProperty(example = "http://www.phenome-fppn.fr/phenovia/documents/document90fb96ace2894cdb9f4575173d8ed4c9")
     public String getUri() {
         return uri;
     }
@@ -70,4 +70,4 @@ public class InstanceDTO extends AbstractVerifiedClass{
         this.uri = uri;
     }
     
-}
+} //

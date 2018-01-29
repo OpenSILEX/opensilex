@@ -14,8 +14,11 @@ package phis2ws.service.dao.sesame;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import javafx.util.Pair;
 import javax.persistence.TupleElement;
+import org.eclipse.rdf4j.model.Literal;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -62,8 +65,7 @@ public class ConceptDaoSesame extends DAOSesame<Concept>{
             query.appendSelect("?uri");
         }
         
-        query.appendSelect(" ?class");
-        query.appendSelect(" ?type");
+        query.appendSelect(" ?class ?type");
         query.appendTriplet(contextURI,"?class", "?type", null);
  
         LOGGER.trace("sparql select query : " + query.toString());
@@ -180,10 +182,17 @@ public class ConceptDaoSesame extends DAOSesame<Concept>{
             Concept concept = new Concept();
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
-                LOGGER.debug(bindingSet.getValue("class").stringValue());
                 concept.setUri(uri);
                 String classname = bindingSet.getValue("class").stringValue();
+                Value label = bindingSet.getValue("type");
+                if (label instanceof Literal) {
+                    Literal literal = (Literal) bindingSet.getValue("type");
+                    Optional<String> propertyLanguage = literal.getLanguage();
+                    concept.addInfos(classname.substring(classname.indexOf("#")+1,classname.length())+"_"+propertyLanguage.get(), bindingSet.getValue("type").stringValue());
+                }else{
+                
                 concept.addInfos(classname.substring(classname.indexOf("#")+1,classname.length()),bindingSet.getValue("type").stringValue());
+                }
                 
             }
             concepts.add(concept);

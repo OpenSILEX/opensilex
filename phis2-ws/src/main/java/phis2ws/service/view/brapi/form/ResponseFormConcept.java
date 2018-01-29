@@ -30,9 +30,7 @@ public class ResponseFormConcept extends ResultForm<Concept>{
      * @param paginate 
      */   
         public ResponseFormConcept(int pageSize, int currentPage, ArrayList<Concept> list, boolean paginate) {
-        metadata = new Metadata(pageSize, currentPage, list.size());
-        result = new ResultatConcept(list, metadata.getPagination(), paginate);
-       
+        metadata = new Metadata(pageSize, currentPage, list.size());       
        if (list.size() > 1) {
             result = new ResultatConcept(list, metadata.getPagination(), paginate);
         } else {

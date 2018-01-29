@@ -5,8 +5,8 @@
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2016
 // Creation date: may 2016
-// Contact:arnaud.charleroy@supagro.inra.fr, anne.tireau@supagro.inra.fr, pascal.neveu@supagro.inra.fr
-// Last modification date:  October, 2016
+// Contact:eloan.lagier@inra.fr, arnaud.charleroy@supagro.inra.fr, anne.tireau@supagro.inra.fr, pascal.neveu@supagro.inra.fr
+// Last modification date:  Janvier 29 , 2018
 // Subject: A class which permit to build a SPARQL query
 //***********************************************************************************************
 package phis2ws.service.utils.sparql;
@@ -26,6 +26,7 @@ public class SPARQLQueryBuilder extends SPARQLStringBuilder {
     private Integer offset = null;
     private String graph = null;
     private String optional = null;
+    private String ask = null;
 
     public SPARQLQueryBuilder() {
         super();
@@ -62,7 +63,11 @@ public class SPARQLQueryBuilder extends SPARQLStringBuilder {
     public void appendOptional(String optional) {
         this.optional = optional;
     }
-
+    
+    public void appendAsk(String ask) {
+        this.ask = ask;
+    }
+    
     /**
      * Ajout du sélect
      *
@@ -80,27 +85,35 @@ public class SPARQLQueryBuilder extends SPARQLStringBuilder {
         if (prefix != null) {
             queryResource += prefix + "\n";
         }
-        if (count != null && count) {
-            if (select.length() == 0) {
-                queryResource += "SELECT ( COUNT ( DISTINCT * ) as ?count) ";
+        if (ask == null){
+            if (count != null && count) {
+                if (select.length() == 0) {
+                    queryResource += "SELECT ( COUNT ( DISTINCT * ) as ?count) ";
+                } else {
+                    queryResource += "SELECT ( COUNT ( DISTINCT " + select + "  ) as ?count) ";
+                }
+            } else if (this.distinct != null) {
+                if (select.length() == 0) {
+                    queryResource += "SELECT DISTINCT * ";
+                } else {
+                    queryResource += "SELECT DISTINCT " + select + " ";
+                }
+            } else if (select.length() == 0) {
+                queryResource += "SELECT * ";
             } else {
-                queryResource += "SELECT ( COUNT ( DISTINCT " + select + "  ) as ?count) ";
+                queryResource += "SELECT " + select + " ";
             }
-        } else if (this.distinct != null) {
-            if (select.length() == 0) {
-                queryResource += "SELECT DISTINCT * ";
-            } else {
-                queryResource += "SELECT DISTINCT " + select + " ";
-            }
-        } else if (select.length() == 0) {
-            queryResource += "SELECT * ";
-        } else {
-            queryResource += "SELECT " + select + " ";
         }
+        
         if (from != null) {
             queryResource += "FROM " + from + "\n";
         }
-        queryResource += "WHERE {\n";
+        if (ask !=null) {
+            queryResource += "\n" + "ASK {"+ ask + "}";
+        }   else{
+                queryResource += "WHERE {\n";
+            }
+        
         if (graph != null) {
             queryResource += "GRAPH <" + graph + "> {";
         }
@@ -128,6 +141,7 @@ public class SPARQLQueryBuilder extends SPARQLStringBuilder {
         if (offset != null) {
             queryResource += "\n" + "OFFSET " + offset + " ";
         }
+        
         return queryResource;
     }
 

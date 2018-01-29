@@ -23,7 +23,7 @@ public class Instance  {
     String uri;
     String type;
     
-    public Instance() {
+    public Instance() { 
         
     }
     

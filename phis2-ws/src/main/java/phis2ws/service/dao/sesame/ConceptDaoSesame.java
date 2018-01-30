@@ -12,11 +12,7 @@
 package phis2ws.service.dao.sesame;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import javafx.util.Pair;
-import javax.persistence.TupleElement;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.BindingSet;
@@ -25,11 +21,14 @@ import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
+
+import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
+import phis2ws.service.view.model.phis.Ask;
 import phis2ws.service.view.model.phis.Concept;
 
 /**
@@ -170,12 +169,31 @@ public class ConceptDaoSesame extends DAOSesame<Concept>{
     public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+    
+    
+    protected SPARQLQueryBuilder prepareAskQuery() {
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        query.appendDistinct(Boolean.TRUE);
+        
+        String contextURI;
+        
+        
+        if (uri != null) {
+            contextURI = "<" + uri + ">";
+        } else {
+            contextURI = "?uri";
+            query.appendSelect("?uri");
+        }
+        //any = anything
+        query.appendAsk(contextURI+" ?any1 ?any2 ");
+
+        return query;
+    }
   
     /*
     return the concept info all paginate
     */
     public ArrayList<Concept> ConceptAllPaginate() {
-        
         SPARQLQueryBuilder query = prepareSearchQuery();
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         ArrayList<Concept> concepts = new ArrayList<Concept>();
@@ -236,7 +254,7 @@ public class ConceptDaoSesame extends DAOSesame<Concept>{
         SPARQLQueryBuilder query = prepareAncestorsQuery();
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         ArrayList<Concept> concepts = new ArrayList<Concept>();
-
+        
         try (TupleQueryResult result = tupleQuery.evaluate()) {
 
             
@@ -272,6 +290,23 @@ public class ConceptDaoSesame extends DAOSesame<Concept>{
             
         }
         return concepts;
+    }
+    
+    /*
+    return if an URI is in the tupple
+    */
+    public ArrayList<Ask> getAskAnswer() {
+        SPARQLQueryBuilder query = prepareAskQuery();
+        BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
+        ArrayList<Ask> answer = new ArrayList<Ask>();;
+        LOGGER.debug(query.toString());
+        boolean result = booleanQuery.evaluate();
+        LOGGER.debug("YO");
+        Ask ask = new Ask();
+        ask.setResponse(String.valueOf(result));
+        answer.add(ask);       
+        
+        return answer;
     }
     
 }

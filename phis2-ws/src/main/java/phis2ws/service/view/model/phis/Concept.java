@@ -25,7 +25,6 @@ import javafx.util.Pair;
 
 public class Concept {
     String uri;
-    //ArrayList<Pair<String,String>> infos = new ArrayList<>();
     private Map<String, String> infos = new HashMap<String, String>();
     
     public Concept (){

@@ -26,7 +26,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.eclipse.rdf4j.model.Literal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.authentication.Session;
@@ -38,8 +37,10 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.view.brapi.Status;
+import phis2ws.service.view.brapi.form.ResponseFormAsk;
 import phis2ws.service.view.brapi.form.ResponseFormConcept;
 import phis2ws.service.view.brapi.form.ResponseFormInstance;
+import phis2ws.service.view.model.phis.Ask;
 import phis2ws.service.view.model.phis.Concept;
 import phis2ws.service.view.model.phis.Instance;
 
@@ -56,6 +57,25 @@ public class ConceptResourceService {
     //Session utilisateur
     @SessionInject
     Session userSession;
+
+    private Response noResultFound(ResponseFormConcept getResponse, ArrayList<Status> insertStatusList) {
+        insertStatusList.add(new Status("No results", StatusCodeMsg.INFO, "No results for the concepts"));
+        getResponse.setStatus(insertStatusList);
+        return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
+    }
+    
+    private Response noResultFound(ResponseFormInstance getResponse, ArrayList<Status> insertStatusList) {
+        insertStatusList.add(new Status("No results", StatusCodeMsg.INFO, "No results for the instances"));
+        getResponse.setStatus(insertStatusList);
+        return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
+    }
+    
+    private Response noResultFound(ResponseFormAsk getResponse, ArrayList<Status> insertStatusList) {
+        insertStatusList.add(new Status("No results", StatusCodeMsg.INFO, "No results for the ask"));
+        getResponse.setStatus(insertStatusList);
+        return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
+    }
+   
     
      /* @return concept list deppending of the GET calling
      *                                                             
@@ -65,17 +85,7 @@ public class ConceptResourceService {
      *              { concept description },
      *          ]
      */
-    private Response noResultFound(ResponseFormConcept getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status("No results", StatusCodeMsg.INFO, "No results for the concepts"));
-        getResponse.setStatus(insertStatusList);
-        return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
-    }
-    private Response noResultFound(ResponseFormInstance getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status("No results", StatusCodeMsg.INFO, "No results for the concepts"));
-        getResponse.setStatus(insertStatusList);
-        return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
-    }
-   
+
  
     /*this GET return all the concept info it could 
      there will be in an Hashmap in  because of the variation of its result
@@ -116,14 +126,52 @@ public class ConceptResourceService {
             
             
           
-    /* GET {uri}/instances return the list of instances of a concept
+    /*Get {uri} search if an uri is in the tripplestore or not
     
+    */
+    
+    
+    /**
+     *
+     * @param uri
+     * @return
+     */
+   @GET
+    @Path("{uri}")
+    @ApiOperation(value = "ask if an URI is in the triplestore or not (concept or instance )", 
+                  notes = "Return a String of a boolean")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "ask concept", response = Ask.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+    })
+    @ApiImplicitParams({
+       @ApiImplicitParam(name = "Authorization", required = true,
+                         dataType = "string", paramType = "header",
+                         value = DocumentationAnnotation.ACCES_TOKEN,
+                         example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAskResponse(
+            @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example=DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @QueryParam("conceptUri") String uri ) {
+        
+        ConceptDaoSesame conceptDaoSesame = new ConceptDaoSesame();
+        if (uri != null) {
+            conceptDaoSesame.uri = uri;
+         }
+        
+        conceptDaoSesame.user = userSession.getUser();
+        
+        return getAskdata(conceptDaoSesame);
+    }  
+    
+    
+    /* GET {uri}/instances return the list of instances of a concept
     if the deep param is equal to TRUE it will also give the instances of the 
     subClass of the concept
+    */
     
-    
-    
-    */   
     /**
      *
      * @param uri
@@ -448,8 +496,28 @@ public class ConceptResourceService {
         }
     }
     
-    
-    
+     private Response getAskdata(ConceptDaoSesame conceptDaoSesame) {
+        ArrayList<Ask> ask;
+        ArrayList<Status> statusList = new ArrayList<>();
+        ResponseFormAsk getResponse;
+        ask = conceptDaoSesame.getAskAnswer();
+        if (ask == null) {
+            getResponse = new ResponseFormAsk(0, 0, ask, true);
+            return noResultFound(getResponse, statusList);
+        } else if (!ask.isEmpty()) {
+            getResponse = new ResponseFormAsk(conceptDaoSesame.getPageSize(), conceptDaoSesame.getPage(), ask, false);
+            if (getResponse.getResult().dataSize() == 0) {
+                return noResultFound(getResponse, statusList);
+            } else {
+                getResponse.setStatus(statusList);
+                return Response.status(Response.Status.OK).entity(getResponse).build();
+            }
+        } else {
+            getResponse = new ResponseFormAsk(0, 0, ask, true);
+            return noResultFound(getResponse, statusList);
+        }
+
+     }
     
 
 }

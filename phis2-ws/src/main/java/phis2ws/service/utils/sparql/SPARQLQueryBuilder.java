@@ -109,7 +109,7 @@ public class SPARQLQueryBuilder extends SPARQLStringBuilder {
             queryResource += "FROM " + from + "\n";
         }
         if (ask !=null) {
-            queryResource += "\n" + "ASK {"+ ask + "}";
+            queryResource += "\n" + "ASK {"+ ask + " .";
         }   else{
                 queryResource += "WHERE {\n";
             }

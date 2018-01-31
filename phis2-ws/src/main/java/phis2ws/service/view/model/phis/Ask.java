@@ -6,7 +6,7 @@
 // Copyright © - INRA - 2017
 // Creation date: Janvier 30 2018
 // Contact: eloan.lagire@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  Janvier 30, 2018
+// Last modification date:  Janvier 31, 2018
 // Subject: Ask model for SPARQL Ask Response
 //***********************************************************************************************
 package phis2ws.service.view.model.phis;
@@ -19,6 +19,7 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class Ask {
     String response;
+    String type;
     
     @ApiModelProperty(example = "true")
     public String getResponse() {
@@ -28,4 +29,15 @@ public class Ask {
     public void setResponse(String response){
         this.response = response;
     }
+    
+    
+    @ApiModelProperty(example = "Class")
+    public String getType() {
+        return type;
+    }
+    
+    public void setType(String type) {
+        this.type = type;
+    }
+    
 }

@@ -6,7 +6,7 @@
 // Copyright © - INRA - 2017
 // Creation date: January 3 2018
 // Contact: eloan.lager@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  January 25, 2018
+// Last modification date:  January 31, 2018
 // Subject: A Dao specific to concept insert into triplestore 
 //***********************************************************************************************
 package phis2ws.service.dao.sesame;
@@ -21,7 +21,6 @@ import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
-
 import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
@@ -171,6 +170,8 @@ public class ConceptDaoSesame extends DAOSesame<Concept>{
     }
     
     
+    /* create the ask query */
+    
     protected SPARQLQueryBuilder prepareAskQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
@@ -190,9 +191,32 @@ public class ConceptDaoSesame extends DAOSesame<Concept>{
         return query;
     }
   
+    
+    /* create the query that return the type of an URI if its in the Tupple */
+    protected SPARQLQueryBuilder prepareAskTypeQuery() {
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        query.appendDistinct(Boolean.TRUE);
+        
+        String contextURI;
+        
+        
+        if (uri != null) {
+            contextURI = "<" + uri + ">";
+        } else {
+            contextURI = "?uri";
+            query.appendSelect("?uri");
+        }
+        query.appendSelect(" ?type ");
+        query.appendTriplet(contextURI," rdf:type"," ?type ", null);
+        LOGGER.debug(query.toString());
+        return query;
+    }
+    
+            
     /*
     return the concept info all paginate
     */
+    
     public ArrayList<Concept> ConceptAllPaginate() {
         SPARQLQueryBuilder query = prepareSearchQuery();
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
@@ -298,14 +322,32 @@ public class ConceptDaoSesame extends DAOSesame<Concept>{
     public ArrayList<Ask> getAskAnswer() {
         SPARQLQueryBuilder query = prepareAskQuery();
         BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
-        ArrayList<Ask> answer = new ArrayList<Ask>();;
-        LOGGER.debug(query.toString());
+        ArrayList<Ask> answer = new ArrayList<Ask>();
         boolean result = booleanQuery.evaluate();
-        LOGGER.debug("YO");
         Ask ask = new Ask();
         ask.setResponse(String.valueOf(result));
         answer.add(ask);       
         
+        return answer;
+    }
+    
+    /*return the type of the uri concept if it is in the tupple */
+    public ArrayList<Ask> getAskTypeAnswer() {
+        SPARQLQueryBuilder query = prepareAskQuery();
+        BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
+        ArrayList<Ask> answer = new ArrayList<Ask>();;
+        boolean result = booleanQuery.evaluate();
+        Ask ask = new Ask();
+        ask.setResponse(String.valueOf(result));
+        if (ask.getResponse() == "true"){
+            query = prepareAskTypeQuery();
+            TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+            TupleQueryResult resultat = tupleQuery.evaluate();
+            BindingSet bindingSet = resultat.next();
+            ask.setType(bindingSet.getValue("type").toString());
+            
+        }
+        answer.add(ask);
         return answer;
     }
     

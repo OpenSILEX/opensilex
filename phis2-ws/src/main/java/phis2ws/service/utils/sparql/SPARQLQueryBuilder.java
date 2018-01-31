@@ -156,5 +156,6 @@ public class SPARQLQueryBuilder extends SPARQLStringBuilder {
         where = null;
         filter = "";
         optional = null;
+        ask =  null;
     }
 }

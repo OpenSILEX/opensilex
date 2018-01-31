@@ -6,7 +6,7 @@
 // Copyright © - INRA - 2017
 // Creation date: Decembre 8, 2017
 // Contact: eloan.lagier@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  Janvier 25, 2017
+// Last modification date:  Janvier 31, 2018
 // Subject: Represente the Concept data service
 //***********************************************************************************************
 package phis2ws.service.resources;
@@ -166,11 +166,53 @@ public class ConceptResourceService {
         return getAskdata(conceptDaoSesame);
     }  
     
+    /* GET {uri}/type
+    return the type of an uri if it exist
+    */
+    
+    /**
+     * @param uri
+     * @param limit
+     * @param page
+     * @return
+     */
+    
+    @GET
+    @Path("{uri}/type")
+    @ApiOperation(value = "get the type of an uri if exist",
+        notes = "else it will say false" )
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Retrieve type", response = Concept.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+    })
+        
+    @ApiImplicitParams({
+    @ApiImplicitParam(name = "Authorization", required = true,
+                         dataType = "string", paramType = "header",
+                         value = DocumentationAnnotation.ACCES_TOKEN,
+                         example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAskType(
+            @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example=DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @QueryParam("conceptUri") String uri ) {
+        
+        ConceptDaoSesame conceptDaoSesame = new ConceptDaoSesame();
+        if (uri != null) {
+            conceptDaoSesame.uri = uri;
+         }
+        
+        conceptDaoSesame.user = userSession.getUser();
+        
+        return getAskTypedata(conceptDaoSesame);
+    }   
     
     /* GET {uri}/instances return the list of instances of a concept
     if the deep param is equal to TRUE it will also give the instances of the 
     subClass of the concept
     */
+    
     
     /**
      *
@@ -496,7 +538,12 @@ public class ConceptResourceService {
         }
     }
     
-     private Response getAskdata(ConceptDaoSesame conceptDaoSesame) {
+    
+    /**getAskdata:
+    * @param ConceptDaoSesame conceptDaoSesame
+    *this one return the boolean if an URI is in the tupplestore
+     */
+    private Response getAskdata(ConceptDaoSesame conceptDaoSesame) {
         ArrayList<Ask> ask;
         ArrayList<Status> statusList = new ArrayList<>();
         ResponseFormAsk getResponse;
@@ -519,5 +566,31 @@ public class ConceptResourceService {
 
      }
     
+    /**getAskTypedata:
+     * @param ConceptDaoSesame conceptDaoSesame
+     *this one return the type of a concept if it is in the tupplestore
+    */
+    private Response getAskTypedata(ConceptDaoSesame conceptDaoSesame) {
+        ArrayList<Ask> ask;
+        ArrayList<Status> statusList = new ArrayList<>();
+        ResponseFormAsk getResponse;
+        ask = conceptDaoSesame.getAskTypeAnswer();
+        if (ask == null) {
+            getResponse = new ResponseFormAsk(0, 0, ask, true);
+            return noResultFound(getResponse, statusList);
+        } else if (!ask.isEmpty()) {
+            getResponse = new ResponseFormAsk(conceptDaoSesame.getPageSize(), conceptDaoSesame.getPage(), ask, false);
+            if (getResponse.getResult().dataSize() == 0) {
+                return noResultFound(getResponse, statusList);
+            } else {
+                getResponse.setStatus(statusList);
+                return Response.status(Response.Status.OK).entity(getResponse).build();
+            }
+        } else {
+            getResponse = new ResponseFormAsk(0, 0, ask, true);
+            return noResultFound(getResponse, statusList);
+        }
+
+     }
 
 }

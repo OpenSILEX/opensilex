@@ -39,4 +39,8 @@ public class ResultatAsk extends Resultat<Ask>{
     public ResultatAsk(ArrayList<Ask> concepts, Pagination pagination, boolean paginate) {
         super(concepts, pagination, paginate);
     }
+    
+    
+    
+    
 }

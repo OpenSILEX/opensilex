@@ -182,7 +182,7 @@ public class ConceptResourceService {
     @ApiOperation(value = "get the type of an uri if exist",
         notes = "else it will say false" )
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve type", response = Concept.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Retrieve type", response = Ask.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)

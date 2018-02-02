@@ -165,6 +165,7 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_DEEP ="true";
     public static final String EXAMPLE_SIBLING_URI = "http://www.phenome-fppn.fr/vocabulary/2017#ScientificDocument";
 
+    public static final String EXAMPLE_CONCEPT_LABEL = "'document'@en";
     
     public static final String EXAMPLE_RDFTYPE_URI = "http://www.phenome-fppn.fr/vocabulary/2017#ScientificDocument";
     public static final String EXAMPLE_INSTANCE_URI = "http://www.phenome-fppn.fr/phenovia/documents/document90fb96ace2894cdb9f4575173d8ed4c9";

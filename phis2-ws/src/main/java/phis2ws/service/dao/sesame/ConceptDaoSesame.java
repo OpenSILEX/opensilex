@@ -37,7 +37,6 @@ import phis2ws.service.view.model.phis.Concept;
 public class ConceptDaoSesame extends DAOSesame<Concept>{
     final static Logger LOGGER = LoggerFactory.getLogger(ConceptDaoSesame.class);
     public String uri;
-    public ArrayList<Double> infos;
     
      /**
      *  Search infos of concept (ex : label, subclass.. )

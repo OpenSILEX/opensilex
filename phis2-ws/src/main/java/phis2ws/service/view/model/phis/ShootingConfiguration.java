@@ -17,8 +17,11 @@ package phis2ws.service.view.model.phis;
  */
 public class ShootingConfiguration {
     
+    //date of the image shooting
     private String date;
+    //timestamp of the date attribute
     private String timestamp;
+    //position of the sensor
     private String position;
 
     public ShootingConfiguration() {

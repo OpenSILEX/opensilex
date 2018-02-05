@@ -123,7 +123,7 @@ public class UnitDaoSesame extends DAOSesame<Unit> {
             } else { //Données attendues non reçues
                 dataOk = false;
                 unitDTO.isOk().remove("state");
-                checkStatusList.add(new Status("Bad data format", StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.MISSINGFIELDS).append(unitDTO.isOk()).toString()));
+                checkStatusList.add(new Status("Bad data format", StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.MISSING_FIELDS_LIST).append(unitDTO.isOk()).toString()));
             }
         }
         

@@ -122,7 +122,7 @@ public class DatasetResourceService {
             
             return Response.status(result.getHttpStatus()).entity(postResponse).build();
         } else {
-            postResponse = new ResponseFormPOST(new Status("Request error", StatusCodeMsg.ERR, "Empty datasets to add"));
+            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty datasets to add"));
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }
@@ -163,7 +163,7 @@ public class DatasetResourceService {
      * @return the response "no result found" for the service
      */
     private Response noResultFound(ResponseFormDataset getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status("No results", StatusCodeMsg.INFO, "No results for the datasets"));
+        insertStatusList.add(new Status(StatusCodeMsg.NO_RESULTS, StatusCodeMsg.INFO, "No results for the datasets"));
         getResponse.setStatus(insertStatusList);
         return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
     }

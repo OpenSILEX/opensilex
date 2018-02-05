@@ -538,9 +538,9 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
                 }
 
                 results = new POSTResultsReturn(false, insertionState, dataState);
-                insertStatusList.add(new Status("Error", StatusCodeMsg.ERRPG, e.getMessage()));
+                insertStatusList.add(new Status("Error", StatusCodeMsg.POSTGRESQL_ERROR, e.getMessage()));
                 if (e.getNextException() != null) {
-                    insertStatusList.add(new Status("Error", StatusCodeMsg.ERRPG, e.getNextException().getMessage()));
+                    insertStatusList.add(new Status("Error", StatusCodeMsg.POSTGRESQL_ERROR, e.getNextException().getMessage()));
                     insertStatusList.add(new Status("Error", StatusCodeMsg.ERR, "Duplicated user in json or in database"));
                 }
                 results.statusList = insertStatusList;
@@ -712,9 +712,9 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
                 }
 
                 results = new POSTResultsReturn(false, true, allUsersAlreadyInDB);
-                insertStatusList.add(new Status("Error", StatusCodeMsg.ERRPG, e.getMessage()));
+                insertStatusList.add(new Status("Error", StatusCodeMsg.POSTGRESQL_ERROR, e.getMessage()));
                 if (e.getNextException() != null) {
-                    insertStatusList.add(new Status("Error", StatusCodeMsg.ERRPG, e.getNextException().getMessage()));
+                    insertStatusList.add(new Status("Error", StatusCodeMsg.POSTGRESQL_ERROR, e.getNextException().getMessage()));
                 }
                 results.statusList = insertStatusList;
             } finally {

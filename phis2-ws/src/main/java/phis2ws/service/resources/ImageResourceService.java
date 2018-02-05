@@ -165,7 +165,7 @@ public class ImageResourceService {
                     //Launch the thread for the expected file
                     THREAD_POOL.submit(new ImageWaitingCheck(imageUri));
                 }
-                final Status waitingTimeStatus = new Status("Timeout", StatusCodeMsg.INFO, " Timeout :" + PropertiesFileManager.getConfigFileProperty("service", "waitingFileTime") + " seconds");
+                final Status waitingTimeStatus = new Status(StatusCodeMsg.TIMEOUT, StatusCodeMsg.INFO, " Timeout :" + PropertiesFileManager.getConfigFileProperty("service", "waitingFileTime") + " seconds");
                 checkImageMetadata.statusList.add(waitingTimeStatus);
                 postResponse = new ResponseFormPOST(checkImageMetadata.statusList);
                 postResponse.getMetadata().setDatafiles(imagesUploadLinks);
@@ -270,7 +270,7 @@ public class ImageResourceService {
         }
         
         if (headers != null && headers.getLength() <= 0) {
-            statusList.add(new Status("File error", StatusCodeMsg.ERR, "File Size : " + headers.getLength() + " octets"));
+            statusList.add(new Status(StatusCodeMsg.FILE_ERROR, StatusCodeMsg.ERR, "File Size : " + headers.getLength() + " octets"));
             postResponse = new ResponseFormPOST(statusList);
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
@@ -278,7 +278,7 @@ public class ImageResourceService {
         //check the checksum
         String hash = getHash(in);
         if (hash != null && !WAITING_METADATA_INFORMATION.get(imageUri).getFileInformations().getChecksum().equals(hash)) {
-            statusList.add(new Status("MD5 error", StatusCodeMsg.ERR, "Checksum MD5 doesn't match. Corrupted File."));
+            statusList.add(new Status(StatusCodeMsg.MD5_ERROR, StatusCodeMsg.ERR, "Checksum MD5 doesn't match. Corrupted File."));
             postResponse = new ResponseFormPOST(statusList);
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
@@ -295,7 +295,7 @@ public class ImageResourceService {
             jsch.getChannelSftp().cd(serverImagesDirectory);
             //\SILEX:test
         } catch (SftpException e) {
-            statusList.add(new Status("SftException", StatusCodeMsg.ERR, e.getMessage()));
+            statusList.add(new Status(StatusCodeMsg.SFTP_EXCEPTION, StatusCodeMsg.ERR, e.getMessage()));
             LOGGER.error(e.getMessage(), serverImagesDirectory + " " + e);
         }
         
@@ -338,7 +338,7 @@ public class ImageResourceService {
      * @return the response "no result found" for the service
      */
     private Response noResultFound(ResponseFormImageMetadata getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status("No results", StatusCodeMsg.INFO, "No results for the images metadata"));
+        insertStatusList.add(new Status(StatusCodeMsg.NO_RESULTS, StatusCodeMsg.INFO, "No results for the images metadata"));
         getResponse.setStatus(insertStatusList);
         return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
     }

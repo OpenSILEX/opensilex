@@ -19,10 +19,15 @@ import java.util.ArrayList;
  */
 public class ImageMetadata {
     
+    //image uri
     private String uri;
+    //image type (in the ontology)
     private String rdfType;
+    //elements concerned by the image
     private ArrayList<ConcernItem> concernedItems = new ArrayList<>();
+    //shooting configuration
     private ShootingConfiguration configuration;
+    //informations about the image file
     private FileInformations fileInformations;
 
     public ImageMetadata() {

@@ -20,6 +20,10 @@ import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.model.phis.ImageMetadata;
 
+/**
+ * Used to check if an image type exist in the triplestore
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class ImageMetadataDaoSesame extends DAOSesame<ImageMetadata> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(ImageMetadataDaoSesame.class);
@@ -38,5 +42,4 @@ public class ImageMetadataDaoSesame extends DAOSesame<ImageMetadata> {
     public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
 }

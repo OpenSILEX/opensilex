@@ -17,8 +17,11 @@ package phis2ws.service.view.model.phis;
  */
 public class FileInformations {
     
+    //md5sum of the file
     private String checksum;
+    //extension of the file (e.g. PNG)
     private String extension;
+    //file path of the file on the server
     private String serverFilePath;
 
     public FileInformations() {

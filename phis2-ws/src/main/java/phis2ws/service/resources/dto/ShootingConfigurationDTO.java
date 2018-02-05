@@ -24,7 +24,9 @@ import phis2ws.service.view.model.phis.ShootingConfiguration;
  */
 public class ShootingConfigurationDTO extends AbstractVerifiedClass {
     
+    //date of the shooting
     private String date;
+    //position of the sensor
     private String position;
     
     @Override

@@ -17,7 +17,6 @@ import java.util.HashMap;
 import java.util.Map;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.view.model.phis.Dataset;
-import phis2ws.service.view.model.phis.Provenance;
 
 /**
  * corresponds to the submitted JSON for the datasets
@@ -26,7 +25,10 @@ import phis2ws.service.view.model.phis.Provenance;
 public class DatasetDTO extends AbstractVerifiedClass {
 
     private String variableUri;
-    private Provenance provenance;
+    //Provenance is the dataset provenance. It is composed of the creation date 
+    //of the dataset, the script which has generate the dataset and a description
+    //of the generation (if possible)
+    private ProvenanceDTO provenance;
     private ArrayList<DataDTO> data;
     
     @Override
@@ -44,7 +46,7 @@ public class DatasetDTO extends AbstractVerifiedClass {
     public Dataset createObjectFromDTO() {
        Dataset phenotypes = new Dataset();
        phenotypes.setVariableURI(variableUri);       
-       phenotypes.setProvenance(new Provenance(provenance));
+       phenotypes.setProvenance(provenance.createObjectFromDTO());
        for (DataDTO d : data) {
            phenotypes.addData(d.createObjectFromDTO());
        }
@@ -61,11 +63,11 @@ public class DatasetDTO extends AbstractVerifiedClass {
         this.variableUri = variableUri;
     }
 
-    public Provenance getProvenance() {
+    public ProvenanceDTO getProvenance() {
         return provenance;
     }
 
-    public void setProvenance(Provenance provenance) {
+    public void setProvenance(ProvenanceDTO provenance) {
         this.provenance = provenance;
     }
 

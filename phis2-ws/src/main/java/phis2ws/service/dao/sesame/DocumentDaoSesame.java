@@ -6,18 +6,10 @@
 // Copyright © - INRA - 2016
 // Creation date: august 2016
 // Contact:arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  October, 12 2017 (Ajout status sur les documents (linked/unlinked)
+// Last modification date:  October, 12 2017 (add status on documents : linked/unlinked)
 // Subject: A Dao specific to documents insert into triplestore 
 //***********************************************************************************************
 
-// /!\ Suite à la maj de la semaine du 12 juin 2017, 
-// des insertions sont faites dans le triplestore (metadonnées) ET dans mongodb (document - Utilisation de DocumentDaoMongo)
-// il faudra renommer la classe... 
-
-//SILEX:conception
-// Si l'objet concerné par le document n'existe pas dans le triplestore, on n'ajoute pas de triplet 
-// avec son type (element rdf:type elementType). C'est plus souple mais cela sera sûrement à modifier par la suite
-//\SILEX:conception
 package phis2ws.service.dao.sesame;
 
 import java.util.ArrayList;
@@ -43,6 +35,7 @@ import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.model.User;
 import phis2ws.service.resources.dto.ConcernItemDTO;
 import phis2ws.service.resources.dto.DocumentMetadataDTO;
+import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.ResourcesUtils;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
@@ -83,7 +76,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         boolean dataOk = true; 
         for (DocumentMetadataDTO documentMetadata : docsMetadata) {
             // Vérification des docsMetadata
-            if ((boolean) documentMetadata.isOk().get("state")) { // Données attendues reçues
+            if ((boolean) documentMetadata.isOk().get(AbstractVerifiedClass.STATE)) { // Données attendues reçues
                 //1. Récupération des types de documents de l'ontologie
                 ArrayList<String> documentsSchemasUri = null;
                 try {
@@ -95,20 +88,20 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
                 //2. Vérification du type du document
                 if (documentsSchemasUri != null && !documentsSchemasUri.contains(documentMetadata.getDocumentType())) {
                     dataOk = false;
-                    insertStatusList.add(new Status("Wrong value", StatusCodeMsg.ERR, "Wrong document type value. Authorized document type values : " + documentsSchemasUri.toString()));
+                    insertStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Wrong document type value. Authorized document type values : " + documentsSchemasUri.toString()));
                 }
                 
                 //3. Vérification du status (doit être égal à "linked" ou "unlinked")
                 if (!(documentMetadata.getStatus().equals("linked") || documentMetadata.getStatus().equals("unlinked"))) {
                     dataOk = false;
-                    insertStatusList.add(new Status("Wrong value", StatusCodeMsg.ERR, 
+                    insertStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
                             "Wrong status value given : " + documentMetadata.getStatus() + ". Expected : \"linked\" or \"unlinked\"" ));
                 }
             } else {
                 // Format des données non attendu par rapport au schéma demandé
                 dataOk = false;
-                documentMetadata.isOk().remove("state");
-                insertStatusList.add(new Status("Bad data format", StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.MISSINGFIELDS).append(documentMetadata.isOk()).toString()));
+                documentMetadata.isOk().remove(AbstractVerifiedClass.STATE);
+                insertStatusList.add(new Status(StatusCodeMsg.BAD_DATA_FORMAT, StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.MISSING_FIELDS_LIST).append(documentMetadata.isOk()).toString()));
             }
         }
         docsMetadataCheck = new POSTResultsReturn(dataOk, null, dataOk);
@@ -158,8 +151,8 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
                 try {
                     nameExist = exist(documents + "/" + name, null, null);
                 } catch (RepositoryException ex) {
-                    LOGGER.error("Triplestore access error. ", ex);
-                    insertStatusList.add(new Status("Triplestore access error", StatusCodeMsg.ERR, "Triplestore access error : " + ex.getMessage()));
+                    LOGGER.error(StatusCodeMsg.TRIPLESTOR_ACCESS_ERROR, ex);
+                    insertStatusList.add(new Status(StatusCodeMsg.TRIPLESTOR_ACCESS_ERROR, StatusCodeMsg.ERR, ex.getMessage()));
                     break;
                 } catch (MalformedQueryException | QueryEvaluationException ex) {
                     LOGGER.error(ex.getMessage(), ex);
@@ -176,7 +169,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
                 //2. Enreg du rdf associé au document
                 Map<String, Object> anotOk = annotObject.isOk(); //Vérification de la structure
                 
-                docsMetadataState = (boolean) anotOk.get("state");
+                docsMetadataState = (boolean) anotOk.get(AbstractVerifiedClass.STATE);
                 //SILEX:conception
                 // C'est ici qu'il faudrait faire l'ajout du triplet correspondant à l'entité concernée 
                 // par le document s'il n'existe pas
@@ -218,13 +211,13 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
                     } catch (MalformedQueryException e) {
                         LOGGER.error(e.getMessage(), e);
                         AnnotationInsert = false;
-                        insertStatusList.add(new Status("Query error", StatusCodeMsg.ERR, "Malformed insertion query: " + e.getMessage()));
+                        insertStatusList.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.MALFORMED_CREATE_QUERY + " : " + e.getMessage()));
                     }
                 } else {
                     // JSON malformé de quelque sorte que ce soit
                     docsMetadataState = false;
-                    anotOk.remove("state");
-                    insertStatusList.add(new Status("Missing field error", StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.MISSINGFIELDS).append(anotOk).toString()));
+                    anotOk.remove(AbstractVerifiedClass.STATE);
+                    insertStatusList.add(new Status(StatusCodeMsg.MISSING_FIELDS, StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.MISSING_FIELDS_LIST).append(anotOk).toString()));
                 }
                 
                  // JSON bien formé et pas de problème avant l'insertion
@@ -250,7 +243,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         results.statusList = insertStatusList;
         if (resultState && !createdResourcesURIList.isEmpty()) {
             results.createdResources = createdResourcesURIList;
-            results.statusList.add(new Status("Resources created", StatusCodeMsg.INFO, createdResourcesURIList.size() + " new resource(s) created."));
+            results.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, createdResourcesURIList.size() + " new resource(s) created."));
         }
 
         return results;
@@ -360,7 +353,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
 //            sparqlQuery.appendSelect(" ?concern");
 //            sparqlQuery.appendTriplet(select, uriNS.getRelationsProperty("rConcern"), "?concern", null);
 //        }
-        LOGGER.trace("sparql select query : " + sparqlQuery.toString());
+        LOGGER.debug("sparql select query : " + sparqlQuery.toString());
         
         
        return sparqlQuery;
@@ -379,7 +372,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         sparqlQuery.appendSelect("?comment");
         sparqlQuery.appendTriplet(uriDocument, "rdfs:comment", "?comment", null);
         
-        LOGGER.trace("sparql select query : " + sparqlQuery.toString());
+        LOGGER.debug("sparql select query : " + sparqlQuery.toString());
         return sparqlQuery;
     }
     
@@ -398,7 +391,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         sparqlQuery.appendTriplet(uriDocument, uriNS.getRelationsProperty("rConcern"), "?concern", null);
         sparqlQuery.appendTriplet("?concern", "rdf:type", "?typeConcern", null);
 
-        LOGGER.trace("sparql select query : " + sparqlQuery.toString());
+        LOGGER.debug("sparql select query : " + sparqlQuery.toString());
 
         return sparqlQuery;
     }
@@ -532,7 +525,6 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
                     documents.add(document);
                 }
             }
-            
         }
         
         return documents;
@@ -560,7 +552,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
             
             if (!(documentMetadata.getStatus().equals("linked") || documentMetadata.getStatus().equals("unlinked"))) {
                 documentMetadataState = false;
-                updateStatusList.add(new Status("Wrong value", StatusCodeMsg.ERR, 
+                updateStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
                             "Wrong status value given : " + documentMetadata.getStatus() + ". Expected : \"linked\" or \"unlinked\"" ));
             }
             
@@ -626,8 +618,8 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
                     this.getConnection().begin();
                     Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery);
                     Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spqlInsert.toString());
-                    LOGGER.trace(getTraceabilityLogs() + " query : " + prepareDelete.toString());
-                    LOGGER.trace(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
+                    LOGGER.debug(getTraceabilityLogs() + " query : " + prepareDelete.toString());
+                    LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                     prepareDelete.execute();
                     prepareUpdate.execute();
 
@@ -635,14 +627,14 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
                 } catch (MalformedQueryException e) {
                     LOGGER.error(e.getMessage(), e);
                     annotationUpdate = false;
-                    updateStatusList.add(new Status("Query error", StatusCodeMsg.ERR, "Malformed update query: " + e.getMessage()));
+                    updateStatusList.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.MALFORMED_UPDATE_QUERY + e.getMessage()));
                 }   
                     
             } else {
                 // JSON malformé de quelque sorte que ce soit
                 docsMetadataState = false;
-                metadataOk.remove("state");
-                updateStatusList.add(new Status("Missing field error", StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.MISSINGFIELDS).append(metadataOk).toString()));
+                metadataOk.remove(AbstractVerifiedClass.STATE);
+                updateStatusList.add(new Status(StatusCodeMsg.MISSING_FIELDS, StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.MISSING_FIELDS_LIST).append(metadataOk).toString()));
             }
                 
             // JSON bien formé et pas de problème avant l'insertion
@@ -666,7 +658,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         results.statusList = updateStatusList;
         if (resultState && !updatedResourcesURIList.isEmpty()) {
             results.createdResources = updatedResourcesURIList;
-            results.statusList.add(new Status("Resources created", StatusCodeMsg.INFO, updatedResourcesURIList.size() + " new resource(s) created."));
+            results.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, updatedResourcesURIList.size() + " new resource(s) created."));
         }
 
         return results;

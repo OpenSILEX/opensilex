@@ -94,6 +94,7 @@ public final class DocumentationAnnotation {
     
     //Global examples
     public static final String EXAMPLE_DATETIME = "2017-06-15 10:51:00+0200";
+    public static final String EXAMPLE_DATE = "2017-06-15";
     
     //Specific examples
     public static final String EXAMPLE_EXPERIMENT_URI = "http://phenome-fppn.fr/diaphen/DIA2012-1";
@@ -130,6 +131,9 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_PROJECT_PROJECT_COORDINATOR = "Morgane Vidal";
     public static final String EXAMPLE_PROJECT_WEBSITE = "http://example.com";
     public static final String EXAMPLE_PROJECT_TYPE = "project type";
+    
+    public static final String EXAMPLE_PROVENANCE_URI = "http://www.phenome-fppn.fr/mtp/2018/pv181515071552";
+    public static final String EXAMPLE_PROVENANCE_DATE = EXAMPLE_DATE;
     
     public static final String EXAMPLE_GROUP_URI = "http://phenome-fppn.fr/mauguio/INRA-MISTEA-GAMMA";
     public static final String EXAMPLE_GROUP_NAME = "INRA-MISTEA-GAMMA";
@@ -174,4 +178,7 @@ public final class DocumentationAnnotation {
     
     public static final String EXAMPLE_VARIABLE_URI = "http://www.phenome-fppn.fr/diaphen/id/variable/v0000001";
     public static final String EXAMPLE_VARIABLE_LABEL = "LAI";
+    
+    public static final String EXAMPLE_WAS_GENERATED_BY_DOCUMENT = EXAMPLE_DOCUMENT_URI;
+    public static final String EXAMPLE_WAS_GENERATED_BY_DESCRIPTION = "Phenoscript v1.3";
 }

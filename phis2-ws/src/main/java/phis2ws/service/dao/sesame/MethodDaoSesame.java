@@ -124,7 +124,7 @@ public class MethodDaoSesame extends DAOSesame<Method> {
             } else { //Données attendues non reçues
                 dataOk = false;
                 methodDTO.isOk().remove("state");
-                checkStatusList.add(new Status("Bad data format", StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.MISSINGFIELDS).append(methodDTO.isOk()).toString()));
+                checkStatusList.add(new Status("Bad data format", StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.MISSING_FIELDS_LIST).append(methodDTO.isOk()).toString()));
             }
         }
         

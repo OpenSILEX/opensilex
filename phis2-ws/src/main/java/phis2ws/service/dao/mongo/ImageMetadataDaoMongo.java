@@ -1,5 +1,5 @@
 //**********************************************************************************************
-//                                       ImageDaoSesame.java 
+//                                       ImageMetadataDaoSesame.java 
 //
 // Author(s): Morgane VIDAL
 // PHIS-SILEX version 1.0
@@ -7,7 +7,7 @@
 // Creation date: December, 11 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  December, 11 2017
-// Subject: A Dao specific to images insert into mongodb
+// Subject: A Dao specific to insert image metadata in mongodb
 //***********************************************************************************************
 package phis2ws.service.dao.mongo;
 
@@ -29,12 +29,14 @@ import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
+import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOMongo;
 import phis2ws.service.dao.sesame.ImageMetadataDaoSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.ConcernItemDTO;
 import phis2ws.service.resources.dto.ImageMetadataDTO;
+import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.ConcernItem;
@@ -43,7 +45,7 @@ import phis2ws.service.view.model.phis.ImageMetadata;
 import phis2ws.service.view.model.phis.ShootingConfiguration;
 
 /**
- * Represents the MongoDB Data Access Object for the images
+ * Represents the MongoDB Data Access Object for the images metadata
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
@@ -51,10 +53,28 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
     final static Logger LOGGER = LoggerFactory.getLogger(ImageMetadataDaoMongo.class);
     public String uri;
     public String rdfType;
+    //Date of shooting
     public String date;
+    //List of the elements concerned by the image. The elements are represented 
+    //by uris
     public ArrayList<String> concernedItems = new ArrayList<>();
     
     private final MongoCollection<Document> imagesCollection = database.getCollection(PropertiesFileManager.getConfigFileProperty("mongodb_nosql_config", "images"));
+    
+    //Represents the mongodb documents label for the image uri
+    final static String DB_FIELDS_IMAGE_URI = "uri";
+    //Represents the mongodb documents label for the concerned items uris
+    final static String DB_FIELDS_CONCERNED_ITEM_URI = "uri";
+    //Represents the mongodb documents label for the rdf types
+    final static String DB_FIELDS_RDF_TYPE = "rdfType";
+    //Represents the mongodb documents label for the concerned items list
+    final static String DB_FIELDS_CONCERN = "concern";
+    //Represents the mongodb documents label for the shooting configurations
+    final static String DB_FIELDS_SHOOTING_CONFIGURATION = "shootingConfiguration";
+        //Represents the mongodb documents label for the storage
+    final static String DB_FIELDS_STORAGE = "storage";
+    
+    
 
     public ImageMetadataDaoMongo() {
         super();
@@ -94,24 +114,25 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
        BasicDBObject query = new BasicDBObject();
        
        if (uri != null) {
-           query.append("uri", uri);
+           query.append(DB_FIELDS_IMAGE_URI, uri);
        }
        if (rdfType != null) {
-           query.append("rdfType", rdfType);
+           query.append(DB_FIELDS_RDF_TYPE, rdfType);
        }
        if (concernedItems != null && !concernedItems.isEmpty()) {
            BasicDBList and = new BasicDBList();
            for (String concernedItem : concernedItems) {
-               BasicDBObject clause = new BasicDBObject("concern", new BasicDBObject("$elemMatch", new BasicDBObject("uri", concernedItem)));
+               BasicDBObject clause = new BasicDBObject(DB_FIELDS_CONCERN, new BasicDBObject("$elemMatch", new BasicDBObject(DB_FIELDS_CONCERNED_ITEM_URI, concernedItem)));
                and.add(clause);
            }
+           
            query.append("$and", and);
        }
        if (date != null) {
            try {
-               SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ");
+               SimpleDateFormat df = new SimpleDateFormat(DateFormats.YMDHMSZ_FORMAT);
                Date dateSearch = df.parse(date);
-               query.append("shootingConfiguration.date", dateSearch);
+               query.append(DB_FIELDS_SHOOTING_CONFIGURATION + "." + ShootingConfigurationDAOMongo.DB_FIELDS_DATE, dateSearch);
            } catch (ParseException ex) {
                java.util.logging.Logger.getLogger(ImageMetadataDaoMongo.class.getName()).log(Level.SEVERE, null, ex);
            }
@@ -119,45 +140,54 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
        
        return query;
     }
+    
+    /**
+     * transform a documents list (which is supposed to contains concerned items)
+     * into a concerned items list
+     * @param concernedItemsDocuments
+     * @return the concerned items extracted from the document list
+     */
+    private ArrayList<ConcernItem> mongoDocumentListToConcernedItems(List<Document> concernedItemsDocuments) {
+        ArrayList<ConcernItem> concernedItemsToReturn = new ArrayList<>();
+        for (Document concernedItemDocument : concernedItemsDocuments) {
+            ConcernItem concernedItem = new ConcernItem();
+            concernedItem.setUri(concernedItemDocument.getString(DB_FIELDS_CONCERNED_ITEM_URI));
+            concernedItem.setRdfType(concernedItemDocument.getString(DB_FIELDS_RDF_TYPE));
+            concernedItemsToReturn.add(concernedItem);
+        }
+        return concernedItemsToReturn;
+    }
 
     @Override
     public ArrayList<ImageMetadata> allPaginate() {
-        BasicDBObject query = prepareSearchQuery();
-        LOGGER.trace(getTraceabilityLogs() + " query : " + query.toString());
+        BasicDBObject searchQuery = prepareSearchQuery();
+        LOGGER.debug(getTraceabilityLogs() + " query : " + searchQuery.toString());
         
-        FindIterable<Document> imagesMetadataMongo = imagesCollection.find(query);
+        FindIterable<Document> imagesMetadataMongo = imagesCollection.find(searchQuery);
         
         ArrayList<ImageMetadata> imagesMetadata = new ArrayList<>();
         
         try (MongoCursor<Document> imagesMetadataCursor = imagesMetadataMongo.iterator()) {
+            //for each found image metadata, 
+            //add the image in the ArrayList<ImageMetadata> to return
             while (imagesMetadataCursor.hasNext()) {
                 Document imageMetadataDocument = imagesMetadataCursor.next();
                 
                 ImageMetadata imageMetadata = new ImageMetadata();
-                imageMetadata.setUri(imageMetadataDocument.getString("uri"));
-                imageMetadata.setRdfType(imageMetadataDocument.getString("rdfType"));
+                imageMetadata.setUri(imageMetadataDocument.getString(DB_FIELDS_IMAGE_URI));
+                imageMetadata.setRdfType(imageMetadataDocument.getString(DB_FIELDS_RDF_TYPE));
                 
-                List<Document> concernedItemDocuments = (List<Document>) imageMetadataDocument.get("concern");
-                for (Document concernedItemDocument : concernedItemDocuments) {
-                    ConcernItem concernedItem = new ConcernItem();
-                    concernedItem.setUri(concernedItemDocument.getString("uri"));
-                    concernedItem.setRdfType(concernedItemDocument.getString("rdfType"));
-                    imageMetadata.addConcernedItem(concernedItem);
-                }
+                //Add the elements concerned by the image in the ImageMetadata
+                List<Document> concernedItemDocuments = (List<Document>) imageMetadataDocument.get(DB_FIELDS_CONCERN);
+                imageMetadata.setConcernedItems(mongoDocumentListToConcernedItems(concernedItemDocuments));
                 
-                Document shootingConfigurationDocument = (Document) imageMetadataDocument.get("shootingConfiguration");
-                ShootingConfiguration shootingConfiguration = new ShootingConfiguration();
-                shootingConfiguration.setDate(new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ").format(shootingConfigurationDocument.getDate("date")));
-                shootingConfiguration.setPosition(shootingConfigurationDocument.getString("sensorPosition"));
-                shootingConfiguration.setTimestamp(Long.toString(shootingConfigurationDocument.getLong("timestamp")));
-                imageMetadata.setConfiguration(shootingConfiguration);
+                //Add the shootingConfiguration
+                Document shootingConfigurationDocument = (Document) imageMetadataDocument.get(DB_FIELDS_SHOOTING_CONFIGURATION);
+                imageMetadata.setConfiguration(ShootingConfigurationDAOMongo.mongoDocumentToShootingConfiguration(shootingConfigurationDocument));
                 
-                Document fileInformationsDocument = (Document) imageMetadataDocument.get("storage");
-                FileInformations fileInformations = new FileInformations();
-                fileInformations.setChecksum(fileInformationsDocument.getString("md5sum"));
-                fileInformations.setExtension(fileInformationsDocument.getString("extension"));
-                fileInformations.setServerFilePath(fileInformationsDocument.getString("serverFilePath"));
-                imageMetadata.setFileInformations(fileInformations);
+                //add the file informations
+                Document fileInformationsDocument = (Document) imageMetadataDocument.get(DB_FIELDS_STORAGE);
+                imageMetadata.setFileInformations(FileInformationsDAOMongo.mongoDocumentToFileInformation(fileInformationsDocument));
                 
                 imagesMetadata.add(imageMetadata);
             }
@@ -167,7 +197,9 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
     }
     
     /**
-     * check if the images metadata are correct.
+     * check if the images metadata are correct 
+     * (rules, image type, concerned items)
+     * @see phis2ws.service.resources.dto rules()
      * @param imagesMetadata
      * @return the result of the check of the images metadata. 
      */
@@ -177,25 +209,25 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
         boolean dataOk = true;
         
         for (ImageMetadataDTO imageMetadata : imagesMetadata) {
-            if ((boolean) imageMetadata.isOk().get("state")) { //Metadata correct
+            if ((boolean) imageMetadata.isOk().get(AbstractVerifiedClass.STATE)) { //Metadata correct
                 //1. Check if the image type exist
                 ImageMetadataDaoSesame imageMetadataDaoSesame = new ImageMetadataDaoSesame();
                 if (!imageMetadataDaoSesame.existObject(imageMetadata.getRdfType())) {
                     dataOk = false;
-                    checkStatusList.add(new Status("Wrong value", StatusCodeMsg.ERR, "Wrong image type given : " + imageMetadata.getRdfType()));
+                    checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Wrong image type given : " + imageMetadata.getRdfType()));
                 }
                 
                 //2. Check if the concerned items exist in the triplestore
                 for (ConcernItemDTO concernedItem : imageMetadata.getConcern()) {
                     if (!imageMetadataDaoSesame.existObject(concernedItem.getUri())) {
                         dataOk = false;
-                        checkStatusList.add(new Status("Wrong value", StatusCodeMsg.ERR, "Unknown concerned item given : " + concernedItem.getUri()));
+                        checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Unknown concerned item given : " + concernedItem.getUri()));
                     }
                 }
             } else {
                 dataOk = false;
-                checkStatusList.add(new Status("Bad data format", StatusCodeMsg.ERR, 
-                        new StringBuilder().append(StatusCodeMsg.MISSINGFIELDS).append(imageMetadata.isOk()).toString()));
+                checkStatusList.add(new Status(StatusCodeMsg.BAD_DATA_FORMAT, StatusCodeMsg.ERR, 
+                        new StringBuilder().append(StatusCodeMsg.MISSING_FIELDS_LIST).append(imageMetadata.isOk()).toString()));
             }
         }
         
@@ -217,7 +249,7 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
           regQuery.append("$regex", regex);
           
           Document findQuery = new Document();
-          findQuery.append("uri", regQuery);
+          findQuery.append(DB_FIELDS_IMAGE_URI, regQuery);
         
           return findQuery;
     }
@@ -248,44 +280,44 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
        //SILEX:todo
        //transactions
        //\SILEX:todo
-       SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ");
+       SimpleDateFormat df = new SimpleDateFormat(DateFormats.YMDHMSZ_FORMAT);
        for (ImageMetadata imageMetadata : imagesMetadata) {
            Document metadata = new Document();
-           metadata.append("uri", imageMetadata.getUri());
-           metadata.append("rdfType", imageMetadata.getRdfType());
+           metadata.append(DB_FIELDS_IMAGE_URI, imageMetadata.getUri());
+           metadata.append(DB_FIELDS_RDF_TYPE, imageMetadata.getRdfType());
            
            //Concern
            ArrayList<Document> concernedItemsToSave = new ArrayList<>();
            for (ConcernItem concernItem : imageMetadata.getConcernedItems()) {
                Document concern = new Document();
-               concern.append("uri", concernItem.getUri());
-               concern.append("rdfType", concernItem.getRdfType());
+               concern.append(DB_FIELDS_CONCERNED_ITEM_URI, concernItem.getUri());
+               concern.append(DB_FIELDS_RDF_TYPE, concernItem.getRdfType());
                concernedItemsToSave.add(concern);
            }
-           metadata.append("concern", concernedItemsToSave);
+           metadata.append(DB_FIELDS_CONCERN, concernedItemsToSave);
            
            //Configuration
            Document configuration = new Document();
            Date dateImage = df.parse(imageMetadata.getConfiguration().getDate());
-           configuration.append("date", dateImage);
+           configuration.append(ShootingConfigurationDAOMongo.DB_FIELDS_DATE, dateImage);
            Timestamp timestamp = new Timestamp(new Date().getTime());
-           configuration.append("timestamp", timestamp.getTime());
-           configuration.append("sensorPosition", imageMetadata.getConfiguration().getPosition());
-           metadata.append("shootingConfiguration", configuration);
+           configuration.append(ShootingConfigurationDAOMongo.DB_FIELDS_TIMESTAMP, timestamp.getTime());
+           configuration.append(ShootingConfigurationDAOMongo.DB_FIELDS_SENSOR_POSITION, imageMetadata.getConfiguration().getPosition());
+           metadata.append(DB_FIELDS_SHOOTING_CONFIGURATION, configuration);
            
            //FileInformations (Storage)
            Document storage = new Document();
-           storage.append("extension", imageMetadata.getFileInformations().getExtension());
-           storage.append("md5sum", imageMetadata.getFileInformations().getChecksum());
-           storage.append("serverFilePath", imageMetadata.getFileInformations().getServerFilePath());
-           metadata.append("storage", storage);
+           storage.append(FileInformationsDAOMongo.DB_FIELDS_EXTENSION, imageMetadata.getFileInformations().getExtension());
+           storage.append(FileInformationsDAOMongo.DB_FIELDS_MD5SUM, imageMetadata.getFileInformations().getChecksum());
+           storage.append(FileInformationsDAOMongo.DB_FIELDS_SERVER_FILE_PATH, imageMetadata.getFileInformations().getServerFilePath());
+           metadata.append(DB_FIELDS_STORAGE, storage);
            
            LOGGER.debug("MongoDB insert : " + metadata.toJson());
            imagesCollection.insertOne(metadata);
            createdResourcesUris.add(imageMetadata.getUri());
        }
        
-       insertStatus.add(new Status("Resource created", StatusCodeMsg.INFO, "images metadata inserted"));;
+       insertStatus.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, StatusCodeMsg.DATA_INSERTED));;
        result = new POSTResultsReturn(Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
        result.setHttpStatus(Response.Status.CREATED);
        result.statusList = insertStatus;

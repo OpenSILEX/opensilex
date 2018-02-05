@@ -7,7 +7,11 @@
 // Creation date: December, 11 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  January, 03 2018
-// Subject: A class which allows to start a thread for image sending
+// Subject: A class which allows to start a thread for image sending. When an
+// image is sent to the web service, it is sent in two times : 
+// 1. the image metadata is sent
+// 2. the file is sent
+// This is why we need this class (to wait for the image file)
 //***********************************************************************************************
 package phis2ws.service.utils;
 
@@ -29,7 +33,9 @@ public class ImageWaitingCheck implements Callable<Boolean> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(ImageWaitingCheck.class);
     final static String PROPS_FILE_NAME = "service";
+    //Waiting file time default
     final static int DEFAUT_WAITING_FILE_TIME = 30;
+    //The uris of the image metadata
     final private String annotationsUri;
 
     public ImageWaitingCheck(String annotationsUri) {

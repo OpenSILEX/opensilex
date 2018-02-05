@@ -18,7 +18,7 @@ import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.ImageMetadata;
 
 /**
- * Allows the formating of the result of the reqyest about Image Metadata
+ * Allows the formating of the result of the request about Image Metadata
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ResponseFormImageMetadata extends ResultForm<ImageMetadata> {

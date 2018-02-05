@@ -8,7 +8,8 @@
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  January, 12 2018 update insert data : add 
 // possibility to add a dataset with an already existing provenance  
-// Subject: A specific Dao to retrieve data on phenotypes. 
+// Subject: A specific Dao to retrieve data on phenotypes. Here, we choose to
+// deals with quantitative varibles with double type. 
 //***********************************************************************************************
 package phis2ws.service.dao.mongo;
 
@@ -30,6 +31,7 @@ import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
+import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.dao.manager.DAOMongo;
 import phis2ws.service.dao.phis.AgronomicalObjectDao;
 import phis2ws.service.dao.sesame.AgronomicalObjectDaoSesame;
@@ -37,6 +39,7 @@ import phis2ws.service.dao.sesame.VariableDaoSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.DataDTO;
 import phis2ws.service.resources.dto.DatasetDTO;
+import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.AgronomicalObject;
@@ -51,35 +54,76 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(DatasetDAOMongo.class);
     
+    //Mongodb collection of the provenance
     private final MongoCollection<Document> provenanceCollection = database.getCollection(PropertiesFileManager.getConfigFileProperty("mongodb_nosql_config", "provenance"));
+    //Mongodb collection of the data
     private final MongoCollection<Document> dataCollection = database.getCollection(PropertiesFileManager.getConfigFileProperty("mongodb_nosql_config", "data"));
     
+    //experiment uri concerned by the dataset
     public String experiment;
+    //variable uri of the data of the dataset
     public String variable;
+    //list of the agronomical objects uris concerned by the dataset
     public ArrayList<String> agronomicalObjects = new ArrayList<>();
+    //start date of the data searched (when the user want data in a time interval)
     public String startDate;
+    //end date of the data searched (when the user want data in a time interval)
     public String endDate;
+    //provenance uri of the dataset
     public String provenance;
+    
+    //Mongodb fields labels 
+    //Represents the agronomical object label used for mongodb documents
+    private final static String DB_FIELD_AGRONOMICAL_OBJECT = "agronomicalObject";
+    //Represents the variable label used for mongodb documents
+    private final static String DB_FIELD_VARIABLE = "variable";
+    //Represents the date label used for mongodb documents
+    private final static String DB_FIELD_DATE = "date";
+    //Represents the uri label used for mongodb documents
+    private final static String DB_FIELD_URI = "uri";
+    //Represents the value label used for mongodb documents. It is the double 
+    //value of the data
+    private final static String DB_FIELD_VALUE = "value";
+    //Represents the creation date label used for mongodb documents.
+    private final static String DB_FIELD_CREATION_DATE = "creationDate";
+    //Represents the mongodb documents label for the script document uri which 
+    //was used to generate the dataset
+    private final static String DB_FIELD_WAS_GENERATED_BY = "wasGeneratedBy";
+    //Represents the mongodb documents label for the description about the 
+    //dataset generation 
+    private final static String DB_FIELDS_WAS_GENERATED_BY_DESCRIPTION = "wasGeneratedByDescription";
+    //Represents the mongodb documents label for the documents linked to the 
+    //dataset
+    private final static String DB_FIELDS_DOCUMENTS = "documents";
+    //Represents the mongodb documents label for the provenance id
+    private final static String DB_FIELDS_PROVENANCE_ID = "provenanceId";
+    //Represents the mongodb documents label for the provenance uri
+    private final static String DB_FIELDS_PROVENANCE_URI = "provenanceUri";
     
     public DatasetDAOMongo() {
         super();
     }    
     
+    /**
+     * Search by variable, start date, end date, agronomical object 
+     * @see phis2ws.service.dao.manager prepareSearchQuery()
+     * @return the search query
+     */
     @Override
     protected BasicDBObject prepareSearchQuery() {
         BasicDBObject query = new BasicDBObject();
         
         if (variable != null) {
-            query.append("variable", variable);
+            query.append(DB_FIELD_VARIABLE, variable);
         }
         
         if (startDate != null && endDate != null) {
             try {
-                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+                SimpleDateFormat df = new SimpleDateFormat(DateFormats.YMD_FORMAT);
                 Date start = df.parse(startDate);
                 Date end = df.parse(endDate);
                 
-                query.append("date", BasicDBObjectBuilder.start("$gte", start).add("$lte", end).get());
+                query.append(DB_FIELD_DATE, BasicDBObjectBuilder.start("$gte", start).add("$lte", end).get());
 
             } catch (ParseException ex) {
                 java.util.logging.Logger.getLogger(DatasetDAOMongo.class.getName()).log(Level.SEVERE, null, ex);
@@ -90,12 +134,12 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
             if (agronomicalObjects.size() > 1) {
                 BasicDBList or = new BasicDBList();
                 for (String agronomicalObject : agronomicalObjects) {
-                    BasicDBObject clause = new BasicDBObject("agronomicalObject", agronomicalObject);
+                    BasicDBObject clause = new BasicDBObject(DB_FIELD_AGRONOMICAL_OBJECT, agronomicalObject);
                     or.add(clause);
                 }
                 query.append("$or", or);
             } else {
-                query.append("agronomicalObject", agronomicalObjects.get(0));
+                query.append(DB_FIELD_AGRONOMICAL_OBJECT, agronomicalObjects.get(0));
             }
         }
         
@@ -109,7 +153,7 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
     protected BasicDBObject prepareSearchProvenance() {
         BasicDBObject query = new BasicDBObject();
         if (provenance != null) {
-            query.append("uri", provenance);
+            query.append(DB_FIELD_URI, provenance);
         }
         return query;
     }
@@ -156,10 +200,10 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
                 Document phenotypeDocument = phenotypesCursor.next();
                 
                 Data data = new Data();
-                data.setAgronomicalObject(phenotypeDocument.getString("agronomicalObject"));
-                data.setDate(new SimpleDateFormat("yyyy-MM-dd").format(phenotypeDocument.getDate("date")));
-                data.setValue(phenotypeDocument.getString("value"));
-                data.setVariable(phenotypeDocument.getString("variable"));
+                data.setAgronomicalObject(phenotypeDocument.getString(DB_FIELD_AGRONOMICAL_OBJECT));
+                data.setDate(new SimpleDateFormat(DateFormats.YMD_FORMAT).format(phenotypeDocument.getDate(DB_FIELD_DATE)));
+                data.setValue(Double.toString(phenotypeDocument.getDouble(DB_FIELD_VALUE)));
+                data.setVariable(phenotypeDocument.getString(DB_FIELD_VARIABLE));
                 
                 phenotype.addData(data);
             }
@@ -171,12 +215,13 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
     
     /**
      * check if a dataset is valid (follows rules).
+     * @see phis2ws.service.resources.dto.DatasetDTO rules()
      * @param datasetDTO
      * @return 
      */
     private boolean isElementValid(DatasetDTO datasetDTO) {
         Map<String, Object> phenotypeOk = datasetDTO.isOk();
-        return (boolean) phenotypeOk.get("state");
+        return (boolean) phenotypeOk.get(AbstractVerifiedClass.STATE);
     }
     
     //SILEX:todo
@@ -184,47 +229,57 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
     //- The check function must be also used in the update
     //\SILEX:todo
     /**
-     * check and insert in the mongodb database a list of datasets
+     * check and insert in the mongodb database a list of datasets.
+     * If the provenance creation date is not given, it means that the provenance
+     * already exist. The dataset is added to the existing provenance. If the 
+     * provenance does not exist and the creation date is given, a new provenance
+     * is created
      * @param datasetsDTO datasets to insert
      * @return the insertion result
      * @throws Exception 
      */
     private POSTResultsReturn checkAndInsertDatasets(ArrayList<DatasetDTO> datasetsDTO) throws Exception {
         List<Status> insertStatusList = new ArrayList<>();
-        List<String> createdProvenances = new ArrayList<>();
+        //The uris of the provenances created
+        List<String> createdProvenances = new ArrayList<>(); 
         POSTResultsReturn result = null;
         
         ArrayList<Dataset> datasets = new ArrayList<>();
         boolean dataState = true;
         
-        
+        //check if data is valid
         for (DatasetDTO datasetDTO : datasetsDTO) {
-            if (isElementValid(datasetDTO)) {                
+            //if the datasetDTO follows the rules
+            if (isElementValid(datasetDTO)) { 
                 for (DataDTO data : datasetDTO.getData()) {
+                    //is agronomical object exist ?
                     AgronomicalObjectDao agronomicalObjectDao = new AgronomicalObjectDao();
                     if (!agronomicalObjectDao.existInDB(new AgronomicalObject(data.getAgronomicalObject()))) {
                         dataState = false;
-                        insertStatusList.add(new Status("Data error", StatusCodeMsg.ERR, "Unknown Agronomical Object URI : " + data.getAgronomicalObject()));
+                        insertStatusList.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Unknown Agronomical Object URI : " + data.getAgronomicalObject()));
                     }
                 }
                 
+                //is variable exist ? 
                 VariableDaoSesame variableDaoSesame = new VariableDaoSesame();
                 if (!variableDaoSesame.existObject(datasetDTO.getVariableUri())) {
                     dataState = false;
-                    insertStatusList.add(new Status("Data error", StatusCodeMsg.ERR, "Unknown Variable : " + datasetDTO.getVariableUri()));
+                    insertStatusList.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Unknown Variable : " + datasetDTO.getVariableUri()));
                 }
                 
                 Dataset phenotype = datasetDTO.createObjectFromDTO();
                 datasets.add(phenotype);
                 
-            } else {
+            } else { //if the datasetDTO does not follow the rules, 
+                //it means that at least of the fields is missing
                 dataState = false;
-                insertStatusList.add(new Status("Data error", StatusCodeMsg.ERR, "Fields are missing in JSON Data"));
+                insertStatusList.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.MISSING_FIELDS));
             }
         }
         
+        //if data is valid, insert in mongo
         if (dataState) {
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat df = new SimpleDateFormat(DateFormats.YMD_FORMAT);
             //SILEX:todo
             //transactions
             //mongodb insertion
@@ -232,20 +287,27 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
                 //1. provenance creation if needed
                 Object provenanceId = null;
                 if (dataset.getProvenance().getCreationDate() != null) {
+                    //If the provenance creation date is not given, it means that the provenance
+                    //already exist. The dataset is added to the existing provenance. If the 
+                    //provenance does not exist and the creation date is given, a new provenance
+                    //is created
                     Document provenanceDocument = new Document();
                     Date creationDate = df.parse(dataset.getProvenance().getCreationDate());
 
-                    provenanceDocument.append("creationDate", creationDate);
-                    provenanceDocument.append("wasGeneratedBy", dataset.getProvenance().getWasGeneratedBy().getWasGeneratedBy());
-                    provenanceDocument.append("wasGeneratedByDescription", dataset.getProvenance().getWasGeneratedBy().getWasGeneratedByDescription());
-                    provenanceDocument.append("documents", dataset.getProvenance().getDocumentsUris());
-                    provenanceDocument.append("uri", dataset.getProvenance().getUri());
+                    provenanceDocument.append(DB_FIELD_CREATION_DATE, creationDate);
+                    provenanceDocument.append(DB_FIELD_WAS_GENERATED_BY, dataset.getProvenance().getWasGeneratedBy().getWasGeneratedBy());
+                    provenanceDocument.append(DB_FIELDS_WAS_GENERATED_BY_DESCRIPTION, dataset.getProvenance().getWasGeneratedBy().getWasGeneratedByDescription());
+                    provenanceDocument.append(DB_FIELDS_DOCUMENTS, dataset.getProvenance().getDocumentsUris());
+                    provenanceDocument.append(DB_FIELD_URI, dataset.getProvenance().getUri());
 
                     LOGGER.debug("MongoDB insert : " + provenanceDocument.toJson());
 
                     provenanceCollection.insertOne(provenanceDocument);
-                    provenanceId = provenanceDocument.get("_id");
+                    provenanceId = provenanceDocument.get(DB_FIELD_ID);
                 } else { //get provenance id
+                    //SILEX:todo
+                    //create a Provenance DAO
+                    //\SILEX:todo
                     provenance = dataset.getProvenance().getUri();
                     BasicDBObject provenanceQuery = prepareSearchProvenance();
                     LOGGER.debug("MongoDB query provenance : " + provenanceQuery.toJson());
@@ -254,7 +316,7 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
                     try (MongoCursor<Document> provenancesCursor = provenances.iterator()) {
                         while (provenancesCursor.hasNext()) {
                             Document provenanceDocument = provenancesCursor.next();
-                            provenanceId = provenanceDocument.get("_id");
+                            provenanceId = provenanceDocument.get(DB_FIELD_ID);
                         }
                     }
                 }
@@ -266,18 +328,19 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
                     Document d = new Document();
                     Date date = df.parse(data.getDate());
                     
-                    d.append("date", date);
-                    d.append("variable", dataset.getVariableURI());
+                    d.append(DB_FIELD_DATE, date);
+                    d.append(DB_FIELD_VARIABLE, dataset.getVariableURI());
                     //SILEX:todo
                     //choose the type of the value with the variable type 
                     //(string or double)
-                    d.append("value", Double.parseDouble(data.getValue()));
+                    //for the first version, we can only handle double values
+                    d.append(DB_FIELD_VALUE, Double.parseDouble(data.getValue()));
                     //\SILEX:todo
-                    d.append("agronomicalObject", data.getAgronomicalObject());
+                    d.append(DB_FIELD_AGRONOMICAL_OBJECT, data.getAgronomicalObject());
                     //SILEX:todo
                     //DBRef (https://docs.mongodb.com/manual/reference/database-references/#dbref-explanation)
-                    d.append("provenanceId", provenanceId);
-                    d.append("provenanceUri", dataset.getProvenance().getUri());
+                    d.append(DB_FIELDS_PROVENANCE_ID, provenanceId);
+                    d.append(DB_FIELDS_PROVENANCE_URI, dataset.getProvenance().getUri());
                     //\SILEX:todo
                     
                     LOGGER.debug("MongoDB insert : " + d.toJson());
@@ -288,7 +351,7 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
                 dataCollection.insertMany(dataToInsert);
             }
             
-            insertStatusList.add(new Status("Resource created", StatusCodeMsg.INFO, "datasets inserted"));;
+            insertStatusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, StatusCodeMsg.DATA_INSERTED));;
             result = new POSTResultsReturn(dataState);
             result.setHttpStatus(Response.Status.CREATED);
             result.createdResources = createdProvenances;

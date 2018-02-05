@@ -24,6 +24,12 @@ import java.util.Objects;
  * @author Arnaud CHARLEROY
  */
 public abstract class AbstractVerifiedClass implements VerifiedClassInterface {
+    
+    //Represents the state label for the data state
+    public final static String STATE = "state";
+    //Represents the state label for the data empty
+    public final static String EMPTY = "empty";
+    
     /**
      * Retourne une map contenant l'état dans la clé "state" et les champs manquant de l'objet
      * @return Map
@@ -46,32 +52,32 @@ public abstract class AbstractVerifiedClass implements VerifiedClassInterface {
                     if(!list.isEmpty() 
                             && Objects.equals(rules.get(field.getName()), Boolean.TRUE)){
                         Map<String,Object> verifiedClassInstance = ((AbstractVerifiedClass) list.get(0)).isOk();
-                        if(verifiedClassInstance.get("state") == Boolean.FALSE){
+                        if(verifiedClassInstance.get(STATE) == Boolean.FALSE){
                             validationBool = Boolean.FALSE; 
-                            verifiedClassInstance.remove("state");
+                            verifiedClassInstance.remove(STATE);
                             ok.put(field.getName(), verifiedClassInstance);
                         }
                     }
                     
                 } else if (fieldObject instanceof AbstractVerifiedClass) {
                     Map<String,Object> verifiedClassInstance = ((AbstractVerifiedClass) fieldObject).isOk();
-                    if (verifiedClassInstance.get("state") == Boolean.FALSE) {
+                    if (verifiedClassInstance.get(STATE) == Boolean.FALSE) {
                         validationBool = Boolean.FALSE; 
-                        verifiedClassInstance.remove("state");
+                        verifiedClassInstance.remove(STATE);
                         ok.put(field.getName(), verifiedClassInstance);
                     }
                 } else {
                     if (Objects.equals(rules.get(field.getName()), Boolean.TRUE) && 
                         (Objects.equals(fieldObject, null) || (fieldObject instanceof String && fieldObject == "")) ) {
                         validationBool = Boolean.FALSE; 
-                        ok.put(field.getName(), "empty");
+                        ok.put(field.getName(), EMPTY);
                     }
                 }
             }
         } catch(SecurityException | IllegalArgumentException | IllegalAccessException ex){
-            ok.replace("state", Boolean.FALSE); 
+            ok.replace(STATE, Boolean.FALSE); 
         }
-        ok.put("state", validationBool); 
+        ok.put(STATE, validationBool); 
         return ok;
     }
     

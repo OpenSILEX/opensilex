@@ -1,11 +1,11 @@
-//**********************************************************************************************
-//                                       XXX.java 
+//******************************************************************************
+//                                       ${nameAndExt}
 //
-// Author(s): Morgane VIDAL
+// Author(s): ${user}
 // PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
-// Creation date: XX 2017
+// Copyright © - INRA - ${date?date?string("yyyy")}
+// Creation date: ${date}
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  XX, 2017
-// Subject: XX
-//***********************************************************************************************
+// Last modification date:  ${date}
+// Subject:
+//******************************************************************************

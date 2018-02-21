@@ -116,6 +116,7 @@ public class URINamespaces {
         CONTEXTS.put("agronomicalObjects", CONTEXTS.get("pxPlatform") + "/agronomicalObjects");
         CONTEXTS.put("variables", CONTEXTS.get("pxPlatform") + "/variables");
         
+        
                
         
         //Contextes de phenomeApi version serre
@@ -177,10 +178,15 @@ public class URINamespaces {
         RELATIONS.put("rHasMethod", CONTEXTS.get("pVoc2017") + "#hasMethod");
         RELATIONS.put("rHasUnit", CONTEXTS.get("pVoc2017") + "#hasUnit");
         
+        
         //Relations skos
         RELATIONS.put("rExactMatch", "http://www.w3.org/2008/05/skos#exactMatch");
         RELATIONS.put("rCloseMatch", "http://www.w3.org/2008/05/skos#closeMatch");
         RELATIONS.put("rNarrower", "http://www.w3.org/2008/05/skos#narrower");
         RELATIONS.put("rBroader", "http://www.w3.org/2008/05/skos#broader");
+        
+        //Relations rdfs
+        RELATIONS.put("subClassOf","rdfs:subClassOf");
+        RELATIONS.put("subClassOf*","rdfs:subClassOf");
     }
 }

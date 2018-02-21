@@ -14,7 +14,7 @@ package phis2ws.service.view.model.phis;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
- *
+ * Model for the Label Object
  * @author Eloan LAGIER
  */
 public class Label {

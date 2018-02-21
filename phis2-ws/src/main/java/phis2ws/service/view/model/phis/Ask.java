@@ -14,30 +14,30 @@ package phis2ws.service.view.model.phis;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
+ * this object is here to help the ask-type query result to be shawn
  *
  * @author Eloan LAGIER
  */
 public class Ask {
-    String response;
-    String type;
-    
+
+    String exist;
+    String rdfType;
+
     @ApiModelProperty(example = "true")
-    public String getResponse() {
-        return response;
+    public String getExist() {
+        return exist;
     }
-    
-    public void setResponse(String response){
-        this.response = response;
+
+    public void setExist(String exist) {
+        this.exist = exist;
     }
-    
-    
+
     @ApiModelProperty(example = "Class")
-    public String getType() {
-        return type;
+    public String getRdfType() {
+        return rdfType;
     }
-    
-    public void setType(String type) {
-        this.type = type;
+
+    public void setRdfType(String rdfType) {
+        this.rdfType = rdfType;
     }
-    
 }

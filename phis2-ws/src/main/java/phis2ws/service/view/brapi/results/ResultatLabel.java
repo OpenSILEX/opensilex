@@ -20,22 +20,23 @@ import phis2ws.service.view.model.phis.Label;
  *
  * @author Eloan LAGIER
  */
-public class ResultatLabel extends Resultat<Label>{
-     /**
-     * Constructeur qui appelle celui de la classe mère dans le cas d'une liste 
-     * à un seul élément
-     * @param labels 
+public class ResultatLabel extends Resultat<Label> {
+
+    /**
+     * Builder in the case of a one element list
+     *
+     * @param labels
      */
     public ResultatLabel(ArrayList<Label> labels) {
         super(labels);
     }
-    
-     /**
-     * Constructeur qui appelle celui de la classe mère dans le cas d'une liste 
-     * à plusieurs éléments
+
+    /**
+     * builder in the case of a more than one element list
+     *
      * @param labels
      * @param pagination
-     * @param paginate 
+     * @param paginate
      */
     public ResultatLabel(ArrayList<Label> labels, Pagination pagination, boolean paginate) {
         super(labels, pagination, paginate);

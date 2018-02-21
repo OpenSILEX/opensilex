@@ -20,26 +20,26 @@ import phis2ws.service.view.model.phis.Concept;
  *
  * @author Eloan LAGIER
  */
-public class ResultatConcept extends Resultat<Concept>{
+public class ResultatConcept extends Resultat<Concept> {
+
     /**
-     * Constructeur qui appelle celui de la classe mère dans le cas d'une liste 
-     * à un seul élément
-     * @param concepts 
+     * Builder for a one-element list
+     *
+     * @param concepts
      */
     public ResultatConcept(ArrayList<Concept> concepts) {
         super(concepts);
     }
-    
-     /**
-     * Constructeur qui appelle celui de la classe mère dans le cas d'une liste 
-     * à plusieurs éléments
+
+    /**
+     * builder for a more-than-one element list
+     *
      * @param concepts
      * @param pagination
-     * @param paginate 
+     * @param paginate
      */
     public ResultatConcept(ArrayList<Concept> concepts, Pagination pagination, boolean paginate) {
         super(concepts, pagination, paginate);
     }
-    
-    
+
 }

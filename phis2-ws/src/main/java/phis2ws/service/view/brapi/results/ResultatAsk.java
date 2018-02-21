@@ -17,30 +17,29 @@ import phis2ws.service.view.manager.Resultat;
 import phis2ws.service.view.model.phis.Ask;
 
 /**
- *
+ * 
  * @author Eloan LAGIER
  */
-public class ResultatAsk extends Resultat<Ask>{
-      /**
-     * Constructeur qui appelle celui de la classe mère
-     * @param ask 
+public class ResultatAsk extends Resultat<Ask> {
+
+    /**
+     * builder for a one-element list
+     *
+     * @param ask
      */
     public ResultatAsk(ArrayList<Ask> ask) {
         super(ask);
     }
-    
-         /**
-     * Constructeur qui appelle celui de la classe mère dans le cas d'une liste 
-     * à plusieurs éléments
+
+    /**
+     * builder for a more than one element list
+     *
      * @param concepts
      * @param pagination
-     * @param paginate 
+     * @param paginate
      */
     public ResultatAsk(ArrayList<Ask> concepts, Pagination pagination, boolean paginate) {
         super(concepts, pagination, paginate);
     }
-    
-    
-    
-    
+
 }

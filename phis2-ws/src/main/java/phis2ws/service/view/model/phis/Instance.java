@@ -1,5 +1,5 @@
 //**********************************************************************************************
-//                                       InstanceT.java 
+//                                       Instance.java 
 //
 // Author(s): Eloan LAGIER
 // PHIS-SILEX version 1.0
@@ -7,12 +7,15 @@
 // Creation date: Decembre, 8 2017
 // Contact: eloan.lagier@inra.fr morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date: Decembre, 8 2017
-// Subject: A class of InstanceT for the service call
+// Subject: A class of Instance for the service call
 //***********************************************************************************************
 package phis2ws.service.view.model.phis;
 import io.swagger.annotations.ApiModelProperty;
 
-
+/**
+ * Model for the Instance Object
+ * @author Eloan LAGIER
+ */
 public class Instance  {
         /**
      * @attribute uri ex. http://www.phenome-fppn.fr/phenovia/documents/document90fb96ace2894cdb9f4575173d8ed4c9

@@ -1,7 +1,6 @@
 //**********************************************************************************************
 //                                       ResultatInstance.java 
 //
-
 // Author(s): Eloan LAGIER
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2017
@@ -13,7 +12,6 @@
 package phis2ws.service.view.brapi.results;
 
 import java.util.ArrayList;
-import static phis2ws.service.authentication.TokenManager.Instance;
 import phis2ws.service.view.brapi.Pagination;
 import phis2ws.service.view.manager.Resultat;
 import phis2ws.service.view.model.phis.Instance;
@@ -22,22 +20,23 @@ import phis2ws.service.view.model.phis.Instance;
  *
  * @author lagier
  */
-public class ResultatInstance extends Resultat<Instance>{
+public class ResultatInstance extends Resultat<Instance> {
+
     /**
-     * Constructeur qui appelle celui de la classe mère dans le cas d'une liste 
-     * à un seul élément
-     * @param instances 
+     * Builder for a one element-list
+     *
+     * @param instances
      */
     public ResultatInstance(ArrayList<Instance> instances) {
         super(instances);
     }
-    
+
     /**
-     * Constructeur qui appelle celui de la classe mère dans le cas d'une liste 
-     * à plusieurs éléments
+     * Builder for a more-than-one element list
+     *
      * @param instances
      * @param pagination
-     * @param paginate 
+     * @param paginate
      */
     public ResultatInstance(ArrayList<Instance> instances, Pagination pagination, boolean paginate) {
         super(instances, pagination, paginate);

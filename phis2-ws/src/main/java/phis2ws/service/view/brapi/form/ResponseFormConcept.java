@@ -18,24 +18,27 @@ import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Concept;
 
 /**
+ * Represente the Response Form Concept
  *
  * @author Eloan LAGIER
  */
-public class ResponseFormConcept extends ResultForm<Concept>{
+public class ResponseFormConcept extends ResultForm<Concept> {
+
     /**
      * Initialise les champs metadata et result
+     *
      * @param pageSize nombre de résultats par page
      * @param currentPage page demandée
      * @param list liste des résultats
-     * @param paginate 
-     */   
-        public ResponseFormConcept(int pageSize, int currentPage, ArrayList<Concept> list, boolean paginate) {
-        metadata = new Metadata(pageSize, currentPage, list.size());       
-       if (list.size() > 1) {
+     * @param paginate
+     */
+    public ResponseFormConcept(int pageSize, int currentPage, ArrayList<Concept> list, boolean paginate) {
+        metadata = new Metadata(pageSize, currentPage, list.size());
+        if (list.size() > 1) {
             result = new ResultatConcept(list, metadata.getPagination(), paginate);
         } else {
             result = new ResultatConcept(list);
         }
-    
-        }
+
+    }
 }

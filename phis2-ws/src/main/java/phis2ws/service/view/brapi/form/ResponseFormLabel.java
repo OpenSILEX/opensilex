@@ -18,24 +18,27 @@ import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Label;
 
 /**
+ * Represente the Response Form Label
  *
  * @author Eloan LAGIER
  */
-public class ResponseFormLabel extends ResultForm<Label>{
+public class ResponseFormLabel extends ResultForm<Label> {
+
     /**
      * Initialise les champs metadata et result
+     *
      * @param pageSize nombre de résultats par page
      * @param currentPage page demandée
      * @param list liste des résultats
-     * @param paginate 
-     */   
-        public ResponseFormLabel(int pageSize, int currentPage, ArrayList<Label> list, boolean paginate) {
-        metadata = new Metadata(pageSize, currentPage, list.size());       
-       if (list.size() > 1) {
+     * @param paginate
+     */
+    public ResponseFormLabel(int pageSize, int currentPage, ArrayList<Label> list, boolean paginate) {
+        metadata = new Metadata(pageSize, currentPage, list.size());
+        if (list.size() > 1) {
             result = new ResultatLabel(list, metadata.getPagination(), paginate);
         } else {
             result = new ResultatLabel(list);
         }
-    
-        }
+
+    }
 }

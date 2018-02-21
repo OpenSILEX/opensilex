@@ -18,18 +18,20 @@ import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Ask;
 
 /**
+ * Represent the ResponseForm for the Ask type
  *
  * @author Eloan LAGIER
  */
-public class ResponseFormAsk extends ResultForm<Ask>{
+public class ResponseFormAsk extends ResultForm<Ask> {
+
     /**
      * Initialise les champs metadata et result
+     *
      * @param pageSize nombre de résultats par page
      * @param currentPage page demandée
      * @param ask liste des résultats
-     * @param paginate 
-     */   
-
+     * @param paginate
+     */
 
     public ResponseFormAsk(int pageSize, int currentPage, ArrayList<Ask> ask, boolean paginate) {
         metadata = new Metadata(pageSize, currentPage, ask.size());
@@ -39,5 +41,5 @@ public class ResponseFormAsk extends ResultForm<Ask>{
             result = new ResultatAsk(ask);
         }
     }
-    
+
 }

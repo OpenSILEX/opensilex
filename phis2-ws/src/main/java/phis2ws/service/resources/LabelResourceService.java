@@ -11,6 +11,7 @@
 //***********************************************************************************************
 package phis2ws.service.resources;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
@@ -20,6 +21,7 @@ import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -37,6 +39,10 @@ import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.ResponseFormLabel;
 import phis2ws.service.view.model.phis.Label;
 
+
+
+@Api("/labels")
+@Path("labels")
 /**
  *
  * @author Eloan LAGIER

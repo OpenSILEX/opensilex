@@ -1,5 +1,4 @@
 //                                       ResponseFormInstance.java 
-
 // Author(s): Eloan LAGIER
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2017
@@ -16,17 +15,22 @@ import phis2ws.service.view.brapi.results.ResultatInstance;
 import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Instance;
 
-
-
+/**
+ * Represente the Response Form Instance
+ *
+ * @author Eloan LAGIER
+ */
 public class ResponseFormInstance extends ResultForm<Instance> {
+
     /**
      * Initialise les champs metadata et result
+     *
      * @param pageSize nombre de résultats par page
      * @param currentPage page demandée
      * @param list liste des résultats
-     * @param paginate 
-     */   
-        public ResponseFormInstance(int pageSize, int currentPage, ArrayList<Instance> list, boolean paginate) {
+     * @param paginate
+     */
+    public ResponseFormInstance(int pageSize, int currentPage, ArrayList<Instance> list, boolean paginate) {
         metadata = new Metadata(pageSize, currentPage, list.size());
         if (list.size() > 1) {
             result = new ResultatInstance(list, metadata.getPagination(), paginate);

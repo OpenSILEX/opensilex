@@ -315,7 +315,7 @@ public class ConceptDaoSesame extends DAOSesame<Concept> {
         ArrayList<Ask> uriExistancesResults = new ArrayList<>();
         boolean result = booleanQuery.evaluate();
         Ask ask = new Ask();
-        ask.setExist(String.valueOf(result));
+        ask.setExist(result);
 
         uriExistancesResults.add(ask);
 
@@ -333,7 +333,7 @@ public class ConceptDaoSesame extends DAOSesame<Concept> {
         ArrayList<Ask> answer = new ArrayList<>();
         boolean result = booleanQuery.evaluate();
         Ask ask = new Ask();
-        ask.setExist(String.valueOf(result));
+        ask.setExist(result);
 
         if (ask.getExist().equals("true")) {
             query = prepareAskTypeQuery();

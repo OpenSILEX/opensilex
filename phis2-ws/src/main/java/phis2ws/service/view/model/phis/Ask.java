@@ -20,15 +20,15 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class Ask {
 
-    String exist;
+    Boolean exist;
     String rdfType;
 
     @ApiModelProperty(example = "true")
-    public String getExist() {
+    public Boolean getExist() {
         return exist;
     }
 
-    public void setExist(String exist) {
+    public void setExist(Boolean exist) {
         this.exist = exist;
     }
 

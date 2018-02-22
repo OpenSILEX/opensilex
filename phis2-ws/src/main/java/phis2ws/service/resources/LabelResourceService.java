@@ -61,8 +61,13 @@ public class LabelResourceService {
     }
         
         
-    /* GEt who return all the concept for a label given
-        */
+    /**
+     * searche all concept or instance with the label given
+     * @param limit
+     * @param page
+     * @param name
+     * @return Response
+     */
     @GET
     @ApiOperation(value = "get all concepts with this label",
                     notes = "Retrieve all concepts from the label given")

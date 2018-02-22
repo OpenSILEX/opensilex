@@ -26,7 +26,7 @@ public class Label {
     }
     
     
-    @ApiModelProperty("'document'@en")
+    @ApiModelProperty("document")
     public String getName () {
         return name;
     }

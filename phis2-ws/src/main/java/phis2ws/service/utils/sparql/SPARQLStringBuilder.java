@@ -138,7 +138,8 @@ public abstract class SPARQLStringBuilder {
         } else if (sesameUriFormSubject == null) {
             if (subject.contains(":") && !subject.contains("http://")) {
                 body += " " + subject + " ";
-            } else if (subject.contains("\"")) {
+            }
+             else if (subject.contains("\"")) {
                 body += " " + subject + " ";
             } else if ((subject.contains("<") && subject.contains(">")) || subject.contains("?")) {
                 body += " " + subject + " ";
@@ -176,7 +177,10 @@ public abstract class SPARQLStringBuilder {
         } else if (sesameUriFormObject == null) {
             if (object.contains(":") && !object.contains("http://")) {
                 body += " " + object + " ";
-            } else if (object.contains("\"")) {
+            } else if (object.contains("'")){
+                body += " " + object + " ";
+            } 
+            else if (object.contains("\"")) {
                 body += " " + object + " ";
             } else if ((object.contains(">") && object.contains("<")) || object.contains("?")) {
                 body += " " + object + " ";

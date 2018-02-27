@@ -16,6 +16,7 @@ import phis2ws.service.view.brapi.Metadata;
 import phis2ws.service.view.brapi.results.ResultatAsk;
 import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Ask;
+import phis2ws.service.view.model.phis.Uri;
 
 /**
  * Represent the ResponseForm for the Ask type
@@ -41,5 +42,6 @@ public class ResponseFormAsk extends ResultForm<Ask> {
             result = new ResultatAsk(ask);
         }
     }
+
 
 }

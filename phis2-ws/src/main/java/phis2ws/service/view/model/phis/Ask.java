@@ -21,7 +21,6 @@ import io.swagger.annotations.ApiModelProperty;
 public class Ask {
 
     Boolean exist;
-    String rdfType;
 
     @ApiModelProperty(example = "true")
     public Boolean getExist() {
@@ -32,12 +31,5 @@ public class Ask {
         this.exist = exist;
     }
 
-    @ApiModelProperty(example = "Class")
-    public String getRdfType() {
-        return rdfType;
-    }
 
-    public void setRdfType(String rdfType) {
-        this.rdfType = rdfType;
-    }
 }

@@ -1,44 +1,44 @@
 //**********************************************************************************************
-//                                       ResultatLabel.java 
+//                                       ResultatUri.java 
 //
 // Author(s): Eloan LAGIER
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2018
-// Creation date:Feb 1 2018
+// Creation date: Feb 26 2018
 // Contact: eloan.lagier@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  Feb 1, 2018
-// Subject:  extend form Resultat adapted to the Label
+// Last modification date:  Feb 26, 2018
+// Subject: extend form Resultat adapted to Uri
 //***********************************************************************************************
 package phis2ws.service.view.brapi.results;
 
 import java.util.ArrayList;
 import phis2ws.service.view.brapi.Pagination;
 import phis2ws.service.view.manager.Resultat;
-import phis2ws.service.view.model.phis.Label;
+import phis2ws.service.view.model.phis.Uri;
 
 /**
  *
  * @author Eloan LAGIER
  */
-public class ResultatLabel extends Resultat<Label> {
-
+public class ResultatUri extends Resultat<Uri>{
     /**
-     * Builder in the case of a one element list
+     * Builder for a one-element list
      *
-     * @param labels
+     * @param concepts
      */
-    public ResultatLabel(ArrayList<Label> labels) {
-        super(labels);
+    public ResultatUri(ArrayList<Uri> uris) {
+        super(uris);
     }
 
     /**
-     * builder in the case of a more than one element list
+     * builder for a more-than-one element list
      *
-     * @param labels
+     * @param concepts
      * @param pagination
      * @param paginate
      */
-    public ResultatLabel(ArrayList<Label> labels, Pagination pagination, boolean paginate) {
-        super(labels, pagination, paginate);
+    public ResultatUri(ArrayList<Uri> uris, Pagination pagination, boolean paginate) {
+        super(uris, pagination, paginate);
     }
+
 }

@@ -183,7 +183,7 @@ public class UriResourceService {
      *
      * @param limit
      * @param page
-     * @param name
+     * @param label
      * @return Response
      */
     @GET
@@ -206,11 +206,11 @@ public class UriResourceService {
     public Response getUrisByLabel(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
-            @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_CONCEPT_LABEL) @QueryParam("label") String name) {
+            @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_CONCEPT_LABEL) @QueryParam("label") String label) {
 
         UriDaoSesame uriDaoSesame = new UriDaoSesame();
-        if (name != null) {
-            uriDaoSesame.uri = name;
+        if (label != null) {
+            uriDaoSesame.label = label;
         }
 
         uriDaoSesame.user = userSession.getUser();

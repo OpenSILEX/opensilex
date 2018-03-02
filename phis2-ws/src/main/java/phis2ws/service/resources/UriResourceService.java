@@ -1,7 +1,7 @@
 //**********************************************************************************************
 //                                       UriResourceService.java 
 //
-// Author(s): Eloan LAGIER
+// Author(s): Eloan LAGIER, Morgane VIDAL
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2018
 // Creation date: 26 Feb 2018
@@ -33,6 +33,7 @@ import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.sesame.UriDaoSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
+import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.ResponseFormAsk;
@@ -55,39 +56,56 @@ public class UriResourceService {
     @SessionInject
     Session userSession;
 
+    /**
+     * 
+     * @param response
+     * @param statusList
+     * @return the response "no result found" for the exist (ask) services
+     */
     private Response noResultFound(ResponseFormAsk response, ArrayList<Status> statusList) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        statusList.add(new Status(StatusCodeMsg.NO_RESULTS, StatusCodeMsg.INFO, "No results for the exist query"));
+        response.setStatus(statusList);
+        return Response.status(Response.Status.NOT_FOUND).entity(response).build();
     }
 
+    /**
+     * 
+     * @param response
+     * @param statusList
+     * @return the response "no result found" for the uri services
+     */
     private Response noResultFound(ResponseFormUri response, ArrayList<Status> statusList) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+         statusList.add(new Status(StatusCodeMsg.NO_RESULTS, StatusCodeMsg.INFO, "No results for the given uri"));
+        response.setStatus(statusList);
+        return Response.status(Response.Status.NOT_FOUND).entity(response).build();
     }
 
     /**
      * search if an uri is in the triplestore or not
      *
      * @param uri
-     * @return Ask
+     * @return a response which contains true if the uri exist, 
+     *         false if it is an unknown uri
      */
     @GET
     @Path("{uri}/exist")
-    @ApiOperation(value = "ask if an URI is in the triplestore or not",
+    @ApiOperation(value = "check if an uri exists or not (in the triplestore)",
             notes = "Return a boolean")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "ask concept", response = Ask.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "exist result", response = Ask.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
                 value = DocumentationAnnotation.ACCES_TOKEN,
                 example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response isUriExisting(
-            @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @QueryParam("Uri") String uri) {
+            @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @QueryParam("uri") String uri) {
 
         UriDaoSesame uriDaoSesame = new UriDaoSesame();
         if (uri != null) {
@@ -96,40 +114,54 @@ public class UriResourceService {
 
         uriDaoSesame.user = userSession.getUser();
 
-        return getAskdata(uriDaoSesame);
+        return existData(uriDaoSesame);
     }
 
     /**
-     * this GET return all the concept informations
+     * this GET return all the concept metadata
      *
      * @param limit
      * @param page
      * @param uri
-     * @return concept list. The result form depends on the query results e.g.
-     * of result : { "metadata": { "pagination": null, "status": [],
-     * "datafiles": [] }, "result": { "data": [ { "uri":
-     * "http://www.phenome-fppn.fr/vocabulary/2017#Document", "infos": { "type":
-     * "http://www.w3.org/2002/07/owl#Class", "label_en": "document",
-     * "label_fr": "document" } } ] } }
+     * @return concept list. The result form depends on the query results 
+     * e.g. of result : 
+     * { 
+     *      "metadata": 
+     *          { "pagination": null, 
+     *            "status": [],
+     *            "datafiles": [] 
+     *          }, 
+     *          "result": { 
+     *              "data": [ 
+     *                  { "uri": "http://www.phenome-fppn.fr/vocabulary/2017#Document",
+     *                    "infos": { 
+     *                          "type":"http://www.w3.org/2002/07/owl#Class",
+     *                          "label_en": "document",
+     *                          "label_fr": "document" 
+     *                      } 
+     *                  } 
+     *              ] 
+     *          } 
+     * }
      */
     @GET
     @Path("{uri}/concept")
-    @ApiOperation(value = "Get all concept informations",
-            notes = "Retrieve all infos in the limit of what we knows")
+    @ApiOperation(value = "Get all uri informations",
+            notes = "Retrieve all infos of the uri")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve all experiments", response = Uri.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Retrieve all concept informations", response = Uri.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
                 value = DocumentationAnnotation.ACCES_TOKEN,
                 example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
 
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getUriBySearch(
+    public Response getUriMetadata(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
             @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @QueryParam("uri") String uri) {
@@ -147,7 +179,7 @@ public class UriResourceService {
     }
 
     /**
-     * searche all uri with the label given
+     * search all uri with the label given
      *
      * @param limit
      * @param page
@@ -156,7 +188,7 @@ public class UriResourceService {
      */
     @GET
     @Path("/{uri}/labels")
-    @ApiOperation(value = "get all uri with this label",
+    @ApiOperation(value = "get all uri with a given label",
             notes = "Retrieve all uri from the label given")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Retrieve all labels", response = Uri.class, responseContainer = "List"),
@@ -164,14 +196,14 @@ public class UriResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
                 value = DocumentationAnnotation.ACCES_TOKEN,
                 example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
 
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getLabelBySearch(
+    public Response getUrisByLabel(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
             @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_CONCEPT_LABEL) @QueryParam("label") String name) {
@@ -188,25 +220,33 @@ public class UriResourceService {
         return getLabelMetaData(uriDaoSesame);
     }
 
+    /**
+     * Get all the instances of an uri
+     * @param uri
+     * @param deep
+     * @param limit
+     * @param page
+     * @return the query result, with the list of the instances or the errors
+     */
     @GET
     @Path("{uri}/instances")
     @ApiOperation(value = "Get all the instances of a concept",
-            notes = "Retrieve all instances of subClass too, if deep=true")
+            notes = "Retrieve all instances of subClass too, if deep = true")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve instances", response = Uri.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Retrieve instances from a concept", response = Uri.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
                 value = DocumentationAnnotation.ACCES_TOKEN,
                 example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getInstancesList(
-            @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @QueryParam("conceptUri") String uri,
+            @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @QueryParam("uri") String uri,
             @ApiParam(value = DocumentationAnnotation.DEEP) @QueryParam("deep") @DefaultValue(DocumentationAnnotation.EXAMPLE_DEEP) String deep,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
@@ -226,15 +266,29 @@ public class UriResourceService {
     }
 
     /**
-     * give all the class parent of the uri
+     * give all the class parent of a given uri
      *
      * @param uri
      * @param limit
      * @param page
-     * @return { "metadata": { "pagination": null, "status": [], "datafiles": []
-     * }, "result": { "data": [ { "uri":
-     * "http://www.phenome-fppn.fr/vocabulary/2017#Document", "properties": {} }
-     * ] } }
+     * @return the result. 
+     * Example :
+     * { 
+     *      "metadata": 
+     *          { 
+     *              "pagination": null, 
+     *              "status": [], 
+     *              "datafiles": []
+     *          },
+     *      "result": 
+     *          { 
+     *              "data": [ 
+     *                  { "uri": "http://www.phenome-fppn.fr/vocabulary/2017#Document",
+     *                    "properties": {} 
+     *                  }
+     *              ] 
+     *          } 
+     * }
      */
     @GET
     @Path("{uri}/ancestors")
@@ -247,8 +301,8 @@ public class UriResourceService {
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
                 value = DocumentationAnnotation.ACCES_TOKEN,
                 example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
@@ -275,13 +329,30 @@ public class UriResourceService {
      * @param uri
      * @param limit
      * @param page
-     * @return { "metadata": { "pagination": { "pageSize": 20, "currentPage": 0,
-     * "totalCount": 11, "totalPages": 1 }, "status": [], "datafiles": [] },
-     * "result": { "data": [ { "uri":
-     * "http://www.phenome-fppn.fr/vocabulary/2017#DataFile", "properties": {}
-     * }, { "uri":
-     * "http://www.phenome-fppn.fr/vocabulary/2017#TechnicalDocument",
-     * "properties": {} } ] } }
+     * @return 
+     * Example : 
+     * { 
+     *      "metadata": { 
+     *          "pagination": { 
+     *              "pageSize": 20,
+     *              "currentPage": 0,
+     *              "totalCount": 11,
+     *              "totalPages": 1 
+     *          }, 
+     *          "status": [], 
+     *          "datafiles": [] 
+     *      },
+     *      "result": { 
+     *          "data": [ 
+     *              { "uri": "http://www.phenome-fppn.fr/vocabulary/2017#DataFile",
+     *                "properties": {}
+     *              },
+     *              { "uri": "http://www.phenome-fppn.fr/vocabulary/2017#TechnicalDocument",
+     *                "properties": {} 
+     *              } 
+     *          ] 
+     *      } 
+     * }
      */
     @GET
     @Path("{uri}/siblings")
@@ -300,7 +371,7 @@ public class UriResourceService {
                 example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getSibblingsList(
+    public Response getSibblings(
             @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_SIBLING_URI) @QueryParam("Uri") String uri,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
@@ -322,31 +393,43 @@ public class UriResourceService {
      * @param uri
      * @param limit
      * @param page
-     * @return { "metadata": { "pagination": { "pageSize": 20, "currentPage": 0,
-     * "totalCount": 12, "totalPages": 1 }, "status": [], "datafiles": [] },
-     * "result": { "data": [ { "uri":
-     * "http://www.phenome-fppn.fr/vocabulary/2017#Document", "properties": {}
-     * }, { "uri": "http://www.phenome-fppn.fr/vocabulary/2017#DataFile",
-     * "properties": {} }, { "uri":
-     * "http://www.phenome-fppn.fr/vocabulary/2017#TechnicalDocument",
-     * "properties": {} } ] } }
+     * @return 
+     * { 
+     *      "metadata": { 
+     *          "pagination": { 
+     *              "pageSize": 20, 
+     *              "currentPage": 0,
+     *              "totalCount": 12, 
+     *              "totalPages": 1 
+     *          },
+     *          "status": [], 
+     *          "datafiles": [] 
+     *      },
+     *      "result": { 
+     *          "data": [ 
+     *              { "uri": "http://www.phenome-fppn.fr/vocabulary/2017#Document",
+     *                "properties": {}
+     *              }, 
+     *              { "uri": "http://www.phenome-fppn.fr/vocabulary/2017#DataFile",
+     *                "properties": {} 
+     *              } 
+     *          ] 
+     *      } 
+     * }
      */
     @GET
     @Path("{uri}/descendants")
     @ApiOperation(value = "Get all the descendants of an uri",
             notes = "Retrieve all subclass and the subClass of subClass too")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve Concept", response = Uri.class, responseContainer = "List")
-        ,
-        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION)
-        ,
-        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED)
-        ,
+        @ApiResponse(code = 200, message = "Retrieve uri's descendants", response = Uri.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
                 value = DocumentationAnnotation.ACCES_TOKEN,
                 example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
@@ -375,18 +458,17 @@ public class UriResourceService {
      */
     @GET
     @Path("{uri}/type")
-    @ApiOperation(value = "get the type of an uri if exist",
-            notes = "else it will return empty list")
+    @ApiOperation(value = "get the type of an uri if it exist")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve type", response = Uri.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Retrieve the uri existance", response = Uri.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
                 value = DocumentationAnnotation.ACCES_TOKEN,
                 example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
@@ -401,7 +483,7 @@ public class UriResourceService {
 
         uriDaoSesame.user = userSession.getUser();
 
-        return getUriTypedata(uriDaoSesame);
+        return getUriType(uriDaoSesame);
     }
 
     /**
@@ -434,15 +516,17 @@ public class UriResourceService {
     }
 
     /**
-     * collect all the data for the ask request
+     * use the uriDaoSesame to check if the uris exist or not and return the 
+     * formatted result
      *
-     * @param conceptDaoSesame
-     * @return Response
+     * @param uriDaoSesame
+     * @return Response the result, containing the existing of each uri
      */
-    private Response getAskdata(UriDaoSesame uriDaoSesame) {
+    private Response existData(UriDaoSesame uriDaoSesame) {
         ArrayList<Status> statusList = new ArrayList<>();
         ResponseFormAsk getResponse;
         ArrayList<Ask> ask = uriDaoSesame.askUriExistance();
+        
         if (ask == null) {//no result found
             getResponse = new ResponseFormAsk(0, 0, ask, true);
             return noResultFound(getResponse, statusList);
@@ -461,8 +545,8 @@ public class UriResourceService {
     }
 
     /**
-     * collect all the data of the user request
-     *
+     * get the metadata of a given uri. 
+     * The uri can be a concept uri or an instance
      * @param uriDaoSesame
      * @return Response
      */
@@ -491,7 +575,7 @@ public class UriResourceService {
     }
 
     /**
-     * getLabelMetaData:
+     * return the list of uris which has the given label
      *
      * @param uriDaoSesame collect all the Label data
      */
@@ -520,7 +604,7 @@ public class UriResourceService {
     }
 
     /**
-     * collect all the data for the ancestors request
+     * collect all the ancestors of a given uri
      *
      * @param uriDaoSesame
      * @return Response
@@ -549,7 +633,7 @@ public class UriResourceService {
     }
 
     /**
-     * collect all the data for the siblings request
+     * collect all the siblings of a given uri
      *
      * @param uriDaoSesame
      * @return Response
@@ -579,7 +663,7 @@ public class UriResourceService {
     }
 
     /**
-     * collect all the data for the descendant request
+     * collect all the descendants of a given uri
      *
      * @param uriDaoSesame
      * @return Response
@@ -608,16 +692,17 @@ public class UriResourceService {
     }
 
     /**
-     * collect all the data of the ask/type request
+     * get the type of a given uri
      *
      * @param uriDaoSesame
      * @return Response
      */
-    private Response getUriTypedata(UriDaoSesame uriDaoSesame) {
+    private Response getUriType(UriDaoSesame uriDaoSesame) {
         ArrayList<Uri> uris;
         ArrayList<Status> statusList = new ArrayList<>();
         ResponseFormUri getResponse;
         uris = uriDaoSesame.getAskTypeAnswer();
+        
         if (uris == null) {//no result found
             getResponse = new ResponseFormUri(0, 0, uris, true);
             return noResultFound(getResponse, statusList);

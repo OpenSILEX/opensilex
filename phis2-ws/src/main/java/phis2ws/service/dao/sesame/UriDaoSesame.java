@@ -1,7 +1,7 @@
 //**********************************************************************************************
 //                                       UriDaoSesame.java 
 //
-// Author(s): Eloan LAGIER
+// Author(s): Eloan LAGIER, Morgane VIDAL
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2018
 // Creation date: Feb 26 2018
@@ -13,6 +13,8 @@ package phis2ws.service.dao.sesame;
 
 import java.util.ArrayList;
 import java.util.Optional;
+import javax.json.Json;
+import org.eclipse.persistence.sessions.serializers.JSONSerializer;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.BindingSet;
@@ -32,23 +34,32 @@ import phis2ws.service.view.model.phis.Ask;
 import phis2ws.service.view.model.phis.Uri;
 
 /**
- * 
- * 
+ * Represents the Triplestore Data Access Object for the uris
  * @author Eloan LAGIER
  */
-public class UriDaoSesame extends DAOSesame<Uri>{
+public class UriDaoSesame extends DAOSesame<Uri> {
 
     public String uri;
-    public String name;
+    public String label;
     
     final static String TRIPLESTORE_FIELDS_TYPE = "type";
     final static String TRIPLESTORE_FIELDS_CLASS = "class";
+    final static String TRIPLESTORE_FIELDS_INSTANCE = "instance";
+    final static String TRIPLESTORE_FIELDS_SUBCLASS = "subclass";
+    
     
     final static Logger LOGGER = LoggerFactory.getLogger(UriDaoSesame.class);
     public Boolean deep;
 
     URINamespaces uriNameSpace = new URINamespaces();
     
+    /**
+     * prepare a query to get the triplets of an uri (given or not).
+     * @return the query 
+     * e.g.
+     * SELECT DISTINCT  ?class ?type WHERE {
+     * <http://www.phenome-fppn.fr/vocabulary/2017#Document>  ?class  ?type  . }
+     */
     @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
@@ -71,34 +82,31 @@ public class UriDaoSesame extends DAOSesame<Uri>{
     }
     
     /**
-     * Searche uri with same label
-     *
-     * query example : SELECT ?class WHERE { ?class rdfs:label contextName }
-     *
-     * @return SPARQLQueryBuilder
-     *
-     *
+     * Search uri with same label
+     * @return the query
+     * query example : 
+     * SELECT ?class WHERE { ?class rdfs:label contextName }
      */
     protected SPARQLQueryBuilder prepareLabelSearchQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
 
-        String contextName;
+        String selectLabel;
 
-        if (name != null) {
-            contextName = name;
+        if (label != null) {
+            selectLabel = label;
         } else {
-            contextName = " ?label ";
+            selectLabel = " ?label ";
             query.appendSelect(" ?label ");
 
         }
 
         query.appendSelect(" ?class ");
-        query.appendTriplet(" ?class ", " rdfs:label ", contextName, null);
+        query.appendTriplet(" ?class ", uriNameSpace.getRelationsProperty("label"), selectLabel, null);
 
         LOGGER.debug(" sparql select query : " + query.toString());
         return query;
-    }
+    }    
     
     /**
      * Search siblings of concept query example : SELECT DISTINCT ?class WHERE {
@@ -106,10 +114,12 @@ public class UriDaoSesame extends DAOSesame<Uri>{
      *
      * @return SPARQLQueryBuilder
      */
-    /*probleme : Siblings take ScientificDocument for exemple but it's different that all the other concept GET
-    where could this can be change?
-     */
     protected SPARQLQueryBuilder prepareSiblingsQuery() {
+        //SILEX:warning
+        //Siblings take ScientificDocument for exemple but it's different that all the other concept GET
+        //where could this can be change?
+        //\SILEX:warning
+        
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
 
@@ -135,10 +145,8 @@ public class UriDaoSesame extends DAOSesame<Uri>{
     
     /**
      * Ask if an Uri is in the triplestore
-     *
+     * @return the ask query
      * query exemple : ASK { concept ?any1 ?any2 .}
-     *
-     * @return SPARQLQueryBuilder
      */
     protected SPARQLQueryBuilder prepareAskQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
@@ -152,14 +160,14 @@ public class UriDaoSesame extends DAOSesame<Uri>{
             contextURI = "?uri";
             query.appendSelect("?uri");
         }
-        //any = anything
-        query.appendAsk(contextURI + " ?any1 ?any2 ");
+        
+        query.appendAsk(contextURI + " ?any1 ?any2 "); //any = anything
         LOGGER.debug(query.toString());
         return query;
     }
     
     /**
-     * call the query function for the ask-problemes
+     * check if the given uris exists in the triplestore and return the results
      * @return a boolean saying if the uri exist
      */
     public ArrayList<Ask> askUriExistance() {
@@ -175,11 +183,12 @@ public class UriDaoSesame extends DAOSesame<Uri>{
         return uriExistancesResults;
     }
     
-       /**
-     * Search instances by uri, ... query example : SELECT
-     * ?instance ?subclass WHERE {?subclass rdfs:subClassOf(*) context URI }
-     *
+    /**
+     * Search instances by uri, ... 
      * @return SPARQLQueryBuilder
+     * query example : 
+     * SELECT ?instance ?subclass 
+     * WHERE {?subclass rdfs:subClassOf(*) context URI }
      */
     protected SPARQLQueryBuilder prepareInstanceSearchQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
@@ -202,16 +211,17 @@ public class UriDaoSesame extends DAOSesame<Uri>{
         } else {
             query.appendTriplet("?subclass", uriNameSpace.getRelationsProperty("rdfs:subClassOf"), contextURI, null);
         }
-        query.appendTriplet("?instance", "rdf:type", "?subclass", null);
+        query.appendTriplet("?instance", uriNameSpace.getRelationsProperty("type"), "?subclass", null);
         LOGGER.debug("sparql select query : " + query.toString());
         return query;
     }
     
    /**
-     * Search ancestors of concept query example : SELECT DISTINCT ?class WHERE
-     * { contextURI rdfs:subClassOf* ?class }
-     *
+     * Search ancestors of a concept 
      * @return SPARQLQueryBuilder
+     * query example : 
+     * SELECT DISTINCT ?class WHERE
+     * { contextURI rdfs:subClassOf* ?class }
      */
     protected SPARQLQueryBuilder prepareAncestorsQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
@@ -232,10 +242,11 @@ public class UriDaoSesame extends DAOSesame<Uri>{
     }
     
     /**
-     * Search descendants of concept query example : SELECT DISTINCT ?class
-     * WHERE { ?class rdfs:subClassOf* contextURI }
-     *
+     * Search descendants of concept 
      * @return SPARQLQueryBuilder
+     * query example : 
+     * SELECT DISTINCT ?class
+     * WHERE { ?class rdfs:subClassOf* contextURI }
      */
     protected SPARQLQueryBuilder prepareDescendantsQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
@@ -259,14 +270,12 @@ public class UriDaoSesame extends DAOSesame<Uri>{
     
     /**
      * return the type of the uri given
-     *
-     *
-     * SELECT DISTINCT ?type WHERE { concept rdf:type ?type . }
-     *
      * @return SPARQLQueryBuilder
+     * query example : 
+     * SELECT DISTINCT ?type WHERE { concept rdf:type ?type . }
      */
     /* create the query that return the type of an URI if its in the Tupple */
-    protected SPARQLQueryBuilder prepareAskTypeQuery() {
+    protected SPARQLQueryBuilder prepareGetUriType() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
 
@@ -279,17 +288,14 @@ public class UriDaoSesame extends DAOSesame<Uri>{
             query.appendSelect("?uri");
         }
         query.appendSelect(" ?type ");
-        query.appendTriplet(contextURI, " rdf:type", " ?type ", null);
+        query.appendTriplet(contextURI, uriNameSpace.getRelationsProperty("type"), " ?type ", null);
         LOGGER.debug(query.toString());
         return query;
     }
-
-    
-    
     
     /**
      * return all metadata for the uri given
-     * @return Concept info all paginate
+     * @return the list of the uris corresponding to the search informations
      */
     public ArrayList<Uri> allPaginate() {
         SPARQLQueryBuilder query = prepareSearchQuery();
@@ -297,52 +303,48 @@ public class UriDaoSesame extends DAOSesame<Uri>{
         ArrayList<Uri> uris = new ArrayList<>();
 
         try (TupleQueryResult result = tupleQuery.evaluate()) {
-
-            Uri uri = new Uri();
             while (result.hasNext()) {
+                Uri uriFounded = new Uri();
                 BindingSet bindingSet = result.next();
-                uri.setUri(this.uri);
+                uriFounded.setUri(this.uri);
                 String classname = bindingSet.getValue(TRIPLESTORE_FIELDS_CLASS).stringValue();
                 Value propertyType = bindingSet.getValue(TRIPLESTORE_FIELDS_TYPE);
                 //if its a litteral we look what's the language
                 if (propertyType instanceof Literal) {
                     Literal literal = (Literal) bindingSet.getValue(TRIPLESTORE_FIELDS_TYPE);
                     Optional<String> propertyLanguage = literal.getLanguage();
-                    uri.addAnnotation(classname.substring(classname.indexOf("#") + 1, classname.length()) + "_" + propertyLanguage.get(), bindingSet.getValue(TRIPLESTORE_FIELDS_TYPE).stringValue());
+                    uriFounded.addAnnotation(classname.substring(classname.indexOf("#") + 1, classname.length()) + "_" + propertyLanguage.get(), bindingSet.getValue(TRIPLESTORE_FIELDS_TYPE).stringValue());
                 } else {
-                    uri.addProperty(classname.substring(classname.indexOf("#") + 1, classname.length()), bindingSet.getValue(TRIPLESTORE_FIELDS_TYPE).stringValue());
+                    uriFounded.addProperty(classname.substring(classname.indexOf("#") + 1, classname.length()), bindingSet.getValue(TRIPLESTORE_FIELDS_TYPE).stringValue());
                 }
-            }
-            uris.add(uri);
+                 uris.add(uriFounded);
+            }           
         }
         return uris;
     }
+    
     /**
-     * paginate all the metadata of the query request
-     *
+     * search the uris which has the given label as label and return the list 
      * @return ArrayList
      */
     public ArrayList<Uri> labelsPaginate() {
         SPARQLQueryBuilder query = prepareLabelSearchQuery();
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-        ArrayList<Uri> labels = new ArrayList();
-        LOGGER.debug(query.toString());
+        ArrayList<Uri> uris = new ArrayList();
+        
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {
-                Uri label = new Uri();
+                Uri uriFounded = new Uri();
                 BindingSet bindingSet = result.next();
-                label.setUri(bindingSet.getValue(TRIPLESTORE_FIELDS_CLASS).toString());
-                labels.add(label);
+                uriFounded.setUri(bindingSet.getValue(TRIPLESTORE_FIELDS_CLASS).toString());
+                uris.add(uriFounded);
             }
-
         }
-        return labels;
+        return uris;
     }
     
     /**
-     * return Sparql result paginated
-     *
-     * @return ArrayList<>
+     * @return the list of the instances, corresponding to the search params given
      */
     public ArrayList<Uri> instancesPaginate() {
 
@@ -358,8 +360,8 @@ public class UriDaoSesame extends DAOSesame<Uri>{
 
                 Uri instance = new Uri();
 
-                instance.setUri(bindingSet.getValue("instance").stringValue());
-                instance.setRdfType(bindingSet.getValue("subclass").stringValue());
+                instance.setUri(bindingSet.getValue(TRIPLESTORE_FIELDS_INSTANCE).stringValue());
+                instance.setRdfType(bindingSet.getValue(TRIPLESTORE_FIELDS_SUBCLASS).stringValue());
 
                 instances.add(instance);
             }
@@ -435,7 +437,7 @@ public class UriDaoSesame extends DAOSesame<Uri>{
         return concepts;
     }
     
-        /**
+    /**
      * return the type of the uri if it's in the triplestore
      * @return a boolean or a type
      */
@@ -449,14 +451,12 @@ public class UriDaoSesame extends DAOSesame<Uri>{
         ask.setExist(result);
 
         Uri uriType = new Uri();
-        if (ask.getExist().equals("true")) {
-            
-            query = prepareAskTypeQuery();
+        if (ask.getExist()) {
+            query = prepareGetUriType();
             TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
             TupleQueryResult resultat = tupleQuery.evaluate();
             BindingSet bindingSet = resultat.next();
             uriType.setRdfType(bindingSet.getValue(TRIPLESTORE_FIELDS_TYPE).toString());
-            
         }
         uris.add(uriType);
         

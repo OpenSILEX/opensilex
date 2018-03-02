@@ -32,4 +32,7 @@ public final class GlobalWebserviceValues {
     public static final Response ACCESS_FORBIDDEN = Response.status(Response.Status.FORBIDDEN)
             .entity(new ResponseFormGET(new Status("Access error",StatusCodeMsg.ERR, "Access blocked for all users !!"))).build();
 
+    public static final String DATA_TYPE_STRING = "string";
+    public static final String HEADER = "header";
+    public static final String AUTHORIZATION = "Authorization";
 }

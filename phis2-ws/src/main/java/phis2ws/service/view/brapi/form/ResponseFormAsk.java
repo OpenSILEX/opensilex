@@ -13,10 +13,9 @@ package phis2ws.service.view.brapi.form;
 
 import java.util.ArrayList;
 import phis2ws.service.view.brapi.Metadata;
-import phis2ws.service.view.brapi.results.ResultatAsk;
+import phis2ws.service.view.brapi.results.ResultAsk;
 import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Ask;
-import phis2ws.service.view.model.phis.Uri;
 
 /**
  * Represent the ResponseForm for the Ask type
@@ -25,23 +24,19 @@ import phis2ws.service.view.model.phis.Uri;
  */
 public class ResponseFormAsk extends ResultForm<Ask> {
 
-    /**
-     * Initialise les champs metadata et result
-     *
-     * @param pageSize nombre de résultats par page
-     * @param currentPage page demandée
-     * @param ask liste des résultats
-     * @param paginate
+     /**
+     * Initialize fields metadata and result
+     * @param pageSize results per page
+     * @param currentPage current page
+     * @param list results list
+     * @param paginate 
      */
-
-    public ResponseFormAsk(int pageSize, int currentPage, ArrayList<Ask> ask, boolean paginate) {
-        metadata = new Metadata(pageSize, currentPage, ask.size());
-        if (ask.size() > 1) {
-            result = new ResultatAsk(ask, metadata.getPagination(), paginate);
+    public ResponseFormAsk(int pageSize, int currentPage, ArrayList<Ask> list, boolean paginate) {
+        metadata = new Metadata(pageSize, currentPage, list.size());
+        if (list.size() > 1) {
+            result = new ResultAsk(list, metadata.getPagination(), paginate);
         } else {
-            result = new ResultatAsk(ask);
+            result = new ResultAsk(list);
         }
     }
-
-
 }

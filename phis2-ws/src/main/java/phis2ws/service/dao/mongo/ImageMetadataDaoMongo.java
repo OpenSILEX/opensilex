@@ -40,9 +40,7 @@ import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.ConcernItem;
-import phis2ws.service.view.model.phis.FileInformations;
 import phis2ws.service.view.model.phis.ImageMetadata;
-import phis2ws.service.view.model.phis.ShootingConfiguration;
 
 /**
  * Represents the MongoDB Data Access Object for the images metadata

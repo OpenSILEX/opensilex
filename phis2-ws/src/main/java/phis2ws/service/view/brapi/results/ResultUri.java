@@ -17,28 +17,27 @@ import phis2ws.service.view.manager.Resultat;
 import phis2ws.service.view.model.phis.Uri;
 
 /**
- *
+ * A class which represents the result part in the response form, adapted to the URIs
  * @author Eloan LAGIER
  */
-public class ResultatUri extends Resultat<Uri>{
+public class ResultUri extends Resultat<Uri> {
     /**
      * Builder for a one-element list
      *
-     * @param concepts
+     * @param uris
      */
-    public ResultatUri(ArrayList<Uri> uris) {
+    public ResultUri(ArrayList<Uri> uris) {
         super(uris);
     }
 
     /**
      * builder for a more-than-one element list
      *
-     * @param concepts
+     * @param uris
      * @param pagination
      * @param paginate
      */
-    public ResultatUri(ArrayList<Uri> uris, Pagination pagination, boolean paginate) {
+    public ResultUri(ArrayList<Uri> uris, Pagination pagination, boolean paginate) {
         super(uris, pagination, paginate);
     }
-
 }

@@ -17,29 +17,29 @@ import phis2ws.service.view.manager.Resultat;
 import phis2ws.service.view.model.phis.Ask;
 
 /**
- * 
+ * A class which represents the result part in the response form, adapted to the 
+ * exist queries (ask)
  * @author Eloan LAGIER
  */
-public class ResultatAsk extends Resultat<Ask> {
+public class ResultAsk extends Resultat<Ask> {
 
     /**
      * builder for a one-element list
      *
-     * @param ask
+     * @param ask the exist results
      */
-    public ResultatAsk(ArrayList<Ask> ask) {
+    public ResultAsk(ArrayList<Ask> ask) {
         super(ask);
     }
 
     /**
      * builder for a more than one element list
      *
-     * @param concepts
+     * @param askResults
      * @param pagination
      * @param paginate
      */
-    public ResultatAsk(ArrayList<Ask> concepts, Pagination pagination, boolean paginate) {
-        super(concepts, pagination, paginate);
+    public ResultAsk(ArrayList<Ask> askResults, Pagination pagination, boolean paginate) {
+        super(askResults, pagination, paginate);
     }
-
 }

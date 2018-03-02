@@ -101,35 +101,17 @@ public class URINamespaces {
         //n  => namespace
         //p  => phenome
         
-        
-        
         //Plateforme et préfixes
         CONTEXTS.put("pxPhenome", "http://www.phenome-fppn.fr");
         CONTEXTS.put("pxDublinCore", "http://purl.org/dc/terms");
         CONTEXTS.put("pxPlatform", CONTEXTS.get("pxPhenome") + "/" + platform);
         CONTEXTS.put("pxGeoSPARQL", "http://www.opengis.net/ont/geosparql#");
         
-        
         //Context(s) 
         CONTEXTS.put("pVoc2017", CONTEXTS.get("pxPhenome") + "/vocabulary/2017");
         CONTEXTS.put("documents", CONTEXTS.get("pxPlatform") + "/documents");
         CONTEXTS.put("agronomicalObjects", CONTEXTS.get("pxPlatform") + "/agronomicalObjects");
         CONTEXTS.put("variables", CONTEXTS.get("pxPlatform") + "/variables");
-        
-        
-               
-        
-        //Contextes de phenomeApi version serre
-//        CONTEXTS.put("pxPhenome", "http://www.phenome-fppn.fr");
-//        CONTEXTS.put("pExperiment", "http://www.phenome-fppn.fr/m3p/experiment");
-//        CONTEXTS.put("pVocaPlateform", "http://www.phenome-fppn.fr/vocabulary/2015");
-//        CONTEXTS.put("annotation", "http://www.mistea.supagro.inra.fr/ontologies/2014/v1/annotation");
-//        CONTEXTS.put("annotSemantic", "http://www.mistea.supagro.inra.fr/ontologies/2014/v1/semanticAnnotation");
-//        CONTEXTS.put("pEvent", "http://www.phenome-fppn.fr/vocabulary/"+ platform + "/2015/event");
-//        CONTEXTS.put("eventRepo", "http://www.phenome-fppn.fr/" + platform + "/event");
-//        CONTEXTS.put("annotationRepo", "http://www.phenome-fppn.fr/" + platform + "/annotation");
-//        CONTEXTS.put("documents", "http://www.mistea.supagro.inra.fr/ontologies/2014/v1/documents");
-//        CONTEXTS.put("documentsRepo", "http://www.phenome-fppn.fr/" + platform + "/document");
     }
     
     private void setNamespaces() {
@@ -188,5 +170,7 @@ public class URINamespaces {
         //Relations rdfs
         RELATIONS.put("subClassOf","rdfs:subClassOf");
         RELATIONS.put("subClassOf*","rdfs:subClassOf");
+        RELATIONS.put("label", "rdfs:label");
+        RELATIONS.put("type", "rdf:type");
     }
 }

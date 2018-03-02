@@ -1,5 +1,5 @@
 //**********************************************************************************************
-//                                       PhenotypeSerializer.java 
+//                                       DatasetSerializer.java 
 //
 // Author(s): Morgane VIDAL
 // PHIS-SILEX version 1.0
@@ -7,8 +7,9 @@
 // Creation date: October, 23 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  October, 23 2017
-// Subject: Serialize a Phenotype instance to JSON, 
-//          used to have a different return from the model class for the GET phenotype
+// Subject: Serialize a Dataset instance to JSON, 
+//          used to have a different return from the model class for the GET 
+//          dataset
 //***********************************************************************************************
 package phis2ws.service.json;
 
@@ -23,10 +24,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import phis2ws.service.view.model.phis.Data;
-import phis2ws.service.view.model.phis.Phenotype;
+import phis2ws.service.view.model.phis.Dataset;
 
-public class PhenotypeSerializer implements JsonSerializer<Phenotype> {
-    /*Format souhaité : 
+/**
+ * serialize a dataset instance to JSON, used to have a different return from 
+ * the model class for the GET dataset
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
+public class DatasetsSerializer implements JsonSerializer<Dataset> {
+    /* 
             {
                 agronomicalObject: "http://.....",
                 experiment: "http://....",
@@ -39,7 +45,7 @@ public class PhenotypeSerializer implements JsonSerializer<Phenotype> {
                 ]
     }*/
     @Override
-    public JsonElement serialize(Phenotype src, Type typeOfSrc, JsonSerializationContext context) {
+    public JsonElement serialize(Dataset src, Type typeOfSrc, JsonSerializationContext context) {
         Map<String, JsonArray> phenotypesDataToReturn = new HashMap<>();
         for (Data d : src.getData()) {
             if (phenotypesDataToReturn.containsKey(d.getAgronomicalObject())) {
@@ -82,5 +88,4 @@ public class PhenotypeSerializer implements JsonSerializer<Phenotype> {
         }
         return finalJson;
     }
-    
 }

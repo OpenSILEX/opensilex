@@ -1,5 +1,5 @@
 //**********************************************************************************************
-//                                       Phenotype.java 
+//                                       Dataset.java 
 //
 // Author(s): Morgane VIDAL
 // PHIS-SILEX version 1.0
@@ -7,19 +7,24 @@
 // Creation date: September 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  September, 14 2017
-// Subject: XX
+// Subject: represents the dataset view
 //***********************************************************************************************
 package phis2ws.service.view.model.phis;
 
 import java.util.ArrayList;
 
-public class Phenotype {
+/**
+ * represents the dataset view
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
+public class Dataset {
+    
     private String variableURI;
     private String experiment;
     private Provenance provenance;
     private ArrayList<Data> data = new ArrayList<>();
     
-    public Phenotype() {
+    public Dataset() {
         
     }
 

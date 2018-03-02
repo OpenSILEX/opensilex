@@ -6,17 +6,19 @@
 // Copyright © - INRA - 2016
 // Creation date: august 2016
 // Contact:arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  October, 12 2017 (Ajout status sur les documents (linked/unlinked)
-// Subject: A Dao specific to documents insert into triplestore 
+// Last modification date:  October, 12 2017 (add status on documents : linked/unlinked)
+// Subject: A Dao specific to insert the metadata of a document inside the triplestore
 //***********************************************************************************************
 
-// /!\ Suite à la maj de la semaine du 12 juin 2017, 
-// des insertions sont faites dans le triplestore (metadonnées) ET dans mongodb (document - Utilisation de DocumentDaoMongo)
-// il faudra renommer la classe... 
+//SILEX:warning
+//After the update of the June 12, 2018 document's metadata are inserted inside 
+//the triplestore and in mongodb, the document is updated (linked/unlinked)
+//\SILEX:warning
 
 //SILEX:conception
-// Si l'objet concerné par le document n'existe pas dans le triplestore, on n'ajoute pas de triplet 
-// avec son type (element rdf:type elementType). C'est plus souple mais cela sera sûrement à modifier par la suite
+//If the object concerned by the document does not exist in the triplestore, 
+//dont add the triplet (element rdf:type elementType). It allows more genericity
+//but might need to be updated in the future
 //\SILEX:conception
 package phis2ws.service.dao.sesame;
 
@@ -43,6 +45,7 @@ import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.model.User;
 import phis2ws.service.resources.dto.ConcernItemDTO;
 import phis2ws.service.resources.dto.DocumentMetadataDTO;
+import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.ResourcesUtils;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
@@ -61,174 +64,212 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
     public String creationDate;
     public String format;
     public String comment;
+    //List of the elements concerned by the document
     public List<String> concernedItemsUris = new ArrayList<>();
+    //Document's status. Equals to linked if the document has been linked to at 
+    //least one element (concernedItems). Unlinked if the document isnt linked 
+    //to any element
     public String status;
+    
+    /**
+     * Triplestore relations, graph, context, concept labels  
+     * @see https://www.w3.org/TR/rdf-schema/ 
+     * @see http://dublincore.org/documents/dces/
+     */
+    //SILEX:conception
+    //Maybe change the URINamespaces class in static ? 
+    //\SILEX:conception
+    private final static URINamespaces NAMESPACES = new URINamespaces();
+    
+    final static String TRIPLESTORE_RELATION_TYPE = "rdf:type";
+    final static String TRIPLESTORE_RELATION_CREATOR = "dc:creator";
+    final static String TRIPLESTORE_RELATION_LANGUGAGE = "dc:language";
+    final static String TRIPLESTORE_RELATION_TITLE = "dc:title";
+    final static String TRIPLESTORE_RELATION_DATE = "dc:date";
+    final static String TRIPLESTORE_RELATION_FORMAT = "dc:format";
+    final static String TRIPLESTORE_RELATION_COMMENT = "rdfs:comment";
+    final static String TRIPLESTORE_RELATION_STATUS = NAMESPACES.getRelationsProperty("rStatus");
+    final static String TRIPLESTORE_RELATION_CONCERN = NAMESPACES.getRelationsProperty("rConcern");
+    
+    final static String TRIPLESTORE_GRAPH_DOCUMENT = NAMESPACES.getContextsProperty("documents");
+    
+    final static String TRIPLESTORE_PREFIX_DUBLIN_CORE = NAMESPACES.getContextsProperty("pxDublinCore");
+    
+    final static String TRIPLESTORE_CONCEPT_DOCUMENT = NAMESPACES.getObjectsProperty("cDocuments");
+    
 
     public DocumentDaoSesame() {
         super(); // Repository
-        resourceType = "documents"; // type de la ressource
+        resourceType = "documents";
     }
     
     /**
-     * Verifie si les metadonnes du document sont correctes
-     * @param docsMetadata
-     * @return 
+     * Check if document's metadata are valid 
+     * (check rules, documents types, documents status)
+     * @see phis2ws.service.resources.dto.DocumentMetadataDTO#rules() 
+     * @param documentsMetadata 
+     * @return The POSTResultsReturn of the check. Contains list of errors if
+     * errors found.
      */
-    public POSTResultsReturn check(List<DocumentMetadataDTO> docsMetadata) throws RepositoryException {
-        // Résultats attendus
-        POSTResultsReturn docsMetadataCheck = null;
-        // list des statuts retournés
-        List<Status> insertStatusList = new ArrayList<>(); // Echec ou Info
+    public POSTResultsReturn check(List<DocumentMetadataDTO> documentsMetadata) throws RepositoryException {
+        POSTResultsReturn documentsMetadataCheck = null;
+        // status list which will be returned. It will contains some fails or
+        // informations
+        List<Status> checkStatus = new ArrayList<>(); 
 
+        //Get ontology documents types to check
+        ArrayList<String> documentsTypes = null;
+        try {
+            documentsTypes = getDocumentsTypes();
+        } catch (RepositoryException | MalformedQueryException | QueryEvaluationException ex) {
+            LOGGER.error(ex.getMessage(), ex);
+        }
+        
         boolean dataOk = true; 
-        for (DocumentMetadataDTO documentMetadata : docsMetadata) {
-            // Vérification des docsMetadata
-            if ((boolean) documentMetadata.isOk().get("state")) { // Données attendues reçues
-                //1. Récupération des types de documents de l'ontologie
-                ArrayList<String> documentsSchemasUri = null;
-                try {
-                    documentsSchemasUri = getDocumentsTypes();
-                } catch (RepositoryException | MalformedQueryException | QueryEvaluationException ex) {
-                    LOGGER.error(ex.getMessage(), ex);
-                }
-
-                //2. Vérification du type du document
-                if (documentsSchemasUri != null && !documentsSchemasUri.contains(documentMetadata.getDocumentType())) {
+        for (DocumentMetadataDTO documentMetadata : documentsMetadata) {
+            //Check if metadata respect the rules
+            if ((boolean) documentMetadata.isOk().get(AbstractVerifiedClass.STATE)) { 
+                //1. Check document's type
+                if (documentsTypes != null && !documentsTypes.contains(documentMetadata.getDocumentType())) {
                     dataOk = false;
-                    insertStatusList.add(new Status("Wrong value", StatusCodeMsg.ERR, "Wrong document type value. Authorized document type values : " + documentsSchemasUri.toString()));
+                    checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Wrong document type value. Authorized document type values : " + documentsTypes.toString()));
                 }
                 
-                //3. Vérification du status (doit être égal à "linked" ou "unlinked")
+                //3. Check status (equals to linked or unlinked)
                 if (!(documentMetadata.getStatus().equals("linked") || documentMetadata.getStatus().equals("unlinked"))) {
                     dataOk = false;
-                    insertStatusList.add(new Status("Wrong value", StatusCodeMsg.ERR, 
+                    checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
                             "Wrong status value given : " + documentMetadata.getStatus() + ". Expected : \"linked\" or \"unlinked\"" ));
                 }
             } else {
-                // Format des données non attendu par rapport au schéma demandé
+                // Metadata does not respect rules
                 dataOk = false;
-                documentMetadata.isOk().remove("state");
-                insertStatusList.add(new Status("Bad data format", StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.MISSINGFIELDS).append(documentMetadata.isOk()).toString()));
+                documentMetadata.isOk().remove(AbstractVerifiedClass.STATE);
+                checkStatus.add(new Status(StatusCodeMsg.BAD_DATA_FORMAT, StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.MISSING_FIELDS_LIST).append(documentMetadata.isOk()).toString()));
             }
         }
-        docsMetadataCheck = new POSTResultsReturn(dataOk, null, dataOk);
-        docsMetadataCheck.statusList = insertStatusList;
-        return docsMetadataCheck;
+        documentsMetadataCheck = new POSTResultsReturn(dataOk, null, dataOk);
+        documentsMetadataCheck.statusList = checkStatus;
+        return documentsMetadataCheck;
     }
     
     /**
-     * 
-     * @param filePath le chemin du fichier à enregistrer en mongodb
-     * @return true si le document a été enregistré dans mongo
-     *         false sinon
+     * save the document in mongodb
+     * @param filePath the file path of the document to save in mongodb
+     * @return true document saved in mongodb
+     *         false an error occurred
      */
     private POSTResultsReturn saveFileInMongoDB(String filePath, String fileURI) {
         DocumentDaoMongo documentDaoMongo = new DocumentDaoMongo();
         return documentDaoMongo.insertFile(filePath, fileURI);
     }
+    
+    /**
+     * generate a unique document uri. 
+     * @see phis2ws.service.utils.ResourcesUtils#getUniqueID() 
+     * @return the generated document's uri
+     */
+    private String generateDocumentsURI() {
+        String fileName = "";
+        boolean nameExist = true;
+        final String uniqueID = ResourcesUtils.getUniqueID();
+        while (nameExist) {
+            fileName = new StringBuilder("document").append(uniqueID).toString();
+            try {
+                nameExist = exist(TRIPLESTORE_GRAPH_DOCUMENT + "/" + fileName, null, null);
+            } catch (MalformedQueryException | QueryEvaluationException ex) {
+                LOGGER.error(ex.getMessage(), ex);
+                break;
+            }
+        }
+        return TRIPLESTORE_GRAPH_DOCUMENT + "/" + fileName;
+    }
 
-    public POSTResultsReturn insert(List<DocumentMetadataDTO> listAnnotations) {
-        // nom du document
-        String name = null;
-        // list des statuts retournés
-        List<Status> insertStatusList = new ArrayList<>(); // Failed or Info
-        List<String> createdResourcesURIList = new ArrayList<>(); // Failed or Info
+    /**
+     * insert document's metadata in the triplestore and the file in mongo
+     * @param documentsMetadata
+     * @return the insert result, with each error or information
+     */
+    public POSTResultsReturn insert(List<DocumentMetadataDTO> documentsMetadata) {
+        List<Status> insertStatus = new ArrayList<>(); // returned status, Failed or Info
+        List<String> createdResourcesURIs = new ArrayList<>();
 
         POSTResultsReturn results = null;
 
-        boolean resultState = false; // Pour savoir si les données étaient bonnes et on bien été insérées
+        boolean resultState = false; // To know if data ok and saved
 
-        boolean docsMetadataState = true; // Si toutes les données étaient bonnes ok !
-        boolean AnnotationInsert = true; // Si l'insertion a bien été réalisée
+        boolean documentsMetadataState = true; // true if all the metadata is valid
+        boolean AnnotationInsert = true; // true if the insertion has been done
 
-        final Iterator<DocumentMetadataDTO> itAnot = listAnnotations.iterator();
+        final Iterator<DocumentMetadataDTO> itAnot = documentsMetadata.iterator();
 
         while (itAnot.hasNext() && AnnotationInsert) {
             DocumentMetadataDTO annotObject = itAnot.next();
-            //1. Enreg dans mongoDB du document
             
-            //Uri du document (en évitant les doublons de noms)
-            //SILEX:conception
-            final URINamespaces uriNS = new URINamespaces();
-            boolean nameExist = true;
-            final String uniqueID = ResourcesUtils.getUniqueID();
-            final String documents = uriNS.getContextsProperty("documents");
-            while (nameExist) {
-                name = new StringBuilder("document").append(uniqueID).toString();
-                try {
-                    nameExist = exist(documents + "/" + name, null, null);
-                } catch (RepositoryException ex) {
-                    LOGGER.error("Triplestore access error. ", ex);
-                    insertStatusList.add(new Status("Triplestore access error", StatusCodeMsg.ERR, "Triplestore access error : " + ex.getMessage()));
-                    break;
-                } catch (MalformedQueryException | QueryEvaluationException ex) {
-                    LOGGER.error(ex.getMessage(), ex);
-                    break;
-                }
-            }
-            final String documentName = documents + "/" + name;
-            //\SILEX:conception 
+            //1. Save document in mongodb
+            final String documentName = generateDocumentsURI(); 
             
             POSTResultsReturn saveFileResult = saveFileInMongoDB(annotObject.getServerFilePath(), documentName);
-            insertStatusList.addAll(saveFileResult.statusList);
+            insertStatus.addAll(saveFileResult.statusList);
             
-            if (saveFileResult.getResultState()) {
-                //2. Enreg du rdf associé au document
-                Map<String, Object> anotOk = annotObject.isOk(); //Vérification de la structure
+            //Document has been save
+            if (saveFileResult.getResultState()) { 
+                //2. Save document's metadata
+                Map<String, Object> metadataOk = annotObject.isOk(); //check respect of rules
                 
-                docsMetadataState = (boolean) anotOk.get("state");
+                documentsMetadataState = (boolean) metadataOk.get(AbstractVerifiedClass.STATE);
                 //SILEX:conception
-                // C'est ici qu'il faudrait faire l'ajout du triplet correspondant à l'entité concernée 
-                // par le document s'il n'existe pas
+                // Here, the triplet corresponding to the concerned element which
+                // does not exist should be added
                 //\SILEX:conception
-                
-                if (docsMetadataState) {                    
-                    //3. Insertion des métadonnées dans le triplestore
+                //Document's metadata are correct and can be savec in triplestore
+                if (documentsMetadataState) {                    
+                    //3. Save metadata in triplestore
                     SPARQLUpdateBuilder spqlInsert = new SPARQLUpdateBuilder();
-                    spqlInsert.appendPrefix("dc", uriNS.getContextsProperty("pxDublinCore"));
+                    spqlInsert.appendPrefix("dc", TRIPLESTORE_PREFIX_DUBLIN_CORE);
                     
-                    spqlInsert.appendGraphURI(uriNS.getContextsProperty("documents")); //Le document est mis dans un graphe nommé
-                    spqlInsert.appendTriplet(documentName, "rdf:type", annotObject.getDocumentType(), null);
-                    spqlInsert.appendTriplet(documentName, "dc:creator", "\"" + annotObject.getCreator() + "\"", null);
-                    spqlInsert.appendTriplet(documentName, "dc:language", "\"" + annotObject.getLanguage() + "\"", null);
-                    spqlInsert.appendTriplet(documentName, "dc:title", "\"" + annotObject.getTitle() + "\"", null);
-                    spqlInsert.appendTriplet(documentName, "dc:date", "\"" + annotObject.getCreationDate() + "\"", null);
-                    spqlInsert.appendTriplet(documentName, "dc:format", "\"" + annotObject.getExtension() + "\"", null);
-                    spqlInsert.appendTriplet(documentName, uriNS.getRelationsProperty("rStatus"), "\"" + annotObject.getStatus() + "\"", null);
+                    spqlInsert.appendGraphURI(TRIPLESTORE_GRAPH_DOCUMENT); //Documents named graph
+                    spqlInsert.appendTriplet(documentName, TRIPLESTORE_RELATION_TYPE, annotObject.getDocumentType(), null);
+                    spqlInsert.appendTriplet(documentName, TRIPLESTORE_RELATION_CREATOR, "\"" + annotObject.getCreator() + "\"", null);
+                    spqlInsert.appendTriplet(documentName, TRIPLESTORE_RELATION_LANGUGAGE, "\"" + annotObject.getLanguage() + "\"", null);
+                    spqlInsert.appendTriplet(documentName, TRIPLESTORE_RELATION_TITLE, "\"" + annotObject.getTitle() + "\"", null);
+                    spqlInsert.appendTriplet(documentName, TRIPLESTORE_RELATION_DATE, "\"" + annotObject.getCreationDate() + "\"", null);
+                    spqlInsert.appendTriplet(documentName, TRIPLESTORE_RELATION_FORMAT, "\"" + annotObject.getExtension() + "\"", null);
+                    spqlInsert.appendTriplet(documentName, TRIPLESTORE_RELATION_STATUS, "\"" + annotObject.getStatus() + "\"", null);
                     
                     if (annotObject.getComment() != null) {
-                        spqlInsert.appendTriplet(documentName, "rdfs:comment", "\"" + annotObject.getComment() + "\"", null);
+                        spqlInsert.appendTriplet(documentName, TRIPLESTORE_RELATION_COMMENT, "\"" + annotObject.getComment() + "\"", null);
                     }
                     
                     if (!(annotObject.getConcern() == null) && !annotObject.getConcern().isEmpty()) {
                         for (ConcernItemDTO concernedItem : annotObject.getConcern()) {
-                            spqlInsert.appendTriplet(documentName, uriNS.getRelationsProperty("rConcern"), concernedItem.getUri(), null);
-                            spqlInsert.appendTriplet(concernedItem.getUri(),"rdf:type", concernedItem.getTypeURI(), null);
+                            spqlInsert.appendTriplet(documentName, TRIPLESTORE_RELATION_CONCERN, concernedItem.getUri(), null);
+                            spqlInsert.appendTriplet(concernedItem.getUri(),TRIPLESTORE_RELATION_TYPE , concernedItem.getTypeURI(), null);
                         }
                     }
                         
                     try {
-                        // début de la transaction : vérification de la requête
+                        // transaction begining
                         this.getConnection().begin();
                         Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spqlInsert.toString());
                         LOGGER.trace(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                         prepareUpdate.execute();
                         
-                        createdResourcesURIList.add(documentName);
+                        createdResourcesURIs.add(documentName);
                     } catch (MalformedQueryException e) {
                         LOGGER.error(e.getMessage(), e);
                         AnnotationInsert = false;
-                        insertStatusList.add(new Status("Query error", StatusCodeMsg.ERR, "Malformed insertion query: " + e.getMessage()));
+                        insertStatus.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.MALFORMED_CREATE_QUERY + " : " + e.getMessage()));
                     }
                 } else {
                     // JSON malformé de quelque sorte que ce soit
-                    docsMetadataState = false;
-                    anotOk.remove("state");
-                    insertStatusList.add(new Status("Missing field error", StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.MISSINGFIELDS).append(anotOk).toString()));
+                    documentsMetadataState = false;
+                    metadataOk.remove(AbstractVerifiedClass.STATE);
+                    insertStatus.add(new Status(StatusCodeMsg.MISSING_FIELDS, StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.MISSING_FIELDS_LIST).append(metadataOk).toString()));
                 }
                 
                  // JSON bien formé et pas de problème avant l'insertion
-                if (AnnotationInsert && docsMetadataState) {
+                if (AnnotationInsert && documentsMetadataState) {
                     resultState = true;
                     try {
                         this.getConnection().commit();
@@ -246,32 +287,30 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
             }
         }
             
-        results = new POSTResultsReturn(resultState, AnnotationInsert, docsMetadataState);
-        results.statusList = insertStatusList;
-        if (resultState && !createdResourcesURIList.isEmpty()) {
-            results.createdResources = createdResourcesURIList;
-            results.statusList.add(new Status("Resources created", StatusCodeMsg.INFO, createdResourcesURIList.size() + " new resource(s) created."));
+        results = new POSTResultsReturn(resultState, AnnotationInsert, documentsMetadataState);
+        results.statusList = insertStatus;
+        if (resultState && !createdResourcesURIs.isEmpty()) {
+            results.createdResources = createdResourcesURIs;
+            results.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, createdResourcesURIs.size() + " new resource(s) created."));
         }
 
         return results;
     }
     /**
-     * Retourne les types de documents disponibles
+     * Return the list of documents types Retourne les types de documents disponibles
      * @return List de concepts de document 
      * @throws RepositoryException
      * @throws MalformedQueryException
      * @throws QueryEvaluationException 
      */
     public ArrayList<String> getDocumentsTypes() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
-        URINamespaces uriNS = new URINamespaces();
         ArrayList<String> documentsSchemasUri = new ArrayList<>();
-        // phis query
         SPARQLQueryBuilder sparqlQ = new SPARQLQueryBuilder();
         sparqlQ.appendDistinct(true);
         sparqlQ.appendSelect("?documentType");
-        sparqlQ.appendTriplet("?documentType", "rdfs:subClassOf*", uriNS.getObjectsProperty("cDocuments"), null);
-        sparqlQ.appendFilter("?documentType != <" + uriNS.getObjectsProperty("cDocuments") +">");
-        LOGGER.trace(sparqlQ.toString());
+        sparqlQ.appendTriplet("?documentType", "rdfs:subClassOf*", TRIPLESTORE_CONCEPT_DOCUMENT, null);
+        sparqlQ.appendFilter("?documentType != <" + TRIPLESTORE_CONCEPT_DOCUMENT +">");
+        LOGGER.debug(sparqlQ.toString());
         TupleQuery tupleQueryTo = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQ.toString());
         
         try (TupleQueryResult resultTo = tupleQueryTo.evaluate()) {
@@ -287,11 +326,10 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
 
     @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
-       final URINamespaces uriNS = new URINamespaces();
        SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
-       sparqlQuery.appendPrefix("dc", uriNS.getContextsProperty("pxDublinCore"));
+       sparqlQuery.appendPrefix("dc", TRIPLESTORE_PREFIX_DUBLIN_CORE);
        sparqlQuery.appendDistinct(true);
-       sparqlQuery.appendGraph(uriNS.getContextsProperty("documents"));
+       sparqlQuery.appendGraph(TRIPLESTORE_GRAPH_DOCUMENT);
        String select;
        if (uri != null) {
            select = "<" + uri + ">";
@@ -302,103 +340,96 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
        }
 
         if (documentType != null) {
-             sparqlQuery.appendTriplet(select, "rdf:type", documentType, null);
+             sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_TYPE, documentType, null);
         } else {
             sparqlQuery.appendSelect(" ?documentType");
-            sparqlQuery.appendTriplet(select, "rdf:type", "?documentType", null);
+            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_TYPE, "?documentType", null);
         }
         
         if (creator != null) {
-            sparqlQuery.appendTriplet(select, "dc:creator", "\"" + creator + "\"", null);
+            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_CREATOR, "\"" + creator + "\"", null);
         } else {
             sparqlQuery.appendSelect(" ?creator");
-            sparqlQuery.appendTriplet(select, "dc:creator", "?creator", null);
+            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_CREATOR, "?creator", null);
         }
         
         if (language != null) {
-            sparqlQuery.appendTriplet(select, "dc:language", "\"" + language + "\"", null);
+            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_LANGUGAGE, "\"" + language + "\"", null);
         } else {
             sparqlQuery.appendSelect(" ?language");
-            sparqlQuery.appendTriplet(select, "dc:language", "?language", null);
+            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_LANGUGAGE, "?language", null);
         }
         
         if (title != null) {
-            sparqlQuery.appendTriplet(select, "dc:title", "\"" + title + "\"", null);
+            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_TITLE, "\"" + title + "\"", null);
         } else {
             sparqlQuery.appendSelect(" ?title");
-            sparqlQuery.appendTriplet(select, "dc:title", "?title", null);
+            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_TITLE, "?title", null);
         }
         
         if (creationDate != null) {
-            sparqlQuery.appendTriplet(select, "dc:date", "\"" + creationDate + "\"", null);
+            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_DATE, "\"" + creationDate + "\"", null);
         } else {
             sparqlQuery.appendSelect(" ?date");
-            sparqlQuery.appendTriplet(select, "dc:date", "?date", null);
+            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_DATE, "?date", null);
         }
         
         if (format != null) {
-            sparqlQuery.appendTriplet(select, "dc:format", "\"" + format + "\"", null);
+            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_FORMAT, "\"" + format + "\"", null);
         } else {
             sparqlQuery.appendSelect(" ?format");
-            sparqlQuery.appendTriplet(select, "dc:format", "?format", null);
+            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_FORMAT, "?format", null);
         }
         
         if (!concernedItemsUris.isEmpty() && concernedItemsUris.size() > 0) {
             for (String concernedItemUri : concernedItemsUris) {
-                sparqlQuery.appendTriplet(select, uriNS.getRelationsProperty("rConcern"), concernedItemUri, null);
+                sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_CONCERN, concernedItemUri, null);
             }
         } 
         
         if (status != null) {
-            sparqlQuery.appendTriplet(select, uriNS.getRelationsProperty("rStatus"), "\"" + status + "\"", null);
+            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_STATUS, "\"" + status + "\"", null);
         } else {
             sparqlQuery.appendSelect(" ?status");
-            sparqlQuery.appendTriplet(select, uriNS.getRelationsProperty("rStatus"), "?status", null);
+            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_STATUS, "?status", null);
         }
         
-        //else {
-//            sparqlQuery.appendSelect(" ?concern");
-//            sparqlQuery.appendTriplet(select, uriNS.getRelationsProperty("rConcern"), "?concern", null);
-//        }
-        LOGGER.trace("sparql select query : " + sparqlQuery.toString());
-        
+       LOGGER.debug("sparql select query : " + sparqlQuery.toString());
         
        return sparqlQuery;
     }
     
     /**
-     * 
+     * prepare the query to search the comments of a document
      * @param uriDocument
-     * @return la requête permettant de récupérer le commentaire du document
+     * @return the document's comments search query
      */
     private SPARQLQueryBuilder prepareSearchCommentQuery(String uriDocument) {
-        final URINamespaces uriNS = new URINamespaces();
         SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
         sparqlQuery.appendDistinct(true);
-        sparqlQuery.appendGraph(uriNS.getContextsProperty("documents"));
+        sparqlQuery.appendGraph(TRIPLESTORE_GRAPH_DOCUMENT);
         sparqlQuery.appendSelect("?comment");
-        sparqlQuery.appendTriplet(uriDocument, "rdfs:comment", "?comment", null);
+        sparqlQuery.appendTriplet(uriDocument, TRIPLESTORE_RELATION_COMMENT, "?comment", null);
         
-        LOGGER.trace("sparql select query : " + sparqlQuery.toString());
+        LOGGER.debug("sparql select query : " + sparqlQuery.toString());
         return sparqlQuery;
     }
     
     /**
-     * 
+     * prepare the query to search the elements which are concerned by the document
      * @param uriDocument
-     * @return la requête permettant de lister les entités liées au document (dans le triplestore)
+     * @return the search query
      */
     private SPARQLQueryBuilder prepareSearchConcernQuery(String uriDocument) {
-        final URINamespaces uriNS = new URINamespaces();
         SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
         sparqlQuery.appendDistinct(true);
-        sparqlQuery.appendGraph(uriNS.getContextsProperty("documents"));
+        sparqlQuery.appendGraph(TRIPLESTORE_GRAPH_DOCUMENT);
 
         sparqlQuery.appendSelect(" ?concern ?typeConcern");
-        sparqlQuery.appendTriplet(uriDocument, uriNS.getRelationsProperty("rConcern"), "?concern", null);
-        sparqlQuery.appendTriplet("?concern", "rdf:type", "?typeConcern", null);
+        sparqlQuery.appendTriplet(uriDocument, TRIPLESTORE_RELATION_CONCERN, "?concern", null);
+        sparqlQuery.appendTriplet("?concern", TRIPLESTORE_RELATION_TYPE, "?typeConcern", null);
 
-        LOGGER.trace("sparql select query : " + sparqlQuery.toString());
+        LOGGER.debug("sparql select query : " + sparqlQuery.toString());
 
         return sparqlQuery;
     }
@@ -409,10 +440,10 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
     }
     
     /**
-     * 
-     * @param u
+     * check if the given user has the right to see the document
+     * @param u the user
      * @param document
-     * @return true si l'utilisateur peut voir le document, false sinon
+     * @return true if the user can see the document
      */
     private boolean canUserSeeDocument(User u, Document document) {
         UserDaoPhisBrapi userDao = new UserDaoPhisBrapi();
@@ -421,9 +452,8 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
             return true;
         } else {
             ExperimentDao experimentDao = new ExperimentDao();
-            URINamespaces uriNs = new URINamespaces();
             for (ConcernItemDTO concernItem : document.getConcernedItems()) {
-                if (concernItem.getTypeURI().equals(uriNs.getContextsProperty("pVoc2017") + "#Experiment")) {
+                if (concernItem.getTypeURI().equals(NAMESPACES.getContextsProperty("pVoc2017") + "#Experiment")) {
                     Experiment experiment = new Experiment(concernItem.getUri());
                     
                     if (experimentDao.canUserSeeExperiment(u, experiment)) {
@@ -497,12 +527,8 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
                 } else {
                     document.setStatus(bindingSet.getValue("status").stringValue());
                 }
-                
-                //Si l'utilisateur a bien les droits d'accès sur le document, on récupère les informations manquantes et on ajoute le document
 
-                
-                //Après avoir récupéré les métadonnées obligatoires associées au document,
-                //on regarde s'il a un rdfs:comment 
+                //After having metadata, get comments
                 SPARQLQueryBuilder sparqlQueryComment = prepareSearchCommentQuery(document.getUri());
                 TupleQuery tupleQueryComment = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQueryComment.toString());
                 TupleQueryResult resultComment = tupleQueryComment.evaluate();
@@ -513,8 +539,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
                     }
                 }
 
-                //Après avoir récupéré les métadonnées associées au document, on regarde dans
-                //le triplestore si le document n'est pas rattaché à des éléments
+                //Check if document is linked to other elements
                 SPARQLQueryBuilder sparqlQueryConcern = prepareSearchConcernQuery(document.getUri());
                 TupleQuery tupleQueryConcern = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQueryConcern.toString());
                 TupleQueryResult resultConcern = tupleQueryConcern.evaluate();
@@ -532,92 +557,95 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
                     documents.add(document);
                 }
             }
-            
         }
         
         return documents;
     }
     
     //SILEX:todo
-    //Faire une méthode commune de check des données pour l'insert et le update
+    //Create a check method for the update and the insert
     //\SILEX:todo
+    /**
+     * check the metadata and update them if metadata valid
+     * @see phis2ws.service.resources.dto.DocumentMetadataDTO#rules() 
+     * @param documentsMetadata
+     * @return the query result with the list of error or informations
+     */
     private POSTResultsReturn checkAndUpdateDocumentsMetadataList(List<DocumentMetadataDTO> documentsMetadata) {
-        
-         // list des statuts retournés
         List<Status> updateStatusList = new ArrayList<>(); // Failed or Info
         List<String> updatedResourcesURIList = new ArrayList<>(); // Failed or Info
         POSTResultsReturn results;
         
-        boolean annotationUpdate = true; // Si l'insertion a bien été réalisée
+        boolean annotationUpdate = true; // true if the update has been done
         boolean docsMetadataState = true;
-        boolean resultState = false; // Pour savoir si les données étaient bonnes et on bien été mises à jour
+        boolean resultState = false; // To know if the metadata where valid and updated
         
         for (DocumentMetadataDTO documentMetadata : documentsMetadata) {
             
-            //Vérification que les données fournies soient les bonnes
+            //Check that the metadata is valid (rules, status)
             Map<String, Object> metadataOk = documentMetadata.isOk();
-            boolean documentMetadataState = (boolean) metadataOk.get("state");
+            boolean documentMetadataState = (boolean) metadataOk.get(AbstractVerifiedClass.STATE);
             
             if (!(documentMetadata.getStatus().equals("linked") || documentMetadata.getStatus().equals("unlinked"))) {
                 documentMetadataState = false;
-                updateStatusList.add(new Status("Wrong value", StatusCodeMsg.ERR, 
+                updateStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
                             "Wrong status value given : " + documentMetadata.getStatus() + ". Expected : \"linked\" or \"unlinked\"" ));
             }
             
+            //If metadata valid
             if (documentMetadataState) {
-                //1.Suppression des métadonnées actuellement présente
-                //1.1 Récupération des infos qui seront modifiées (pour supprimer les triplets)
+                //1. Delete actual metadata
+                //1.1 Get informations which will be updated (to remove triplets)
                 DocumentDaoSesame docDaoSesame = new DocumentDaoSesame();
                 docDaoSesame.user = user;
                 docDaoSesame.uri = documentMetadata.getUri();
                 ArrayList<Document> documentsCorresponding = docDaoSesame.allPaginate();
-                URINamespaces uriNamespaces = new URINamespaces();
                 
                 String deleteQuery = null;
-                //1.2 Suppression des métadonnées associées à l'URI
+                //1.2 Delete metatada associated to the URI
                 if (documentsCorresponding.size() > 0) {
                     //SILEX:conception
-                    //De la même façon qu'un querybuilder pour les insert existe, il faudra 
-                    //développer un querybuilder pour le delete et l'utiliser ici
-                    deleteQuery = "PREFIX dc: <" + uriNamespaces.getContextsProperty("pxDublinCore") + "#> "
+                    //Such as the existing querybuilder for the insert, create a
+                    //delete query builder and use it
+                    deleteQuery = "PREFIX dc: <" + TRIPLESTORE_PREFIX_DUBLIN_CORE + "#> "
                                        + "DELETE WHERE { "
-                                       + "<" + documentsCorresponding.get(0).getUri() + "> dc:creator \"" + documentsCorresponding.get(0).getCreator() + "\" . "
-                                       + "<" + documentsCorresponding.get(0).getUri() + "> dc:language \"" + documentsCorresponding.get(0).getLanguage() + "\" . "
-                                       + "<" + documentsCorresponding.get(0).getUri() + "> dc:title \"" + documentsCorresponding.get(0).getTitle() + "\" . "
-                                       + "<" + documentsCorresponding.get(0).getUri() + "> dc:date \"" + documentsCorresponding.get(0).getCreationDate() + "\" . "
-                                       + "<" + documentsCorresponding.get(0).getUri() + "> rdf:type <" + documentsCorresponding.get(0).getDocumentType() +"> . "
-                                       + "<" + documentsCorresponding.get(0).getUri() + "> <" + uriNamespaces.getRelationsProperty("rStatus") + "> \"" + documentsCorresponding.get(0).getStatus() + "\" . ";
+                                       + "<" + documentsCorresponding.get(0).getUri() + "> " + TRIPLESTORE_RELATION_CREATOR + " \"" + documentsCorresponding.get(0).getCreator() + "\" . "
+                                       + "<" + documentsCorresponding.get(0).getUri() + "> " + TRIPLESTORE_RELATION_LANGUGAGE + " \"" + documentsCorresponding.get(0).getLanguage() + "\" . "
+                                       + "<" + documentsCorresponding.get(0).getUri() + "> " + TRIPLESTORE_RELATION_TITLE + " \"" + documentsCorresponding.get(0).getTitle() + "\" . "
+                                       + "<" + documentsCorresponding.get(0).getUri() + "> " + TRIPLESTORE_RELATION_DATE + " \"" + documentsCorresponding.get(0).getCreationDate() + "\" . "
+                                       + "<" + documentsCorresponding.get(0).getUri() + "> " + TRIPLESTORE_RELATION_TYPE + " <" + documentsCorresponding.get(0).getDocumentType() +"> . "
+                                       + "<" + documentsCorresponding.get(0).getUri() + "> <" + TRIPLESTORE_RELATION_STATUS + "> \"" + documentsCorresponding.get(0).getStatus() + "\" . ";
                                       
                     if (documentsCorresponding.get(0).getComment() != null) {
-                        deleteQuery += "<" + documentsCorresponding.get(0).getUri() + "> rdfs:comment \"" + documentsCorresponding.get(0).getComment() + "\" . ";
+                        deleteQuery += "<" + documentsCorresponding.get(0).getUri() + "> " + TRIPLESTORE_RELATION_COMMENT + " \"" + documentsCorresponding.get(0).getComment() + "\" . ";
                     }
                     
                     for (ConcernItemDTO concernedItem : documentsCorresponding.get(0).getConcernedItems()) {
-                        deleteQuery += "<" + documentsCorresponding.get(0).getUri() + "> <" + uriNamespaces.getRelationsProperty("rConcern") + "> <" + concernedItem.getUri() + "> . ";
+                        deleteQuery += "<" + documentsCorresponding.get(0).getUri() + "> <" + TRIPLESTORE_RELATION_CONCERN + "> <" + concernedItem.getUri() + "> . ";
                     }
                     deleteQuery += "}";
                     //\SILEX:conception
                 }
                 
-                //2. Insertion des nouvelles métadonnées
+                //2. Insert updated metadata
                 SPARQLUpdateBuilder spqlInsert = new SPARQLUpdateBuilder();
-                spqlInsert.appendPrefix("dc", uriNamespaces.getContextsProperty("pxDublinCore"));
-                spqlInsert.appendGraphURI(uriNamespaces.getContextsProperty("documents")); 
-                spqlInsert.appendTriplet(documentMetadata.getUri(), "rdf:type", documentMetadata.getDocumentType(), null);
-                spqlInsert.appendTriplet(documentMetadata.getUri(), "dc:creator", "\"" + documentMetadata.getCreator() + "\"", null);
-                spqlInsert.appendTriplet(documentMetadata.getUri(), "dc:language", "\"" + documentMetadata.getLanguage() + "\"", null);
-                spqlInsert.appendTriplet(documentMetadata.getUri(), "dc:title", "\"" + documentMetadata.getTitle() + "\"", null);
-                spqlInsert.appendTriplet(documentMetadata.getUri(), "dc:date", "\"" + documentMetadata.getCreationDate() + "\"", null);
-                spqlInsert.appendTriplet(documentMetadata.getUri(), uriNamespaces.getRelationsProperty("rStatus"), "\"" + documentMetadata.getStatus() + "\"", null);
+                spqlInsert.appendPrefix("dc", TRIPLESTORE_PREFIX_DUBLIN_CORE);
+                spqlInsert.appendGraphURI(TRIPLESTORE_GRAPH_DOCUMENT); 
+                spqlInsert.appendTriplet(documentMetadata.getUri(), TRIPLESTORE_RELATION_TYPE, documentMetadata.getDocumentType(), null);
+                spqlInsert.appendTriplet(documentMetadata.getUri(), TRIPLESTORE_RELATION_CREATOR, "\"" + documentMetadata.getCreator() + "\"", null);
+                spqlInsert.appendTriplet(documentMetadata.getUri(), TRIPLESTORE_RELATION_LANGUGAGE, "\"" + documentMetadata.getLanguage() + "\"", null);
+                spqlInsert.appendTriplet(documentMetadata.getUri(), TRIPLESTORE_RELATION_TITLE, "\"" + documentMetadata.getTitle() + "\"", null);
+                spqlInsert.appendTriplet(documentMetadata.getUri(), TRIPLESTORE_RELATION_DATE, "\"" + documentMetadata.getCreationDate() + "\"", null);
+                spqlInsert.appendTriplet(documentMetadata.getUri(), TRIPLESTORE_RELATION_STATUS, "\"" + documentMetadata.getStatus() + "\"", null);
                 
                 if (documentMetadata.getComment() != null) {
-                    spqlInsert.appendTriplet(documentMetadata.getUri(), "rdfs:comment", "\"" + documentMetadata.getComment() + "\"", null);
+                    spqlInsert.appendTriplet(documentMetadata.getUri(), TRIPLESTORE_RELATION_COMMENT, "\"" + documentMetadata.getComment() + "\"", null);
                 }
                 
                 if (documentMetadata.getConcern() != null && !documentMetadata.getConcern().isEmpty() && documentMetadata.getConcern().size() > 0) {
                     for (ConcernItemDTO concernedItem : documentMetadata.getConcern()) {
-                        spqlInsert.appendTriplet(documentMetadata.getUri(), uriNamespaces.getRelationsProperty("rConcern"), concernedItem.getUri(), null);
-                        spqlInsert.appendTriplet(concernedItem.getUri(), "rdf:type", concernedItem.getTypeURI(), null);
+                        spqlInsert.appendTriplet(documentMetadata.getUri(), TRIPLESTORE_RELATION_CONCERN, concernedItem.getUri(), null);
+                        spqlInsert.appendTriplet(concernedItem.getUri(), TRIPLESTORE_RELATION_TYPE, concernedItem.getTypeURI(), null);
                     }
                 }
                     
@@ -626,8 +654,8 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
                     this.getConnection().begin();
                     Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery);
                     Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spqlInsert.toString());
-                    LOGGER.trace(getTraceabilityLogs() + " query : " + prepareDelete.toString());
-                    LOGGER.trace(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
+                    LOGGER.debug(getTraceabilityLogs() + " query : " + prepareDelete.toString());
+                    LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                     prepareDelete.execute();
                     prepareUpdate.execute();
 
@@ -635,17 +663,17 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
                 } catch (MalformedQueryException e) {
                     LOGGER.error(e.getMessage(), e);
                     annotationUpdate = false;
-                    updateStatusList.add(new Status("Query error", StatusCodeMsg.ERR, "Malformed update query: " + e.getMessage()));
+                    updateStatusList.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.MALFORMED_UPDATE_QUERY + e.getMessage()));
                 }   
                     
             } else {
-                // JSON malformé de quelque sorte que ce soit
+                // Missing fields
                 docsMetadataState = false;
-                metadataOk.remove("state");
-                updateStatusList.add(new Status("Missing field error", StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.MISSINGFIELDS).append(metadataOk).toString()));
+                metadataOk.remove(AbstractVerifiedClass.STATE);
+                updateStatusList.add(new Status(StatusCodeMsg.MISSING_FIELDS, StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.MISSING_FIELDS_LIST).append(metadataOk).toString()));
             }
                 
-            // JSON bien formé et pas de problème avant l'insertion
+            // Data ok, update
             if (annotationUpdate && docsMetadataState) {
                 resultState = true;
                 try {
@@ -666,16 +694,16 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         results.statusList = updateStatusList;
         if (resultState && !updatedResourcesURIList.isEmpty()) {
             results.createdResources = updatedResourcesURIList;
-            results.statusList.add(new Status("Resources created", StatusCodeMsg.INFO, updatedResourcesURIList.size() + " new resource(s) created."));
+            results.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, updatedResourcesURIList.size() + " new resource(s) created."));
         }
 
         return results;
     }
     
     /**
-     * @action modifie les metadonnées des documents 
+     * check new metadata and update if no error
      * @param objectsToUpdate
-     * @return 
+     * @return the update result, with errors or informations
      */
     public POSTResultsReturn checkAndUpdateList(List<DocumentMetadataDTO> objectsToUpdate) {
         POSTResultsReturn postResult;

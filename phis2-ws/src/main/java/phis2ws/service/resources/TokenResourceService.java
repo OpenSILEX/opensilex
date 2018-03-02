@@ -54,7 +54,7 @@ import phis2ws.service.model.User;
 import phis2ws.service.resources.dto.LogoutDTO;
 import phis2ws.service.resources.dto.TokenDTO;
 import phis2ws.service.utils.JsonConverter;
-import phis2ws.service.utils.ResourcesUtils;
+import phis2ws.service.utils.dates.Dates;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
 import phis2ws.service.view.brapi.form.ResponseUnique;
@@ -196,7 +196,7 @@ public class TokenResourceService {
                         reponseStatus = Response.Status.CREATED;
                     } else {
                         Session session = TokenManager.Instance().getSession(id);
-                        DateTime sessionStartDateTime = ResourcesUtils.convertStringToDateTime(session.getDateStart(), "yyyy-MM-dd HH:mm:ss");
+                        DateTime sessionStartDateTime = Dates.stringToDateTimeWithGivenPattern(session.getDateStart(), "yyyy-MM-dd HH:mm:ss");
                         if (sessionStartDateTime != null) {
                             Seconds secondsBetween = Seconds.secondsBetween(sessionStartDateTime, new DateTime());
                             expires_in = Integer.toString(Integer.valueOf(PropertiesFileManager.getConfigFileProperty("service", "sessionTime")) - secondsBetween.getSeconds());

@@ -48,6 +48,9 @@ public abstract class DAOMongo<T> {
      * User ip adress
      */
     protected String remoteUserAdress;
+    
+    //The _id json data key in the mongodb documents
+    public final static String DB_FIELD_ID = "_id";
 
     /**
      * @see service.properties file

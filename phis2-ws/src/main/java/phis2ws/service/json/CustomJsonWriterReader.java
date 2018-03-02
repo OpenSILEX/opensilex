@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
-import phis2ws.service.view.model.phis.Phenotype;
+import phis2ws.service.view.model.phis.Dataset;
 
 /**
  * Classe permettant de surcharger la classe qui permet la sérialization et la
@@ -144,7 +144,7 @@ public final class CustomJsonWriterReader<T> implements MessageBodyWriter<T>,
             throws IOException, WebApplicationException {
         try {
             Gson g = new GsonBuilder()
-                    .registerTypeAdapter(Phenotype.class, new PhenotypeSerializer())
+                    .registerTypeAdapter(Dataset.class, new DatasetsSerializer())
                    
                     .serializeNulls() // Pour serialiser les variables null en nulll json
                     //                    see https://github.com/plantbreeding/documentation/wiki/Best-Practices-and-Conventions

@@ -6,7 +6,7 @@
 // Copyright © - INRA - 2017
 // Creation date: March 2017
 // Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  June, 2017
+// Last modification date:  January, 03 2018
 // Subject: Represents the JSON submitted for the objects concerned by the annotation
 //***********************************************************************************************
 package phis2ws.service.resources.dto;
@@ -16,8 +16,13 @@ import java.util.HashMap;
 import java.util.Map;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.view.model.phis.ConcernItem;
 
-public class ConcernItemDTO extends AbstractVerifiedClass{
+/**
+ * corresponds to the submitted JSON for the objects concerned (by an annotation for example)
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
+public class ConcernItemDTO extends AbstractVerifiedClass {
     private String uri;
     private String typeURI;
 
@@ -30,8 +35,12 @@ public class ConcernItemDTO extends AbstractVerifiedClass{
     }
 
     @Override
-    public Object createObjectFromDTO() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public ConcernItem createObjectFromDTO() {
+        ConcernItem concernedItem = new ConcernItem();
+        concernedItem.setRdfType(typeURI);
+        concernedItem.setUri(uri);
+        
+        return concernedItem;
     }
 
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI)

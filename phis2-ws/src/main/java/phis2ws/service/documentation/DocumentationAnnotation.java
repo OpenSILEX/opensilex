@@ -5,7 +5,7 @@
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2016
 // Creation date: august 2016
-// Contact: eloan.lagier@inra.fr, arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, eloan.lagier@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  Janvier, 25 2018
 // Subject: A class which group documentation informations ( try message bundle for the next version)
 //***********************************************************************************************
@@ -14,16 +14,17 @@ package phis2ws.service.documentation;
 import javax.inject.Singleton;
 import phis2ws.service.PropertiesFileManager;
 
+/**
+ * A class which group documentation informations
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 @Singleton
 public final class DocumentationAnnotation {
 
-    /**
-     * Par defaut la page est 0
-     */
+    //Default page number is 0
     public static final String PAGE = "Current page number";
     /**
-     * A mettre a jour si changement de la variable dans service properties
-     *
+     * To be updated if the variable in service.properties is updated
      * @see service.properties
      */
     public static final String PAGE_SIZE = "Number of elements per page (limited to 150000)";
@@ -53,7 +54,6 @@ public final class DocumentationAnnotation {
             + "<b>The token also include the response object header. </b>"
             + "For more information, the <b>Response object definition</b> is available at <b><a href=\"http://docs.brapi.apiary.io/#introduction/structure-of-the-response-object:\">Brapi response object</a></b>.";
 
-    // defintions des variables    
     public static final String EXPERIMENT_URI_DEFINITION = "An experiment URI (Unique Resource Identifier)";
     public static final String EXPERIMENT_POST_DATA_DEFINITION = "JSON format of experiment data";
     
@@ -94,18 +94,30 @@ public final class DocumentationAnnotation {
     
     public static final String CONCEPT_URI_DEFINITION ="A concept URI (Unique Resource Identifier)";
     public static final String DEEP ="true or false deppending if you want instances of concept progenity";
+
+    //Global examples
+    public static final String EXAMPLE_DATETIME = "2017-06-15 10:51:00+0200";
+    public static final String EXAMPLE_DATE = "2017-06-15";
     
-    // Exemples de variables
+    //Specific examples
     public static final String EXAMPLE_EXPERIMENT_URI = "http://phenome-fppn.fr/diaphen/DIA2012-1";
-    public static final String EXAMPLE_EXPERIMENT_START_DATE = "2015-07-07 00:00:00+02";
-    public static final String EXAMPLE_EXPERIMENT_END_DATE = "2015-08-07 00:00:00+02";
+    public static final String EXAMPLE_EXPERIMENT_START_DATE = EXAMPLE_DATETIME;
+    public static final String EXAMPLE_EXPERIMENT_END_DATE = EXAMPLE_DATETIME;
     public static final String EXAMPLE_EXPERIMENT_FIELD = "field";
     public static final String EXAMPLE_EXPERIMENT_PLACE = "place";
     public static final String EXAMPLE_EXPERIMENT_ALIAS = "alias";
     public static final String EXAMPLE_EXPERIMENT_KEYWORDS = "keywords";  
     public static final String EXAMPLE_EXPERIMENT_CAMPAIGN = "2012";
     
-    public static final String EXAMPLE_AGRONOMICAL_OBJECT_URI = "http://phenome-fppn.fr/phis_field/ao1";
+    public static final String EXAMPLE_FILE_INFORMATION_CHECKSUM = "106fa487baa1728083747de1c6df73e9";
+    public static final String EXAMPLE_FILE_INFORMATION_EXTENSION = "jpg";
+    
+    public static final String EXAMPLE_AGRONOMICAL_OBJECT_URI = "http://www.phenome-fppn.fr/phenovia/2017/o1032481";
+    
+    public static final String EXAMPLE_IMAGE_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#HemisphericalImage";
+    public static final String EXAMPLE_IMAGE_URI = "http://www.phenome-fppn.fr/phis_field/2017/i170000000000";
+    public static final String EXAMPLE_IMAGE_DATE = EXAMPLE_DATETIME;
+    public static final String EXAMPLE_IMAGE_CONCERNED_ITEMS = EXAMPLE_AGRONOMICAL_OBJECT_URI + ";" + EXAMPLE_AGRONOMICAL_OBJECT_URI;
     
     public static final String EXAMPLE_PROJECT_URI = "http://phenome-fppn.fr/phis_field/projectTest";
     public static final String EXAMPLE_PROJECT_NAME = "projectTest";
@@ -123,6 +135,9 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_PROJECT_WEBSITE = "http://example.com";
     public static final String EXAMPLE_PROJECT_TYPE = "project type";
     
+    public static final String EXAMPLE_PROVENANCE_URI = "http://www.phenome-fppn.fr/mtp/2018/pv181515071552";
+    public static final String EXAMPLE_PROVENANCE_DATE = EXAMPLE_DATE;
+    
     public static final String EXAMPLE_GROUP_URI = "http://phenome-fppn.fr/mauguio/INRA-MISTEA-GAMMA";
     public static final String EXAMPLE_GROUP_NAME = "INRA-MISTEA-GAMMA";
     public static final String EXAMPLE_GROUP_LEVEL = "Owner";
@@ -139,6 +154,8 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_USER_ADMIN = "true";
     public static final String EXAMPLE_USER_AVAILABLE = "true";
     
+    public static final String EXAMPLE_DATA_VALUE = "3.0000000";
+    
     public static final String EXAMPLE_DOCUMENT_URI = "http://www.phenome-fppn.fr/phis_field/documents/documente597f57ba71d421a86277d830f4b9885";
     public static final String EXAMPLE_DOCUMENT_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#ScientificDocument";
     public static final String EXAMPLE_DOCUMENT_CREATOR = "John Doe";
@@ -148,6 +165,10 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_DOCUMENT_TITLE = "title";
     public static final String EXAMPLE_DOCUMENT_CONCERNED_TYPE_URI = "http://www.phenome-fppn.fr/vocabulary/2017#Experiment";
     public static final String EXAMPLE_DOCUMENT_STATUS = "linked";
+    
+    public static final String EXAMPLE_SHOOTING_CONFIGURATION_TIMESTAMP = "1512744238";
+    public static final String EXAMPLE_SHOOTING_CONFIGURATION_POSITION = "POINT(0, 0)";
+    public static final String EXAMPLE_SHOOTING_CONFIGURATION_DATE = EXAMPLE_EXPERIMENT_START_DATE;
     
     public static final String EXAMPLE_TRAIT_URI = "http://www.phenome-fppn.fr/phis_field/id/traits/t001";
     public static final String EXAMPLE_TRAIT_LABEL = "Height";
@@ -169,4 +190,7 @@ public final class DocumentationAnnotation {
     
     public static final String EXAMPLE_RDFTYPE_URI = "http://www.phenome-fppn.fr/vocabulary/2017#ScientificDocument";
     public static final String EXAMPLE_INSTANCE_URI = "http://www.phenome-fppn.fr/phenovia/documents/document90fb96ace2894cdb9f4575173d8ed4c9";
+
+    public static final String EXAMPLE_WAS_GENERATED_BY_DOCUMENT = EXAMPLE_DOCUMENT_URI;
+    public static final String EXAMPLE_WAS_GENERATED_BY_DESCRIPTION = "Phenoscript v1.3";
 }

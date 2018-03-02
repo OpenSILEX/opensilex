@@ -1,5 +1,5 @@
 //**********************************************************************************************
-//                                       RawDataDTO.java 
+//                                       DatasetDTO.java 
 //
 // Author(s): Morgane VIDAL
 // PHIS-SILEX version 1.0
@@ -7,7 +7,7 @@
 // Creation date: September 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  September, 13 2017
-// Subject: XX
+// Subject: Represents the JSON submitted for the datasets
 //***********************************************************************************************
 package phis2ws.service.resources.dto;
 
@@ -16,15 +16,20 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
-import phis2ws.service.view.model.phis.Data;
-import phis2ws.service.view.model.phis.Phenotype;
-import phis2ws.service.view.model.phis.Provenance;
+import phis2ws.service.view.model.phis.Dataset;
 
-public class PhenotypeDTO extends AbstractVerifiedClass {
+/**
+ * corresponds to the submitted JSON for the datasets
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
+public class DatasetDTO extends AbstractVerifiedClass {
 
     private String variableUri;
-    private Provenance provenance;
-    private ArrayList<Data> data;
+    //Provenance is the dataset provenance. It is composed of the creation date 
+    //of the dataset, the script which has generate the dataset and a description
+    //of the generation (if possible)
+    private ProvenanceDTO provenance;
+    private ArrayList<DataDTO> data;
     
     @Override
     public Map rules() {
@@ -32,18 +37,18 @@ public class PhenotypeDTO extends AbstractVerifiedClass {
         rules.put(variableUri, Boolean.TRUE);
         
         //SILEX:todo
-        //Trouver une solution pour mettres les rules sur les objets complexes.
+        //Find a way to add rules on others Objects
         //\SILEX:todo
         return rules;
     }
 
     @Override
-    public Phenotype createObjectFromDTO() {
-       Phenotype phenotypes = new Phenotype();
+    public Dataset createObjectFromDTO() {
+       Dataset phenotypes = new Dataset();
        phenotypes.setVariableURI(variableUri);       
-       phenotypes.setProvenance(new Provenance(provenance));
-       for (Data d : data) {
-           phenotypes.addData(new Data(d));
+       phenotypes.setProvenance(provenance.createObjectFromDTO());
+       for (DataDTO d : data) {
+           phenotypes.addData(d.createObjectFromDTO());
        }
        
        return phenotypes;
@@ -58,19 +63,19 @@ public class PhenotypeDTO extends AbstractVerifiedClass {
         this.variableUri = variableUri;
     }
 
-    public Provenance getProvenance() {
+    public ProvenanceDTO getProvenance() {
         return provenance;
     }
 
-    public void setProvenance(Provenance provenance) {
+    public void setProvenance(ProvenanceDTO provenance) {
         this.provenance = provenance;
     }
 
-    public ArrayList<Data> getData() {
+    public ArrayList<DataDTO> getData() {
         return data;
     }
 
-    public void setData(ArrayList<Data> data) {
+    public void setData(ArrayList<DataDTO> data) {
         this.data = data;
     }
 }

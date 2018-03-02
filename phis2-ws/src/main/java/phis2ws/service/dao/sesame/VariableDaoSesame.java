@@ -162,7 +162,7 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
             } else {
                 dataOk = false;
                 variableDTO.isOk().remove("state");
-                checkStatusList.add(new Status("Bad data format", StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.MISSINGFIELDS).append(variableDTO.isOk()).toString()));
+                checkStatusList.add(new Status("Bad data format", StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.MISSING_FIELDS_LIST).append(variableDTO.isOk()).toString()));
             }
         }
         

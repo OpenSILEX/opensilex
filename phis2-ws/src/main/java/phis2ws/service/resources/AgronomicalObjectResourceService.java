@@ -94,7 +94,7 @@ public class AgronomicalObjectResourceService {
             while (nbYear.length() < 6) {
                 nbYear = "0" + nbYear;
             }
-            String uniqId = "o" + year.substring(2, 3) + nbYear;
+            String uniqId = "o" + year.substring(2, 4) + nbYear;
             AgronomicalObject ao = agronomicalObject.createObjectFromDTO();
             ao.setUri(baseURI + year + "/" + uniqId);
             

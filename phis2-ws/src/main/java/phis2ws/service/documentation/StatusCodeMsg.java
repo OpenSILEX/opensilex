@@ -6,7 +6,7 @@
 // Copyright © - INRA - 2016
 // Creation date: august 2016
 // Contact:arnaud.charleroy@supagro.inra.fr, anne.tireau@supagro.inra.fr, pascal.neveu@supagro.inra.fr
-// Last modification date:  October, 2016
+// Last modification date:  February, 05 2018 - add constants
 // Subject: A class which group possible status message return
 // @see phenomeapi.service.view.brapi.Status
 //***********************************************************************************************
@@ -15,14 +15,34 @@ package phis2ws.service.documentation;
 import javax.inject.Singleton;
 
 /**
- * Définit des messages de retour régulièrement utilisés
+ * Defines the web service return messages
  * @author Arnaud CHARLEROY
+ * @author Morgane Vidal
  */
 @Singleton
 public final class StatusCodeMsg {
     public static final String ERR = "Error";
     public static final String INFO = "Info";
-    public static final String ERRPG = "PostgresSQL Error";
-    public static final String MISSINGFIELDS = "Missing Field(s) : ";
-   
+
+    public static final String RESOURCES_CREATED = "Resources created";
+    public static final String DATA_INSERTED = "Data inserted";
+    
+    public static final String WRONG_VALUE = "Wrong value";
+    public static final String BAD_DATA_FORMAT = "Bad data format";
+    public static final String DATA_ERROR = "Data error";
+    public static final String REQUEST_ERROR = "Request error";
+    public static final String MISSING_FIELDS_LIST = "Missing Field(s) : ";
+    public static final String MISSING_FIELDS = "Fields are missing in JSON Data";
+    
+    public static final String NO_RESULTS = "No results";
+    public static final String TIMEOUT = "Timeout";
+    public static final String FILE_ERROR = "File error";
+    public static final String MD5_ERROR = "md5 error";
+    public static final String SFTP_EXCEPTION = "sftp exception";
+    
+    public static final String TRIPLESTOR_ACCESS_ERROR = "Triplestore access error";
+    public static final String POSTGRESQL_ERROR = "PostgresSQL Error";
+    public static final String QUERY_ERROR = "Query error";
+    public static final String MALFORMED_CREATE_QUERY = "Malformed create query";
+    public static final String MALFORMED_UPDATE_QUERY = "Malformed update query";
 }

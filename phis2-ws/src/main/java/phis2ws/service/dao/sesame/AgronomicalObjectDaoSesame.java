@@ -86,7 +86,7 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject>{
                 // Format des données non attendu par rapport au schéma demandé
                 dataOk = false;
                 agronomicalObject.isOk().remove("state");
-                checkStatusList.add(new Status("Bad data format", StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.MISSINGFIELDS).append(agronomicalObject.isOk()).toString()));
+                checkStatusList.add(new Status("Bad data format", StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.MISSING_FIELDS_LIST).append(agronomicalObject.isOk()).toString()));
             }
         }
         agronomicalObjectsCheck = new POSTResultsReturn(dataOk, null, dataOk);

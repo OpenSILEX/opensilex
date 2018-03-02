@@ -245,7 +245,7 @@ public class UriResourceService {
                 example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getInstancesList(
+    public Response getInstancesByConcept(
             @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @QueryParam("uri") String uri,
             @ApiParam(value = DocumentationAnnotation.DEEP) @QueryParam("deep") @DefaultValue(DocumentationAnnotation.EXAMPLE_DEEP) String deep,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
@@ -257,7 +257,10 @@ public class UriResourceService {
         }
         if (deep != null) {
             uriDaoSesame.deep = Boolean.valueOf(deep);
+        } else {
+            uriDaoSesame.deep = true;
         }
+        
         uriDaoSesame.setPageSize(limit);
         uriDaoSesame.setPage(page);
         uriDaoSesame.user = userSession.getUser();
@@ -307,7 +310,7 @@ public class UriResourceService {
                 example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getAncestorsList(
+    public Response getAncestors(
             @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @QueryParam("Uri") String uri,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
@@ -614,7 +617,7 @@ public class UriResourceService {
         ArrayList<Status> statusList = new ArrayList<>();
         ResponseFormUri getResponse;
 
-        concepts = uriDaoSesame.AncestorsAllPaginate();
+        concepts = uriDaoSesame.ancestorsAllPaginate();
         if (concepts == null) { //no result found
             getResponse = new ResponseFormUri(0, 0, concepts, true);
             return noResultFound(getResponse, statusList);

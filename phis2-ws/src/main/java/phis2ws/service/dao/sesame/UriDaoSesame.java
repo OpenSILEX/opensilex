@@ -184,7 +184,7 @@ public class UriDaoSesame extends DAOSesame<Uri> {
     }
     
     /**
-     * Search instances by uri, ... 
+     * Search instances by uri, concept 
      * @return SPARQLQueryBuilder
      * query example : 
      * SELECT ?instance ?subclass 
@@ -207,9 +207,9 @@ public class UriDaoSesame extends DAOSesame<Uri> {
         query.appendSelect(" ?subclass");
         // if deep get descendents
         if (deep) {
-            query.appendTriplet("?subclass", uriNameSpace.getRelationsProperty("rdfs:subClassOf*"), contextURI, null);
+            query.appendTriplet("?subclass", uriNameSpace.getRelationsProperty("subClassOf*"), contextURI, null);
         } else {
-            query.appendTriplet("?subclass", uriNameSpace.getRelationsProperty("rdfs:subClassOf"), contextURI, null);
+            query.appendTriplet("?subclass", uriNameSpace.getRelationsProperty("subClassOf"), contextURI, null);
         }
         query.appendTriplet("?instance", uriNameSpace.getRelationsProperty("type"), "?subclass", null);
         LOGGER.debug("sparql select query : " + query.toString());
@@ -236,7 +236,7 @@ public class UriDaoSesame extends DAOSesame<Uri> {
             query.appendSelect("?uri");
         }
         query.appendSelect(" ?class ");
-        query.appendTriplet(contextURI,uriNameSpace.getRelationsProperty("SubClassOf"), " ?class ", null);
+        query.appendTriplet(contextURI,uriNameSpace.getRelationsProperty("subClassOf"), " ?class ", null);
         LOGGER.debug(query.toString());
         return query;
     }
@@ -374,7 +374,7 @@ public class UriDaoSesame extends DAOSesame<Uri> {
      * call the query function for the ancestors GET
      * @return the ancestors info all paginate
      */
-    public ArrayList<Uri> AncestorsAllPaginate() {
+    public ArrayList<Uri> ancestorsAllPaginate() {
 
         SPARQLQueryBuilder query = prepareAncestorsQuery();
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());

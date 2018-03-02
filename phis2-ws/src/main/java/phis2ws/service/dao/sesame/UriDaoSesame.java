@@ -449,16 +449,16 @@ public class UriDaoSesame extends DAOSesame<Uri> {
         boolean result = booleanQuery.evaluate();
         Ask ask = new Ask();
         ask.setExist(result);
-
-        Uri uriType = new Uri();
+        
         if (ask.getExist()) {
+            Uri uriType = new Uri();
             query = prepareGetUriType();
             TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
             TupleQueryResult resultat = tupleQuery.evaluate();
             BindingSet bindingSet = resultat.next();
             uriType.setRdfType(bindingSet.getValue(TRIPLESTORE_FIELDS_TYPE).toString());
+            uris.add(uriType);
         }
-        uris.add(uriType);
         
         return uris;
     }

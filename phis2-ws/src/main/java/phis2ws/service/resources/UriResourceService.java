@@ -477,7 +477,7 @@ public class UriResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTypeIfUriExist(
-            @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @QueryParam("conceptUri") String uri) {
+            @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @QueryParam("uri") String uri) {
 
         UriDaoSesame uriDaoSesame = new UriDaoSesame();
         if (uri != null) {

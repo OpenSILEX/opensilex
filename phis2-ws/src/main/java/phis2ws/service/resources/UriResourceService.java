@@ -311,7 +311,7 @@ public class UriResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAncestors(
-            @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @QueryParam("Uri") String uri,
+            @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @QueryParam("uri") String uri,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
 
@@ -375,7 +375,7 @@ public class UriResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getSibblings(
-            @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_SIBLING_URI) @QueryParam("Uri") String uri,
+            @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_SIBLING_URI) @QueryParam("uri") String uri,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
 
@@ -437,8 +437,8 @@ public class UriResourceService {
                 example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getDescendantsList(
-            @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @QueryParam("conceptUri") String uri,
+    public Response getDescendants(
+            @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @QueryParam("uri") String uri,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
 
@@ -646,7 +646,7 @@ public class UriResourceService {
         ArrayList<Status> statusList = new ArrayList<>();
         ResponseFormUri getResponse;
 
-        concepts = uriDaoSesame.SiblingsAllPaginate();
+        concepts = uriDaoSesame.siblingsAllPaginate();
         if (concepts == null) { //no result found
             getResponse = new ResponseFormUri(0, 0, concepts, true);
             return noResultFound(getResponse, statusList);

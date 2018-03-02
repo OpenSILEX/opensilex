@@ -132,8 +132,8 @@ public class UriDaoSesame extends DAOSesame<Uri> {
             query.appendSelect("?uri");
         }
         query.appendSelect(" ?class ");
-        query.appendTriplet(contextURI,uriNameSpace.getRelationsProperty("SubClassOf"), " ?parent ", null);
-        query.appendTriplet("?class",uriNameSpace.getRelationsProperty("SubClassOf"), "?parent", null);
+        query.appendTriplet(contextURI,uriNameSpace.getRelationsProperty("subClassOf"), " ?parent ", null);
+        query.appendTriplet("?class",uriNameSpace.getRelationsProperty("subClassOf"), "?parent", null);
         LOGGER.debug(query.toString());
         return query;
     }
@@ -261,7 +261,7 @@ public class UriDaoSesame extends DAOSesame<Uri> {
             query.appendSelect("?uri");
         }
         query.appendSelect(" ?class ");
-        query.appendTriplet(" ?class ",uriNameSpace.getRelationsProperty("SubClassOf*"), contextURI, null);
+        query.appendTriplet(" ?class ",uriNameSpace.getRelationsProperty("subClassOf*"), contextURI, null);
         LOGGER.debug(query.toString());
 
         return query;
@@ -397,7 +397,7 @@ public class UriDaoSesame extends DAOSesame<Uri> {
      * call the query function for the siblings GET
      * @return the siblings info all paginate
      */
-    public ArrayList<Uri> SiblingsAllPaginate() {
+    public ArrayList<Uri> siblingsAllPaginate() {
 
         SPARQLQueryBuilder query = prepareSiblingsQuery();
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());

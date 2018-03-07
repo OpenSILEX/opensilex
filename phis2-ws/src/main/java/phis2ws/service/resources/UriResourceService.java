@@ -146,7 +146,7 @@ public class UriResourceService {
      * }
      */
     @GET
-    @Path("{uri}/concept")
+    @Path("{uri}")
     @ApiOperation(value = "Get all uri informations",
             notes = "Retrieve all infos of the uri")
     @ApiResponses(value = {
@@ -188,7 +188,6 @@ public class UriResourceService {
      * @return Response
      */
     @GET
-    @Path("/{uri}/labels")
     @ApiOperation(value = "get all uri with a given label",
             notes = "Retrieve all uri from the label given")
     @ApiResponses(value = {

@@ -33,6 +33,8 @@ public final class StatusCodeMsg {
     public static final String REQUEST_ERROR = "Request error";
     public static final String MISSING_FIELDS_LIST = "Missing Field(s) : ";
     public static final String MISSING_FIELDS = "Fields are missing in JSON Data";
+    public static final String UNKNOWN_URI = "Unknown uri";
+    public static final String MALFORMED_URI = "Malformed uri";
     
     public static final String NO_RESULTS = "No results";
     public static final String TIMEOUT = "Timeout";
@@ -45,4 +47,6 @@ public final class StatusCodeMsg {
     public static final String QUERY_ERROR = "Query error";
     public static final String MALFORMED_CREATE_QUERY = "Malformed create query";
     public static final String MALFORMED_UPDATE_QUERY = "Malformed update query";
+    
+    public static final String COMMIT_TRIPLESTORE_ERROR = "Error during commit or rolleback Triplestore statements.";
 }

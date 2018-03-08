@@ -75,6 +75,8 @@ public final class DocumentationAnnotation {
     public static final String TRAIT_POST_DATA_DEFINITION = "JSON format of trait";
     public static final String TRAIT_URI_DEFINITION = "A trait URI (Unique Resource Identifier)";
     
+    public static final String TRIPLET_POST_DATA_DEFINITION = "JSON format of a triplet";
+    
     public static final String METHOD_POST_DATA_DEFINITION = "JSON format of method";
     public static final String METHOD_URI_DEFINITION = "A method URI (Unique Resource Identifier)";
     
@@ -172,6 +174,13 @@ public final class DocumentationAnnotation {
     
     public static final String EXAMPLE_TRAIT_URI = "http://www.phenome-fppn.fr/phis_field/id/traits/t001";
     public static final String EXAMPLE_TRAIT_LABEL = "Height";
+    
+    public static final String EXAMPLE_TRIPLET_SUBJECT = "http://www.phenome-fppn.fr/diaphen/DIA2018-2";
+    public static final String EXAMPLE_TRIPLET_PROPERTY = "http://www.phenome-fppn.fr/vocabulary/2017#hasDocument";
+    public static final String EXAMPLE_TRIPLET_OBJECT = "http://www.phenome-fppn.fr/phis_field/documents/documente597f57ba71d421a86277d830f4b9885";
+    public static final String EXAMPLE_TRIPLET_OBJECT_LANGUAGE = "en-US";
+    public static final String EXAMPLE_TRIPLET_OBJECT_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#ScientificDocument";
+    public static final String EXAMPLE_TRIPLET_GRAPH = "http://www.phenome-fppn.fr/diaphen/DIA2018-2";
     
     public static final String EXAMPLE_METHOD_URI = "http://www.phenome-fppn.fr/phis_field/id/methods/m001";
     public static final String EXAMPLE_METHOD_LABEL = "comptage";

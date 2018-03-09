@@ -15,6 +15,7 @@ import java.util.Calendar;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.sesame.SensorDAOSesame;
+import phis2ws.service.dao.sesame.VectorDAOSesame;
 
 /**
  * generate differents kinds of uris (vector, sensor, ...)
@@ -38,7 +39,25 @@ public class UriGenerator {
      * @return the new vector uri
      */
     private String generateVectorUri() {
+        String actualYear = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
         
+        //1. get the actual number of vectors in the triplestor for the year
+        VectorDAOSesame vectorDAO = new VectorDAOSesame();
+        int numberExistingVectors = vectorDAO.getNumberOfVectors(actualYear);
+        
+        //2. generates vectors uri
+        String platformUri = PropertiesFileManager.getConfigFileProperty(PROPERTIES_SERVICE_FILE_NAME, PROPERTIES_SERVICE_BASE_URI);
+        
+        String numberOfVectors = Integer.toString(numberExistingVectors + 1);
+        String newVectorNumber;
+        
+        if (numberOfVectors.length() == 1) {
+            newVectorNumber = "0" + numberOfVectors;
+        } else {
+            newVectorNumber = numberOfVectors;
+        }
+        
+        return platformUri + "/" + actualYear + "/" + URI_CODE_VECTOR + actualYear.substring(0,2) + newVectorNumber;
     }
     
     /**

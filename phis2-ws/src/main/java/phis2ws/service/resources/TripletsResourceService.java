@@ -18,6 +18,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.POST;
@@ -26,14 +27,17 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.phis.UserDaoPhisBrapi;
 import phis2ws.service.dao.sesame.TripletDAOSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
+import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.TripletDTO;
 import phis2ws.service.utils.POSTResultsReturn;
+import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
 
@@ -112,16 +116,27 @@ public class TripletsResourceService {
                 }
                 tripletDAOSesame.user = userSession.getUser();
                 
-                //TODO
-                String graphUri = "";
+                String graphUri = PropertiesFileManager.getConfigFileProperty("service", "baseURI") + Long.toString(new Timestamp(System.currentTimeMillis()).getTime());
                 
                 POSTResultsReturn insertResult = tripletDAOSesame.checkAndInsert(triplets, graphUri);
                 
-                //TODO
-                
+                //triplets inserted
+                if (insertResult.getHttpStatus().equals(Response.Status.CREATED)){
+                    postResponse = new ResponseFormPOST(insertResult.statusList);
+                    postResponse.getMetadata().setDatafiles(insertResult.getCreatedResources());
+                } else if (insertResult.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                        || insertResult.getHttpStatus().equals(Response.Status.OK)
+                        || insertResult.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                    postResponse = new ResponseFormPOST(insertResult.statusList);
+                }
+                return Response.status(insertResult.getHttpStatus()).entity(postResponse).build();
+            } else {
+                postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.ACCESS_DENIED, StatusCodeMsg.ERR, StatusCodeMsg.ADMINISTRATOR_ONLY));
+                return Response.status(Response.Status.FORBIDDEN).entity(new ResponseFormPOST()).build();
             }
             
         } else {
+            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty triplets to add"));
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormPOST()).build();
         }
     }

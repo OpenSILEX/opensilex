@@ -179,7 +179,7 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_TRIPLET_PROPERTY = "http://www.phenome-fppn.fr/vocabulary/2017#hasDocument";
     public static final String EXAMPLE_TRIPLET_OBJECT = "http://www.phenome-fppn.fr/phis_field/documents/documente597f57ba71d421a86277d830f4b9885";
     public static final String EXAMPLE_TRIPLET_OBJECT_LANGUAGE = "en-US";
-    public static final String EXAMPLE_TRIPLET_OBJECT_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#ScientificDocument";
+    public static final String EXAMPLE_TRIPLET_OBJECT_TYPE = "uri";
     public static final String EXAMPLE_TRIPLET_GRAPH = "http://www.phenome-fppn.fr/diaphen/DIA2018-2";
     
     public static final String EXAMPLE_METHOD_URI = "http://www.phenome-fppn.fr/phis_field/id/methods/m001";

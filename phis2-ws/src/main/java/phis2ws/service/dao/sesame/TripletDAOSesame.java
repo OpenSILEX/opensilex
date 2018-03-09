@@ -136,9 +136,8 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
         //returned status list
         List<Status> checkStatusList = new ArrayList<>();
         boolean dataOk = true;
-        
-        for (ArrayList<TripletDTO> tripletsGroup : triplets) {
-            POSTResultsReturn tripletsGroupCheck = checkTripletsGroup(tripletsGroup);
+        for (int i = 0; i < triplets.size(); i++) {
+            POSTResultsReturn tripletsGroupCheck = checkTripletsGroup(triplets.get(i));
             if (!tripletsGroupCheck.getDataState()) {
                 dataOk = false;
                 checkStatusList.addAll(tripletsGroupCheck.getStatusList());
@@ -187,7 +186,7 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
                 this.setConnection(rep.getConnection());
                 this.getConnection().begin();
 
-                //Register triplet in the triplestore
+                //Register triplet in the triplestore, in the graph created at the request reception
                 SPARQLUpdateBuilder insertQuery = prepareInsertQuery(tripletDTO, graphUri);
                 LOGGER.debug("SPARQL query : " + insertQuery.toString());
                 Update prepareInsert = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, insertQuery.toString());
@@ -221,7 +220,7 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
         result.setCreatedResources(createdResourcesUris);
         if (resultState && !createdResourcesUris.isEmpty()) {
             result.createdResources = createdResourcesUris;
-            result.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, createdResourcesUris.size() + " new resource(s)"));
+            result.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, createdResourcesUris.size() + " " + StatusCodeMsg.RESOURCES_CREATED));
         }
         
         return result;
@@ -229,6 +228,7 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
     
     /**
      * for each group of triplets, insert them in the triplestore
+     * @param graphUri
      * @see POSTResultsReturn
      * @see TripletDAOSesame#insertTripletsGroup(java.utils.ArrayList)
      * @param triplets
@@ -259,7 +259,6 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
         insertResult.setStatusList(insertStatus);
         if (tripletInserted && !createdResourcesUris.isEmpty()) {
             insertResult.setCreatedResources(createdResourcesUris);
-            insertResult.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.ERR, createdResourcesUris.size() + " " + StatusCodeMsg.RESOURCES_CREATED));
         }
         
         return insertResult;
@@ -269,6 +268,7 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
      * check if there are some errors in the triplets list when no error founded
      * insert them in the triplestore
      * @param triplets
+     * @param graphUri
      * @see POSTResultsReturn
      * @see TripletDAOSesame#check(java.util.ArrayList) 
      * @see TripletDAOSesame#insert(java.util.ArrayList)

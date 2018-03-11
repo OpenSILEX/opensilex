@@ -31,7 +31,7 @@ import phis2ws.service.PropertiesFileManager;
  * @author Arnaud CHARLEROY
  */
 public class FileUploader extends JSch{
-    final static Logger logger = LoggerFactory.getLogger(FileUploader.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(FileUploader.class);
     private static final String PROPERTY_FILE_NAME = "service";
     private String SFTPHost;
     private String SFTPUser;
@@ -61,9 +61,9 @@ public class FileUploader extends JSch{
             channelSftp.cd(SFTPWorkingDirectory);
             
         } catch (SftpException ex) {
-            logger.error(ex.getMessage(), ex);        
+            LOGGER.error(ex.getMessage(), ex);        
         } catch (JSchException ex) {
-            logger.error(ex.getMessage(), ex);  
+            LOGGER.error(ex.getMessage(), ex);  
         }
     }
     
@@ -74,17 +74,17 @@ public class FileUploader extends JSch{
             fStream = new FileInputStream(f);
             channelSftp.put(new FileInputStream(f), filename);
         } catch (FileNotFoundException ex) {
-            logger.error(ex.getMessage(), ex);
+            LOGGER.error(ex.getMessage(), ex);
             return false;
         } catch (SftpException | IOException ex) {
-            logger.error(ex.getMessage(), ex);  
+            LOGGER.error(ex.getMessage(), ex);  
             return false;
         }finally{
             if(fStream != null){
                 try {
                     fStream.close();
                 } catch (IOException ex) {
-                    logger.error("Error during file closing", ex);  
+                    LOGGER.error("Error during file closing", ex);  
                 }
             }
         }

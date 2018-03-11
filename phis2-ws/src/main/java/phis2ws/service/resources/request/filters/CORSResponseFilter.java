@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
  */
 @Provider
 public class CORSResponseFilter implements ContainerResponseFilter {
-        final static Logger logger = LoggerFactory.getLogger(CORSResponseFilter.class);
+        final static Logger LOGGER = LoggerFactory.getLogger(CORSResponseFilter.class);
         @Context UriInfo ui;
         
         @Override

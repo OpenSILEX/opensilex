@@ -58,7 +58,7 @@ public final class CustomJsonWriterReader<T> implements MessageBodyWriter<T>,
     /**
      * Récupération des erreurs
      */
-    final static Logger logger = LoggerFactory.getLogger(CustomJsonWriterReader.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(CustomJsonWriterReader.class);
 
     /**
      * Permet de filtrer les classes qui sont lisibles
@@ -97,7 +97,7 @@ public final class CustomJsonWriterReader<T> implements MessageBodyWriter<T>,
             final BufferedReader reader = new BufferedReader(new InputStreamReader(entityStream));
             return g.fromJson(reader, genericType);
         } catch (Exception e) {
-            logger.warn(e.getMessage(), e);
+            LOGGER.warn(e.getMessage(), e);
             final ResponseFormPOST postResponse = new ResponseFormPOST(new Status("Unexpected JSON format", StatusCodeMsg.ERR, e.getMessage()));
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build());
         }
@@ -180,7 +180,7 @@ public final class CustomJsonWriterReader<T> implements MessageBodyWriter<T>,
                 g.toJson(t, genericType, writer);
             }
         } catch (Exception gsonEx) {
-            logger.error(gsonEx.getMessage(), gsonEx);
+            LOGGER.error(gsonEx.getMessage(), gsonEx);
             throw new ProcessingException(
                     "Error serializing a " + type + " to the output stream", gsonEx);
         }

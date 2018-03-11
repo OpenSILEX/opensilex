@@ -52,7 +52,7 @@ import phis2ws.service.utils.sql.SQLQueryBuilder;
  */
 public abstract class SQLDAO<T> extends DAO<T> {
 
-    private final static Logger logger = LoggerFactory.getLogger(SQLDAO.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(SQLDAO.class);
     protected final static String DUPLICATE_KEY_ERROR_POSTGRE = "23505";
 
     /**
@@ -256,7 +256,7 @@ public abstract class SQLDAO<T> extends DAO<T> {
         PreparedStatement statement = null;
         Connection con = null;
         
-        logger.debug(query);
+        LOGGER.debug(query);
         try {
             con = dataSource.getConnection();
             statement = con.prepareStatement(query);
@@ -266,8 +266,8 @@ public abstract class SQLDAO<T> extends DAO<T> {
             }
             return false;
         } catch (SQLException e) {
-            logger.error("SQL error Exist Request Method ", e);
-            logger.error(query);
+            LOGGER.error("SQL error Exist Request Method ", e);
+            LOGGER.error(query);
             return false;
         } finally {
             try {
@@ -282,7 +282,7 @@ public abstract class SQLDAO<T> extends DAO<T> {
                     con.close();
                 }
             } catch (SQLException ex) {
-                logger.error(ex.getMessage());
+                LOGGER.error(ex.getMessage());
             }
         }
     }
@@ -305,13 +305,13 @@ public abstract class SQLDAO<T> extends DAO<T> {
                 .append("\"").append(table).append("\"")
                 .append(" WHERE ")
                 .append(makeFindSQLConditionQuery(obj, false));
-        logger.debug(strSQLBuilder.toString());
+        LOGGER.debug(strSQLBuilder.toString());
         Statement Statement = null;
         ResultSet rs = null;
         Connection con = null;
         Map<String, String> objectFields = relationFieldsJavaSQLObject();
         final Field[] attributes = obj.getClass().getDeclaredFields();
-        logger.debug(JsonConverter.ConvertToJson(obj));
+        LOGGER.debug(JsonConverter.ConvertToJson(obj));
         try {
             con = dataSource.getConnection();
             Statement = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
@@ -343,8 +343,8 @@ public abstract class SQLDAO<T> extends DAO<T> {
             }
             return obj;
         } catch (SQLException e) {
-            logger.error("SQL error Exist Request ", e);
-            logger.error(strSQLBuilder.toString());
+            LOGGER.error("SQL error Exist Request ", e);
+            LOGGER.error(strSQLBuilder.toString());
 //            e.printStackTrace();
             return null;
         } finally {
@@ -353,7 +353,7 @@ public abstract class SQLDAO<T> extends DAO<T> {
                 try {
                     Statement.close();
                 } catch (SQLException ex) {
-                    logger.error(ex.getMessage());
+                    LOGGER.error(ex.getMessage());
                 }
             }
             if (rs != null) {
@@ -391,7 +391,7 @@ public abstract class SQLDAO<T> extends DAO<T> {
             if (user != null) {
                 log += "User : " + user.getEmail() + "-";
             }
-            logger.trace(log + " query : " + preparedStatement.toString());
+            LOGGER.trace(log + " query : " + preparedStatement.toString());
 //            logger.trace(preparedStatement.toString());
 //            logger.debug(preparedStatement.toString());
             return true;
@@ -400,7 +400,7 @@ public abstract class SQLDAO<T> extends DAO<T> {
             if (e.getSQLState().contains(DUPLICATE_KEY_ERROR_POSTGRE)) {
                 return null;
             } else {
-                logger.error("SQL error Create Request " + e.getErrorCode() + e.getSQLState(), e);
+                LOGGER.error("SQL error Create Request " + e.getErrorCode() + e.getSQLState(), e);
                 return false;
             }
         } finally {
@@ -484,7 +484,7 @@ public abstract class SQLDAO<T> extends DAO<T> {
             }
 
         } catch (SecurityException | IllegalArgumentException | IllegalAccessException ex) {
-            logger.error(ex.getMessage(), ex);
+            LOGGER.error(ex.getMessage(), ex);
             return null;
         }
         return strBuilder.toString();
@@ -528,7 +528,7 @@ public abstract class SQLDAO<T> extends DAO<T> {
                 }
             }
         } catch (SecurityException | IllegalArgumentException | IllegalAccessException ex) {
-            logger.error(ex.getMessage(), ex);
+            LOGGER.error(ex.getMessage(), ex);
             return null;
         }
         final String createSQLValuesQuery = "(" + attributesBuilder.toString() + ")"
@@ -591,7 +591,7 @@ public abstract class SQLDAO<T> extends DAO<T> {
 
             }
         } catch (SecurityException | IllegalArgumentException | IllegalAccessException ex) {
-            logger.error(ex.getMessage(), ex);
+            LOGGER.error(ex.getMessage(), ex);
         } catch (SQLException ex) {
             java.util.logging.Logger.getLogger(SQLDAO.class.getName()).log(Level.SEVERE, null, ex);
         }

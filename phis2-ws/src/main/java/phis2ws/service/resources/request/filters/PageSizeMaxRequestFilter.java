@@ -27,7 +27,7 @@ import phis2ws.service.view.brapi.form.ResponseFormGET;
 @Provider
 public class PageSizeMaxRequestFilter implements ContainerRequestFilter {
 
-    final static Logger logger = LoggerFactory.getLogger(PageSizeMaxRequestFilter.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(PageSizeMaxRequestFilter.class);
     public final static int PAGE_SIZE_DEFAULT_LIMIT = 2097152; // 2 MB
 
     /**

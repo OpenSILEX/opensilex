@@ -1,4 +1,4 @@
- /*AJout AC fond phis*/
+ /* Arnaud Charleroy Add phis wallpaper */
 .cover {
     background: url('../imgs/wallpaper_leaf.jpg') no-repeat center center fixed;
     -webkit-background-size: cover;
@@ -6,7 +6,7 @@
     background-size: cover;
     -o-background-size: cover;
 }
- /*AJout AC fond phis léger*/
+ /*Arnaud Charleroy add lighter phis wallpaper*/
 .coverLight {
     background: url('../imgs/wallpaper_leaf.png') no-repeat center center fixed;
     -webkit-background-size: cover;

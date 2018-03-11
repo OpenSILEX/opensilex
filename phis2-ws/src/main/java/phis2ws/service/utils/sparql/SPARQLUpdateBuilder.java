@@ -1,11 +1,11 @@
 //**********************************************************************************************
 //                                       SPARQLUpdateBuilder.java 
 //
-// Author(s): Arnaud CHARLEROY 
+// Author(s): Arnaud Charleroy 
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2016
 // Creation date: may 2016
-// Contact:arnaud.charleroy@supagro.inra.fr, anne.tireau@supagro.inra.fr, pascal.neveu@supagro.inra.fr
+// Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  October, 2016
 // Subject: A class which permit to build SPARQL update query
 //***********************************************************************************************
@@ -14,7 +14,7 @@ package phis2ws.service.utils.sparql;
 /**
  * Classe concrète qui permet de créer des requêtes d'insertion en SPARQL
  *
- * @author Arnaud CHARLEROY
+ * @author Arnaud Charleroy
  */
 public class SPARQLUpdateBuilder extends SPARQLStringBuilder {
 

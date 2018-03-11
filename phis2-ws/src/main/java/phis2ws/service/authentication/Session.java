@@ -11,7 +11,7 @@ import phis2ws.service.model.User;
  * @author Samuël Chérimont
  * @date 25/11/2015
  * @note Les champs dateStart et dateEnd ne sont pas utilisés pour le moment
- * @update Anraud CHARLEROY Définir SQLDBModel et les cahmps uniques dans
+ * @update Anraud Charleroy Définir SQLDBModel et les cahmps uniques dans
  * Session
  */
 public class Session {

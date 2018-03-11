@@ -1,11 +1,11 @@
 //**********************************************************************************************
 //                                       CustomJsonWriterReader.java 
 //
-// Author(s): Arnaud CHARLEROY
+// Author(s): Arnaud Charleroy
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2016
 // Creation date: august 2016
-// Contact:arnaud.charleroy@supagro.inra.fr, anne.tireau@supagro.inra.fr, pascal.neveu@supagro.inra.fr
+// Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  October, 2016
 // Subject: Define the way to read incoming JSON and write output JSON
 //***********************************************************************************************
@@ -45,7 +45,7 @@ import phis2ws.service.view.model.phis.Dataset;
  * Classe permettant de surcharger la classe qui permet la sérialization et la
  * deserialisation du JSON dans Jersey
  *
- * @author Arnaud CHARLEROY
+ * @author Arnaud Charleroy
  * @date 05/16
  * @param <T>
  */

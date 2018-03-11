@@ -1,11 +1,11 @@
 //**********************************************************************************************
 //                                       SessionFactory.java 
 //
-// Author(s): Arnaud CHARLEROY 
+// Author(s): Arnaud Charleroy 
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2016
 // Creation date: august 2016
-// Contact:arnaud.charleroy@supagro.inra.fr, anne.tireau@supagro.inra.fr, pascal.neveu@supagro.inra.fr
+// Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  October, 2016
 // Subject: custom HK2 Factory implementation that knows how to extract from http session
 // @see https://jersey.java.net/documentation/latest/ioc.html
@@ -24,7 +24,7 @@ import phis2ws.service.configuration.GlobalWebserviceValues;
 /**
  * Extrait les donnees de la requete de l'utilisateur 
  * et les lie à l'objet de l'annotation personnalisee @SessionInject
- * @author A. CHARLEROY
+ * @author A. Charleroy
  */
 public class SessionFactory implements Factory<Session> {
 

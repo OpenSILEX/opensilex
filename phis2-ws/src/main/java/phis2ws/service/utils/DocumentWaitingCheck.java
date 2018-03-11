@@ -1,7 +1,7 @@
 //**********************************************************************************************
 //                                       DocumentWaitingCheck.java 
 //
-// Author(s): Arnaud CHARLEROY, Morgane VIDAL
+// Author(s): Arnaud Charleroy, Morgane Vidal
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2016
 // Creation date: may 2016

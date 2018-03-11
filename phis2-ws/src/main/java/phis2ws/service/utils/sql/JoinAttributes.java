@@ -1,11 +1,11 @@
 //**********************************************************************************************
 //                                       JoinAttributes.java 
 //
-// Author(s): Arnaud CHARLEROY 
+// Author(s): Arnaud Charleroy 
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2016
 // Creation date: october 2016
-// Contact:arnaud.charleroy@supagro.inra.fr, anne.tireau@supagro.inra.fr, pascal.neveu@supagro.inra.fr
+// Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  October, 2016
 // Subject: A class which list usables JOIN in SQL
 //***********************************************************************************************
@@ -15,7 +15,7 @@ import javax.inject.Singleton;
 
 /**
  * Liste des jointures
- * @author A. CHARLEROY
+ * @author A. Charleroy
  */
 @Singleton
 public final class JoinAttributes {

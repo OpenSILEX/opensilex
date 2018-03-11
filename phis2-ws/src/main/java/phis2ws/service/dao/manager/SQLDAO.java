@@ -1,11 +1,11 @@
 //**********************************************************************************************
 //                                       SQLDAO.java 
 //
-// Author(s): Arnaud CHARLEROY
+// Author(s): Arnaud Charleroy
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2016
 // Creation date: august 2016
-// Contact:arnaud.charleroy@supagro.inra.fr, anne.tireau@supagro.inra.fr, pascal.neveu@supagro.inra.fr
+// Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  October, 2016
 // Subject: List all methods usable for all SQL Database DAO
 //***********************************************************************************************
@@ -46,7 +46,7 @@ import phis2ws.service.utils.sql.SQLQueryBuilder;
  * Répresente les attributs et les methode d'un DAO se connectant à une base de
  * données relationnelle
  *
- * @author Arnaud CHARLEROY
+ * @author Arnaud Charleroy
  * @param <T>
  * @date 05/2016
  */
@@ -177,7 +177,7 @@ public abstract class SQLDAO<T> extends DAO<T> {
      * Exécute une requête de recherche à partir d'un DAO qui est en lien vers
      * une BD relationnelle.
      *
-     * @author Arnaud CHARLEROY
+     * @author Arnaud Charleroy
      * @param query
      * @return
      * @deprecated
@@ -197,7 +197,7 @@ public abstract class SQLDAO<T> extends DAO<T> {
      * Exécute une requête d'ajout de suppresion ou de mise à jour à partir d'un
      * DAO qui est en lien vers une BD relationnelle.
      *
-     * @author Arnaud CHARLEROY
+     * @author Arnaud Charleroy
      * @param query
      * @return
      * @throws SQLException

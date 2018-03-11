@@ -1,11 +1,11 @@
 //**********************************************************************************************
 //                                       SPARQLQueryBuilder.java 
 //
-// Author(s): Arnaud CHARLEROY 
+// Author(s): Arnaud Charleroy 
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2016
 // Creation date: may 2016
-// Contact:eloan.lagier@inra.fr, arnaud.charleroy@supagro.inra.fr, anne.tireau@supagro.inra.fr, pascal.neveu@supagro.inra.fr
+// Contact:eloan.lagier@inra.fr, arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  Janvier 29 , 2018
 // Subject: A class which permit to build a SPARQL query
 //***********************************************************************************************
@@ -14,7 +14,7 @@ package phis2ws.service.utils.sparql;
 /**
  * Classe concrète qui permet de créer des requêtes de recherche en SPARQL
  *
- * @author Arnaud CHARLEROY
+ * @author Arnaud Charleroy
  */
 public class SPARQLQueryBuilder extends SPARQLStringBuilder {
 

@@ -1,11 +1,11 @@
 //**********************************************************************************************
 //                                       SPARQLStringBuilder.java 
 //
-// Author(s): Arnaud CHARLEROY 
+// Author(s): Arnaud Charleroy 
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2016
 // Creation date: may 2016
-// Contact:arnaud.charleroy@supagro.inra.fr, anne.tireau@supagro.inra.fr, pascal.neveu@supagro.inra.fr
+// Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  October, 2016
 // Subject: A class which provide method to manipulate SPARQL 
 //***********************************************************************************************
@@ -18,7 +18,7 @@ import java.util.List;
  * Classe abstraite qui permet la création de constructeur qui facilite
  * l'écriture de requête SPARQL à partir de chaîne de caractères
  *
- * @author Arnaud CHARLEROY
+ * @author Arnaud Charleroy
  */
 public abstract class SPARQLStringBuilder {
 

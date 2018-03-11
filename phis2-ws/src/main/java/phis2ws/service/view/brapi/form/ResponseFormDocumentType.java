@@ -1,7 +1,7 @@
 //**********************************************************************************************
 //                                       ResponseFormDocumentType.java 
 //
-// Author(s): Arnaud CHARLEROY, Morgane VIDAL
+// Author(s): Arnaud Charleroy, Morgane Vidal
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2017
 // Creation date: March 2016

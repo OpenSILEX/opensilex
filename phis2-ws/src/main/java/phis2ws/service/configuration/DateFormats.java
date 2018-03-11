@@ -1,11 +1,11 @@
 //**********************************************************************************************
 //                                       DateFormats.java 
 //
-// Author(s): Arnaud CHARLEROY
+// Author(s): Arnaud Charleroy
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2016
 // Creation date: august 2016
-// Contact:arnaud.charleroy@supagro.inra.fr, anne.tireau@supagro.inra.fr, pascal.neveu@supagro.inra.fr
+// Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  February, 05 2018 - add constants 
 // Subject: Dates formats used in the WS
 //***********************************************************************************************
@@ -16,7 +16,7 @@ import java.util.List;
 
 /**
  * contains the date formats used in the web service
- * @author A. CHARLEROY
+ * @author A. Charleroy
  */
 public final class DateFormats {
 

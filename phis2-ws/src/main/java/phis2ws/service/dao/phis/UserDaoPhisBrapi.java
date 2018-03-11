@@ -1,7 +1,7 @@
 //**********************************************************************************************
 //                                       UserDaoPhisBrapi.java 
 //
-// Author(s): Anne TIREAU, Arnaud CHARLEROY, Morgane VIDAL
+// Author(s): Anne TIREAU, Arnaud Charleroy, Morgane Vidal
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2017
 // Creation date: may 2016
@@ -40,7 +40,7 @@ import phis2ws.service.view.model.phis.Group;
  * Manipule les Sessions et leur modifications à partir de la base de données
  *
  * @date 05/2016
- * @author Arnaud CHARLEROY
+ * @author Arnaud Charleroy
  * @update [Morgane Vidal] 04/17 suppression des attributs isAdmin, role, type
  * dans la table User ce qui a impliqué la suppression des méthodes isAdmin,
  * getProjectUserType, getUserGroup, getUserRole, getUserExperiment

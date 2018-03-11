@@ -1,7 +1,7 @@
 //**********************************************************************************************
 //                                       DAOPhisBrapi.java 
 //
-// Author(s): Arnaud CHARLEROY, Morgane VIDAL
+// Author(s): Arnaud Charleroy, Morgane Vidal
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2017
 // Creation date: august 2016
@@ -19,7 +19,7 @@ import phis2ws.service.utils.POSTResultsReturn;
  * Répresente une définition de la classe DAO permettant de se connecter à la
  * source de données Phis tout en ayant les méthodes déjà définies
  *
- * @author Arnaud CHARLEROY
+ * @author Arnaud Charleroy
  * @date 05/2016
  * @param <T> Classe représentant l'objet
  * @param <D> Classe représentant l'objet à enregistrer en BD

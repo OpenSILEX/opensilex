@@ -1,11 +1,11 @@
 //**********************************************************************************************
 //                                       DAO.java 
 //
-// Author(s): Arnaud CHARLEROY
+// Author(s): Arnaud Charleroy
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2016
 // Creation date: august 2016
-// Contact:arnaud.charleroy@supagro.inra.fr, anne.tireau@supagro.inra.fr, pascal.neveu@supagro.inra.fr
+// Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  October, 2016
 // Subject: A list of reusable functions for all DAO inherit class
 //***********************************************************************************************
@@ -14,7 +14,7 @@ package phis2ws.service.dao.manager;
 /**
  * Représente les fonctions de bases pour tout DAO
  *
- * @author Arnaud CHARLEROY
+ * @author Arnaud Charleroy
  * @param <T>
  */
 public abstract class DAO<T> {

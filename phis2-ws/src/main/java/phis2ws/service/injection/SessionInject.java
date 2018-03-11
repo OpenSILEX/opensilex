@@ -1,11 +1,11 @@
 //**********************************************************************************************
 //                                       SessionInject.java 
 //
-// Author(s): Arnaud CHARLEROY
+// Author(s): Arnaud Charleroy
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2016
 // Creation date: august 2016
-// Contact:arnaud.charleroy@supagro.inra.fr, anne.tireau@supagro.inra.fr, pascal.neveu@supagro.inra.fr
+// Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  October, 2016
 // Subject: Annotation created to inject user data in webservice resources classes
 // Custom Injection Provider
@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
  * 
  * @see https://jersey.java.net/documentation/latest/ioc.html
  * @date 07/16
- * @author A. CHARLEROY
+ * @author A. Charleroy
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)

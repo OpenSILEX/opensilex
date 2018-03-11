@@ -1,7 +1,7 @@
 //**********************************************************************************************
 //                                       SQLDAO.java 
 //
-// Author(s): Arnaud CHARLEROY
+// Author(s): Arnaud Charleroy
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2016
 // Creation date: august 2016
@@ -11,6 +11,7 @@
 //***********************************************************************************************
 package phis2ws.service.dao.manager;
 
+import com.nimbusds.jwt.JWTClaimsSet;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.Date;
@@ -21,6 +22,8 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -38,6 +41,7 @@ import org.postgis.Geometry;
 import org.postgresql.util.PGobject;
 import phis2ws.service.authentication.TokenManager;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
+import phis2ws.service.dao.datasource.DataSourceDAOPhisBrapi;
 import phis2ws.service.model.User;
 import phis2ws.service.utils.JsonConverter;
 import phis2ws.service.utils.sql.SQLQueryBuilder;
@@ -46,14 +50,26 @@ import phis2ws.service.utils.sql.SQLQueryBuilder;
  * Répresente les attributs et les methode d'un DAO se connectant à une base de
  * données relationnelle
  *
- * @author Arnaud CHARLEROY
+ * @author Arnaud Charleroy
  * @param <T>
  * @date 05/2016
  */
 public abstract class SQLDAO<T> extends DAO<T> {
 
-    private final static Logger logger = LoggerFactory.getLogger(SQLDAO.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(SQLDAO.class);
     protected final static String DUPLICATE_KEY_ERROR_POSTGRE = "23505";
+
+    static final Map<String, DataSource> JWT_ISSUER_DATASOURCE;
+    protected static final String PHIS_MODEL_DB_LOCATION = "Phis";
+        protected static final String GNPIS_MODEL_DB_LOCATION = "GnpIS";
+
+    // to manage multiple database switch 
+    static {
+        Map<String, DataSource> tmpMap = new HashMap<>();
+        tmpMap.put(DAOPhisBrapi.PHIS_MODEL_DB_LOCATION, DataSourceDAOPhisBrapi.getInstance());
+        tmpMap.put(DAOPhisBrapi.GNPIS_MODEL_DB_LOCATION, DataSourceDAOPhisBrapi.getInstance());
+        JWT_ISSUER_DATASOURCE = Collections.unmodifiableMap(tmpMap);
+    }
 
     /**
      * user c'est l'objet qui représente l'utilisateur
@@ -160,7 +176,6 @@ public abstract class SQLDAO<T> extends DAO<T> {
      * @param id identifiant
      */
     public void setUser(String id) {
-//        logger.debug(JsonConverter.ConvertToJson(TokenManager.Instance().getSession(id).getUser()));
         if (TokenManager.Instance().getSession(id).getUser() == null) {
             throw new WebApplicationException(Response.status(Response.Status.UNAUTHORIZED).build());
         } else {
@@ -177,7 +192,7 @@ public abstract class SQLDAO<T> extends DAO<T> {
      * Exécute une requête de recherche à partir d'un DAO qui est en lien vers
      * une BD relationnelle.
      *
-     * @author Arnaud CHARLEROY
+     * @author Arnaud Charleroy
      * @param query
      * @return
      * @deprecated
@@ -197,7 +212,7 @@ public abstract class SQLDAO<T> extends DAO<T> {
      * Exécute une requête d'ajout de suppresion ou de mise à jour à partir d'un
      * DAO qui est en lien vers une BD relationnelle.
      *
-     * @author Arnaud CHARLEROY
+     * @author Arnaud Charleroy
      * @param query
      * @return
      * @throws SQLException
@@ -256,7 +271,7 @@ public abstract class SQLDAO<T> extends DAO<T> {
         PreparedStatement statement = null;
         Connection con = null;
         
-        logger.debug(query);
+        LOGGER.debug(query);
         try {
             con = dataSource.getConnection();
             statement = con.prepareStatement(query);
@@ -266,8 +281,8 @@ public abstract class SQLDAO<T> extends DAO<T> {
             }
             return false;
         } catch (SQLException e) {
-            logger.error("SQL error Exist Request Method ", e);
-            logger.error(query);
+            LOGGER.error("SQL error Exist Request Method ", e);
+            LOGGER.error(query);
             return false;
         } finally {
             try {
@@ -282,7 +297,7 @@ public abstract class SQLDAO<T> extends DAO<T> {
                     con.close();
                 }
             } catch (SQLException ex) {
-                logger.error(ex.getMessage());
+                LOGGER.error(ex.getMessage());
             }
         }
     }
@@ -305,13 +320,13 @@ public abstract class SQLDAO<T> extends DAO<T> {
                 .append("\"").append(table).append("\"")
                 .append(" WHERE ")
                 .append(makeFindSQLConditionQuery(obj, false));
-        logger.debug(strSQLBuilder.toString());
+        LOGGER.debug(strSQLBuilder.toString());
         Statement Statement = null;
         ResultSet rs = null;
         Connection con = null;
         Map<String, String> objectFields = relationFieldsJavaSQLObject();
         final Field[] attributes = obj.getClass().getDeclaredFields();
-        logger.debug(JsonConverter.ConvertToJson(obj));
+        LOGGER.debug(JsonConverter.ConvertToJson(obj));
         try {
             con = dataSource.getConnection();
             Statement = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
@@ -343,17 +358,15 @@ public abstract class SQLDAO<T> extends DAO<T> {
             }
             return obj;
         } catch (SQLException e) {
-            logger.error("SQL error Exist Request ", e);
-            logger.error(strSQLBuilder.toString());
-//            e.printStackTrace();
+            LOGGER.error("SQL error Exist Request ", e);
+            LOGGER.error(strSQLBuilder.toString());
             return null;
         } finally {
-//            logger.debug(strSQLBuilder.toString());
             if (Statement != null) {
                 try {
                     Statement.close();
                 } catch (SQLException ex) {
-                    logger.error(ex.getMessage());
+                    LOGGER.error(ex.getMessage());
                 }
             }
             if (rs != null) {
@@ -391,16 +404,13 @@ public abstract class SQLDAO<T> extends DAO<T> {
             if (user != null) {
                 log += "User : " + user.getEmail() + "-";
             }
-            logger.trace(log + " query : " + preparedStatement.toString());
-//            logger.trace(preparedStatement.toString());
-//            logger.debug(preparedStatement.toString());
+            LOGGER.trace(log + " query : " + preparedStatement.toString());
             return true;
         } catch (SQLException e) {
-//            System.err.println(e.getMessage());
             if (e.getSQLState().contains(DUPLICATE_KEY_ERROR_POSTGRE)) {
                 return null;
             } else {
-                logger.error("SQL error Create Request " + e.getErrorCode() + e.getSQLState(), e);
+                LOGGER.error("SQL error Create Request " + e.getErrorCode() + e.getSQLState(), e);
                 return false;
             }
         } finally {
@@ -484,7 +494,7 @@ public abstract class SQLDAO<T> extends DAO<T> {
             }
 
         } catch (SecurityException | IllegalArgumentException | IllegalAccessException ex) {
-            logger.error(ex.getMessage(), ex);
+            LOGGER.error(ex.getMessage(), ex);
             return null;
         }
         return strBuilder.toString();
@@ -528,7 +538,7 @@ public abstract class SQLDAO<T> extends DAO<T> {
                 }
             }
         } catch (SecurityException | IllegalArgumentException | IllegalAccessException ex) {
-            logger.error(ex.getMessage(), ex);
+            LOGGER.error(ex.getMessage(), ex);
             return null;
         }
         final String createSQLValuesQuery = "(" + attributesBuilder.toString() + ")"
@@ -591,11 +601,10 @@ public abstract class SQLDAO<T> extends DAO<T> {
 
             }
         } catch (SecurityException | IllegalArgumentException | IllegalAccessException ex) {
-            logger.error(ex.getMessage(), ex);
+            LOGGER.error(ex.getMessage(), ex);
         } catch (SQLException ex) {
             java.util.logging.Logger.getLogger(SQLDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
-//        logger.debug(preparedStatement.toString());
         return preparedStatement;
     }
 
@@ -645,4 +654,17 @@ public abstract class SQLDAO<T> extends DAO<T> {
      * @return SQLQueryBuilder
      */
     protected abstract SQLQueryBuilder prepareSearchQuery();
+    
+    /**
+     * Switch database according to jwt payload information 
+     * @param jwtClaimsSet set of claims in the jwt payload
+     */
+    public void setDataSourceFromJwtClaimsSet(JWTClaimsSet jwtClaimsSet) {
+        if (jwtClaimsSet != null) {
+            String issuer = jwtClaimsSet.getIssuer();
+            if (JWT_ISSUER_DATASOURCE.containsKey(issuer)) {
+                this.dataSource = JWT_ISSUER_DATASOURCE.get(issuer);
+            }
+        }
+    }
 }

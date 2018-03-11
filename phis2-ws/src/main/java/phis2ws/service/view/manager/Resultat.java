@@ -1,7 +1,7 @@
 //**********************************************************************************************
 //                                       Resultat.java 
 //
-// Author(s): Samuël Chérimont, Arnaud CHARLEROY 
+// Author(s): Samuël Chérimont, Arnaud Charleroy 
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2016
 // Creation date: december 2015

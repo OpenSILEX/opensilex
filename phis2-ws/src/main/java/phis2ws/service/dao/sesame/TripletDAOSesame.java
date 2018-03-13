@@ -7,15 +7,17 @@
 // Creation date: 7 mars 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  7 mars 2018
-// Subject:
+// Subject: a specific DAO to insert triplets in the triplestore
 //******************************************************************************
 package phis2ws.service.dao.sesame;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -26,24 +28,29 @@ import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
+import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.OType;
 import phis2ws.service.resources.dto.TripletDTO;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.utils.POSTResultsReturn;
+import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.utils.sparql.SPARQLUpdateBuilder;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.Triplet;
 
 /**
- *
+ * a specific DAO to insert triplets in the triplestore
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class TripletDAOSesame extends DAOSesame<Triplet> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(TripletDAOSesame.class);
+    
+    //pattern to generate uri for the subject of a triplet
+    private final static String REQUEST_GENERATION_URI_STRING = "?";
 
     @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
@@ -77,13 +84,16 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
                         dataOk = false;
                         checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, StatusCodeMsg.UNKNOWN_URI + " " + tripletDTO.getS()));
                     }
-                } else { //malformed uri
-                    dataOk = false;
-                    checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, StatusCodeMsg.MALFORMED_URI + " " + tripletDTO.getS()));
+                } else {
+                    if (!tripletDTO.getS().equals(REQUEST_GENERATION_URI_STRING)) {//malformed uri
+                        dataOk = false;
+                        checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, StatusCodeMsg.MALFORMED_URI + " " + tripletDTO.getS()));
+                    }
                 }
                 
                 //2. check if triplet.p is an existing relation
-                if (!uriDaoSesame.existObject(tripletDTO.getP())) {
+                if (!uriDaoSesame.existObject(tripletDTO.getP())
+                        && !tripletDTO.getP().equals("rdf:type")) {
                     dataOk = false;
                     checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, StatusCodeMsg.UNKNOWN_URI + " " + tripletDTO.getP()));
                 }
@@ -150,18 +160,110 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
         return tripletsCheck;
     }
     
-    public SPARQLUpdateBuilder prepareInsertQuery(TripletDTO triplet, String graphUri) {
+    /**
+     * generates the query of insertion of a triplets group
+     * @param triplets
+     * @param graphUri
+     * @return the insertion query
+     * e.g.
+     * INSERT DATA {
+     *      GRAPH <http://www.phenome-fppn.fr/diaphen/1520935678173> { 
+     *          <http://www.phenome-fppn.fr/diaphen/2018/s18001>  rdf:type  <http://www.phenome-fppn.fr/vocabulary/2017#Sensor> . 
+     *          <http://www.phenome-fppn.fr/diaphen/2018/s18001>  <http://www.phenome-fppn.fr/vocabulary/2017#hasSensor>  <http://www.phenome-fppn.fr/phenovia/2017/o1032482> . 
+     *      }
+     * }
+     */
+    public SPARQLUpdateBuilder prepareInsertQuery(ArrayList<TripletDTO> triplets, String graphUri) {
         SPARQLUpdateBuilder insertQuery = new SPARQLUpdateBuilder();
         
         insertQuery.appendGraphURI(graphUri);
         
-        String object = triplet.getO_lang() != null ? "\"" + triplet.getO() + "\"@" + triplet.getO_lang() : triplet.getO();
-        
-        insertQuery.appendTriplet(triplet.getS(), triplet.getP(), object, null);
+        for (TripletDTO triplet : triplets) {
+            String object = triplet.getO_lang() != null ? "\"" + triplet.getO() + "\"@" + triplet.getO_lang() : triplet.getO();
+            insertQuery.appendTriplet(triplet.getS(), triplet.getP(), object, null);
+        }
         
         return insertQuery;
     }
     
+    /**
+     * generates the uri of the triplet group if it is needed
+     * (REQUEST_GENERATION_URI_STRING founded as triplet subject)
+     * needs to find the rdf:type property
+     * @param tripletsGroup
+     * @return the uri generated
+     */
+    private String generateUriIfNeeded(ArrayList<TripletDTO> tripletsGroup) {
+        String rdfType = null;
+        URINamespaces uriNamespaces = new URINamespaces();
+
+        //1. get the type (if exist)
+        for (TripletDTO triplet : tripletsGroup) {
+            //if there is a type, generate the uri
+            if (triplet.getP().equals(uriNamespaces.getRelationsProperty("type"))
+                    && triplet.getS().equals(REQUEST_GENERATION_URI_STRING)) {
+                rdfType = triplet.getO();
+            }
+        }
+
+        //2. generate uri if needed
+        UriGenerator uriGenerator = new UriGenerator();
+        String uri = null;
+
+        for (TripletDTO triplet : tripletsGroup) {
+            //if there is a type, generate the uri
+            if (triplet.getS().equals(REQUEST_GENERATION_URI_STRING) && uri == null) {
+                uri = uriGenerator.generateNewInstanceUri(rdfType);
+            }
+        }
+
+        return uri;
+    }
+    
+    /**
+     * register the triplets in the triplestore. Add the triplets in the given
+     * graphs
+     * @param tripletsGroup
+     */
+    private ArrayList<String> registerTripletsInGivenGraphs(ArrayList<TripletDTO> tripletsGroup) {
+        HashMap<String, ArrayList<TripletDTO>> tripletsByGraph = new HashMap<>();
+        ArrayList<String> createdResourcesUris = new ArrayList<>();
+
+        //1. order triplets by graphs
+        for (TripletDTO triplet : tripletsGroup) {
+            if (triplet.getG() != null) {
+                ArrayList<TripletDTO> triplets = new ArrayList<>();
+
+                if (tripletsByGraph.containsKey(triplet.getG())) {
+                    triplets = tripletsByGraph.get(triplet.getG());
+                }
+
+                triplets.add(triplet);
+                tripletsByGraph.put(triplet.getG(), triplets);
+            }
+
+            if (!createdResourcesUris.contains(triplet.getS())) {
+                createdResourcesUris.add(triplet.getS());
+            }
+        }
+
+        //2. save each group of triplets
+        for (Map.Entry<String,ArrayList<TripletDTO>> triplets : tripletsByGraph.entrySet()) {
+            SPARQLUpdateBuilder insertInGivenGraph = prepareInsertQuery(triplets.getValue(), triplets.getKey());
+            LOGGER.debug("SPARQL query : " + insertInGivenGraph.toString());
+            Update prepareInsertInGivenGraph = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, insertInGivenGraph.toString());
+            prepareInsertInGivenGraph.execute();
+        }
+
+        return createdResourcesUris;
+    }
+    
+    /**
+     * insert a group of triplets in the triplestore
+     * @param tripletsGroup
+     * @param graphUri
+     * @return the insertion result with the resources created or the errors
+     */
     public POSTResultsReturn insertTripletsGroup(ArrayList<TripletDTO> tripletsGroup, String graphUri) {
         //SILEX:todo
         //add transaction
@@ -170,51 +272,64 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
         List<String> createdResourcesUris = new ArrayList<>();
         boolean tripletInserted = true;
         boolean resultState = false;
-        
+
         final Iterator<TripletDTO> iteratorTriplets = tripletsGroup.iterator();
-        
+
+        String generatedUri = generateUriIfNeeded(tripletsGroup);
+
         while(iteratorTriplets.hasNext() && tripletInserted) {
             TripletDTO tripletDTO = iteratorTriplets.next();
-            try {
-                //SILEX:test
-                //All the triplestore connection has to been checked and updated
-                //This is an unclean hot fix
-                String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
-                String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "repositoryID");
-                rep = new HTTPRepository(sesameServer, repositoryID); //Stockage triplestore Sesame
-                rep.initialize();
-                this.setConnection(rep.getConnection());
-                this.getConnection().begin();
 
-                //Register triplet in the triplestore, in the graph created at the request reception
-                SPARQLUpdateBuilder insertQuery = prepareInsertQuery(tripletDTO, graphUri);
-                LOGGER.debug("SPARQL query : " + insertQuery.toString());
-                Update prepareInsert = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, insertQuery.toString());
-                prepareInsert.execute();
-                if (tripletDTO.getG() != null) {
-                    SPARQLUpdateBuilder insertInGivenGraph = prepareInsertQuery(tripletDTO, tripletDTO.getG());
-                    LOGGER.debug("SPARQL query : " + insertInGivenGraph.toString());
-                    Update prepareInsertInGivenGraph = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, insertInGivenGraph.toString());
-                    prepareInsertInGivenGraph.execute();
+            if (tripletDTO.getS().equals(REQUEST_GENERATION_URI_STRING)) {
+                if (generatedUri != null) {
+                    tripletDTO.setS(generatedUri);
+                } else { //error (blank node unimplemented yet)
+                    POSTResultsReturn result = new POSTResultsReturn(false, false, false);
+                    insertStatus.add(new Status(StatusCodeMsg.ERR, StatusCodeMsg.ERR, "Cannot generate uri, unknown type or given type uri generator not implemetend yet."));
+                    result.statusList = insertStatus;
+                    return result;
                 }
-                //\SILEX:test
-                createdResourcesUris.add(tripletDTO.getS());
-                
-                if (tripletInserted) {
-                    resultState = true;
-                    getConnection().commit();
-                } else {
-                    getConnection().rollback();
-                }
-            } catch (RepositoryException ex) {
-                    LOGGER.error(StatusCodeMsg.COMMIT_TRIPLESTORE_ERROR, ex);
-            } catch (MalformedQueryException e) {
-                   LOGGER.error(e.getMessage(), e);
-                   tripletInserted = false;
-                   insertStatus.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.MALFORMED_CREATE_QUERY + " : " + e.getMessage()));
-            } 
+            }
         }
-        
+        try {
+            //SILEX:test
+            //All the triplestore connection has to been checked and updated
+            //This is an unclean hot fix
+            String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
+            String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "repositoryID");
+            rep = new HTTPRepository(sesameServer, repositoryID); //Stockage triplestore Sesame
+            rep.initialize();
+            this.setConnection(rep.getConnection());
+            this.getConnection().begin();
+
+            //Register triplet in the triplestore, in the graph created at the request reception
+            SPARQLUpdateBuilder insertQuery = prepareInsertQuery(tripletsGroup, graphUri);
+            LOGGER.debug("SPARQL query : " + insertQuery.toString());
+            Update prepareInsert = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, insertQuery.toString());
+            prepareInsert.execute();
+
+            //Register triplets in the triplestore, in the given graphs
+            createdResourcesUris = registerTripletsInGivenGraphs(tripletsGroup);
+
+            if (tripletInserted) {
+                resultState = true;
+                getConnection().commit();
+            } else {
+                getConnection().rollback();
+            }
+
+            //SILEX:test
+            //For the pool connection problems
+            getConnection().close();
+            //\SILEX:test
+        } catch (RepositoryException ex) {
+                LOGGER.error(StatusCodeMsg.COMMIT_TRIPLESTORE_ERROR, ex);
+        } catch (MalformedQueryException e) {
+               LOGGER.error(e.getMessage(), e);
+               tripletInserted = false;
+               insertStatus.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.MALFORMED_CREATE_QUERY + " : " + e.getMessage()));
+        }
+
         POSTResultsReturn result = new POSTResultsReturn(resultState, tripletInserted, true);
         result.statusList = insertStatus;
         result.setCreatedResources(createdResourcesUris);
@@ -222,7 +337,7 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
             result.createdResources = createdResourcesUris;
             result.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, createdResourcesUris.size() + " " + StatusCodeMsg.RESOURCES_CREATED));
         }
-        
+
         return result;
     }
     

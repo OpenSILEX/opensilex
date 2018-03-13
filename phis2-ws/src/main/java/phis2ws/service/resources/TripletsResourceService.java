@@ -75,13 +75,15 @@ public class TripletsResourceService {
      *          "s": "?",
      *          "p": "rdf:type",
      *          "o": "http://www.phenome-fppn.fr/vocabulary/2017#Experiment",
-     *          "o_type": "uri"
+     *          "o_type": "uri",
+     *          "g": "http://www.phenome-fppn.fr/phis_field/DIA2017-2"
      *      },
      *      {
      *        "s": "?",
      *        "p": "http://www.phenome-fppn.fr/vocabulary/2017#hasDocument",
      *        "o": "http://www.phenome-fppn.fr/phis_field/documents/documente597f57ba71d421a86277d830f4b9885",
-     *        "o_type": "uri"  
+     *        "o_type": "uri" ,
+     *        "g": "http://www.phenome-fppn.fr/phis_field/DIA2017-2"
      *      }
      * ]
      * @param context
@@ -105,6 +107,10 @@ public class TripletsResourceService {
     public Response postTriplets(
             @ApiParam(value = DocumentationAnnotation.TRIPLET_POST_DATA_DEFINITION) ArrayList<ArrayList<TripletDTO>> triplets,
             @Context HttpServletRequest context) {
+        //SILEX:warning
+        //blank nodes are not implemented yet
+        //\SILEX:warning
+
         AbstractResultForm postResponse = null;
         
         //If there are at least one list of triplets

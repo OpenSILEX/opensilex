@@ -57,7 +57,7 @@ public class UriGenerator {
             newVectorNumber = numberOfVectors;
         }
         
-        return platformUri + "/" + actualYear + "/" + URI_CODE_VECTOR + actualYear.substring(0,2) + newVectorNumber;
+        return platformUri + actualYear + "/" + URI_CODE_VECTOR + actualYear.substring(2,4) + newVectorNumber;
     }
     
     /**
@@ -80,7 +80,8 @@ public class UriGenerator {
         //2. generates sensor uri
         String platformUri = PropertiesFileManager.getConfigFileProperty(PROPERTIES_SERVICE_FILE_NAME, PROPERTIES_SERVICE_BASE_URI);
         
-        String numberOfSensors = Integer.toString(numberExistingSensors + 1);
+        int sensorNumber = numberExistingSensors + 1;
+        String numberOfSensors = Integer.toString(sensorNumber);
         String newSensorNumber;
         
         switch (numberOfSensors.length()) {
@@ -95,7 +96,7 @@ public class UriGenerator {
                 break;
         }
         
-        return platformUri + "/" + actualYear + "/" + URI_CODE_SENSOR + actualYear.substring(0,2) + newSensorNumber;
+        return platformUri + actualYear + "/" + URI_CODE_SENSOR + actualYear.substring(2,4) + newSensorNumber;
     }
     
     /**
@@ -106,9 +107,9 @@ public class UriGenerator {
     public String generateNewInstanceUri(String instanceType) {
         URINamespaces uriNamespaces = new URINamespaces();
         
-        if (uriNamespaces.getContexts().get("cVector").equals(instanceType)) {
+        if (uriNamespaces.getObjectsProperty("cVector").equals(instanceType)) {
             return generateVectorUri();
-        } else if (uriNamespaces.getContexts().get("cSensor").equals(instanceType)) {
+        } else if (uriNamespaces.getObjectsProperty("cSensor").equals(instanceType)) {
             return generateSensorUri();
         }
         

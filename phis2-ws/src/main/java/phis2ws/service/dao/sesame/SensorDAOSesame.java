@@ -26,7 +26,7 @@ import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 
 /**
- * allows CRUD methods of sensors in the triplestore sesame
+ * allows CRUD methods of sensors in the triplestore rdf4j
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class SensorDAOSesame extends DAOSesame<Object> {
@@ -42,9 +42,9 @@ public class SensorDAOSesame extends DAOSesame<Object> {
     private SPARQLQueryBuilder prepareGetSensorsNumber(String year) {
         URINamespaces uriNamespaces = new URINamespaces();
         SPARQLQueryBuilder queryNumberSensors = new SPARQLQueryBuilder();
-        queryNumberSensors.appendSelect("count(?sensor) as ?count");
+        queryNumberSensors.appendSelect("(count(distinct ?sensor) as ?count)");
         queryNumberSensors.appendTriplet("?sensor", uriNamespaces.getRelationsProperty("type"), uriNamespaces.getObjectsProperty("cSensor"), null);
-        queryNumberSensors.appendFilter("FILTER regex(?sensor, \".*\\/" + year + "\\/.*\")");
+        queryNumberSensors.appendFilter("regex(str(?sensor), \".*/" + year + "/.*\")");
         
         LOGGER.debug("SPARQL query : " + queryNumberSensors.toString());
         return queryNumberSensors;

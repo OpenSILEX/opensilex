@@ -42,9 +42,9 @@ public class VectorDAOSesame extends DAOSesame<Object> {
     private SPARQLQueryBuilder prepareGetVectorsNumber(String year) {
         URINamespaces uriNamespaces = new URINamespaces();
         SPARQLQueryBuilder queryNumberVectors = new SPARQLQueryBuilder();
-        queryNumberVectors.appendSelect("count(?sensor) as ?count");
+        queryNumberVectors.appendSelect("(count(distinct ?vector) as ?count)");
         queryNumberVectors.appendTriplet("?vector", uriNamespaces.getRelationsProperty("type"), uriNamespaces.getObjectsProperty("cVector"), null);
-        queryNumberVectors.appendFilter("FILTER regex(?vector, \".*\\/" + year + "\\/.*\")");
+        queryNumberVectors.appendFilter("regex(str(?vector), \".*/" + year + "/.*\")");
         
         LOGGER.debug("SPARQL query : " + queryNumberVectors.toString());
         return queryNumberVectors;

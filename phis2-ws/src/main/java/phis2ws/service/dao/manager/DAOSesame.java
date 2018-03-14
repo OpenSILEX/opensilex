@@ -49,7 +49,10 @@ public abstract class DAOSesame<T> {
     protected static final String SESAME_SERVER = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
     protected static final String REPOSITORY_ID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "repositoryID");
     //\SILEX:test
-    
+
+    //used for logger
+    protected static final String SPARQL_SELECT_QUERY = "SPARQL query : ";
+
     protected static Repository rep;
     private RepositoryConnection connection;
 

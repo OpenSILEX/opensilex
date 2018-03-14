@@ -35,4 +35,6 @@ public final class GlobalWebserviceValues {
     public static final String DATA_TYPE_STRING = "string";
     public static final String HEADER = "header";
     public static final String AUTHORIZATION = "Authorization";
+    public static final String PAGE_SIZE = "pageSize";
+    public static final String PAGE = "page";
 }

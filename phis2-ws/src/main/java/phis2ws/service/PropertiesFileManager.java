@@ -1,7 +1,7 @@
 //**********************************************************************************************
 //                                       PropertiesFileManager.java 
 //
-// Author(s): Arnaud CHARLEROY, Morgane VIDAL
+// Author(s): Arnaud Charleroy, Morgane Vidal
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2016
 // Creation date: august 2016
@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
  * défaut dans un projet Maven
  *
  * @date 05/2016
- * @author Arnaud CHARLEROY
+ * @author Arnaud Charleroy
  */
 public class PropertiesFileManager {
 

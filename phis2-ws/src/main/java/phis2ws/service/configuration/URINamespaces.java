@@ -1,11 +1,11 @@
 //**********************************************************************************************
 //                                       URINamespaces.java from uris.php
 //
-// Author(s): Isabelle NEMBROT, Arnaud CHARLEROY, Morgane Vidal
+// Author(s): Isabelle NEMBROT, Arnaud Charleroy, Morgane Vidal
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2016
 // Creation date: august 2016
-// Contact:i.nembrot@laposte.net, arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@supagro.inra.fr, pascal.neveu@supagro.inra.fr
+// Contact:i.nembrot@laposte.net, arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  June, 2017 (adaptation to PHIS field)
 // Subject: personal parameters for global usage
 // G_URI :
@@ -24,7 +24,7 @@ import phis2ws.service.PropertiesFileManager;
 
 /**
  * Permet de creer des URI de concepts, objets et relation entre objets et proprietes en fonction pour une platform
- * @author A. CHARLEROY
+ * @author A. Charleroy
  */
 public class URINamespaces {
 

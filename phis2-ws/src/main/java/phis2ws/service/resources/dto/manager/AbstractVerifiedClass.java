@@ -1,11 +1,11 @@
 //**********************************************************************************************
 //                                       AbstractVerifiedClass.java 
 //
-// Author(s): Arnaud CHARLEROY 
+// Author(s): Arnaud Charleroy 
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2016
 // Creation date: may 2016
-// Contact:arnaud.charleroy@supagro.inra.fr, anne.tireau@supagro.inra.fr, pascal.neveu@supagro.inra.fr
+// Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  October, 2016
 // Subject: A class which contains methods to verify automatically class's attributes from rules defined by user
 //***********************************************************************************************
@@ -21,7 +21,7 @@ import java.util.Objects;
 
 /**
  * Réprésente un classe qui permet de définir des objets qui peuvent vérifier leur attributs
- * @author Arnaud CHARLEROY
+ * @author Arnaud Charleroy
  */
 public abstract class AbstractVerifiedClass implements VerifiedClassInterface {
     

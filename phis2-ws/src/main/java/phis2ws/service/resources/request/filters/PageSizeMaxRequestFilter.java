@@ -20,7 +20,7 @@ import phis2ws.service.view.brapi.form.ResponseFormGET;
  * Permet de filtrer les envois au Web Service grâce au header des requêtes
  * ainsi que d'autres paramètres
  *
- * @author Arnaud CHARLEROY
+ * @author Arnaud Charleroy
  * @date 05/16
  * @update 07/16
  */

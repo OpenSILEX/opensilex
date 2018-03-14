@@ -1,7 +1,7 @@
 //**********************************************************************************************
 //                                       DatasetResourceService.java 
 //
-// Author(s): Morgane VIDAL
+// Author(s): Morgane Vidal
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2017
 // Creation date: September 2017

@@ -21,7 +21,7 @@ import phis2ws.service.utils.sql.SQLQueryBuilder;
  * Manipule les Sessions et leur modifications à partir de la base de données
  *
  * @date 05/2016
- * @author Arnaud CHARLEROY
+ * @author Arnaud Charleroy
  */
 public class SessionDaoPhisBrapi extends DAOPhisBrapi<Session, Object> {
 

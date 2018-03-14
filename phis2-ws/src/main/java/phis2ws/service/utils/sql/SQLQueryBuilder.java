@@ -1,7 +1,7 @@
 //**********************************************************************************************
 //                                       SQLQueryBuilder.java 
 //
-// Author(s): Arnaud CHARLEROY, Morgane Vidal
+// Author(s): Arnaud Charleroy, Morgane Vidal
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2016
 // Creation date: may 2016
@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * Classe concrète qui permet de créer des requêtes de recherche en SQL
  *
- * @author Arnaud CHARLEROY, Morgane Vidal
+ * @author Arnaud Charleroy, Morgane Vidal
  */
 public class SQLQueryBuilder {
 

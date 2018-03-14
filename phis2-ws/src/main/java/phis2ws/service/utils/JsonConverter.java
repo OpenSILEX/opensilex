@@ -64,7 +64,7 @@ public final class JsonConverter {
     }
 
     /**
-     * @author Arnaud CHARLEROY
+     * @author Arnaud Charleroy
      * @param j Chaîne à convertir
      * @param c Classe de l'objet dans lequel la chaîne doit être convertie
      * @return Objet du converti du JSON

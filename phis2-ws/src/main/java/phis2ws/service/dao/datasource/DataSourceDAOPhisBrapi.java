@@ -1,11 +1,11 @@
 //**********************************************************************************************
 //                                       DataSourceDAOPhisBrapi.java 
 //
-// Author(s): Arnaud CHARLEROY
+// Author(s): Arnaud Charleroy
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2016
 // Creation date: august 2016
-// Contact:arnaud.charleroy@supagro.inra.fr, anne.tireau@supagro.inra.fr, pascal.neveu@supagro.inra.fr
+// Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  October, 2016
 // Subject: Datasource for Phis database, create a pool of connexion for this database
 //***********************************************************************************************
@@ -22,7 +22,7 @@ import static phis2ws.service.PropertiesFileManager.getSQLPoolDataSourceProperti
  * relationnelle Postgresql Phis pattern SingletonHolder
  *
  * @date 05/2016
- * @author Arnaud CHARLEROY
+ * @author Arnaud Charleroy
  */
 public abstract class DataSourceDAOPhisBrapi extends AbstractSQLDataSource {
 

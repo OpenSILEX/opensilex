@@ -161,7 +161,7 @@ public class URINamespaces {
         RELATIONS.put("rHasTrait", CONTEXTS.get("pVoc2017") + "#hasTrait");
         RELATIONS.put("rHasMethod", CONTEXTS.get("pVoc2017") + "#hasMethod");
         RELATIONS.put("rHasUnit", CONTEXTS.get("pVoc2017") + "#hasUnit");
-        RELATIONS.put("rHasBrand", CONTEXTS.get("pVoc2018") + "#hasBrand");
+        RELATIONS.put("rHasBrand", CONTEXTS.get("pVoc2017") + "#hasBrand");
         RELATIONS.put("rMeasuredVariable", CONTEXTS.get("pVoc2017") + "#measuredVariable");
         RELATIONS.put("rInServiceDate", CONTEXTS.get("pVoc2017") + "#inServiceDate");
         RELATIONS.put("rDateOfPurchase", CONTEXTS.get("pVoc2017") + "#dateOfPurchase");

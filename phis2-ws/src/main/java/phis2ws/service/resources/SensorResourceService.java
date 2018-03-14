@@ -11,6 +11,7 @@
 //******************************************************************************
 package phis2ws.service.resources;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
@@ -44,6 +45,8 @@ import phis2ws.service.view.model.phis.Sensor;
  * sensor service 
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
+@Api("/sensors")
+@Path("/sensors")
 public class SensorResourceService {
     final static Logger LOGGER = LoggerFactory.getLogger(SensorResourceService.class);
     
@@ -111,14 +114,14 @@ public class SensorResourceService {
     public Response getSensorsBySearch(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int pageSize,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
-            @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @PathParam("uri") String uri,
-            @ApiParam(value = "Search by type uri", example = DocumentationAnnotation.EXAMPLE_SENSOR_RDF_TYPE) @PathParam("rdfType") String rdfType,
-            @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_SENSOR_ALIAS) @PathParam("label") String label,
-            @ApiParam(value = "Search by brand", example = DocumentationAnnotation.EXAMPLE_SENSOR_BRAND) @PathParam("brand") String brand,
-            @ApiParam(value = "Search by variable", example = DocumentationAnnotation.EXAMPLE_SENSOR_VARIABLE) @PathParam("variable") String variable,
-            @ApiParam(value = "Search by service date", example = DocumentationAnnotation.EXAMPLE_SENSOR_IN_SERVICE_DATE) @PathParam("inServiceDate") String inServiceDate,
-            @ApiParam(value = "Search by date of purchase", example = DocumentationAnnotation.EXAMPLE_SENSOR_DATE_OF_PURCHASE) @PathParam("dateOfPurchase") String dateOfPurchase,
-            @ApiParam(value = "Search by date of last calibration", example = DocumentationAnnotation.EXAMPLE_SENSOR_DATE_OF_LAST_CALIBRATION) @PathParam("dateOfLastCalibration") String dateOfLastCalibration) {
+            @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("uri") String uri,
+            @ApiParam(value = "Search by type uri", example = DocumentationAnnotation.EXAMPLE_SENSOR_RDF_TYPE) @QueryParam("rdfType") String rdfType,
+            @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_SENSOR_ALIAS) @QueryParam("label") String label,
+            @ApiParam(value = "Search by brand", example = DocumentationAnnotation.EXAMPLE_SENSOR_BRAND) @QueryParam("brand") String brand,
+            @ApiParam(value = "Search by variable", example = DocumentationAnnotation.EXAMPLE_SENSOR_VARIABLE) @QueryParam("variable") String variable,
+            @ApiParam(value = "Search by service date", example = DocumentationAnnotation.EXAMPLE_SENSOR_IN_SERVICE_DATE) @QueryParam("inServiceDate") String inServiceDate,
+            @ApiParam(value = "Search by date of purchase", example = DocumentationAnnotation.EXAMPLE_SENSOR_DATE_OF_PURCHASE) @QueryParam("dateOfPurchase") String dateOfPurchase,
+            @ApiParam(value = "Search by date of last calibration", example = DocumentationAnnotation.EXAMPLE_SENSOR_DATE_OF_LAST_CALIBRATION) @QueryParam("dateOfLastCalibration") String dateOfLastCalibration) {
         
         SensorDAOSesame sensorDAO = new SensorDAOSesame();
         if (uri != null) {

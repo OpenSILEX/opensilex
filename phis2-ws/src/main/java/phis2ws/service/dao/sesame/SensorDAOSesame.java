@@ -138,14 +138,14 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_TYPE, rdfType, null);
 
         if (label != null) {
-            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_LABEL, label, null);
+            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_LABEL, "\"" + label + "\"", null);
         } else {
             query.appendSelect(" ?" + LABEL);
             query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_LABEL, "?" + LABEL, null);
         }
 
         if (brand != null) {
-            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_BRAND, brand, null);
+            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_BRAND, "\"" + brand + "\"", null);
         } else {
             query.appendSelect(" ?" + BRAND);
             query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_BRAND, "?" + BRAND, null);
@@ -159,21 +159,21 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         }
 
         if (inServiceDate != null) {
-            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_IN_SERVICE_DATE, inServiceDate, null);
+            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_IN_SERVICE_DATE, "\"" + inServiceDate + "\"", null);
         } else {
             query.appendSelect(" ?" + IN_SERVICE_DATE);
             query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_IN_SERVICE_DATE, "?" + IN_SERVICE_DATE, null);
         }
 
         if (dateOfPurchase != null) {
-            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_DATE_OF_PURCHASE, dateOfPurchase, null);
+            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_DATE_OF_PURCHASE, "\"" + dateOfPurchase + "\"", null);
         } else {
             query.appendSelect("?" + DATE_OF_PURCHASE);
             query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_DATE_OF_PURCHASE, "?" + DATE_OF_PURCHASE, null);
         }
 
         if (dateOfLastCalibration != null) {
-            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_DATE_OF_LAST_CALIBRATION, dateOfLastCalibration, null);
+            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_DATE_OF_LAST_CALIBRATION, "\"" + dateOfLastCalibration + "\"", null);
         } else {
             query.appendSelect("?" + DATE_OF_LAST_CALIBRATION);
             query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_DATE_OF_LAST_CALIBRATION, "?" + DATE_OF_LAST_CALIBRATION, null);
@@ -205,11 +205,11 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
             sensor.setUri(bindingSet.getValue(URI).stringValue());
         }
 
-        if (rdfType != null) {
-            sensor.setRdfType(rdfType);
-        } else {
-            sensor.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
-        }
+//        if (rdfType != null) {
+//            sensor.setRdfType(rdfType);
+//        } else {
+//            sensor.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
+//        }
 
         if (label != null) {
             sensor.setLabel(label);

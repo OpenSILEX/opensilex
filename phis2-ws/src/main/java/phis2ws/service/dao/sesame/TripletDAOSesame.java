@@ -178,10 +178,16 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
         
         insertQuery.appendGraphURI(graphUri);
         
-        for (TripletDTO triplet : triplets) {
-            String object = triplet.getO_lang() != null ? "\"" + triplet.getO() + "\"@" + triplet.getO_lang() : triplet.getO();
+        triplets.forEach((triplet) -> {
+            String object;
+            if (triplet.getO_type().equals("literal")) {
+                object = triplet.getO_lang() != null ? "\"" + triplet.getO() + "\"@" + triplet.getO_lang() : "\"" + triplet.getO() + "\"";
+            } else {
+                object = triplet.getO();
+            }
+            
             insertQuery.appendTriplet(triplet.getS(), triplet.getP(), object, null);
-        }
+        });
         
         return insertQuery;
     }

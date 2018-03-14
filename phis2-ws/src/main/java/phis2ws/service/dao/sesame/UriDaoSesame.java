@@ -1,7 +1,7 @@
 //**********************************************************************************************
 //                                       UriDaoSesame.java 
 //
-// Author(s): Eloan LAGIER, Morgane VIDAL
+// Author(s): Eloan LAGIER, Morgane Vidal
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2018
 // Creation date: Feb 26 2018

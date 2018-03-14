@@ -22,7 +22,7 @@ import phis2ws.service.PropertiesFileManager;
  */
 public class SessionThread extends Thread {
     private static final String propsFileName = "service";
-    final static Logger logger = LoggerFactory.getLogger(SessionThread.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(SessionThread.class);
     
     private final String id, username;
     private boolean cmp;
@@ -42,7 +42,7 @@ public class SessionThread extends Thread {
             try {
                 this.sessionTime = Integer.valueOf(PropertiesFileManager.getConfigFileProperty(propsFileName, "sessionTime")) * 1000;
             } catch (NumberFormatException e) {
-                logger.error("Error : No session time defined or file parsing error for "+ propsFileName +" properties file", e);
+                LOGGER.error("Error : No session time defined or file parsing error for "+ propsFileName +" properties file", e);
             }
    }
 
@@ -65,7 +65,7 @@ public class SessionThread extends Thread {
                 SessionThread.sleep(this.sessionTime);
             }
         } catch (InterruptedException ex) {
-             logger.info("The session was interrupted", ex);
+             LOGGER.info("The session was interrupted", ex);
         }
         TokenManager.Instance().removeSession(this.id);
         this.interrupt();

@@ -1,7 +1,7 @@
 //**********************************************************************************************
 //                                       DocumentDao.java 
 //
-// Author(s): Arnaud CHARLEROY, Morgane VIDAL
+// Author(s): Arnaud Charleroy, Morgane Vidal
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2016
 // Creation date: august 2016
@@ -25,7 +25,7 @@ import phis2ws.service.utils.sql.SQLQueryBuilder;
 import phis2ws.service.view.model.phis.Document;
 
 public class DocumentDao extends DAOPhisBrapi<Document, Object> {
-    final static Logger logger = LoggerFactory.getLogger(DocumentDao.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(DocumentDao.class);
 
     public DocumentDao() {
         super();

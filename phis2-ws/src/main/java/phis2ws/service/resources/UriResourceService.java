@@ -1,7 +1,7 @@
 //**********************************************************************************************
 //                                       UriResourceService.java 
 //
-// Author(s): Eloan LAGIER, Morgane VIDAL
+// Author(s): Eloan LAGIER, Morgane Vidal
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2018
 // Creation date: 26 Feb 2018

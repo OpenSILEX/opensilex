@@ -20,14 +20,14 @@ import phis2ws.service.view.brapi.form.ResponseFormGET;
  * Permet de filtrer les envois au Web Service grâce au header des requêtes
  * ainsi que d'autres paramètres
  *
- * @author Arnaud CHARLEROY
+ * @author Arnaud Charleroy
  * @date 05/16
  * @update 07/16
  */
 @Provider
 public class PageSizeMaxRequestFilter implements ContainerRequestFilter {
 
-    final static Logger logger = LoggerFactory.getLogger(PageSizeMaxRequestFilter.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(PageSizeMaxRequestFilter.class);
     public final static int PAGE_SIZE_DEFAULT_LIMIT = 2097152; // 2 MB
 
     /**

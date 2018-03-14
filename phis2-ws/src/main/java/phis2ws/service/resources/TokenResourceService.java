@@ -1,11 +1,11 @@
 //**********************************************************************************************
 //                                       TokenResourceService.java 
 //
-// Author(s): Arnaud CHARLEROY
+// Author(s): Arnaud Charleroy
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2015
 // Creation date: november 2015
-// Contact:arnaud.charleroy@supagro.inra.fr, anne.tireau@supagro.inra.fr, pascal.neveu@supagro.inra.fr
+// Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  October, 2016
 // Subject: Represents the token data service
 //***********************************************************************************************
@@ -81,7 +81,7 @@ import phis2ws.service.view.brapi.form.ResponseUnique;
 @Path("brapi/v1/token")
 public class TokenResourceService {
 
-    final static Logger logger = LoggerFactory.getLogger(TokenResourceService.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(TokenResourceService.class);
 
     /**
      * getToken() - Méthode appelé par la requête HTTP GET suivi de l'URI de la
@@ -160,14 +160,14 @@ public class TokenResourceService {
                 }
 
             } catch (ParseException | JOSEException ex) {
-                logger.error(ex.getMessage(), ex);
+                LOGGER.error(ex.getMessage(), ex);
                 statusList.add(new Status("JWT Error", StatusCodeMsg.ERR, ex.getMessage()));
             }
         } else if (password == null) {
             password = jsonToken.getPassword();
         }
-        logger.debug(username);
-        logger.debug(password);
+        LOGGER.debug(username);
+        LOGGER.debug(password);
 //        LOGGER.debug(jwt);
 //        LOGGER.debug(Boolean.toString(validJWTToken));
         if ((password != null && username != null) || (jwt != null && validJWTToken && username != null)) {
@@ -209,7 +209,7 @@ public class TokenResourceService {
                 } 
 
             } catch (NoSuchAlgorithmException | SQLException | URISyntaxException ex) {
-                logger.error(ex.getMessage(), ex);
+                LOGGER.error(ex.getMessage(), ex);
                 statusList.add(new Status("SQL " + StatusCodeMsg.ERR, StatusCodeMsg.ERR, ex.getMessage()));
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(new ResponseFormPOST(statusList)).build();
             }
@@ -308,10 +308,10 @@ public class TokenResourceService {
                     u = null;
                 }
             }
-            logger.debug(JsonConverter.ConvertToJson(u));
+            LOGGER.debug(JsonConverter.ConvertToJson(u));
             return u;
         } catch (Exception ex) {
-            logger.error(ex.getMessage(), ex);
+            LOGGER.error(ex.getMessage(), ex);
         }
 
         return null;
@@ -319,7 +319,7 @@ public class TokenResourceService {
 
 //     public static void main(String[] args) {
 //        UserDaoPhisBrapi ubpd = new UserDaoPhisBrapi();
-//        User u = new User("arnaud.charleroy@supagro.inra.fr", "pic3.14");
+//        User u = new User("arnaud.charleroy@inra.fr", "pic3.14");
 //        try {
 //            ubpd.find(u);
 //        } catch (Exception ex) {
@@ -346,7 +346,7 @@ public class TokenResourceService {
 //            // Prepare JWT with claims set
 //            JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
 //                    .claim("mdp", "pic3.14")
-//                    .subject("arnaud.charleroy@supagro.inra.fr")
+//                    .subject("arnaud.charleroy@inra.fr")
 //                    .issuer("GnpIS")
 //                    .issueTime(new DateTime().toDate())
 //                    .expirationTime(new DateTime(new DateTime().getMillis() + 60 * 1000).toDate())

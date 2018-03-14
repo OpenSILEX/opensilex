@@ -1,7 +1,7 @@
 //**********************************************************************************************
 //                                       DocumentationAnnotation.java 
 //
-// Author(s): Arnaud CHARLEROY, Morgane VIDAL, Eloan LAGIER
+// Author(s): Arnaud Charleroy, Morgane Vidal, Eloan LAGIER
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2016
 // Creation date: august 2016

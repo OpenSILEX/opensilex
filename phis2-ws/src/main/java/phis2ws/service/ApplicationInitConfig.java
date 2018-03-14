@@ -1,7 +1,7 @@
 //**********************************************************************************************
 //                                       ApplicationInitConfig.java 
 //
-// Author(s): Morgane VIDAL
+// Author(s): Morgane Vidal
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2017
 // Creation date: january 2017
@@ -39,7 +39,7 @@ import phis2ws.service.view.brapi.form.ResponseFormPOST;
 public class ApplicationInitConfig extends ResourceConfig {
 
     final static String PROPERTY_FILE_NAME = "service";
-    final static Logger logger = LoggerFactory.getLogger(ApplicationInitConfig.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(ApplicationInitConfig.class);
 
     
     public ApplicationInitConfig() {
@@ -82,7 +82,7 @@ public class ApplicationInitConfig extends ResourceConfig {
             File logDir = new File(logDirectory);
             if (!logDir.isDirectory()) {
                 if (!logDir.mkdirs()) {
-                    logger.error("Can't create log directory");
+                    LOGGER.error("Can't create log directory");
                     throw new WebApplicationException(
                             Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                             .entity(new ResponseFormPOST(new Status("Can't create log directory", StatusCodeMsg.ERR, null))).build());

@@ -1,11 +1,11 @@
 //**********************************************************************************************
 //                                       POSTResultsReturn.java 
 //
-// Author(s): Arnaud CHARLEROY 
+// Author(s): Arnaud Charleroy 
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2016
 // Creation date: June 2016
-// Contact:arnaud.charleroy@supagro.inra.fr, anne.tireau@supagro.inra.fr, pascal.neveu@supagro.inra.fr
+// Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  October, 2016
 // Subject: A class which collect results, error, and http status from an insertion
 //***********************************************************************************************
@@ -17,7 +17,7 @@ import javax.ws.rs.core.Response;
 
 /**
  * Représentes les résults d'un envoi en POST
- * @author Arnaud CHARLEROY
+ * @author Arnaud Charleroy
  */
 public class POSTResultsReturn {
     private Boolean resultState; // Le résultat de insert et data (bon si les 2 snt ok et faux sinon)

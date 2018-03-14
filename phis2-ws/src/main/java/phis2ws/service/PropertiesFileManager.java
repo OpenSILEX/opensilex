@@ -1,7 +1,7 @@
 //**********************************************************************************************
 //                                       PropertiesFileManager.java 
 //
-// Author(s): Arnaud CHARLEROY, Morgane VIDAL
+// Author(s): Arnaud Charleroy, Morgane Vidal
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2016
 // Creation date: august 2016
@@ -37,11 +37,11 @@ import org.slf4j.LoggerFactory;
  * défaut dans un projet Maven
  *
  * @date 05/2016
- * @author Arnaud CHARLEROY
+ * @author Arnaud Charleroy
  */
 public class PropertiesFileManager {
 
-    final static Logger logger = LoggerFactory.getLogger(PropertiesFileManager.class.getName());
+    final static Logger LOGGER = LoggerFactory.getLogger(PropertiesFileManager.class.getName());
 
     /**
      * Lit le fichier de configuration et retourne un objet Proprietes
@@ -61,7 +61,7 @@ public class PropertiesFileManager {
             inputStream = PropertiesFileManager.class.getResourceAsStream(filePath);
             props.load(inputStream);
         } catch (IOException | NullPointerException ex) {
-            logger.error(ex.getMessage(), ex);
+            LOGGER.error(ex.getMessage(), ex);
             // Si les paramètres ne sont pas récupérés le web service propage une exception INTERNAL_SERVER_ERROR
             throw new WebApplicationException(Response
                     .status(Response.Status.INTERNAL_SERVER_ERROR)
@@ -71,7 +71,7 @@ public class PropertiesFileManager {
                 try { 
                     inputStream.close(); 
                 } catch (IOException ex) { 
-                    logger.error(ex.getMessage(), ex); 
+                    LOGGER.error(ex.getMessage(), ex); 
                 } 
             } 
         } 
@@ -95,7 +95,7 @@ public class PropertiesFileManager {
             generatedRSAPublicKey = (RSAPublicKey) kf.generatePublic(spec);
 
         } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException ex) {
-            logger.error(ex.getMessage(), ex);
+            LOGGER.error(ex.getMessage(), ex);
             // Si les paramètres ne sont pas récupérés le web service propage une exception INTERNAL_SERVER_ERROR
             throw new WebApplicationException(Response
                     .status(Response.Status.INTERNAL_SERVER_ERROR)
@@ -105,7 +105,7 @@ public class PropertiesFileManager {
                 try { 
                     dataInputStream.close(); 
                 } catch (IOException ex) { 
-                    logger.error(ex.getMessage(), ex); 
+                    LOGGER.error(ex.getMessage(), ex); 
                 } 
             } 
         } 
@@ -126,7 +126,7 @@ public class PropertiesFileManager {
             strBuilder.append(sqlProps.getProperty(prop));
             return strBuilder.toString();
         } catch (Exception ex) {
-            logger.error(ex.getMessage(), ex);
+            LOGGER.error(ex.getMessage(), ex);
             ex.printStackTrace();
             // Si les paramètres ne sont pas récupérés le web service propage une exception INTERNAL_SERVER_ERROR
             throw new WebApplicationException(Response
@@ -153,7 +153,7 @@ public class PropertiesFileManager {
                     .append("password=").append(sqlProps.getProperty("password"));
             return strBuilder.toString();
         } catch (Exception ex) {
-            logger.error(ex.getMessage(), ex);
+            LOGGER.error(ex.getMessage(), ex);
             // Si les paramètres ne sont pas récupérés le web service propage une exception INTERNAL_SERVER_ERROR
             throw new WebApplicationException(Response
                     .status(Response.Status.INTERNAL_SERVER_ERROR)
@@ -236,7 +236,7 @@ public class PropertiesFileManager {
             return p;
 
         } catch (Exception ex) {
-            logger.error("Error : Cannot find " + fileName + " configuration file \n", ex);
+            LOGGER.error("Error : Cannot find " + fileName + " configuration file \n", ex);
             return null;
         }
     }

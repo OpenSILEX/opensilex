@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractSQLDataSource extends DataSource {
 
     // Récupération des logs
-    final static Logger logger = LoggerFactory.getLogger(AbstractSQLDataSource.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(AbstractSQLDataSource.class);
     // Fichier de configuration
     protected static String propertyFileName;
 

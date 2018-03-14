@@ -25,7 +25,7 @@ import phis2ws.service.utils.sql.SQLQueryBuilder;
 import phis2ws.service.view.model.phis.Document;
 
 public class DocumentDao extends DAOPhisBrapi<Document, Object> {
-    final static Logger logger = LoggerFactory.getLogger(DocumentDao.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(DocumentDao.class);
 
     public DocumentDao() {
         super();

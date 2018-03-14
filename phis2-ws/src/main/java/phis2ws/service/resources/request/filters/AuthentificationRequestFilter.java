@@ -30,7 +30,7 @@ import phis2ws.service.view.brapi.form.ResponseFormGET;
 @Provider
 public class AuthentificationRequestFilter implements ContainerRequestFilter {
 
-    final static Logger logger = LoggerFactory.getLogger(AuthentificationRequestFilter.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(AuthentificationRequestFilter.class);
 
     /**
      * Filtre le token de session

@@ -24,7 +24,7 @@ import phis2ws.service.view.brapi.form.ResponseFormGET;
  */
 public class TokenManager {
 
-    static final Logger logger = LoggerFactory.getLogger(TokenManager.class);
+    static final Logger LOGGER = LoggerFactory.getLogger(TokenManager.class);
     private ArrayList<Session> listSession;
     private ArrayList<SessionThread> listThread;
     private static TokenManager _instance = null;

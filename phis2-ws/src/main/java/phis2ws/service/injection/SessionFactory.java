@@ -28,7 +28,7 @@ import phis2ws.service.configuration.GlobalWebserviceValues;
  */
 public class SessionFactory implements Factory<Session> {
 
-    final static Logger logger = LoggerFactory.getLogger(SessionFactory.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(SessionFactory.class);
 
     private final HttpServletRequest request;
 

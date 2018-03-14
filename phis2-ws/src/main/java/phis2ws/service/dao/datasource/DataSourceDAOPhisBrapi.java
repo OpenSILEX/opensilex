@@ -34,7 +34,7 @@ public abstract class DataSourceDAOPhisBrapi extends AbstractSQLDataSource {
         try {
             this.setPoolProperties(p);   // S'l n'y a aucune connexion le web service propage une exception INTERNAL_SERVER_ERROR
         } catch (Exception e) {
-            logger.error("Can not access to Phis Database.", e);
+            LOGGER.error("Can not access to Phis Database.", e);
             throw new WebApplicationException(
                     Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Can not access to Phis Database : " + e.getMessage()).build());
         }
@@ -67,7 +67,7 @@ public abstract class DataSourceDAOPhisBrapi extends AbstractSQLDataSource {
         try {
             return getInstance().getConnection();
         } catch (Exception e) {
-            logger.error("Can not access to Phis Database.", e);
+            LOGGER.error("Can not access to Phis Database.", e);
             throw new WebApplicationException(
                     Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity("Can not access to Phis Database : " + e.getMessage())

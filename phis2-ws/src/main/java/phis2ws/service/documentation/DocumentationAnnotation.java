@@ -83,6 +83,8 @@ public final class DocumentationAnnotation {
     public static final String UNIT_POST_DATA_DEFINITION = "JSON format of unit";
     public static final String UNIT_URI_DEFINITION = "A unit URI (Unique Resource Identifier)";
     
+    public static final String SENSOR_URI_DEFINITION = "a sensor URI (Unique Resource Identifier)";
+
     public static final String VARIABLES_DEFINITION = "A variable or comma-separated variables list";
     
     public static final String ADMIN_ONLY_NOTES = "This can only be done by a PHIS-SILEX admin.";

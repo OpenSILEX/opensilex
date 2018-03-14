@@ -20,8 +20,11 @@ import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +36,7 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.view.brapi.Status;
+import phis2ws.service.view.brapi.form.ResponseFormGET;
 import phis2ws.service.view.brapi.form.ResponseFormSensor;
 import phis2ws.service.view.model.phis.Sensor;
 
@@ -103,6 +107,7 @@ public class SensorResourceService {
                 value = DocumentationAnnotation.ACCES_TOKEN,
                 example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
+    @Produces(MediaType.APPLICATION_JSON)
     public Response getSensorsBySearch(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int pageSize,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
@@ -145,6 +150,42 @@ public class SensorResourceService {
         sensorDAO.setPage(page);
         sensorDAO.setPageSize(pageSize);
         
+        return getSensorsData(sensorDAO);
+    }
+
+    @GET
+    @Path("{uri}")
+    @ApiOperation(value = "Get a sensor",
+                  notes = "Retrieve a sensor. Need URL encoded sensor URI")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Retrieve a sensor", response = Sensor.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getSensorDetails(
+        @ApiParam(value = DocumentationAnnotation.SENSOR_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @PathParam("uri") String uri,
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int pageSize,
+        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
+
+        if (uri == null) {
+            final Status status = new Status(StatusCodeMsg.ACCESS_ERROR, StatusCodeMsg.ERR, "Empty sensor uri");
+            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
+        }
+
+        SensorDAOSesame sensorDAO = new SensorDAOSesame();
+        sensorDAO.uri = uri;
+        sensorDAO.setPage(page);
+        sensorDAO.setPageSize(pageSize);
+        sensorDAO.user = userSession.getUser();
+
         return getSensorsData(sensorDAO);
     }
 }

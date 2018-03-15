@@ -141,7 +141,9 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
             query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_LABEL, "\"" + label + "\"", null);
         } else {
             query.appendSelect(" ?" + LABEL);
-            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_LABEL, "?" + LABEL, null);
+            query.beginBodyOptional();
+            query.appendToBody(sensorUri + " <" + TRIPLESTORE_RELATION_LABEL + "> " + "?" + LABEL + " . ");
+            query.endBodyOptional();
         }
 
         if (brand != null) {
@@ -162,21 +164,27 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
             query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_IN_SERVICE_DATE, "\"" + inServiceDate + "\"", null);
         } else {
             query.appendSelect(" ?" + IN_SERVICE_DATE);
-            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_IN_SERVICE_DATE, "?" + IN_SERVICE_DATE, null);
+            query.beginBodyOptional();
+            query.appendToBody(sensorUri + " <" + TRIPLESTORE_RELATION_IN_SERVICE_DATE + "> " + "?" + IN_SERVICE_DATE + " . ");
+            query.endBodyOptional();
         }
 
         if (dateOfPurchase != null) {
             query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_DATE_OF_PURCHASE, "\"" + dateOfPurchase + "\"", null);
         } else {
             query.appendSelect("?" + DATE_OF_PURCHASE);
-            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_DATE_OF_PURCHASE, "?" + DATE_OF_PURCHASE, null);
+            query.beginBodyOptional();
+            query.appendToBody(sensorUri + " <" + TRIPLESTORE_RELATION_DATE_OF_PURCHASE + "> " + "?" + DATE_OF_PURCHASE + " . ");
+            query.endBodyOptional();
         }
 
         if (dateOfLastCalibration != null) {
             query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_DATE_OF_LAST_CALIBRATION, "\"" + dateOfLastCalibration + "\"", null);
         } else {
             query.appendSelect("?" + DATE_OF_LAST_CALIBRATION);
-            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_DATE_OF_LAST_CALIBRATION, "?" + DATE_OF_LAST_CALIBRATION, null);
+            query.beginBodyOptional();
+            query.appendToBody(sensorUri + " <" + TRIPLESTORE_RELATION_DATE_OF_LAST_CALIBRATION + "> " + "?" + DATE_OF_LAST_CALIBRATION + " . ");
+            query.endBodyOptional();
         }
 
         LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
@@ -213,7 +221,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
 
         if (label != null) {
             sensor.setLabel(label);
-        } else {
+        } else if (bindingSet.getValue(LABEL) != null ){
             sensor.setLabel(bindingSet.getValue(LABEL).stringValue());
         }
 
@@ -231,19 +239,19 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
 
         if (inServiceDate != null) {
             sensor.setInServiceDate(inServiceDate);
-        } else {
+        } else if (bindingSet.getValue(IN_SERVICE_DATE) != null) {
             sensor.setInServiceDate(bindingSet.getValue(IN_SERVICE_DATE).stringValue());
         }
 
         if (dateOfPurchase != null) {
             sensor.setDateOfPurchase(dateOfPurchase);
-        } else {
+        } else if (bindingSet.getValue(DATE_OF_PURCHASE) != null) {
             sensor.setDateOfPurchase(bindingSet.getValue(DATE_OF_PURCHASE).stringValue());
         }
 
         if (dateOfLastCalibration != null) {
             sensor.setDateOfLastCalibration(dateOfLastCalibration);
-        } else {
+        } else if (bindingSet.getValue(DATE_OF_LAST_CALIBRATION) != null) {
             sensor.setDateOfLastCalibration(bindingSet.getValue(DATE_OF_LAST_CALIBRATION).stringValue());
         }
 

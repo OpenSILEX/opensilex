@@ -171,7 +171,7 @@ public class URINamespaces {
         
         //Relations rdfs
         RELATIONS.put("subClassOf","rdfs:subClassOf");
-        RELATIONS.put("subClassOf*","rdfs:subClassOf");
+        RELATIONS.put("subClassOf*","rdfs:subClassOf*");
         RELATIONS.put("label", "rdfs:label");
         RELATIONS.put("type", "rdf:type");
     }

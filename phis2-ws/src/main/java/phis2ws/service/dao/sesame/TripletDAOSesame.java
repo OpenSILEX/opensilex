@@ -93,7 +93,8 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
                 
                 //2. check if triplet.p is an existing relation
                 if (!uriDaoSesame.existObject(tripletDTO.getP())
-                        && !tripletDTO.getP().equals("rdf:type")) {
+                        && !tripletDTO.getP().equals("rdf:type")
+                        && !tripletDTO.getP().equals("rdfs:label")) {
                     dataOk = false;
                     checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, StatusCodeMsg.UNKNOWN_URI + " " + tripletDTO.getP()));
                 }

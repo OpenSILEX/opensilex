@@ -141,7 +141,7 @@ public class URINamespaces {
         OBJECTS.put("cMethod", CONTEXTS.get("pVoc2017") + "#Method");
         OBJECTS.put("cUnit", CONTEXTS.get("pVoc2017") + "#Unit");
         OBJECTS.put("cVector", CONTEXTS.get("pVoc2017") + "#Vector");
-        OBJECTS.put("cSensor", CONTEXTS.get("pVoc2017") + "#Sensor");
+        OBJECTS.put("cSensingDevice", CONTEXTS.get("pVoc2017") + "#SensingDevice");
     }
 
     private void setRelations() {

@@ -15,6 +15,7 @@ import java.util.Calendar;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.sesame.SensorDAOSesame;
+import phis2ws.service.dao.sesame.UriDaoSesame;
 import phis2ws.service.dao.sesame.VectorDAOSesame;
 
 /**
@@ -107,9 +108,11 @@ public class UriGenerator {
     public String generateNewInstanceUri(String instanceType) {
         URINamespaces uriNamespaces = new URINamespaces();
         
-        if (uriNamespaces.getObjectsProperty("cVector").equals(instanceType)) {
+        UriDaoSesame uriDaoSesame = new UriDaoSesame();
+        
+        if (uriDaoSesame.isSubClassOf(instanceType, uriNamespaces.getObjectsProperty("cVector"))) {
             return generateVectorUri();
-        } else if (uriNamespaces.getObjectsProperty("cSensor").equals(instanceType)) {
+        } else if (uriDaoSesame.isSubClassOf(instanceType, uriNamespaces.getObjectsProperty("cSensingDevice"))) {
             return generateSensorUri();
         }
         

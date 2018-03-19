@@ -81,7 +81,8 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         URINamespaces uriNamespaces = new URINamespaces();
         SPARQLQueryBuilder queryNumberSensors = new SPARQLQueryBuilder();
         queryNumberSensors.appendSelect("(count(distinct ?sensor) as ?count)");
-        queryNumberSensors.appendTriplet("?sensor", uriNamespaces.getRelationsProperty("type"), uriNamespaces.getObjectsProperty("cSensor"), null);
+        queryNumberSensors.appendTriplet("?sensor", uriNamespaces.getRelationsProperty("type"), "?rdfType", null);
+        queryNumberSensors.appendTriplet("?rdfType", uriNamespaces.getRelationsProperty("subClassOf*"), uriNamespaces.getObjectsProperty("cSensingDevice"), null);
         queryNumberSensors.appendFilter("regex(str(?sensor), \".*/" + year + "/.*\")");
         
         LOGGER.debug(SPARQL_SELECT_QUERY + queryNumberSensors.toString());

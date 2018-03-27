@@ -381,9 +381,8 @@ public class ImageResourceService {
      * @param uri image uri (e.g http://www.phenome-fppn.fr/phis_field/2017/i170000000000)
      * @param rdfType image type (e.g http://www.phenome-fppn.fr/vocabulary/2017#HemisphericalImage)
      * @param concernedItems uris of the items concerned by the searched image(s), separated by ";". (e.g http://phenome-fppn.fr/phis_field/ao1;http://phenome-fppn.fr/phis_field/ao2)
-     * @param startDate
-     * @param date date of the shooting, with timezone (e.g 2015-07-07 00:00:00+02)
-     * @param endDate
+     * @param startDate start date of the shooting. Format YYYY-MM-DD (e.g 2015-07-07)
+     * @param endDate end date of the shooting. Format YYYY-MM-DD (e.g 2015-07-08)
      * @return the images list corresponding to the search params given (all the images if no search param) /!\ there is a pagination 
      *         JSON returned : 
      *          [

@@ -136,7 +136,6 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
                Date end = df.parse(endDate);
                query.append(DB_FIELDS_SHOOTING_CONFIGURATION + "." + ShootingConfigurationDAOMongo.DB_FIELDS_DATE, 
                        BasicDBObjectBuilder.start(MONGO_GTE, start).add(MONGO_LTE, end).get());
-//               query.append(DB_FIELDS_SHOOTING_CONFIGURATION + "." + ShootingConfigurationDAOMongo.DB_FIELDS_DATE, start);
            } catch (ParseException ex) {
                java.util.logging.Logger.getLogger(ImageMetadataDaoMongo.class.getName()).log(Level.SEVERE, null, ex);
            }

@@ -14,6 +14,7 @@ package phis2ws.service.dao.mongo;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
+import com.mongodb.DBCursor;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
@@ -140,6 +141,7 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
                java.util.logging.Logger.getLogger(ImageMetadataDaoMongo.class.getName()).log(Level.SEVERE, null, ex);
            }
        }
+       LOGGER.debug(getTraceabilityLogs() + " query : " + query.toString());
        
        return query;
     }
@@ -164,9 +166,10 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
     @Override
     public ArrayList<ImageMetadata> allPaginate() {
         BasicDBObject searchQuery = prepareSearchQuery();
-        LOGGER.debug(getTraceabilityLogs() + " query : " + searchQuery.toString());
-        
+       
         FindIterable<Document> imagesMetadataMongo = imagesCollection.find(searchQuery);
+        //sort by date
+        imagesMetadataMongo.sort(new BasicDBObject(DB_FIELDS_SHOOTING_CONFIGURATION + "." + ShootingConfigurationDAOMongo.DB_FIELDS_DATE, 1));
         
         ArrayList<ImageMetadata> imagesMetadata = new ArrayList<>();
         

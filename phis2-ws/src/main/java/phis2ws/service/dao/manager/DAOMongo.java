@@ -51,6 +51,14 @@ public abstract class DAOMongo<T> {
     
     //The _id json data key in the mongodb documents
     public final static String DB_FIELD_ID = "_id";
+    //The $gte mongo key
+    public final static String MONGO_GTE = "$gte";
+    //the $lte mongo key
+    public final static String MONGO_LTE = "$lte";
+    //the $elemMatch mongo key
+    public final static String MONGO_ELEM_MATCH = "$elemMatch";
+    //the $and mongo key
+    public final static String MONGO_AND = "$and";
 
     /**
      * @see service.properties file

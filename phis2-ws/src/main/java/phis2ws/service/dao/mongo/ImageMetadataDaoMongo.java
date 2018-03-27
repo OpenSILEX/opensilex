@@ -13,6 +13,7 @@ package phis2ws.service.dao.mongo;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
+import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
@@ -51,8 +52,10 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
     final static Logger LOGGER = LoggerFactory.getLogger(ImageMetadataDaoMongo.class);
     public String uri;
     public String rdfType;
-    //Date of shooting
-    public String date;
+    //Start date of the wanted images
+    public String startDate;
+    //End date of the wanted images
+    public String endDate;
     //List of the elements concerned by the image. The elements are represented 
     //by uris
     public ArrayList<String> concernedItems = new ArrayList<>();
@@ -120,17 +123,20 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
        if (concernedItems != null && !concernedItems.isEmpty()) {
            BasicDBList and = new BasicDBList();
            for (String concernedItem : concernedItems) {
-               BasicDBObject clause = new BasicDBObject(DB_FIELDS_CONCERN, new BasicDBObject("$elemMatch", new BasicDBObject(DB_FIELDS_CONCERNED_ITEM_URI, concernedItem)));
+               BasicDBObject clause = new BasicDBObject(DB_FIELDS_CONCERN, new BasicDBObject(MONGO_ELEM_MATCH, new BasicDBObject(DB_FIELDS_CONCERNED_ITEM_URI, concernedItem)));
                and.add(clause);
            }
            
-           query.append("$and", and);
+           query.append(MONGO_AND, and);
        }
-       if (date != null) {
+       if (startDate != null && endDate != null) {
            try {
-               SimpleDateFormat df = new SimpleDateFormat(DateFormats.YMDHMSZ_FORMAT);
-               Date dateSearch = df.parse(date);
-               query.append(DB_FIELDS_SHOOTING_CONFIGURATION + "." + ShootingConfigurationDAOMongo.DB_FIELDS_DATE, dateSearch);
+               SimpleDateFormat df = new SimpleDateFormat(DateFormats.YMD_FORMAT);
+               Date start = df.parse(startDate);
+               Date end = df.parse(endDate);
+               query.append(DB_FIELDS_SHOOTING_CONFIGURATION + "." + ShootingConfigurationDAOMongo.DB_FIELDS_DATE, 
+                       BasicDBObjectBuilder.start(MONGO_GTE, start).add(MONGO_LTE, end).get());
+//               query.append(DB_FIELDS_SHOOTING_CONFIGURATION + "." + ShootingConfigurationDAOMongo.DB_FIELDS_DATE, start);
            } catch (ParseException ex) {
                java.util.logging.Logger.getLogger(ImageMetadataDaoMongo.class.getName()).log(Level.SEVERE, null, ex);
            }

@@ -213,7 +213,7 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
         for (TripletDTO triplet : tripletsGroup) {
             //if there is a type, generate the uri
             if (triplet.getS().equals(REQUEST_GENERATION_URI_STRING) && uri == null) {
-                uri = uriGenerator.generateNewInstanceUri(rdfType);
+                uri = uriGenerator.generateNewInstanceUri(rdfType, null);
             }
         }
 

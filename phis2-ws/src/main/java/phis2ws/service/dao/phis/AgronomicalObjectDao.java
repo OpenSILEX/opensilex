@@ -57,20 +57,13 @@ public class AgronomicalObjectDao extends DAOPhisBrapi<AgronomicalObject, Agrono
         return (boolean) agronomicalObjectOk.get("state");
     }
     
-    private POSTResultsReturn checkAndInsertAgronomicalObjectsList(List<AgronomicalObjectDTO> newAgronomicalObjectsDTO, List<AgronomicalObject> newAgronomicalObjects) throws Exception {
+    private POSTResultsReturn checkAndInsertAgronomicalObjectsList(List<AgronomicalObject> newAgronomicalObjects) throws Exception {
         //init result returned maps
         List<Status> insertStatusList = new ArrayList<>();
         boolean dataState = true;
         boolean resultState = true;
         boolean insertionState = true;
         POSTResultsReturn results = null;
-        
-        for (AgronomicalObjectDTO agronomicalObjectDTO : newAgronomicalObjectsDTO) {
-            if (!isElementValid(agronomicalObjectDTO)) {
-                dataState = false;
-                insertStatusList.add(new Status("Data error", StatusCodeMsg.ERR, "Fields are missing in JSON Data"));
-            }
-        }
         
         if (dataState) {
             PreparedStatement insertPreparedStatement = null;
@@ -129,7 +122,6 @@ public class AgronomicalObjectDao extends DAOPhisBrapi<AgronomicalObject, Agrono
                     results = new POSTResultsReturn(resultState, insertionState, dataState);
                     insertStatusList.add(new Status("Already existing data", StatusCodeMsg.INFO, "All agronomical objects already exist"));
                     results.setHttpStatus(Response.Status.OK);
-                    results.statusList = insertStatusList;
                 } else {
                     if (exists > 0) { //Si données existantes et aucunes insérées
                         insertStatusList.add(new Status ("Already existing data", StatusCodeMsg.INFO, String.valueOf(exists) + " agronomical objects already exists"));
@@ -152,7 +144,6 @@ public class AgronomicalObjectDao extends DAOPhisBrapi<AgronomicalObject, Agrono
                     insertStatusList.add(new Status("Error", StatusCodeMsg.POSTGRESQL_ERROR, e.getNextException().getMessage()));
                     insertStatusList.add(new Status("Error", StatusCodeMsg.ERR, "Duplicated project in json or in database"));
                 }
-                results.statusList = insertStatusList;
             } finally {
                 if (insertPreparedStatement != null) {
                     insertPreparedStatement.close();
@@ -163,16 +154,17 @@ public class AgronomicalObjectDao extends DAOPhisBrapi<AgronomicalObject, Agrono
             }
         } else {
             results = new POSTResultsReturn(resultState, insertionState, dataState);
+        }
+        if (results != null) {
             results.statusList = insertStatusList;
         }
-        
         return results;
     }
     
-    public POSTResultsReturn checkAndInsertListAO(List<AgronomicalObject> newObjects, List<AgronomicalObjectDTO> newObjectsDTO) {
+    public POSTResultsReturn checkAndInsertListAO(List<AgronomicalObject> newObjects) {
         POSTResultsReturn postResult;
         try {
-            postResult = this.checkAndInsertAgronomicalObjectsList(newObjectsDTO, newObjects);
+            postResult = this.checkAndInsertAgronomicalObjectsList(newObjects);
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
             postResult = new POSTResultsReturn(false, Response.Status.INTERNAL_SERVER_ERROR, e.toString());

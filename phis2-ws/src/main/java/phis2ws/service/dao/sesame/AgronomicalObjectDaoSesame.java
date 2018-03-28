@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
@@ -31,11 +32,13 @@ import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOSesame;
+import phis2ws.service.dao.phis.AgronomicalObjectDao;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.AgronomicalObjectDTO;
 import phis2ws.service.resources.dto.LayerDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.ResourcesUtils;
+import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.utils.sparql.SPARQLUpdateBuilder;
 import phis2ws.service.view.brapi.Status;
@@ -52,8 +55,138 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject>{
     public String experiment;
     public String alias;
     
+    private static final String PROPERTIES_SERVICE_FILE_NAME = "service";
+    private static final String PROPERTIES_SERVICE_BASE_URI = "baseURI";
+    
+    private static final String URI_CODE_AGRONOMICAL_OBJECT = "o";
+    
+    private static final String PLATFORM_URI = PropertiesFileManager.getConfigFileProperty(PROPERTIES_SERVICE_FILE_NAME, PROPERTIES_SERVICE_BASE_URI);
+    
+    
     public AgronomicalObjectDaoSesame() {
         super();
+    }
+    
+    /**
+     * generates a query to get the last agronomical object uri from the given year
+     * @param year 
+     * @return the query to get the uri of the last inserted agronomical object 
+     *         for the given year
+     * e.g
+     * SELECT ?uri WHERE {
+     *      ?uri  rdf:type  ?type  . 
+     *      ?type  rdfs:subClassOf*  <http://www.phenome-fppn.fr/vocabulary/2017#AgronomicalObject> . 
+     *      FILTER ( regex(str(?uri), ".*\/2018/.*") ) 
+     * }
+     * ORDER BY desc(?uri) 
+     * LIMIT 1
+     */
+    private SPARQLQueryBuilder prepareGetLastAgronomicalObjectUriFromYear(String year) {
+        URINamespaces uriNamespaces = new URINamespaces();
+        SPARQLQueryBuilder queryLastAgronomicalObjectURi = new SPARQLQueryBuilder();
+        queryLastAgronomicalObjectURi.appendSelect("?uri");
+        queryLastAgronomicalObjectURi.appendTriplet("?uri", uriNamespaces.getRelationsProperty("type"), "?type", null);
+        queryLastAgronomicalObjectURi.appendTriplet("?type", uriNamespaces.getRelationsProperty("subClassOf*"), uriNamespaces.getObjectsProperty("cAgronomicalObject"), null);
+        queryLastAgronomicalObjectURi.appendFilter("regex(str(?uri), \".*/" + year + "/.*\")");
+        queryLastAgronomicalObjectURi.appendOrderBy("desc(?uri)");
+        queryLastAgronomicalObjectURi.appendLimit(1);
+        
+        LOGGER.debug("SPARQL query : " + queryLastAgronomicalObjectURi.toString());
+        return queryLastAgronomicalObjectURi;
+    }
+    
+    private SPARQLQueryBuilder prepareIsTypeSubclassOfAgronomicalObject(String rdfType) {
+        URINamespaces uriNamespaces = new URINamespaces();
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        query.appendDistinct(Boolean.TRUE);
+
+        String type = "<" + rdfType + ">";
+        
+        query.appendAsk(type + " "  + uriNamespaces.getRelationsProperty("subClassOf*") + " <" +  uriNamespaces.getObjectsProperty("cAgronomicalObject") + ">");
+        LOGGER.debug(query.toString());
+        return query;
+    }
+    
+    /**
+     * check if a given type is sub class of agronomical object
+     * @param rdfType
+     * @return true if the rdfType is subclass of agronomical object 
+     *         false if not
+     */
+    public boolean isObjectAgronomicalObject(String rdfType) {
+        SPARQLQueryBuilder query = prepareIsTypeSubclassOfAgronomicalObject(rdfType);
+        
+        //SILEX:test
+        //All the triplestore connection has to been checked and updated
+        //This is an unclean hot fix
+        String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
+        String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "repositoryID");
+        rep = new HTTPRepository(sesameServer, repositoryID); //Stockage triplestore Sesame
+        rep.initialize();
+        this.setConnection(rep.getConnection());
+        this.getConnection().begin();
+        //\SILEX:test
+        BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
+        boolean result = booleanQuery.evaluate();
+        
+        //SILEX:test
+        //For the pool connection problems
+        getConnection().commit();
+        getConnection().close();
+        //\SILEX:test
+        
+        return result;
+    }
+    
+    /**
+     * get the last agronomical object id for the given year. 
+     * e.g : for http://www.phenome-fppn.fr/diaphen/
+     * @param year the year of the wanted agronomical object number.
+     * @return the id of the last agronomical object inserted in the triplestore for the given year
+     */
+    public int getLastAgronomicalObjectIdFromYear(String year) {
+        SPARQLQueryBuilder lastAgronomicalObjectUriFromYearQuery = prepareGetLastAgronomicalObjectUriFromYear(year);
+        
+        //SILEX:test
+        //All the triplestore connection has to been checked and updated
+        //This is an unclean hot fix
+        String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
+        String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "repositoryID");
+        rep = new HTTPRepository(sesameServer, repositoryID); //Stockage triplestore Sesame
+        rep.initialize();
+        this.setConnection(rep.getConnection());
+        this.getConnection().begin();
+        //\SILEX:test
+
+        //get last agronomicalObject uri inserted during the given year
+        TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, lastAgronomicalObjectUriFromYearQuery.toString());
+        TupleQueryResult result = tupleQuery.evaluate();
+
+        //SILEX:test
+        //For the pool connection problems
+        getConnection().commit();
+        getConnection().close();
+        //\SILEX:test
+        
+        String uriAgronomicalObject = null;
+        
+        if (result.hasNext()) {
+            BindingSet bindingSet = result.next();
+            uriAgronomicalObject = bindingSet.getValue("uri").stringValue();
+        }
+        
+        if (uriAgronomicalObject == null) {
+            return 0;
+        } else {
+            //2018 -> 18. to get /o18
+            String split = "/o" + year.substring(2, 4);
+            String[] parts = uriAgronomicalObject.split(split);
+            if (parts.length > 1) {
+                return Integer.parseInt(parts[1]);
+            } else {
+                return 0;
+            }
+        }
     }
     
     /**
@@ -100,7 +233,7 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject>{
      * @param agronomicalObjects
      * @return 
      */
-    public POSTResultsReturn insert(List<AgronomicalObject> agronomicalObjects) {
+    public POSTResultsReturn insert(List<AgronomicalObjectDTO> agronomicalObjects) {
         List<Status> insertStatusList = new ArrayList<>();
         List<String> createdResourcesURIList = new ArrayList<>(); 
         
@@ -109,12 +242,18 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject>{
         boolean resultState = false; //Pour savoir si les données sont bonnes et ont bien été insérées
         boolean annotationInsert = true; // Si l'insertion a bien été effectuée
         
-        final Iterator<AgronomicalObject> iteratorAgronomicalObjects = agronomicalObjects.iterator();
+        final Iterator<AgronomicalObjectDTO> iteratorAgronomicalObjects = agronomicalObjects.iterator();
+        
+        UriGenerator uriGenerator = new UriGenerator();
         
         while (iteratorAgronomicalObjects.hasNext() && annotationInsert) {
-            AgronomicalObject agronomicalObject = iteratorAgronomicalObjects.next();
+            AgronomicalObjectDTO agronomicalObjectDTO = iteratorAgronomicalObjects.next();
+            AgronomicalObject agronomicalObject = agronomicalObjectDTO.createObjectFromDTO();
             
-            //Enregistrement triplestore
+            //1. generates agronomical object uri
+            agronomicalObject.setUri(uriGenerator.generateNewInstanceUri(agronomicalObject.getTypeAgronomicalObject(), agronomicalObjectDTO.getYear()));
+            
+            //2. Register in triplestore
             final URINamespaces uriNamespaces = new URINamespaces();
             SPARQLUpdateBuilder spqlInsert = new SPARQLUpdateBuilder();
             
@@ -176,11 +315,13 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject>{
                     annotationInsert = false;
                     insertStatusList.add(new Status("Query error", StatusCodeMsg.ERR, "Malformed insertion query: " + e.getMessage()));
             } 
-//            finally {
-//                if (this.getConnection() != null) {
-//                    this.getConnection().close();
-//                }
-//            }
+            
+            //3. insert in postgresql
+            AgronomicalObjectDao agronomicalObjectDAO = new AgronomicalObjectDao();
+            ArrayList<AgronomicalObject> aos = new ArrayList<>();
+            aos.add(agronomicalObject);
+            POSTResultsReturn postgreInsertionResult = agronomicalObjectDAO.checkAndInsertListAO(aos);
+            insertStatusList.addAll(postgreInsertionResult.statusList);
         }
         
         results = new POSTResultsReturn(resultState, annotationInsert, true);
@@ -195,16 +336,15 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject>{
     
     /**
      * vérifie les données et les insère dans le triplestore
-     * @param agronomicalObjects
      * @param agronomicalObjectsDTO
      * @return 
      */
-    public POSTResultsReturn checkAndInsert(List<AgronomicalObject> agronomicalObjects, List<AgronomicalObjectDTO> agronomicalObjectsDTO) {
+    public POSTResultsReturn checkAndInsert(List<AgronomicalObjectDTO> agronomicalObjectsDTO) {
         POSTResultsReturn checkResult = check(agronomicalObjectsDTO);
         if (checkResult.statusList == null) { //Les données ne sont pas bonnes
             return checkResult;
         } else { //Si les données sont bonnes
-            return insert(agronomicalObjects);
+            return insert(agronomicalObjectsDTO);
         }
     }
     
@@ -432,7 +572,6 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject>{
      */
     public ArrayList<AgronomicalObject> allPaginate() {
         SPARQLQueryBuilder sparqlQuery = prepareSearchQuery();
-        
         //SILEX:test
         //Pour les soucis de pool de connexion
         rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID); //Stockage triplestore Sesame

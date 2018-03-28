@@ -62,49 +62,6 @@ public class AgronomicalObjectResourceService {
     Session userSession;
   
     /**
-     * 
-     * @param agronomicalObjectsDTO
-     * @return Une liste d'agronomical objects pour lesquels on a généré l'uri.
-     */
-    private ArrayList<AgronomicalObject> generateURIs(ArrayList<AgronomicalObjectDTO> agronomicalObjectsDTO) {
-        String actualYear = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
-        String baseURI = PropertiesFileManager.getConfigFileProperty("service", "baseURI");
-        ArrayList<AgronomicalObject> agronomicalObjects = new ArrayList<>();
-        HashMap<String, Integer> numberByYear = new HashMap<>();
-        //Récupération du numéro où l'on s'est arrêté
-        AgronomicalObjectDao agronomicalObjectDao = new AgronomicalObjectDao();
-        String numberInYear = agronomicalObjectDao.getNumberOfAgronomicalObjectForYear(actualYear);
-        numberByYear.put(actualYear, Integer.parseInt(numberInYear));        
-        
-        //Modification des URIs de chaque agronomicalObject
-        for (AgronomicalObjectDTO agronomicalObject : agronomicalObjectsDTO) {
-            String year = actualYear;
-            if (agronomicalObject.getYear() != null) {
-                year = actualYear;
-            }
-            if (numberByYear.containsKey(year)) {
-                numberByYear.put(year, numberByYear.get(year) + 1);
-            } else {
-                numberByYear.put(year, 1);
-            }
-            
-            //On calcule le nombre de 0 à ajouter devant le numéro de l'ao (pour la cohérance des URI).
-            //au 30/08/17, il faut en tout 6 chiffres (ex : 000001)
-            String nbYear = numberByYear.get(year).toString();
-            while (nbYear.length() < 6) {
-                nbYear = "0" + nbYear;
-            }
-            String uniqId = "o" + year.substring(2, 4) + nbYear;
-            AgronomicalObject ao = agronomicalObject.createObjectFromDTO();
-            ao.setUri(baseURI + year + "/" + uniqId);
-            
-            agronomicalObjects.add(ao);      
-        }
-        
-        return agronomicalObjects;
-    }
-
-    /**
      * Enregistre un ensemble d'objets agronomiques dans le triplestore et les associe à un essai s'il est renseigné
      * @param agronomicalObjectsDTO liste des objets agronomiques à enregistrer
      * @param context élément du contexte de la requête pour obtenir les
@@ -142,24 +99,13 @@ public class AgronomicalObjectResourceService {
                 
                 agronomicalObjectDaoSesame.user = userSession.getUser();
                 
-                //Génération de toutes les URI
-                ArrayList<AgronomicalObject> agronomicalObjects = generateURIs(agronomicalObjectsDTO);
-                
                 //Vérification des objets agronomiques et insertion en sesame
-                POSTResultsReturn resultSesame = agronomicalObjectDaoSesame.checkAndInsert(agronomicalObjects, agronomicalObjectsDTO);
+                POSTResultsReturn resultSesame = agronomicalObjectDaoSesame.checkAndInsert(agronomicalObjectsDTO);
                 if (resultSesame.getHttpStatus().equals(Response.Status.CREATED)) {
-                    //Code 201, agronomical objects insérés
-                    AgronomicalObjectDao agronomicalObjectDao = new AgronomicalObjectDao();
-                    POSTResultsReturn result = agronomicalObjectDao.checkAndInsertListAO(agronomicalObjects, agronomicalObjectsDTO);
-                    if (result.getHttpStatus().equals(Response.Status.CREATED)) { //201, agronomical objects insérés
-                        postResponse = new ResponseFormPOST(result.statusList);
-                        return Response.status(result.getHttpStatus()).entity(postResponse).build();
-                    } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                            || result.getHttpStatus().equals(Response.Status.OK)
-                            || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                        postResponse = new ResponseFormPOST(result.statusList);
-                    }
-                    return Response.status(result.getHttpStatus()).entity(postResponse).build();
+                    //agronomical objects inserted (201)
+                    postResponse = new ResponseFormPOST(resultSesame.statusList);
+                    return Response.status(resultSesame.getHttpStatus()).entity(postResponse).build();
+                    
                 } else if (resultSesame.getHttpStatus().equals(Response.Status.BAD_REQUEST)
                         || resultSesame.getHttpStatus().equals(Response.Status.OK)
                         || resultSesame.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {

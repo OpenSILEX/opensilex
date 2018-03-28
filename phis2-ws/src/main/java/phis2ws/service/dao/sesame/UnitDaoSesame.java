@@ -31,6 +31,7 @@ import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.UnitDTO;
 import phis2ws.service.utils.POSTResultsReturn;
+import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.utils.sparql.SPARQLUpdateBuilder;
 import phis2ws.service.view.brapi.Status;
@@ -133,84 +134,67 @@ public class UnitDaoSesame extends DAOSesame<Unit> {
     }
     
     /**
-     * 
-     * @return la requête permettant de connaitre le nombre d'unités
+     * prepare a query to get the higher id of the units
+     * @return 
      */
-    private SPARQLQueryBuilder prepareGetUnitsNumber() {
-        URINamespaces uriNamespaces = new URINamespaces();
-        SPARQLQueryBuilder spqlQuery = new SPARQLQueryBuilder();
-        spqlQuery.appendGraph(uriNamespaces.getContextsProperty("variables"));
-        spqlQuery.appendSelect("(count(?unit) as ?count)");
-        spqlQuery.appendTriplet("?unit", "rdf:type", uriNamespaces.getObjectsProperty("cUnit"), null);
+    private SPARQLQueryBuilder prepareGetLastId() {
+        URINamespaces uriNamespace = new URINamespaces();
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         
-        LOGGER.trace("sparql select query : " + spqlQuery.toString());
+        query.appendSelect("?uri");
+        query.appendTriplet("?uri", uriNamespace.getRelationsProperty("type"), uriNamespace.getObjectsProperty("cUnit"), null);
+        query.appendOrderBy("desc(?uri)");
+        query.appendLimit(1);
         
-        return spqlQuery;
+        return query;
     }
     
     /**
-     * 
-     * @return le nombre d'unités présentes dans le triplestore
+     * get the higher id of the units
+     * @return the id
      */
-    public int getNumerOfUnits() {
-        SPARQLQueryBuilder spqlQuery = prepareGetUnitsNumber();
+    public int getLastId() {
+        SPARQLQueryBuilder query = prepareGetLastId();
         
         //SILEX:test
-        //Pour les soucis de pool de connexion
-        rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID); //Stockage triplestore Sesame
+        //All the triplestore connection has to been checked and updated
+        //This is an unclean hot fix
+        String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
+        String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "repositoryID");
+        rep = new HTTPRepository(sesameServer, repositoryID); //Stockage triplestore Sesame
         rep.initialize();
-        setConnection(rep.getConnection());
+        this.setConnection(rep.getConnection());
+        this.getConnection().begin();
         //\SILEX:test
-        TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, spqlQuery.toString());
+
+        //get last unit uri inserted
+        TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         TupleQueryResult result = tupleQuery.evaluate();
+
         //SILEX:test
-        //Pour les soucis de pool de connexion
+        //For the pool connection problems
+        getConnection().commit();
         getConnection().close();
         //\SILEX:test
         
-        BindingSet bindingSet = result.next();
-        String countResult = bindingSet.getValue("count").stringValue();
+        String uriUnit = null;
         
-        return Integer.parseInt(countResult);   
-    }
-    
-    /**
-     * génère les uris des unit"s
-     * @param unitsDTO
-     * @return la liste des unités, avec les URIs en plus
-     */
-    private ArrayList<UnitDTO> generateURIs(List<UnitDTO> unitsDTO) {
-        URINamespaces uriNamespaces = new URINamespaces();
-        String baseURI = uriNamespaces.getNamespaceProperty("units");
-        ArrayList<UnitDTO> toReturn = new ArrayList<>();
-        
-        //Récupération du numéro de la dernière uri de l'unité (pour l'autoincrement)
-        int numberOfUnits = getNumerOfUnits();
-        
-        for (UnitDTO unitDTO : unitsDTO) {
-            numberOfUnits++;
-            
-            //On calcule le nombre de 0 à ajouter (l'id de l'unité doit être du type : 001)
-            //avec 3 chiffres.
-            String unitNb;
-            String numberOfUnitsString = Integer.toString(numberOfUnits);
-            switch (numberOfUnitsString.length()) {
-                case 1:
-                    unitNb = "00" + numberOfUnitsString;
-                    break;
-                case 2:
-                    unitNb = "0" + numberOfUnitsString;
-                    break;
-                default:
-                    unitNb = numberOfUnitsString;
-                    break;
-            }
-            
-            unitDTO.setUri(baseURI + "/u" + unitNb);
-            toReturn.add(unitDTO);
+        if (result.hasNext()) {
+            BindingSet bindingSet = result.next();
+            uriUnit = bindingSet.getValue("uri").stringValue();
         }
         
-        return toReturn;
+        if (uriUnit == null) {
+            return 0;
+        } else {
+            String split = "units/u";
+            String[] parts = uriUnit.split(split);
+            if (parts.length > 1) {
+                return Integer.parseInt(parts[1]);
+            } else {
+                return 0;
+            }
+        }
     }
     
     private SPARQLUpdateBuilder prepareInsertQuery(UnitDTO unitDTO) {
@@ -244,11 +228,13 @@ public class UnitDaoSesame extends DAOSesame<Unit> {
         boolean resultState = false; //Pour savoir si les données sont bonnes et ont bien été insérées
         boolean annotationInsert = true; //Si l'insertion a bien été faite
         
-        unitsDTO = generateURIs(unitsDTO);
+        UriGenerator uriGenerator = new UriGenerator();
+        URINamespaces uriNamespaces = new URINamespaces();
         final Iterator<UnitDTO> iteratorUnitDTO = unitsDTO.iterator();
         
         while (iteratorUnitDTO.hasNext() && annotationInsert) {
             UnitDTO unitDTO = iteratorUnitDTO.next();
+            unitDTO.setUri(uriGenerator.generateNewInstanceUri(uriNamespaces.getObjectsProperty("cUnit"), null));
             
             //Enregistrement dans le triplestore
             SPARQLUpdateBuilder spqlInsert = prepareInsertQuery(unitDTO);

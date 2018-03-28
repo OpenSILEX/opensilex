@@ -17,7 +17,11 @@ import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.sesame.AgronomicalObjectDaoSesame;
+import phis2ws.service.dao.sesame.MethodDaoSesame;
 import phis2ws.service.dao.sesame.SensorDAOSesame;
+import phis2ws.service.dao.sesame.TraitDaoSesame;
+import phis2ws.service.dao.sesame.UnitDaoSesame;
+import phis2ws.service.dao.sesame.VariableDaoSesame;
 import phis2ws.service.dao.sesame.VectorDAOSesame;
 
 /**
@@ -25,17 +29,24 @@ import phis2ws.service.dao.sesame.VectorDAOSesame;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class UriGenerator {
-    
-    final static Logger LOGGER = LoggerFactory.getLogger(UriGenerator.class);
-    
     private static final String PROPERTIES_SERVICE_FILE_NAME = "service";
     private static final String PROPERTIES_SERVICE_BASE_URI = "baseURI";
     
-    private static final String URI_CODE_SENSOR = "s";
-    private static final String URI_CODE_VECTOR = "v";
     private static final String URI_CODE_AGRONOMICAL_OBJECT = "o";
+    private static final String URI_CODE_METHOD = "m";
+    private static final String URI_CODE_SENSOR = "s";
+    private static final String URI_CODE_TRAIT = "t";
+    private static final String URI_CODE_UNIT = "u";
+    private static final String URI_CODE_VARIABLE = "v";
+    private static final String URI_CODE_VECTOR = "v";
     
     private static final String PLATFORM_URI = PropertiesFileManager.getConfigFileProperty(PROPERTIES_SERVICE_FILE_NAME, PROPERTIES_SERVICE_BASE_URI);
+    private static final String PLATFORM_URI_ID = PLATFORM_URI + "id/";
+    private static final String PLATFORM_URI_ID_METHOD = PLATFORM_URI_ID + "methods/";
+    private static final String PLATFORM_URI_ID_TRAITS = PLATFORM_URI_ID + "traits/";
+    private static final String PLATFORM_URI_ID_UNITS = PLATFORM_URI_ID + "units/";
+    private static final String PLATFORM_URI_ID_VARIABLES = PLATFORM_URI_ID + "variables/";
+    
     
     /**
      * generates a new vector uri. 
@@ -113,7 +124,7 @@ public class UriGenerator {
      * @return the new agronomical object uri
      */
     private String generateAgronomicalObjectUri(String year) {
-        //1. get the existing uri with the higher number for the year 
+        //1. get the higher number for the year 
         //(i.e. the last inserted agronomical object for the year)
         AgronomicalObjectDaoSesame agronomicalObjectDAO = new AgronomicalObjectDaoSesame();
         int lastAgronomicalObjectIdFromYear = agronomicalObjectDAO.getLastAgronomicalObjectIdFromYear(year);
@@ -121,13 +132,112 @@ public class UriGenerator {
         //2. generates agronomical object uri
         int agronomicalObjectNumber = lastAgronomicalObjectIdFromYear + 1;
         String agronomicalObjectId = Integer.toString(agronomicalObjectNumber);
-        
-        
+
         while (agronomicalObjectId.length() < 6) {
             agronomicalObjectId = "0" + agronomicalObjectId;
         }
         
         return PLATFORM_URI + year + "/" + URI_CODE_AGRONOMICAL_OBJECT + year.substring(2,4) + agronomicalObjectId;
+    }
+    
+    /**
+     * generates a new variable uri.
+     * a variable uri follows the pattern :
+     * <prefix>:id/variables/<unic_code>
+     * <unic_code> = 1 letter type + auto incremented number with 3 digits
+     * e.g. http://www.phenome-fppn.fr/diaphen/id/variables/v001
+     * @return the new variable uri
+     */
+    private String generateVariableUri() {
+        //1. get the higher variable id (i.e. the last 
+        //inserted variable)
+        VariableDaoSesame variableDAO = new VariableDaoSesame();
+        int lastVariableId = variableDAO.getLastId();
+        
+        //2. generates variable uri
+        int newVariableId = lastVariableId + 1;
+        String variableId = Integer.toString(newVariableId);
+        
+        while (variableId.length() < 3) {
+            variableId = "0" + variableId;
+        }
+        
+        return PLATFORM_URI_ID_VARIABLES + URI_CODE_VARIABLE + variableId; 
+    }
+    
+    /**
+     * generates a new trait uri.
+     * a trait uri follows the pattern :
+     * <prefix>:id/traits/<unic_code>
+     * <unic_code> = 1 letter type + auto incremented number with 3 digits
+     * e.g. http://www.phenome-fppn.fr/diaphen/id/traits/t001
+     * @return the new trait uri
+     */
+    private String generateTraitUri() {
+        //1. get the higher trait id (i.e. the last 
+        //inserted trait)
+        TraitDaoSesame traitDAO = new TraitDaoSesame();
+        int lastTraitId = traitDAO.getLastId();
+        
+        //2. generates trait uri
+        int newTraitId = lastTraitId + 1;
+        String traitId = Integer.toString(newTraitId);
+        
+        while (traitId.length() < 3) {
+            traitId = "0" + traitId;
+        }
+        
+        return PLATFORM_URI_ID_TRAITS + URI_CODE_TRAIT + traitId; 
+    }
+    
+    /**
+     * generates a new method uri.
+     * a method uri follows the pattern :
+     * <prefix>:id/methods/<unic_code>
+     * <unic_code> = 1 letter type + auto incremented number with 3 digits
+     * e.g. http://www.phenome-fppn.fr/diaphen/id/methods/m001
+     * @return the new method uri
+     */
+    private String generateMethodUri() {
+        //1. get the higher method id (i.e. the last 
+        //inserted method)
+        MethodDaoSesame methodDAO = new MethodDaoSesame();
+        int lastMethodId = methodDAO.getLastId();
+        
+        //2. generates method uri
+        int newMethodId = lastMethodId + 1;
+        String methodId = Integer.toString(newMethodId);
+        
+        while (methodId.length() < 3) {
+            methodId = "0" + methodId;
+        }
+        
+        return PLATFORM_URI_ID_METHOD + URI_CODE_METHOD + methodId; 
+    }
+    
+    /**
+     * generates a new unit uri.
+     * a unit uri follows the pattern :
+     * <prefix>:id/units/<unic_code>
+     * <unic_code> = 1 letter type + auto incremented number with 3 digits
+     * e.g. http://www.phenome-fppn.fr/diaphen/id/units/m001
+     * @return the new unit uri
+     */
+    private String generateUnitUri() {
+         //1. get the higher unit id (i.e. the last 
+        //inserted unit)
+        UnitDaoSesame unitDAO = new UnitDaoSesame();
+        int lastUnitId = unitDAO.getLastId();
+        
+        //2. generates unit uri
+        int newUnitId = lastUnitId + 1;
+        String unitId = Integer.toString(newUnitId);
+        
+        while (unitId.length() < 3) {
+            unitId = "0" + unitId;
+        }
+        
+        return PLATFORM_URI_ID_UNITS + URI_CODE_UNIT + unitId; 
     }
     
     /**
@@ -148,6 +258,14 @@ public class UriGenerator {
             return generateVectorUri(year);
         } else if (uriNamespaces.getObjectsProperty("cSensor").equals(instanceType)) {
             return generateSensorUri(year);
+        } else if (uriNamespaces.getObjectsProperty("cVariable").equals(instanceType)) {
+            return generateVariableUri();
+        } else if (uriNamespaces.getObjectsProperty("cTrait").equals(instanceType)) {
+            return generateTraitUri();
+        } else if (uriNamespaces.getObjectsProperty("cMethod").equals(instanceType)) {
+            return generateMethodUri();
+        } else if (uriNamespaces.getObjectsProperty("cUnit").equals(instanceType)) {
+            return generateUnitUri();
         } else {
             AgronomicalObjectDaoSesame agronomicalObjectDAO = new AgronomicalObjectDaoSesame();
             if (agronomicalObjectDAO.isObjectAgronomicalObject(instanceType)) {

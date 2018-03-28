@@ -31,6 +31,7 @@ import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.MethodDTO;
 import phis2ws.service.utils.POSTResultsReturn;
+import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.utils.sparql.SPARQLUpdateBuilder;
 import phis2ws.service.view.brapi.Status;
@@ -134,84 +135,67 @@ public class MethodDaoSesame extends DAOSesame<Method> {
     }
     
     /**
-     * 
-     * @return la requête permettant de connaitre le nombre de méthodes
+     * prepare a query to get the higher id of the methods
+     * @return 
      */
-    private SPARQLQueryBuilder prepareGetMethodsNumber() {
-        URINamespaces uriNamespaces = new URINamespaces();
-        SPARQLQueryBuilder spqlQuery = new SPARQLQueryBuilder();
-        spqlQuery.appendGraph(uriNamespaces.getContextsProperty("variables"));
-        spqlQuery.appendSelect("(count(?trait) as ?count)");
-        spqlQuery.appendTriplet("?trait", "rdf:type", uriNamespaces.getObjectsProperty("cMethod"), null);
+    private SPARQLQueryBuilder prepareGetLastId() {
+        URINamespaces uriNamespace = new URINamespaces();
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         
-        LOGGER.trace("sparql select query : " + spqlQuery.toString());
+        query.appendSelect("?uri");
+        query.appendTriplet("?uri", uriNamespace.getRelationsProperty("type"), uriNamespace.getObjectsProperty("cMethod"), null);
+        query.appendOrderBy("desc(?uri)");
+        query.appendLimit(1);
         
-        return spqlQuery;
+        return query;
     }
     
     /**
-     * 
-     * @return le nombre de méthodes présentes dans le triplestore
+     * get the higher id of the methods
+     * @return the id
      */
-    public int getNumerOfMethods() {
-        SPARQLQueryBuilder spqlQuery = prepareGetMethodsNumber();
+    public int getLastId() {
+        SPARQLQueryBuilder query = prepareGetLastId();
         
         //SILEX:test
-        //Pour les soucis de pool de connexion
-        rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID); //Stockage triplestore Sesame
+        //All the triplestore connection has to been checked and updated
+        //This is an unclean hot fix
+        String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, SESAME_SERVER);
+        String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, REPOSITORY_ID);
+        rep = new HTTPRepository(sesameServer, repositoryID); //Stockage triplestore Sesame
         rep.initialize();
-        setConnection(rep.getConnection());
+        this.setConnection(rep.getConnection());
+        this.getConnection().begin();
         //\SILEX:test
-        TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, spqlQuery.toString());
+
+        //get last method uri inserted
+        TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         TupleQueryResult result = tupleQuery.evaluate();
+
         //SILEX:test
-        //Pour les soucis de pool de connexion
+        //For the pool connection problems
+        getConnection().commit();
         getConnection().close();
         //\SILEX:test
         
-        BindingSet bindingSet = result.next();
-        String countResult = bindingSet.getValue("count").stringValue();
+        String uriMethod = null;
         
-        return Integer.parseInt(countResult);   
-    }
-    
-    /**
-     * génère les uris des méthodes
-     * @param methodsDTO
-     * @return la liste des méthodes, avec les URIs en plus
-     */
-    private ArrayList<MethodDTO> generateURIs(List<MethodDTO> methodsDTO) {
-        URINamespaces uriNamespaces = new URINamespaces();
-        String baseURI = uriNamespaces.getNamespaceProperty("methods");
-        ArrayList<MethodDTO> toReturn = new ArrayList<>();
-        
-        //Récupération du numéro de la dernière uri de la méthode (pour l'autoincrement)
-        int numberOfMethods = getNumerOfMethods();
-        
-        for (MethodDTO methodDTO : methodsDTO) {
-            numberOfMethods++;
-            
-            //On calcule le nombre de 0 à ajouter (l'id de la méthode doit être du type : 001)
-            //avec 3 chiffres.
-            String methodNb;
-            String numberOfMethodsString = Integer.toString(numberOfMethods);
-            switch (numberOfMethodsString.length()) {
-                case 1:
-                    methodNb = "00" + numberOfMethodsString;
-                    break;
-                case 2:
-                    methodNb = "0" + numberOfMethodsString;
-                    break;
-                default:
-                    methodNb = numberOfMethodsString;
-                    break;
-            }
-            
-            methodDTO.setUri(baseURI + "/m" + methodNb);
-            toReturn.add(methodDTO);
+        if (result.hasNext()) {
+            BindingSet bindingSet = result.next();
+            uriMethod = bindingSet.getValue("uri").stringValue();
         }
         
-        return toReturn;
+        if (uriMethod == null) {
+            return 0;
+        } else {
+            String split = "methods/m";
+            String[] parts = uriMethod.split(split);
+            if (parts.length > 1) {
+                return Integer.parseInt(parts[1]);
+            } else {
+                return 0;
+            }
+        }
     }
     
     private SPARQLUpdateBuilder prepareInsertQuery(MethodDTO methodDTO) {
@@ -245,11 +229,14 @@ public class MethodDaoSesame extends DAOSesame<Method> {
         boolean resultState = false; //Pour savoir si les données sont bonnes et ont bien été insérées
         boolean annotationInsert = true; //Si l'insertion a bien été faite
         
-        methodsDTO = generateURIs(methodsDTO);
+        UriGenerator uriGenerator = new UriGenerator();
+        URINamespaces uriNamespaces = new URINamespaces();
+        
         final Iterator<MethodDTO> iteratorMethodDTO = methodsDTO.iterator();
         
         while (iteratorMethodDTO.hasNext() && annotationInsert) {
             MethodDTO methodDTO = iteratorMethodDTO.next();
+            methodDTO.setUri(uriGenerator.generateNewInstanceUri(uriNamespaces.getObjectsProperty("cMethod"), null));
             
             //Enregistrement dans le triplestore
             SPARQLUpdateBuilder spqlInsert = prepareInsertQuery(methodDTO);
@@ -258,8 +245,8 @@ public class MethodDaoSesame extends DAOSesame<Method> {
                 //SILEX:test
                 //Toute la notion de connexion au triplestore sera à revoir.
                 //C'est un hot fix qui n'est pas propre
-                String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
-                String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "repositoryID");
+                String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, SESAME_SERVER);
+                String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, REPOSITORY_ID);
                 rep = new HTTPRepository(sesameServer, repositoryID); //Stockage triplestore Sesame
                 rep.initialize();
                 this.setConnection(rep.getConnection());

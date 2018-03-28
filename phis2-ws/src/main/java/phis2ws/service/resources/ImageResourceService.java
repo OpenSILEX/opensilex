@@ -25,9 +25,11 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -379,7 +381,8 @@ public class ImageResourceService {
      * @param uri image uri (e.g http://www.phenome-fppn.fr/phis_field/2017/i170000000000)
      * @param rdfType image type (e.g http://www.phenome-fppn.fr/vocabulary/2017#HemisphericalImage)
      * @param concernedItems uris of the items concerned by the searched image(s), separated by ";". (e.g http://phenome-fppn.fr/phis_field/ao1;http://phenome-fppn.fr/phis_field/ao2)
-     * @param date date of the shooting, with timezone (e.g 2015-07-07 00:00:00+02)
+     * @param startDate start date of the shooting. Format YYYY-MM-DD (e.g 2015-07-07)
+     * @param endDate end date of the shooting. Format YYYY-MM-DD (e.g 2015-07-08)
      * @return the images list corresponding to the search params given (all the images if no search param) /!\ there is a pagination 
      *         JSON returned : 
      *          [
@@ -427,7 +430,8 @@ public class ImageResourceService {
         @ApiParam(value = "Search by image uri", example = DocumentationAnnotation.EXAMPLE_IMAGE_URI) @QueryParam("uri") String uri,
         @ApiParam(value = "Search by image type", example = DocumentationAnnotation.EXAMPLE_IMAGE_TYPE) @QueryParam("rdfType") String rdfType,
         @ApiParam(value = "Search by concerned item uri - each concerned item uri must be separated by ;", example = DocumentationAnnotation.EXAMPLE_IMAGE_CONCERNED_ITEMS) @QueryParam("concernedItems") String concernedItems,
-        @ApiParam(value = "Search by date", example = DocumentationAnnotation.EXAMPLE_IMAGE_DATE) @QueryParam("date") String date) {
+        @ApiParam(value = "Search by interval - start date", example = DocumentationAnnotation.EXAMPLE_IMAGE_DATE) @QueryParam("startDate") String startDate,
+        @ApiParam(value = "Search by interval - end date", example = DocumentationAnnotation.EXAMPLE_IMAGE_DATE) @QueryParam("endDate") String endDate) {
         
         ImageMetadataDaoMongo imageMetadataDaoMongo = new ImageMetadataDaoMongo();
         
@@ -440,11 +444,16 @@ public class ImageResourceService {
         if (concernedItems != null) {
             imageMetadataDaoMongo.concernedItems = new ArrayList<>(Arrays.asList(concernedItems.split(";")));
         }
-        if (date != null) {
+        if (startDate != null) {
             //SILEX:todo
             //check date format
-            imageMetadataDaoMongo.date = date;
+            imageMetadataDaoMongo.startDate = startDate;
             //\SILEX:todo
+            if (endDate != null) {
+                imageMetadataDaoMongo.endDate = endDate;
+            } else {
+                imageMetadataDaoMongo.endDate = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+            }
         }
         
         imageMetadataDaoMongo.user = userSession.getUser();

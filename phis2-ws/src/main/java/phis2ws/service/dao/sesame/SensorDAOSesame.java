@@ -21,6 +21,7 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
@@ -32,50 +33,74 @@ import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 public class SensorDAOSesame extends DAOSesame<Object> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(SensorDAOSesame.class);
-
+    
+    
     /**
-     * generates the query to get the number of sensors in the triplestore for 
-     * a specific year
-     * @param the 
-     * @return query of number of sensors
+     * prepare a query to get the higher id of the sensors
+     * @return 
      */
-    private SPARQLQueryBuilder prepareGetSensorsNumber(String year) {
-        URINamespaces uriNamespaces = new URINamespaces();
-        SPARQLQueryBuilder queryNumberSensors = new SPARQLQueryBuilder();
-        queryNumberSensors.appendSelect("(count(distinct ?sensor) as ?count)");
-        queryNumberSensors.appendTriplet("?sensor", uriNamespaces.getRelationsProperty("type"), uriNamespaces.getObjectsProperty("cSensor"), null);
-        queryNumberSensors.appendFilter("regex(str(?sensor), \".*/" + year + "/.*\")");
+    private SPARQLQueryBuilder prepareGetLastIdFromYear(String year) {
+        URINamespaces uriNamespace = new URINamespaces();
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         
-        LOGGER.debug("SPARQL query : " + queryNumberSensors.toString());
-        return queryNumberSensors;
+        query.appendSelect("?uri");
+        query.appendTriplet("?uri", uriNamespace.getRelationsProperty("type"), "?type", null);
+        query.appendTriplet("?type", uriNamespace.getRelationsProperty("subClassOf*"), uriNamespace.getObjectsProperty("cSensor"), null);
+        query.appendFilter("regex(str(?sensor), \".*/" + year + "/.*\")");
+        query.appendOrderBy("desc(?uri)");
+        query.appendLimit(1);
+        
+        return query;
     }
     
     /**
-     * get the number of sensors in the triplestore, for a given year
+     * get the higher id of the variables
      * @param year
-     * @see SensorDAOSesame#prepareGetSensorsNumber() 
-     * @return the number of sensors in the triplestore
+     * @return the id
      */
-    public int getNumberOfSensors(String year) {
-        SPARQLQueryBuilder queryNumberSensors = prepareGetSensorsNumber(year);
+    public int getLastIdFromYear(String year) {
+        SPARQLQueryBuilder query = prepareGetLastIdFromYear(year);
+        
         //SILEX:test
-        //for the pool connection problems. 
-        //WARNING this is a quick fix
-        rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID); //Stockage triplestore Sesame
+        //All the triplestore connection has to been checked and updated
+        //This is an unclean hot fix
+        String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, SESAME_SERVER);
+        String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, REPOSITORY_ID);
+        rep = new HTTPRepository(sesameServer, repositoryID); //Stockage triplestore Sesame
         rep.initialize();
-        setConnection(rep.getConnection());
+        this.setConnection(rep.getConnection());
+        this.getConnection().begin();
         //\SILEX:test
-        TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryNumberSensors.toString());
-        TupleQueryResult result = tupleQuery.evaluate();        
+
+        //get last variable uri inserted
+        TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQueryResult result = tupleQuery.evaluate();
+
         //SILEX:test
-        //for the pool connection problems.
+        //For the pool connection problems
+        getConnection().commit();
         getConnection().close();
         //\SILEX:test
         
-        BindingSet bindingSet = result.next();
-        String numberSensors = bindingSet.getValue("count").stringValue();
+        String uriSensor = null;
         
-        return Integer.parseInt(numberSensors);
+        if (result.hasNext()) {
+            BindingSet bindingSet = result.next();
+            uriSensor = bindingSet.getValue("uri").stringValue();
+        }
+        
+        if (uriSensor == null) {
+            return 0;
+        } else {
+            //2018 -> 18. to get /s18
+            String split = "/s" + year.substring(2, 4);
+            String[] parts = uriSensor.split(split);
+            if (parts.length > 1) {
+                return Integer.parseInt(parts[1]);
+            } else {
+                return 0;
+            }
+        }
     }
     
     @Override

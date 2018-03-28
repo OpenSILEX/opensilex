@@ -86,14 +86,14 @@ public class UriGenerator {
      * e.g. http://www.phenome-fppn.fr/diaphen/2017/s17002
      * @param year the insertion year of the sensor.
      * @return the new sensor uri
-     */
+     */    
     private String generateSensorUri(String year) {
         //1. get the actual number of sensors in the triplestor for the year
         SensorDAOSesame sensorDAO = new SensorDAOSesame();
-        int numberExistingSensors = sensorDAO.getNumberOfSensors(year);
+        int lastSensorIdFromYear = sensorDAO.getLastIdFromYear(year);
         
         //2. generates sensor uri
-        int sensorNumber = numberExistingSensors + 1;
+        int sensorNumber = lastSensorIdFromYear + 1;
         String numberOfSensors = Integer.toString(sensorNumber);
         String newSensorNumber;
         

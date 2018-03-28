@@ -119,8 +119,8 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject>{
         //SILEX:test
         //All the triplestore connection has to been checked and updated
         //This is an unclean hot fix
-        String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
-        String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "repositoryID");
+        String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, SESAME_SERVER);
+        String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, REPOSITORY_ID);
         rep = new HTTPRepository(sesameServer, repositoryID); //Stockage triplestore Sesame
         rep.initialize();
         this.setConnection(rep.getConnection());
@@ -150,8 +150,8 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject>{
         //SILEX:test
         //All the triplestore connection has to been checked and updated
         //This is an unclean hot fix
-        String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
-        String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "repositoryID");
+        String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, SESAME_SERVER);
+        String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, REPOSITORY_ID);
         rep = new HTTPRepository(sesameServer, repositoryID); //Stockage triplestore Sesame
         rep.initialize();
         this.setConnection(rep.getConnection());
@@ -286,8 +286,8 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject>{
                 //SILEX:test
                 //Toute la notion de connexion au triplestore sera à revoir.
                 //C'est un hot fix qui n'est pas propre
-                String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
-                String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "repositoryID");
+                String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, SESAME_SERVER);
+                String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, REPOSITORY_ID);
                 rep = new HTTPRepository(sesameServer, repositoryID); //Stockage triplestore Sesame
                 rep.initialize();
                 this.setConnection(rep.getConnection());

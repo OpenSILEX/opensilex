@@ -25,8 +25,6 @@ public class Sensor {
     private String label;
     //sensor brand
     private String brand;
-    //variable measured by the sensor
-    private String variable;
     //first date of sensor service
     private String inServiceDate;
     //purchase date of the sensor
@@ -65,15 +63,7 @@ public class Sensor {
     public void setBrand(String brand) {
         this.brand = brand;
     }
-
-    public String getVariable() {
-        return variable;
-    }
-
-    public void setVariable(String variable) {
-        this.variable = variable;
-    }
-
+    
     public String getInServiceDate() {
         return inServiceDate;
     }

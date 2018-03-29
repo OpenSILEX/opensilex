@@ -47,9 +47,6 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
     //brand of the sensor(s)
     public String brand;
     private final String BRAND = "brand";
-    //variable of the sensor(s)
-    public String variable;
-    private final String VARIABLE = "variable";
     //service date of the sensor(s)
     public String inServiceDate;
     private final String IN_SERVICE_DATE = "inServiceDate";
@@ -62,6 +59,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
 
     //Triplestore relations
     private final static URINamespaces NAMESPACES = new URINamespaces();
+    final static String TRIPLESTORE_CONCEPT_SENSING_DEVICE = NAMESPACES.getObjectsProperty("cSensingDevice");
     final static String TRIPLESTORE_RELATION_TYPE = NAMESPACES.getRelationsProperty("type");
     final static String TRIPLESTORE_RELATION_LABEL = NAMESPACES.getRelationsProperty("label");
     final static String TRIPLESTORE_RELATION_BRAND = NAMESPACES.getRelationsProperty("rHasBrand");
@@ -69,6 +67,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
     final static String TRIPLESTORE_RELATION_IN_SERVICE_DATE = NAMESPACES.getRelationsProperty("rInServiceDate");
     final static String TRIPLESTORE_RELATION_DATE_OF_PURCHASE = NAMESPACES.getRelationsProperty("rDateOfPurchase");
     final static String TRIPLESTORE_RELATION_DATE_OF_LAST_CALIBRATION = NAMESPACES.getRelationsProperty("rDateOfLastCalibration");
+    final static String TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE = NAMESPACES.getRelationsProperty("subClassOf*");
 
     /**
      * prepare a query to get the higher id of the sensors
@@ -80,7 +79,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         
         query.appendSelect("?" + URI);
         query.appendTriplet("?" + URI, TRIPLESTORE_RELATION_TYPE, "?type", null);
-        query.appendTriplet("?type", uriNamespace.getRelationsProperty("subClassOf*"), uriNamespace.getObjectsProperty("cSensingDevice"), null);
+        query.appendTriplet("?type", TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE, TRIPLESTORE_CONCEPT_SENSING_DEVICE, null);
         query.appendFilter("regex(str(?uri), \".*/" + year + "/.*\")");
         query.appendOrderBy("desc(?uri)");
         query.appendLimit(1);
@@ -143,15 +142,21 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
             sensorUri = "?" + URI;
             query.appendSelect(sensorUri);
         }
-
-        query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_TYPE, rdfType, null);
+        
+        if (rdfType != null) {
+            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_TYPE, rdfType, null);
+        } else {
+            query.appendSelect("?" + RDF_TYPE);
+            query.appendTriplet(sensorUri, rdfType, "?" + RDF_TYPE, null);
+            query.appendTriplet("?" + RDF_TYPE, TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE, TRIPLESTORE_CONCEPT_SENSING_DEVICE, null);
+        }        
 
         if (label != null) {
             query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_LABEL, "\"" + label + "\"", null);
         } else {
             query.appendSelect(" ?" + LABEL);
             query.beginBodyOptional();
-            query.appendToBody(sensorUri + " <" + TRIPLESTORE_RELATION_LABEL + "> " + "?" + LABEL + " . ");
+            query.appendToBody(sensorUri + " " + TRIPLESTORE_RELATION_LABEL + " " + "?" + LABEL + " . ");
             query.endBodyOptional();
         }
 
@@ -160,13 +165,6 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         } else {
             query.appendSelect(" ?" + BRAND);
             query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_BRAND, "?" + BRAND, null);
-        }
-
-        if (variable != null) {
-            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_VARIABLE, variable, null);
-        } else {
-            query.appendSelect(" ?" + VARIABLE);
-            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_VARIABLE, "?" + VARIABLE, null);
         }
 
         if (inServiceDate != null) {
@@ -222,11 +220,11 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
             sensor.setUri(bindingSet.getValue(URI).stringValue());
         }
 
-//        if (rdfType != null) {
-//            sensor.setRdfType(rdfType);
-//        } else {
-//            sensor.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
-//        }
+        if (rdfType != null) {
+            sensor.setRdfType(rdfType);
+        } else {
+            sensor.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
+        }
 
         if (label != null) {
             sensor.setLabel(label);
@@ -238,12 +236,6 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
             sensor.setBrand(brand);
         } else {
             sensor.setBrand(bindingSet.getValue(BRAND).stringValue());
-        }
-
-        if (variable != null) {
-            sensor.setVariable(variable);
-        } else {
-            sensor.setVariable(bindingSet.getValue(VARIABLE).stringValue());
         }
 
         if (inServiceDate != null) {

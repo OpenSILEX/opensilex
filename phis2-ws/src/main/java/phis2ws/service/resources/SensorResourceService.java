@@ -118,7 +118,6 @@ public class SensorResourceService {
             @ApiParam(value = "Search by type uri", example = DocumentationAnnotation.EXAMPLE_SENSOR_RDF_TYPE) @QueryParam("rdfType") String rdfType,
             @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_SENSOR_ALIAS) @QueryParam("label") String label,
             @ApiParam(value = "Search by brand", example = DocumentationAnnotation.EXAMPLE_SENSOR_BRAND) @QueryParam("brand") String brand,
-            @ApiParam(value = "Search by variable", example = DocumentationAnnotation.EXAMPLE_SENSOR_VARIABLE) @QueryParam("variable") String variable,
             @ApiParam(value = "Search by service date", example = DocumentationAnnotation.EXAMPLE_SENSOR_IN_SERVICE_DATE) @QueryParam("inServiceDate") String inServiceDate,
             @ApiParam(value = "Search by date of purchase", example = DocumentationAnnotation.EXAMPLE_SENSOR_DATE_OF_PURCHASE) @QueryParam("dateOfPurchase") String dateOfPurchase,
             @ApiParam(value = "Search by date of last calibration", example = DocumentationAnnotation.EXAMPLE_SENSOR_DATE_OF_LAST_CALIBRATION) @QueryParam("dateOfLastCalibration") String dateOfLastCalibration) {
@@ -135,9 +134,6 @@ public class SensorResourceService {
         }
         if (brand != null) {
             sensorDAO.brand = brand;
-        }
-        if (variable != null) {
-            sensorDAO.variable = variable;
         }
         if (inServiceDate != null) {
             sensorDAO.inServiceDate = inServiceDate;

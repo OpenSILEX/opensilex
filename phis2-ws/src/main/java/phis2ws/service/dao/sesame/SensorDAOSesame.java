@@ -19,10 +19,8 @@ import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryException;
-import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
@@ -82,10 +80,12 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         
         query.appendSelect("?" + URI);
         query.appendTriplet("?" + URI, TRIPLESTORE_RELATION_TYPE, "?type", null);
-        query.appendTriplet("?type", uriNamespace.getRelationsProperty("subClassOf*"), uriNamespace.getObjectsProperty("cSensor"), null);
-        query.appendFilter("regex(str(?sensor), \".*/" + year + "/.*\")");
+        query.appendTriplet("?type", uriNamespace.getRelationsProperty("subClassOf*"), uriNamespace.getObjectsProperty("cSensingDevice"), null);
+        query.appendFilter("regex(str(?uri), \".*/" + year + "/.*\")");
         query.appendOrderBy("desc(?uri)");
         query.appendLimit(1);
+        
+        LOGGER.debug(query.toString());
         
         return query;
     }
@@ -97,27 +97,12 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
      */
     public int getLastIdFromYear(String year) {
         SPARQLQueryBuilder query = prepareGetLastIdFromYear(year);
-        
-        //SILEX:test
-        //All the triplestore connection has to been checked and updated
-        //This is an unclean hot fix
-        String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, SESAME_SERVER);
-        String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, REPOSITORY_ID);
-        rep = new HTTPRepository(sesameServer, repositoryID); //Stockage triplestore Sesame
-        rep.initialize();
-        this.setConnection(rep.getConnection());
-        this.getConnection().begin();
-        //\SILEX:test
 
         //get last variable uri inserted
         TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         TupleQueryResult result = tupleQuery.evaluate();
 
-        //SILEX:test
-        //For the pool connection problems
-        getConnection().commit();
         getConnection().close();
-        //\SILEX:test
         
         String uriSensor = null;
         

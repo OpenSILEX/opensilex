@@ -22,18 +22,18 @@ import phis2ws.service.view.model.phis.Sensor;
  */
 public class ResultSensor extends Resultat<Sensor> {
     /**
-     * @param imagesMetadata the images metadata of the result 
+     * @param sensors the sensors of the result 
      */
-    public ResultSensor(ArrayList<Sensor> imagesMetadata) {
-        super(imagesMetadata);
+    public ResultSensor(ArrayList<Sensor> sensors) {
+        super(sensors);
     }
     
     /**
-     * @param imagesMetadata
+     * @param sensors
      * @param pagination
      * @param paginate 
      */
-    public ResultSensor(ArrayList<Sensor> imagesMetadata, Pagination pagination, boolean paginate) {
-        super(imagesMetadata, pagination, paginate);
+    public ResultSensor(ArrayList<Sensor> sensors, Pagination pagination, boolean paginate) {
+        super(sensors, pagination, paginate);
     }
 }

@@ -87,5 +87,4 @@ public class Sensor {
     public void setDateOfLastCalibration(String dateOfLastCalibration) {
         this.dateOfLastCalibration = dateOfLastCalibration;
     }
-    
 }

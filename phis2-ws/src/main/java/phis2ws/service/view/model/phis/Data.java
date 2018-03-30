@@ -16,6 +16,8 @@ public class Data {
     private String date;
     private String value;
     private String variable; 
+    private String sensor;
+    private String incertitude;
     
     public Data() {
         
@@ -57,5 +59,21 @@ public class Data {
 
     public void setVariable(String variable) {
         this.variable = variable;
+    }
+
+    public String getSensor() {
+        return sensor;
+    }
+
+    public void setSensor(String sensor) {
+        this.sensor = sensor;
+    }
+
+    public String getIncertitude() {
+        return incertitude;
+    }
+
+    public void setIncertitude(String incertitude) {
+        this.incertitude = incertitude;
     }
 }

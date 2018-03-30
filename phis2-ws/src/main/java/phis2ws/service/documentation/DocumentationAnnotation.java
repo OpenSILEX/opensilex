@@ -158,6 +158,7 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_USER_ADMIN = "true";
     public static final String EXAMPLE_USER_AVAILABLE = "true";
     
+    public static final String EXAMPLE_DATA_INCERTITUDE = "0.4";
     public static final String EXAMPLE_DATA_VALUE = "3.0000000";
     
     public static final String EXAMPLE_DOCUMENT_URI = "http://www.phenome-fppn.fr/phis_field/documents/documente597f57ba71d421a86277d830f4b9885";

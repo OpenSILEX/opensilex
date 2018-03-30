@@ -27,6 +27,8 @@ public class DataDTO extends AbstractVerifiedClass {
     private String agronomicalObject;
     private String date;
     private String value;
+    private String sensor;
+    private String incertitude;
 
     @Override
     public Map rules() {
@@ -34,6 +36,8 @@ public class DataDTO extends AbstractVerifiedClass {
         rules.put("agronomicalObject", Boolean.TRUE);
         rules.put("data", Boolean.TRUE);
         rules.put("value", Boolean.TRUE);
+        rules.put("sensor", Boolean.FALSE);
+        rules.put("incertitude", Boolean.FALSE);
         return rules;
     }
 
@@ -43,6 +47,9 @@ public class DataDTO extends AbstractVerifiedClass {
         data.setAgronomicalObject(agronomicalObject);
         data.setDate(date);
         data.setValue(value);
+        data.setSensor(sensor);
+        data.setIncertitude(incertitude);
+        
         return data;
     }
     
@@ -71,5 +78,23 @@ public class DataDTO extends AbstractVerifiedClass {
 
     public void setValue(String value) {
         this.value = value;
+    }
+
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SENSOR_URI)
+    public String getSensor() {
+        return sensor;
+    }
+
+    public void setSensor(String sensor) {
+        this.sensor = sensor;
+    }
+
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_DATA_INCERTITUDE)
+    public String getIncertitude() {
+        return incertitude;
+    }
+
+    public void setIncertitude(String incertitude) {
+        this.incertitude = incertitude;
     }
 }

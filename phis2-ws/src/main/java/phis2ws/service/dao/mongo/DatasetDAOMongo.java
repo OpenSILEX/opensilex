@@ -35,6 +35,7 @@ import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.dao.manager.DAOMongo;
 import phis2ws.service.dao.phis.AgronomicalObjectDao;
 import phis2ws.service.dao.sesame.AgronomicalObjectDaoSesame;
+import phis2ws.service.dao.sesame.SensorDAOSesame;
 import phis2ws.service.dao.sesame.VariableDaoSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.DataDTO;
@@ -99,6 +100,10 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
     private final static String DB_FIELDS_PROVENANCE_ID = "provenanceId";
     //Represents the mongodb documents label for the provenance uri
     private final static String DB_FIELDS_PROVENANCE_URI = "provenanceUri";
+    //Represents the mongodb documents label for the sensor uri
+    private final static String DB_FIELDS_SENSOR = "sensor";
+    //Represents the mongodb documents label for the incertitude of data
+    private final static String DB_FIELDS_INCERTITUDE = "incertitude";
     
     public DatasetDAOMongo() {
         super();
@@ -258,6 +263,15 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
                         dataState = false;
                         insertStatusList.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Unknown Agronomical Object URI : " + data.getAgronomicalObject()));
                     }
+                    
+                    //is sensor exist ?
+                    if (data.getSensor() != null) {
+                        SensorDAOSesame sensorDAO = new SensorDAOSesame();
+                        if (!sensorDAO.existObject(data.getSensor())) {
+                            dataState = false;
+                            insertStatusList.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Unknown sensor : " + data.getSensor()));
+                        }
+                    }
                 }
                 
                 //is variable exist ? 
@@ -342,6 +356,8 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
                     d.append(DB_FIELDS_PROVENANCE_ID, provenanceId);
                     d.append(DB_FIELDS_PROVENANCE_URI, dataset.getProvenance().getUri());
                     //\SILEX:todo
+                    d.append(DB_FIELDS_SENSOR, data.getSensor());
+                    d.append(DB_FIELDS_INCERTITUDE, data.getIncertitude());
                     
                     LOGGER.debug("MongoDB insert : " + d.toJson());
                    

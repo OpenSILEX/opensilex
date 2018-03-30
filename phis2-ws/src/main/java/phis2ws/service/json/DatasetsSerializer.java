@@ -57,6 +57,8 @@ public class DatasetsSerializer implements JsonSerializer<Dataset> {
                 }
                 agronomicalObjectData.add("date", new JsonPrimitive(d.getDate()));
                 agronomicalObjectData.add("value", new JsonPrimitive(d.getValue()));
+                agronomicalObjectData.add("sensor", new JsonPrimitive(d.getSensor()));
+                agronomicalObjectData.add("incertitude", new JsonPrimitive(d.getIncertitude()));
                 
                 phenotypesDataToReturn.get(d.getAgronomicalObject()).add(agronomicalObjectData);
             } else {
@@ -68,6 +70,8 @@ public class DatasetsSerializer implements JsonSerializer<Dataset> {
                     }
                     agronomicalObjectData.add("date", new JsonPrimitive(d.getDate()));
                     agronomicalObjectData.add("value", new JsonPrimitive(d.getValue()));
+                    agronomicalObjectData.add("sensor", new JsonPrimitive(d.getSensor()));
+                    agronomicalObjectData.add("incertitude", new JsonPrimitive(d.getIncertitude()));
 
                     JsonArray agronomicalObjectPhenotypes = new JsonArray();
                     agronomicalObjectPhenotypes.add(agronomicalObjectData);

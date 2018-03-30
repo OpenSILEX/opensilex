@@ -72,6 +72,10 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
     public String endDate;
     //provenance uri of the dataset
     public String provenance;
+    //senesor uri
+    public String sensor;
+    //incertitude of the data
+    public String incertitude;
     
     //Mongodb fields labels 
     //Represents the agronomical object label used for mongodb documents
@@ -148,6 +152,14 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
             }
         }
         
+        if (sensor != null) {
+            query.append(DB_FIELDS_SENSOR, sensor);
+        }
+        
+        if (incertitude != null) {
+            query.append(DB_FIELDS_INCERTITUDE, incertitude);
+        }
+        
         return query;
     }
     
@@ -193,22 +205,28 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
         BasicDBObject query = prepareSearchQuery();
         
         LOGGER.trace(getTraceabilityLogs() + " query : " + query.toString());
-        FindIterable<Document> phenotypesMongo = dataCollection.find(query);
+        FindIterable<Document> datasetMongo = dataCollection.find(query);
 
         ArrayList<Dataset> phenotypes = new ArrayList<>();
         Dataset phenotype = new Dataset();
         phenotype.setExperiment(experiment);
         phenotype.setVariableURI(variable);
         
-        try (MongoCursor<Document> phenotypesCursor = phenotypesMongo.iterator()) {
-            while (phenotypesCursor.hasNext()) {
-                Document phenotypeDocument = phenotypesCursor.next();
+        try (MongoCursor<Document> datasetCursor = datasetMongo.iterator()) {
+            while (datasetCursor.hasNext()) {
+                Document datasetDocument = datasetCursor.next();
                 
                 Data data = new Data();
-                data.setAgronomicalObject(phenotypeDocument.getString(DB_FIELD_AGRONOMICAL_OBJECT));
-                data.setDate(new SimpleDateFormat(DateFormats.YMD_FORMAT).format(phenotypeDocument.getDate(DB_FIELD_DATE)));
-                data.setValue(Double.toString(phenotypeDocument.getDouble(DB_FIELD_VALUE)));
-                data.setVariable(phenotypeDocument.getString(DB_FIELD_VARIABLE));
+                data.setAgronomicalObject(datasetDocument.getString(DB_FIELD_AGRONOMICAL_OBJECT));
+                data.setDate(new SimpleDateFormat(DateFormats.YMD_FORMAT).format(datasetDocument.getDate(DB_FIELD_DATE)));
+                data.setValue(Double.toString(datasetDocument.getDouble(DB_FIELD_VALUE)));
+                data.setVariable(datasetDocument.getString(DB_FIELD_VARIABLE));
+                if (datasetDocument.getString(DB_FIELDS_SENSOR) != null) {
+                    data.setSensor(datasetDocument.getString(DB_FIELDS_SENSOR));
+                }
+                if (datasetDocument.getString(DB_FIELDS_INCERTITUDE) != null) {
+                    data.setIncertitude(datasetDocument.getString(DB_FIELDS_INCERTITUDE));
+                }
                 
                 phenotype.addData(data);
             }

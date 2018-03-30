@@ -51,6 +51,11 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
     
     //pattern to generate uri for the subject of a triplet
     private final static String REQUEST_GENERATION_URI_STRING = "?";
+    private final static String LITERAL = "literal";
+    
+    private final static URINamespaces NAMESPACES = new URINamespaces();
+    final static String TRIPLESTORE_RELATION_TYPE = NAMESPACES.getRelationsProperty("type");
+    final static String TRIPLESTORE_RELATION_LABEL = NAMESPACES.getRelationsProperty("label");
 
     @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
@@ -93,8 +98,8 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
                 
                 //2. check if triplet.p is an existing relation
                 if (!uriDaoSesame.existObject(tripletDTO.getP())
-                        && !tripletDTO.getP().equals("rdf:type")
-                        && !tripletDTO.getP().equals("rdfs:label")) {
+                        && !tripletDTO.getP().equals(TRIPLESTORE_RELATION_TYPE)
+                        && !tripletDTO.getP().equals(TRIPLESTORE_RELATION_LABEL)) {
                     dataOk = false;
                     checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, StatusCodeMsg.UNKNOWN_URI + " " + tripletDTO.getP()));
                 }
@@ -181,7 +186,7 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
         
         triplets.forEach((triplet) -> {
             String object;
-            if (triplet.getO_type().equals("literal")) {
+            if (triplet.getO_type().equals(LITERAL)) {
                 object = triplet.getO_lang() != null ? "\"" + triplet.getO() + "\"@" + triplet.getO_lang() : "\"" + triplet.getO() + "\"";
             } else {
                 object = triplet.getO();
@@ -207,7 +212,7 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
         //1. get the type (if exist)
         for (TripletDTO triplet : tripletsGroup) {
             //if there is a type, generate the uri
-            if (triplet.getP().equals(uriNamespaces.getRelationsProperty("type"))
+            if (triplet.getP().equals(TRIPLESTORE_RELATION_TYPE)
                     && triplet.getS().equals(REQUEST_GENERATION_URI_STRING)) {
                 rdfType = triplet.getO();
             }
@@ -257,7 +262,7 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
         //2. save each group of triplets
         for (Map.Entry<String,ArrayList<TripletDTO>> triplets : tripletsByGraph.entrySet()) {
             SPARQLUpdateBuilder insertInGivenGraph = prepareInsertQuery(triplets.getValue(), triplets.getKey());
-            LOGGER.debug("SPARQL query : " + insertInGivenGraph.toString());
+            LOGGER.debug(SPARQL_SELECT_QUERY + insertInGivenGraph.toString());
             Update prepareInsertInGivenGraph = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, insertInGivenGraph.toString());
             prepareInsertInGivenGraph.execute();
         }
@@ -302,8 +307,8 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
             //SILEX:test
             //All the triplestore connection has to been checked and updated
             //This is an unclean hot fix
-            String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
-            String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "repositoryID");
+            String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, SESAME_SERVER);
+            String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, REPOSITORY_ID);
             rep = new HTTPRepository(sesameServer, repositoryID); //Stockage triplestore Sesame
             rep.initialize();
             this.setConnection(rep.getConnection());
@@ -311,7 +316,7 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
 
             //Register triplet in the triplestore, in the graph created at the request reception
             SPARQLUpdateBuilder insertQuery = prepareInsertQuery(tripletsGroup, graphUri);
-            LOGGER.debug("SPARQL query : " + insertQuery.toString());
+            LOGGER.debug(SPARQL_SELECT_QUERY + insertQuery.toString());
             Update prepareInsert = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, insertQuery.toString());
             prepareInsert.execute();
 

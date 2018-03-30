@@ -61,7 +61,7 @@ public class SensorResourceService {
      * @return the response "no result found" for the service
      */
     private Response noResultFound(ResponseFormSensor getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status(StatusCodeMsg.NO_RESULTS, StatusCodeMsg.INFO, "No results for the images metadata"));
+        insertStatusList.add(new Status(StatusCodeMsg.NO_RESULTS, StatusCodeMsg.INFO, "No results for the sensors"));
         getResponse.setStatus(insertStatusList);
         return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
     }
@@ -95,6 +95,47 @@ public class SensorResourceService {
         }
     }    
     
+    /**
+     * search sensors by uri, rdfType, label, brand, in service date, 
+     * date of purchase and date of last calibration. 
+     * 
+     * @param pageSize
+     * @param page
+     * @param uri
+     * @param rdfType
+     * @param label
+     * @param brand
+     * @param inServiceDate
+     * @param dateOfPurchase
+     * @param dateOfLastCalibration
+     * @return list of the sensors corresponding to the search params given
+     * e.g
+     * {
+     *      "metadata": {
+     *          "pagination": {
+     *              "pageSize": 20,
+     *              "currentPage": 0,
+     *              "totalCount": 3,
+     *              "totalPages": 1
+     *          },
+     *          "status": [],
+     *          "datafiles": []
+     *      },
+     *      "result": {
+     *          "data": [
+     *              {
+     *                  "uri": "http://www.phenome-fppn.fr/diaphen/2018/s18001",
+     *                  "rdfType": "http://www.phenome-fppn.fr/vocabulary/2017#LevelMeasurementRainGauge",
+     *                  "label": "alias",
+     *                  "brand": "brand",
+     *                  "inServiceDate": null,
+     *                  "dateOfPurchase": null,
+     *                  "dateOfLastCalibration": null
+     *              },
+     *          ]
+     *      }
+     * }
+     */
     @GET
     @ApiOperation(value = "Get all sensors corresponding to the search params given",
                   notes = "Retrieve all sensors authorized for the user corresponding to the searched params given")
@@ -152,6 +193,34 @@ public class SensorResourceService {
         return getSensorsData(sensorDAO);
     }
 
+    /**
+     * get the informations about a sensor
+     * @param uri
+     * @param pageSize
+     * @param page
+     * @return the informations about the sensor if it exists
+     * e.g.
+     * {
+     *      "metadata": {
+     *          "pagination": null,
+     *          "status": [],
+     *          "datafiles": []
+     *      },
+     *      "result": {
+     *          "data": [
+     *              {
+     *                 "uri": "http://www.phenome-fppn.fr/diaphen/2018/s18025",
+     *                 "rdfType": "http://www.phenome-fppn.fr/vocabulary/2017#HumiditySensor",
+     *                 "label": "aria_hr1_p",
+     *                 "brand": "unknown",
+     *                 "inServiceDate": null,
+     *                 "dateOfPurchase": null,
+     *                 "dateOfLastCalibration": null
+     *              }
+     *          ]
+     *      }
+     * }
+     */
     @GET
     @Path("{uri}")
     @ApiOperation(value = "Get a sensor",

@@ -183,6 +183,10 @@ public class DatasetResourceService {
      *                  (e.g 2017-06-15 10:51:00+0200)
      * @param endDate the end date of the searched data
      *                (e.g 2017-06-15 10:51:00+0200)
+     * @param sensor the sensor which provides the data
+     *                 (e.g. http://www.phenome-fppn.fr/diaphen/2018/s18001)
+     * @param incertitude the incertitude of the data
+     *                  (e.g. 0.4)
      * @see phis2ws.service.json.DatasetsSerializer
      * @return data corresponding to the search params. Every data if no search 
      *         params.
@@ -221,7 +225,9 @@ public class DatasetResourceService {
         @ApiParam(value = "Search by variable", example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI) @QueryParam("variable") String variable,
         @ApiParam(value = "Search by agronomical(s) object(s), separated by coma", example = DocumentationAnnotation.EXAMPLE_AGRONOMICAL_OBJECT_URI + "," + DocumentationAnnotation.EXAMPLE_AGRONOMICAL_OBJECT_URI) @QueryParam("agronomicalObjects") String agronomicalObjects,
         @ApiParam(value = "Search by interval - Start date", example = DocumentationAnnotation.EXAMPLE_DATETIME) @QueryParam("startDate") String startDate,
-        @ApiParam(value = "Search by interval - End date", example = DocumentationAnnotation.EXAMPLE_DATETIME) @QueryParam("endDate") String endDate) {
+        @ApiParam(value = "Search by interval - End date", example = DocumentationAnnotation.EXAMPLE_DATETIME) @QueryParam("endDate") String endDate,
+        @ApiParam(value = "Search by sensor", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("sensor") String sensor,
+        @ApiParam(value = "Search by incertitude", example = DocumentationAnnotation.EXAMPLE_DATA_INCERTITUDE) @QueryParam("incertitude") String incertitude) {
         
         DatasetDAOMongo datasetDAOMongo = new DatasetDAOMongo();
         
@@ -242,6 +248,12 @@ public class DatasetResourceService {
             //the agronomical object's uri must be separated by ","
             String[] agronomicalObjectsURIs = agronomicalObjects.split(",");
             datasetDAOMongo.agronomicalObjects.addAll(Arrays.asList(agronomicalObjectsURIs));
+        }
+        if (sensor != null) {
+            datasetDAOMongo.sensor = sensor;
+        }
+        if (incertitude != null) {
+            datasetDAOMongo.incertitude = incertitude;
         }
         
         datasetDAOMongo.user = userSession.getUser();

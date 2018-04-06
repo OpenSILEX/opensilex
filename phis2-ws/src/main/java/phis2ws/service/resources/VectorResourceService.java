@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -36,6 +37,7 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.view.brapi.Status;
+import phis2ws.service.view.brapi.form.ResponseFormGET;
 import phis2ws.service.view.brapi.form.ResponseFormVector;
 import phis2ws.service.view.model.phis.Vector;
 
@@ -182,6 +184,69 @@ public class VectorResourceService {
         vectorDAO.setPage(page);
         vectorDAO.setPageSize(pageSize);
         
+        return getVectorsData(vectorDAO);
+    }
+    
+    /**
+     * get the informations about a vector
+     * @param uri
+     * @param pageSize
+     * @param page
+     * @return the informations about the vector if it exists
+     * e.g.
+     * {
+     *      "metadata": {
+     *          "pagination": null,
+     *          "status": [],
+     *          "datafiles": []
+     *      },
+     *      "result": {
+     *          "data": [
+     *              {
+     *                 "uri": "http://www.phenome-fppn.fr/diaphen/2018/v1825",
+     *                 "rdfType": "http://www.phenome-fppn.fr/vocabulary/2017#UAV",
+     *                 "label": "aria_hr1_p",
+     *                 "brand": "unknown",
+     *                 "inServiceDate": null,
+     *                 "dateOfPurchase": null
+     *              }
+     *          ]
+     *      }
+     * }
+     */
+    @GET
+    @Path("{uri}")
+    @ApiOperation(value = "Get a vector",
+                  notes = "Retrieve a vector. Need URL encoded vector URI")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Retrieve a vector", response = Vector.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getVectorDetails(
+        @ApiParam(value = DocumentationAnnotation.SENSOR_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @PathParam("uri") String uri,
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int pageSize,
+        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
+
+        if (uri == null) {
+            final Status status = new Status(StatusCodeMsg.ACCESS_ERROR, StatusCodeMsg.ERR, "Empty vector uri");
+            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
+        }
+
+        VectorDAOSesame vectorDAO = new VectorDAOSesame();
+        vectorDAO.uri = uri;
+        vectorDAO.setPage(page);
+        vectorDAO.setPageSize(pageSize);
+        vectorDAO.user = userSession.getUser();
+
         return getVectorsData(vectorDAO);
     }
 }

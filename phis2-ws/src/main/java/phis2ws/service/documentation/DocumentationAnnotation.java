@@ -202,6 +202,13 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_VARIABLE_URI = "http://www.phenome-fppn.fr/diaphen/id/variable/v0000001";
     public static final String EXAMPLE_VARIABLE_LABEL = "LAI";
     
+    public static final String EXAMPLE_VECTOR_URI = "http://www.phenome-fppn.fr/diaphen/2018/v1801";
+    public static final String EXAMPLE_VECTOR_RDF_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#UAV";
+    public static final String EXAMPLE_VECTOR_ALIAS = "par03_p";
+    public static final String EXAMPLE_VECTOR_BRAND = "Skye Instruments";
+    public static final String EXAMPLE_VECTOR_IN_SERVICE_DATE = EXAMPLE_DATE;
+    public static final String EXAMPLE_VECTOR_DATE_OF_PURCHASE = EXAMPLE_DATE;
+    
     public static final String EXAMPLE_CONCEPT_URI = "http://www.phenome-fppn.fr/vocabulary/2017#Document";
     public static final String EXAMPLE_DEEP ="true";
     public static final String EXAMPLE_SIBLING_URI = "http://www.phenome-fppn.fr/vocabulary/2017#ScientificDocument";

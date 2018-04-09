@@ -36,6 +36,8 @@ public class ShootingConfigurationDAOMongo extends DAOMongo<ShootingConfiguratio
     final static String DB_FIELDS_SENSOR_POSITION = "sensorPosition";
     //Represents the mongodb documents labels for the timestamp
     final static String DB_FIELDS_TIMESTAMP = "timestamp";
+    //Represents the mongodb documents label for the sensor uri
+    final static String DB_FIELDS_SENSOR = "sensor";
     
     @Override
     protected BasicDBObject prepareSearchQuery() {
@@ -58,6 +60,7 @@ public class ShootingConfigurationDAOMongo extends DAOMongo<ShootingConfiguratio
         shootingConfiguration.setDate(new SimpleDateFormat(DateFormats.YMDHMSZ_FORMAT).format(shootingConfigurationDocument.getDate(ShootingConfigurationDAOMongo.DB_FIELDS_DATE)));
         shootingConfiguration.setPosition(shootingConfigurationDocument.getString(ShootingConfigurationDAOMongo.DB_FIELDS_SENSOR_POSITION));
         shootingConfiguration.setTimestamp(Long.toString(shootingConfigurationDocument.getLong(ShootingConfigurationDAOMongo.DB_FIELDS_TIMESTAMP)));
+        shootingConfiguration.setSensor(shootingConfigurationDocument.getString(ShootingConfigurationDAOMongo.DB_FIELDS_SENSOR));
         
         return shootingConfiguration;
     }

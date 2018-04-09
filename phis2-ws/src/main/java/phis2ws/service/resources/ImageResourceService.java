@@ -107,7 +107,8 @@ public class ImageResourceService {
      *                  ],
      *                  shootingConfigurations {
      *                      date,
-     *                      position
+     *                      position,
+     *                      sensor
      *                  },
      *                  storage {
      *                      checksum,
@@ -383,6 +384,7 @@ public class ImageResourceService {
      * @param concernedItems uris of the items concerned by the searched image(s), separated by ";". (e.g http://phenome-fppn.fr/phis_field/ao1;http://phenome-fppn.fr/phis_field/ao2)
      * @param startDate start date of the shooting. Format YYYY-MM-DD (e.g 2015-07-07)
      * @param endDate end date of the shooting. Format YYYY-MM-DD (e.g 2015-07-08)
+     * @param sensor uri of the sensor providing the image (e.g. http://www.phenome-fppn.fr/diaphen/2018/s18035)
      * @return the images list corresponding to the search params given (all the images if no search param) /!\ there is a pagination 
      *         JSON returned : 
      *          [
@@ -431,7 +433,8 @@ public class ImageResourceService {
         @ApiParam(value = "Search by image type", example = DocumentationAnnotation.EXAMPLE_IMAGE_TYPE) @QueryParam("rdfType") String rdfType,
         @ApiParam(value = "Search by concerned item uri - each concerned item uri must be separated by ;", example = DocumentationAnnotation.EXAMPLE_IMAGE_CONCERNED_ITEMS) @QueryParam("concernedItems") String concernedItems,
         @ApiParam(value = "Search by interval - start date", example = DocumentationAnnotation.EXAMPLE_IMAGE_DATE) @QueryParam("startDate") String startDate,
-        @ApiParam(value = "Search by interval - end date", example = DocumentationAnnotation.EXAMPLE_IMAGE_DATE) @QueryParam("endDate") String endDate) {
+        @ApiParam(value = "Search by interval - end date", example = DocumentationAnnotation.EXAMPLE_IMAGE_DATE) @QueryParam("endDate") String endDate,
+        @ApiParam(value = "Search by sensor", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("sensor") String sensor) {
         
         ImageMetadataDaoMongo imageMetadataDaoMongo = new ImageMetadataDaoMongo();
         
@@ -454,6 +457,9 @@ public class ImageResourceService {
             } else {
                 imageMetadataDaoMongo.endDate = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
             }
+        }
+        if (sensor != null) {
+            imageMetadataDaoMongo.sensor = sensor;
         }
         
         imageMetadataDaoMongo.user = userSession.getUser();

@@ -277,4 +277,19 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         }
         return sensors;
     }
+     
+    /**
+     * check if a given uri is a sensor
+     * @param uri
+     * @return true if the uri corresponds to a sensor
+     *         false if it does not exist or if it is not a sensor
+     */
+    public boolean isSensor(String uri) {
+        if (existObject(uri)) {
+            UriDaoSesame uriDAOSesame = new UriDaoSesame();
+            return uriDAOSesame.isSubClassOf(uri, TRIPLESTORE_CONCEPT_SENSING_DEVICE);
+        } else {
+            return false;
+        }
+    }
 }

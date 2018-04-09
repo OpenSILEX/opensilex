@@ -35,6 +35,7 @@ import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOMongo;
 import phis2ws.service.dao.sesame.ImageMetadataDaoSesame;
+import phis2ws.service.dao.sesame.SensorDAOSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.ConcernItemDTO;
 import phis2ws.service.resources.dto.ImageMetadataDTO;
@@ -57,6 +58,8 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
     public String startDate;
     //End date of the wanted images
     public String endDate;
+    //uri of the sensor for the wanted images
+    public String sensor;
     //List of the elements concerned by the image. The elements are represented 
     //by uris
     public ArrayList<String> concernedItems = new ArrayList<>();
@@ -140,6 +143,9 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
            } catch (ParseException ex) {
                java.util.logging.Logger.getLogger(ImageMetadataDaoMongo.class.getName()).log(Level.SEVERE, null, ex);
            }
+       }
+       if (sensor != null) {
+           query.append(DB_FIELDS_SHOOTING_CONFIGURATION + "." + ShootingConfigurationDAOMongo.DB_FIELDS_SENSOR, sensor);
        }
        LOGGER.debug(getTraceabilityLogs() + " query : " + query.toString());
        
@@ -230,6 +236,13 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
                         checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Unknown concerned item given : " + concernedItem.getUri()));
                     }
                 }
+                
+                //3. Check if the sensor exist
+                SensorDAOSesame sensorDAOSesame = new SensorDAOSesame();
+                if (!sensorDAOSesame.isSensor(imageMetadata.getConfiguration().getSensor())) {
+                    dataOk = false;
+                    checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Unknown sensor given : " + imageMetadata.getConfiguration().getSensor()));
+                }
             } else {
                 dataOk = false;
                 checkStatusList.add(new Status(StatusCodeMsg.BAD_DATA_FORMAT, StatusCodeMsg.ERR, 
@@ -309,6 +322,7 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
            Timestamp timestamp = new Timestamp(new Date().getTime());
            configuration.append(ShootingConfigurationDAOMongo.DB_FIELDS_TIMESTAMP, timestamp.getTime());
            configuration.append(ShootingConfigurationDAOMongo.DB_FIELDS_SENSOR_POSITION, imageMetadata.getConfiguration().getPosition());
+           configuration.append(ShootingConfigurationDAOMongo.DB_FIELDS_SENSOR, imageMetadata.getConfiguration().getSensor());
            metadata.append(DB_FIELDS_SHOOTING_CONFIGURATION, configuration);
            
            //FileInformations (Storage)

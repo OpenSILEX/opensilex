@@ -307,11 +307,13 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
             //SILEX:test
             //All the triplestore connection has to been checked and updated
             //This is an unclean hot fix
-            String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, SESAME_SERVER);
-            String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, REPOSITORY_ID);
-            rep = new HTTPRepository(sesameServer, repositoryID); //Stockage triplestore Sesame
-            rep.initialize();
-            this.setConnection(rep.getConnection());
+
+//            String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, SESAME_SERVER);
+//            String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, REPOSITORY_ID);
+//            rep = new HTTPRepository(sesameServer, repositoryID); //Stockage triplestore Sesame
+//            rep.initialize();
+//            this.setConnection(rep.getConnection());
+
             this.getConnection().begin();
 
             //Register triplet in the triplestore, in the graph created at the request reception
@@ -330,10 +332,10 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
                 getConnection().rollback();
             }
 
-            //SILEX:test
-            //For the pool connection problems
-            getConnection().close();
-            //\SILEX:test
+//            //SILEX:test
+//            //For the pool connection problems
+//            getConnection().close();
+//            //\SILEX:test
         } catch (RepositoryException ex) {
                 LOGGER.error(StatusCodeMsg.COMMIT_TRIPLESTORE_ERROR, ex);
         } catch (MalformedQueryException e) {

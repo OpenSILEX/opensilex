@@ -239,7 +239,7 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
                 
                 //3. Check if the sensor exist
                 SensorDAOSesame sensorDAOSesame = new SensorDAOSesame();
-                if (!sensorDAOSesame.isSensor(imageMetadata.getConfiguration().getSensor())) {
+                if (!sensorDAOSesame.existAndIsSensor(imageMetadata.getConfiguration().getSensor())) {
                     dataOk = false;
                     checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Unknown sensor given : " + imageMetadata.getConfiguration().getSensor()));
                 }

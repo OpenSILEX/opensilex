@@ -13,6 +13,7 @@ package phis2ws.service.dao.sesame;
 
 import java.util.ArrayList;
 import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
@@ -277,6 +278,23 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         }
         return sensors;
     }
+    
+    private SPARQLQueryBuilder prepareIsSensorQuery(String uri) {
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        query.appendTriplet("<" + uri + ">", TRIPLESTORE_RELATION_TYPE, "?" + RDF_TYPE, null);
+        query.appendTriplet("?" + RDF_TYPE, TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE, TRIPLESTORE_CONCEPT_SENSING_DEVICE, null);
+        
+        query.appendAsk("");
+        LOGGER.debug(query.toString());
+        return query;
+    }
+    
+    private boolean isSensor(String uri) {
+        SPARQLQueryBuilder query = prepareIsSensorQuery(uri);
+        BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
+        
+        return booleanQuery.evaluate();
+    }
      
     /**
      * check if a given uri is a sensor
@@ -284,10 +302,10 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
      * @return true if the uri corresponds to a sensor
      *         false if it does not exist or if it is not a sensor
      */
-    public boolean isSensor(String uri) {
+    public boolean existAndIsSensor(String uri) {
         if (existObject(uri)) {
-            UriDaoSesame uriDAOSesame = new UriDaoSesame();
-            return uriDAOSesame.isSubClassOf(uri, TRIPLESTORE_CONCEPT_SENSING_DEVICE);
+            return isSensor(uri);
+            
         } else {
             return false;
         }

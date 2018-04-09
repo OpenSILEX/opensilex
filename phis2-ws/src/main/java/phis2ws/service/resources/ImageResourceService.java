@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -298,8 +299,15 @@ public class ImageResourceService {
             jsch.getChannelSftp().cd(serverImagesDirectory);
             //\SILEX:test
         } catch (SftpException e) {
-            statusList.add(new Status(StatusCodeMsg.SFTP_EXCEPTION, StatusCodeMsg.ERR, e.getMessage()));
-            LOGGER.error(e.getMessage(), serverImagesDirectory + " " + e);
+            try {
+                //Create repository if it does not exist
+                jsch.getChannelSftp().mkdir(serverImagesDirectory);
+                jsch.getChannelSftp().cd(serverImagesDirectory);
+                LOGGER.debug("Create directory : " + serverImagesDirectory);
+            } catch (SftpException ex) {
+                statusList.add(new Status(StatusCodeMsg.SFTP_EXCEPTION, StatusCodeMsg.ERR, e.getMessage()));
+                LOGGER.error(e.getMessage(), serverImagesDirectory + " " + ex);
+            }
         }
         
         boolean fileTransfered = jsch.fileTransfer(in, serverFileName);

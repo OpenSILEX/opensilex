@@ -89,7 +89,7 @@ public class AgronomicalObjectDao extends DAOPhisBrapi<AgronomicalObject, Agrono
                     if (!existInDB(agronomicalObject)) {
                         insertionLeft = true;
                         insertPreparedStatement.setString(1, agronomicalObject.getUri());
-                        insertPreparedStatement.setString(2, agronomicalObject.getTypeAgronomicalObject());
+                        insertPreparedStatement.setString(2, agronomicalObject.getRdfType());
                         insertPreparedStatement.setString(3, agronomicalObject.getGeometry());
                         insertPreparedStatement.setString(4, agronomicalObject.getUriExperiment());
                         
@@ -216,7 +216,7 @@ public class AgronomicalObjectDao extends DAOPhisBrapi<AgronomicalObject, Agrono
         AgronomicalObject agronomicalObject = new AgronomicalObject();
         agronomicalObject.setUri(result.getString("uri"));
         agronomicalObject.setGeometry(result.getString("geometry"));
-        agronomicalObject.setTypeAgronomicalObject(result.getString("type"));
+        agronomicalObject.setRdfType(result.getString("type"));
         agronomicalObject.setUriExperiment(result.getString("named_graph"));
         
         return agronomicalObject;

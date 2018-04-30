@@ -19,29 +19,42 @@ import java.util.HashMap;
 import java.util.Map;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.view.model.phis.AgronomicalObject;
-import phis2ws.service.view.model.phis.Property;
 
+/**
+ * Represents the submitted JSON for the agronomical objects
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class AgronomicalObjectDTO extends AbstractVerifiedClass {
     
-    /**
-     * @param typeAgronomicalObject le type de l'objet agronomique (plot, fields, cultivated land...). On donne ici l'uri du concept 
-     * @param geometry les coordonnées GPS (idéalement en WGS84) de l'objet agronomique
-     * @param experiment l'uri de l'essai concerné s'il y en a un
-     * @param year l'année utilisée dans l'uri de l'objet agronomique. Si le champ n'est pas renseigné, on prendra l'année actuelle.
-     * @param properties les propriétés associées à l'objet agronomique
-     */
-    private String typeAgronomicalObject;
+    
+    //the argonomical object type 
+    //(e.g. http://www.phenome-fppn.fr/vocabulary/2017#Plot)
+    private String rdfType;
+    //The WKT geometry (WGS84 EPSG4326) of the agronomical object
+    //(e.g. POLYGON(0 1, 1 2, 2 3, 3 0, 0 1)
     private String geometry;
+    //the concerned experiment (e.g. http://www.phenome-fppn.fr/diaphen/DIA2018-2)
     private String experiment;
+    //the object in which is contained the agronomical object (it should be a plot)
+    //(e.g. http://www.phenome-fppn.fr/mtp/2017/o1032490)
+    private String contains;
+    //the object which as part the agronomical object 
+    //(e.g. http://www.phenome-fppn.fr/mtp/2017/o1032491)
+    private String isPartOf;
+    //the year used to generated the agronomical object. If it is not given, this is the actual year
+    //(e.g. 2017)
     private String year;
-    private ArrayList<Property> properties;
+    //the properties of the agronomical object
+    private ArrayList<PropertyDTO> properties;
             
     @Override
     public Map rules() {
         Map<String, Boolean> rules = new HashMap<>();
-        rules.put(typeAgronomicalObject, Boolean.TRUE);
+        rules.put(rdfType, Boolean.TRUE);
         rules.put(geometry, Boolean.TRUE);
         rules.put(experiment, Boolean.FALSE);
+        rules.put(contains, Boolean.FALSE);
+        rules.put(isPartOf, Boolean.FALSE);
         rules.put(year, Boolean.FALSE);
         
         return rules;
@@ -50,14 +63,14 @@ public class AgronomicalObjectDTO extends AbstractVerifiedClass {
     @Override
     public AgronomicalObject createObjectFromDTO() {
         AgronomicalObject agronomicalObject = new AgronomicalObject();
-        agronomicalObject.setTypeAgronomicalObject(typeAgronomicalObject);
+        agronomicalObject.setRdfType(rdfType);
         agronomicalObject.setGeometry(geometry);
         agronomicalObject.setUriExperiment(experiment);
         
         if (properties != null) {
-            for (Property property : properties) {
-                agronomicalObject.addProperty(property);
-            }
+            properties.forEach((property) -> {
+                agronomicalObject.addProperty(property.createObjectFromDTO());
+            });
         }
         
         return agronomicalObject;
@@ -69,8 +82,8 @@ public class AgronomicalObjectDTO extends AbstractVerifiedClass {
     }
     
     @ApiModelProperty(example = "http://www.phenome-fppn.fr/vocabulary/2017#Plot")
-    public String getTypeAgronomicalObject() {
-        return typeAgronomicalObject;
+    public String getRdfType() {
+        return rdfType;
     }
 
     @ApiModelProperty(example = "http://www.phenome-fppn.fr/diaphen/DIA2017-1")
@@ -82,8 +95,8 @@ public class AgronomicalObjectDTO extends AbstractVerifiedClass {
         this.experiment = uriConcernedItem;
     }
 
-    public void setTypeAgronomicalObject(String typeAgronomicalObject) {
-        this.typeAgronomicalObject = typeAgronomicalObject;
+    public void setRdfType(String rdfType) {
+        this.rdfType = rdfType;
     }
 
     public void setGeometry(String geometry) {
@@ -98,12 +111,36 @@ public class AgronomicalObjectDTO extends AbstractVerifiedClass {
     public void setYear(String year) {
         this.year = year;
     }
-    
-    public ArrayList<Property> getProperties() {
+
+    public String getExperiment() {
+        return experiment;
+    }
+
+    public void setExperiment(String experiment) {
+        this.experiment = experiment;
+    }
+
+    public String getContains() {
+        return contains;
+    }
+
+    public void setContains(String contains) {
+        this.contains = contains;
+    }
+
+    public String getIsPartOf() {
+        return isPartOf;
+    }
+
+    public void setIsPartOf(String isPartOf) {
+        this.isPartOf = isPartOf;
+    }
+
+    public ArrayList<PropertyDTO> getProperties() {
         return properties;
     }
-    
-    public void setProperties(ArrayList<Property> properties) {
+
+    public void setProperties(ArrayList<PropertyDTO> properties) {
         this.properties = properties;
     }
 }

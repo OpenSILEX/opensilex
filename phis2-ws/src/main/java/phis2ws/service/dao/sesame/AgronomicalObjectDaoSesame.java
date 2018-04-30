@@ -207,7 +207,7 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject>{
             if ((boolean) agronomicalObject.isOk().get("state")) { //Données attendues reçues
                //On vérifie que les types soient effectivement présents dans l'ontologie
                 URINamespaces uriNamespaces = new URINamespaces();
-                if (!uriNamespaces.objectsPropertyContainsValue(agronomicalObject.getTypeAgronomicalObject())) {
+                if (!uriNamespaces.objectsPropertyContainsValue(agronomicalObject.getRdfType())) {
                     dataOk = false;
                     checkStatusList.add(new Status("Wrong value", StatusCodeMsg.ERR, "Wrong agronomical object type value. See ontology"));
                 }
@@ -251,7 +251,7 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject>{
             AgronomicalObject agronomicalObject = agronomicalObjectDTO.createObjectFromDTO();
             
             //1. generates agronomical object uri
-            agronomicalObject.setUri(uriGenerator.generateNewInstanceUri(agronomicalObject.getTypeAgronomicalObject(), agronomicalObjectDTO.getYear()));
+            agronomicalObject.setUri(uriGenerator.generateNewInstanceUri(agronomicalObject.getRdfType(), agronomicalObjectDTO.getYear()));
             
             //2. Register in triplestore
             final URINamespaces uriNamespaces = new URINamespaces();
@@ -260,7 +260,7 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject>{
             String graphURI = agronomicalObject.getUriExperiment() != null ? agronomicalObject.getUriExperiment() 
                                                                       : uriNamespaces.getContextsProperty("agronomicalObjects");
             spqlInsert.appendGraphURI(graphURI);
-            spqlInsert.appendTriplet(agronomicalObject.getUri(), "rdf:type", agronomicalObject.getTypeAgronomicalObject(), null);
+            spqlInsert.appendTriplet(agronomicalObject.getUri(), "rdf:type", agronomicalObject.getRdfType(), null);
             
             //Propriétés associées à l'AO
             for (Property property : agronomicalObject.getProperties()) {
@@ -460,7 +460,7 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject>{
                 } else { //Il n'est pas encore dans la liste, il faut le rajouter
                     agronomicalObject = new AgronomicalObject();
                     agronomicalObject.setUri(bindingSet.getValue("child").stringValue());
-                    agronomicalObject.setTypeAgronomicalObject(bindingSet.getValue("type").stringValue());
+                    agronomicalObject.setRdfType(bindingSet.getValue("type").stringValue());
                     
                     Property property = new Property();
                     property.setValue(bindingSet.getValue("property").stringValue());
@@ -491,7 +491,7 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject>{
                     //\SILEX:test
                 for (Entry<String, AgronomicalObject> child : children.entrySet()) {
                    
-                    SPARQLQueryBuilder sparqlQuery = prepareSearchChildrenWithContains(child.getKey(), child.getValue().getTypeAgronomicalObject());
+                    SPARQLQueryBuilder sparqlQuery = prepareSearchChildrenWithContains(child.getKey(), child.getValue().getRdfType());
                     TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
                     TupleQueryResult result = tupleQuery.evaluate();
                    
@@ -501,7 +501,7 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject>{
                         if (!children.containsKey(bindingSet.getValue("child").stringValue())) {
                             AgronomicalObject agronomicalObject = new AgronomicalObject();
                             agronomicalObject.setUri(bindingSet.getValue("child").stringValue());
-                            agronomicalObject.setTypeAgronomicalObject(bindingSet.getValue("type").stringValue());
+                            agronomicalObject.setRdfType(bindingSet.getValue("type").stringValue());
                             
                             children.put(bindingSet.getValue("child").stringValue(), agronomicalObject);
                         }
@@ -531,7 +531,7 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject>{
                     BindingSet bindingSet = result.next();
                     AgronomicalObject agronomicalObject = new AgronomicalObject();
                     agronomicalObject.setUri(bindingSet.getValue("child").stringValue());
-                    agronomicalObject.setTypeAgronomicalObject(bindingSet.getValue("type").stringValue());
+                    agronomicalObject.setRdfType(bindingSet.getValue("type").stringValue());
 
                     children.put(bindingSet.getValue("child").stringValue(), agronomicalObject);
                 }
@@ -556,7 +556,7 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject>{
                 BindingSet bindingSet = result.next();
                 AgronomicalObject agronomicalObject = new AgronomicalObject();
                 agronomicalObject.setUri(bindingSet.getValue("child").stringValue());
-                agronomicalObject.setTypeAgronomicalObject(bindingSet.getValue("type").stringValue());
+                agronomicalObject.setRdfType(bindingSet.getValue("type").stringValue());
 
                 children.put(bindingSet.getValue("child").stringValue(), agronomicalObject);
             }
@@ -606,7 +606,7 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject>{
                 }
                 
                 URINamespaces uriNamespaces = new URINamespaces();
-                agronomicalObject.setTypeAgronomicalObject(uriNamespaces.getObjectsProperty("cPlot"));
+                agronomicalObject.setRdfType(uriNamespaces.getObjectsProperty("cPlot"));
                 
                 
                 agronomicalObjects.add(agronomicalObject);

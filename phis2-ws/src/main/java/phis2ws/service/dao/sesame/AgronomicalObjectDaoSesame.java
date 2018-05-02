@@ -18,7 +18,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import org.eclipse.rdf4j.query.BindingSet;
-import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
@@ -29,7 +28,6 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.dao.phis.AgronomicalObjectDao;
@@ -628,13 +626,15 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject> {
             sparqlQuery.appendTriplet(agronomicalObjectURI, TRIPLESTORE_RELATION_HAS_ALIAS, "?alias", null);
         }
         
-        //SILEX:TODO
-        //search all agronomical objects and not only plots
-        //\SILEX:TODO
+        if (rdfType != null) {
+            sparqlQuery.appendTriplet(agronomicalObjectURI, TRIPLESTORE_RELATION_TYPE, rdfType, null);
+        } else {
+            sparqlQuery.appendSelect(" ?" + RDF_TYPE);
+            sparqlQuery.appendTriplet(agronomicalObjectURI, TRIPLESTORE_RELATION_TYPE, "?" + RDF_TYPE, null);
+            sparqlQuery.appendTriplet("?" + RDF_TYPE, TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE, TRIPLESTORE_CONCEPT_AGRONOMICAL_OBJECT, null);
+        }
         
-        sparqlQuery.appendTriplet(agronomicalObjectURI, TRIPLESTORE_RELATION_TYPE, NAMESPACES.getObjectsProperty("cPlot"), null);
-        
-        LOGGER.trace("sparql select query : " + sparqlQuery.toString());
+        LOGGER.debug("sparql select query : " + sparqlQuery.toString());
         
         return sparqlQuery;
     }

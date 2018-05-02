@@ -47,6 +47,10 @@ import phis2ws.service.view.brapi.form.ResponseFormAgronomicalObject;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
 import phis2ws.service.view.model.phis.AgronomicalObject;
 
+/**
+ * Agronomical objects service
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 @Api("/agronomicalObjects")
 @Path("agronomicalObjects")
 public class AgronomicalObjectResourceService {
@@ -74,8 +78,8 @@ public class AgronomicalObjectResourceService {
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
     @ApiImplicitParams({
-       @ApiImplicitParam(name = "Authorization", required = true,
-                         dataType = "string", paramType = "header",
+       @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                         dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
                          value = DocumentationAnnotation.ACCES_TOKEN,
                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
@@ -168,8 +172,8 @@ public class AgronomicalObjectResourceService {
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiImplicitParams({
-         @ApiImplicitParam(name = "Authorization", required = true,
-                         dataType = "string", paramType = "header",
+         @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                         dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
                          value = DocumentationAnnotation.ACCES_TOKEN,
                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
@@ -179,7 +183,8 @@ public class AgronomicalObjectResourceService {
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
         @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_AGRONOMICAL_OBJECT_URI) @QueryParam("uri") String uri,
         @ApiParam(value = "Search by experiment URI", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI) @QueryParam("experiment") String experimentURI,
-        @ApiParam(value = "Search by alias", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_ALIAS) @QueryParam("alias") String alias
+        @ApiParam(value = "Search by alias", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_ALIAS) @QueryParam("alias") String alias,
+        @ApiParam(value = "Search by rdfType", example = DocumentationAnnotation.EXAMPLE_AGRONOMICAL_OBJECT_TYPE) @QueryParam("rdfType") String rdfType
     ) {
         AgronomicalObjectDaoSesame agronomicalObjectDaoSesame = new AgronomicalObjectDaoSesame();
         
@@ -191,6 +196,9 @@ public class AgronomicalObjectResourceService {
         }
         if (alias != null) {
             agronomicalObjectDaoSesame.alias = alias;
+        }
+        if (rdfType != null) {
+            agronomicalObjectDaoSesame.rdfType = rdfType;
         }
         
         agronomicalObjectDaoSesame.user = userSession.getUser();

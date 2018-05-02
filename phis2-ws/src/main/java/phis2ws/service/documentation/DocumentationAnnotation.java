@@ -117,6 +117,7 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_FILE_INFORMATION_EXTENSION = "jpg";
     
     public static final String EXAMPLE_AGRONOMICAL_OBJECT_URI = "http://www.phenome-fppn.fr/phenovia/2017/o1032481";
+    public static final String EXAMPLE_AGRONOMICAL_OBJECT_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#Plot";
     
     public static final String EXAMPLE_IMAGE_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#HemisphericalImage";
     public static final String EXAMPLE_IMAGE_URI = "http://www.phenome-fppn.fr/phis_field/2017/i170000000000";

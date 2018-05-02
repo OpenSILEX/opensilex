@@ -26,7 +26,6 @@ import phis2ws.service.view.model.phis.AgronomicalObject;
  */
 public class AgronomicalObjectDTO extends AbstractVerifiedClass {
     
-    
     //the argonomical object type 
     //(e.g. http://www.phenome-fppn.fr/vocabulary/2017#Plot)
     private String rdfType;
@@ -35,9 +34,6 @@ public class AgronomicalObjectDTO extends AbstractVerifiedClass {
     private String geometry;
     //the concerned experiment (e.g. http://www.phenome-fppn.fr/diaphen/DIA2018-2)
     private String experiment;
-    //the object in which is contained the agronomical object (it should be a plot)
-    //(e.g. http://www.phenome-fppn.fr/mtp/2017/o1032490)
-    private String contains;
     //the object which as part the agronomical object 
     //(e.g. http://www.phenome-fppn.fr/mtp/2017/o1032491)
     private String isPartOf;
@@ -53,7 +49,6 @@ public class AgronomicalObjectDTO extends AbstractVerifiedClass {
         rules.put(rdfType, Boolean.TRUE);
         rules.put(geometry, Boolean.TRUE);
         rules.put(experiment, Boolean.FALSE);
-        rules.put(contains, Boolean.FALSE);
         rules.put(isPartOf, Boolean.FALSE);
         rules.put(year, Boolean.FALSE);
         
@@ -66,6 +61,7 @@ public class AgronomicalObjectDTO extends AbstractVerifiedClass {
         agronomicalObject.setRdfType(rdfType);
         agronomicalObject.setGeometry(geometry);
         agronomicalObject.setUriExperiment(experiment);
+        agronomicalObject.setIsPartOf(isPartOf);
         
         if (properties != null) {
             properties.forEach((property) -> {
@@ -86,15 +82,6 @@ public class AgronomicalObjectDTO extends AbstractVerifiedClass {
         return rdfType;
     }
 
-    @ApiModelProperty(example = "http://www.phenome-fppn.fr/diaphen/DIA2017-1")
-    public String getUriExperiment() {
-        return experiment;
-    }
-
-    public void setUriExperiment(String uriConcernedItem) {
-        this.experiment = uriConcernedItem;
-    }
-
     public void setRdfType(String rdfType) {
         this.rdfType = rdfType;
     }
@@ -112,20 +99,13 @@ public class AgronomicalObjectDTO extends AbstractVerifiedClass {
         this.year = year;
     }
 
+    @ApiModelProperty(example = "http://www.phenome-fppn.fr/diaphen/DIA2017-1")
     public String getExperiment() {
         return experiment;
     }
 
     public void setExperiment(String experiment) {
         this.experiment = experiment;
-    }
-
-    public String getContains() {
-        return contains;
-    }
-
-    public void setContains(String contains) {
-        this.contains = contains;
     }
 
     public String getIsPartOf() {

@@ -28,8 +28,6 @@ public class AgronomicalObject {
     private String geometry;
     //experiment of the argonomical object
     private String experiment;
-    //object which contains the agronomical object
-    private String contains;
     //object which has part the agronomical object
     private String isPartOf;
     
@@ -103,14 +101,6 @@ public class AgronomicalObject {
 
     public void setExperiment(String experiment) {
         this.experiment = experiment;
-    }
-
-    public String getContains() {
-        return contains;
-    }
-
-    public void setContains(String contains) {
-        this.contains = contains;
     }
 
     public String getIsPartOf() {

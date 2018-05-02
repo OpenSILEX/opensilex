@@ -19,8 +19,6 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -34,11 +32,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.phis.AgronomicalObjectDao;
 import phis2ws.service.dao.sesame.AgronomicalObjectDaoSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
@@ -104,8 +100,8 @@ public class AgronomicalObjectResourceService {
                 if (resultSesame.getHttpStatus().equals(Response.Status.CREATED)) {
                     //agronomical objects inserted (201)
                     postResponse = new ResponseFormPOST(resultSesame.statusList);
+                    postResponse.getMetadata().setDatafiles(resultSesame.getCreatedResources());
                     return Response.status(resultSesame.getHttpStatus()).entity(postResponse).build();
-                    
                 } else if (resultSesame.getHttpStatus().equals(Response.Status.BAD_REQUEST)
                         || resultSesame.getHttpStatus().equals(Response.Status.OK)
                         || resultSesame.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {

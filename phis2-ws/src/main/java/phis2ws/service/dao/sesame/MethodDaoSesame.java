@@ -156,27 +156,10 @@ public class MethodDaoSesame extends DAOSesame<Method> {
      */
     public int getLastId() {
         SPARQLQueryBuilder query = prepareGetLastId();
-        
-        //SILEX:test
-        //All the triplestore connection has to been checked and updated
-        //This is an unclean hot fix
-        String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, SESAME_SERVER);
-        String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, REPOSITORY_ID);
-        rep = new HTTPRepository(sesameServer, repositoryID); //Stockage triplestore Sesame
-        rep.initialize();
-        this.setConnection(rep.getConnection());
-        this.getConnection().begin();
-        //\SILEX:test
 
         //get last method uri inserted
         TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         TupleQueryResult result = tupleQuery.evaluate();
-
-        //SILEX:test
-        //For the pool connection problems
-        getConnection().commit();
-        getConnection().close();
-        //\SILEX:test
         
         String uriMethod = null;
         
@@ -245,11 +228,6 @@ public class MethodDaoSesame extends DAOSesame<Method> {
                 //SILEX:test
                 //Toute la notion de connexion au triplestore sera à revoir.
                 //C'est un hot fix qui n'est pas propre
-                String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, SESAME_SERVER);
-                String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, REPOSITORY_ID);
-                rep = new HTTPRepository(sesameServer, repositoryID); //Stockage triplestore Sesame
-                rep.initialize();
-                this.setConnection(rep.getConnection());
                 this.getConnection().begin();
                 Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spqlInsert.toString());
                 LOGGER.trace(getTraceabilityLogs() + " query : " + prepareUpdate.toString());

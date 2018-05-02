@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
@@ -34,6 +35,7 @@ import phis2ws.service.dao.phis.AgronomicalObjectDao;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.AgronomicalObjectDTO;
 import phis2ws.service.resources.dto.LayerDTO;
+import phis2ws.service.resources.dto.PropertyDTO;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.ResourcesUtils;
@@ -151,6 +153,25 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject> {
     }
     
     /**
+     * generates the sparql ask query to know if a given alias is already 
+     * existing in a given context
+     * @param alias
+     * @param context
+     * @return the query
+     */
+    private SPARQLQueryBuilder askExistAliasInContext(String alias, String context) {
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        query.appendDistinct(Boolean.TRUE);
+
+        query.appendGraph(context);
+        
+        query.appendAsk("?x <" + TRIPLESTORE_RELATION_HAS_ALIAS + "> \"" + alias + "\"");
+        
+        LOGGER.debug(query.toString());
+        return query;
+    }
+    
+    /**
      * Vérifie si les agronomical objects sont corrects
      * @param agronomicalObjectsDTO
      * @return
@@ -178,10 +199,7 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject> {
                 //bien présents dans l'ontologie ? Idem pour les relations
                 //\SILEX:TODO
                 
-                //SILEX:TODO
-                //check that there are an alias in the properties and that it is unique
-                //\SILEX:TODO
-                
+                //check isPartOf
                 if (agronomicalObject.getIsPartOf() != null) {
                     if (existObject(agronomicalObject.getIsPartOf())) {
                         //1. get isPartOf object type
@@ -195,6 +213,31 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject> {
                         dataOk = false;
                         checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "unknown is part of uri"));
                     }
+                }
+                
+                //check properties
+                boolean missingAlias = true;
+                for (PropertyDTO property : agronomicalObject.getProperties()) {
+                    //check alias
+                    if (property.getRelation().equals(TRIPLESTORE_RELATION_HAS_ALIAS)) {
+                        missingAlias = false;
+                        //check unique alias in the experiment
+                        if (agronomicalObject.getExperiment() != null) {
+                            SPARQLQueryBuilder query = askExistAliasInContext(property.getValue(), agronomicalObject.getExperiment());
+                            BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
+                            boolean result = booleanQuery.evaluate();
+                            
+                            if (!result) {
+                                dataOk = false;
+                                checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "already existing alias for the given experiment"));
+                            }
+                        }
+                    }
+                }
+                
+                if (missingAlias) {
+                    dataOk = false;
+                    checkStatusList.add(new Status(StatusCodeMsg.MISSING_FIELDS, StatusCodeMsg.ERR, "missing alias"));
                 }
             } else {
                 // Format des données non attendu par rapport au schéma demandé
@@ -319,7 +362,7 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject> {
      */
     public POSTResultsReturn checkAndInsert(List<AgronomicalObjectDTO> agronomicalObjectsDTO) {
         POSTResultsReturn checkResult = check(agronomicalObjectsDTO);
-        if (checkResult.statusList == null) { //Les données ne sont pas bonnes
+        if (checkResult.statusList != null) { //Les données ne sont pas bonnes
             return checkResult;
         } else { //Si les données sont bonnes
             return insert(agronomicalObjectsDTO);
@@ -580,7 +623,6 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject> {
                 }
                 
                 agronomicalObject.setRdfType(NAMESPACES.getObjectsProperty("cPlot"));
-                
                 
                 agronomicalObjects.add(agronomicalObject);
             }

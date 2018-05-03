@@ -164,8 +164,8 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject> {
         query.appendDistinct(Boolean.TRUE);
 
         query.appendGraph(context);
-        
-        query.appendAsk("?x <" + TRIPLESTORE_RELATION_HAS_ALIAS + "> \"" + alias + "\"");
+        query.appendAsk("");
+        query.appendToBody("?x <" + TRIPLESTORE_RELATION_HAS_ALIAS + "> \"" + alias + "\"");
         
         LOGGER.debug(query.toString());
         return query;
@@ -227,7 +227,7 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject> {
                             BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
                             boolean result = booleanQuery.evaluate();
                             
-                            if (!result) {
+                            if (result) {
                                 dataOk = false;
                                 checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "already existing alias for the given experiment"));
                             }
@@ -315,7 +315,7 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject> {
             }
             
             try {
-                this.getConnection().begin();
+//                this.getConnection().begin();
                 Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spqlInsert.toString());
                 LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                 prepareUpdate.execute();
@@ -328,7 +328,7 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject> {
                     // retour en arrière sur la transaction
                     this.getConnection().rollback();
                 }
-                this.getConnection().close();
+//                this.getConnection().close();
             } catch (RepositoryException ex) {
                     LOGGER.error("Error during commit or rolleback Triplestore statements: ", ex);
             } catch (MalformedQueryException e) {
@@ -362,7 +362,7 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject> {
      */
     public POSTResultsReturn checkAndInsert(List<AgronomicalObjectDTO> agronomicalObjectsDTO) {
         POSTResultsReturn checkResult = check(agronomicalObjectsDTO);
-        if (checkResult.statusList != null) { //Les données ne sont pas bonnes
+        if (checkResult.statusList.size() > 0) { //Les données ne sont pas bonnes
             return checkResult;
         } else { //Si les données sont bonnes
             return insert(agronomicalObjectsDTO);
@@ -388,7 +388,7 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject> {
         sparqlQuery.appendToBody("?property " + TRIPLESTORE_RELATION_TYPE + " ?propertyType");
         sparqlQuery.endBodyOptional();
         
-        LOGGER.trace("sparql select query : " + sparqlQuery.toString());
+        LOGGER.debug("sparql select query : " + sparqlQuery.toString());
 
         return sparqlQuery;
     }
@@ -645,6 +645,7 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject> {
         SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
         
         sparqlQuery.appendDistinct(true);
+                
         String agronomicalObjectURI;
         
         if (uri != null ) {
@@ -655,7 +656,7 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject> {
         }
         
         if (experiment != null) {
-            sparqlQuery.appendGraph(experiment);
+            sparqlQuery.appendFrom("<" + NAMESPACES.getContextsProperty("pVoc2017") + "> \n FROM <" + experiment + ">");
         } else {
             sparqlQuery.appendSelect(" ?experimentURI");
             sparqlQuery.appendTriplet("?experimentURI", TRIPLESTORE_RELATION_HAS_PLOT, agronomicalObjectURI, null);

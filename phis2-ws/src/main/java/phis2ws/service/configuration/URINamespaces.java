@@ -156,6 +156,7 @@ public class URINamespaces {
         RELATIONS.put("rHasPlot", CONTEXTS.get("pVoc2017") + "#hasPlot");
         RELATIONS.put("rFromGenotype", CONTEXTS.get("pVoc2017") + "#fromGenotype");
         RELATIONS.put("rFromVariety", CONTEXTS.get("pVoc2017") + "#fromVariety");
+        RELATIONS.put("rFromSpecies", CONTEXTS.get("pVoc2017") + "#fromSpecies");
         RELATIONS.put("rExperimentModalities", CONTEXTS.get("pVoc2017") + "#hasExperimentModalities");
         RELATIONS.put("rHasRepetition", CONTEXTS.get("pVoc2017") + "#hasRepetition");
         RELATIONS.put("rHasAlias", CONTEXTS.get("pVoc2017") + "#hasAlias");

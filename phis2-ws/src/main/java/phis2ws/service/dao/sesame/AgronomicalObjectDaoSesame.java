@@ -37,6 +37,7 @@ import phis2ws.service.resources.dto.AgronomicalObjectDTO;
 import phis2ws.service.resources.dto.LayerDTO;
 import phis2ws.service.resources.dto.PropertyDTO;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.utils.JsonConverter;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.ResourcesUtils;
 import phis2ws.service.utils.UriGenerator;
@@ -427,9 +428,8 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject> {
         sparqlQuery.appendSelect("?child ?type");
         sparqlQuery.appendTriplet(objectURI, "geo:contains", "?child", null);
         sparqlQuery.appendTriplet("?child", TRIPLESTORE_RELATION_TYPE, "?type", null);
-
         
-        LOGGER.trace("sparql select query : " + sparqlQuery.toString());
+        LOGGER.debug("sparql select query : " + sparqlQuery.toString());
 
         return sparqlQuery;
     }
@@ -477,7 +477,7 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject> {
                 } else { //Il n'est pas encore dans la liste, il faut le rajouter
                     agronomicalObject = new AgronomicalObject();
                     agronomicalObject.setUri(bindingSet.getValue("child").stringValue());
-                    agronomicalObject.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
+                    agronomicalObject.setRdfType(bindingSet.getValue("type").stringValue());
                     
                     Property property = new Property();
                     property.setValue(bindingSet.getValue("property").stringValue());
@@ -491,7 +491,6 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject> {
                 children.put(agronomicalObject.getUri(), agronomicalObject);
             }
         }
-        
         //SILEX:INFO
         //Pour l'instant, on ne récupère que les propriétés des AO de type plot, les premiers descendants de l'expérimentation.
         //Pas les autres
@@ -518,7 +517,7 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject> {
                         if (!children.containsKey(bindingSet.getValue("child").stringValue())) {
                             AgronomicalObject agronomicalObject = new AgronomicalObject();
                             agronomicalObject.setUri(bindingSet.getValue("child").stringValue());
-                            agronomicalObject.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
+                            agronomicalObject.setRdfType(bindingSet.getValue("type").stringValue());
                             
                             children.put(bindingSet.getValue("child").stringValue(), agronomicalObject);
                         }
@@ -548,7 +547,7 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject> {
                     BindingSet bindingSet = result.next();
                     AgronomicalObject agronomicalObject = new AgronomicalObject();
                     agronomicalObject.setUri(bindingSet.getValue("child").stringValue());
-                    agronomicalObject.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
+                    agronomicalObject.setRdfType(bindingSet.getValue("type").stringValue());
 
                     children.put(bindingSet.getValue("child").stringValue(), agronomicalObject);
                 }
@@ -573,7 +572,7 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject> {
                 BindingSet bindingSet = result.next();
                 AgronomicalObject agronomicalObject = new AgronomicalObject();
                 agronomicalObject.setUri(bindingSet.getValue("child").stringValue());
-                agronomicalObject.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
+                agronomicalObject.setRdfType(bindingSet.getValue("type").stringValue());
 
                 children.put(bindingSet.getValue("child").stringValue(), agronomicalObject);
             }

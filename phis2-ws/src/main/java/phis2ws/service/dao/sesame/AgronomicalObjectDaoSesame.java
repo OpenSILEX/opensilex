@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.BooleanQuery;
@@ -596,36 +597,60 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject> {
         //\SILEX:test
         
         TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
-        ArrayList<AgronomicalObject> agronomicalObjects = new ArrayList<>();
+        Map<String, AgronomicalObject> foundedAgronomicalObjects = new HashMap<>();
         
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
-                AgronomicalObject agronomicalObject = new AgronomicalObject();
+                boolean alreadyFoundedUri = false;
                 
-                if (uri != null) {
-                    agronomicalObject.setUri(uri);
-                } else {
-                    agronomicalObject.setUri(bindingSet.getValue(URI).stringValue());
+                String actualUri = uri != null ? uri : bindingSet.getValue(URI).stringValue();
+                
+                if (foundedAgronomicalObjects.containsKey(actualUri)) {
+                    alreadyFoundedUri = true;
                 }
                 
-                if (experiment != null) {
+                AgronomicalObject agronomicalObject = null;
+                
+                Property property = new Property();
+                
+                property.setRelation(bindingSet.getValue("relation").stringValue());
+                property.setValue(bindingSet.getValue("property").stringValue());
+                
+                if (alreadyFoundedUri) {
+                    agronomicalObject = foundedAgronomicalObjects.get(actualUri);
+                } else {
+                    agronomicalObject = new AgronomicalObject();
+                    agronomicalObject.setUri(actualUri);
+                    
+                    if (experiment != null) {
                     agronomicalObject.setUriExperiment(experiment);
-                } else {
-                    agronomicalObject.setUriExperiment(bindingSet.getValue("experimentURI").stringValue());
+                    } else {
+                        agronomicalObject.setUriExperiment(bindingSet.getValue("experimentURI").stringValue());
+                    }
+                    
+                    if (alias != null) {
+                        agronomicalObject.setAlias(alias);
+                    } else {
+                        agronomicalObject.setAlias(bindingSet.getValue("alias").stringValue());
+                    }
+                    
+                    if (rdfType != null) {
+                        agronomicalObject.setRdfType(rdfType);
+                    } else {
+                         agronomicalObject.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
+                    }
                 }
                 
-                if (alias != null) {
-                    agronomicalObject.setAlias(alias);
-                } else {
-                    agronomicalObject.setAlias(bindingSet.getValue("alias").stringValue());
-                }
-                
-                agronomicalObject.setRdfType(NAMESPACES.getObjectsProperty("cPlot"));
-                
-                agronomicalObjects.add(agronomicalObject);
+                agronomicalObject.addProperty(property);
+                foundedAgronomicalObjects.put(actualUri, agronomicalObject);
             }
         }
+        
+        ArrayList<AgronomicalObject> agronomicalObjects = new ArrayList<>();
+        foundedAgronomicalObjects.entrySet().forEach((entry) -> {
+            agronomicalObjects.add(entry.getValue());
+        });
         
         //SILEX:test
         //Pour les soucis de pool de connexion
@@ -656,9 +681,6 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject> {
         
         if (experiment != null) {
             sparqlQuery.appendFrom("<" + NAMESPACES.getContextsProperty("pVoc2017") + "> \n FROM <" + experiment + ">");
-        } else {
-            sparqlQuery.appendSelect(" ?experimentURI");
-            sparqlQuery.appendTriplet("?experimentURI", TRIPLESTORE_RELATION_HAS_PLOT, agronomicalObjectURI, null);
         }
         
         if (alias != null) {
@@ -675,6 +697,9 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject> {
             sparqlQuery.appendTriplet(agronomicalObjectURI, TRIPLESTORE_RELATION_TYPE, "?" + RDF_TYPE, null);
             sparqlQuery.appendTriplet("?" + RDF_TYPE, TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE, TRIPLESTORE_CONCEPT_AGRONOMICAL_OBJECT, null);
         }
+        
+        sparqlQuery.appendSelect(" ?relation ?property");
+        sparqlQuery.appendTriplet("?" + URI, "?relation", "?property", null);
         
         LOGGER.debug("sparql select query : " + sparqlQuery.toString());
         

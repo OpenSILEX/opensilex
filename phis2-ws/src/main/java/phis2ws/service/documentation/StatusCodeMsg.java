@@ -24,6 +24,7 @@ public final class StatusCodeMsg {
     
     public static final String ACCESS_ERROR = "Access error";
     public static final String ADMINISTRATOR_ONLY = "Request only for administrators";
+    public static final String ALREADY_EXISTING_DATA = "Already existing data";
     public static final String BAD_DATA_FORMAT = "Bad data format";
     public static final String DATA_ERROR = "Data error";
     public static final String DATA_INSERTED = "Data inserted";
@@ -48,5 +49,4 @@ public final class StatusCodeMsg {
     public static final String TRIPLESTOR_ACCESS_ERROR = "Triplestore access error";
     public static final String UNKNOWN_URI = "Unknown uri";
     public static final String WRONG_VALUE = "Wrong value";
-        
 }

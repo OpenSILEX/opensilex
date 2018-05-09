@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.sesame.AgronomicalObjectDaoSesame;
+import phis2ws.service.dao.sesame.AgronomicalObjectDAOSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
@@ -92,7 +92,7 @@ public class AgronomicalObjectResourceService {
         //S'il y a au moins un objet agronomique
         if (!agronomicalObjectsDTO.isEmpty()) {
             try {
-                AgronomicalObjectDaoSesame agronomicalObjectDaoSesame = new AgronomicalObjectDaoSesame();
+                AgronomicalObjectDAOSesame agronomicalObjectDaoSesame = new AgronomicalObjectDAOSesame();
                 if (context.getRemoteAddr() != null) {
                     agronomicalObjectDaoSesame.remoteUserAdress = context.getRemoteAddr();
                 }
@@ -138,7 +138,7 @@ public class AgronomicalObjectResourceService {
      * on récupère une liste d'ao composés d'un uri et d'un type. Il faudra compléter ce retour 
      * \SILEX:TODO
      */
-    private Response getAgronomicalObjectsData(AgronomicalObjectDaoSesame agronomicalObjectDaoSesame) {
+    private Response getAgronomicalObjectsData(AgronomicalObjectDAOSesame agronomicalObjectDaoSesame) {
         ArrayList<AgronomicalObject> agronomicalObjects;
         ArrayList<Status> statusList = new ArrayList<>();
         ResponseFormAgronomicalObject getResponse;
@@ -186,7 +186,7 @@ public class AgronomicalObjectResourceService {
         @ApiParam(value = "Search by alias", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_ALIAS) @QueryParam("alias") String alias,
         @ApiParam(value = "Search by rdfType", example = DocumentationAnnotation.EXAMPLE_AGRONOMICAL_OBJECT_TYPE) @QueryParam("rdfType") String rdfType
     ) {
-        AgronomicalObjectDaoSesame agronomicalObjectDaoSesame = new AgronomicalObjectDaoSesame();
+        AgronomicalObjectDAOSesame agronomicalObjectDaoSesame = new AgronomicalObjectDAOSesame();
         
         if (uri != null) {
             agronomicalObjectDaoSesame.uri = uri;

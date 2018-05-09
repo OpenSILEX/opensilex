@@ -34,13 +34,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOSesame;
-import phis2ws.service.dao.phis.AgronomicalObjectDao;
+import phis2ws.service.dao.phis.AgronomicalObjectDAO;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.AgronomicalObjectDTO;
 import phis2ws.service.resources.dto.LayerDTO;
 import phis2ws.service.resources.dto.PropertyDTO;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
-import phis2ws.service.utils.JsonConverter;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.ResourcesUtils;
 import phis2ws.service.utils.UriGenerator;
@@ -52,9 +51,9 @@ import phis2ws.service.view.model.phis.Property;
 import phis2ws.service.view.model.phis.Uri;
 
 
-public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject> {
+public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
     
-    final static Logger LOGGER = LoggerFactory.getLogger(AgronomicalObjectDaoSesame.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(AgronomicalObjectDAOSesame.class);
     
     //The following attributes are used to search agronomical objects in the triplestore
     //uri of the agronomical object
@@ -86,7 +85,7 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject> {
     final static String TRIPLESTORE_RELATION_TYPE = NAMESPACES.getRelationsProperty("type");
     final static String TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE = NAMESPACES.getRelationsProperty("subClassOf*");
         
-    public AgronomicalObjectDaoSesame() {
+    public AgronomicalObjectDAOSesame() {
         super();
     }
     
@@ -342,7 +341,7 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject> {
             } 
             
             //3. insert in postgresql
-            AgronomicalObjectDao agronomicalObjectDAO = new AgronomicalObjectDao();
+            AgronomicalObjectDAO agronomicalObjectDAO = new AgronomicalObjectDAO();
             ArrayList<AgronomicalObject> aos = new ArrayList<>();
             aos.add(agronomicalObject);
             POSTResultsReturn postgreInsertionResult = agronomicalObjectDAO.checkAndInsertListAO(aos);
@@ -657,7 +656,7 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject> {
             });
             
             //Get geometries in relational database
-            AgronomicalObjectDao agronomicalObjectDao = new AgronomicalObjectDao();
+            AgronomicalObjectDAO agronomicalObjectDao = new AgronomicalObjectDAO();
             HashMap<String, String> geometries = agronomicalObjectDao.getGeometries(agronomicalObjectsUris);
             
             agronomicalObjects.forEach((agronomicalObject) -> {
@@ -672,7 +671,7 @@ public class AgronomicalObjectDaoSesame extends DAOSesame<AgronomicalObject> {
             
             return agronomicalObjects;
         }   catch (SQLException ex) {
-            java.util.logging.Logger.getLogger(AgronomicalObjectDaoSesame.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(AgronomicalObjectDAOSesame.class.getName()).log(Level.SEVERE, null, ex);
             
             if (getConnection() != null) {
                 getConnection().close();

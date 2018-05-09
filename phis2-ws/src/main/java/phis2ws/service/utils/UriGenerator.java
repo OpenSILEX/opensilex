@@ -14,7 +14,7 @@ package phis2ws.service.utils;
 import java.util.Calendar;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.URINamespaces;
-import phis2ws.service.dao.sesame.AgronomicalObjectDaoSesame;
+import phis2ws.service.dao.sesame.AgronomicalObjectDAOSesame;
 import phis2ws.service.dao.sesame.MethodDaoSesame;
 import phis2ws.service.dao.sesame.SensorDAOSesame;
 import phis2ws.service.dao.sesame.UriDaoSesame;
@@ -125,7 +125,7 @@ public class UriGenerator {
     private String generateAgronomicalObjectUri(String year) {
         //1. get the higher number for the year 
         //(i.e. the last inserted agronomical object for the year)
-        AgronomicalObjectDaoSesame agronomicalObjectDAO = new AgronomicalObjectDaoSesame();
+        AgronomicalObjectDAOSesame agronomicalObjectDAO = new AgronomicalObjectDAOSesame();
         int lastAgronomicalObjectIdFromYear = agronomicalObjectDAO.getLastAgronomicalObjectIdFromYear(year);
         
         //2. generates agronomical object uri

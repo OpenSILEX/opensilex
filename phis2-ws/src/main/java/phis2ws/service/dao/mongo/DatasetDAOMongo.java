@@ -33,8 +33,8 @@ import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.dao.manager.DAOMongo;
-import phis2ws.service.dao.phis.AgronomicalObjectDao;
-import phis2ws.service.dao.sesame.AgronomicalObjectDaoSesame;
+import phis2ws.service.dao.phis.AgronomicalObjectDAO;
+import phis2ws.service.dao.sesame.AgronomicalObjectDAOSesame;
 import phis2ws.service.dao.sesame.SensorDAOSesame;
 import phis2ws.service.dao.sesame.VariableDaoSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
@@ -180,7 +180,7 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
      * agronomical objects list 
      */
     private void updateAgronomicalObjectsWithExperimentsAgronomicalObjects() {
-        AgronomicalObjectDaoSesame agronomicalObjectDaoSesame = new AgronomicalObjectDaoSesame();
+        AgronomicalObjectDAOSesame agronomicalObjectDaoSesame = new AgronomicalObjectDAOSesame();
         agronomicalObjectDaoSesame.experiment = experiment;
         
         ArrayList<AgronomicalObject> agronomicalObjectsSearched = agronomicalObjectDaoSesame.allPaginate();
@@ -276,7 +276,7 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
             if (isElementValid(datasetDTO)) { 
                 for (DataDTO data : datasetDTO.getData()) {
                     //is agronomical object exist ?
-                    AgronomicalObjectDao agronomicalObjectDao = new AgronomicalObjectDao();
+                    AgronomicalObjectDAO agronomicalObjectDao = new AgronomicalObjectDAO();
                     if (!agronomicalObjectDao.existInDB(new AgronomicalObject(data.getAgronomicalObject()))) {
                         dataState = false;
                         insertStatusList.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Unknown Agronomical Object URI : " + data.getAgronomicalObject()));

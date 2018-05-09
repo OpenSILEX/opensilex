@@ -32,16 +32,16 @@ import phis2ws.service.utils.sql.SQLQueryBuilder;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.AgronomicalObject;
 
-public class AgronomicalObjectDao extends DAOPhisBrapi<AgronomicalObject, AgronomicalObjectDTO> {
+public class AgronomicalObjectDAO extends DAOPhisBrapi<AgronomicalObject, AgronomicalObjectDTO> {
     
-    final static Logger LOGGER = LoggerFactory.getLogger(AgronomicalObjectDao.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(AgronomicalObjectDAO.class);
     
     public String uri;
     public String typeAgronomicalObject;
     public String geometry;
     public String namedGraph;
     
-    public AgronomicalObjectDao() {
+    public AgronomicalObjectDAO() {
         super();
         setTable("agronomical_object");
         setTableAlias("ao");
@@ -93,7 +93,7 @@ public class AgronomicalObjectDao extends DAOPhisBrapi<AgronomicalObject, Agrono
                         insertPreparedStatement.setString(3, agronomicalObject.getGeometry());
                         insertPreparedStatement.setString(4, agronomicalObject.getUriExperiment());
                         
-                        LOGGER.trace(getTraceabilityLogs() + " quert : " + insertPreparedStatement.toString());
+                        LOGGER.debug(getTraceabilityLogs() + " quert : " + insertPreparedStatement.toString());
                         
                         insertPreparedStatement.execute();
                         
@@ -263,7 +263,7 @@ public class AgronomicalObjectDao extends DAOPhisBrapi<AgronomicalObject, Agrono
                 query.appendORWhereConditionIfNeeded("uri", agronomicalObjectURI, "=", null, tableAlias);
             }
 
-            LOGGER.trace(getTraceabilityLogs() + " quert : " + query.toString());
+            LOGGER.debug(getTraceabilityLogs() + " quert : " + query.toString());
 
             ResultSet queryResult = statement.executeQuery(query.toString());
             HashMap<String, String> geometries = new HashMap<>();
@@ -274,7 +274,7 @@ public class AgronomicalObjectDao extends DAOPhisBrapi<AgronomicalObject, Agrono
 
             return geometries;                
         } catch (SQLException ex) {
-            java.util.logging.Logger.getLogger(AgronomicalObjectDao.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(AgronomicalObjectDAO.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         } finally {
             if (statement != null) {
@@ -301,7 +301,7 @@ public class AgronomicalObjectDao extends DAOPhisBrapi<AgronomicalObject, Agrono
                 query.appendSelect("count(*)");
                 query.appendFrom(table, tableAlias);
                 query.appendANDWhereConditionIfNeeded("uri", "/" + year + "/", "~*", null, tableAlias);
-                LOGGER.trace(getTraceabilityLogs() + " quert : " + query.toString());
+                LOGGER.debug(getTraceabilityLogs() + " quert : " + query.toString());
                 ResultSet queryResult = statement.executeQuery(query.toString());
                 queryResult.next();
                 toReturn = queryResult.getString("count");
@@ -309,7 +309,7 @@ public class AgronomicalObjectDao extends DAOPhisBrapi<AgronomicalObject, Agrono
             
             return toReturn;
         } catch (SQLException ex) {
-            java.util.logging.Logger.getLogger(AgronomicalObjectDao.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(AgronomicalObjectDAO.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         }  
     }

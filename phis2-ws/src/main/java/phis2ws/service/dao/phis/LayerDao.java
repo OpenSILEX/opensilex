@@ -32,7 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.URINamespaces;
-import phis2ws.service.dao.sesame.AgronomicalObjectDaoSesame;
+import phis2ws.service.dao.sesame.AgronomicalObjectDAOSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.LayerDTO;
 import phis2ws.service.utils.POSTResultsReturn;
@@ -74,8 +74,8 @@ public class LayerDao {
      * @param layerDTO 
      */
       public void searchAndUpdateChildren(LayerDTO layerDTO) throws SQLException {
-        AgronomicalObjectDaoSesame agronomicalObjectDaoSesame = new AgronomicalObjectDaoSesame();
-        AgronomicalObjectDao agronomicalObject = new AgronomicalObjectDao();
+        AgronomicalObjectDAOSesame agronomicalObjectDaoSesame = new AgronomicalObjectDAOSesame();
+        AgronomicalObjectDAO agronomicalObject = new AgronomicalObjectDAO();
         
         HashMap<String, AgronomicalObject> childrendAgronomicalObjectDaoSesame = agronomicalObjectDaoSesame.searchChildren(layerDTO);
         

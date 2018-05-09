@@ -66,6 +66,7 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
     
     //experiment of the agronomical object
     public String experiment;
+    private final String EXPERIMENT = "experiment";
     
     //alias of the agronomical object
     public String alias;
@@ -641,6 +642,8 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
                         
                         if (experiment != null) {
                             agronomicalObject.setUriExperiment(experiment);
+                        } else if (bindingSet.getValue(EXPERIMENT) != null) {
+                            agronomicalObject.setExperiment(bindingSet.getValue(EXPERIMENT).stringValue());
                         }
                         
                         if (alias != null) {
@@ -716,7 +719,10 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
         
         if (experiment != null) {
             sparqlQuery.appendFrom("<" + TRIPLESTORE_CONTEXY_VOCABULARY + "> \n FROM <" + experiment + ">");
-        } 
+        } else {
+            sparqlQuery.appendSelect("?" + EXPERIMENT);
+            sparqlQuery.appendOptional("?" + EXPERIMENT + " <" + TRIPLESTORE_RELATION_HAS_PLOT + "> " + agronomicalObjectURI);
+        }
         
         if (alias != null) {
             sparqlQuery.appendTriplet(agronomicalObjectURI, TRIPLESTORE_RELATION_HAS_ALIAS, "\"" + alias + "\"", null);

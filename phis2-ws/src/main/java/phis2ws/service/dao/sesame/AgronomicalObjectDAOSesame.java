@@ -720,7 +720,7 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
         }
         
         sparqlQuery.appendSelect(" ?relation ?property");
-        sparqlQuery.appendTriplet("?" + URI, "?relation", "?property", null);
+        sparqlQuery.appendTriplet(agronomicalObjectURI, "?relation", "?property", null);
         
         LOGGER.debug("sparql select query : " + sparqlQuery.toString());
         

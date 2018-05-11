@@ -45,6 +45,7 @@ public class UriGenerator {
     private static final String PLATFORM_URI_ID_TRAITS = PLATFORM_URI_ID + "traits/";
     private static final String PLATFORM_URI_ID_UNITS = PLATFORM_URI_ID + "units/";
     private static final String PLATFORM_URI_ID_VARIABLES = PLATFORM_URI_ID + "variables/";
+    private static final String PLATFORM_URI_ID_VARIETY = PLATFORM_URI + "v/";
     
     
     /**
@@ -240,13 +241,27 @@ public class UriGenerator {
     }
     
     /**
+     * generates a new variety uri.
+     * a variety uri follows the pattern : 
+     * <prefix>:v/<varietynameinlowercase>
+     * e.g. http://www.phenome-fppn.fr/diaphen/v/dkc4814
+     * @param variety the variety name
+     * @return the new variety uri
+     */
+    private String generateVarietyUri(String variety) {
+        return PLATFORM_URI_ID_VARIETY + variety.toLowerCase();
+    }
+    
+    /**
      * generates the uri of a new instance of instanceType
      * @param instanceType the rdf type of the instance. (a concept uri)
      * @param year year of the creation of the element. If it is null, it will 
      *             be the current year
+     * @param additionalInformation some additional informations used for some 
+     *                              uri generators. (e.g. the variety name)
      * @return the generated uri
      */
-    public String generateNewInstanceUri(String instanceType, String year) {
+    public String generateNewInstanceUri(String instanceType, String year, String additionalInformation) {
         if (year == null) {
             year = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
         }
@@ -269,6 +284,8 @@ public class UriGenerator {
             return generateUnitUri();
         } else if (uriDaoSesame.isSubClassOf(instanceType, uriNamespaces.getObjectsProperty("cAgronomicalObject"))){
             return generateAgronomicalObjectUri(year);
+        } else if (uriNamespaces.getObjectsProperty("cVariety").equals(instanceType)) {
+            return generateVarietyUri(additionalInformation);
         }
         
         return null;

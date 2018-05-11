@@ -22,10 +22,8 @@ import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
-import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
@@ -219,7 +217,7 @@ public class MethodDaoSesame extends DAOSesame<Method> {
         
         while (iteratorMethodDTO.hasNext() && annotationInsert) {
             MethodDTO methodDTO = iteratorMethodDTO.next();
-            methodDTO.setUri(uriGenerator.generateNewInstanceUri(uriNamespaces.getObjectsProperty("cMethod"), null));
+            methodDTO.setUri(uriGenerator.generateNewInstanceUri(uriNamespaces.getObjectsProperty("cMethod"), null, null));
             
             //Enregistrement dans le triplestore
             SPARQLUpdateBuilder spqlInsert = prepareInsertQuery(methodDTO);

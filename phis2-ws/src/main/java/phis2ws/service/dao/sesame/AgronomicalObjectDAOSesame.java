@@ -293,7 +293,7 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
             AgronomicalObject agronomicalObject = agronomicalObjectDTO.createObjectFromDTO();
             
             //1. generates agronomical object uri
-            agronomicalObject.setUri(uriGenerator.generateNewInstanceUri(agronomicalObject.getRdfType(), agronomicalObjectDTO.getYear()));
+            agronomicalObject.setUri(uriGenerator.generateNewInstanceUri(agronomicalObject.getRdfType(), agronomicalObjectDTO.getYear(), null));
             
             //2. Register in triplestore
             SPARQLUpdateBuilder spqlInsert = new SPARQLUpdateBuilder();
@@ -311,7 +311,7 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
                         //SILEX:TODO
                         //move the uri generation in the UriGenerator (#45)
                         //\SILEX:TODO
-                        String propertyURI = NAMESPACES.getContextsProperty("pxPlatform") + "/v/" + property.getValue().toLowerCase();
+                        String propertyURI = uriGenerator.generateNewInstanceUri(TRIPLESTORE_CONCEPT_VARIETY, null, property.getValue());
                         spqlInsert.appendTriplet(propertyURI, TRIPLESTORE_RELATION_TYPE, property.getTypeProperty(), null);
                         spqlInsert.appendTriplet(agronomicalObject.getUri(), property.getRelation(), propertyURI, null);
                     } else {

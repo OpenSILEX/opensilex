@@ -24,10 +24,8 @@ import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
-import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
@@ -225,7 +223,7 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
         for (TripletDTO triplet : tripletsGroup) {
             //if there is a type, generate the uri
             if (triplet.getS().equals(REQUEST_GENERATION_URI_STRING) && uri == null) {
-                uri = uriGenerator.generateNewInstanceUri(rdfType, null);
+                uri = uriGenerator.generateNewInstanceUri(rdfType, null, null);
             }
         }
 

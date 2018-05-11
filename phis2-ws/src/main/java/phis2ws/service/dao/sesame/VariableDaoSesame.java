@@ -277,7 +277,7 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
         while (iteratorVariablesDTO.hasNext() && annotationInsert) {
             VariableDTO variableDTO = iteratorVariablesDTO.next();
             
-            variableDTO.setUri(uriGenerator.generateNewInstanceUri(uriNamespaces.getObjectsProperty("cVariable"), null));
+            variableDTO.setUri(uriGenerator.generateNewInstanceUri(uriNamespaces.getObjectsProperty("cVariable"), null, null));
             
             //Enregistrement dans le triplestore
             SPARQLUpdateBuilder spqlInsert = prepareInsertQuery(variableDTO);

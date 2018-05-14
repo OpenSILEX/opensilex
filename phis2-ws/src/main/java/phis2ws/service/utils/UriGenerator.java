@@ -11,9 +11,11 @@
 //******************************************************************************
 package phis2ws.service.utils;
 
+import java.awt.Image;
 import java.util.Calendar;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.URINamespaces;
+import phis2ws.service.dao.mongo.ImageMetadataDaoMongo;
 import phis2ws.service.dao.sesame.AgronomicalObjectDAOSesame;
 import phis2ws.service.dao.sesame.MethodDaoSesame;
 import phis2ws.service.dao.sesame.SensorDAOSesame;
@@ -38,6 +40,7 @@ public class UriGenerator {
     private static final String URI_CODE_UNIT = "u";
     private static final String URI_CODE_VARIABLE = "v";
     private static final String URI_CODE_VECTOR = "v";
+    private static final String URI_CODE_IMAGE = "i";
     
     private static final String PLATFORM_URI = PropertiesFileManager.getConfigFileProperty(PROPERTIES_SERVICE_FILE_NAME, PROPERTIES_SERVICE_BASE_URI);
     private static final String PLATFORM_URI_ID = PLATFORM_URI + "id/";
@@ -253,12 +256,51 @@ public class UriGenerator {
     }
     
     /**
+     * generates a new image uri. 
+     * an image uri follows the pattern : 
+     * <prefix>:yyyy/<unic_code>
+     * <unic_code> = 1 letter type (i) + 2 digits year + auto incremet with 10 digit
+     * e.g. http://www.phenome-fppn.fr/diaphen/2018/i180000000001
+     * @param year the year of insertion of the image
+     * @param lastGeneratedUri if a few uri has been generated but not inserted, 
+     *                         corresponds to the last generated uri 
+     * @return the new uri
+     */
+    private String generateImageUri(String year, String lastGeneratedUri) {
+        if (lastGeneratedUri == null) {
+            ImageMetadataDaoMongo imageDaoMongo = new ImageMetadataDaoMongo();
+            long imagesNumber = imageDaoMongo.getNbImagesYear();
+            imagesNumber++;
+            
+            //calculate the number of 0 to add before the number of the image
+            String nbImagesByYear = Long.toString(imagesNumber);
+            while (nbImagesByYear.length() < 10) {
+                nbImagesByYear = "0" + nbImagesByYear;
+            }
+
+            String uniqueId = URI_CODE_IMAGE + year.substring(2, 4) + nbImagesByYear;
+            return PLATFORM_URI + year + "/" + uniqueId;
+        } else {
+            int uniqueId = Integer.parseInt(lastGeneratedUri.split("/i" + year.substring(2, 4))[1]);
+            uniqueId++;
+            
+            String nbImagesByYear = Long.toString(uniqueId);
+            while (nbImagesByYear.length() < 10) {
+                nbImagesByYear = "0" + nbImagesByYear;
+            }
+            
+            return PLATFORM_URI + year + nbImagesByYear;
+        }
+    }
+    
+    /**
      * generates the uri of a new instance of instanceType
      * @param instanceType the rdf type of the instance. (a concept uri)
      * @param year year of the creation of the element. If it is null, it will 
      *             be the current year
      * @param additionalInformation some additional informations used for some 
-     *                              uri generators. (e.g. the variety name)
+     *                              uri generators. (e.g. the variety name, 
+     *                              or the last generated uri for the images)
      * @return the generated uri
      */
     public String generateNewInstanceUri(String instanceType, String year, String additionalInformation) {
@@ -286,6 +328,8 @@ public class UriGenerator {
             return generateAgronomicalObjectUri(year);
         } else if (uriNamespaces.getObjectsProperty("cVariety").equals(instanceType)) {
             return generateVarietyUri(additionalInformation);
+        } else if (uriDaoSesame.isSubClassOf(instanceType, uriNamespaces.getObjectsProperty("cImage"))) {
+            return generateImageUri(year, additionalInformation);
         }
         
         return null;

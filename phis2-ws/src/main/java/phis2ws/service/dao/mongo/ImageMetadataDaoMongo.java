@@ -261,7 +261,7 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
      *         Query example : 
      *         {uri: {$regex: "http://www.phenome-fppn.fr/diaphen/2017*"}}    
      */
-    private Document prepareGetNbImagesYearQuery() {        
+    private Document prepareGetLastId() {        
           Document regQuery = new Document();
           URINamespaces uriNamespaces = new URINamespaces();
           String regex = uriNamespaces.getContextsProperty("pxPlatform") + "/" + Year.now().toString() + "*";
@@ -269,7 +269,9 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
           
           Document findQuery = new Document();
           findQuery.append(DB_FIELDS_IMAGE_URI, regQuery);
-        
+          
+          LOGGER.debug(getTraceabilityLogs() + " query : " + findQuery.toString());
+          
           return findQuery;
     }
     
@@ -278,10 +280,23 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
      * @return the number of images in the database for the actual year
      */
     public long getNbImagesYear() {
-        Document query = prepareGetNbImagesYearQuery();
+        Document query = prepareGetLastId();
         
-        LOGGER.debug(getTraceabilityLogs() + " query : " + query.toString());
-        return imagesCollection.count(query);
+        FindIterable<Document> cursor = imagesCollection.find(query).sort(new BasicDBObject(DB_FIELDS_IMAGE_URI, -1)).limit(1);
+        
+        String lastUri = "";
+        MongoCursor<Document> imagesMetadataCursor = cursor.iterator();
+        while (imagesMetadataCursor.hasNext()) {
+            Document imageMetadataDocument = imagesMetadataCursor.next();
+            lastUri = imageMetadataDocument.getString(DB_FIELDS_IMAGE_URI);
+        }
+        if (lastUri.equals("")) {
+            return 0;
+        } else {
+            String[] splitString = lastUri.split("/i" + Year.now().toString().substring(2, 4));
+
+            return Integer.parseInt(splitString[splitString.length - 1]);
+        }
     }
     
     /**

@@ -130,6 +130,7 @@ public class URINamespaces {
         //c , concept
         OBJECTS.put("cDocuments", CONTEXTS.get("pVoc2017") + "#Document");
         OBJECTS.put("cExperiment", CONTEXTS.get("pVoc2017") + "#Experiment");
+        OBJECTS.put("cImage", CONTEXTS.get("pVoc2017") + "#Image");
         OBJECTS.put("cAgronomicalObject", CONTEXTS.get("pVoc2017") + "#AgronomicalObject");
         OBJECTS.put("cPlot", CONTEXTS.get("pVoc2017") + "#Plot");
         OBJECTS.put("cFields", CONTEXTS.get("pVoc2017") + "#Fields");

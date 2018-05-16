@@ -12,19 +12,32 @@
 package phis2ws.service.dao.sesame;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOSesame;
+import phis2ws.service.dao.phis.UserDaoPhisBrapi;
+import phis2ws.service.documentation.StatusCodeMsg;
+import phis2ws.service.model.User;
+import phis2ws.service.resources.dto.VectorDTO;
+import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.utils.POSTResultsReturn;
+import phis2ws.service.utils.UriGenerator;
+import phis2ws.service.utils.dates.Dates;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
+import phis2ws.service.utils.sparql.SPARQLUpdateBuilder;
+import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.Vector;
 
 /**
@@ -58,14 +71,18 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
     //Triplestore relations
     private final static URINamespaces NAMESPACES = new URINamespaces();
     final static String TRIPLESTORE_CONCEPT_VECTOR = NAMESPACES.getObjectsProperty("cVector");
-    final static String TRIPLESTORE_RELATION_TYPE = NAMESPACES.getRelationsProperty("type");
-    final static String TRIPLESTORE_RELATION_LABEL = NAMESPACES.getRelationsProperty("label");
-    final static String TRIPLESTORE_RELATION_BRAND = NAMESPACES.getRelationsProperty("rHasBrand");
-    final static String TRIPLESTORE_RELATION_VARIABLE = NAMESPACES.getRelationsProperty("rMeasuredVariable");
-    final static String TRIPLESTORE_RELATION_IN_SERVICE_DATE = NAMESPACES.getRelationsProperty("rInServiceDate");
-    final static String TRIPLESTORE_RELATION_DATE_OF_PURCHASE = NAMESPACES.getRelationsProperty("rDateOfPurchase");
-    final static String TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE = NAMESPACES.getRelationsProperty("subClassOf*");
+    final static String TRIPLESTORE_CONTEXT_VECTORS = NAMESPACES.getContextsProperty("vectors");
     
+    final static String TRIPLESTORE_RELATION_BRAND = NAMESPACES.getRelationsProperty("rHasBrand");
+    final static String TRIPLESTORE_RELATION_DATE_OF_PURCHASE = NAMESPACES.getRelationsProperty("rDateOfPurchase");
+    final static String TRIPLESTORE_RELATION_IN_SERVICE_DATE = NAMESPACES.getRelationsProperty("rInServiceDate");
+    final static String TRIPLESTORE_RELATION_LABEL = NAMESPACES.getRelationsProperty("label");
+    final static String TRIPLESTORE_RELATION_PERSON_IN_CHARGE = NAMESPACES.getRelationsProperty("rPersonInCharge");
+    final static String TRIPLESTORE_RELATION_SERIAL_NUMBER = NAMESPACES.getRelationsProperty("rSerialNumber");
+    final static String TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE = NAMESPACES.getRelationsProperty("subClassOf*");
+    final static String TRIPLESTORE_RELATION_TYPE = NAMESPACES.getRelationsProperty("type");
+    final static String TRIPLESTORE_RELATION_VARIABLE = NAMESPACES.getRelationsProperty("rMeasuredVariable");
+        
     /**
      * generates the query to get the number of vectors in the triplestore for 
      * a specific year
@@ -262,5 +279,172 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
             }
         }
         return vectors;
+    }
+    
+    /**
+     * check the given vectors's metadata
+     * @param vectorsDTO
+     * @return the result with the list of the errors founded (empty if no errors)
+     * @throws Exception 
+     */
+    public POSTResultsReturn check(List<VectorDTO> vectorsDTO) {
+        POSTResultsReturn vectorsCheck = null;
+        //list of the returned results
+        List<Status> checkStatus = new ArrayList<>();
+        boolean dataOk = true;
+
+        //1. check if user is an administrator
+        UserDaoPhisBrapi userDao = new UserDaoPhisBrapi();
+        if (userDao.isAdmin(user)) {
+            //2. check data
+            for (VectorDTO vectorDTO : vectorsDTO) {
+                //2.1 Check required fields 
+                if ((boolean) vectorDTO.isOk().get(AbstractVerifiedClass.STATE)) {
+                    try {
+                        //2.2 check date formats
+                        if (!Dates.isDateYMD(vectorDTO.getDateOfPurchase())) {
+                            dataOk = false;
+                            checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.EXPECTED_DATE_FORMAT_YMD + " for the dateOfPurchase field"));
+                        }
+                        if (!Dates.isDateYMD(vectorDTO.getInServiceDate())) {
+                            dataOk = false;
+                            checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.EXPECTED_DATE_FORMAT_YMD + " for the inServiceDate field"));
+                        }
+                        
+                        //2.3 check type (subclass of Vector)
+                        UriDaoSesame uriDaoSesame = new UriDaoSesame();
+                        if (!uriDaoSesame.isSubClassOf(vectorDTO.getRdfType(), TRIPLESTORE_CONCEPT_VECTOR)) {
+                            dataOk = false;
+                            checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Bad vector type given"));
+                        }
+                        
+                        //2.4 check if person in charge exist
+                        User u = new User(vectorDTO.getPersonInCharge());
+                        if (!userDao.existInDB(u)) {
+                            dataOk = false;
+                            checkStatus.add(new Status(StatusCodeMsg.UNKNOWN_URI, StatusCodeMsg.ERR, "Unknown person in charge email"));
+                        }
+                    } catch (Exception ex) {
+                        java.util.logging.Logger.getLogger(VectorDAOSesame.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                } else { //Missing required fields
+                    dataOk = false;
+                    vectorDTO.isOk().remove(AbstractVerifiedClass.STATE);
+                    checkStatus.add(new Status(StatusCodeMsg.BAD_DATA_FORMAT, StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.MISSING_FIELDS_LIST).append(vectorDTO.isOk()).toString()));
+                }
+            }
+        } else {
+            dataOk = false;
+            checkStatus.add(new Status(StatusCodeMsg.ACCESS_DENIED, StatusCodeMsg.ERR, StatusCodeMsg.ADMINISTRATOR_ONLY));
+        }
+        
+        vectorsCheck = new POSTResultsReturn(dataOk, null, dataOk);
+        vectorsCheck.statusList = checkStatus;
+        return vectorsCheck;
+    }
+    
+    /**
+     * generates an insert query for vector. 
+     * e.g.
+     * INSERT DATA {
+     *  GRAPH <http://www.phenome-fppn.fr/diaphen/vectors> { 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  rdf:type  <http://www.phenome-fppn.fr/vocabulary/2017#UAV> . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  rdfs:label  "par03_p"  . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.phenome-fppn.fr/vocabulary/2017#hasBrand>  "Skye Instruments"  . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.phenome-fppn.fr/vocabulary/2017#inServiceDate>  "2017-06-15"  . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.phenome-fppn.fr/vocabulary/2017#personInCharge>  "morgane.vidal@inra.fr"  . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.phenome-fppn.fr/vocabulary/2017#serialNumber>  "A1E345F32"  . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.phenome-fppn.fr/vocabulary/2017#dateOfPurchase>  "2017-06-15"  . 
+     *  }
+     * }
+     * @param vector
+     * @return the query
+     */
+    private SPARQLUpdateBuilder prepareInsertQuery(Vector vector) {
+        SPARQLUpdateBuilder query = new SPARQLUpdateBuilder();
+        
+        query.appendGraphURI(TRIPLESTORE_CONTEXT_VECTORS);
+        query.appendTriplet(vector.getUri(), TRIPLESTORE_RELATION_TYPE, vector.getRdfType(), null);
+        query.appendTriplet(vector.getUri(), TRIPLESTORE_RELATION_LABEL, "\"" + vector.getLabel() + "\"", null);
+        query.appendTriplet(vector.getUri(), TRIPLESTORE_RELATION_BRAND, "\"" + vector.getBrand() + "\"", null);
+        query.appendTriplet(vector.getUri(), TRIPLESTORE_RELATION_IN_SERVICE_DATE, "\"" + vector.getInServiceDate() + "\"", null);
+        query.appendTriplet(vector.getUri(), TRIPLESTORE_RELATION_PERSON_IN_CHARGE, "\"" + vector.getPersonInCharge() + "\"", null);
+        
+        if (vector.getSerialNumber() != null) {
+            query.appendTriplet(vector.getUri(), TRIPLESTORE_RELATION_SERIAL_NUMBER, "\"" + vector.getSerialNumber() + "\"", null);
+        }
+        if (vector.getDateOfPurchase() != null) {
+            query.appendTriplet(vector.getUri(), TRIPLESTORE_RELATION_DATE_OF_PURCHASE, "\"" + vector.getDateOfPurchase() + "\"", null);
+        }
+        
+        LOGGER.debug(getTraceabilityLogs() + " query : " + query.toString());
+        return query;
+    }
+    
+    /**
+     * insert the given vectors in the triplestore
+     * @param vectors
+     * @return the insertion result, with the errors list or the uri of the 
+     *         inserted vectors
+     */
+    public POSTResultsReturn insert(List<VectorDTO> vectors) {
+        List<Status> insertStatus = new ArrayList<>();
+        List<String> createdResourcesUri = new ArrayList<>();
+        
+        POSTResultsReturn results;
+        boolean resultState = false; //to know if data has been well inserted
+        boolean annotationInsert = true; //
+        
+        UriGenerator uriGenerator = new UriGenerator();
+        //SILEX:test
+        //Triplestore connection has to be checked (this is kind of an hot fix)
+        this.getConnection().begin();
+        //\SILEX:test
+        vectors.stream().map((vectorDTO) -> vectorDTO.createObjectFromDTO()).map((vector) -> {
+            vector.setUri(uriGenerator.generateNewInstanceUri(vector.getRdfType(), null, null));
+            return vector;            
+        }).forEachOrdered((vector) -> {
+            SPARQLUpdateBuilder query = prepareInsertQuery(vector);
+            Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
+            prepareUpdate.execute();
+            
+            createdResourcesUri.add(vector.getUri());
+        });
+        
+        if (annotationInsert) {
+            resultState = true;
+            getConnection().commit();
+        } else {
+            getConnection().rollback();
+        }
+        
+        results = new POSTResultsReturn(resultState, annotationInsert, true);
+        results.statusList = insertStatus;
+        results.setCreatedResources(createdResourcesUri);
+        if (resultState && !createdResourcesUri.isEmpty()) {
+            results.createdResources = createdResourcesUri;
+            results.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, createdResourcesUri.size() + " new resource(s) created."));
+        }
+        
+        if (getConnection() != null) {
+            getConnection().close();
+        }
+        
+        return results;
+    }
+    
+    /**
+     * check and insert the given vectors in the triplestore
+     * @param vectors
+     * @return the insertion result. Message error if errors founded in data,
+     *         the list of the generated uri of the vectors if the insertion has been done
+     */
+    public POSTResultsReturn checkAndInsert(List<VectorDTO> vectors) {
+        POSTResultsReturn checkResult = check(vectors);
+        if (checkResult.getDataState()) {
+            return insert(vectors);
+        } else { //errors founded in data
+            return checkResult;
+        }
     }
 }

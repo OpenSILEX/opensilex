@@ -87,6 +87,8 @@ public final class DocumentationAnnotation {
 
     public static final String VARIABLES_DEFINITION = "A variable or comma-separated variables list";
     
+    public static final String VECTOR_POST_DEFINITION = "JSON format of vector data";
+    
     public static final String ADMIN_ONLY_NOTES = "This can only be done by a PHIS-SILEX admin.";
     public static final String USER_ONLY_NOTES = "This can only be done by a PHIS-SILEX user.";
     
@@ -210,10 +212,12 @@ public final class DocumentationAnnotation {
     
     public static final String EXAMPLE_VECTOR_URI = "http://www.phenome-fppn.fr/diaphen/2018/v1801";
     public static final String EXAMPLE_VECTOR_RDF_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#UAV";
-    public static final String EXAMPLE_VECTOR_ALIAS = "par03_p";
+    public static final String EXAMPLE_VECTOR_LABEL = "par03_p";
     public static final String EXAMPLE_VECTOR_BRAND = "Skye Instruments";
+    public static final String EXAMPLE_VECTOR_SERIAL_NUMBER = "A1E345F32";
     public static final String EXAMPLE_VECTOR_IN_SERVICE_DATE = EXAMPLE_DATE;
     public static final String EXAMPLE_VECTOR_DATE_OF_PURCHASE = EXAMPLE_DATE;
+    public static final String EXAMPLE_VECTOR_PERSON_IN_CHARGE = EXAMPLE_USER_EMAIL;
     
     public static final String EXAMPLE_CONCEPT_URI = "http://www.phenome-fppn.fr/vocabulary/2017#Document";
     public static final String EXAMPLE_DEEP ="true";

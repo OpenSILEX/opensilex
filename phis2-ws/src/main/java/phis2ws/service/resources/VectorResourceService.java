@@ -19,12 +19,16 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
@@ -36,8 +40,12 @@ import phis2ws.service.dao.sesame.VectorDAOSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
+import phis2ws.service.resources.dto.VectorDTO;
+import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
+import phis2ws.service.view.brapi.form.AbstractResultForm;
 import phis2ws.service.view.brapi.form.ResponseFormGET;
+import phis2ws.service.view.brapi.form.ResponseFormPOST;
 import phis2ws.service.view.brapi.form.ResponseFormVector;
 import phis2ws.service.view.model.phis.Vector;
 
@@ -155,7 +163,7 @@ public class VectorResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
             @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_VECTOR_URI) @QueryParam("uri") String uri,
             @ApiParam(value = "Search by type uri", example = DocumentationAnnotation.EXAMPLE_VECTOR_RDF_TYPE) @QueryParam("rdfType") String rdfType,
-            @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_VECTOR_ALIAS) @QueryParam("label") String label,
+            @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_VECTOR_LABEL) @QueryParam("label") String label,
             @ApiParam(value = "Search by brand", example = DocumentationAnnotation.EXAMPLE_VECTOR_BRAND) @QueryParam("brand") String brand,
             @ApiParam(value = "Search by service date", example = DocumentationAnnotation.EXAMPLE_VECTOR_IN_SERVICE_DATE) @QueryParam("inServiceDate") String inServiceDate,
             @ApiParam(value = "Search by date of purchase", example = DocumentationAnnotation.EXAMPLE_VECTOR_DATE_OF_PURCHASE) @QueryParam("dateOfPurchase") String dateOfPurchase) {
@@ -248,5 +256,69 @@ public class VectorResourceService {
         vectorDAO.user = userSession.getUser();
 
         return getVectorsData(vectorDAO);
+    }
+    
+    /**
+     * insert vectors in the database(s)
+     * @param vectors list of the vectors to insert.
+     *                e.g of vector data :
+     * {
+     *      "rdfType": "http://www.phenome-fppn.fr/vocabulary/2017#UAV",
+     *      "label": "par03_p",
+     *      "brand": "Skye Instruments",
+     *      "serialNumber": "A1E345F32",
+     *      "inServiceDate": "2017-06-15",
+     *      "dateOfPurchase": "2017-06-15",
+     *      "personInCharge": "morgane.vidal@inra.fr"
+     * }
+     * @param context
+     * @return the post result with the errors or the uri of the inserted vectors
+     */
+    @POST
+    @ApiOperation(value = "Post a vector",
+                  notes = "Register a new vector in the database")
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "Vector saved", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response post(
+        @ApiParam(value = DocumentationAnnotation.VECTOR_POST_DEFINITION) ArrayList<VectorDTO> vectors,
+        @Context HttpServletRequest context) {
+        AbstractResultForm postResponse = null;
+        
+        if (vectors != null && !vectors.isEmpty()) {
+            VectorDAOSesame vectorDAOSesame = new VectorDAOSesame();
+            
+            if (context.getRemoteAddr() != null) {
+                vectorDAOSesame.remoteUserAdress = context.getRemoteAddr();
+            }
+            
+            vectorDAOSesame.user = userSession.getUser();
+            
+            POSTResultsReturn result = vectorDAOSesame.checkAndInsert(vectors);
+            
+            if (result.getHttpStatus().equals(Response.Status.CREATED)) {
+                postResponse = new ResponseFormPOST(result.statusList);
+                postResponse.getMetadata().setDatafiles(result.getCreatedResources());
+            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                    || result.getHttpStatus().equals(Response.Status.OK)
+                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                postResponse = new ResponseFormPOST(result.statusList);
+            }
+            return Response.status(result.getHttpStatus()).entity(postResponse).build();
+        } else {
+            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty vectors(s) to add"));
+            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+        }
     }
 }

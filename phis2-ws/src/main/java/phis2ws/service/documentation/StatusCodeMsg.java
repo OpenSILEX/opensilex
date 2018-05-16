@@ -30,6 +30,7 @@ public final class StatusCodeMsg {
     public static final String DATA_INSERTED = "Data inserted";
     public static final String COMMIT_TRIPLESTORE_ERROR = "Error during commit or rolleback Triplestore statements.";
     public static final String ERR = "Error";
+    public static final String EXPECTED_DATE_FORMAT_YMD = "Expected date format : YYYY-MM-DD";
     public static final String FILE_ERROR = "File error";
     public static final String INFO = "Info";
     public static final String MALFORMED_CREATE_QUERY = "Malformed create query";

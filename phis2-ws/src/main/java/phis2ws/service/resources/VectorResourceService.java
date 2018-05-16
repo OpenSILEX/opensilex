@@ -113,8 +113,10 @@ public class VectorResourceService {
      * @param rdfType
      * @param label
      * @param brand
+     * @param serialNumber
      * @param inServiceDate
      * @param dateOfPurchase
+     * @param personInCharge
      * @return list of the vectors corresponding to the search params given
      * e.g
      * {
@@ -135,8 +137,10 @@ public class VectorResourceService {
      *                  "rdfType": "http://www.phenome-fppn.fr/vocabulary/2017#UAV",
      *                  "label": "alias",
      *                  "brand": "brand",
+     *                  "serialNumber" : "serialNumber",
      *                  "inServiceDate": null,
-     *                  "dateOfPurchase": null
+     *                  "dateOfPurchase": null,
+     *                  "personInCharge": "user@mail.fr"
      *              },
      *          ]
      *      }
@@ -162,11 +166,13 @@ public class VectorResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int pageSize,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
             @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_VECTOR_URI) @QueryParam("uri") String uri,
-            @ApiParam(value = "Search by type uri", example = DocumentationAnnotation.EXAMPLE_VECTOR_RDF_TYPE) @QueryParam("rdfType") String rdfType,
+            @ApiParam(value = "Search by rdf type", example = DocumentationAnnotation.EXAMPLE_VECTOR_RDF_TYPE) @QueryParam("rdfType") String rdfType,
             @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_VECTOR_LABEL) @QueryParam("label") String label,
             @ApiParam(value = "Search by brand", example = DocumentationAnnotation.EXAMPLE_VECTOR_BRAND) @QueryParam("brand") String brand,
+            @ApiParam(value = "Search by serial number", example = DocumentationAnnotation.EXAMPLE_VECTOR_SERIAL_NUMBER) @QueryParam("serialNumber") String serialNumber,
             @ApiParam(value = "Search by service date", example = DocumentationAnnotation.EXAMPLE_VECTOR_IN_SERVICE_DATE) @QueryParam("inServiceDate") String inServiceDate,
-            @ApiParam(value = "Search by date of purchase", example = DocumentationAnnotation.EXAMPLE_VECTOR_DATE_OF_PURCHASE) @QueryParam("dateOfPurchase") String dateOfPurchase) {
+            @ApiParam(value = "Search by date of purchase", example = DocumentationAnnotation.EXAMPLE_VECTOR_DATE_OF_PURCHASE) @QueryParam("dateOfPurchase") String dateOfPurchase,
+            @ApiParam(value = "Search by person in charge", example = DocumentationAnnotation.EXAMPLE_VECTOR_PERSON_IN_CHARGE) @QueryParam("personInCharge") String personInCharge) {
         
         VectorDAOSesame vectorDAO = new VectorDAOSesame();
         if (uri != null) {
@@ -181,11 +187,17 @@ public class VectorResourceService {
         if (brand != null) {
             vectorDAO.brand = brand;
         }
+        if (serialNumber != null) {
+            vectorDAO.serialNumber = serialNumber;
+        }
         if (inServiceDate != null) {
             vectorDAO.inServiceDate = inServiceDate;
         }
         if (dateOfPurchase != null) {
             vectorDAO.dateOfPurchase = dateOfPurchase;
+        }
+        if (personInCharge != null) {
+            vectorDAO.personInCharge = personInCharge;
         }
         
         vectorDAO.user = userSession.getUser();

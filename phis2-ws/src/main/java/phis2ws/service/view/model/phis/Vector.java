@@ -24,10 +24,14 @@ public class Vector {
     private String label;
     //sensor brand
     private String brand;
+    //serial number of the vector
+    private String serialNumber;
     //first date of vector service
     private String inServiceDate;
     //purchase date of the vector
     private String dateOfPurchase;
+    //email of the person in charge of the vector
+    private String personInCharge;
 
     public String getUri() {
         return uri;
@@ -75,5 +79,21 @@ public class Vector {
 
     public void setDateOfPurchase(String dateOfPurchase) {
         this.dateOfPurchase = dateOfPurchase;
+    }
+
+    public String getSerialNumber() {
+        return serialNumber;
+    }
+
+    public void setSerialNumber(String serialNumber) {
+        this.serialNumber = serialNumber;
+    }
+
+    public String getPersonInCharge() {
+        return personInCharge;
+    }
+
+    public void setPersonInCharge(String personInCharge) {
+        this.personInCharge = personInCharge;
     }
 }

@@ -11,7 +11,6 @@
 //******************************************************************************
 package phis2ws.service.utils;
 
-import java.awt.Image;
 import java.util.Calendar;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.URINamespaces;
@@ -281,7 +280,7 @@ public class UriGenerator {
             String uniqueId = URI_CODE_IMAGE + year.substring(2, 4) + nbImagesByYear;
             return PLATFORM_URI + year + "/" + uniqueId;
         } else {
-            int uniqueId = Integer.parseInt(lastGeneratedUri.split("/i" + year.substring(2, 4))[1]);
+            int uniqueId = Integer.parseInt(lastGeneratedUri.split("/" + URI_CODE_IMAGE + year.substring(2, 4))[1]);
             uniqueId++;
             
             String nbImagesByYear = Long.toString(uniqueId);

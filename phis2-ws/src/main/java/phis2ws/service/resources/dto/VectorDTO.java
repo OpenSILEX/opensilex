@@ -24,6 +24,8 @@ import phis2ws.service.view.model.phis.Vector;
  */
 public class VectorDTO extends AbstractVerifiedClass {
     
+    //uri of the vector
+    private String uri;
     //type of the vector. Uri of the concept (must be subclass of Vector)
     //(e.g. http://www.phenome-fppn.fr/vocabulary/2018#UAV)
     private String rdfType;
@@ -50,6 +52,7 @@ public class VectorDTO extends AbstractVerifiedClass {
         rules.put("inServiceDate", Boolean.TRUE);
         rules.put("dateOfPurchase", Boolean.FALSE);
         rules.put("personInCharge", Boolean.TRUE);
+        rules.put("uri", Boolean.FALSE);
         
         return rules;
     }
@@ -57,6 +60,7 @@ public class VectorDTO extends AbstractVerifiedClass {
     @Override
     public Vector createObjectFromDTO() {
         Vector vector = new Vector();
+        vector.setUri(uri);
         vector.setRdfType(rdfType);
         vector.setLabel(label);
         vector.setBrand(brand);
@@ -67,7 +71,15 @@ public class VectorDTO extends AbstractVerifiedClass {
         
         return vector;
     }
+    
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_VECTOR_URI)
+    public String getUri() {
+        return uri;
+    }
 
+    public void setUri(String uri) {
+        this.uri = uri;
+    }
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_VECTOR_RDF_TYPE)
     public String getRdfType() {
         return rdfType;

@@ -468,6 +468,116 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
     }
     
     /**
+     * prepare a delete query of the triplets corresponding to the given vector
+     * e.g.
+     * DELETE WHERE { 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142> rdf:type <http://www.phenome-fppn.fr/vocabulary/2017#UAV> . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142> rdfs:label "par03_p" . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142> <http://www.phenome-fppn.fr/vocabulary/2017#hasBrand> "Skye Instruments" . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142> <http://www.phenome-fppn.fr/vocabulary/2017#inServiceDate> "2017-06-15" . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142> <http://www.phenome-fppn.fr/vocabulary/2017#personInCharge> "morgane.vidal@inra.fr" . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142> <http://www.phenome-fppn.fr/vocabulary/2017#serialNumber> "A1E345F32" .
+     *      <2017-06-15> <http://www.phenome-fppn.fr/vocabulary/2017#dateOfPurchase> "2017-06-15"
+     * }
+     * @param vector
+     * @return 
+     */
+    private String prepareDeleteQuery(Vector vector) {
+        String deleteQuery;
+        deleteQuery = "DELETE WHERE { "
+                + "<" + vector.getUri() + "> " + TRIPLESTORE_RELATION_TYPE + " <" + vector.getRdfType() + "> . "
+                + "<" + vector.getUri() + "> " + TRIPLESTORE_RELATION_LABEL + " \"" + vector.getLabel()+ "\" . "
+                + "<" + vector.getUri() + "> <" + TRIPLESTORE_RELATION_BRAND + "> \"" + vector.getBrand() + "\" . "
+                + "<" + vector.getUri() + "> <" + TRIPLESTORE_RELATION_IN_SERVICE_DATE + "> \"" + vector.getInServiceDate() + "\" . "
+                + "<" + vector.getUri() + "> <" + TRIPLESTORE_RELATION_PERSON_IN_CHARGE + "> \"" + vector.getPersonInCharge() + "\" . ";
+        
+        if (vector.getSerialNumber() != null) {
+            deleteQuery += "<" + vector.getUri() + "> <" + TRIPLESTORE_RELATION_SERIAL_NUMBER + "> \"" + vector.getSerialNumber() + "\" . ";
+        }
+        
+        if (vector.getDateOfPurchase() != null) {
+            deleteQuery += "<" + vector.getUri() + "> <" + TRIPLESTORE_RELATION_DATE_OF_PURCHASE + "> \"" + vector.getDateOfPurchase() + "\"";
+        }
+        
+        deleteQuery += "}";
+        
+        return deleteQuery;
+    }
+    
+    /**
+     * update a list of vectors. The vectors data must have been checked before
+     * @see VectorDAOSesame#check(java.util.List) 
+     * @param vectors
+     * @return the update results
+     */
+    private POSTResultsReturn update(List<VectorDTO> vectors) {
+        List<Status> updateStatus = new ArrayList<>();
+        List<String> updatedResourcesUri = new ArrayList<>();
+        POSTResultsReturn results;
+        
+        boolean annotationUpdate = true;
+        boolean resultState = false;
+        
+        for (VectorDTO vectorDTO : vectors) {
+            //1. delete already existing data
+            //1.1 get informations that will be updated (to delete the right triplets)
+            uri = vectorDTO.getUri();
+            ArrayList<Vector> vectorsCorresponding = allPaginate();
+            if (vectorsCorresponding.size() > 0) {
+                String deleteQuery = prepareDeleteQuery(vectorsCorresponding.get(0));
+                
+                //2. insert new data
+                SPARQLUpdateBuilder insertQuery = prepareInsertQuery(vectorDTO.createObjectFromDTO());
+                
+                try {
+                    this.getConnection().begin();
+                    Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery);
+                    Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, insertQuery.toString());
+                    LOGGER.debug(getTraceabilityLogs() + " query : " + prepareDelete.toString());
+                    LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
+                    prepareDelete.execute();
+                    prepareUpdate.execute();
+                    updatedResourcesUri.add(vectorDTO.getUri());
+
+                    updatedResourcesUri.add(vectorDTO.getUri());
+                } catch (MalformedQueryException e) {
+                    LOGGER.error(e.getMessage(), e);
+                    annotationUpdate = false;
+                    updateStatus.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, "Malformed update query: " + e.getMessage()));
+                } 
+                
+            } else {
+                annotationUpdate = false;
+                updateStatus.add(new Status(StatusCodeMsg.UNKNOWN_URI, StatusCodeMsg.ERR, "Unknown vector " + uri));
+            }
+        }
+        
+        if (annotationUpdate) {
+            resultState = true;
+            try {
+                this.getConnection().commit();
+            } catch (RepositoryException ex) {
+                LOGGER.error("Error during commit Triplestore statements: ", ex);
+            }
+        } else {
+            try {
+                this.getConnection().rollback();
+            } catch (RepositoryException ex) {
+                LOGGER.error("Error during rollback Triplestore statements : ", ex);
+            }
+        }
+        
+        results = new POSTResultsReturn(resultState, annotationUpdate, true);
+        results.statusList = updateStatus;
+        if (resultState && !updatedResourcesUri.isEmpty()) {
+            results.createdResources = updatedResourcesUri;
+            results.statusList.add(new Status(StatusCodeMsg.RESOURCES_UPDATED, StatusCodeMsg.INFO, updatedResourcesUri.size() + " resources updated"));
+        }
+        
+        return results;
+    }
+    
+    /**
      * check and insert the given vectors in the triplestore
      * @param vectors
      * @return the insertion result. Message error if errors founded in data,
@@ -477,6 +587,23 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
         POSTResultsReturn checkResult = check(vectors);
         if (checkResult.getDataState()) {
             return insert(vectors);
+        } else { //errors founded in data
+            return checkResult;
+        }
+    }
+    
+    /**
+     * check and update the given vectors in the triplestore
+     * @see VectorDAOSesame#check(java.util.List) 
+     * @see VectorDAOSesame#update(java.util.List) 
+     * @param vectors 
+     * @return the update result. Message error if errors founded in data,
+     *         the list of the updated vector's uri if the updated has been correcty done
+     */
+    public POSTResultsReturn checkAndUpdate(List<VectorDTO> vectors) {
+        POSTResultsReturn checkResult = check(vectors);
+        if (checkResult.getDataState()) {
+            return update(vectors);
         } else { //errors founded in data
             return checkResult;
         }

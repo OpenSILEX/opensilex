@@ -24,6 +24,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -330,6 +331,69 @@ public class VectorResourceService {
             return Response.status(result.getHttpStatus()).entity(postResponse).build();
         } else {
             postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty vectors(s) to add"));
+            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+        }
+    }
+    
+    /**
+     * update the given vectors
+     * e.g. 
+     * [
+     *      {
+     *          "uri": "http://www.phenome-fppn.fr/diaphen/2018/v18142",
+     *          "rdfType": "http://www.phenome-fppn.fr/vocabulary/2017#UAV",
+     *          "label": "testNewLabel",
+     *          "brand": "Skye Instrdfgduments",
+     *          "serialNumber": "A1E34qsf5F32",
+     *          "inServiceDate": "2017-06-15",
+     *          "dateOfPurchase": "2017-06-15",
+     *          "personInCharge": "morgane.vidal@inra.fr"
+     *      }
+     * ]
+     * @param vectors
+     * @param context
+     * @return the post result with the founded errors or the uris of the updated vectors
+     */
+    @PUT
+    @ApiOperation(value = "Update vector")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Vector updated", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 404, message = "Vector not found"),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    public Response put(
+        @ApiParam(value = DocumentationAnnotation.VECTOR_POST_DEFINITION) ArrayList<VectorDTO> vectors,
+        @Context HttpServletRequest context) {
+        AbstractResultForm postResponse = null;
+        
+        if (vectors != null && !vectors.isEmpty()) {
+            VectorDAOSesame vectorDAOSesame = new VectorDAOSesame();
+            if (context.getRemoteAddr() != null) {
+                vectorDAOSesame.remoteUserAdress = context.getRemoteAddr();
+            }
+            
+            vectorDAOSesame.user = userSession.getUser();
+            
+            POSTResultsReturn result = vectorDAOSesame.checkAndUpdate(vectors);
+            
+            if (result.getHttpStatus().equals(Response.Status.OK)) {
+                //Code 200, traits modifiés
+                postResponse = new ResponseFormPOST(result.statusList);
+            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                    || result.getHttpStatus().equals(Response.Status.OK)
+                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                postResponse = new ResponseFormPOST(result.statusList);
+            }
+            return Response.status(result.getHttpStatus()).entity(postResponse).build();
+        } else {
+            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty vector(s) to update"));
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }

@@ -44,6 +44,7 @@ public final class StatusCodeMsg {
     public static final String QUERY_ERROR = "Query error";
     public static final String REQUEST_ERROR = "Request error";
     public static final String RESOURCES_CREATED = "Resources created";
+    public static final String RESOURCES_UPDATED = "Resources updated";
     public static final String ACCESS_DENIED = "Access denied";
     public static final String SFTP_EXCEPTION = "sftp exception";
     public static final String TIMEOUT = "Timeout";

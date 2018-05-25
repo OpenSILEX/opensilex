@@ -113,9 +113,11 @@ public class SensorResourceService {
      * @param rdfType
      * @param label
      * @param brand
+     * @param serialNumber
      * @param inServiceDate
      * @param dateOfPurchase
      * @param dateOfLastCalibration
+     * @param personInCharge
      * @return list of the sensors corresponding to the search params given
      * e.g
      * {
@@ -136,9 +138,11 @@ public class SensorResourceService {
      *                  "rdfType": "http://www.phenome-fppn.fr/vocabulary/2017#LevelMeasurementRainGauge",
      *                  "label": "alias",
      *                  "brand": "brand",
+     *                  "serialNumber": "E1ISHFUSK2345",
      *                  "inServiceDate": null,
      *                  "dateOfPurchase": null,
-     *                  "dateOfLastCalibration": null
+     *                  "dateOfLastCalibration": null,
+     *                  "personInCharge": "username@mail.com"
      *              },
      *          ]
      *      }
@@ -167,9 +171,11 @@ public class SensorResourceService {
             @ApiParam(value = "Search by type uri", example = DocumentationAnnotation.EXAMPLE_SENSOR_RDF_TYPE) @QueryParam("rdfType") String rdfType,
             @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_SENSOR_LABEL) @QueryParam("label") String label,
             @ApiParam(value = "Search by brand", example = DocumentationAnnotation.EXAMPLE_SENSOR_BRAND) @QueryParam("brand") String brand,
+            @ApiParam(value = "Search by serial number", example = DocumentationAnnotation.EXAMPLE_SENSOR_SERIAL_NUMBER) @QueryParam("serialNumber") String serialNumber,
             @ApiParam(value = "Search by service date", example = DocumentationAnnotation.EXAMPLE_SENSOR_IN_SERVICE_DATE) @QueryParam("inServiceDate") String inServiceDate,
             @ApiParam(value = "Search by date of purchase", example = DocumentationAnnotation.EXAMPLE_SENSOR_DATE_OF_PURCHASE) @QueryParam("dateOfPurchase") String dateOfPurchase,
-            @ApiParam(value = "Search by date of last calibration", example = DocumentationAnnotation.EXAMPLE_SENSOR_DATE_OF_LAST_CALIBRATION) @QueryParam("dateOfLastCalibration") String dateOfLastCalibration) {
+            @ApiParam(value = "Search by date of last calibration", example = DocumentationAnnotation.EXAMPLE_SENSOR_DATE_OF_LAST_CALIBRATION) @QueryParam("dateOfLastCalibration") String dateOfLastCalibration,
+            @ApiParam(value = "Search by person in charge", example = DocumentationAnnotation.EXAMPLE_USER_EMAIL) @QueryParam("personInCharge") String personInCharge) {
         
         SensorDAOSesame sensorDAO = new SensorDAOSesame();
         if (uri != null) {
@@ -184,6 +190,9 @@ public class SensorResourceService {
         if (brand != null) {
             sensorDAO.brand = brand;
         }
+        if (serialNumber != null) {
+            sensorDAO.serialNumber = serialNumber;
+        }
         if (inServiceDate != null) {
             sensorDAO.inServiceDate = inServiceDate;
         }
@@ -192,6 +201,9 @@ public class SensorResourceService {
         }
         if (dateOfLastCalibration != null) {
             sensorDAO.dateOfLastCalibration = dateOfLastCalibration;
+        }
+        if (personInCharge != null) {
+            sensorDAO.personInCharge = personInCharge;
         }
         
         sensorDAO.user = userSession.getUser();
@@ -221,9 +233,11 @@ public class SensorResourceService {
      *                 "rdfType": "http://www.phenome-fppn.fr/vocabulary/2017#HumiditySensor",
      *                 "label": "aria_hr1_p",
      *                 "brand": "unknown",
+     *                 "serialNumber": null,
      *                 "inServiceDate": null,
      *                 "dateOfPurchase": null,
-     *                 "dateOfLastCalibration": null
+     *                 "dateOfLastCalibration": null,
+     *                 "personInCharge": "user@mail.fr"
      *              }
      *          ]
      *      }

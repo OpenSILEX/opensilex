@@ -61,6 +61,9 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
     //brand of the sensor(s)
     public String brand;
     private final String BRAND = "brand";
+    //serial number of the sensor(s)
+    public String serialNumber;
+    private final String SERIAL_NUMBER = "serialNumber";
     //service date of the sensor(s)
     public String inServiceDate;
     private final String IN_SERVICE_DATE = "inServiceDate";
@@ -70,6 +73,9 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
     //date of last calibration of the sensor(s)
     public String dateOfLastCalibration;
     private final String DATE_OF_LAST_CALIBRATION = "dateOfLastCalibration";
+    //person in charge of the sensor(s)
+    public String personInCharge;
+    private final String PERSON_IN_CHARGE = "personInCharge";
 
     //Triplestore relations
     private final static URINamespaces NAMESPACES = new URINamespaces();
@@ -186,6 +192,15 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
             query.appendSelect(" ?" + BRAND);
             query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_BRAND, "?" + BRAND, null);
         }
+        
+        if (serialNumber != null) {
+            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_SERIAL_NUMBER, "\"" + serialNumber + "\"", null);
+        } else {
+            query.appendSelect("?" + SERIAL_NUMBER);
+            query.beginBodyOptional();
+            query.appendToBody(sensorUri + " <" + TRIPLESTORE_RELATION_SERIAL_NUMBER + "> ?" + SERIAL_NUMBER + " . ");
+            query.endBodyOptional();
+        }
 
         if (inServiceDate != null) {
             query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_IN_SERVICE_DATE, "\"" + inServiceDate + "\"", null);
@@ -212,6 +227,13 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
             query.beginBodyOptional();
             query.appendToBody(sensorUri + " <" + TRIPLESTORE_RELATION_DATE_OF_LAST_CALIBRATION + "> " + "?" + DATE_OF_LAST_CALIBRATION + " . ");
             query.endBodyOptional();
+        }
+        
+        if (personInCharge != null) {
+            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_PERSON_IN_CHARGE, "\"" + personInCharge + "\"", null);
+        } else {
+            query.appendSelect(" ?" + PERSON_IN_CHARGE);
+            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_PERSON_IN_CHARGE, "?" + PERSON_IN_CHARGE, null);
         }
 
         LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
@@ -257,6 +279,12 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         } else {
             sensor.setBrand(bindingSet.getValue(BRAND).stringValue());
         }
+        
+        if (serialNumber != null) {
+            sensor.setSerialNumber(serialNumber);
+        } else if (bindingSet.getValue(SERIAL_NUMBER) != null) {
+            sensor.setSerialNumber(bindingSet.getValue(SERIAL_NUMBER).stringValue());
+        }
 
         if (inServiceDate != null) {
             sensor.setInServiceDate(inServiceDate);
@@ -274,6 +302,12 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
             sensor.setDateOfLastCalibration(dateOfLastCalibration);
         } else if (bindingSet.getValue(DATE_OF_LAST_CALIBRATION) != null) {
             sensor.setDateOfLastCalibration(bindingSet.getValue(DATE_OF_LAST_CALIBRATION).stringValue());
+        }
+        
+        if (personInCharge != null) {
+            sensor.setPersonInCharge(personInCharge);
+        } else {
+            sensor.setPersonInCharge(bindingSet.getValue(PERSON_IN_CHARGE).stringValue());
         }
 
         return sensor;

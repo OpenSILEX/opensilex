@@ -84,6 +84,7 @@ public final class DocumentationAnnotation {
     public static final String UNIT_URI_DEFINITION = "A unit URI (Unique Resource Identifier)";
     
     public static final String SENSOR_URI_DEFINITION = "a sensor URI (Unique Resource Identifier)";
+    public static final String SENSOR_POST_DEFINITION = "JSON format of sensor data";
 
     public static final String VARIABLES_DEFINITION = "A variable or comma-separated variables list";
     
@@ -176,12 +177,13 @@ public final class DocumentationAnnotation {
     
     public static final String EXAMPLE_SENSOR_URI = "http://www.phenome-fppn.fr/diaphen/2018/s18001";
     public static final String EXAMPLE_SENSOR_RDF_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#Sensor";
-    public static final String EXAMPLE_SENSOR_ALIAS = "par03_p";
+    public static final String EXAMPLE_SENSOR_LABEL = "par03_p";
     public static final String EXAMPLE_SENSOR_BRAND = "Skye Instruments";
     public static final String EXAMPLE_SENSOR_VARIABLE = "http://www.phenome-fppn.fr/phenovia/id/variables/v001";
     public static final String EXAMPLE_SENSOR_IN_SERVICE_DATE = EXAMPLE_DATE;
     public static final String EXAMPLE_SENSOR_DATE_OF_PURCHASE = EXAMPLE_DATE;
     public static final String EXAMPLE_SENSOR_DATE_OF_LAST_CALIBRATION = EXAMPLE_DATE;
+    public static final String EXAMPLE_SENSOR_SERIAL_NUMBER = "A1E345F32";
 
     public static final String EXAMPLE_SHOOTING_CONFIGURATION_TIMESTAMP = "1512744238";
     public static final String EXAMPLE_SHOOTING_CONFIGURATION_POSITION = "POINT(0, 0)";

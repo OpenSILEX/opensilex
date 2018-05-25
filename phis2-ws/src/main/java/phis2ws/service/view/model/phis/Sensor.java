@@ -25,12 +25,16 @@ public class Sensor {
     private String label;
     //sensor brand
     private String brand;
+    //serial number of the sensor
+    private String serialNumber;
     //first date of sensor service
     private String inServiceDate;
     //purchase date of the sensor
     private String dateOfPurchase;
     //date of the last calibration of the sensor
     private String dateOfLastCalibration;
+    //email of the person in charge of the sensor
+    private String personInCharge;
 
     public String getUri() {
         return uri;
@@ -86,5 +90,21 @@ public class Sensor {
 
     public void setDateOfLastCalibration(String dateOfLastCalibration) {
         this.dateOfLastCalibration = dateOfLastCalibration;
+    }
+
+    public String getSerialNumber() {
+        return serialNumber;
+    }
+
+    public void setSerialNumber(String serialNumber) {
+        this.serialNumber = serialNumber;
+    }
+
+    public String getPersonInCharge() {
+        return personInCharge;
+    }
+
+    public void setPersonInCharge(String personInCharge) {
+        this.personInCharge = personInCharge;
     }
 }

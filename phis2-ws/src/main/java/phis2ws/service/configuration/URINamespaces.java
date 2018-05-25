@@ -113,6 +113,7 @@ public class URINamespaces {
         CONTEXTS.put("agronomicalObjects", CONTEXTS.get("pxPlatform") + "/agronomicalObjects");
         CONTEXTS.put("variables", CONTEXTS.get("pxPlatform") + "/variables");
         CONTEXTS.put("vectors", CONTEXTS.get("pxPlatform") + "/vectors");
+        CONTEXTS.put("sensors", CONTEXTS.get("pxPlatform") + "/sensors");
     }
     
     private void setNamespaces() {

@@ -541,4 +541,130 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
             return checkResult;
         }
     }
+    
+    /**
+     * prepare a delete query of the triplets corresponding to the given sensor
+     * e.g.
+     * DELETE WHERE { 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/s18142> rdf:type <http://www.phenome-fppn.fr/vocabulary/2017#Thermocouple> . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/s18142> rdfs:label "par03_p" . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/s18142> <http://www.phenome-fppn.fr/vocabulary/2017#hasBrand> "Skye Instruments" . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/s18142> <http://www.phenome-fppn.fr/vocabulary/2017#inServiceDate> "2017-06-15" . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/s18142> <http://www.phenome-fppn.fr/vocabulary/2017#personInCharge> "morgane.vidal@inra.fr" . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/s18142> <http://www.phenome-fppn.fr/vocabulary/2017#serialNumber> "A1E345F32" .
+     *      <http://www.phenome-fppn.fr/diaphen/2018/s18142> <http://www.phenome-fppn.fr/vocabulary/2017#dateOfPurchase> "2017-06-15" .
+     *      <http://www.phenome-fppn.fr/diaphen/2018/s18142> <http://www.phenome-fppn.fr/vocabulary/2017#dateOfLastCalibration> "2017-06-15"
+     * }
+     * @param sensor
+     * @return 
+     */
+    private String prepareDeleteQuery(Sensor sensor) {
+        String query;
+        query = "DELETE WHERE { "
+                + "<" + sensor.getUri() + "> " + TRIPLESTORE_RELATION_TYPE + " <" + sensor.getRdfType() + "> . "
+                + "<" + sensor.getUri() + "> " + TRIPLESTORE_RELATION_LABEL + " \"" + sensor.getLabel() + "\" . "
+                + "<" + sensor.getUri() + "> <" + TRIPLESTORE_RELATION_BRAND + "> \"" + sensor.getBrand() + "\" . "
+                + "<" + sensor.getUri() + "> <" + TRIPLESTORE_RELATION_IN_SERVICE_DATE + "> \"" + sensor.getInServiceDate() + "\" . "
+                + "<" + sensor.getUri() + "> <" + TRIPLESTORE_RELATION_PERSON_IN_CHARGE + "> \"" + sensor.getPersonInCharge() + "\" . ";
+        
+        if (sensor.getSerialNumber() != null) {
+            query += "<" + sensor.getUri() + "> <" + TRIPLESTORE_RELATION_SERIAL_NUMBER + "> \"" + sensor.getSerialNumber() + "\" . ";
+        }
+        if (sensor.getDateOfPurchase() != null) {
+            query += "<" + sensor.getUri() + "> <" + TRIPLESTORE_RELATION_DATE_OF_PURCHASE + "> \"" + sensor.getDateOfPurchase() + "\" . ";
+        }
+        if (sensor.getDateOfLastCalibration() != null) {
+            query += "<" + sensor.getUri() + "> <" + TRIPLESTORE_RELATION_DATE_OF_LAST_CALIBRATION + "> \"" + sensor.getDateOfLastCalibration() + "\" . ";
+        }
+        
+        query += " }";
+        
+        return query;
+    }
+    
+    /**
+     * update a list of sensors. The sensors data must have been checked before
+     * @see SensorDAOSesame#check(java.util.List)
+     * @param sensors 
+     * @return the updated result
+     */
+    private POSTResultsReturn update(List<SensorDTO> sensors) {
+        List<Status> updateStatus = new ArrayList<>();
+        List<String> updatedResourcesUri = new ArrayList<>();
+        POSTResultsReturn results;
+        
+        boolean annotationUpdate = true;
+        boolean resultState = false;
+        
+        for (SensorDTO sensorDTO : sensors) {
+            //1. delete already existing data
+            //1.1 get informations that will be updated (to delete the right triplets)
+            uri = sensorDTO.getUri();
+            ArrayList<Sensor> sensorsCorresponding = allPaginate();
+            if (sensorsCorresponding.size() > 0) {
+                String deleteQuery = prepareDeleteQuery(sensorsCorresponding.get(0));
+                
+                //2. insert new data
+                SPARQLUpdateBuilder insertQuery = prepareInsertQuery(sensorDTO.createObjectFromDTO());
+                try {
+                    this.getConnection().begin();
+                    Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery);
+                    Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, insertQuery.toString());
+                    LOGGER.debug(getTraceabilityLogs() + " query : " + prepareDelete.toString());
+                    LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
+                    prepareDelete.execute();
+                    prepareUpdate.execute();
+                    updatedResourcesUri.add(sensorDTO.getUri());
+                } catch (MalformedQueryException e) {
+                    LOGGER.error(e.getMessage(), e);
+                    annotationUpdate = false;
+                    updateStatus.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, "Malformed update query: " + e.getMessage()));
+                }
+            } else {
+                annotationUpdate = false;
+                updateStatus.add(new Status(StatusCodeMsg.UNKNOWN_URI, StatusCodeMsg.ERR, "Unknown sensor " + uri));
+            }
+        }
+        
+        if (annotationUpdate) {
+            resultState = true;
+            try {
+                this.getConnection().commit();
+            } catch (RepositoryException ex) {
+                LOGGER.error("Error during commit Triplestore statements: ", ex);
+            }
+        } else {
+            try {
+                this.getConnection().rollback();
+            } catch (RepositoryException ex) {
+                LOGGER.error("Error during rollback Triplestore statements : ", ex);
+            }
+        }
+        
+        results = new POSTResultsReturn(resultState, annotationUpdate, true);
+        results.statusList = updateStatus;
+        if (resultState && !updatedResourcesUri.isEmpty()) {
+            results.createdResources = updatedResourcesUri;
+            results.statusList.add(new Status(StatusCodeMsg.RESOURCES_UPDATED, StatusCodeMsg.INFO, updatedResourcesUri.size() + " resources updated"));
+        }
+        
+        return results;
+    }
+    
+    /**
+     * check and update the given sensors in the triplestore
+     * @see SensorDAOSesame#check(java.util.List)
+     * @see SensorDAOSesame#update(java.util.List)
+     * @param sensors
+     * @return the update result. Message error if errors founded in data,
+     *         the list of the updated sensors's uri if they has been updated correctly
+     */
+    public POSTResultsReturn checkAndUpdate(List<SensorDTO> sensors) {
+        POSTResultsReturn checkResult = check(sensors);
+        if (checkResult.getDataState()) {
+            return update(sensors);
+        } else { //errors founded in data
+            return checkResult;
+        }
+    }
 }

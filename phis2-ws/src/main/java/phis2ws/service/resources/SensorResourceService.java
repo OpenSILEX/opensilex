@@ -24,6 +24,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -340,6 +341,72 @@ public class SensorResourceService {
             return Response.status(result.getHttpStatus()).entity(postResponse).build();
         } else {
             postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty sensor(s) to add"));
+            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+        }
+    }
+    
+    /**
+     * update the given sensors
+     * e.g. 
+     * [
+     *      {
+     *          "uri": "http://www.phenome-fppn.fr/diaphen/2018/s18142",
+     *          "rdfType": "http://www.phenome-fppn.fr/vocabulary/2017#Thermocouple",
+     *          "label": "testNewLabel",
+     *          "brand": "Skye Instrdfgduments",
+     *          "serialNumber": "A1E34qsf5F32",
+     *          "inServiceDate": "2017-06-15",
+     *          "dateOfPurchase": "2017-06-15",
+     *          "dateOfLastCalibration": "2017-06-15",
+     *          "personInCharge": "morgane.vidal@inra.fr"
+     *      }
+     * ]
+     * @param sensors
+     * @param context
+     * @return the post result with the founded errors or the uris of the updated sensors
+     */
+    @PUT
+    @ApiOperation(value = "Update sensors")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Sensor(s) updated", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 404, message = "Sensor(s) not found"),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    public Response put(
+        @ApiParam(value = DocumentationAnnotation.VECTOR_POST_DEFINITION) ArrayList<SensorDTO> sensors,
+        @Context HttpServletRequest context) {
+        AbstractResultForm postResponse = null;
+        
+        if (sensors != null && !sensors.isEmpty()) {
+            SensorDAOSesame sensorDAOSesame = new SensorDAOSesame();
+            if (context.getRemoteAddr() != null) {
+                sensorDAOSesame.remoteUserAdress = context.getRemoteAddr();
+            }
+            
+            sensorDAOSesame.user = userSession.getUser();
+            
+            POSTResultsReturn result = sensorDAOSesame.checkAndUpdate(sensors);
+            
+            if (result.getHttpStatus().equals(Response.Status.OK)
+                    || result.getHttpStatus().equals(Response.Status.CREATED)) {
+                //Code 200, traits modifiés
+                postResponse = new ResponseFormPOST(result.statusList);
+                postResponse.getMetadata().setDatafiles(result.createdResources);
+            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                    || result.getHttpStatus().equals(Response.Status.OK)
+                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                postResponse = new ResponseFormPOST(result.statusList);
+            }
+            return Response.status(result.getHttpStatus()).entity(postResponse).build();
+        } else {
+            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty sensors(s) to update"));
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }

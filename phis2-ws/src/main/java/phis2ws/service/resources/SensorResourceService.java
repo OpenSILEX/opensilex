@@ -38,10 +38,12 @@ import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.sesame.SensorDAOSesame;
+import phis2ws.service.dao.sesame.SensorProfileDAOSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.SensorDTO;
+import phis2ws.service.resources.dto.SensorProfileDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
@@ -407,6 +409,55 @@ public class SensorResourceService {
             return Response.status(result.getHttpStatus()).entity(postResponse).build();
         } else {
             postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty sensors(s) to update"));
+            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+        }
+    }
+    
+    @POST
+    @Path("profiles")
+    @ApiOperation(value = "Post sensor(s) profile(s)",
+                  notes = "Register sensor(s) profile(s) in the database")
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "sensor(s) profile(s) saved", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response postProfiles(
+        @ApiParam(value = DocumentationAnnotation.SENSOR_PROFILE_POST_DEFINITION) ArrayList<SensorProfileDTO> profiles,
+        @Context HttpServletRequest context) {
+        AbstractResultForm postResponse = null;
+        
+        if (profiles != null && !profiles.isEmpty()) {
+            SensorProfileDAOSesame sensorProfileDAO = new SensorProfileDAOSesame();
+            
+             if (context.getRemoteAddr() != null) {
+                sensorProfileDAO.remoteUserAdress = context.getRemoteAddr();
+            }
+            
+            sensorProfileDAO.user = userSession.getUser();
+            
+            POSTResultsReturn result = sensorProfileDAO.checkAndInsert(profiles);
+            
+            if (result.getHttpStatus().equals(Response.Status.CREATED)) {
+                postResponse = new ResponseFormPOST(result.statusList);
+                postResponse.getMetadata().setDatafiles(result.getCreatedResources());
+            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                    || result.getHttpStatus().equals(Response.Status.OK)
+                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                postResponse = new ResponseFormPOST(result.statusList);
+            }
+            return Response.status(result.getHttpStatus()).entity(postResponse).build();
+        } else {
+            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty sensor(s) profile(s) to add"));
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }

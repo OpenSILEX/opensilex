@@ -19,7 +19,7 @@ import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.view.model.phis.Property;
 
 /**
- * Represents the submitted JSON for the agronomical objects
+ * Represents the submitted JSON for the properties
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class PropertyDTO extends AbstractVerifiedClass {
@@ -45,7 +45,7 @@ public class PropertyDTO extends AbstractVerifiedClass {
     @Override
     public Property createObjectFromDTO() {
         Property property = new Property();
-        property.setTypeProperty(rdfType);
+        property.setRdfType(rdfType);
         property.setRelation(relation);
         property.setValue(value);
         

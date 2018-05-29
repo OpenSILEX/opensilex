@@ -172,8 +172,8 @@ public class LayerDao {
                     int nbProperties = 0;
                     for (Property property : child.getValue().getProperties()) {
                         //On déduit le nom de la propriété du type de relation ou de concept
-                         if (property.getTypeProperty() != null) {
-                            writer.write("\"" + typesByRelationOrConcept.get(property.getTypeProperty()) + "\" : \"" + property.getValue() + "\"");
+                         if (property.getRdfType() != null) {
+                            writer.write("\"" + typesByRelationOrConcept.get(property.getRdfType()) + "\" : \"" + property.getValue() + "\"");
                         } else {
                             writer.write("\"" + typesByRelationOrConcept.get(property.getRelation()) + "\" : \"" + property.getValue() + "\"");
                         }

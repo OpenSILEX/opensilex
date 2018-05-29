@@ -305,17 +305,17 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
             
             //Propriétés associées à l'AO
             for (Property property : agronomicalObject.getProperties()) {
-                if (property.getTypeProperty() != null && !property.getTypeProperty().equals("")) {//Propriété typée
-                    if (property.getTypeProperty().equals(TRIPLESTORE_CONCEPT_VARIETY)) {
+                if (property.getRdfType() != null && !property.getRdfType().equals("")) {//Propriété typée
+                    if (property.getRdfType().equals(TRIPLESTORE_CONCEPT_VARIETY)) {
                         //On génère l'uri de la variété
                         //SILEX:TODO
                         //move the uri generation in the UriGenerator (#45)
                         //\SILEX:TODO
                         String propertyURI = uriGenerator.generateNewInstanceUri(TRIPLESTORE_CONCEPT_VARIETY, null, property.getValue());
-                        spqlInsert.appendTriplet(propertyURI, TRIPLESTORE_RELATION_TYPE, property.getTypeProperty(), null);
+                        spqlInsert.appendTriplet(propertyURI, TRIPLESTORE_RELATION_TYPE, property.getRdfType(), null);
                         spqlInsert.appendTriplet(agronomicalObject.getUri(), property.getRelation(), propertyURI, null);
                     } else {
-                        spqlInsert.appendTriplet(property.getValue(), TRIPLESTORE_RELATION_TYPE, property.getTypeProperty(), null);
+                        spqlInsert.appendTriplet(property.getValue(), TRIPLESTORE_RELATION_TYPE, property.getRdfType(), null);
                         spqlInsert.appendTriplet(agronomicalObject.getUri(), property.getRelation(), property.getValue(), null);
                     }
                 } else {
@@ -487,7 +487,7 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
                     property.setValue(bindingSet.getValue(PROPERTY).stringValue());
                     property.setRelation(bindingSet.getValue(PROPERTY_RELATION).stringValue());
                     if (bindingSet.getValue(PROPERTY_TYPE) != null) {
-                        property.setTypeProperty(bindingSet.getValue(PROPERTY_TYPE).stringValue());
+                        property.setRdfType(bindingSet.getValue(PROPERTY_TYPE).stringValue());
                     }
                     
                     agronomicalObject.addProperty(property);
@@ -500,7 +500,7 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
                     property.setValue(bindingSet.getValue(PROPERTY).stringValue());
                     property.setRelation(bindingSet.getValue(PROPERTY_RELATION).stringValue());
                     if (bindingSet.getValue(PROPERTY_TYPE) != null) {
-                        property.setTypeProperty(bindingSet.getValue(PROPERTY_TYPE).stringValue());
+                        property.setRdfType(bindingSet.getValue(PROPERTY_TYPE).stringValue());
                     }
                     agronomicalObject.addProperty(property);
                 }

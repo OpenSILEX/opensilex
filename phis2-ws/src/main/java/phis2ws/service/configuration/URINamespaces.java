@@ -188,5 +188,8 @@ public class URINamespaces {
         RELATIONS.put("label", "rdfs:label");
         RELATIONS.put("type", "rdf:type");
         RELATIONS.put("domain", "rdfs:domain");
+        RELATIONS.put("unionOf", "owl:unionOf");
+        RELATIONS.put("rest", "rdf:rest");
+        RELATIONS.put("first", "rdf:first");
     }
 }

@@ -98,13 +98,20 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
                         if (uriExistance.get(0).getExist()) {
                             //3.2 check the domain of the property
                             propertyDAO.relation = propertyDTO.getRelation();
-                            String propertyDomain = propertyDAO.getPropertyDomain();
+                            ArrayList<String> propertyDomains = propertyDAO.getPropertyDomain();
                             
-                            if (propertyDomain != null) { //the property has a specific domain
-                                if (!uriDaoSesame.isSubClassOf(rdfType, propertyDomain)) {
+                            if (propertyDomains != null && propertyDomains.size() > 0) { //the property has a specific domain
+                                boolean domainOk = false;
+                                for (String propertyDomain : propertyDomains) {
+                                    if (uriDaoSesame.isSubClassOf(rdfType, propertyDomain)) {
+                                        domainOk = true;
+                                        }
+                                }
+                                
+                                if (!domainOk) {
                                     validData = false;
                                     checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, 
-                                            "the type of the given uri is not in the domain of the relation " + propertyDTO.getRelation() + " (expected type " + propertyDomain + ")"));
+                                            "the type of the given uri is not in the domain of the relation " + propertyDTO.getRelation()));
                                 }
                             }
                             

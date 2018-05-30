@@ -13,6 +13,7 @@ package phis2ws.service.dao.sesame;
 
 //SILEX:todo
 
+import java.util.ArrayList;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -50,6 +51,9 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     //Triplestore relations
     private final static URINamespaces NAMESPACES = new URINamespaces();
     private final static String TRIPLESTORE_RELATION_DOMAIN = NAMESPACES.getRelationsProperty("domain");
+    private final static String TRIPLESTORE_RELATION_UNION_OF = NAMESPACES.getRelationsProperty("unionOf");
+    private final static String TRIPLESTORE_RELATION_REST = NAMESPACES.getRelationsProperty("rest");
+    private final static String TRIPLESTORE_RELATION_FIRST = NAMESPACES.getRelationsProperty("first");
 
     @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
@@ -73,7 +77,8 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     private SPARQLQueryBuilder prepareGetDomainQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendSelect("?" + DOMAIN);
-        query.appendTriplet(relation, TRIPLESTORE_RELATION_DOMAIN , "?" + DOMAIN, null);
+        query.appendTriplet(relation, 
+                TRIPLESTORE_RELATION_DOMAIN + "/(" + TRIPLESTORE_RELATION_UNION_OF + "/" + TRIPLESTORE_RELATION_REST + "*/" + TRIPLESTORE_RELATION_FIRST + ")*" , "?" + DOMAIN, null);
         
         LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
         
@@ -84,17 +89,18 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      * get in the triplestore the domain of the property if it exist
      * @return the domain of the property (attributes relation)
      */
-    public String getPropertyDomain() {
+    public ArrayList<String> getPropertyDomain() {
         SPARQLQueryBuilder query = prepareGetDomainQuery();
+        ArrayList<String> propertyDomains = new ArrayList<>();
         
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
-                return bindingSet.getValue(DOMAIN).toString();
+                propertyDomains.add(bindingSet.getValue(DOMAIN).toString());
             }
         }
         
-        return null;
+        return propertyDomains;
     }
 }

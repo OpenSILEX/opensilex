@@ -1,7 +1,7 @@
 //**********************************************************************************************
 //                                       ImageMetadataDaoSesame.java 
 //
-// Author(s): Morgane VIDAL
+// Author(s): Morgane Vidal
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2017
 // Creation date: December, 11 2017
@@ -13,6 +13,8 @@ package phis2ws.service.dao.mongo;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
+import com.mongodb.BasicDBObjectBuilder;
+import com.mongodb.DBCursor;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
@@ -33,6 +35,7 @@ import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOMongo;
 import phis2ws.service.dao.sesame.ImageMetadataDaoSesame;
+import phis2ws.service.dao.sesame.SensorDAOSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.ConcernItemDTO;
 import phis2ws.service.resources.dto.ImageMetadataDTO;
@@ -51,8 +54,12 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
     final static Logger LOGGER = LoggerFactory.getLogger(ImageMetadataDaoMongo.class);
     public String uri;
     public String rdfType;
-    //Date of shooting
-    public String date;
+    //Start date of the wanted images
+    public String startDate;
+    //End date of the wanted images
+    public String endDate;
+    //uri of the sensor for the wanted images
+    public String sensor;
     //List of the elements concerned by the image. The elements are represented 
     //by uris
     public ArrayList<String> concernedItems = new ArrayList<>();
@@ -120,21 +127,27 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
        if (concernedItems != null && !concernedItems.isEmpty()) {
            BasicDBList and = new BasicDBList();
            for (String concernedItem : concernedItems) {
-               BasicDBObject clause = new BasicDBObject(DB_FIELDS_CONCERN, new BasicDBObject("$elemMatch", new BasicDBObject(DB_FIELDS_CONCERNED_ITEM_URI, concernedItem)));
+               BasicDBObject clause = new BasicDBObject(DB_FIELDS_CONCERN, new BasicDBObject(MONGO_ELEM_MATCH, new BasicDBObject(DB_FIELDS_CONCERNED_ITEM_URI, concernedItem)));
                and.add(clause);
            }
            
-           query.append("$and", and);
+           query.append(MONGO_AND, and);
        }
-       if (date != null) {
+       if (startDate != null && endDate != null) {
            try {
-               SimpleDateFormat df = new SimpleDateFormat(DateFormats.YMDHMSZ_FORMAT);
-               Date dateSearch = df.parse(date);
-               query.append(DB_FIELDS_SHOOTING_CONFIGURATION + "." + ShootingConfigurationDAOMongo.DB_FIELDS_DATE, dateSearch);
+               SimpleDateFormat df = new SimpleDateFormat(DateFormats.YMD_FORMAT);
+               Date start = df.parse(startDate);
+               Date end = df.parse(endDate);
+               query.append(DB_FIELDS_SHOOTING_CONFIGURATION + "." + ShootingConfigurationDAOMongo.DB_FIELDS_DATE, 
+                       BasicDBObjectBuilder.start(MONGO_GTE, start).add(MONGO_LTE, end).get());
            } catch (ParseException ex) {
                java.util.logging.Logger.getLogger(ImageMetadataDaoMongo.class.getName()).log(Level.SEVERE, null, ex);
            }
        }
+       if (sensor != null) {
+           query.append(DB_FIELDS_SHOOTING_CONFIGURATION + "." + ShootingConfigurationDAOMongo.DB_FIELDS_SENSOR, sensor);
+       }
+       LOGGER.debug(getTraceabilityLogs() + " query : " + query.toString());
        
        return query;
     }
@@ -159,9 +172,10 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
     @Override
     public ArrayList<ImageMetadata> allPaginate() {
         BasicDBObject searchQuery = prepareSearchQuery();
-        LOGGER.debug(getTraceabilityLogs() + " query : " + searchQuery.toString());
-        
+       
         FindIterable<Document> imagesMetadataMongo = imagesCollection.find(searchQuery);
+        //sort by date
+        imagesMetadataMongo.sort(new BasicDBObject(DB_FIELDS_SHOOTING_CONFIGURATION + "." + ShootingConfigurationDAOMongo.DB_FIELDS_DATE, 1));
         
         ArrayList<ImageMetadata> imagesMetadata = new ArrayList<>();
         
@@ -222,6 +236,13 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
                         checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Unknown concerned item given : " + concernedItem.getUri()));
                     }
                 }
+                
+                //3. Check if the sensor exist
+                SensorDAOSesame sensorDAOSesame = new SensorDAOSesame();
+                if (!sensorDAOSesame.existAndIsSensor(imageMetadata.getConfiguration().getSensor())) {
+                    dataOk = false;
+                    checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Unknown sensor given : " + imageMetadata.getConfiguration().getSensor()));
+                }
             } else {
                 dataOk = false;
                 checkStatusList.add(new Status(StatusCodeMsg.BAD_DATA_FORMAT, StatusCodeMsg.ERR, 
@@ -240,7 +261,7 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
      *         Query example : 
      *         {uri: {$regex: "http://www.phenome-fppn.fr/diaphen/2017*"}}    
      */
-    private Document prepareGetNbImagesYearQuery() {        
+    private Document prepareGetLastId() {        
           Document regQuery = new Document();
           URINamespaces uriNamespaces = new URINamespaces();
           String regex = uriNamespaces.getContextsProperty("pxPlatform") + "/" + Year.now().toString() + "*";
@@ -248,7 +269,9 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
           
           Document findQuery = new Document();
           findQuery.append(DB_FIELDS_IMAGE_URI, regQuery);
-        
+          
+          LOGGER.debug(getTraceabilityLogs() + " query : " + findQuery.toString());
+          
           return findQuery;
     }
     
@@ -257,10 +280,23 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
      * @return the number of images in the database for the actual year
      */
     public long getNbImagesYear() {
-        Document query = prepareGetNbImagesYearQuery();
+        Document query = prepareGetLastId();
         
-        LOGGER.debug(getTraceabilityLogs() + " query : " + query.toString());
-        return imagesCollection.count(query);
+        FindIterable<Document> cursor = imagesCollection.find(query).sort(new BasicDBObject(DB_FIELDS_IMAGE_URI, -1)).limit(1);
+        
+        String lastUri = "";
+        MongoCursor<Document> imagesMetadataCursor = cursor.iterator();
+        while (imagesMetadataCursor.hasNext()) {
+            Document imageMetadataDocument = imagesMetadataCursor.next();
+            lastUri = imageMetadataDocument.getString(DB_FIELDS_IMAGE_URI);
+        }
+        if (lastUri.equals("")) {
+            return 0;
+        } else {
+            String[] splitString = lastUri.split("/i" + Year.now().toString().substring(2, 4));
+
+            return Integer.parseInt(splitString[splitString.length - 1]);
+        }
     }
     
     /**
@@ -301,6 +337,7 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
            Timestamp timestamp = new Timestamp(new Date().getTime());
            configuration.append(ShootingConfigurationDAOMongo.DB_FIELDS_TIMESTAMP, timestamp.getTime());
            configuration.append(ShootingConfigurationDAOMongo.DB_FIELDS_SENSOR_POSITION, imageMetadata.getConfiguration().getPosition());
+           configuration.append(ShootingConfigurationDAOMongo.DB_FIELDS_SENSOR, imageMetadata.getConfiguration().getSensor());
            metadata.append(DB_FIELDS_SHOOTING_CONFIGURATION, configuration);
            
            //FileInformations (Storage)

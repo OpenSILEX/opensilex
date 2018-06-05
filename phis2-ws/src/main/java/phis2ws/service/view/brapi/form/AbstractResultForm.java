@@ -11,7 +11,7 @@ import phis2ws.service.view.brapi.Status;
 
 /**
  * 
- * @author A. CHARLEROY
+ * @author A. Charleroy
  */
 public abstract class AbstractResultForm {
 

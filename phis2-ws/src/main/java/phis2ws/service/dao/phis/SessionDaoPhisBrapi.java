@@ -21,11 +21,11 @@ import phis2ws.service.utils.sql.SQLQueryBuilder;
  * Manipule les Sessions et leur modifications à partir de la base de données
  *
  * @date 05/2016
- * @author Arnaud CHARLEROY
+ * @author Arnaud Charleroy
  */
 public class SessionDaoPhisBrapi extends DAOPhisBrapi<Session, Object> {
 
-    final static Logger logger = LoggerFactory.getLogger(SessionDaoPhisBrapi.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(SessionDaoPhisBrapi.class);
 
     public SessionDaoPhisBrapi() {
         super();
@@ -100,14 +100,14 @@ public class SessionDaoPhisBrapi extends DAOPhisBrapi<Session, Object> {
 //            logger.debug(query);
             statement.executeUpdate(query);
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
         } finally {
 
             if (rs != null) {
                 try {
                     rs.close();
                 } catch (SQLException e) {
-                    logger.error(e.getMessage(), e);
+                    LOGGER.error(e.getMessage(), e);
                 }
 
             }
@@ -115,7 +115,7 @@ public class SessionDaoPhisBrapi extends DAOPhisBrapi<Session, Object> {
                 try {
                     statement.close();
                 } catch (SQLException e) {
-                    logger.error(e.getMessage(), e);
+                    LOGGER.error(e.getMessage(), e);
                 }
             }
 
@@ -123,7 +123,7 @@ public class SessionDaoPhisBrapi extends DAOPhisBrapi<Session, Object> {
                 try {
                     con.close();
                 } catch (SQLException e) {
-                    logger.error(e.getMessage(), e);
+                    LOGGER.error(e.getMessage(), e);
                 }
             }
         }
@@ -156,14 +156,14 @@ public class SessionDaoPhisBrapi extends DAOPhisBrapi<Session, Object> {
             } 
 //            TokenManager.Instance().searchSession("5e47fd3d1639c95957f1e9099ddadd84"); 
         } catch (Exception e) { 
-            logger.error(e.getMessage(), e); 
+            LOGGER.error(e.getMessage(), e); 
         } finally { 
  
             if (rs != null) { 
                 try { 
                     rs.close(); 
                 } catch (SQLException e) { 
-                    logger.error(e.getMessage(), e); 
+                    LOGGER.error(e.getMessage(), e); 
                 } 
  
             } 
@@ -171,7 +171,7 @@ public class SessionDaoPhisBrapi extends DAOPhisBrapi<Session, Object> {
                 try { 
                     statement.close(); 
                 } catch (SQLException e) { 
-                    logger.error(e.getMessage(), e); 
+                    LOGGER.error(e.getMessage(), e); 
                 } 
             } 
  
@@ -179,7 +179,7 @@ public class SessionDaoPhisBrapi extends DAOPhisBrapi<Session, Object> {
                 try { 
                     con.close(); 
                 } catch (SQLException e) { 
-                    logger.error(e.getMessage(), e); 
+                    LOGGER.error(e.getMessage(), e); 
                 } 
             } 
  
@@ -198,7 +198,7 @@ public class SessionDaoPhisBrapi extends DAOPhisBrapi<Session, Object> {
         try { 
             user = userDao.find(user); 
         } catch (Exception ex) { 
-            logger.error(ex.getMessage(), ex); 
+            LOGGER.error(ex.getMessage(), ex); 
         } 
         //user.setIsAdmin(userDao.isAdmin(user)); // Admin ou non 
         return user; 

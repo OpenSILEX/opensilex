@@ -404,5 +404,4 @@ public class TokenResourceService {
         }
         return validJWTToken;
     }
-
 }

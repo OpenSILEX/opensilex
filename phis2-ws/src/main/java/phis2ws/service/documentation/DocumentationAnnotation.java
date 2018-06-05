@@ -1,7 +1,7 @@
 //**********************************************************************************************
 //                                       DocumentationAnnotation.java 
 //
-// Author(s): Arnaud CHARLEROY, Morgane VIDAL, Eloan LAGIER
+// Author(s): Arnaud Charleroy, Morgane Vidal, Eloan LAGIER
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2016
 // Creation date: august 2016
@@ -75,13 +75,20 @@ public final class DocumentationAnnotation {
     public static final String TRAIT_POST_DATA_DEFINITION = "JSON format of trait";
     public static final String TRAIT_URI_DEFINITION = "A trait URI (Unique Resource Identifier)";
     
+    public static final String TRIPLET_POST_DATA_DEFINITION = "JSON format of a triplet";
+    
     public static final String METHOD_POST_DATA_DEFINITION = "JSON format of method";
     public static final String METHOD_URI_DEFINITION = "A method URI (Unique Resource Identifier)";
     
     public static final String UNIT_POST_DATA_DEFINITION = "JSON format of unit";
     public static final String UNIT_URI_DEFINITION = "A unit URI (Unique Resource Identifier)";
     
+    public static final String SENSOR_URI_DEFINITION = "a sensor URI (Unique Resource Identifier)";
+    public static final String SENSOR_POST_DEFINITION = "JSON format of sensor data";
+
     public static final String VARIABLES_DEFINITION = "A variable or comma-separated variables list";
+    
+    public static final String VECTOR_POST_DEFINITION = "JSON format of vector data";
     
     public static final String ADMIN_ONLY_NOTES = "This can only be done by a PHIS-SILEX admin.";
     public static final String USER_ONLY_NOTES = "This can only be done by a PHIS-SILEX user.";
@@ -113,6 +120,7 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_FILE_INFORMATION_EXTENSION = "jpg";
     
     public static final String EXAMPLE_AGRONOMICAL_OBJECT_URI = "http://www.phenome-fppn.fr/phenovia/2017/o1032481";
+    public static final String EXAMPLE_AGRONOMICAL_OBJECT_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#Plot";
     
     public static final String EXAMPLE_IMAGE_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#HemisphericalImage";
     public static final String EXAMPLE_IMAGE_URI = "http://www.phenome-fppn.fr/phis_field/2017/i170000000000";
@@ -154,6 +162,7 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_USER_ADMIN = "true";
     public static final String EXAMPLE_USER_AVAILABLE = "true";
     
+    public static final String EXAMPLE_DATA_INCERTITUDE = "0.4";
     public static final String EXAMPLE_DATA_VALUE = "3.0000000";
     
     public static final String EXAMPLE_DOCUMENT_URI = "http://www.phenome-fppn.fr/phis_field/documents/documente597f57ba71d421a86277d830f4b9885";
@@ -166,12 +175,33 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_DOCUMENT_CONCERNED_TYPE_URI = "http://www.phenome-fppn.fr/vocabulary/2017#Experiment";
     public static final String EXAMPLE_DOCUMENT_STATUS = "linked";
     
+    public static final String EXAMPLE_SENSOR_URI = "http://www.phenome-fppn.fr/diaphen/2018/s18001";
+    public static final String EXAMPLE_SENSOR_RDF_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#Sensor";
+    public static final String EXAMPLE_SENSOR_LABEL = "par03_p";
+    public static final String EXAMPLE_SENSOR_BRAND = "Skye Instruments";
+    public static final String EXAMPLE_SENSOR_VARIABLE = "http://www.phenome-fppn.fr/phenovia/id/variables/v001";
+    public static final String EXAMPLE_SENSOR_IN_SERVICE_DATE = EXAMPLE_DATE;
+    public static final String EXAMPLE_SENSOR_DATE_OF_PURCHASE = EXAMPLE_DATE;
+    public static final String EXAMPLE_SENSOR_DATE_OF_LAST_CALIBRATION = EXAMPLE_DATE;
+    public static final String EXAMPLE_SENSOR_SERIAL_NUMBER = "A1E345F32";
+
     public static final String EXAMPLE_SHOOTING_CONFIGURATION_TIMESTAMP = "1512744238";
     public static final String EXAMPLE_SHOOTING_CONFIGURATION_POSITION = "POINT(0, 0)";
     public static final String EXAMPLE_SHOOTING_CONFIGURATION_DATE = EXAMPLE_EXPERIMENT_START_DATE;
     
+    public static final String EXAMPLE_SPECIES_RDF_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#Species";
+    public static final String EXAMPLE_SPECIES_URI = "http://www.phenome-fppn.fr/id/species/maize";
+    public static final String EXAMPLE_SPECIES_FROM_SPECIES = " http://www.phenome-fppn.fr/vocabulary/2017#fromSpecies";
+    
     public static final String EXAMPLE_TRAIT_URI = "http://www.phenome-fppn.fr/phis_field/id/traits/t001";
     public static final String EXAMPLE_TRAIT_LABEL = "Height";
+    
+    public static final String EXAMPLE_TRIPLET_SUBJECT = "http://www.phenome-fppn.fr/diaphen/DIA2018-2";
+    public static final String EXAMPLE_TRIPLET_PROPERTY = "http://www.phenome-fppn.fr/vocabulary/2017#hasDocument";
+    public static final String EXAMPLE_TRIPLET_OBJECT = "http://www.phenome-fppn.fr/phis_field/documents/documente597f57ba71d421a86277d830f4b9885";
+    public static final String EXAMPLE_TRIPLET_OBJECT_LANGUAGE = "en-US";
+    public static final String EXAMPLE_TRIPLET_OBJECT_TYPE = "uri";
+    public static final String EXAMPLE_TRIPLET_GRAPH = "http://www.phenome-fppn.fr/diaphen/DIA2018-2";
     
     public static final String EXAMPLE_METHOD_URI = "http://www.phenome-fppn.fr/phis_field/id/methods/m001";
     public static final String EXAMPLE_METHOD_LABEL = "comptage";
@@ -181,6 +211,15 @@ public final class DocumentationAnnotation {
     
     public static final String EXAMPLE_VARIABLE_URI = "http://www.phenome-fppn.fr/diaphen/id/variable/v0000001";
     public static final String EXAMPLE_VARIABLE_LABEL = "LAI";
+    
+    public static final String EXAMPLE_VECTOR_URI = "http://www.phenome-fppn.fr/diaphen/2018/v1801";
+    public static final String EXAMPLE_VECTOR_RDF_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#UAV";
+    public static final String EXAMPLE_VECTOR_LABEL = "par03_p";
+    public static final String EXAMPLE_VECTOR_BRAND = "Skye Instruments";
+    public static final String EXAMPLE_VECTOR_SERIAL_NUMBER = "A1E345F32";
+    public static final String EXAMPLE_VECTOR_IN_SERVICE_DATE = EXAMPLE_DATE;
+    public static final String EXAMPLE_VECTOR_DATE_OF_PURCHASE = EXAMPLE_DATE;
+    public static final String EXAMPLE_VECTOR_PERSON_IN_CHARGE = EXAMPLE_USER_EMAIL;
     
     public static final String EXAMPLE_CONCEPT_URI = "http://www.phenome-fppn.fr/vocabulary/2017#Document";
     public static final String EXAMPLE_DEEP ="true";

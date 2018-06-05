@@ -1,7 +1,7 @@
 //**********************************************************************************************
 //                                       DocumentResourceService.java 
 //
-// Author(s): Arnaud CHARLEROY, Morgane VIDAL
+// Author(s): Arnaud Charleroy, Morgane Vidal
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2016
 // Creation date: august 2016
@@ -87,7 +87,7 @@ public class DocumentResourceService {
     @SessionInject
     Session userSession;
     
-    final static Logger logger = LoggerFactory.getLogger(DocumentResourceService.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(DocumentResourceService.class);
     
     // Gère les annotations en attene
     public final static ExecutorService threadPool = Executors.newCachedThreadPool();
@@ -220,13 +220,13 @@ public class DocumentResourceService {
         FileUploader jsch = new FileUploader();
         try {
             waitingAnnotFileCheck.put(docUri, Boolean.TRUE); // Traitement en cours du fichier
-            logger.debug(jsch.getSFTPWorkingDirectory() + "/" + media);
+            LOGGER.debug(jsch.getSFTPWorkingDirectory() + "/" + media);
             //SILEX:test
             jsch.getChannelSftp().cd(jsch.getSFTPWorkingDirectory());
             //\SILEX:test
         } catch (SftpException e) {
             statusList.add(new Status("SftException", StatusCodeMsg.ERR, e.getMessage()));
-            logger.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
         }
         
         final String serverFileName = ResourcesUtils.getUniqueID() + "." + waitingAnnotInformation.get(docUri).getExtension();
@@ -270,7 +270,7 @@ public class DocumentResourceService {
         try {
             hash = MD5.asHex(MD5.getHash(in)); // Ex : 106fa487baa1728083747de1c6df73e9
         } catch (IOException ex) {
-            logger.error(ex.getMessage(), ex);
+            LOGGER.error(ex.getMessage(), ex);
         }
         return hash;
     }

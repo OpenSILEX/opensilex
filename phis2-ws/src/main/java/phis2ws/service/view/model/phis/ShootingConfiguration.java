@@ -1,7 +1,7 @@
 //**********************************************************************************************
 //                                       ShootingConfiguration.java 
 //
-// Author(s): Morgane VIDAL
+// Author(s): Morgane Vidal
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2017
 // Creation date: December, 11 2017
@@ -23,6 +23,8 @@ public class ShootingConfiguration {
     private String timestamp;
     //position of the sensor
     private String position;
+    //uri of the sensor
+    private String sensor;
 
     public ShootingConfiguration() {
     }
@@ -49,5 +51,13 @@ public class ShootingConfiguration {
 
     public void setPosition(String position) {
         this.position = position;
+    }
+
+    public String getSensor() {
+        return sensor;
+    }
+
+    public void setSensor(String sensor) {
+        this.sensor = sensor;
     }
 }

@@ -5,7 +5,7 @@
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2016
 // Creation date: august 2016
-// Contact:arnaud.charleroy@supagro.inra.fr, anne.tireau@supagro.inra.fr, pascal.neveu@supagro.inra.fr
+// Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  October, 2016
 // Subject: List all methods usable for all SQL Database DAO
 //***********************************************************************************************
@@ -360,7 +360,8 @@ public abstract class SQLDAO<T> extends DAO<T> {
         } catch (SQLException e) {
             LOGGER.error("SQL error Exist Request ", e);
             LOGGER.error(strSQLBuilder.toString());
-            return null;
+//            e.printStackTrace();
+        return null;
         } finally {
             if (Statement != null) {
                 try {
@@ -405,7 +406,9 @@ public abstract class SQLDAO<T> extends DAO<T> {
                 log += "User : " + user.getEmail() + "-";
             }
             LOGGER.trace(log + " query : " + preparedStatement.toString());
-            return true;
+//            logger.trace(preparedStatement.toString());
+//            logger.debug(preparedStatement.toString());
+        return true;
         } catch (SQLException e) {
             if (e.getSQLState().contains(DUPLICATE_KEY_ERROR_POSTGRE)) {
                 return null;

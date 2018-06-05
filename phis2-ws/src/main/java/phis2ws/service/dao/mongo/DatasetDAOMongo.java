@@ -1,7 +1,7 @@
 //**********************************************************************************************
 //                                       DatasetDaoMongo.java 
 //
-// Author(s): Morgane VIDAL
+// Author(s): Morgane Vidal
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2017
 // Creation date: September 2017
@@ -33,8 +33,9 @@ import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.dao.manager.DAOMongo;
-import phis2ws.service.dao.phis.AgronomicalObjectDao;
-import phis2ws.service.dao.sesame.AgronomicalObjectDaoSesame;
+import phis2ws.service.dao.phis.AgronomicalObjectDAO;
+import phis2ws.service.dao.sesame.AgronomicalObjectDAOSesame;
+import phis2ws.service.dao.sesame.SensorDAOSesame;
 import phis2ws.service.dao.sesame.VariableDaoSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.DataDTO;
@@ -71,6 +72,10 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
     public String endDate;
     //provenance uri of the dataset
     public String provenance;
+    //senesor uri
+    public String sensor;
+    //incertitude of the data
+    public String incertitude;
     
     //Mongodb fields labels 
     //Represents the agronomical object label used for mongodb documents
@@ -99,6 +104,10 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
     private final static String DB_FIELDS_PROVENANCE_ID = "provenanceId";
     //Represents the mongodb documents label for the provenance uri
     private final static String DB_FIELDS_PROVENANCE_URI = "provenanceUri";
+    //Represents the mongodb documents label for the sensor uri
+    private final static String DB_FIELDS_SENSOR = "sensor";
+    //Represents the mongodb documents label for the incertitude of data
+    private final static String DB_FIELDS_INCERTITUDE = "incertitude";
     
     public DatasetDAOMongo() {
         super();
@@ -143,6 +152,14 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
             }
         }
         
+        if (sensor != null) {
+            query.append(DB_FIELDS_SENSOR, sensor);
+        }
+        
+        if (incertitude != null) {
+            query.append(DB_FIELDS_INCERTITUDE, incertitude);
+        }
+        
         return query;
     }
     
@@ -163,7 +180,7 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
      * agronomical objects list 
      */
     private void updateAgronomicalObjectsWithExperimentsAgronomicalObjects() {
-        AgronomicalObjectDaoSesame agronomicalObjectDaoSesame = new AgronomicalObjectDaoSesame();
+        AgronomicalObjectDAOSesame agronomicalObjectDaoSesame = new AgronomicalObjectDAOSesame();
         agronomicalObjectDaoSesame.experiment = experiment;
         
         ArrayList<AgronomicalObject> agronomicalObjectsSearched = agronomicalObjectDaoSesame.allPaginate();
@@ -188,22 +205,28 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
         BasicDBObject query = prepareSearchQuery();
         
         LOGGER.trace(getTraceabilityLogs() + " query : " + query.toString());
-        FindIterable<Document> phenotypesMongo = dataCollection.find(query);
+        FindIterable<Document> datasetMongo = dataCollection.find(query);
 
         ArrayList<Dataset> phenotypes = new ArrayList<>();
         Dataset phenotype = new Dataset();
         phenotype.setExperiment(experiment);
         phenotype.setVariableURI(variable);
         
-        try (MongoCursor<Document> phenotypesCursor = phenotypesMongo.iterator()) {
-            while (phenotypesCursor.hasNext()) {
-                Document phenotypeDocument = phenotypesCursor.next();
+        try (MongoCursor<Document> datasetCursor = datasetMongo.iterator()) {
+            while (datasetCursor.hasNext()) {
+                Document datasetDocument = datasetCursor.next();
                 
                 Data data = new Data();
-                data.setAgronomicalObject(phenotypeDocument.getString(DB_FIELD_AGRONOMICAL_OBJECT));
-                data.setDate(new SimpleDateFormat(DateFormats.YMD_FORMAT).format(phenotypeDocument.getDate(DB_FIELD_DATE)));
-                data.setValue(Double.toString(phenotypeDocument.getDouble(DB_FIELD_VALUE)));
-                data.setVariable(phenotypeDocument.getString(DB_FIELD_VARIABLE));
+                data.setAgronomicalObject(datasetDocument.getString(DB_FIELD_AGRONOMICAL_OBJECT));
+                data.setDate(new SimpleDateFormat(DateFormats.YMD_FORMAT).format(datasetDocument.getDate(DB_FIELD_DATE)));
+                data.setValue(Double.toString(datasetDocument.getDouble(DB_FIELD_VALUE)));
+                data.setVariable(datasetDocument.getString(DB_FIELD_VARIABLE));
+                if (datasetDocument.getString(DB_FIELDS_SENSOR) != null) {
+                    data.setSensor(datasetDocument.getString(DB_FIELDS_SENSOR));
+                }
+                if (datasetDocument.getString(DB_FIELDS_INCERTITUDE) != null) {
+                    data.setIncertitude(datasetDocument.getString(DB_FIELDS_INCERTITUDE));
+                }
                 
                 phenotype.addData(data);
             }
@@ -253,10 +276,19 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
             if (isElementValid(datasetDTO)) { 
                 for (DataDTO data : datasetDTO.getData()) {
                     //is agronomical object exist ?
-                    AgronomicalObjectDao agronomicalObjectDao = new AgronomicalObjectDao();
+                    AgronomicalObjectDAO agronomicalObjectDao = new AgronomicalObjectDAO();
                     if (!agronomicalObjectDao.existInDB(new AgronomicalObject(data.getAgronomicalObject()))) {
                         dataState = false;
                         insertStatusList.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Unknown Agronomical Object URI : " + data.getAgronomicalObject()));
+                    }
+                    
+                    //is sensor exist ?
+                    if (data.getSensor() != null) {
+                        SensorDAOSesame sensorDAO = new SensorDAOSesame();
+                        if (!sensorDAO.existObject(data.getSensor())) {
+                            dataState = false;
+                            insertStatusList.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Unknown sensor : " + data.getSensor()));
+                        }
                     }
                 }
                 
@@ -342,6 +374,8 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
                     d.append(DB_FIELDS_PROVENANCE_ID, provenanceId);
                     d.append(DB_FIELDS_PROVENANCE_URI, dataset.getProvenance().getUri());
                     //\SILEX:todo
+                    d.append(DB_FIELDS_SENSOR, data.getSensor());
+                    d.append(DB_FIELDS_INCERTITUDE, data.getIncertitude());
                     
                     LOGGER.debug("MongoDB insert : " + d.toJson());
                    

@@ -21,7 +21,7 @@ public final class JsonConverter {
     /**
      * Récupération des erreurs
      */
-    final static Logger logger = LoggerFactory.getLogger(JsonConverter.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(JsonConverter.class);
 
     /**
      * ConvertToPrettyJson() - Méthode de classe qui permet de convertir un
@@ -56,7 +56,7 @@ public final class JsonConverter {
             jsonObject = gson.toJson(o);
         } catch (Exception e) {
 //            e.printStackTrace();
-            logger.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
 
         }
 
@@ -64,7 +64,7 @@ public final class JsonConverter {
     }
 
     /**
-     * @author Arnaud CHARLEROY
+     * @author Arnaud Charleroy
      * @param j Chaîne à convertir
      * @param c Classe de l'objet dans lequel la chaîne doit être convertie
      * @return Objet du converti du JSON
@@ -76,7 +76,7 @@ public final class JsonConverter {
         try {
             jsonObject = c.newInstance();
         } catch (InstantiationException | IllegalAccessException ex) {
-            logger.error(ex.getMessage(), ex);
+            LOGGER.error(ex.getMessage(), ex);
         }
         jsonObject = gson.fromJson(j, c);
 

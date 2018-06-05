@@ -1,11 +1,11 @@
 //**********************************************************************************************
 //                                       DAOMongo.java 
 //
-// Author(s): Arnaud CHARLEROY
+// Author(s): Arnaud Charleroy
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2016
 // Creation date: august 2016
-// Contact:arnaud.charleroy@supagro.inra.fr, anne.tireau@supagro.inra.fr, pascal.neveu@supagro.inra.fr
+// Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  October, 2016
 // Subject:This abstract class is the base of all Dao class for the Mongo DB 
 //***********************************************************************************************
@@ -27,7 +27,7 @@ import phis2ws.service.model.User;
  * Répresente une définition de la classe DAO permettant de se connecter à la
  * source de données MongoDB
  *
- * @author Arnaud CHARLEROY
+ * @author Arnaud Charleroy
  * @param <T>
  */
 public abstract class DAOMongo<T> {
@@ -51,6 +51,14 @@ public abstract class DAOMongo<T> {
     
     //The _id json data key in the mongodb documents
     public final static String DB_FIELD_ID = "_id";
+    //The $gte mongo key
+    public final static String MONGO_GTE = "$gte";
+    //the $lte mongo key
+    public final static String MONGO_LTE = "$lte";
+    //the $elemMatch mongo key
+    public final static String MONGO_ELEM_MATCH = "$elemMatch";
+    //the $and mongo key
+    public final static String MONGO_AND = "$and";
 
     /**
      * @see service.properties file

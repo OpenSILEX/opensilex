@@ -1,7 +1,7 @@
 //**********************************************************************************************
 //                                       ProjectDTO.java 
 //
-// Author(s): Morgane VIDAL
+// Author(s): Morgane Vidal
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2017
 // Creation date: March 2017
@@ -26,7 +26,7 @@ import phis2ws.service.view.model.phis.Project;
 
 public class ProjectDTO extends AbstractVerifiedClass {
     
-    final static Logger logger = LoggerFactory.getLogger(ProjectDTO.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(ProjectDTO.class);
     
     private String uri;
     private String name;

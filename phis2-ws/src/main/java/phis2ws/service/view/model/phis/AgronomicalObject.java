@@ -1,7 +1,7 @@
 //**********************************************************************************************
 //                               AgronomicalObject.java 
 //
-// Author(s): Morgane VIDAL
+// Author(s): Morgane Vidal
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2017
 // Creation date: august 2017
@@ -14,11 +14,22 @@ package phis2ws.service.view.model.phis;
 
 import java.util.ArrayList;
 
+/**
+ * Represents an agronomical object view
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class AgronomicalObject {
+    
+    //agronomical object uri
     private String uri;
-    private String typeAgronomicalObject;
+    //type of the agronomical object
+    private String rdfType;
+    //geometry of the argonomical object
     private String geometry;
+    //experiment of the argonomical object
     private String experiment;
+    //object which has part the agronomical object
+    private String isPartOf;
     
     //SILEX:INFO
     //Pour l'instant je l'ai mis en attribut pour aller plus vite et avancer le reste (dans le get ao)
@@ -44,12 +55,12 @@ public class AgronomicalObject {
         this.uri = uri;
     }
 
-    public String getTypeAgronomicalObject() {
-        return typeAgronomicalObject;
+    public String getRdfType() {
+        return rdfType;
     }
 
-    public void setTypeAgronomicalObject(String typeAgronomicalObject) {
-        this.typeAgronomicalObject = typeAgronomicalObject;
+    public void setRdfType(String rdfType) {
+        this.rdfType = rdfType;
     }
 
     public String getGeometry() {
@@ -82,5 +93,21 @@ public class AgronomicalObject {
 
     public void setAlias(String alias) {
         this.alias = alias;
+    }
+
+    public String getExperiment() {
+        return experiment;
+    }
+
+    public void setExperiment(String experiment) {
+        this.experiment = experiment;
+    }
+
+    public String getIsPartOf() {
+        return isPartOf;
+    }
+
+    public void setIsPartOf(String isPartOf) {
+        this.isPartOf = isPartOf;
     }
 }

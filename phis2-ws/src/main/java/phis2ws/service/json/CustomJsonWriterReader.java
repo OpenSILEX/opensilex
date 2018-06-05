@@ -1,11 +1,11 @@
 //**********************************************************************************************
 //                                       CustomJsonWriterReader.java 
 //
-// Author(s): Arnaud CHARLEROY
+// Author(s): Arnaud Charleroy
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2016
 // Creation date: august 2016
-// Contact:arnaud.charleroy@supagro.inra.fr, anne.tireau@supagro.inra.fr, pascal.neveu@supagro.inra.fr
+// Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  October, 2016
 // Subject: Define the way to read incoming JSON and write output JSON
 //***********************************************************************************************
@@ -45,7 +45,7 @@ import phis2ws.service.view.model.phis.Dataset;
  * Classe permettant de surcharger la classe qui permet la sérialization et la
  * deserialisation du JSON dans Jersey
  *
- * @author Arnaud CHARLEROY
+ * @author Arnaud Charleroy
  * @date 05/16
  * @param <T>
  */
@@ -58,7 +58,7 @@ public final class CustomJsonWriterReader<T> implements MessageBodyWriter<T>,
     /**
      * Récupération des erreurs
      */
-    final static Logger logger = LoggerFactory.getLogger(CustomJsonWriterReader.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(CustomJsonWriterReader.class);
 
     /**
      * Permet de filtrer les classes qui sont lisibles
@@ -97,7 +97,7 @@ public final class CustomJsonWriterReader<T> implements MessageBodyWriter<T>,
             final BufferedReader reader = new BufferedReader(new InputStreamReader(entityStream));
             return g.fromJson(reader, genericType);
         } catch (Exception e) {
-            logger.warn(e.getMessage(), e);
+            LOGGER.warn(e.getMessage(), e);
             final ResponseFormPOST postResponse = new ResponseFormPOST(new Status("Unexpected JSON format", StatusCodeMsg.ERR, e.getMessage()));
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build());
         }
@@ -180,7 +180,7 @@ public final class CustomJsonWriterReader<T> implements MessageBodyWriter<T>,
                 g.toJson(t, genericType, writer);
             }
         } catch (Exception gsonEx) {
-            logger.error(gsonEx.getMessage(), gsonEx);
+            LOGGER.error(gsonEx.getMessage(), gsonEx);
             throw new ProcessingException(
                     "Error serializing a " + type + " to the output stream", gsonEx);
         }

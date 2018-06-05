@@ -1,7 +1,7 @@
 //**********************************************************************************************
 //                                       ImageResourceService.java 
 //
-// Author(s): Morgane VIDAL
+// Author(s): Morgane Vidal
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2017
 // Creation date: December, 8 2017
@@ -25,14 +25,17 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -62,6 +65,7 @@ import phis2ws.service.resources.dto.ImageMetadataDTO;
 import phis2ws.service.utils.FileUploader;
 import phis2ws.service.utils.ImageWaitingCheck;
 import phis2ws.service.utils.POSTResultsReturn;
+import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
 import phis2ws.service.view.brapi.form.ResponseFormImageMetadata;
@@ -105,7 +109,8 @@ public class ImageResourceService {
      *                  ],
      *                  shootingConfigurations {
      *                      date,
-     *                      position
+     *                      position,
+     *                      sensor
      *                  },
      *                  storage {
      *                      checksum,
@@ -144,17 +149,15 @@ public class ImageResourceService {
                 ArrayList<String> imagesUploadLinks = new ArrayList<>();
                 long imagesNumber = imageDaoMongo.getNbImagesYear();
                 URINamespaces uriNamespaces = new URINamespaces();
+                String lastGeneratedUri = null;
                 for (ImageMetadataDTO imageMetadata : imagesMetadata) {
                     final UriBuilder uploadPath = uri.getBaseUriBuilder();
                     
-                    //calculate the number of 0 to add before the number of the image
-                    String nbImagesByYear = Long.toString(imagesNumber);
-                    while (nbImagesByYear.length() < 10) {
-                        nbImagesByYear = "0" + nbImagesByYear;
-                    }
+                    //generates the imageUri
+                    UriGenerator uriGenerator = new UriGenerator();
+                    final String imageUri = uriGenerator.generateNewInstanceUri(uriNamespaces.getObjectsProperty("cImage"), Year.now().toString(), lastGeneratedUri);
+                    lastGeneratedUri = imageUri;
                     
-                    String uniqueId = "i" + Year.now().toString().substring(2, 4) + nbImagesByYear;
-                    final String imageUri = uriNamespaces.getContextsProperty("pxPlatform") + "/" + Year.now().toString() + "/" + uniqueId;
                     final String uploadLink = uploadPath.path("images").path("upload").queryParam("uri", imageUri).toString();
                     imagesUploadLinks.add(uploadLink);
                     
@@ -295,8 +298,15 @@ public class ImageResourceService {
             jsch.getChannelSftp().cd(serverImagesDirectory);
             //\SILEX:test
         } catch (SftpException e) {
-            statusList.add(new Status(StatusCodeMsg.SFTP_EXCEPTION, StatusCodeMsg.ERR, e.getMessage()));
-            LOGGER.error(e.getMessage(), serverImagesDirectory + " " + e);
+            try {
+                //Create repository if it does not exist
+                jsch.getChannelSftp().mkdir(serverImagesDirectory);
+                jsch.getChannelSftp().cd(serverImagesDirectory);
+                LOGGER.debug("Create directory : " + serverImagesDirectory);
+            } catch (SftpException ex) {
+                statusList.add(new Status(StatusCodeMsg.SFTP_EXCEPTION, StatusCodeMsg.ERR, e.getMessage()));
+                LOGGER.error(e.getMessage(), serverImagesDirectory + " " + ex);
+            }
         }
         
         boolean fileTransfered = jsch.fileTransfer(in, serverFileName);
@@ -379,7 +389,9 @@ public class ImageResourceService {
      * @param uri image uri (e.g http://www.phenome-fppn.fr/phis_field/2017/i170000000000)
      * @param rdfType image type (e.g http://www.phenome-fppn.fr/vocabulary/2017#HemisphericalImage)
      * @param concernedItems uris of the items concerned by the searched image(s), separated by ";". (e.g http://phenome-fppn.fr/phis_field/ao1;http://phenome-fppn.fr/phis_field/ao2)
-     * @param date date of the shooting, with timezone (e.g 2015-07-07 00:00:00+02)
+     * @param startDate start date of the shooting. Format YYYY-MM-DD (e.g 2015-07-07)
+     * @param endDate end date of the shooting. Format YYYY-MM-DD (e.g 2015-07-08)
+     * @param sensor uri of the sensor providing the image (e.g. http://www.phenome-fppn.fr/diaphen/2018/s18035)
      * @return the images list corresponding to the search params given (all the images if no search param) /!\ there is a pagination 
      *         JSON returned : 
      *          [
@@ -427,7 +439,9 @@ public class ImageResourceService {
         @ApiParam(value = "Search by image uri", example = DocumentationAnnotation.EXAMPLE_IMAGE_URI) @QueryParam("uri") String uri,
         @ApiParam(value = "Search by image type", example = DocumentationAnnotation.EXAMPLE_IMAGE_TYPE) @QueryParam("rdfType") String rdfType,
         @ApiParam(value = "Search by concerned item uri - each concerned item uri must be separated by ;", example = DocumentationAnnotation.EXAMPLE_IMAGE_CONCERNED_ITEMS) @QueryParam("concernedItems") String concernedItems,
-        @ApiParam(value = "Search by date", example = DocumentationAnnotation.EXAMPLE_IMAGE_DATE) @QueryParam("date") String date) {
+        @ApiParam(value = "Search by interval - start date", example = DocumentationAnnotation.EXAMPLE_IMAGE_DATE) @QueryParam("startDate") String startDate,
+        @ApiParam(value = "Search by interval - end date", example = DocumentationAnnotation.EXAMPLE_IMAGE_DATE) @QueryParam("endDate") String endDate,
+        @ApiParam(value = "Search by sensor", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("sensor") String sensor) {
         
         ImageMetadataDaoMongo imageMetadataDaoMongo = new ImageMetadataDaoMongo();
         
@@ -440,11 +454,19 @@ public class ImageResourceService {
         if (concernedItems != null) {
             imageMetadataDaoMongo.concernedItems = new ArrayList<>(Arrays.asList(concernedItems.split(";")));
         }
-        if (date != null) {
+        if (startDate != null) {
             //SILEX:todo
             //check date format
-            imageMetadataDaoMongo.date = date;
+            imageMetadataDaoMongo.startDate = startDate;
             //\SILEX:todo
+            if (endDate != null) {
+                imageMetadataDaoMongo.endDate = endDate;
+            } else {
+                imageMetadataDaoMongo.endDate = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+            }
+        }
+        if (sensor != null) {
+            imageMetadataDaoMongo.sensor = sensor;
         }
         
         imageMetadataDaoMongo.user = userSession.getUser();

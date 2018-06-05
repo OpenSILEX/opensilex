@@ -6,7 +6,7 @@
 // Copyright © - INRA - 2017
 // Creation date: january 2017
 // Contact:morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  March, 2018
+// Last modification date:  june, 2018
 // Subject: Configuration of the webservice
 //***********************************************************************************************
 
@@ -40,7 +40,7 @@ import phis2ws.service.view.brapi.form.ResponseFormPOST;
 public class ApplicationInitConfig extends ResourceConfig {
 
     final static String PROPERTY_FILE_NAME = "service";
-    final static Logger logger = LoggerFactory.getLogger(ApplicationInitConfig.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(ApplicationInitConfig.class);
 
     
     public ApplicationInitConfig() {
@@ -83,7 +83,7 @@ public class ApplicationInitConfig extends ResourceConfig {
             File logDir = new File(logDirectory);
             if (!logDir.isDirectory()) {
                 if (!logDir.mkdirs()) {
-                    logger.error("Can't create log directory");
+                    LOGGER.error("Can't create log directory");
                     throw new WebApplicationException(
                             Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                             .entity(new ResponseFormPOST(new Status("Can't create log directory", StatusCodeMsg.ERR, null))).build());
@@ -93,9 +93,9 @@ public class ApplicationInitConfig extends ResourceConfig {
         // make the good rights on log directory on remote server
         try {
             Runtime.getRuntime().exec("chmod -R 755 " + logDirectory);
-            logger.info("Log directory rights successful update");
+            LOGGER.info("Log directory rights successful update");
         } catch (IOException e) {
-            logger.error("Can't change rights on log directory");
+            LOGGER.error("Can't change rights on log directory");
         }
         TokenManager.Instance();
         SessionDaoPhisBrapi sessionDao = new SessionDaoPhisBrapi();

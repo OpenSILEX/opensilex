@@ -1,7 +1,7 @@
 //**********************************************************************************************
 //                                       ShootingConfigurationDTO.java 
 //
-// Author(s): Morgane VIDAL
+// Author(s): Morgane Vidal
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2017
 // Creation date: December, 8 2017
@@ -28,11 +28,14 @@ public class ShootingConfigurationDTO extends AbstractVerifiedClass {
     private String date;
     //position of the sensor
     private String position;
+    //uri of the sensor used to take the images
+    private String sensor;
     
     @Override
     public Map rules() {
         Map<String, Boolean> rules = new HashMap<>();
         rules.put("date", Boolean.TRUE);
+        rules.put("sensor", Boolean.TRUE);
         rules.put("position", Boolean.FALSE);
         return rules;
     }
@@ -41,6 +44,7 @@ public class ShootingConfigurationDTO extends AbstractVerifiedClass {
     public ShootingConfiguration createObjectFromDTO() {
         ShootingConfiguration shootingConfiguration = new ShootingConfiguration();
         shootingConfiguration.setDate(date);
+        shootingConfiguration.setSensor(sensor);
         shootingConfiguration.setPosition(position);
         
         return shootingConfiguration;
@@ -62,5 +66,14 @@ public class ShootingConfigurationDTO extends AbstractVerifiedClass {
 
     public void setPosition(String position) {
         this.position = position;
+    }
+
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SENSOR_URI)
+    public String getSensor() {
+        return sensor;
+    }
+
+    public void setSensor(String sensor) {
+        this.sensor = sensor;
     }
 }

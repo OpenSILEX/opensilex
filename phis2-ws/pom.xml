@@ -150,7 +150,7 @@
             <artifactId>commons-logging</artifactId>
             <version>1.1.1</version>
         </dependency>
-        <!--Pour corriger l'erreur : 
+<!--To correct this error : 
         java.lang.NoClassDefFoundError: com/fasterxml/jackson/annotation/JsonInclude$Value-->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -161,6 +161,31 @@
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
             <version>2.9.9</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-validator</groupId>
+            <artifactId>commons-validator</artifactId>
+            <version>1.6</version>
+        </dependency>
+        <!--Manage js file from maven
+        @see http://www.webjars.org/documentation#servlet3
+        The ressource namespace META-INF.resources.webjars.jquery.2.1.4 contains 
+        jquery.js the path is the same as the url namespace 
+        Ex : http://localhost:8080/phis2ws/webjars/jquery/2.1.4/jquery.js -->
+        <dependency>
+            <groupId>org.webjars.npm</groupId>
+            <artifactId>swagger-ui</artifactId>
+            <version>2.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>bootstrap</artifactId>
+            <version>3.3.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>jquery</artifactId>
+            <version>2.1.4</version>
         </dependency>
     </dependencies>
 

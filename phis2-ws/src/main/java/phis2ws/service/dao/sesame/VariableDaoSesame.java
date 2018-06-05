@@ -1,7 +1,7 @@
 //**********************************************************************************************
 //                                       VariableDaoSesame.java 
 //
-// Author(s): Morgane VIDAL
+// Author(s): Morgane Vidal
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2017
 // Creation date: November, 16 2017
@@ -31,10 +31,10 @@ import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.VariableDTO;
 import phis2ws.service.utils.POSTResultsReturn;
+import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.utils.sparql.SPARQLUpdateBuilder;
 import phis2ws.service.view.brapi.Status;
-import phis2ws.service.view.model.phis.InstanceDefinition;
 import phis2ws.service.view.model.phis.Method;
 import phis2ws.service.view.model.phis.OntologyReference;
 import phis2ws.service.view.model.phis.Trait;
@@ -113,6 +113,70 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
         LOGGER.trace("sparql select query : " + query.toString());
         return query;
     }
+    
+    /**
+     * prepare a query to get the higher id of the variables
+     * @return 
+     */
+    private SPARQLQueryBuilder prepareGetLastId() {
+        URINamespaces uriNamespace = new URINamespaces();
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        
+        query.appendSelect("?uri");
+        query.appendTriplet("?uri", uriNamespace.getRelationsProperty("type"), uriNamespace.getObjectsProperty("cVariable"), null);
+        query.appendOrderBy("desc(?uri)");
+        query.appendLimit(1);
+        
+        return query;
+    }
+    
+    /**
+     * get the higher id of the variables
+     * @return the id
+     */
+    public int getLastId() {
+        SPARQLQueryBuilder query = prepareGetLastId();
+        
+        //SILEX:test
+        //All the triplestore connection has to been checked and updated
+        //This is an unclean hot fix
+        String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
+        String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "repositoryID");
+        rep = new HTTPRepository(sesameServer, repositoryID); //Stockage triplestore Sesame
+        rep.initialize();
+        this.setConnection(rep.getConnection());
+        this.getConnection().begin();
+        //\SILEX:test
+
+        //get last variable uri inserted
+        TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQueryResult result = tupleQuery.evaluate();
+
+        //SILEX:test
+        //For the pool connection problems
+        getConnection().commit();
+        getConnection().close();
+        //\SILEX:test
+        
+        String uriVariable = null;
+        
+        if (result.hasNext()) {
+            BindingSet bindingSet = result.next();
+            uriVariable = bindingSet.getValue("uri").stringValue();
+        }
+        
+        if (uriVariable == null) {
+            return 0;
+        } else {
+            String split = "variables/v";
+            String[] parts = uriVariable.split(split);
+            if (parts.length > 1) {
+                return Integer.parseInt(parts[1]);
+            } else {
+                return 0;
+            }
+        }
+    }
 
     @Override
     public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
@@ -171,83 +235,6 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
         return variablesCheck;
     }
     
-    /**
-     * 
-     * @return la requete permettant de connaitre le nombre de variables
-     */
-    private SPARQLQueryBuilder prepareGetVariablesNumber() {
-        URINamespaces uriNamespaces = new URINamespaces();
-        SPARQLQueryBuilder spqlQuery = new SPARQLQueryBuilder();
-        spqlQuery.appendGraph(uriNamespaces.getContextsProperty("variables"));
-        spqlQuery.appendSelect("(count(?variable) as ?count)");
-        spqlQuery.appendTriplet("?variable", "rdf:type", uriNamespaces.getObjectsProperty("cVariable"), null);
-        
-        LOGGER.trace("sparql select query : " + spqlQuery.toString());
-        
-        return spqlQuery;
-    }
-    
-    public int getNumberOfVariables() {
-        SPARQLQueryBuilder spqlQuery = prepareGetVariablesNumber();
-        
-        //SILEX:test
-        //Pour les soucis de pool de connexion
-        rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID); //Stockage triplestore Sesame
-        rep.initialize();
-        setConnection(rep.getConnection());
-        //\SILEX:test
-        TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, spqlQuery.toString());
-        TupleQueryResult result = tupleQuery.evaluate();
-        //SILEX:test
-        //Pour les soucis de pool de connexion
-        getConnection().close();
-        //\SILEX:test
-        
-        BindingSet bindingSet = result.next();
-        String countResult = bindingSet.getValue("count").stringValue();
-        
-        return Integer.parseInt(countResult);        
-    }
-    
-    /**
-     * génère les uris des variables
-     * @param variablesDTO
-     * @return la liste des variables, avec les URIs en plus
-     */
-    private ArrayList<VariableDTO> generateURIs(List<VariableDTO> variablesDTO) {
-        URINamespaces uriNamespaces = new URINamespaces();
-        String baseURI = uriNamespaces.getNamespaceProperty("variables");
-        ArrayList<VariableDTO> toReturn = new ArrayList<>();
-        
-        //Récupération du numéro de la dernière uri de variable (pour l'autoincrement)
-        int numberOfVariables = getNumberOfVariables();
-        
-        for (VariableDTO variableDTO : variablesDTO) {
-            numberOfVariables++;
-            
-            //On calcule le nombre de 0 à ajouter (l'id de la variable doit être du type : 001)
-            //avec 3 chiffres.
-            String variableNb;
-            String numberOfVariablesString = Integer.toString(numberOfVariables);
-            switch (numberOfVariablesString.length()) {
-                case 1:
-                    variableNb = "00" + numberOfVariablesString;
-                    break;
-                case 2:
-                    variableNb = "0" + numberOfVariablesString;
-                    break;
-                default:
-                    variableNb = numberOfVariablesString;
-                    break;
-            }
-            
-            variableDTO.setUri(baseURI + "/v" + variableNb);
-            toReturn.add(variableDTO);
-        }
-        
-        return toReturn;
-    }
-    
     private SPARQLUpdateBuilder prepareInsertQuery(VariableDTO variable) {
         SPARQLUpdateBuilder spql = new SPARQLUpdateBuilder();
         final URINamespaces uriNamespaces = new URINamespaces();
@@ -283,11 +270,14 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
         boolean resultState = false; //Pour savoir si les données sont bonnes et ont bien été insérées
         boolean annotationInsert = true; //Si l'insertion a bien été effectuée
         
-        variablesDTO = generateURIs(variablesDTO);
+        UriGenerator uriGenerator = new UriGenerator();
+        URINamespaces uriNamespaces = new URINamespaces();
         final Iterator<VariableDTO> iteratorVariablesDTO = variablesDTO.iterator();      
         
         while (iteratorVariablesDTO.hasNext() && annotationInsert) {
             VariableDTO variableDTO = iteratorVariablesDTO.next();
+            
+            variableDTO.setUri(uriGenerator.generateNewInstanceUri(uriNamespaces.getObjectsProperty("cVariable"), null, null));
             
             //Enregistrement dans le triplestore
             SPARQLUpdateBuilder spqlInsert = prepareInsertQuery(variableDTO);

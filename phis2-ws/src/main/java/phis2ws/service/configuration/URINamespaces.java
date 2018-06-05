@@ -1,11 +1,11 @@
 //**********************************************************************************************
 //                                       URINamespaces.java from uris.php
 //
-// Author(s): Isabelle NEMBROT, Arnaud CHARLEROY, Morgane Vidal
+// Author(s): Isabelle NEMBROT, Arnaud Charleroy, Morgane Vidal
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2016
 // Creation date: august 2016
-// Contact:i.nembrot@laposte.net, arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@supagro.inra.fr, pascal.neveu@supagro.inra.fr
+// Contact:i.nembrot@laposte.net, arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  June, 2017 (adaptation to PHIS field)
 // Subject: personal parameters for global usage
 // G_URI :
@@ -24,7 +24,7 @@ import phis2ws.service.PropertiesFileManager;
 
 /**
  * Permet de creer des URI de concepts, objets et relation entre objets et proprietes en fonction pour une platform
- * @author A. CHARLEROY
+ * @author A. Charleroy
  */
 public class URINamespaces {
 
@@ -112,6 +112,8 @@ public class URINamespaces {
         CONTEXTS.put("documents", CONTEXTS.get("pxPlatform") + "/documents");
         CONTEXTS.put("agronomicalObjects", CONTEXTS.get("pxPlatform") + "/agronomicalObjects");
         CONTEXTS.put("variables", CONTEXTS.get("pxPlatform") + "/variables");
+        CONTEXTS.put("vectors", CONTEXTS.get("pxPlatform") + "/vectors");
+        CONTEXTS.put("sensors", CONTEXTS.get("pxPlatform") + "/sensors");
     }
     
     private void setNamespaces() {
@@ -130,6 +132,8 @@ public class URINamespaces {
         //c , concept
         OBJECTS.put("cDocuments", CONTEXTS.get("pVoc2017") + "#Document");
         OBJECTS.put("cExperiment", CONTEXTS.get("pVoc2017") + "#Experiment");
+        OBJECTS.put("cImage", CONTEXTS.get("pVoc2017") + "#Image");
+        OBJECTS.put("cAgronomicalObject", CONTEXTS.get("pVoc2017") + "#AgronomicalObject");
         OBJECTS.put("cPlot", CONTEXTS.get("pVoc2017") + "#Plot");
         OBJECTS.put("cFields", CONTEXTS.get("pVoc2017") + "#Fields");
         OBJECTS.put("cCultivatedLand", CONTEXTS.get("pVoc2017") + "#CultivatedLand");
@@ -140,6 +144,8 @@ public class URINamespaces {
         OBJECTS.put("cTrait", CONTEXTS.get("pVoc2017") + "#Trait");
         OBJECTS.put("cMethod", CONTEXTS.get("pVoc2017") + "#Method");
         OBJECTS.put("cUnit", CONTEXTS.get("pVoc2017") + "#Unit");
+        OBJECTS.put("cVector", CONTEXTS.get("pVoc2017") + "#Vector");
+        OBJECTS.put("cSensingDevice", CONTEXTS.get("pVoc2017") + "#SensingDevice");
     }
 
     private void setRelations() {
@@ -149,9 +155,11 @@ public class URINamespaces {
         
         RELATIONS.put("rHasDocument", CONTEXTS.get("pVoc2017") + "#hasDocument");
         RELATIONS.put("rConcern", CONTEXTS.get("pVoc2017") + "#concern");
+        RELATIONS.put("rIsPartOf", CONTEXTS.get("pVoc2017") + "#isPartOf");
         RELATIONS.put("rHasPlot", CONTEXTS.get("pVoc2017") + "#hasPlot");
         RELATIONS.put("rFromGenotype", CONTEXTS.get("pVoc2017") + "#fromGenotype");
         RELATIONS.put("rFromVariety", CONTEXTS.get("pVoc2017") + "#fromVariety");
+        RELATIONS.put("rFromSpecies", CONTEXTS.get("pVoc2017") + "#fromSpecies");
         RELATIONS.put("rExperimentModalities", CONTEXTS.get("pVoc2017") + "#hasExperimentModalities");
         RELATIONS.put("rHasRepetition", CONTEXTS.get("pVoc2017") + "#hasRepetition");
         RELATIONS.put("rHasAlias", CONTEXTS.get("pVoc2017") + "#hasAlias");
@@ -159,6 +167,13 @@ public class URINamespaces {
         RELATIONS.put("rHasTrait", CONTEXTS.get("pVoc2017") + "#hasTrait");
         RELATIONS.put("rHasMethod", CONTEXTS.get("pVoc2017") + "#hasMethod");
         RELATIONS.put("rHasUnit", CONTEXTS.get("pVoc2017") + "#hasUnit");
+        RELATIONS.put("rHasBrand", CONTEXTS.get("pVoc2017") + "#hasBrand");
+        RELATIONS.put("rMeasuredVariable", CONTEXTS.get("pVoc2017") + "#measuredVariable");
+        RELATIONS.put("rInServiceDate", CONTEXTS.get("pVoc2017") + "#inServiceDate");
+        RELATIONS.put("rDateOfPurchase", CONTEXTS.get("pVoc2017") + "#dateOfPurchase");
+        RELATIONS.put("rDateOfLastCalibration", CONTEXTS.get("pVoc2017") + "#dateOfLastCalibration");
+        RELATIONS.put("rPersonInCharge", CONTEXTS.get("pVoc2017") + "#personInCharge");
+        RELATIONS.put("rSerialNumber", CONTEXTS.get("pVoc2017") + "#serialNumber");
         
         
         //Relations skos
@@ -169,7 +184,7 @@ public class URINamespaces {
         
         //Relations rdfs
         RELATIONS.put("subClassOf","rdfs:subClassOf");
-        RELATIONS.put("subClassOf*","rdfs:subClassOf");
+        RELATIONS.put("subClassOf*","rdfs:subClassOf*");
         RELATIONS.put("label", "rdfs:label");
         RELATIONS.put("type", "rdf:type");
     }

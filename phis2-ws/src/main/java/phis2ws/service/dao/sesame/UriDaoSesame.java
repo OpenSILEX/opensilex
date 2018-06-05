@@ -1,7 +1,7 @@
 //**********************************************************************************************
 //                                       UriDaoSesame.java 
 //
-// Author(s): Eloan LAGIER, Morgane VIDAL
+// Author(s): Eloan LAGIER, Morgane Vidal
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2018
 // Creation date: Feb 26 2018
@@ -13,8 +13,6 @@ package phis2ws.service.dao.sesame;
 
 import java.util.ArrayList;
 import java.util.Optional;
-import javax.json.Json;
-import org.eclipse.persistence.sessions.serializers.JSONSerializer;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.BindingSet;
@@ -45,8 +43,7 @@ public class UriDaoSesame extends DAOSesame<Uri> {
     final static String TRIPLESTORE_FIELDS_TYPE = "type";
     final static String TRIPLESTORE_FIELDS_CLASS = "class";
     final static String TRIPLESTORE_FIELDS_INSTANCE = "instance";
-    final static String TRIPLESTORE_FIELDS_SUBCLASS = "subclass";
-    
+    final static String TRIPLESTORE_FIELDS_SUBCLASS = "subclass";    
     
     final static Logger LOGGER = LoggerFactory.getLogger(UriDaoSesame.class);
     public Boolean deep;
@@ -461,5 +458,50 @@ public class UriDaoSesame extends DAOSesame<Uri> {
         }
         
         return uris;
+    }
+    
+    /**
+     * generates an ask query to know if the given rdfSubType is a subclass of 
+     * rdfType. 
+     * @param rdfSubType
+     * @param rdfType
+     * @return the query. 
+     * e.g.
+     * ASK {
+     *	<http://www.phenome-fppn.fr/vocabulary/2017#HemisphericalCamera> rdfs:subClassOf* <http://www.phenome-fppn.fr/vocabulary/2017#SensingDevice>
+     *  }
+     */
+    private SPARQLQueryBuilder prepareIsSubclassOf(String rdfSubType, String rdfType) {
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        query.appendDistinct(Boolean.TRUE);
+
+        String contextURI;
+
+        if (uri != null) {
+            contextURI = "<" + uri + ">";
+        } else {
+            contextURI = "?uri";
+            query.appendSelect("?uri");
+        }
+        
+        query.appendTriplet("<" + rdfSubType + ">", uriNameSpace.getRelationsProperty("subClassOf*"), "<" + rdfType + ">", null);
+        
+        query.appendAsk(""); //any = anything
+        LOGGER.debug(query.toString());
+        return query;
+    }
+    
+    /**
+     * check if the given rdfSubType is a sub class of the given rdfType
+     * @param rdfSubType
+     * @param rdfType
+     * @return true if it is a subclass
+     *         false if not
+     */
+    public boolean isSubClassOf(String rdfSubType, String rdfType) {
+        SPARQLQueryBuilder query = prepareIsSubclassOf(rdfSubType, rdfType);
+
+        BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
+        return booleanQuery.evaluate();
     }
 }

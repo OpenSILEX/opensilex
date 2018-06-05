@@ -5,7 +5,7 @@
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2016
 // Creation date: december 2015
-// Contact:arnaud.charleroy@supagro.inra.fr, anne.tireau@supagro.inra.fr, pascal.neveu@supagro.inra.fr
+// Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  October, 2016
 // Subject: A class which represente result part in response form 
 //***********************************************************************************************

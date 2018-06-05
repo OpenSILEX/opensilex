@@ -13,7 +13,7 @@ import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 
 /**
  *  Represente le JSON soumis pour les objets de type token
- * @author A. CHARLEROY
+ * @author A. Charleroy
  */
 public class TokenDTO extends AbstractVerifiedClass {
 

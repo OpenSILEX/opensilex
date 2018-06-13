@@ -120,6 +120,14 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
                             checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.UNKNOWN_URI + " " + propertyDTO.getRelation()));
                         }
                     }
+                    
+                    //4. check the properties cardinalities
+                    POSTResultsReturn propertyCheckResult = propertyDAO.checkCardinalities(sensorProfile.getProperties(), sensorProfile.getUri(), rdfType);
+                    
+                    if (!propertyCheckResult.getDataState()) {
+                        validData = false;
+                        checkStatus.addAll(propertyCheckResult.statusList);
+                    }
                 } else {
                     validData = false;
                     checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.UNKNOWN_URI + " or bad uri type " + sensorProfile.getUri()));

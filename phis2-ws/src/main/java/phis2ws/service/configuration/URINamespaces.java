@@ -146,6 +146,7 @@ public class URINamespaces {
         OBJECTS.put("cUnit", CONTEXTS.get("pVoc2017") + "#Unit");
         OBJECTS.put("cVector", CONTEXTS.get("pVoc2017") + "#Vector");
         OBJECTS.put("cSensingDevice", CONTEXTS.get("pVoc2017") + "#SensingDevice");
+        OBJECTS.put("cRestriction", "owl:Restriction");
     }
 
     private void setRelations() {
@@ -182,14 +183,21 @@ public class URINamespaces {
         RELATIONS.put("rNarrower", "http://www.w3.org/2008/05/skos#narrower");
         RELATIONS.put("rBroader", "http://www.w3.org/2008/05/skos#broader");
         
-        //Relations rdfs
+        //Relations rdfs et rdf
         RELATIONS.put("subClassOf","rdfs:subClassOf");
         RELATIONS.put("subClassOf*","rdfs:subClassOf*");
         RELATIONS.put("label", "rdfs:label");
         RELATIONS.put("type", "rdf:type");
         RELATIONS.put("domain", "rdfs:domain");
-        RELATIONS.put("unionOf", "owl:unionOf");
         RELATIONS.put("rest", "rdf:rest");
         RELATIONS.put("first", "rdf:first");
+        
+        //relations owl
+        RELATIONS.put("unionOf", "owl:unionOf");
+        RELATIONS.put("onProperty", "owl:onProperty");
+        RELATIONS.put("cardinality", "http://www.w3.org/2002/07/owl#cardinality");
+        RELATIONS.put("minCardinality", "http://www.w3.org/2002/07/owl#minCardinality");
+        RELATIONS.put("maxCardinality", "http://www.w3.org/2002/07/owl#maxCardinality");
+        RELATIONS.put("qualifiedCardinality", "http://www.w3.org/2002/07/owl#qualifiedCardinality");
     }
 }

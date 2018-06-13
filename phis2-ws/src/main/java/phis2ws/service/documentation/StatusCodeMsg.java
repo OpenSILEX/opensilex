@@ -22,13 +22,15 @@ import javax.inject.Singleton;
 @Singleton
 public final class StatusCodeMsg {
     
+    public static final String ACCESS_DENIED = "Access denied";
     public static final String ACCESS_ERROR = "Access error";
     public static final String ADMINISTRATOR_ONLY = "Request only for administrators";
     public static final String ALREADY_EXISTING_DATA = "Already existing data";
+    public static final String BAD_CARDINALITY = "Bad cardinality";
     public static final String BAD_DATA_FORMAT = "Bad data format";
+    public static final String COMMIT_TRIPLESTORE_ERROR = "Error during commit or rolleback Triplestore statements.";
     public static final String DATA_ERROR = "Data error";
     public static final String DATA_INSERTED = "Data inserted";
-    public static final String COMMIT_TRIPLESTORE_ERROR = "Error during commit or rolleback Triplestore statements.";
     public static final String ERR = "Error";
     public static final String EXPECTED_DATE_FORMAT_YMD = "Expected date format : YYYY-MM-DD";
     public static final String FILE_ERROR = "File error";
@@ -45,7 +47,6 @@ public final class StatusCodeMsg {
     public static final String REQUEST_ERROR = "Request error";
     public static final String RESOURCES_CREATED = "Resources created";
     public static final String RESOURCES_UPDATED = "Resources updated";
-    public static final String ACCESS_DENIED = "Access denied";
     public static final String SFTP_EXCEPTION = "sftp exception";
     public static final String TIMEOUT = "Timeout";
     public static final String TRIPLESTOR_ACCESS_ERROR = "Triplestore access error";

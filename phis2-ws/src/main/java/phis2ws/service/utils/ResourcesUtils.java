@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
 
 /**
  * List of functions which can be used in ressources
@@ -119,5 +121,24 @@ public class ResourcesUtils {
         } else {
             return parts[1];
         }
+    }
+    
+    /**
+     * Transforme une chaîne de caractère en DateTime avec un format entrée en
+     * paramètre (librairie Joda)
+     *
+     * @param stringDate
+     * @param pattern
+     * @return
+     */
+    public static DateTime convertStringToDateTime(String stringDate, String pattern) {
+        final org.joda.time.format.DateTimeFormatter formatter = DateTimeFormat.forPattern(pattern);
+        try {
+            return formatter.withOffsetParsed().parseDateTime(stringDate);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
     }
 }

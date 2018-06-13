@@ -1,12 +1,12 @@
 //**********************************************************************************************
 //                                       ApplicationInitConfig.java 
 //
-// Author(s): Morgane Vidal
+// Author(s): Morgane Vidal, Arnaud Charleroy
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2017
 // Creation date: january 2017
 // Contact:morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  January, 2017
+// Last modification date:  june, 2018
 // Subject: Configuration of the webservice
 //***********************************************************************************************
 
@@ -14,6 +14,7 @@ package phis2ws.service;
 
 import io.swagger.jaxrs.config.BeanConfig;
 import java.io.File;
+import java.io.IOException;
 import javax.annotation.PostConstruct;
 import javax.inject.Singleton;
 import javax.ws.rs.ApplicationPath;
@@ -89,8 +90,16 @@ public class ApplicationInitConfig extends ResourceConfig {
                 }
             }
         }
+        // make the good rights on log directory on remote server
+        try {
+            Runtime.getRuntime().exec("chmod -R 755 " + logDirectory);
+            LOGGER.info("Log directory rights successful update");
+        } catch (IOException e) {
+            LOGGER.error("Can't change rights on log directory");
+        }
         TokenManager.Instance();
         SessionDaoPhisBrapi sessionDao = new SessionDaoPhisBrapi();
+        // It's possible to reload a session that hasn't been desactived
 //        sessionDao.reloadActiveSession();
     }
 }

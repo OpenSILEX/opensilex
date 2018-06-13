@@ -22,6 +22,8 @@ public class TokenDTO extends AbstractVerifiedClass {
     private String password;
     private String client_id;
 
+    // Uncomment if you use jwt
+    // @ApiModelProperty(example = EXAMPLE_TOKEN_JWT_GRANTTYPE)
     @ApiModelProperty(example = "password")
     public String getGrant_type() {
         return grant_type;
@@ -48,8 +50,8 @@ public class TokenDTO extends AbstractVerifiedClass {
     public void setPassword(String password) {
         this.password = password;
     }
-
-   // @ApiModelProperty(example = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJndWVzdHBoaXNAc3VwYWdyby5pbnJhLmZyIiwiaXNzIjoiR25wSVMiLCJpYXQiOjE0NzYyNzY5MzgsImV4cCI6MTc5MTgwOTczOH0.Tm0fqmqSp1tna9g5govzgfPiRLaEu6OC5mvUNf1DKxa1nnAp5N1QUYwtTFdgOcUoWoO9nwj6Fe-4YbKpe7ECuNLqhm3-Pu42YI2359AkEorMxTfg4VUJfUVljgxSIakqrfCHt1qRImTpQegQiPsZque_BXBUxU3I7rScNODfzPs")
+    // Uncomment if you use jwt
+    // @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_TOKEN_JWT_CLIENTID)
     public String getClient_id() {
         return client_id;
     }

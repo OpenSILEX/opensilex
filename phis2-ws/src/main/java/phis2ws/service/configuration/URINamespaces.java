@@ -183,7 +183,7 @@ public class URINamespaces {
         RELATIONS.put("rNarrower", "http://www.w3.org/2008/05/skos#narrower");
         RELATIONS.put("rBroader", "http://www.w3.org/2008/05/skos#broader");
         
-        //Relations rdfs et rdf
+        //Relations rdfs and rdf
         RELATIONS.put("subClassOf","rdfs:subClassOf");
         RELATIONS.put("subClassOf*","rdfs:subClassOf*");
         RELATIONS.put("label", "rdfs:label");

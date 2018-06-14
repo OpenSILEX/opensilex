@@ -35,6 +35,7 @@ public final class DateFormats {
     //Dates formats
     public final static String YMD_FORMAT = "yyyy-MM-dd";
     public final static String YMDHMSZ_FORMAT = "yyyy-MM-dd HH:mm:ssZ";
+    public final static String YMDHMS_FORMAT = "yyyy-MM-dd HH:mm:ss";
     
     //Timezones
     public final static String TIMEZONE_EU_PARIS = "Europe/paris";

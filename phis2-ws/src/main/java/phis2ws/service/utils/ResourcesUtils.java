@@ -122,23 +122,4 @@ public class ResourcesUtils {
             return parts[1];
         }
     }
-    
-    /**
-     * Transforme une chaîne de caractère en DateTime avec un format entrée en
-     * paramètre (librairie Joda)
-     *
-     * @param stringDate
-     * @param pattern
-     * @return
-     */
-    public static DateTime convertStringToDateTime(String stringDate, String pattern) {
-        final org.joda.time.format.DateTimeFormatter formatter = DateTimeFormat.forPattern(pattern);
-        try {
-            return formatter.withOffsetParsed().parseDateTime(stringDate);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-
-    }
 }

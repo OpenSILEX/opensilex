@@ -175,4 +175,23 @@ public class Dates {
         DateTime dt = new DateTime(timestamp, DateTimeZone.forID(DateFormats.TIMEZONE_EU_PARIS));
         return dt;
     }
+    
+    
+    /**
+     * Convert a string to joda datetime according to a given pattern 
+     *
+     * @param stringDate date
+     * @param pattern pattern
+     * @return null|DateTime
+     */
+    public static DateTime convertStringToDateTime(String stringDate, String pattern) {
+        final org.joda.time.format.DateTimeFormatter formatter = DateTimeFormat.forPattern(pattern);
+        try {
+            return formatter.withOffsetParsed().parseDateTime(stringDate);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
+    }
 }

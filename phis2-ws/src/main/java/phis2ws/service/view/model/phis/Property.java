@@ -13,6 +13,7 @@
 package phis2ws.service.view.model.phis;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Represents the view of the properties in the triplestore. 
@@ -40,6 +41,10 @@ public class Property {
     //then, the union and others will be added
     //(e.g. http://www.phenome-fppn.fr/vocabulary/2017#MultispectralCamera)
     private String domain;
+    //the list of the labels of the property. Hash Map with the languages if needed
+    //it is a hash map with the language and the label
+    //if there is no language for a label, the key is equals to none (?)
+    private HashMap<String, String> labels = new HashMap<>();
     
     public Property() {
     }
@@ -74,5 +79,16 @@ public class Property {
 
     public void setDomain(String domain) {
         this.domain = domain;
+    }
+    public HashMap<String, String> getLabels() {
+        return labels;
+    }
+
+    public void setLabels(HashMap<String, String> labels) {
+        this.labels = labels;
+    }
+    
+    public void addLabel(String language, String label) {
+        labels.put(language, label);
     }
 }

@@ -38,7 +38,6 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
     final static String LANGUAGE_EN = "en";
     final static String LABEL_LABEL_EN = "label";
     final static String LABEL_COMMENT_EN = "comment";
-    
 
     @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
@@ -49,7 +48,6 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
     public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
     
     public ArrayList<PropertyVocabularyDTO> allPaginateRdfsProperties() {
         ArrayList<PropertyVocabularyDTO> rdfsPropertyes = new ArrayList<>();

@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration debug="true">
-    <!-- variables de configuration-->
+    <!-- configuration variables-->
     <property resource="service.properties" />
-     <!-- Sortie -->
+     <!-- output -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <layout class="ch.qos.logback.classic.PatternLayout">
             <pattern>${logPattern}</pattern>
         </layout>
     </appender>
-    <!--Sortie informatives-->
+    <!-- information log output-->
     <appender name="INFOLOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
          <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>INFO</level>
@@ -25,7 +25,7 @@
         </encoder>
     </appender> 
     
-     <!--Sortie informatives-->
+     <!-- debug log output-->
     <appender name="DEBUGLOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
          <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>DEBUG</level>
@@ -42,7 +42,7 @@
         </encoder>
     </appender> 
     
-    <!--Sortie erreur-->
+    <!-- error log output -->
     <appender name="ERRORLOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>ERROR</level>
@@ -60,7 +60,7 @@
         </encoder>
     </appender> 
     
-     <!--Sortie Trace-->
+     <!-- trace log output for relationnal database -->
     <appender name="DBLOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <filter class="ch.qos.logback.core.filter.EvaluatorFilter">      
             <evaluator> <!-- defaults to type ch.qos.logback.classic.boolex.JaninoEventEvaluator -->
@@ -88,7 +88,7 @@
         </encoder>
     </appender> 
     
-     <!--Sortie Trace-->
+     <!--trace log output for graph database -->
     <appender name="SPARQLLOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <filter class="ch.qos.logback.core.filter.EvaluatorFilter">      
             <evaluator> <!-- defaults to type ch.qos.logback.classic.boolex.JaninoEventEvaluator -->
@@ -116,17 +116,19 @@
         </encoder>
     </appender> 
     
-    <!--definit le niveau de sortie des logs d'un pacakge en particulier-->
+    <!-- define log level output for specific packages -->
     <logger name="org.mongodb.driver" level="INFO"/>
     <logger name="org.apache" level="INFO"/>
     <logger name="org.apache.tomcat" level="INFO"/>
     <logger name="org.glassfish.jersey" level="DEBUG"/>
     <!--<logger name="i.s.c.ModelConverterContextImpl" level="ERROR"/>-->
-<!--    <logger name="io.swagger.jackson" level="ERROR"/>
-    <logger name="io.swagger.jaxrs" level="ERROR"/>-->
+    <!--<logger name="io.swagger.jackson" level="ERROR"/>-->
+    <!--remove swagger debug log-->
+    <logger name="io.swagger" level="INFO"/>
+    <logger name="org.reflections" level="INFO"/>
     <logger name="org.openrdf" level="ERROR"/>
     
-    <!--ensembles des logs définis-->
+    <!-- appender by log type -->
     <root level="ALL">
         <appender-ref ref="DBLOG" />
         <appender-ref ref="SPARQLLOG" />

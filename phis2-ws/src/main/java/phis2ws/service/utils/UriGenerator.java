@@ -12,9 +12,12 @@
 package phis2ws.service.utils;
 
 import java.util.Calendar;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.mongo.ImageMetadataDaoMongo;
+import phis2ws.service.dao.phis.UserDaoPhisBrapi;
 import phis2ws.service.dao.sesame.AgronomicalObjectDAOSesame;
 import phis2ws.service.dao.sesame.MethodDaoSesame;
 import phis2ws.service.dao.sesame.SensorDAOSesame;
@@ -23,12 +26,17 @@ import phis2ws.service.dao.sesame.TraitDaoSesame;
 import phis2ws.service.dao.sesame.UnitDaoSesame;
 import phis2ws.service.dao.sesame.VariableDaoSesame;
 import phis2ws.service.dao.sesame.VectorDAOSesame;
+import phis2ws.service.model.User;
 
 /**
  * generate differents kinds of uris (vector, sensor, ...)
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class UriGenerator {
+    
+    final static Logger LOGGER = LoggerFactory.getLogger(UriGenerator.class);
+
+    
     private static final String PROPERTIES_SERVICE_FILE_NAME = "service";
     private static final String PROPERTIES_SERVICE_BASE_URI = "baseURI";
     
@@ -48,6 +56,7 @@ public class UriGenerator {
     private static final String PLATFORM_URI_ID_UNITS = PLATFORM_URI_ID + "units/";
     private static final String PLATFORM_URI_ID_VARIABLES = PLATFORM_URI_ID + "variables/";
     private static final String PLATFORM_URI_ID_VARIETY = PLATFORM_URI + "v/";
+    private static final String PLATFORM_URI_ID_AGENT = PLATFORM_URI_ID + "agent/";
     
     
     /**
@@ -255,6 +264,39 @@ public class UriGenerator {
     }
     
     /**
+     * generates a new agent uri.
+     * a agent uri follows the pattern : 
+     * <prefix>:id/agent/<unic_code>
+     * <unic_code> = firstname first letter concat with lastname in lowercase
+     * e.g. http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy
+     * @param agentEmail the agent email
+     * @return the new agent uri
+     */
+    private String generateAgentUri(String agentEmail) {
+        // retreive user information
+        UserDaoPhisBrapi uspb = new UserDaoPhisBrapi();
+        User user = new User(agentEmail);
+        //SILEX:conception
+        // This will be able change when user information will be put in the triplestore
+        //\SILEX:conception
+        try {
+            uspb.find(user);
+        } catch (Exception ex) {
+            LOGGER.error("Can't able to find this user", ex);
+            return null;
+        }
+       
+        // format firstname and lastname
+        String userFirstName = user.getFirstName().trim();
+        String userFamilyName = user.getFamilyName().trim();
+        userFamilyName = userFamilyName.replace(" ", "-");
+      
+        // create URI
+        return PLATFORM_URI_ID_AGENT + userFirstName.toLowerCase().charAt(0) + userFamilyName.toLowerCase();
+    }
+    
+    
+    /**
      * generates a new image uri. 
      * an image uri follows the pattern : 
      * <prefix>:yyyy/<unic_code>
@@ -329,6 +371,8 @@ public class UriGenerator {
             return generateVarietyUri(additionalInformation);
         } else if (uriDaoSesame.isSubClassOf(instanceType, uriNamespaces.getObjectsProperty("cImage"))) {
             return generateImageUri(year, additionalInformation);
+        } else if (instanceType.equals(uriNamespaces.getObjectsProperty("cAgent")) || uriDaoSesame.isSubClassOf(instanceType, uriNamespaces.getObjectsProperty("cAgent"))) {
+            return generateAgentUri(additionalInformation);
         }
         
         return null;

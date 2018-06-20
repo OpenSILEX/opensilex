@@ -496,6 +496,38 @@ public class UriDaoSesame extends DAOSesame<Uri> {
         return query;
     }
     
+    
+    /**
+     * generates an ask query to know if the given instance URI is an instance of 
+     * rdfType. 
+     * @param instanceUri
+     * @param rdfType
+     * @return the query. 
+     * e.g.
+     * ASK {
+     *	<http://www.phenome-fppn.fr/vocabulary/2017#HemisphericalCamera> rdfs:subClassOf* <http://www.phenome-fppn.fr/vocabulary/2017#SensingDevice>
+     *  }
+     */
+    private SPARQLQueryBuilder prepareIsInstanceOf(String instanceUri, String rdfType) {
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        query.appendDistinct(Boolean.TRUE);
+
+        String contextURI;
+
+        if (uri != null) {
+            contextURI = "<" + uri + ">";
+        } else {
+            contextURI = "?uri";
+            query.appendSelect("?uri");
+        }
+        
+        query.appendTriplet("<" + instanceUri + ">", "a", "<" + rdfType + ">", null);
+        
+        query.appendAsk(""); //any = anything
+        LOGGER.debug(query.toString());
+        return query;
+    }
+    
     /**
      * check if the given rdfSubType is a sub class of the given rdfType
      * @param rdfSubType
@@ -506,6 +538,19 @@ public class UriDaoSesame extends DAOSesame<Uri> {
     public boolean isSubClassOf(String rdfSubType, String rdfType) {
         SPARQLQueryBuilder query = prepareIsSubclassOf(rdfSubType, rdfType);
 
+        BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
+        return booleanQuery.evaluate();
+    }
+    
+    /**
+     * check if the given uri is an instance of the given rdfType
+     * @param instanceUri
+     * @param rdfType
+     * @return true if it is a subclass
+     *         false if not
+     */
+    public boolean isInstanceOf(String instanceUri, String rdfType) {
+        SPARQLQueryBuilder query = prepareIsInstanceOf(instanceUri, rdfType);
         BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
         return booleanQuery.evaluate();
     }

@@ -106,6 +106,7 @@ public class URINamespaces {
         CONTEXTS.put("pxDublinCore", "http://purl.org/dc/terms");
         CONTEXTS.put("pxPlatform", CONTEXTS.get("pxPhenome") + "/" + platform);
         CONTEXTS.put("pxGeoSPARQL", "http://www.opengis.net/ont/geosparql#");
+        CONTEXTS.put("pxFoaf", "http://xmlns.com/foaf/0.1/");
         
         //Context(s) 
         CONTEXTS.put("pVoc2017", CONTEXTS.get("pxPhenome") + "/vocabulary/2017");
@@ -147,6 +148,7 @@ public class URINamespaces {
         OBJECTS.put("cVector", CONTEXTS.get("pVoc2017") + "#Vector");
         OBJECTS.put("cSensingDevice", CONTEXTS.get("pVoc2017") + "#SensingDevice");
         OBJECTS.put("cRestriction", "owl:Restriction");
+        OBJECTS.put("cAgent", CONTEXTS.get("pxFoaf") + "Person");
     }
 
     private void setRelations() {

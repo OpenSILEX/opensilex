@@ -25,13 +25,17 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
+import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.phis.UserDaoPhisBrapi;
 import phis2ws.service.dao.sesame.AnnotationDAOSesame;
 import phis2ws.service.dao.sesame.TripletDAOSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
+import phis2ws.service.injection.SessionInject;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
@@ -43,8 +47,13 @@ import phis2ws.service.resources.dto.AnnotationDTO;
  */
 @Api("/annotations")
 @Path("/annotations")
-public class AnnotationResourceService extends AbstractResourceService{
+public class AnnotationResourceService {
+    final static Logger LOGGER = LoggerFactory.getLogger(AnnotationResourceService.class);
     
+    //Session de l'utilisateur
+    @SessionInject
+    Session userSession;
+  
     
     /**
      * insert given annotations in the triplestore
@@ -68,25 +77,22 @@ public class AnnotationResourceService extends AbstractResourceService{
                 example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     public Response postAnnotations(
-            @ApiParam(value = DocumentationAnnotation.TRIPLET_POST_DATA_DEFINITION) ArrayList<AnnotationDTO> annotations,
+            @ApiParam(value = DocumentationAnnotation.ANNOTATION_POST_DATA_DEFINITION) ArrayList<AnnotationDTO> annotations,
             @Context HttpServletRequest context) {
 
         AbstractResultForm postResponse = null;
         
         //If there are at least one list of annotations
         if (annotations != null && !annotations.isEmpty()) {
-            if (canUserAddTriplets()) { //If the user has the rights to insert triplets
                 AnnotationDAOSesame annotationDAOSesame = new AnnotationDAOSesame();
                 if (context.getRemoteAddr() != null) {
                     annotationDAOSesame.remoteUserAdress = context.getRemoteAddr();
                 }
                 annotationDAOSesame.user = userSession.getUser();
-                
-//                String graphUri = PropertiesFileManager.getConfigFileProperty("service", "baseURI") + Long.toString(new Timestamp(System.currentTimeMillis()).getTime());
-                
+                                
                 POSTResultsReturn insertResult = annotationDAOSesame.checkAndInsert(annotations);
                 
-                //triplets inserted
+                //annotations inserted
                 if (insertResult.getHttpStatus().equals(Response.Status.CREATED)){
                     postResponse = new ResponseFormPOST(insertResult.statusList);
                     postResponse.getMetadata().setDatafiles(insertResult.getCreatedResources());
@@ -96,25 +102,21 @@ public class AnnotationResourceService extends AbstractResourceService{
                     postResponse = new ResponseFormPOST(insertResult.statusList);
                 }
                 return Response.status(insertResult.getHttpStatus()).entity(postResponse).build();
-            } else {
-                postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.ACCESS_DENIED, StatusCodeMsg.ERR, StatusCodeMsg.ADMINISTRATOR_ONLY));
-                return Response.status(Response.Status.FORBIDDEN).entity(new ResponseFormPOST()).build();
-            }
-            
+//            
         } else {
-            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty triplets to add"));
+            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty annotations to add"));
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormPOST()).build();
         }
     }
     
-    /**
-     * check if the user can insert triplets in the triplestore. Only admins can
-     * insert triplets
-     * @return true if the user can insert triplets, 
-     *         false if user cannot insert triplets
-     */
-    private boolean canUserAddTriplets() {
-        UserDaoPhisBrapi userDao = new UserDaoPhisBrapi();
-        return userDao.isAdmin(userSession.getUser());
-    }
+//    /**
+//     * check if the user can insert triplets in the triplestore. Only admins can
+//     * insert triplets
+//     * @return true if the user can insert triplets, 
+//     *         false if user cannot insert triplets
+//     */
+//    private boolean canUserAddTriplets() {
+//        UserDaoPhisBrapi userDao = new UserDaoPhisBrapi();
+//        return userDao.isAdmin(userSession.getUser());
+//    }
 }

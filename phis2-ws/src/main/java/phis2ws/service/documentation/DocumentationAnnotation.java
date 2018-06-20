@@ -77,6 +77,8 @@ public final class DocumentationAnnotation {
     
     public static final String TRIPLET_POST_DATA_DEFINITION = "JSON format of a triplet";
     
+    public static final String ANNOTATION_POST_DATA_DEFINITION = "JSON format of an annotation";
+    
     public static final String METHOD_POST_DATA_DEFINITION = "JSON format of method";
     public static final String METHOD_URI_DEFINITION = "A method URI (Unique Resource Identifier)";
     

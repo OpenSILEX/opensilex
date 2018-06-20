@@ -165,6 +165,7 @@ public class URINamespaces {
         RELATIONS.put("rHasRepetition", CONTEXTS.get("pVoc2017") + "#hasRepetition");
         RELATIONS.put("rHasAlias", CONTEXTS.get("pVoc2017") + "#hasAlias");
         RELATIONS.put("rStatus", CONTEXTS.get("pVoc2017") + "#status");
+        RELATIONS.put("rHasContact", CONTEXTS.get("pVoc2017") + "#hasContact");
         RELATIONS.put("rHasTrait", CONTEXTS.get("pVoc2017") + "#hasTrait");
         RELATIONS.put("rHasMethod", CONTEXTS.get("pVoc2017") + "#hasMethod");
         RELATIONS.put("rHasUnit", CONTEXTS.get("pVoc2017") + "#hasUnit");
@@ -186,6 +187,7 @@ public class URINamespaces {
         //Relations rdfs and rdf
         RELATIONS.put("subClassOf","rdfs:subClassOf");
         RELATIONS.put("subClassOf*","rdfs:subClassOf*");
+        RELATIONS.put("subPropertyOf*", "rdfs:subPropertyOf*");
         RELATIONS.put("label", "rdfs:label");
         RELATIONS.put("comment", "rdfs:comment");
         RELATIONS.put("type", "rdf:type");

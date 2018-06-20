@@ -12,6 +12,7 @@
 package phis2ws.service.dao.sesame;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Optional;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
@@ -39,6 +40,8 @@ public class UriDaoSesame extends DAOSesame<Uri> {
 
     public String uri;
     public String label;
+    //used to query the triplestore
+    final static String LABEL = "label";
     
     final static String TRIPLESTORE_FIELDS_TYPE = "type";
     final static String TRIPLESTORE_FIELDS_CLASS = "class";
@@ -48,7 +51,9 @@ public class UriDaoSesame extends DAOSesame<Uri> {
     final static Logger LOGGER = LoggerFactory.getLogger(UriDaoSesame.class);
     public Boolean deep;
 
-    URINamespaces uriNameSpace = new URINamespaces();
+    private final static URINamespaces NAMESPACES = new URINamespaces();
+    final static String TRIPLESTORE_RELATION_LABEL = NAMESPACES.getRelationsProperty("label");
+    
     
     /**
      * prepare a query to get the triplets of an uri (given or not).
@@ -99,7 +104,7 @@ public class UriDaoSesame extends DAOSesame<Uri> {
         }
 
         query.appendSelect(" ?class ");
-        query.appendTriplet(" ?class ", uriNameSpace.getRelationsProperty("label"), selectLabel, null);
+        query.appendTriplet(" ?class ", NAMESPACES.getRelationsProperty("label"), selectLabel, null);
 
         LOGGER.debug(" sparql select query : " + query.toString());
         return query;
@@ -129,8 +134,8 @@ public class UriDaoSesame extends DAOSesame<Uri> {
             query.appendSelect("?uri");
         }
         query.appendSelect(" ?class ");
-        query.appendTriplet(contextURI,uriNameSpace.getRelationsProperty("subClassOf"), " ?parent ", null);
-        query.appendTriplet("?class",uriNameSpace.getRelationsProperty("subClassOf"), "?parent", null);
+        query.appendTriplet(contextURI,NAMESPACES.getRelationsProperty("subClassOf"), " ?parent ", null);
+        query.appendTriplet("?class",NAMESPACES.getRelationsProperty("subClassOf"), "?parent", null);
         LOGGER.debug(query.toString());
         return query;
     }
@@ -204,11 +209,11 @@ public class UriDaoSesame extends DAOSesame<Uri> {
         query.appendSelect(" ?subclass");
         // if deep get descendents
         if (deep) {
-            query.appendTriplet("?subclass", uriNameSpace.getRelationsProperty("subClassOf*"), contextURI, null);
+            query.appendTriplet("?subclass", NAMESPACES.getRelationsProperty("subClassOf*"), contextURI, null);
         } else {
-            query.appendTriplet("?subclass", uriNameSpace.getRelationsProperty("subClassOf"), contextURI, null);
+            query.appendTriplet("?subclass", NAMESPACES.getRelationsProperty("subClassOf"), contextURI, null);
         }
-        query.appendTriplet("?instance", uriNameSpace.getRelationsProperty("type"), "?subclass", null);
+        query.appendTriplet("?instance", NAMESPACES.getRelationsProperty("type"), "?subclass", null);
         LOGGER.debug("sparql select query : " + query.toString());
         return query;
     }
@@ -233,7 +238,7 @@ public class UriDaoSesame extends DAOSesame<Uri> {
             query.appendSelect("?uri");
         }
         query.appendSelect(" ?class ");
-        query.appendTriplet(contextURI,uriNameSpace.getRelationsProperty("subClassOf"), " ?class ", null);
+        query.appendTriplet(contextURI,NAMESPACES.getRelationsProperty("subClassOf"), " ?class ", null);
         LOGGER.debug(query.toString());
         return query;
     }
@@ -258,7 +263,7 @@ public class UriDaoSesame extends DAOSesame<Uri> {
             query.appendSelect("?uri");
         }
         query.appendSelect(" ?class ");
-        query.appendTriplet(" ?class ",uriNameSpace.getRelationsProperty("subClassOf*"), contextURI, null);
+        query.appendTriplet(" ?class ",NAMESPACES.getRelationsProperty("subClassOf*"), contextURI, null);
         LOGGER.debug(query.toString());
 
         return query;
@@ -285,7 +290,7 @@ public class UriDaoSesame extends DAOSesame<Uri> {
             query.appendSelect("?uri");
         }
         query.appendSelect(" ?type ");
-        query.appendTriplet(contextURI, uriNameSpace.getRelationsProperty("type"), " ?type ", null);
+        query.appendTriplet(contextURI, NAMESPACES.getRelationsProperty("type"), " ?type ", null);
         LOGGER.debug(query.toString());
         return query;
     }
@@ -484,7 +489,7 @@ public class UriDaoSesame extends DAOSesame<Uri> {
             query.appendSelect("?uri");
         }
         
-        query.appendTriplet("<" + rdfSubType + ">", uriNameSpace.getRelationsProperty("subClassOf*"), "<" + rdfType + ">", null);
+        query.appendTriplet("<" + rdfSubType + ">", NAMESPACES.getRelationsProperty("subClassOf*"), "<" + rdfType + ">", null);
         
         query.appendAsk(""); //any = anything
         LOGGER.debug(query.toString());
@@ -503,5 +508,57 @@ public class UriDaoSesame extends DAOSesame<Uri> {
 
         BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
         return booleanQuery.evaluate();
+    }
+    
+    /**
+     * generates a query to get the list of the labels of the uri attribute
+     * e.g.
+     * SELECT DISTINCT ?label 
+     * WHERE {
+     *      <http://www.phenome-fppn.fr/vocabulary/2017#hasTechnicalContact>  rdfs:label  ?label  . 
+     * }
+     * @return the generated query
+     */
+    protected SPARQLQueryBuilder prepareGetLabels() {
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        query.appendDistinct(Boolean.TRUE);
+        
+        query.appendSelect("?" + LABEL);
+        query.appendTriplet(uri, TRIPLESTORE_RELATION_LABEL, "?" + LABEL, null);
+        
+        LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
+        
+        return query;
+    }
+    
+    /**
+     * get the labels associated to the uri attribute in the triplestore
+     * @return the list of labels. the key is the language 
+     * e.g.
+     * [
+     *  "fr" : "maison",
+     *  "en" : "home",
+     *  "none" : "dqfgdf"
+     * ]
+     */
+    public HashMap<String, String> getLabels() {
+        SPARQLQueryBuilder query = prepareGetLabels();
+        HashMap<String, String> labels = new HashMap<>();
+        
+        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
+            while (result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                Literal propertyLabel = (Literal) bindingSet.getValue(LABEL);
+                Optional<String> labelLanguage = propertyLabel.getLanguage();
+                if (labelLanguage.get() != null) {
+                    labels.put(labelLanguage.get(), bindingSet.getValue(LABEL).stringValue());
+                } else { //no language tag associated
+                    labels.put("none", bindingSet.getValue(LABEL).stringValue());
+                }
+            }
+        }
+        return labels;
     }
 }

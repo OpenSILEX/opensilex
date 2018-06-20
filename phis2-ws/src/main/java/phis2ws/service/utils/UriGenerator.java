@@ -12,8 +12,8 @@
 package phis2ws.service.utils;
 
 import java.util.Calendar;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.mongo.ImageMetadataDaoMongo;
@@ -33,6 +33,10 @@ import phis2ws.service.model.User;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class UriGenerator {
+    
+    final static Logger LOGGER = LoggerFactory.getLogger(UriGenerator.class);
+
+    
     private static final String PROPERTIES_SERVICE_FILE_NAME = "service";
     private static final String PROPERTIES_SERVICE_BASE_URI = "baseURI";
     
@@ -275,7 +279,7 @@ public class UriGenerator {
         try {
             uspb.find(user);
         } catch (Exception ex) {
-            Logger.getLogger(UriGenerator.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.error("Can't able to find this user", ex);
             return null;
         }
         // format firstname and lastname

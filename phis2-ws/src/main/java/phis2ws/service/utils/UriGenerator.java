@@ -265,7 +265,7 @@ public class UriGenerator {
      * <prefix>:id/agent/<unic_code>
      * <unic_code> = firstname first letter concat with lastname in lowercase
      * e.g. http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy
-     * @param variety the agent email
+     * @param agentEmail the agent email
      * @return the new agent uri
      */
     private String generateAgentUri(String agentEmail) {

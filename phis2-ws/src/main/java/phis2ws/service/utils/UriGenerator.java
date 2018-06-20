@@ -275,13 +275,17 @@ public class UriGenerator {
     private String generateAgentUri(String agentEmail) {
         // retreive user information
         UserDaoPhisBrapi uspb = new UserDaoPhisBrapi();
-        User user = new User(agentEmail); 
+        User user = new User(agentEmail);
+        //SILEX:conception
+        // This will be able change when user information will be put in the triplestore
+        //\SILEX:conception
         try {
             uspb.find(user);
         } catch (Exception ex) {
             LOGGER.error("Can't able to find this user", ex);
             return null;
         }
+       
         // format firstname and lastname
         String userFirstName = user.getFirstName().trim();
         String userFamilyName = user.getFamilyName().trim();

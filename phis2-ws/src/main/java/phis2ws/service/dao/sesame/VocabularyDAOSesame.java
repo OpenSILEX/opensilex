@@ -12,8 +12,12 @@
 package phis2ws.service.dao.sesame;
 
 import java.util.ArrayList;
+import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,14 +34,21 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(VocabularyDAOSesame.class);
     
+    //the domain wanted for the searched properties
+    //e.g. http://www.phenome-fppn.fr/vocabulary/2018#UAV
+    public String domainRdfType;
+    
     //Triplestore relations
     private final static URINamespaces NAMESPACES = new URINamespaces();
     
+    final static String TRIPLESTORE_RELATION_HAS_CONTACT = NAMESPACES.getRelationsProperty("rHasContact");
     final static String TRIPLESTORE_RELATION_COMMENT = NAMESPACES.getRelationsProperty("comment");
     final static String TRIPLESTORE_RELATION_LABEL = NAMESPACES.getRelationsProperty("label");
+    final static String TRIPLESTORE_RELATION_SUBPROPERTY_OF_MULTIPLE = NAMESPACES.getRelationsProperty("subPropertyOf*");
     final static String LANGUAGE_EN = "en";
     final static String LABEL_LABEL_EN = "label";
     final static String LABEL_COMMENT_EN = "comment";
+    final static String CONTACT_PROPERTY = "contactProperty";
 
     @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
@@ -49,6 +60,10 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
+    /**
+     * get the list of rdfs properties usually used
+     * @return the list of the rdfs properties
+     */
     public ArrayList<PropertyVocabularyDTO> allPaginateRdfsProperties() {
         ArrayList<PropertyVocabularyDTO> rdfsPropertyes = new ArrayList<>();
         
@@ -65,5 +80,91 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
         rdfsPropertyes.add(comment);
         
         return rdfsPropertyes;
+    }
+    
+    /**
+     * generates the SPARQL query to get the list of the contact properties
+     * e.g.
+     * SELECT ?contactProperty 
+     * WHERE {
+     *      ?contactProperty  rdfs:subPropertyOf*  <http://www.phenome-fppn.fr/vocabulary/2017#hasContact> . 
+     * }
+     * @return 
+     */
+    protected SPARQLQueryBuilder prepareGetContactProperties() {        
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        query.appendSelect("?" + CONTACT_PROPERTY);
+        query.appendTriplet("?" + CONTACT_PROPERTY, TRIPLESTORE_RELATION_SUBPROPERTY_OF_MULTIPLE, TRIPLESTORE_RELATION_HAS_CONTACT, null);
+        
+        LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
+        
+        return query;
+    }
+    
+    /**
+     * check if a given property has the class attribute domainRdfType as domain. 
+     * @param property
+     * @return true if the class attribute domainRdfType can have the property
+     *         false if not
+     */
+    protected boolean isPropertyDomainContainsRdfType(String property) {
+        PropertyDAOSesame propertyDAO = new PropertyDAOSesame();
+        propertyDAO.relation = property;
+                
+        ArrayList<String> propertyDomains = propertyDAO.getPropertyDomain();
+        
+        UriDaoSesame uriDao = new UriDaoSesame();
+        for (String propertyDomain : propertyDomains) {
+            if (propertyDomain.equals(domainRdfType) 
+                    || uriDao.isSubClassOf(domainRdfType, propertyDomain)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
+     * generates a PropertyVocabularyDTO with the given property URI. 
+     * Get the labels from the triplestore
+     * @see UriDaoSesame#getLabels() 
+     * @param propertyUri
+     * @return the property
+     */
+    private PropertyVocabularyDTO propertyStringToPropertyVocabularyDTO(String propertyUri) {
+        PropertyVocabularyDTO property = new PropertyVocabularyDTO();
+        property.setRelation(propertyUri);
+        
+        UriDaoSesame uriDao = new UriDaoSesame();
+        uriDao.uri = propertyUri;
+        property.setLabels(uriDao.getLabels());
+        
+        return property;
+    }
+    
+    /**
+     * search the list of contact properties that can be added to an instance of a given concept
+     * @return list of contact properties
+     */
+    public ArrayList<PropertyVocabularyDTO> allPaginateContactProperties() {
+        //1. get all the subproperties of the hasContact Property
+        SPARQLQueryBuilder query = prepareGetContactProperties();
+        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        
+        ArrayList<PropertyVocabularyDTO> properties = new ArrayList<>();
+        
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
+            //2. for each founded property, check if the property can be used on the rdfType
+            while (result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                String propertyFounded = bindingSet.getValue(CONTACT_PROPERTY).stringValue();
+                //2.1 check if domainRdfType can have the property
+                if (isPropertyDomainContainsRdfType(propertyFounded)) {
+                    properties.add(propertyStringToPropertyVocabularyDTO(propertyFounded));
+                }
+            }
+        }
+        
+        return properties;
     }
 }

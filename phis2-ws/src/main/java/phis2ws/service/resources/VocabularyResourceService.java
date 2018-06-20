@@ -60,7 +60,7 @@ public class VocabularyResourceService {
      * @return the response "no result found" for the service
      */
     private Response noResultFound(ResponseFormVocabularyProperty getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status(StatusCodeMsg.NO_RESULTS, StatusCodeMsg.INFO, "No results for the sensors"));
+        insertStatusList.add(new Status(StatusCodeMsg.NO_RESULTS, StatusCodeMsg.INFO, "No results for the vocabulary"));
         getResponse.setStatus(insertStatusList);
         return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
     }
@@ -157,5 +157,95 @@ public class VocabularyResourceService {
         vocabularyDAO.setPageSize(pageSize);
         
         return getRdfsData(vocabularyDAO);
+    }
+    
+    /**
+     * get the list of contact properties that can be added to a given concept
+     * @param vocabularyDAO
+     * @return the list of the contact properties, with their labels
+     */
+    private Response getContactProperties(VocabularyDAOSesame vocabularyDAO) {
+        ArrayList<PropertyVocabularyDTO> properties;
+        ArrayList<Status> statusList = new ArrayList<>();
+        ResponseFormVocabularyProperty getResponse;
+        
+        properties = vocabularyDAO.allPaginateContactProperties();
+        
+        if (properties == null) {
+            getResponse = new ResponseFormVocabularyProperty(0, 0, properties, true);
+            return noResultFound(getResponse, statusList);
+        } else if (properties.isEmpty()) {
+            getResponse = new ResponseFormVocabularyProperty(0, 0, properties, true);
+            return noResultFound(getResponse, statusList);
+        } else {
+            getResponse = new ResponseFormVocabularyProperty(vocabularyDAO.getPageSize(), vocabularyDAO.getPage(), properties, false);
+            if (getResponse.getResult().dataSize() == 0) {
+                return noResultFound(getResponse, statusList);
+            } else {
+                getResponse.setStatus(statusList);
+                return Response.status(Response.Status.OK).entity(getResponse).build();
+            }
+        }
+    }
+    
+    /**
+     * get the list of contact properties that can be associated to a given rdfType
+     * @param rdfType
+     * @param pageSize
+     * @param page
+     * @return the list of the properties, with their labels
+     * e.g.
+     * {
+     *      "metadata": {
+     *          "pagination": null,
+     *          "status": [],
+     *          "datafiles": []
+     *      },
+     *      "result": {
+     *          "data": [
+     *              {
+     *                  "relation": "http://www.phenome-fppn.fr/vocabulary/2017#hasTechnicalContact",
+     *                  "labels": {
+     *                      "en": "technical contact",
+     *                      "fr": "contact technique"
+     *                  }
+     *              }
+     *          ]
+     *      }
+     * }
+     */
+    @GET
+    @Path("contacts/properties")
+    @ApiOperation(value = "Get all contact properties that can be added to a given rdfType",
+                  notes = "Retrieve all contact properties authorized")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Retrieve all contact properties", response = Property.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getContacts(
+            @ApiParam(value = "Search by rdfType", example = DocumentationAnnotation.EXAMPLE_SENSOR_RDF_TYPE) @QueryParam("rdfType") String rdfType,
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int pageSize,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
+        
+        VocabularyDAOSesame vocabularyDAO = new VocabularyDAOSesame();
+        
+        if (rdfType != null) {
+            vocabularyDAO.domainRdfType = rdfType;
+        }
+        
+        vocabularyDAO.user = userSession.getUser();
+        vocabularyDAO.setPage(page);
+        vocabularyDAO.setPageSize(pageSize);
+        
+        return getContactProperties(vocabularyDAO);
     }
 }

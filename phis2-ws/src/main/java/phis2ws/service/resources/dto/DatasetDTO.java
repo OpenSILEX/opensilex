@@ -34,11 +34,9 @@ public class DatasetDTO extends AbstractVerifiedClass {
     @Override
     public Map rules() {
         Map<String, Boolean> rules = new HashMap<>();
-        rules.put(variableUri, Boolean.TRUE);
-        
-        //SILEX:todo
-        //Find a way to add rules on others Objects
-        //\SILEX:todo
+        rules.put("variableUri", Boolean.TRUE);
+        rules.put("provenance", Boolean.TRUE);
+        rules.put("data", Boolean.TRUE);
         return rules;
     }
 

@@ -35,9 +35,9 @@ public class PropertyDTO extends AbstractVerifiedClass {
     @Override
     public Map rules() {
         Map<String, Boolean> rules = new HashMap<>();
-        rules.put(rdfType, Boolean.FALSE);
-        rules.put(relation, Boolean.TRUE);
-        rules.put(value, Boolean.TRUE);
+        rules.put("rdfType", Boolean.FALSE);
+        rules.put("relation", Boolean.TRUE);
+        rules.put("value", Boolean.TRUE);
         
         return rules;
     }

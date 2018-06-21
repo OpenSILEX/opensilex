@@ -49,17 +49,20 @@ public class ExperimentDTO extends AbstractVerifiedClass {
     @Override
     public Map rules() {
         Map<String, Boolean> rules = new HashMap<>();
-        rules.put(uri, Boolean.TRUE);
-        rules.put(startDate, Boolean.TRUE);
-        rules.put(endDate, Boolean.TRUE);
-        rules.put(field, Boolean.FALSE);
-        rules.put(campaign, Boolean.FALSE);
-        rules.put(place, Boolean.FALSE);
-        rules.put(alias, Boolean.FALSE);
-        rules.put(comment, Boolean.FALSE);
-        rules.put(keywords, Boolean.FALSE);
-        rules.put(objective, Boolean.FALSE);
-        rules.put(cropSpecies, Boolean.FALSE);
+        rules.put("uri", Boolean.TRUE);
+        rules.put("startDate", Boolean.TRUE);
+        rules.put("endDate", Boolean.TRUE);
+        rules.put("field", Boolean.FALSE);
+        rules.put("campaign", Boolean.FALSE);
+        rules.put("place", Boolean.FALSE);
+        rules.put("alias", Boolean.FALSE);
+        rules.put("comment", Boolean.FALSE);
+        rules.put("keywords", Boolean.FALSE);
+        rules.put("objective", Boolean.FALSE);
+        rules.put("cropSpecies", Boolean.FALSE);
+        rules.put("projectsUris", Boolean.FALSE);
+        rules.put("groupsUris", Boolean.FALSE);
+        rules.put("contacts", Boolean.FALSE);
         
         return rules;
     }

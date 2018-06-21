@@ -21,6 +21,7 @@ import phis2ws.service.view.model.phis.Method;
 public class MethodDTO extends InstanceDefinitionDTO {
     final static Logger LOGGER = LoggerFactory.getLogger(TraitDTO.class);
     
+    @Override
     public Method createObjectFromDTO() {
         Method method = (Method) super.createObjectFromDTO();
         return method; 

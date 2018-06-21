@@ -36,9 +36,10 @@ public class InstanceDefinitionDTO extends AbstractVerifiedClass {
     @Override
     public Map rules() {
         Map<String, Boolean> rules = new HashMap<>();
-        rules.put(label, Boolean.TRUE);
-        rules.put(uri, Boolean.FALSE);
-        rules.put(comment, Boolean.FALSE);
+        rules.put("label", Boolean.TRUE);
+        rules.put("uri", Boolean.FALSE);
+        rules.put("comment", Boolean.FALSE);
+        rules.put("ontologiesReferences", Boolean.FALSE);
         
         return rules;
     }

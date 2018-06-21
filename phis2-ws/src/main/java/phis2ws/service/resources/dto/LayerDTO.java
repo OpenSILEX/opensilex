@@ -40,10 +40,10 @@ public class LayerDTO extends AbstractVerifiedClass {
     @Override
     public Map rules() {
         Map<String, Boolean> rules = new HashMap<>();
-        rules.put(objectUri, Boolean.TRUE);
-        rules.put(objectType, Boolean.TRUE);
-        rules.put(depth, Boolean.TRUE);
-        rules.put(generateFile, Boolean.FALSE);
+        rules.put("objectUri", Boolean.TRUE);
+        rules.put("objectType", Boolean.TRUE);
+        rules.put("depth", Boolean.TRUE);
+        rules.put("generateFile", Boolean.FALSE);
         
         return rules;
     }

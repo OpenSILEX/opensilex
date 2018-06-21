@@ -39,10 +39,11 @@ public class GroupDTO extends AbstractVerifiedClass {
     @Override
     public Map rules() {
         Map<String, Boolean> rules = new HashMap<>();
-        rules.put(uri, Boolean.TRUE);
-        rules.put(name, Boolean.TRUE);
-        rules.put(level, Boolean.TRUE);
-        rules.put(description, Boolean.TRUE);
+        rules.put("uri", Boolean.TRUE);
+        rules.put("name", Boolean.TRUE);
+        rules.put("level", Boolean.TRUE);
+        rules.put("description", Boolean.TRUE);
+        rules.put("usersEmails", Boolean.FALSE);
         
         return rules;
     }

@@ -34,6 +34,9 @@ public class ImageMetadataDTO extends AbstractVerifiedClass {
     public Map rules() {
          Map<String, Boolean> rules = new HashMap<>();
         rules.put("rdfType", Boolean.TRUE);
+        rules.put("concern", Boolean.FALSE);
+        rules.put("configuration", Boolean.TRUE);
+        rules.put("fileInfo", Boolean.TRUE);
         return rules;
     }
 

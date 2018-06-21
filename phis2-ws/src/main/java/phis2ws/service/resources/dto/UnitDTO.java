@@ -21,6 +21,7 @@ import phis2ws.service.view.model.phis.Unit;
 public class UnitDTO extends InstanceDefinitionDTO {
     final static Logger LOGGER = LoggerFactory.getLogger(UnitDTO.class);
     
+    @Override
     public Unit createObjectFromDTO() {
         Unit trait = (Unit) super.createObjectFromDTO();
         return trait; 

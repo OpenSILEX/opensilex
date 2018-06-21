@@ -46,11 +46,11 @@ public class AgronomicalObjectDTO extends AbstractVerifiedClass {
     @Override
     public Map rules() {
         Map<String, Boolean> rules = new HashMap<>();
-        rules.put(rdfType, Boolean.TRUE);
-        rules.put(geometry, Boolean.TRUE);
-        rules.put(experiment, Boolean.FALSE);
-        rules.put(isPartOf, Boolean.FALSE);
-        rules.put(year, Boolean.FALSE);
+        rules.put("rdfType", Boolean.TRUE);
+        rules.put("geometry", Boolean.TRUE);
+        rules.put("experiment", Boolean.FALSE);
+        rules.put("isPartOf", Boolean.FALSE);
+        rules.put("year", Boolean.FALSE);
         
         return rules;
     }

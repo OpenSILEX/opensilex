@@ -44,7 +44,7 @@ public class ProvenanceDTO extends AbstractVerifiedClass {
         } else {
             rules.put("creationDate", Boolean.FALSE);
         }
-        
+        rules.put("documentsUris", Boolean.FALSE);
         return rules;
     }
 

@@ -34,8 +34,8 @@ public class SensorProfileDTO extends AbstractVerifiedClass {
     @Override
     public Map rules() {
         Map<String, Boolean> rules = new HashMap<>();
-        rules.put(uri, Boolean.TRUE);
-        
+        rules.put("uri", Boolean.TRUE);
+        rules.put("properties", Boolean.TRUE);
         return rules;
     }
 

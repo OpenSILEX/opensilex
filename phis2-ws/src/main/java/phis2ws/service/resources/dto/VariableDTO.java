@@ -38,9 +38,9 @@ public class VariableDTO extends InstanceDefinitionDTO {
     @Override
     public Map rules() {
        Map<String, Boolean> rules = super.rules();
-       rules.put(trait, Boolean.TRUE);
-       rules.put(method, Boolean.TRUE);
-       rules.put(unit, Boolean.TRUE);
+       rules.put("trait", Boolean.TRUE);
+       rules.put("method", Boolean.TRUE);
+       rules.put("unit", Boolean.TRUE);
        return rules;
     }
 

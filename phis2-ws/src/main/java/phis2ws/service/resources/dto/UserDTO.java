@@ -43,15 +43,16 @@ public class UserDTO extends AbstractVerifiedClass {
     @Override
     public Map rules() {
         Map<String, Boolean> rules = new HashMap<>();
-        rules.put(email, Boolean.TRUE);
-        rules.put(password, Boolean.FALSE);
-        rules.put(firstName, Boolean.FALSE);
-        rules.put(familyName, Boolean.FALSE);
-        rules.put(address, Boolean.FALSE);
-        rules.put(phone, Boolean.FALSE);
-        rules.put(affiliation, Boolean.TRUE);
-        rules.put(orcid, Boolean.FALSE);
-        rules.put(admin, Boolean.FALSE);
+        rules.put("email", Boolean.TRUE);
+        rules.put("password", Boolean.FALSE);
+        rules.put("firstName", Boolean.FALSE);
+        rules.put("familyName", Boolean.FALSE);
+        rules.put("address", Boolean.FALSE);
+        rules.put("phone", Boolean.FALSE);
+        rules.put("affiliation", Boolean.TRUE);
+        rules.put("orcid", Boolean.FALSE);
+        rules.put("admin", Boolean.FALSE);
+        rules.put("groupsUris", Boolean.FALSE);
         
         return rules;
     }

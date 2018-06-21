@@ -46,19 +46,20 @@ public class ProjectDTO extends AbstractVerifiedClass {
     @Override
     public Map rules() {
         Map<String, Boolean> rules = new HashMap<>();
-        rules.put(uri, Boolean.TRUE);
-        rules.put(name, Boolean.TRUE);
-        rules.put(acronyme, Boolean.FALSE);
-        rules.put(subprojectType, Boolean.FALSE);
-        rules.put(financialSupport, Boolean.FALSE);
-        rules.put(financialName, Boolean.FALSE);
-        rules.put(dateStart, Boolean.TRUE);
-        rules.put(dateEnd, Boolean.FALSE);
-        rules.put(keywords, Boolean.FALSE);
-        rules.put(description, Boolean.FALSE);
-        rules.put(objective, Boolean.FALSE);
-        rules.put(parentProject, Boolean.FALSE);
-        rules.put(website, Boolean.FALSE);
+        rules.put("uri", Boolean.TRUE);
+        rules.put("name", Boolean.TRUE);
+        rules.put("acronyme", Boolean.FALSE);
+        rules.put("subprojectType", Boolean.FALSE);
+        rules.put("financialSupport", Boolean.FALSE);
+        rules.put("financialName", Boolean.FALSE);
+        rules.put("dateStart", Boolean.TRUE);
+        rules.put("dateEnd", Boolean.FALSE);
+        rules.put("keywords", Boolean.FALSE);
+        rules.put("description", Boolean.FALSE);
+        rules.put("objective", Boolean.FALSE);
+        rules.put("parentProject", Boolean.FALSE);
+        rules.put("website", Boolean.FALSE);
+        rules.put("contacts", Boolean.FALSE);
         
         return rules;
     }

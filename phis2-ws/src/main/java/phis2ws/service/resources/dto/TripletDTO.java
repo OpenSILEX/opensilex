@@ -42,12 +42,12 @@ public class TripletDTO extends AbstractVerifiedClass {
     @Override
     public Map rules() {
         Map<String, Boolean> rules = new HashMap<>();
-        rules.put(s, Boolean.TRUE);
-        rules.put(p, Boolean.TRUE);
-        rules.put(o, Boolean.TRUE);
-        rules.put(o_type, Boolean.TRUE);
-        rules.put(o_lang, Boolean.FALSE);
-        rules.put(g, Boolean.FALSE);
+        rules.put("s", Boolean.TRUE);
+        rules.put("p", Boolean.TRUE);
+        rules.put("o", Boolean.TRUE);
+        rules.put("o_type", Boolean.TRUE);
+        rules.put("o_lang", Boolean.FALSE);
+        rules.put("g", Boolean.FALSE);
         
         return rules;
     }

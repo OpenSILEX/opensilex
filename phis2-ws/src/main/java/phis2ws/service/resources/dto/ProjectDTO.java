@@ -20,14 +20,15 @@ import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import phis2ws.service.resources.dto.constraints.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.view.model.phis.Contact;
 import phis2ws.service.view.model.phis.Project;
 
 public class ProjectDTO extends AbstractVerifiedClass {
-    
+
     final static Logger LOGGER = LoggerFactory.getLogger(ProjectDTO.class);
-    
+
     private String uri;
     private String name;
     private String acronyme;
@@ -44,27 +45,6 @@ public class ProjectDTO extends AbstractVerifiedClass {
     private ArrayList<Contact> contacts;
 
     @Override
-    public Map rules() {
-        Map<String, Boolean> rules = new HashMap<>();
-        rules.put("uri", Boolean.TRUE);
-        rules.put("name", Boolean.TRUE);
-        rules.put("acronyme", Boolean.FALSE);
-        rules.put("subprojectType", Boolean.FALSE);
-        rules.put("financialSupport", Boolean.FALSE);
-        rules.put("financialName", Boolean.FALSE);
-        rules.put("dateStart", Boolean.TRUE);
-        rules.put("dateEnd", Boolean.FALSE);
-        rules.put("keywords", Boolean.FALSE);
-        rules.put("description", Boolean.FALSE);
-        rules.put("objective", Boolean.FALSE);
-        rules.put("parentProject", Boolean.FALSE);
-        rules.put("website", Boolean.FALSE);
-        rules.put("contacts", Boolean.FALSE);
-        
-        return rules;
-    }
-
-    @Override
     public Project createObjectFromDTO() {
         Project project = new Project(uri);
         project.setName(name);
@@ -79,16 +59,17 @@ public class ProjectDTO extends AbstractVerifiedClass {
         project.setObjective(objective);
         project.setParentProject(parentProject);
         project.setWebsite(website);
-        
+
         if (contacts != null && !contacts.isEmpty()) {
             for (Contact contact : contacts) {
                 project.addContact(contact);
             }
         }
-        
+
         return project;
     }
 
+    @Required
     @ApiModelProperty(example = "http://phenome-fppn.fr/phis_field/projectTest")
     public String getUri() {
         return uri;
@@ -97,7 +78,8 @@ public class ProjectDTO extends AbstractVerifiedClass {
     public void setUri(String uri) {
         this.uri = uri;
     }
-    
+
+    @Required
     @ApiModelProperty(example = "projectTest")
     public String getName() {
         return name;
@@ -115,7 +97,7 @@ public class ProjectDTO extends AbstractVerifiedClass {
     public void setAcronyme(String acronyme) {
         this.acronyme = acronyme;
     }
-    
+
     @ApiModelProperty(example = "subproject type")
     public String getSubprojectType() {
         return subprojectType;
@@ -124,7 +106,7 @@ public class ProjectDTO extends AbstractVerifiedClass {
     public void setSubprojectType(String subprojectType) {
         this.subprojectType = subprojectType;
     }
-    
+
     @ApiModelProperty(example = "financial support")
     public String getFinancialSupport() {
         return financialSupport;
@@ -133,7 +115,7 @@ public class ProjectDTO extends AbstractVerifiedClass {
     public void setFinancialSupport(String financialSupport) {
         this.financialSupport = financialSupport;
     }
-    
+
     @ApiModelProperty(example = "financial name")
     public String getFinancialName() {
         return financialName;
@@ -143,6 +125,7 @@ public class ProjectDTO extends AbstractVerifiedClass {
         this.financialName = financialName;
     }
 
+    @Required
     @ApiModelProperty(example = "2015-07-07")
     public String getDateStart() {
         return dateStart;
@@ -151,7 +134,7 @@ public class ProjectDTO extends AbstractVerifiedClass {
     public void setDateStart(String dateStart) {
         this.dateStart = dateStart;
     }
-    
+
     @ApiModelProperty(example = "2016-07-07")
     public String getDateEnd() {
         return dateEnd;
@@ -205,7 +188,7 @@ public class ProjectDTO extends AbstractVerifiedClass {
     public void setWebsite(String website) {
         this.website = website;
     }
-    
+
     public ArrayList<Contact> getContacts() {
         return contacts;
     }

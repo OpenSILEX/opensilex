@@ -18,6 +18,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import phis2ws.service.resources.dto.constraints.Required;
 import phis2ws.service.view.model.phis.Method;
 import phis2ws.service.view.model.phis.Trait;
 import phis2ws.service.view.model.phis.Unit;
@@ -35,14 +36,6 @@ public class VariableDTO extends InstanceDefinitionDTO {
     private String method;
     private String unit;
 
-    @Override
-    public Map rules() {
-       Map<String, Boolean> rules = super.rules();
-       rules.put("trait", Boolean.TRUE);
-       rules.put("method", Boolean.TRUE);
-       rules.put("unit", Boolean.TRUE);
-       return rules;
-    }
 
     @Override
     public Variable createObjectFromDTO() {
@@ -54,6 +47,7 @@ public class VariableDTO extends InstanceDefinitionDTO {
         return variable;
     }
 
+     @Required
     @ApiModelProperty(example = "http://www.phenome-fppn.fr/diaphen/id/traits/t001")
     public String getTrait() {
         return trait;
@@ -63,6 +57,7 @@ public class VariableDTO extends InstanceDefinitionDTO {
         this.trait = trait;
     }
     
+     @Required
     @ApiModelProperty(example = "http://www.phenome-fppn.fr/diaphen/id/methods/m001")
     public String getMethod() {
         return method;
@@ -72,6 +67,7 @@ public class VariableDTO extends InstanceDefinitionDTO {
         this.method = method;
     }
     
+     @Required
     @ApiModelProperty(example = "http://www.phenome-fppn.fr/diaphen/id/units/u001")
     public String getUnit() {
         return unit;

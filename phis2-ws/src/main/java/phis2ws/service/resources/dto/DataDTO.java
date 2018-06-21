@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.HashMap;
 import java.util.Map;
 import phis2ws.service.documentation.DocumentationAnnotation;
+import phis2ws.service.resources.dto.constraints.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.view.model.phis.Data;
 
@@ -30,16 +31,7 @@ public class DataDTO extends AbstractVerifiedClass {
     private String sensor;
     private String incertitude;
 
-    @Override
-    public Map rules() {
-        Map<String, Boolean> rules = new HashMap<>();
-        rules.put("agronomicalObject", Boolean.TRUE);
-        rules.put("data", Boolean.TRUE);
-        rules.put("value", Boolean.TRUE);
-        rules.put("sensor", Boolean.FALSE);
-        rules.put("incertitude", Boolean.FALSE);
-        return rules;
-    }
+
 
     @Override
     public Data createObjectFromDTO() {
@@ -53,6 +45,7 @@ public class DataDTO extends AbstractVerifiedClass {
         return data;
     }
     
+    @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_AGRONOMICAL_OBJECT_URI)
     public String getAgronomicalObject() {
         return agronomicalObject;
@@ -62,6 +55,7 @@ public class DataDTO extends AbstractVerifiedClass {
         this.agronomicalObject = agronomicalObject;
     }
 
+    @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_DATETIME)
     public String getDate() {
         return date;

@@ -15,42 +15,38 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import javax.validation.Valid;
 import phis2ws.service.documentation.DocumentationAnnotation;
+import phis2ws.service.resources.dto.constraints.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.view.model.phis.SensorProfile;
 
 /**
  * Represents the submitted JSON for the sensor's profile
+ *
  * @see PropertyDTO
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class SensorProfileDTO extends AbstractVerifiedClass {
-    
+
     //uri of the sensor concerned by the properties
     private String uri;
     //list of the properties of the sensor
     private ArrayList<PropertyDTO> properties;
 
     @Override
-    public Map rules() {
-        Map<String, Boolean> rules = new HashMap<>();
-        rules.put("uri", Boolean.TRUE);
-        rules.put("properties", Boolean.TRUE);
-        return rules;
-    }
-
-    @Override
     public SensorProfile createObjectFromDTO() {
         SensorProfile sensorProfile = new SensorProfile();
         sensorProfile.setUri(uri);
-        
+
         properties.forEach((property) -> {
             sensorProfile.addProperty(property.createObjectFromDTO());
         });
-        
+
         return sensorProfile;
     }
 
+    @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SENSOR_URI)
     public String getUri() {
         return uri;
@@ -60,6 +56,8 @@ public class SensorProfileDTO extends AbstractVerifiedClass {
         this.uri = uri;
     }
 
+    @Required
+    @Valid
     public ArrayList<PropertyDTO> getProperties() {
         return properties;
     }

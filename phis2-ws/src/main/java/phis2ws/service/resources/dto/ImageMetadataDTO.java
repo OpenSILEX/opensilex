@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import phis2ws.service.documentation.DocumentationAnnotation;
+import phis2ws.service.resources.dto.constraints.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.view.model.phis.ImageMetadata;
 
@@ -30,15 +31,7 @@ public class ImageMetadataDTO extends AbstractVerifiedClass {
     private ShootingConfigurationDTO configuration;
     private FileInformationDTO fileInfo;
 
-    @Override
-    public Map rules() {
-         Map<String, Boolean> rules = new HashMap<>();
-        rules.put("rdfType", Boolean.TRUE);
-        rules.put("concern", Boolean.FALSE);
-        rules.put("configuration", Boolean.TRUE);
-        rules.put("fileInfo", Boolean.TRUE);
-        return rules;
-    }
+   
 
     @Override
     public ImageMetadata createObjectFromDTO() {
@@ -54,6 +47,7 @@ public class ImageMetadataDTO extends AbstractVerifiedClass {
        return imageMetadata;
     }
     
+    @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_IMAGE_TYPE)
     public String getRdfType() {
         return rdfType;
@@ -71,6 +65,7 @@ public class ImageMetadataDTO extends AbstractVerifiedClass {
         this.concern = concern;
     }
 
+    @Required
     public ShootingConfigurationDTO getConfiguration() {
         return configuration;
     }
@@ -79,6 +74,7 @@ public class ImageMetadataDTO extends AbstractVerifiedClass {
         this.configuration = configuration;
     }
 
+    @Required
     public FileInformationDTO getFileInfo() {
         return fileInfo;
     }

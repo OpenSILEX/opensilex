@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.model.User;
+import phis2ws.service.resources.dto.constraints.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.view.model.phis.Group;
 
@@ -36,18 +37,7 @@ public class GroupDTO extends AbstractVerifiedClass {
     
     private ArrayList<String> usersEmails = new ArrayList<>();
 
-    @Override
-    public Map rules() {
-        Map<String, Boolean> rules = new HashMap<>();
-        rules.put("uri", Boolean.TRUE);
-        rules.put("name", Boolean.TRUE);
-        rules.put("level", Boolean.TRUE);
-        rules.put("description", Boolean.TRUE);
-        rules.put("usersEmails", Boolean.FALSE);
-        
-        return rules;
-    }
-
+ 
     @Override
     public Group createObjectFromDTO() {
         Group group = new Group(uri);
@@ -65,6 +55,7 @@ public class GroupDTO extends AbstractVerifiedClass {
         return group;
     }
 
+    @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_GROUP_URI)
     public String getUri() {
         return uri;
@@ -74,6 +65,7 @@ public class GroupDTO extends AbstractVerifiedClass {
         this.uri = uri;
     }
     
+    @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_GROUP_NAME)
     public String getName() {
         return name;
@@ -83,6 +75,7 @@ public class GroupDTO extends AbstractVerifiedClass {
         this.name = name;
     }
 
+    @Required
     @ApiModelProperty(example = "Admin")
     public String getLevel() {
         return level;
@@ -92,6 +85,7 @@ public class GroupDTO extends AbstractVerifiedClass {
         this.level = level;
     }
     
+    @Required
     @ApiModelProperty(example = "description of the gamma group")
     public String getDescription() {
         return description;

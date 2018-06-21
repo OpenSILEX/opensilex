@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import phis2ws.service.resources.dto.constraints.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 
 public class DocumentMetadataDTO extends AbstractVerifiedClass {
@@ -34,22 +35,7 @@ public class DocumentMetadataDTO extends AbstractVerifiedClass {
     private String serverFilePath; // ce champ n'est pas à fournir par le client. 
                                    // Sa valeur sera déterminée coté WS
     
-    @Override
-    public Map rules() {
-        Map<String, Boolean> rules = new HashMap<>();
-        rules.put("documentType", Boolean.TRUE);
-        rules.put("checksum", Boolean.FALSE);
-        rules.put("uri", Boolean.FALSE);
-        rules.put("creator", Boolean.FALSE);
-        rules.put("language", Boolean.FALSE);
-        rules.put("title", Boolean.FALSE);
-        rules.put("creationDate", Boolean.FALSE);
-        rules.put("extension", Boolean.FALSE);
-        rules.put("concern", Boolean.FALSE);
-        rules.put("comment", Boolean.FALSE);
-        rules.put("status", Boolean.TRUE);
-        return rules;
-    }
+   
 
     @Override
     public Object createObjectFromDTO() {
@@ -63,7 +49,8 @@ public class DocumentMetadataDTO extends AbstractVerifiedClass {
     public void setUri(String uri) {
         this.uri = uri;
     }
-
+    
+    @Required
     @ApiModelProperty(example = "http://www.phenome-fppn.fr/vocabulary/2015#ScientificDocument")
     public String getDocumentType() {
         return documentType;
@@ -151,6 +138,7 @@ public class DocumentMetadataDTO extends AbstractVerifiedClass {
         this.comment = comment;
     }
 
+    @Required
     @ApiModelProperty(example = "linked")
     public String getStatus() {
         return status;

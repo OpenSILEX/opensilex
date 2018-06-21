@@ -12,7 +12,7 @@ public interface VerifiedClassInterface<T> {
     
     public Map isOk();
     
-    public Map rules();
+//    public Map rules();
     
     public T createObjectFromDTO();
 }

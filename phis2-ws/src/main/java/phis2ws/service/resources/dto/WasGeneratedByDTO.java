@@ -35,14 +35,6 @@ public class WasGeneratedByDTO extends AbstractVerifiedClass {
     private String wasGeneratedByDescription;
 
     @Override
-    public Map rules() {
-        HashMap<String, Boolean> rules = new HashMap<>();
-        rules.put("wasGeneratedByDocument", Boolean.FALSE);
-        rules.put("wasGeneratedByDescrition", Boolean.FALSE);
-        return rules;
-    }
-
-    @Override
     public WasGeneratedBy createObjectFromDTO() {
         WasGeneratedBy wasGeneratedBy = new WasGeneratedBy();
         wasGeneratedBy.setWasGeneratedBy(wasGeneratedByDocument);

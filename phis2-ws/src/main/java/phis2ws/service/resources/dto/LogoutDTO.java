@@ -8,6 +8,7 @@ package phis2ws.service.resources.dto;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.Map;
+import phis2ws.service.resources.dto.constraints.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 
 /**
@@ -17,17 +18,13 @@ import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
  */
 @ApiModel
 public class LogoutDTO extends AbstractVerifiedClass {
-    
-     @ApiModelProperty(example = "2107aa78b05410a0dbb8f1d8b2d1b54b")
+
+    @Required
+    @ApiModelProperty(example = "2107aa78b05410a0dbb8f1d8b2d1b54b")
     public String access_token;
-    
-    @Override
-    public Object createObjectFromDTO() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 
     @Override
-    public Map rules() {
+    public Object createObjectFromDTO() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

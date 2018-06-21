@@ -9,10 +9,12 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.HashMap;
 import java.util.Map;
 import phis2ws.service.documentation.DocumentationAnnotation;
+import phis2ws.service.resources.dto.constraints.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 
 /**
- *  Represente le JSON soumis pour les objets de type token
+ * Represente le JSON soumis pour les objets de type token
+ *
  * @author A. Charleroy
  */
 public class TokenDTO extends AbstractVerifiedClass {
@@ -33,6 +35,7 @@ public class TokenDTO extends AbstractVerifiedClass {
         this.grant_type = grant_type;
     }
 
+    @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_USER_EMAIL)
     public String getUsername() {
         return username;
@@ -50,6 +53,7 @@ public class TokenDTO extends AbstractVerifiedClass {
     public void setPassword(String password) {
         this.password = password;
     }
+
     // Uncomment if you use jwt
     // @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_TOKEN_JWT_CLIENTID)
     public String getClient_id() {
@@ -58,16 +62,6 @@ public class TokenDTO extends AbstractVerifiedClass {
 
     public void setClient_id(String client_id) {
         this.client_id = client_id;
-    }
-
-    @Override
-    public Map rules() {
-        Map<String, Boolean> rules = new HashMap<>();
-        rules.put("grant_type", Boolean.FALSE);
-        rules.put("username", Boolean.TRUE);
-        rules.put("password", Boolean.FALSE);
-        rules.put("client_id", Boolean.FALSE);
-        return rules;
     }
 
     @Override

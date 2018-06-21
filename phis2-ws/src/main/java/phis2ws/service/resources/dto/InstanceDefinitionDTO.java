@@ -18,6 +18,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import phis2ws.service.resources.dto.constraints.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.view.model.phis.InstanceDefinition;
 import phis2ws.service.view.model.phis.OntologyReference;
@@ -33,16 +34,6 @@ public class InstanceDefinitionDTO extends AbstractVerifiedClass {
     protected String comment;
     protected ArrayList<OntologyReference> ontologiesReferences = new ArrayList<>();
 
-    @Override
-    public Map rules() {
-        Map<String, Boolean> rules = new HashMap<>();
-        rules.put("label", Boolean.TRUE);
-        rules.put("uri", Boolean.FALSE);
-        rules.put("comment", Boolean.FALSE);
-        rules.put("ontologiesReferences", Boolean.FALSE);
-        
-        return rules;
-    }
 
     @Override
     public InstanceDefinition createObjectFromDTO() {
@@ -68,6 +59,8 @@ public class InstanceDefinitionDTO extends AbstractVerifiedClass {
     public void setUri(String uri) {
         this.uri = uri;
     }
+    
+    @Required
     @ApiModelProperty(example = "LAI")
     public String getLabel() {
         return label;

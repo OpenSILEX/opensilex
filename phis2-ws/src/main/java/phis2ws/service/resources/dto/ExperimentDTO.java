@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import phis2ws.service.resources.dto.constraints.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.view.model.phis.Contact;
 import phis2ws.service.view.model.phis.Group;
@@ -46,26 +47,7 @@ public class ExperimentDTO extends AbstractVerifiedClass {
     private ArrayList<String> groupsUris;
     private ArrayList<Contact> contacts;
     
-    @Override
-    public Map rules() {
-        Map<String, Boolean> rules = new HashMap<>();
-        rules.put("uri", Boolean.TRUE);
-        rules.put("startDate", Boolean.TRUE);
-        rules.put("endDate", Boolean.TRUE);
-        rules.put("field", Boolean.FALSE);
-        rules.put("campaign", Boolean.FALSE);
-        rules.put("place", Boolean.FALSE);
-        rules.put("alias", Boolean.FALSE);
-        rules.put("comment", Boolean.FALSE);
-        rules.put("keywords", Boolean.FALSE);
-        rules.put("objective", Boolean.FALSE);
-        rules.put("cropSpecies", Boolean.FALSE);
-        rules.put("projectsUris", Boolean.FALSE);
-        rules.put("groupsUris", Boolean.FALSE);
-        rules.put("contacts", Boolean.FALSE);
-        
-        return rules;
-    }
+    
 
     @Override
     public Experiment createObjectFromDTO() {
@@ -103,7 +85,8 @@ public class ExperimentDTO extends AbstractVerifiedClass {
         
         return experiment;
     }
-
+    
+    @Required
     @ApiModelProperty(example = "http://www.phenome-fppn.fr/diaphen/drops")
     public String getUri() {
         return uri;
@@ -112,7 +95,8 @@ public class ExperimentDTO extends AbstractVerifiedClass {
     public void setUri(String uri) {
         this.uri = uri;
     }
-
+    
+    @Required
     @ApiModelProperty(example = "2015-07-07")
     public String getStartDate() {
         return startDate;
@@ -121,7 +105,8 @@ public class ExperimentDTO extends AbstractVerifiedClass {
     public void setStartDate(String startDate) {
         this.startDate = startDate;
     }
-
+    
+    @Required
     @ApiModelProperty(example = "2015-08-07")
     public String getEndDate() {
         return endDate;

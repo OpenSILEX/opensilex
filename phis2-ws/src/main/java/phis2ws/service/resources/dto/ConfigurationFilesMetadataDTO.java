@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.HashMap;
 import java.util.Map;
+import phis2ws.service.resources.dto.constraints.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 
 @ApiModel
@@ -29,20 +30,6 @@ public class ConfigurationFilesMetadataDTO extends AbstractVerifiedClass {
     private String extension;
     private String checksum;
     
-    @Override
-    public Map rules() {
-        Map<String,Boolean> rules = new HashMap<>();
-        rules.put("provider", Boolean.TRUE);
-        rules.put("clientPath", Boolean.FALSE);
-        rules.put("plateform", Boolean.TRUE);
-        rules.put("fromIP", Boolean.TRUE);
-        rules.put("device", Boolean.FALSE);
-        rules.put("filename", Boolean.TRUE);
-        rules.put("extension", Boolean.TRUE);
-        rules.put("checksum", Boolean.TRUE);
-        rules.put("serverFilename", Boolean.FALSE);
-        return rules;
-    }
 
     @ApiModelProperty(example = "test/dzdz/dzdz")
     public String getClientPath() {
@@ -61,6 +48,7 @@ public class ConfigurationFilesMetadataDTO extends AbstractVerifiedClass {
         this.serverFilename = serverFilename;
     }
     
+    @Required
     @ApiModelProperty(example = "106fa487baa1728083747de1c6df73e9")
     public String getChecksum() {
         return checksum;
@@ -70,7 +58,7 @@ public class ConfigurationFilesMetadataDTO extends AbstractVerifiedClass {
         this.checksum = checksum;
     }
 
-    
+    @Required
      @ApiModelProperty(example = "m3p")
     public String getPlateform() {
         return plateform;
@@ -79,6 +67,8 @@ public class ConfigurationFilesMetadataDTO extends AbstractVerifiedClass {
     public void setPlateform(String plateform) {
         this.plateform = plateform;
     }
+    
+    @Required
     @ApiModelProperty(example = "147.99.7.11")
     public String getFromIP() {
         return fromIP;
@@ -97,7 +87,7 @@ public class ConfigurationFilesMetadataDTO extends AbstractVerifiedClass {
         this.device = device;
     }
     
-    
+    @Required
     @ApiModelProperty(example = "mistea")
     public String getProvider() {
         return provider;
@@ -107,6 +97,7 @@ public class ConfigurationFilesMetadataDTO extends AbstractVerifiedClass {
         this.provider = provider;
     }
 
+    @Required
     @ApiModelProperty(example = "test numero 50005")
     public String getFilename() {
         return filename;
@@ -116,6 +107,7 @@ public class ConfigurationFilesMetadataDTO extends AbstractVerifiedClass {
         this.filename = filename;
     }
     
+    @Required
     @ApiModelProperty(example = "jpg")
     public String getExtension() {
         return extension;

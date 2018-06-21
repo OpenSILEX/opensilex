@@ -31,12 +31,7 @@ public class PropertyVocabularyDTO extends AbstractVerifiedClass {
     //it is a hash map with the language and the label
     //if there is no language for a label, the key is equals to none (?)
     private HashMap<String, String> labels = new HashMap<>();
-    
-    @Override
-    public Map rules() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
+   
     @Override
     public Property createObjectFromDTO() {
         Property property = new Property();

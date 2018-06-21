@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import phis2ws.service.resources.dto.constraints.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 
 public class LayerDTO extends AbstractVerifiedClass {
@@ -37,22 +38,13 @@ public class LayerDTO extends AbstractVerifiedClass {
     private String depth; 
     private String generateFile;
     
-    @Override
-    public Map rules() {
-        Map<String, Boolean> rules = new HashMap<>();
-        rules.put("objectUri", Boolean.TRUE);
-        rules.put("objectType", Boolean.TRUE);
-        rules.put("depth", Boolean.TRUE);
-        rules.put("generateFile", Boolean.FALSE);
-        
-        return rules;
-    }
 
     @Override
     public Object createObjectFromDTO() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    @Required
     @ApiModelProperty(example = "http://www.phenome-fppn.fr/diaphen/DIA2017-1")
     public String getObjectUri() {
         return objectUri;
@@ -62,6 +54,7 @@ public class LayerDTO extends AbstractVerifiedClass {
         this.objectUri = objectUri;
     }
     
+    @Required
     @ApiModelProperty(example = "true")
     public String getDepth() {
         return depth;
@@ -71,6 +64,7 @@ public class LayerDTO extends AbstractVerifiedClass {
         this.depth = depth;
     }
 
+    @Required
     @ApiModelProperty(example = "http://www.phenome-fppn.fr/vocabulary/2017#Experiment")
     public String getObjectType() {
         return objectType;

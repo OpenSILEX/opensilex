@@ -18,11 +18,15 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.model.User;
+import phis2ws.service.resources.dto.constraints.Required;
 import phis2ws.service.view.model.phis.Group;
 
 public class UserDTO extends AbstractVerifiedClass {
@@ -40,23 +44,6 @@ public class UserDTO extends AbstractVerifiedClass {
     private String admin;
     private ArrayList<String> groupsUris = new ArrayList<>();
     
-    @Override
-    public Map rules() {
-        Map<String, Boolean> rules = new HashMap<>();
-        rules.put("email", Boolean.TRUE);
-        rules.put("password", Boolean.FALSE);
-        rules.put("firstName", Boolean.FALSE);
-        rules.put("familyName", Boolean.FALSE);
-        rules.put("address", Boolean.FALSE);
-        rules.put("phone", Boolean.FALSE);
-        rules.put("affiliation", Boolean.TRUE);
-        rules.put("orcid", Boolean.FALSE);
-        rules.put("admin", Boolean.FALSE);
-        rules.put("groupsUris", Boolean.FALSE);
-        
-        return rules;
-    }
-
     @Override
     public User createObjectFromDTO() {
         User user = new User(email);
@@ -79,6 +66,7 @@ public class UserDTO extends AbstractVerifiedClass {
         return user;
     }
     
+    @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_USER_EMAIL)
     public String getEmail() {
         return email;
@@ -133,6 +121,7 @@ public class UserDTO extends AbstractVerifiedClass {
         this.phone = phone;
     }
 
+     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_USER_AFFILIATION)
     public String getAffiliation() {
         return affiliation;

@@ -150,7 +150,7 @@
             <artifactId>commons-logging</artifactId>
             <version>1.1.1</version>
         </dependency>
-<!--To correct this error : 
+        <!--To correct this error : 
         java.lang.NoClassDefFoundError: com/fasterxml/jackson/annotation/JsonInclude$Value-->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -186,6 +186,17 @@
             <groupId>org.webjars</groupId>
             <artifactId>jquery</artifactId>
             <version>2.1.4</version>
+        </dependency>
+        <!--validator-->
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>6.0.10.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <version>2.0.0.Final</version>
         </dependency>
     </dependencies>
 

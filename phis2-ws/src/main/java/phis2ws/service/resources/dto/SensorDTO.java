@@ -15,12 +15,13 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.HashMap;
 import java.util.Map;
 import phis2ws.service.documentation.DocumentationAnnotation;
+import phis2ws.service.resources.dto.constraints.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
-import phis2ws.service.utils.dates.Dates;
 import phis2ws.service.view.model.phis.Sensor;
 
 /**
  * corresponds to the submitted JSON for the sensors
+ *
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class SensorDTO extends AbstractVerifiedClass {
@@ -43,21 +44,7 @@ public class SensorDTO extends AbstractVerifiedClass {
     private String dateOfLastCalibration;
     //email of the person in charge of the sensor
     private String personInCharge;
-    
-    @Override
-    public Map rules() {
-        Map<String, Boolean> rules = new HashMap<>();
-        rules.put("rdfType", Boolean.TRUE);
-        rules.put("label", Boolean.TRUE);
-        rules.put("brand", Boolean.TRUE);
-        rules.put("serialNumber", Boolean.FALSE);
-        rules.put("inServiceDate", Boolean.TRUE);
-        rules.put("dateOfPurchase", Boolean.FALSE);
-        rules.put("dateOfLastCalibration", Boolean.FALSE);
-        rules.put("personInCharge", Boolean.TRUE);
-        
-        return rules;
-    }
+
 
     @Override
     public Sensor createObjectFromDTO() {
@@ -71,10 +58,10 @@ public class SensorDTO extends AbstractVerifiedClass {
         sensor.setDateOfPurchase(dateOfPurchase);
         sensor.setDateOfLastCalibration(dateOfLastCalibration);
         sensor.setPersonInCharge(personInCharge);
-        
+
         return sensor;
     }
-    
+
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SENSOR_URI)
     public String getUri() {
         return uri;
@@ -84,6 +71,7 @@ public class SensorDTO extends AbstractVerifiedClass {
         this.uri = uri;
     }
 
+    @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SENSOR_RDF_TYPE)
     public String getRdfType() {
         return rdfType;
@@ -93,6 +81,7 @@ public class SensorDTO extends AbstractVerifiedClass {
         this.rdfType = rdfType;
     }
 
+    @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SENSOR_LABEL)
     public String getLabel() {
         return label;
@@ -102,6 +91,7 @@ public class SensorDTO extends AbstractVerifiedClass {
         this.label = label;
     }
 
+    @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SENSOR_BRAND)
     public String getBrand() {
         return brand;
@@ -120,6 +110,7 @@ public class SensorDTO extends AbstractVerifiedClass {
         this.serialNumber = serialNumber;
     }
 
+    @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SENSOR_IN_SERVICE_DATE)
     public String getInServiceDate() {
         return inServiceDate;
@@ -128,7 +119,7 @@ public class SensorDTO extends AbstractVerifiedClass {
     public void setInServiceDate(String inServiceDate) {
         this.inServiceDate = inServiceDate;
     }
-    
+
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SENSOR_DATE_OF_PURCHASE)
     public String getDateOfPurchase() {
         return dateOfPurchase;
@@ -146,7 +137,8 @@ public class SensorDTO extends AbstractVerifiedClass {
     public void setDateOfLastCalibration(String dateOfLastCalibration) {
         this.dateOfLastCalibration = dateOfLastCalibration;
     }
-    
+
+    @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_USER_EMAIL)
     public String getPersonInCharge() {
         return personInCharge;

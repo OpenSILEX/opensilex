@@ -15,6 +15,8 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import javax.validation.Valid;
+import phis2ws.service.resources.dto.constraints.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.view.model.phis.Dataset;
 
@@ -31,14 +33,7 @@ public class DatasetDTO extends AbstractVerifiedClass {
     private ProvenanceDTO provenance;
     private ArrayList<DataDTO> data;
     
-    @Override
-    public Map rules() {
-        Map<String, Boolean> rules = new HashMap<>();
-        rules.put("variableUri", Boolean.TRUE);
-        rules.put("provenance", Boolean.TRUE);
-        rules.put("data", Boolean.TRUE);
-        return rules;
-    }
+    
 
     @Override
     public Dataset createObjectFromDTO() {
@@ -52,6 +47,7 @@ public class DatasetDTO extends AbstractVerifiedClass {
        return phenotypes;
     }   
     
+    @Required
     @ApiModelProperty(example = "http://www.phenome-fppn.fr/diaphen/id/variable/v00001")
     public String getVariableUri() {
         return variableUri;
@@ -61,6 +57,7 @@ public class DatasetDTO extends AbstractVerifiedClass {
         this.variableUri = variableUri;
     }
 
+    @Required
     public ProvenanceDTO getProvenance() {
         return provenance;
     }
@@ -69,6 +66,8 @@ public class DatasetDTO extends AbstractVerifiedClass {
         this.provenance = provenance;
     }
 
+    @Required
+    @Valid
     public ArrayList<DataDTO> getData() {
         return data;
     }

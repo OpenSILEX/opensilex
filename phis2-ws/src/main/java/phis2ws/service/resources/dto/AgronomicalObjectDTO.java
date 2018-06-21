@@ -17,6 +17,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import phis2ws.service.resources.dto.constraints.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.view.model.phis.AgronomicalObject;
 
@@ -42,18 +43,6 @@ public class AgronomicalObjectDTO extends AbstractVerifiedClass {
     private String year;
     //the properties of the agronomical object
     private ArrayList<PropertyDTO> properties;
-            
-    @Override
-    public Map rules() {
-        Map<String, Boolean> rules = new HashMap<>();
-        rules.put("rdfType", Boolean.TRUE);
-        rules.put("geometry", Boolean.TRUE);
-        rules.put("experiment", Boolean.FALSE);
-        rules.put("isPartOf", Boolean.FALSE);
-        rules.put("year", Boolean.FALSE);
-        
-        return rules;
-    }
 
     @Override
     public AgronomicalObject createObjectFromDTO() {
@@ -71,12 +60,14 @@ public class AgronomicalObjectDTO extends AbstractVerifiedClass {
         
         return agronomicalObject;
     }
-
+    
+    @Required
     @ApiModelProperty(example = "POLYGON((0 0, 10 0, 10 10, 0 10, 0 0))")
     public String getGeometry() {
         return geometry;
     }
     
+    @Required
     @ApiModelProperty(example = "http://www.phenome-fppn.fr/vocabulary/2017#Plot")
     public String getRdfType() {
         return rdfType;

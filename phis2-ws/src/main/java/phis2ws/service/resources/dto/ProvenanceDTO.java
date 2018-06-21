@@ -35,18 +35,21 @@ public class ProvenanceDTO extends AbstractVerifiedClass {
     //The liste of the documents associated to the dataset
     private ArrayList<String> documentsUris = new ArrayList<>();
 
-    @Override
-    public Map rules() {
-        Map<String, Boolean> rules = new HashMap<>();
-        rules.put("uri", Boolean.TRUE);
-        if (uri == null) {
-            rules.put("creationDate", Boolean.TRUE);
-        } else {
-            rules.put("creationDate", Boolean.FALSE);
-        }
-        rules.put("documentsUris", Boolean.FALSE);
-        return rules;
-    }
+    //SILEX:test
+    // Need to be tested
+    //\SILEX:test
+//    @Override
+//    public Map rules() {
+//        Map<String, Boolean> rules = new HashMap<>();
+//        rules.put("uri", Boolean.TRUE);
+//        if (uri == null) {
+//            rules.put("creationDate", Boolean.TRUE);
+//        } else {
+//            rules.put("creationDate", Boolean.FALSE);
+//        }
+//        rules.put("documentsUris", Boolean.FALSE);
+//        return rules;
+//    }
 
     @Override
     public Provenance createObjectFromDTO() {

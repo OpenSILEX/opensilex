@@ -176,6 +176,7 @@ public class URINamespaces {
         RELATIONS.put("rInServiceDate", CONTEXTS.get("pVoc2017") + "#inServiceDate");
         RELATIONS.put("rDateOfPurchase", CONTEXTS.get("pVoc2017") + "#dateOfPurchase");
         RELATIONS.put("rDateOfLastCalibration", CONTEXTS.get("pVoc2017") + "#dateOfLastCalibration");
+        RELATIONS.put("rDeviceProperty", CONTEXTS.get("pVoc2017") + "#deviceProperty");
         RELATIONS.put("rPersonInCharge", CONTEXTS.get("pVoc2017") + "#personInCharge");
         RELATIONS.put("rSerialNumber", CONTEXTS.get("pVoc2017") + "#serialNumber");
         

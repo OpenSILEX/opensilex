@@ -43,12 +43,13 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
     
     final static String TRIPLESTORE_RELATION_HAS_CONTACT = NAMESPACES.getRelationsProperty("rHasContact");
     final static String TRIPLESTORE_RELATION_COMMENT = NAMESPACES.getRelationsProperty("comment");
+    final static String TRIPLESTORE_RELATION_DEVICE_PROPERTY = NAMESPACES.getRelationsProperty("rDeviceProperty");
     final static String TRIPLESTORE_RELATION_LABEL = NAMESPACES.getRelationsProperty("label");
     final static String TRIPLESTORE_RELATION_SUBPROPERTY_OF_MULTIPLE = NAMESPACES.getRelationsProperty("subPropertyOf*");
     final static String LANGUAGE_EN = "en";
     final static String LABEL_LABEL_EN = "label";
     final static String LABEL_COMMENT_EN = "comment";
-    final static String CONTACT_PROPERTY = "contactProperty";
+    final static String PROPERTY = "property";
 
     @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
@@ -93,8 +94,27 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
      */
     protected SPARQLQueryBuilder prepareGetContactProperties() {        
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
-        query.appendSelect("?" + CONTACT_PROPERTY);
-        query.appendTriplet("?" + CONTACT_PROPERTY, TRIPLESTORE_RELATION_SUBPROPERTY_OF_MULTIPLE, TRIPLESTORE_RELATION_HAS_CONTACT, null);
+        query.appendSelect("?" + PROPERTY);
+        query.appendTriplet("?" + PROPERTY, TRIPLESTORE_RELATION_SUBPROPERTY_OF_MULTIPLE, TRIPLESTORE_RELATION_HAS_CONTACT, null);
+        
+        LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
+        
+        return query;
+    }
+    
+    /**
+     * generates the SPARQL query to get the list of the device properties
+     * e.g.
+     * SELECT ?property 
+     * WHERE {
+     *      ?property  rdfs:subPropertyOf*  <http://www.phenome-fppn.fr/vocabulary/2017#deviceProperty> . 
+     * }
+     * @return 
+     */
+    protected SPARQLQueryBuilder prepareGetDeviceProperties() {        
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        query.appendSelect("?" + PROPERTY);
+        query.appendTriplet("?" + PROPERTY, TRIPLESTORE_RELATION_SUBPROPERTY_OF_MULTIPLE, TRIPLESTORE_RELATION_DEVICE_PROPERTY, null);
         
         LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
         
@@ -157,7 +177,33 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
             //2. for each founded property, check if the property can be used on the rdfType
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
-                String propertyFounded = bindingSet.getValue(CONTACT_PROPERTY).stringValue();
+                String propertyFounded = bindingSet.getValue(PROPERTY).stringValue();
+                //2.1 check if domainRdfType can have the property
+                if (isPropertyDomainContainsRdfType(propertyFounded)) {
+                    properties.add(propertyStringToPropertyVocabularyDTO(propertyFounded));
+                }
+            }
+        }
+        
+        return properties;
+    }
+    
+    /**
+     * search the list of device properties that can be added to an instance of a given concept
+     * @return list of device properties
+     */
+    public ArrayList<PropertyVocabularyDTO> allPaginateDeviceProperties() {
+        //1. get all the subproperties of the hasContact Property
+        SPARQLQueryBuilder query = prepareGetDeviceProperties();
+        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        
+        ArrayList<PropertyVocabularyDTO> properties = new ArrayList<>();
+        
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
+            //2. for each founded property, check if the property can be used on the rdfType
+            while (result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                String propertyFounded = bindingSet.getValue(PROPERTY).stringValue();
                 //2.1 check if domainRdfType can have the property
                 if (isPropertyDomainContainsRdfType(propertyFounded)) {
                     properties.add(propertyStringToPropertyVocabularyDTO(propertyFounded));

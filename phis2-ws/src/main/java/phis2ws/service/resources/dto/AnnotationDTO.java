@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlTransient;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
@@ -28,7 +29,7 @@ public class AnnotationDTO extends AbstractVerifiedClass {
 
     private String motivatedBy;
     
-
+    @NotNull
     private String creator;
 
     private String bodyValue;

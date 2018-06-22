@@ -177,7 +177,6 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
         if (annotation.getTarget() != null && !annotation.getTarget().isEmpty()) {
             for (String targetUri : annotation.getTarget()) {
                 query.appendTriplet(annotation.getUri(), TRIPLESTORE_RELATION_TARGET, targetUri, null);
-
             }
         }
         LOGGER.debug(getTraceabilityLogs() + " query : " + query.toString());

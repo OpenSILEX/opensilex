@@ -142,7 +142,8 @@ public abstract class DAOSesame<T> {
 
     /**
      * Retourne le paramètre taille de la page
-     * @return 
+     *
+     * @return
      */
     public Integer getPageSize() {
         if (pageSize == null || pageSize < 0) {
@@ -183,28 +184,32 @@ public abstract class DAOSesame<T> {
 //        LOGGER.trace(query.toString());
         return exist;
     }
-    
+
     /**
-     * 
+     *
      * @param objectURI l'uri de l'objet recherché
-     * @return true si l'objet est dans le triplestore,
-     *         false sinon
+     * @return true si l'objet est dans le triplestore, false sinon
      */
     public boolean existObject(String objectURI) {
-        if(objectURI == null){
+
+        if (objectURI == null) {
             return false;
         }
-        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
-        query.appendSelect("?p");
-        query.appendTriplet(objectURI, "?p", "?o", null);
-        query.appendParameters("LIMIT 1");
-        TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-        try (TupleQueryResult result = tupleQuery.evaluate()) {
-            if (result.hasNext()) {
-                return true;
+        try {
+            SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+            query.appendSelect("?p");
+            query.appendTriplet(objectURI, "?p", "?o", null);
+            query.appendParameters("LIMIT 1");
+            TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+            try (TupleQueryResult result = tupleQuery.evaluate()) {
+                if (result.hasNext()) {
+                    return true;
+                }
             }
+        } catch (Exception e) {
+            return false;
         }
-        
+
         return false;
     }
 
@@ -251,9 +256,9 @@ public abstract class DAOSesame<T> {
      * @return Integer
      */
     public abstract Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException;
-    
+
     /**
-     * 
+     *
      * @return Les logs qui seront utilisés pour la traçabilité
      */
     protected String getTraceabilityLogs() {
@@ -264,10 +269,10 @@ public abstract class DAOSesame<T> {
         if (user != null) {
             log += "User : " + user.getEmail() + " - ";
         }
-        
+
         return log;
     }
-    
+
     /**
      * Définit un objet utilisateur à partir d'un identifiant
      *

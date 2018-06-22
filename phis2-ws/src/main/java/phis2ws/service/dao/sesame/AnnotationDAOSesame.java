@@ -11,27 +11,27 @@
 //******************************************************************************
 package phis2ws.service.dao.sesame;
 
+import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
+import java.util.Map;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.dao.phis.UserDaoPhisBrapi;
-import static phis2ws.service.dao.sesame.SensorDAOSesame.TRIPLESTORE_CONCEPT_SENSING_DEVICE;
-import static phis2ws.service.dao.sesame.SensorDAOSesame.TRIPLESTORE_CONTEXT_SENSOR;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.model.User;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
-import phis2ws.service.view.model.phis.Annotation;
 import phis2ws.service.resources.dto.AnnotationDTO;
-import phis2ws.service.resources.dto.SensorDTO;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.UriGenerator;
@@ -47,6 +47,16 @@ import phis2ws.service.view.model.phis.Annotation;
 public class AnnotationDAOSesame extends DAOSesame<Annotation> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(AnnotationDAOSesame.class);
+
+    private final static URINamespaces NAMESPACES = new URINamespaces();
+
+    final static String TRIPLESTORE_CONTEXT_ANNOTATION = NAMESPACES.getContextsProperty("annotations");
+    ;
+    final static String TRIPLESTORE_RELATION_TYPE = NAMESPACES.getRelationsProperty("type");
+    final static String TRIPLESTORE_RELATION_BODYVALUE = NAMESPACES.getRelationsProperty("rOaBodyValue");
+    final static String TRIPLESTORE_RELATION_CREATOR = NAMESPACES.getRelationsProperty("rDCCreator");
+    final static String TRIPLESTORE_RELATION_CREATED = NAMESPACES.getRelationsProperty("rDCCreated");
+    final static String TRIPLESTORE_RELATION_TARGET = NAMESPACES.getRelationsProperty("rOaTarget");
 
     @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
@@ -98,7 +108,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
 
         for (AnnotationDTO annotationDTO : annotationsDTO) {
             Annotation annotation = annotationDTO.createObjectFromDTO();
-            annotation.setUri(uriGenerator.generateNewInstanceUri("annotation", null, null));
+            annotation.setUri(uriGenerator.generateNewInstanceUri(NAMESPACES.getObjectsProperty("cAnnotation"), null, null));
 
             SPARQLUpdateBuilder query = prepareInsertQuery(annotation);
             Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
@@ -157,25 +167,19 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
     private SPARQLUpdateBuilder prepareInsertQuery(Annotation annotation) {
         SPARQLUpdateBuilder query = new SPARQLUpdateBuilder();
 
-//        query.appendGraphURI(TRIPLESTORE_CONTEXT_SENSOR);
-//        query.appendTriplet(sensor.getUri(), TRIPLESTORE_RELATION_TYPE, sensor.getRdfType(), null);
-//        query.appendTriplet(sensor.getUri(), TRIPLESTORE_RELATION_LABEL, "\"" + sensor.getLabel() + "\"", null);
-//        query.appendTriplet(sensor.getUri(), TRIPLESTORE_RELATION_BRAND, "\"" + sensor.getBrand() + "\"", null);
-//        query.appendTriplet(sensor.getUri(), TRIPLESTORE_RELATION_IN_SERVICE_DATE, "\"" + sensor.getInServiceDate() + "\"", null);
-//        query.appendTriplet(sensor.getUri(), TRIPLESTORE_RELATION_PERSON_IN_CHARGE, "\"" + sensor.getPersonInCharge() + "\"", null);
-//        
-//        if (sensor.getSerialNumber() != null) {
-//            query.appendTriplet(sensor.getUri(), TRIPLESTORE_RELATION_SERIAL_NUMBER, "\"" + sensor.getSerialNumber() + "\"", null);
-//        }
-//        
-//        if (sensor.getDateOfPurchase() != null) {
-//            query.appendTriplet(sensor.getUri(), TRIPLESTORE_RELATION_DATE_OF_PURCHASE, "\"" + sensor.getDateOfPurchase() + "\"", null);
-//        }
-//        
-//        if (sensor.getDateOfLastCalibration() != null) {
-//            query.appendTriplet(sensor.getUri(), TRIPLESTORE_RELATION_DATE_OF_LAST_CALIBRATION, "\"" + sensor.getDateOfLastCalibration() + "\"", null);
-//        }
-//        
+        query.appendGraphURI(TRIPLESTORE_CONTEXT_ANNOTATION);
+        query.appendTriplet(annotation.getUri(), TRIPLESTORE_RELATION_TYPE, NAMESPACES.getObjectsProperty("cAnnotation"), null);
+        DateTimeFormatter formatter = DateTimeFormat.forPattern(DateFormats.YMDTHMSZ_FORMAT);
+        query.appendTriplet(annotation.getUri(), TRIPLESTORE_RELATION_CREATED, "\"" + annotation.getCreated().toString(formatter) + "\"^^xsd:dateTime", null);
+        query.appendTriplet(annotation.getUri(), TRIPLESTORE_RELATION_CREATOR, annotation.getCreator(), null);
+        query.appendTriplet(annotation.getUri(), TRIPLESTORE_RELATION_BODYVALUE, "\"" + annotation.getBodyValue() + "\"", null);
+
+        if (annotation.getTarget() != null && !annotation.getTarget().isEmpty()) {
+            for (String targetUri : annotation.getTarget()) {
+                query.appendTriplet(annotation.getUri(), TRIPLESTORE_RELATION_TARGET, targetUri, null);
+
+            }
+        }
         LOGGER.debug(getTraceabilityLogs() + " query : " + query.toString());
         return query;
     }
@@ -207,15 +211,21 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
                         checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.WRONG_VALUE + " for the motivatedBy field"));
                     }
 
-                    //1.3 check if person exist
-                    User u = new User(annotation.getCreator());
-                    if (!userDao.existInDB(u)) {
+                    //1.3 check if person exist // MySQL
+//                    User u = new User(annotation.getCreator());
+//                    if (!userDao.existInDB(u)) {
+//                        dataOk = false;
+//                        checkStatus.add(new Status(StatusCodeMsg.UNKNOWN_URI, StatusCodeMsg.ERR, "Unknown person email"));
+//                    }
+                    //1.3 check if person exist // Sesame
+                    if (!uriDao.existObject(annotation.getCreator())) {
                         dataOk = false;
-                        checkStatus.add(new Status(StatusCodeMsg.UNKNOWN_URI, StatusCodeMsg.ERR, "Unknown person email"));
+                        checkStatus.add(new Status(StatusCodeMsg.UNKNOWN_URI, StatusCodeMsg.ERR, "Unknown person uri"));
                     }
+
                     //1.4 check if targets exist
-                    for(String target : annotation.getTargets()){
-                        if (!target.isEmpty() && !uriDao.existObject(target)) {
+                    for (String target : annotation.getTargets()) {
+                        if (target.isEmpty() || !uriDao.existObject(target)) {
                             dataOk = false;
                             checkStatus.add(new Status(StatusCodeMsg.UNKNOWN_URI, StatusCodeMsg.ERR, "Unknown target uri"));
                         }
@@ -226,8 +236,9 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
                 }
             } else { //Missing required fields
                 dataOk = false;
-                annotation.isOk().remove(AbstractVerifiedClass.STATE);
-                checkStatus.add(new Status(StatusCodeMsg.BAD_DATA_FORMAT, StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.MISSING_FIELDS_LIST).append(annotation.isOk()).toString()));
+                Map<String, Object> fieldsNotValid = annotation.isOk();
+                fieldsNotValid.remove(AbstractVerifiedClass.STATE);
+                checkStatus.add(new Status(StatusCodeMsg.BAD_DATA_FORMAT, StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.MISSING_FIELDS_LIST).append(fieldsNotValid).toString()));
             }
         }
 

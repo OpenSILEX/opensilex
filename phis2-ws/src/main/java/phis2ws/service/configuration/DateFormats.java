@@ -39,4 +39,7 @@ public final class DateFormats {
     
     //Timezones
     public final static String TIMEZONE_EU_PARIS = "Europe/paris";
+    
+     //Dates formats
+    public final static String YMDTHMSZ_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
 }

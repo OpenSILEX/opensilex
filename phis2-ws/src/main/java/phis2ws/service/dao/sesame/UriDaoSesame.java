@@ -521,7 +521,7 @@ public class UriDaoSesame extends DAOSesame<Uri> {
             query.appendSelect("?uri");
         }
         
-        query.appendTriplet("<" + instanceUri + ">", "a", "<" + rdfType + ">", null);
+        query.appendTriplet("<" + instanceUri + ">", "rdf:type", "<" + rdfType + ">", null);
         
         query.appendAsk(""); //any = anything
         LOGGER.debug(query.toString());
@@ -550,6 +550,9 @@ public class UriDaoSesame extends DAOSesame<Uri> {
      *         false if not
      */
     public boolean isInstanceOf(String instanceUri, String rdfType) {
+        if(instanceUri == null){
+            return false;
+        }
         SPARQLQueryBuilder query = prepareIsInstanceOf(instanceUri, rdfType);
         BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
         return booleanQuery.evaluate();

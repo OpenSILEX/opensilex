@@ -191,6 +191,9 @@ public abstract class DAOSesame<T> {
      *         false sinon
      */
     public boolean existObject(String objectURI) {
+        if(objectURI == null){
+            return false;
+        }
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendSelect("?p");
         query.appendTriplet(objectURI, "?p", "?o", null);

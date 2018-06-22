@@ -14,16 +14,16 @@
 // ~~~~~~ URINamespaces uris = new URINamespaces("m3p");
 // ~~~~~~ String vocabulary = URINamespaces.getContextsProperty("pVocaPlateform")
 //***********************************************************************************************
-
 package phis2ws.service.configuration;
 
 import java.util.HashMap;
 import java.util.Map;
 import phis2ws.service.PropertiesFileManager;
 
-
 /**
- * Permet de creer des URI de concepts, objets et relation entre objets et proprietes en fonction pour une platform
+ * Permet de creer des URI de concepts, objets et relation entre objets et
+ * proprietes en fonction pour une platform
+ *
  * @author A. Charleroy
  */
 public class URINamespaces {
@@ -63,7 +63,7 @@ public class URINamespaces {
         }
         return propValue;
     }
-    
+
     public String getNamespaceProperty(String prop) {
         if (URINamespaces.NAMESPACES.containsKey(prop)) {
             return URINamespaces.NAMESPACES.get(prop);
@@ -71,7 +71,7 @@ public class URINamespaces {
             return null;
         }
     }
-    
+
     public boolean objectsPropertyContainsValue(String value) {
         return OBJECTS.containsValue(value);
     }
@@ -100,16 +100,15 @@ public class URINamespaces {
         //c  => context
         //n  => namespace
         //p  => phenome
-        
+
         //Plateforme et préfixes
         CONTEXTS.put("pxPhenome", "http://www.phenome-fppn.fr");
         CONTEXTS.put("pxDublinCore", "http://purl.org/dc/terms");
         CONTEXTS.put("pxPlatform", CONTEXTS.get("pxPhenome") + "/" + platform);
         CONTEXTS.put("pxGeoSPARQL", "http://www.opengis.net/ont/geosparql#");
-        CONTEXTS.put("pxFoaf", "http://xmlns.com/foaf/0.1/");
-        CONTEXTS.put("pxOa", "  http://www.w3.org/ns/oa#");
- 
-        
+        CONTEXTS.put("pxFoaf", "http://xmlns.com/foaf/0.1");
+        CONTEXTS.put("pxOa", "http://www.w3.org/ns/oa");
+
         //Context(s) 
         CONTEXTS.put("pVoc2017", CONTEXTS.get("pxPhenome") + "/vocabulary/2017");
         CONTEXTS.put("documents", CONTEXTS.get("pxPlatform") + "/documents");
@@ -117,8 +116,9 @@ public class URINamespaces {
         CONTEXTS.put("variables", CONTEXTS.get("pxPlatform") + "/variables");
         CONTEXTS.put("vectors", CONTEXTS.get("pxPlatform") + "/vectors");
         CONTEXTS.put("sensors", CONTEXTS.get("pxPlatform") + "/sensors");
+        CONTEXTS.put("annotations", CONTEXTS.get("pxPlatform") + "/annotations");
     }
-    
+
     private void setNamespaces() {
         NAMESPACES.put("variables", CONTEXTS.get("pxPlatform") + "/id/variables");
         NAMESPACES.put("traits", CONTEXTS.get("pxPlatform") + "/id/traits");
@@ -150,16 +150,16 @@ public class URINamespaces {
         OBJECTS.put("cVector", CONTEXTS.get("pVoc2017") + "#Vector");
         OBJECTS.put("cSensingDevice", CONTEXTS.get("pVoc2017") + "#SensingDevice");
         OBJECTS.put("cRestriction", "owl:Restriction");
-        OBJECTS.put("cAgent", CONTEXTS.get("pxFoaf") + "Person");
-        OBJECTS.put("cMotivation", CONTEXTS.get("pxOa") + "Motivation");
-             
+        OBJECTS.put("cAgent", CONTEXTS.get("pxFoaf") + "/Person");
+        OBJECTS.put("cMotivation", CONTEXTS.get("pxOa") + "#Motivation");
+        OBJECTS.put("cAnnotation", CONTEXTS.get("pxOa") + "#Annotation");
     }
 
     private void setRelations() {
         //r , relation
         //d , draft
         //v , validated draft
-        
+
         RELATIONS.put("rHasDocument", CONTEXTS.get("pVoc2017") + "#hasDocument");
         RELATIONS.put("rConcern", CONTEXTS.get("pVoc2017") + "#concern");
         RELATIONS.put("rIsPartOf", CONTEXTS.get("pVoc2017") + "#isPartOf");
@@ -183,17 +183,16 @@ public class URINamespaces {
         RELATIONS.put("rDeviceProperty", CONTEXTS.get("pVoc2017") + "#deviceProperty");
         RELATIONS.put("rPersonInCharge", CONTEXTS.get("pVoc2017") + "#personInCharge");
         RELATIONS.put("rSerialNumber", CONTEXTS.get("pVoc2017") + "#serialNumber");
-        
-        
+
         //Relations skos
         RELATIONS.put("rExactMatch", "http://www.w3.org/2008/05/skos#exactMatch");
         RELATIONS.put("rCloseMatch", "http://www.w3.org/2008/05/skos#closeMatch");
         RELATIONS.put("rNarrower", "http://www.w3.org/2008/05/skos#narrower");
         RELATIONS.put("rBroader", "http://www.w3.org/2008/05/skos#broader");
-        
+
         //Relations rdfs and rdf
-        RELATIONS.put("subClassOf","rdfs:subClassOf");
-        RELATIONS.put("subClassOf*","rdfs:subClassOf*");
+        RELATIONS.put("subClassOf", "rdfs:subClassOf");
+        RELATIONS.put("subClassOf*", "rdfs:subClassOf*");
         RELATIONS.put("subPropertyOf*", "rdfs:subPropertyOf*");
         RELATIONS.put("label", "rdfs:label");
         RELATIONS.put("comment", "rdfs:comment");
@@ -201,7 +200,7 @@ public class URINamespaces {
         RELATIONS.put("domain", "rdfs:domain");
         RELATIONS.put("rest", "rdf:rest");
         RELATIONS.put("first", "rdf:first");
-        
+
         //relations owl
         RELATIONS.put("unionOf", "owl:unionOf");
         RELATIONS.put("onProperty", "owl:onProperty");
@@ -209,5 +208,14 @@ public class URINamespaces {
         RELATIONS.put("minCardinality", "http://www.w3.org/2002/07/owl#minCardinality");
         RELATIONS.put("maxCardinality", "http://www.w3.org/2002/07/owl#maxCardinality");
         RELATIONS.put("qualifiedCardinality", "http://www.w3.org/2002/07/owl#qualifiedCardinality");
+
+        //Relations oa
+        RELATIONS.put("rOaTarget", CONTEXTS.get("pxOa") + "#hasTarget");
+         RELATIONS.put("rOaBodyValue", CONTEXTS.get("pxOa") + "#bodyValue");
+
+        //Relations dcterms
+        RELATIONS.put("rDCCreator", CONTEXTS.get("pxDublinCore") + "/creator");
+        RELATIONS.put("rDCCreated", CONTEXTS.get("pxDublinCore") + "/created");
+
     }
 }

@@ -11,6 +11,9 @@
 //******************************************************************************
 package phis2ws.service.view.model.phis;
 
+import java.util.ArrayList;
+import org.joda.time.DateTime;
+
 /**
  * Represents an annotation
  * @author Arnaud Charleroy<arnaud.charleroy@inra.fr>
@@ -19,13 +22,13 @@ public class Annotation {
     
     private String uri;
     
-    private String created;
+    private DateTime created;
     
     private String creator;
     
     private String bodyValue;
     
-    private String target;
+    private ArrayList<String> target;
 
     public String getUri() {
         return uri;
@@ -35,11 +38,11 @@ public class Annotation {
         this.uri = uri;
     }
 
-    public String getCreated() {
+    public DateTime getCreated() {
         return created;
     }
 
-    public void setCreated(String created) {
+    public void setCreated(DateTime created) {
         this.created = created;
     }
 
@@ -59,13 +62,15 @@ public class Annotation {
         this.bodyValue = bodyValue;
     }
 
-    public String getTarget() {
+    public ArrayList<String> getTarget() {
         return target;
     }
 
-    public void setTarget(String target) {
+    public void setTarget(ArrayList<String> target) {
         this.target = target;
     }
+
+  
     
     
 }

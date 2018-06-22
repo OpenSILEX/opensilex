@@ -16,7 +16,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import javax.validation.constraints.NotNull;
-import javax.xml.bind.annotation.XmlTransient;
+import org.joda.time.DateTime;
+import org.joda.time.LocalDateTime;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.view.model.phis.Annotation;
@@ -28,11 +29,12 @@ import phis2ws.service.view.model.phis.Annotation;
 public class AnnotationDTO extends AbstractVerifiedClass {
 
     private String motivatedBy;
-    
+
     @NotNull
     private String creator;
 
-    private String bodyValue;
+    // represent body value
+    private String comment;
 
     private ArrayList<String> targets;
 
@@ -43,16 +45,22 @@ public class AnnotationDTO extends AbstractVerifiedClass {
         rules.put("creator", Boolean.TRUE);
         rules.put("bodyValue", Boolean.TRUE);
         rules.put("targets", Boolean.TRUE);
-        
+
         return rules;
     }
 
     @Override
     public Annotation createObjectFromDTO() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Annotation annotation = new Annotation();
+        annotation.setBodyValue(comment);
+        DateTime currentTime = DateTime.now();
+        annotation.setCreated(currentTime);
+        annotation.setCreator(creator);
+        annotation.setTarget(targets);
+
+        return annotation;
     }
 
-    
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_ANNOTATION_MOTIVATION)
     public String getMotivatedBy() {
         return motivatedBy;
@@ -61,8 +69,8 @@ public class AnnotationDTO extends AbstractVerifiedClass {
     public void setMotivatedBy(String motivatedBy) {
         this.motivatedBy = motivatedBy;
     }
-        
-    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_USER_EMAIL)
+
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_ANNOTATION_CREATOR)
     public String getCreator() {
         return creator;
     }
@@ -70,16 +78,17 @@ public class AnnotationDTO extends AbstractVerifiedClass {
     public void setCreator(String creator) {
         this.creator = creator;
     }
-    
-    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_ANNOTATION_BODYVALUE)
-    public String getBodyValue() {
-        return bodyValue;
+
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_ANNOTATION_COMMENT)
+    public String getComment() {
+        return comment;
     }
 
-    public void setBodyValue(String bodyValue) {
-        this.bodyValue = bodyValue;
+    public void setComment(String comment) {
+        this.comment = comment;
     }
-    
+
+    @ApiModelProperty(notes = "Need to be an URI")
     public ArrayList<String> getTargets() {
         return targets;
     }
@@ -87,10 +96,5 @@ public class AnnotationDTO extends AbstractVerifiedClass {
     public void setTargets(ArrayList<String> targets) {
         this.targets = targets;
     }
-
-    
-    
-    
-    
 
 }

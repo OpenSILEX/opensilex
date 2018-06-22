@@ -56,7 +56,7 @@ public class AnnotationDTO extends AbstractVerifiedClass {
         DateTime currentTime = DateTime.now();
         annotation.setCreated(currentTime);
         annotation.setCreator(creator);
-        annotation.setTarget(targets);
+        annotation.setTargets(targets);
 
         return annotation;
     }

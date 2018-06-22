@@ -11,24 +11,31 @@
 //******************************************************************************
 package phis2ws.service.view.model.phis;
 
+import com.google.gson.annotations.SerializedName;
 import java.util.ArrayList;
 import org.joda.time.DateTime;
 
 /**
  * Represents an annotation
+ *
  * @author Arnaud Charleroy<arnaud.charleroy@inra.fr>
  */
 public class Annotation {
+
+    private final static String CREATED_LABEL = "creationDate";
+    private final static String BODYVALUE_LABEL = "comment";
     
     private String uri;
-    
+
+    @SerializedName(CREATED_LABEL)
     private DateTime created;
-    
+
     private String creator;
-    
+
+    @SerializedName(BODYVALUE_LABEL)
     private String bodyValue;
-    
-    private ArrayList<String> target;
+
+    private ArrayList<String> targets;
 
     public String getUri() {
         return uri;
@@ -62,15 +69,16 @@ public class Annotation {
         this.bodyValue = bodyValue;
     }
 
-    public ArrayList<String> getTarget() {
-        return target;
+    public ArrayList<String> getTargets() {
+        return targets;
     }
 
-    public void setTarget(ArrayList<String> target) {
-        this.target = target;
+    public void setTargets(ArrayList<String> targets) {
+        this.targets = targets;
+    }
+    
+    public void addTarget(String target) {
+        this.targets.add(target);
     }
 
-  
-    
-    
 }

@@ -1,26 +1,27 @@
 //******************************************************************************
 //                                       AnnotationDAOSesame.java
 //
-// Author(s): Arnaud Charleroy<arnaud.charleroy@inra.fr>
+// Author(s): Arnaud Charleroy <arnaud.charleroy@inra.fr>
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2018
 // Creation date: 14 juin 2018
-// Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  14 juin 2018
-// Subject:
+// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Last modification date:  21 juin 2018
+// Subject: This class manages operation on annotation in database
 //******************************************************************************
 package phis2ws.service.dao.sesame;
 
-import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
-import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
@@ -29,20 +30,21 @@ import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.dao.phis.UserDaoPhisBrapi;
+import static phis2ws.service.dao.sesame.SensorDAOSesame.TRIPLESTORE_RELATION_TYPE;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.resources.dto.AnnotationDTO;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.UriGenerator;
-import phis2ws.service.utils.dates.Dates;
 import phis2ws.service.utils.sparql.SPARQLUpdateBuilder;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.Annotation;
+import phis2ws.service.view.model.phis.Sensor;
 
 /**
  *
- * @author Arnaud Charleroy<arnaud.charleroy@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class AnnotationDAOSesame extends DAOSesame<Annotation> {
 
@@ -51,16 +53,74 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
     private final static URINamespaces NAMESPACES = new URINamespaces();
 
     final static String TRIPLESTORE_CONTEXT_ANNOTATION = NAMESPACES.getContextsProperty("annotations");
-    ;
+
     final static String TRIPLESTORE_RELATION_TYPE = NAMESPACES.getRelationsProperty("type");
     final static String TRIPLESTORE_RELATION_BODYVALUE = NAMESPACES.getRelationsProperty("rOaBodyValue");
     final static String TRIPLESTORE_RELATION_CREATOR = NAMESPACES.getRelationsProperty("rDCCreator");
     final static String TRIPLESTORE_RELATION_CREATED = NAMESPACES.getRelationsProperty("rDCCreated");
     final static String TRIPLESTORE_RELATION_TARGET = NAMESPACES.getRelationsProperty("rOaTarget");
 
+    // Search parameters
+    public String uri;
+    public static final String URI = "uri";
+    public String created;
+    public static final String CREATED = "created";
+    public String bodyValue;
+    public static final String BODYVALUE = "bodyValue";
+    public String creator;
+    public static final String CREATOR = "creator";
+    public ArrayList<String> targets = new ArrayList<>();
+    public static final String TARGET = "target";
+
     @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        query.appendDistinct(Boolean.TRUE);
+
+        String annotationUri;
+        if (uri != null) {
+            annotationUri = "<" + uri + ">";
+        } else {
+            annotationUri = "?" + URI;
+            query.appendSelect(annotationUri);
+        }
+
+        if (created != null) {
+            query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_CREATED, created, null);
+        } else {
+            query.appendSelect("?" + CREATED);
+            query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_CREATED, "?" + CREATED, null);
+        }
+
+        if (creator != null) {
+            query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_CREATOR, creator, null);
+        } else {
+            query.appendSelect(" ?" + CREATOR);
+            query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_CREATOR, "?" + CREATOR, null);
+        }
+
+        if (targets != null && !targets.isEmpty()) {
+            UriDaoSesame uriDao = new UriDaoSesame();
+            for (String target : targets) {
+                if (uriDao.existObject(target)) {
+                    query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_TARGET, target, null);
+                }
+
+            }
+        } else {
+            query.appendSelect("?" + TARGET);
+            query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_TARGET, "?" + TARGET, null);
+        }
+
+        query.appendSelect("?" + BODYVALUE);
+        query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_BODYVALUE, "?" + BODYVALUE, null);
+        if (bodyValue != null) {
+            query.appendFilter(" FILTER regex(STR(?" + BODYVALUE + "), '" + bodyValue + "', 'i')");
+        }
+
+        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        return query;
+
     }
 
     @Override
@@ -85,11 +145,11 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
     }
 
     /**
-     * insert the given sensors in the triplestore
+     * insert the given annotations in the triplestore
      *
-     * @param sensorsDTO
+     * @param annotationsDTO
      * @return the insertion result, with the errors list or the uri of the
-     * inserted sensors
+     * inserted annotations
      */
     public POSTResultsReturn insert(List<AnnotationDTO> annotationsDTO) {
         List<Status> insertStatus = new ArrayList<>();
@@ -140,28 +200,22 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
     }
 
     /**
-     * generates an insert query for sensors. e.g. INSERT DATA { GRAPH
-     * <http://www.phenome-fppn.fr/diaphen/sensors> {
-     * <http://www.phenome-fppn.fr/diaphen/2018/v18142> rdf:type
-     * <http://www.phenome-fppn.fr/vocabulary/2017#Thermocouple> .
-     * <http://www.phenome-fppn.fr/diaphen/2018/v18142> rdfs:label "par03_p" .
-     * <http://www.phenome-fppn.fr/diaphen/2018/v18142>
-     * <http://www.phenome-fppn.fr/vocabulary/2017#hasBrand> "Homemade" .
-     * <http://www.phenome-fppn.fr/diaphen/2018/v18142>
-     * <http://www.phenome-fppn.fr/vocabulary/2017#inServiceDate> "2017-06-15" .
-     * <http://www.phenome-fppn.fr/diaphen/2018/v18142>
-     * <http://www.phenome-fppn.fr/vocabulary/2017#personInCharge>
-     * "morgane.vidal@inra.fr" .
-     * <http://www.phenome-fppn.fr/diaphen/2018/v18142>
-     * <http://www.phenome-fppn.fr/vocabulary/2017#serialNumber> "A1E345F32" .
-     * <http://www.phenome-fppn.fr/diaphen/2018/v18142>
-     * <http://www.phenome-fppn.fr/vocabulary/2017#dateOfPurchase> "2017-06-15"
-     * .
-     * <http://www.phenome-fppn.fr/diaphen/2018/v18142>
-     * <http://www.phenome-fppn.fr/vocabulary/2017#dateOfLastCalibration>
-     * "2017-06-15" . } }
+     * generates an insert query for annotations. e.g. INSERT DATA {
+     * <http://www.phenome-fppn.fr/platform/id/annotation/a2f9674f-3e49-4a02-8770-e5a43a327b37>
+     * rdf:type  <http://www.w3.org/ns/oa#Annotation> .
+     * <http://www.phenome-fppn.fr/platform/id/annotation/a2f9674f-3e49-4a02-8770-e5a43a327b37>
+     * <http://purl.org/dc/terms/created>
+     * "2018-06-22T15:18:13+0200"^^xsd:dateTime .
+     * <http://www.phenome-fppn.fr/platform/id/annotation/a2f9674f-3e49-4a02-8770-e5a43a327b37>
+     * <http://purl.org/dc/terms/creator>
+     * <http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy> .
+     * <http://www.phenome-fppn.fr/platform/id/annotation/a2f9674f-3e49-4a02-8770-e5a43a327b37>
+     * <http://www.w3.org/ns/oa#bodyValue> "Ustilago maydis infection" .
+     * <http://www.phenome-fppn.fr/platform/id/annotation/a2f9674f-3e49-4a02-8770-e5a43a327b37>
+     * <http://www.w3.org/ns/oa#hasTarget>
+     * <http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy> . }
      *
-     * @param sensor
+     * @param annotation
      * @return the query
      */
     private SPARQLUpdateBuilder prepareInsertQuery(Annotation annotation) {
@@ -174,8 +228,8 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
         query.appendTriplet(annotation.getUri(), TRIPLESTORE_RELATION_CREATOR, annotation.getCreator(), null);
         query.appendTriplet(annotation.getUri(), TRIPLESTORE_RELATION_BODYVALUE, "\"" + annotation.getBodyValue() + "\"", null);
 
-        if (annotation.getTarget() != null && !annotation.getTarget().isEmpty()) {
-            for (String targetUri : annotation.getTarget()) {
+        if (annotation.getTargets() != null && !annotation.getTargets().isEmpty()) {
+            for (String targetUri : annotation.getTargets()) {
                 query.appendTriplet(annotation.getUri(), TRIPLESTORE_RELATION_TARGET, targetUri, null);
             }
         }
@@ -184,7 +238,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
     }
 
     /**
-     * check the given sensor's metadata
+     * check the given annotations's metadata
      *
      * @param annotations
      * @return the result with the list of the errors founded (empty if no error
@@ -244,5 +298,69 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
         check = new POSTResultsReturn(dataOk, null, dataOk);
         check.statusList = checkStatus;
         return check;
+    }
+
+    /**
+     * search all the sensors corresponding to the search params given by the
+     * user
+     *
+     * @return the list of the sensors which match the given search params.
+     */
+    public ArrayList<Annotation> allPaginate() {
+        SPARQLQueryBuilder query = prepareSearchQuery();
+        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        ArrayList<Annotation> annotations = new ArrayList<>();
+
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
+            while (result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                Annotation annotation = getAnnotationFromBindingSet(bindingSet);
+                annotations.add(annotation);
+            }
+        }
+        return annotations;
+    }
+
+    /**
+     * get a annotation from a given binding set. Assume that the following
+     * attributes exist : uri, creator, created, bodyValue
+     *
+     * @param bindingSet a bindingSet from a search query
+     * @return a annotation with data extracted from the given bindingSet
+     */
+    private Annotation getAnnotationFromBindingSet(BindingSet bindingSet) {
+        Annotation annotation = new Annotation();
+
+        if (uri != null) {
+            annotation.setUri(uri);
+        } else {
+            annotation.setUri(bindingSet.getValue(URI).stringValue());
+        }
+        // date
+//        if (created != null) {
+//            annotation.setCreated(created);
+//        } else {
+//            annotation.setCreated(bindingSet.getValue(CREATED));
+//        }
+
+        if (creator != null) {
+            annotation.setCreator(creator);
+        } else {
+            annotation.setCreator(bindingSet.getValue(CREATOR).stringValue());
+        }
+
+        if (bodyValue != null) {
+            annotation.setBodyValue(bodyValue);
+        } else {
+            annotation.setBodyValue(bindingSet.getValue(BODYVALUE).stringValue());
+        }
+        
+        if (targets != null) {
+            annotation.setTargets(targets);
+        } else {
+            annotation.addTarget(bindingSet.getValue(TARGET).stringValue());
+        }
+
+        return annotation;
     }
 }

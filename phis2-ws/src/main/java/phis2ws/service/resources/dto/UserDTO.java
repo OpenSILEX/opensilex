@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.model.User;
-import phis2ws.service.resources.dto.constraints.Required;
+import phis2ws.service.resources.dto.validation.interfaces.Required;
 import phis2ws.service.view.model.phis.Group;
 
 public class UserDTO extends AbstractVerifiedClass {

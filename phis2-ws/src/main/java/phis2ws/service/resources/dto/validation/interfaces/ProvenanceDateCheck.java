@@ -6,11 +6,12 @@
 // Copyright © - INRA - 2018
 // Creation date: 21 juin 2018
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  21 juin 2018
-// Subject:
+// Last modification date:  25 juin 2018
+// Subject: check provenance date
 //******************************************************************************
-package phis2ws.service.resources.dto.constraints;
+package phis2ws.service.resources.dto.validation.interfaces;
 
+import phis2ws.service.resources.dto.validation.validators.ProvenanceDateValidator;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

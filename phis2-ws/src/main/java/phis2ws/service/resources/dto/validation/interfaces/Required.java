@@ -9,7 +9,7 @@
 // Last modification date:  21 juin 2018
 // Subject: Annotation that verify if a field is required
 //******************************************************************************
-package phis2ws.service.resources.dto.constraints;
+package phis2ws.service.resources.dto.validation.interfaces;
 
 /**
  * Multiple annotations which provides required annotation

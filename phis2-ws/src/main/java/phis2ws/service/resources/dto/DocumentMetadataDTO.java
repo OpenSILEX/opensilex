@@ -15,7 +15,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import phis2ws.service.resources.dto.constraints.Required;
+import phis2ws.service.resources.dto.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 
 public class DocumentMetadataDTO extends AbstractVerifiedClass {

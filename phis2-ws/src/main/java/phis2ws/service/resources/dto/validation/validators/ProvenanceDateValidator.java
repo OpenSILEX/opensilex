@@ -7,15 +7,14 @@
 // Creation date: 21 juin 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  21 juin 2018
-// Subject:
+// Subject: Class checks specific date field on provenance object
 //******************************************************************************
-package phis2ws.service.resources.dto.constraints;
+package phis2ws.service.resources.dto.validation.validators;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
-import javax.validation.constraintvalidation.SupportedValidationTarget;
-import javax.validation.constraintvalidation.ValidationTarget;
 import phis2ws.service.resources.dto.ProvenanceDTO;
+import phis2ws.service.resources.dto.validation.interfaces.ProvenanceDateCheck;
 
 /**
  *

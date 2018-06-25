@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.resources.dto.constraints.Required;
+import phis2ws.service.resources.dto.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 
 public class LayerDTO extends AbstractVerifiedClass {

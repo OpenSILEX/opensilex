@@ -12,6 +12,8 @@
 package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import phis2ws.service.documentation.DocumentationAnnotation;
@@ -30,15 +32,18 @@ public class PropertyVocabularyDTO extends AbstractVerifiedClass {
     //the list of the labels of the property. Hash Map with the languages if needed
     //it is a hash map with the language and the label
     //if there is no language for a label, the key is equals to none (?)
-    private HashMap<String, String> labels = new HashMap<>();
-   
+    private Map<String, Collection<String>> labels = new HashMap<>();
+    //the list of the comments of the property. Map with the languages if knowned. 
+    //if there is no language, the key will be "none"
+    private Map<String, Collection<String>> comments = new HashMap<>();
+    
+    public Map rules() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
     @Override
     public Property createObjectFromDTO() {
-        Property property = new Property();
-        property.setRelation(relation);
-        property.setLabels(labels);
-        
-        return property;
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SPECIES_FROM_SPECIES)
@@ -50,15 +55,28 @@ public class PropertyVocabularyDTO extends AbstractVerifiedClass {
         this.relation = relation;
     }
 
-    public HashMap<String, String> getLabels() {
+    public Map<String, Collection<String>> getLabels() {
         return labels;
     }
 
-    public void setLabels(HashMap<String, String> labels) {
+    public void setLabels(Map<String, Collection<String>> labels) {
         this.labels = labels;
     }
     
     public void addLabel(String language, String label) {
-        labels.put(language, label);
+        Collection<String> labelsByLang = labels.get(language);
+        if (labelsByLang == null) {
+            labelsByLang = new ArrayList<>();
+        }
+        labelsByLang.add(label);
+        labels.put(language, labelsByLang);
+    }
+    
+    public Map<String, Collection<String>> getComments() {
+        return comments;
+    }
+
+    public void setComments(Map<String, Collection<String>> comments) {
+        this.comments = comments;
     }
 }

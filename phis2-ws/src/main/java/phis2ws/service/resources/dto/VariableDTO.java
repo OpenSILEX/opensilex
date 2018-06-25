@@ -18,7 +18,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.resources.dto.constraints.Required;
+import phis2ws.service.resources.dto.validation.interfaces.Required;
 import phis2ws.service.view.model.phis.Method;
 import phis2ws.service.view.model.phis.Trait;
 import phis2ws.service.view.model.phis.Unit;

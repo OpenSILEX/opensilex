@@ -45,10 +45,11 @@ public abstract class AbstractVerifiedClass implements VerifiedClassInterface {
         Map<String, Object> verificationResultMap = new HashMap<>();
         // boolean
         Boolean validationBool = Boolean.FALSE;
+        // retreive constraints
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
         Set<ConstraintViolation<AbstractVerifiedClass>> constraintViolations = validator.validate(this);
-        
+        // iterate on constraints  
         if (constraintViolations.size() > 0) {
             for (ConstraintViolation<AbstractVerifiedClass> contraintes : constraintViolations) {
                 verificationResultMap.put(contraintes.getPropertyPath().toString(), contraintes.getMessage());

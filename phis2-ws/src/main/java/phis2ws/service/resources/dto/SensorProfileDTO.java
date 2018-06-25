@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.validation.Valid;
 import phis2ws.service.documentation.DocumentationAnnotation;
-import phis2ws.service.resources.dto.constraints.Required;
+import phis2ws.service.resources.dto.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.view.model.phis.SensorProfile;
 

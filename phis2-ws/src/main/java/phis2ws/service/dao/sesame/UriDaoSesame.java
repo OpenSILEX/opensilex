@@ -578,6 +578,16 @@ public class UriDaoSesame extends DAOSesame<Uri> {
         return labels;
     }
     
+    /**
+     * get the comments associated to the uri attribute in the triplestore
+     * @return the list of comments. the key is the language 
+     * e.g.
+     * [
+     *  "fr" : "maison",
+     *  "en" : "home",
+     *  "none" : "dqfgdf"
+     * ]
+     */
     public Multimap<String, String> getComments() {
         SPARQLQueryBuilder query = prepareGetComments();
         Multimap<String, String> comments = ArrayListMultimap.create();

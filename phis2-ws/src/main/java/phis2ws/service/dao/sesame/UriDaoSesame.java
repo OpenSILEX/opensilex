@@ -11,8 +11,9 @@
 //***********************************************************************************************
 package phis2ws.service.dao.sesame;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Optional;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
@@ -42,6 +43,8 @@ public class UriDaoSesame extends DAOSesame<Uri> {
     public String label;
     //used to query the triplestore
     final static String LABEL = "label";
+    //used to query the triplestore
+    final static String COMMENT = "comment";
     
     final static String TRIPLESTORE_FIELDS_TYPE = "type";
     final static String TRIPLESTORE_FIELDS_CLASS = "class";
@@ -53,6 +56,7 @@ public class UriDaoSesame extends DAOSesame<Uri> {
 
     private final static URINamespaces NAMESPACES = new URINamespaces();
     final static String TRIPLESTORE_RELATION_LABEL = NAMESPACES.getRelationsProperty("label");
+    final static String TRIPLESTORE_RELATION_COMMENT = NAMESPACES.getRelationsProperty("comment");
     
     
     /**
@@ -479,15 +483,6 @@ public class UriDaoSesame extends DAOSesame<Uri> {
     private SPARQLQueryBuilder prepareIsSubclassOf(String rdfSubType, String rdfType) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
-
-        String contextURI;
-
-        if (uri != null) {
-            contextURI = "<" + uri + ">";
-        } else {
-            contextURI = "?uri";
-            query.appendSelect("?uri");
-        }
         
         query.appendTriplet("<" + rdfSubType + ">", NAMESPACES.getRelationsProperty("subClassOf*"), "<" + rdfType + ">", null);
         
@@ -532,6 +527,27 @@ public class UriDaoSesame extends DAOSesame<Uri> {
     }
     
     /**
+     * generates a query to get the list of the comments of the uri attribute
+     * e.g.
+     * SELECT DISTINCT ?comment 
+     * WHERE {
+     *      <http://www.phenome-fppn.fr/vocabulary/2017#hasTechnicalContact>  rdfs:comment  ?comment . 
+     * }
+     * @return the generated query
+     */
+    protected SPARQLQueryBuilder prepareGetComments() {
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        query.appendDistinct(Boolean.TRUE);
+        
+        query.appendSelect("?" + COMMENT);
+        query.appendTriplet(uri, TRIPLESTORE_RELATION_COMMENT, "?" + COMMENT, null);
+        
+        LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
+        
+        return query;
+    }
+    
+    /**
      * get the labels associated to the uri attribute in the triplestore
      * @return the list of labels. the key is the language 
      * e.g.
@@ -541,9 +557,9 @@ public class UriDaoSesame extends DAOSesame<Uri> {
      *  "none" : "dqfgdf"
      * ]
      */
-    public HashMap<String, String> getLabels() {
+    public Multimap<String, String> getLabels() {
         SPARQLQueryBuilder query = prepareGetLabels();
-        HashMap<String, String> labels = new HashMap<>();
+        Multimap<String, String> labels = ArrayListMultimap.create();
         
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         
@@ -551,14 +567,35 @@ public class UriDaoSesame extends DAOSesame<Uri> {
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 Literal propertyLabel = (Literal) bindingSet.getValue(LABEL);
-                Optional<String> labelLanguage = propertyLabel.getLanguage();
-                if (labelLanguage.get() != null) {
-                    labels.put(labelLanguage.get(), bindingSet.getValue(LABEL).stringValue());
+                if (propertyLabel.getLanguage().isPresent()) {
+                    Optional<String> commentLanguage = propertyLabel.getLanguage();
+                    labels.put(commentLanguage.get(), bindingSet.getValue(LABEL).stringValue());
                 } else { //no language tag associated
                     labels.put("none", bindingSet.getValue(LABEL).stringValue());
                 }
             }
         }
         return labels;
+    }
+    
+    public Multimap<String, String> getComments() {
+        SPARQLQueryBuilder query = prepareGetComments();
+        Multimap<String, String> comments = ArrayListMultimap.create();
+        
+        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
+            while (result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                Literal propertyLabel = (Literal) bindingSet.getValue(COMMENT);
+                if (propertyLabel.getLanguage().isPresent()) {
+                    Optional<String> commentLanguage = propertyLabel.getLanguage();
+                    comments.put(commentLanguage.get(), bindingSet.getValue(COMMENT).stringValue());
+                } else { //no language tag associated
+                    comments.put("none", bindingSet.getValue(COMMENT).stringValue());
+                }
+            }
+        }
+        return comments;
     }
 }

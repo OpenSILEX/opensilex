@@ -157,7 +157,8 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
         
         UriDaoSesame uriDao = new UriDaoSesame();
         uriDao.uri = propertyUri;
-        property.setLabels(uriDao.getLabels());
+        property.setLabels(uriDao.getLabels().asMap());
+        property.setComments(uriDao.getComments().asMap());
         
         return property;
     }

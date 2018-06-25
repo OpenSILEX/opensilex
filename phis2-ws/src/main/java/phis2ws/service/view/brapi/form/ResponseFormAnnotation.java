@@ -37,4 +37,21 @@ public class ResponseFormAnnotation extends ResultForm<Annotation> {
             result = new ResultAnnotation(list);
         }
     }
+    
+    /**
+     * Initialize fields metadata and result
+     * @param pageSize results per page
+     * @param currentPage current page
+     * @param list results list
+     * @param paginate 
+     * @param totalCount number of result
+     */
+    public ResponseFormAnnotation(int pageSize, int currentPage, ArrayList<Annotation> list, boolean paginate, int totalCount) {
+        metadata = new Metadata(pageSize, currentPage, totalCount);
+        if (list.size() > 1) {
+            result = new ResultAnnotation(list, metadata.getPagination(), paginate);
+        } else {
+            result = new ResultAnnotation(list);
+        }
+    }
 }

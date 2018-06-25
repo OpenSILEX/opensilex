@@ -22,6 +22,7 @@ import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
+import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
@@ -30,17 +31,16 @@ import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.dao.phis.UserDaoPhisBrapi;
-import static phis2ws.service.dao.sesame.SensorDAOSesame.TRIPLESTORE_RELATION_TYPE;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.resources.dto.AnnotationDTO;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.UriGenerator;
+import phis2ws.service.utils.dates.Dates;
 import phis2ws.service.utils.sparql.SPARQLUpdateBuilder;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.Annotation;
-import phis2ws.service.view.model.phis.Sensor;
 
 /**
  *
@@ -59,6 +59,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
     final static String TRIPLESTORE_RELATION_CREATOR = NAMESPACES.getRelationsProperty("rDCCreator");
     final static String TRIPLESTORE_RELATION_CREATED = NAMESPACES.getRelationsProperty("rDCCreated");
     final static String TRIPLESTORE_RELATION_TARGET = NAMESPACES.getRelationsProperty("rOaTarget");
+    final static String TRIPLESTORE_RELATION_MOTIVATEDBY = NAMESPACES.getRelationsProperty("rOaMotivatedBy");
 
     // Search parameters
     public String uri;
@@ -71,7 +72,13 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
     public static final String CREATOR = "creator";
     public ArrayList<String> targets = new ArrayList<>();
     public static final String TARGET = "target";
+    public String motivatedBy;
+    public static final String MOTIVATEDBY = "motivatedBy";
 
+    /**
+     * 
+     * @inheritdoc 
+     */
     @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
@@ -85,9 +92,14 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
             query.appendSelect(annotationUri);
         }
 
+        DateTime stringToDateTime = null;
         if (created != null) {
-            query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_CREATED, created, null);
-        } else {
+            stringToDateTime = Dates.stringToDateTime(created);
+            if (stringToDateTime != null) {
+                query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_CREATED, created, null);
+            }
+        }
+        if (created == null && stringToDateTime == null) {
             query.appendSelect("?" + CREATED);
             query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_CREATED, "?" + CREATED, null);
         }
@@ -97,6 +109,13 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
         } else {
             query.appendSelect(" ?" + CREATOR);
             query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_CREATOR, "?" + CREATOR, null);
+        }
+
+        if (motivatedBy != null) {
+            query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_MOTIVATEDBY, motivatedBy, null);
+        } else {
+            query.appendSelect(" ?" + MOTIVATEDBY);
+            query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_MOTIVATEDBY, "?" + MOTIVATEDBY, null);
         }
 
         if (targets != null && !targets.isEmpty()) {
@@ -115,17 +134,43 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
         query.appendSelect("?" + BODYVALUE);
         query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_BODYVALUE, "?" + BODYVALUE, null);
         if (bodyValue != null) {
-            query.appendFilter(" FILTER regex(STR(?" + BODYVALUE + "), '" + bodyValue + "', 'i')");
+            query.appendFilter("regex(STR(?" + BODYVALUE + "), '" + bodyValue + "', 'i')");
         }
 
+        query.appendLimit(this.getPageSize());
+        query.appendOffset(this.getPage() * this.getPageSize());
         LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
         return query;
 
     }
 
+    /**
+     * 
+     * @inheritdoc 
+     */
     @Override
     public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        SPARQLQueryBuilder prepareCount = prepareCount();
+        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
+        Integer count = 0;
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
+            if (result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                count = Integer.parseInt(bindingSet.getValue(COUNT_ELEMENT_QUERY).stringValue());
+            }
+        }
+
+        return count;
+    }
+
+    private SPARQLQueryBuilder prepareCount() {
+        SPARQLQueryBuilder query = this.prepareSearchQuery();
+        query.clearSelect();
+        query.clearLimit();
+        query.clearOffset();
+        query.appendSelect("(count(distinct ?" + URI + ") as ?" + COUNT_ELEMENT_QUERY + ")");
+        LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
+        return query;
     }
 
     /**
@@ -227,6 +272,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
         query.appendTriplet(annotation.getUri(), TRIPLESTORE_RELATION_CREATED, "\"" + annotation.getCreated().toString(formatter) + "\"^^xsd:dateTime", null);
         query.appendTriplet(annotation.getUri(), TRIPLESTORE_RELATION_CREATOR, annotation.getCreator(), null);
         query.appendTriplet(annotation.getUri(), TRIPLESTORE_RELATION_BODYVALUE, "\"" + annotation.getBodyValue() + "\"", null);
+        query.appendTriplet(annotation.getUri(), TRIPLESTORE_RELATION_MOTIVATEDBY, annotation.getMotivatedBy(), null);
 
         if (annotation.getTargets() != null && !annotation.getTargets().isEmpty()) {
             for (String targetUri : annotation.getTargets()) {
@@ -251,7 +297,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
         boolean dataOk = true;
 
         UriDaoSesame uriDao = new UriDaoSesame();
-        UserDaoPhisBrapi userDao = new UserDaoPhisBrapi();
+//        UserDaoPhisBrapi userDao = new UserDaoPhisBrapi();
         //1. check data
         for (AnnotationDTO annotation : annotations) {
             //1.1 check required fields
@@ -282,6 +328,11 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
                             dataOk = false;
                             checkStatus.add(new Status(StatusCodeMsg.UNKNOWN_URI, StatusCodeMsg.ERR, "Unknown target uri"));
                         }
+                    }
+                    //1.5 check if motivation exists and is valid
+                    if (annotation.getMotivatedBy() == null || !uriDao.existObject(annotation.getMotivatedBy())) {
+                        dataOk = false;
+                        checkStatus.add(new Status(StatusCodeMsg.UNKNOWN_URI, StatusCodeMsg.ERR, "Unknown motivation"));
                     }
 
                 } catch (Exception ex) {
@@ -336,12 +387,10 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
         } else {
             annotation.setUri(bindingSet.getValue(URI).stringValue());
         }
-        // date
-//        if (created != null) {
-//            annotation.setCreated(created);
-//        } else {
-//            annotation.setCreated(bindingSet.getValue(CREATED));
-//        }
+        // created date
+        String creationDate = bindingSet.getValue(CREATED).stringValue();
+        DateTime stringToDateTime = Dates.stringToDateTimeWithGivenPattern(creationDate, DateFormats.YMDTHMSZ_FORMAT);
+        annotation.setCreated(stringToDateTime);
 
         if (creator != null) {
             annotation.setCreator(creator);
@@ -349,17 +398,18 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
             annotation.setCreator(bindingSet.getValue(CREATOR).stringValue());
         }
 
-        if (bodyValue != null) {
-            annotation.setBodyValue(bodyValue);
+        annotation.setBodyValue(bindingSet.getValue(BODYVALUE).stringValue());
+
+        if (motivatedBy != null) {
+            annotation.setMotivatedBy(motivatedBy);
         } else {
-            annotation.setBodyValue(bindingSet.getValue(BODYVALUE).stringValue());
+            annotation.setMotivatedBy(bindingSet.getValue(MOTIVATEDBY).stringValue());
         }
-        
-        if (targets != null) {
-            annotation.setTargets(targets);
-        } else {
-            annotation.addTarget(bindingSet.getValue(TARGET).stringValue());
-        }
+
+        //SILEX:concpetion
+        //For now annotation can takes only one target
+        //\SILEX
+        annotation.addTarget(bindingSet.getValue(TARGET).stringValue());
 
         return annotation;
     }

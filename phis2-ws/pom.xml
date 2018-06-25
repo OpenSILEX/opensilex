@@ -187,6 +187,12 @@
             <artifactId>jquery</artifactId>
             <version>2.1.4</version>
         </dependency>
+        <!--validation request parameters-->
+        <dependency>
+            <groupId>org.glassfish.jersey.ext</groupId>
+            <artifactId>jersey-bean-validation</artifactId>
+        <version>2.25</version>
+</dependency>
     </dependencies>
 
     <build>

@@ -4,9 +4,9 @@
 // Author(s): Arnaud Charleroy <arnaud.charleroy@inra.fr>
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2018
-// Creation date: 7 mars 2018
+// Creation date: 21 June 2018
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  7 mars 2018
+// Last modification date:  23 June 2018
 // Subject: Represents the annotation service.
 //******************************************************************************
 package phis2ws.service.resources;
@@ -35,7 +35,6 @@ import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.sesame.AnnotationDAOSesame;
-import phis2ws.service.dao.sesame.SensorDAOSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
@@ -44,10 +43,9 @@ import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
 import phis2ws.service.resources.dto.AnnotationDTO;
+import phis2ws.service.resources.validation.interfaces.IsValidURI;
 import phis2ws.service.view.brapi.form.ResponseFormAnnotation;
-import phis2ws.service.view.brapi.form.ResponseFormSensor;
 import phis2ws.service.view.model.phis.Annotation;
-import phis2ws.service.view.model.phis.Sensor;
 
 /**
  * Represents the annotation service.
@@ -130,17 +128,17 @@ public class AnnotationResourceService {
      * @param uri
      * @param creator
      * @param comment
-     * @param date
      * @param target
+     * @param motivatedBy 
      * @return list of the annotation corresponding to the search params given
      * e.g { "metadata": { "pagination": { "pageSize": 20, "currentPage": 0,
-     * "totalCount": 3, "totalPages": 1 }, "status": [], "datafiles": [] },
+     * "totalCount": 297, "totalPages": 15 }, "status": [], "datafiles": [] },
      * "result": { "data": [ { "uri":
-     * "http://www.phenome-fppn.fr/diaphen/2018/s18001", "rdfType":
-     * "http://www.phenome-fppn.fr/vocabulary/2017#LevelMeasurementRainGauge",
-     * "label": "alias", "brand": "brand", "serialNumber": "E1ISHFUSK2345",
-     * "inServiceDate": null, "dateOfPurchase": null, "dateOfLastCalibration":
-     * null, "personInCharge": "username@mail.com" }, ] } }
+     * "http://www.phenome-fppn.fr/platform/id/annotation/8247af37-769c-495b-8e7e-78b1141176c2",
+     * "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy",
+     * "creationDate": "2018-06-22T14:54:42+0200", "comment": "Ustilago maydis
+     * infection", "targets": [
+     * "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy" ] },{...} )}}
      */
     @GET
     @ApiOperation(value = "Get all annotations corresponding to the search params given",
@@ -164,19 +162,25 @@ public class AnnotationResourceService {
     public Response getAnnotationsBySearch(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int pageSize,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
-            @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("uri") String uri,
-            @ApiParam(value = "Search by date", example = DocumentationAnnotation.EXAMPLE_SENSOR_RDF_TYPE) @QueryParam("date") String date,
-            @ApiParam(value = "Search by creator", example = DocumentationAnnotation.EXAMPLE_SENSOR_LABEL) @QueryParam("creator") String creator,
-            @ApiParam(value = "Search by comment", example = DocumentationAnnotation.EXAMPLE_SENSOR_BRAND) @QueryParam("comment") String comment,
-            @ApiParam(value = "Search by target", example = DocumentationAnnotation.EXAMPLE_SENSOR_SERIAL_NUMBER) @QueryParam("target") String target) {
+            @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_URI) @IsValidURI @QueryParam("uri") String uri,
+            //SILEX:conception
+            // Need to specify if it necessary
+            //\SILEX:conception
+            @ApiParam(value = "Search by creator", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_CREATOR) @IsValidURI  @QueryParam("creator") String creator,
+            @ApiParam(value = "Search by motivation", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_MOTIVATEDBY) @IsValidURI @QueryParam("motivatedBy") String motivatedBy,
+            @ApiParam(value = "Search by comment", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_COMMENT) @QueryParam("comment") String comment,
+            @ApiParam(value = "Search by target", example = DocumentationAnnotation.EXAMPLE_AGRONOMICAL_OBJECT_URI) @IsValidURI @QueryParam("target") String target) {
 
         AnnotationDAOSesame annotationDAO = new AnnotationDAOSesame();
         if (uri != null) {
             annotationDAO.uri = uri;
         }
-        if (date != null) {
-            annotationDAO.created = date;
-        }
+        //SILEX:conception
+        // Need to specify if it necessary
+        //\SILEX:conception
+//        if (date != null) {
+//            annotationDAO.created = date;
+//        }
         if (creator != null) {
             annotationDAO.creator = creator;
         }
@@ -185,6 +189,10 @@ public class AnnotationResourceService {
         }
         if (comment != null) {
             annotationDAO.bodyValue = comment;
+        }
+
+        if (motivatedBy != null) {
+            annotationDAO.motivatedBy = motivatedBy;
         }
 
         annotationDAO.user = userSession.getUser();
@@ -205,6 +213,9 @@ public class AnnotationResourceService {
         ArrayList<Status> statusList = new ArrayList<>();
         ResponseFormAnnotation getResponse;
 
+        // Count all annotations for this specific request
+        Integer totalCount = annotationDAO.count();
+        // Retreive all annotations returned by the query
         annotations = annotationDAO.allPaginate();
 
         if (annotations == null) {
@@ -214,18 +225,14 @@ public class AnnotationResourceService {
             getResponse = new ResponseFormAnnotation(0, 0, annotations, true);
             return noResultFound(getResponse, statusList);
         } else {
-            getResponse = new ResponseFormAnnotation(annotationDAO.getPageSize(), annotationDAO.getPage(), annotations, false);
-            if (getResponse.getResult().dataSize() == 0) {
-                return noResultFound(getResponse, statusList);
-            } else {
-                getResponse.setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(getResponse).build();
-            }
+            getResponse = new ResponseFormAnnotation(annotationDAO.getPageSize(), annotationDAO.getPage(), annotations, true, totalCount);
+            getResponse.setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
         }
     }
 
     private Response noResultFound(ResponseFormAnnotation getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status(StatusCodeMsg.NO_RESULTS, StatusCodeMsg.INFO, "No results for the sensors"));
+        insertStatusList.add(new Status(StatusCodeMsg.NO_RESULTS, StatusCodeMsg.INFO, "No results for the annotations"));
         getResponse.setStatus(insertStatusList);
         return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
     }

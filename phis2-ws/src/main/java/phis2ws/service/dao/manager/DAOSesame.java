@@ -52,6 +52,8 @@ public abstract class DAOSesame<T> {
 
     //used for logger
     protected static final String SPARQL_SELECT_QUERY = "SPARQL query : ";
+    
+    protected static final String COUNT_ELEMENT_QUERY = "count";
 
     protected static Repository rep;
     private RepositoryConnection connection;

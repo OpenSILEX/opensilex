@@ -211,7 +211,8 @@ public class URINamespaces {
 
         //Relations oa
         RELATIONS.put("rOaTarget", CONTEXTS.get("pxOa") + "#hasTarget");
-         RELATIONS.put("rOaBodyValue", CONTEXTS.get("pxOa") + "#bodyValue");
+        RELATIONS.put("rOaBodyValue", CONTEXTS.get("pxOa") + "#bodyValue");
+        RELATIONS.put("rOaMotivatedBy", CONTEXTS.get("pxOa") + "#motivatedBy");
 
         //Relations dcterms
         RELATIONS.put("rDCCreator", CONTEXTS.get("pxDublinCore") + "/creator");

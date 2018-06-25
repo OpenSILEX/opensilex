@@ -11,7 +11,6 @@
 //******************************************************************************
 package phis2ws.service.view.model.phis;
 
-import com.google.gson.annotations.SerializedName;
 import java.util.ArrayList;
 import org.joda.time.DateTime;
 
@@ -22,18 +21,17 @@ import org.joda.time.DateTime;
  */
 public class Annotation {
 
-    private final static String CREATED_LABEL = "creationDate";
-    private final static String BODYVALUE_LABEL = "comment";
-    
+  
+
     private String uri;
 
-    @SerializedName(CREATED_LABEL)
     private DateTime created;
 
     private String creator;
 
-    @SerializedName(BODYVALUE_LABEL)
     private String bodyValue;
+    
+    private String motivatedBy;
 
     private ArrayList<String> targets;
 
@@ -76,9 +74,22 @@ public class Annotation {
     public void setTargets(ArrayList<String> targets) {
         this.targets = targets;
     }
-    
+
     public void addTarget(String target) {
+        if ( this.targets == null) {
+              this.targets = new ArrayList<>();
+        }
         this.targets.add(target);
     }
+
+    public String getMotivatedBy() {
+        return motivatedBy;
+    }
+
+    public void setMotivatedBy(String motivatedBy) {
+        this.motivatedBy = motivatedBy;
+    }
+    
+    
 
 }

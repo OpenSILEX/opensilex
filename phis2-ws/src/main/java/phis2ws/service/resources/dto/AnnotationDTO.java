@@ -17,7 +17,6 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.validation.constraints.NotNull;
 import org.joda.time.DateTime;
-import org.joda.time.LocalDateTime;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.view.model.phis.Annotation;
@@ -57,11 +56,12 @@ public class AnnotationDTO extends AbstractVerifiedClass {
         annotation.setCreated(currentTime);
         annotation.setCreator(creator);
         annotation.setTargets(targets);
+        annotation.setMotivatedBy(motivatedBy);
 
         return annotation;
     }
 
-    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_ANNOTATION_MOTIVATION)
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_ANNOTATION_MOTIVATEDBY)
     public String getMotivatedBy() {
         return motivatedBy;
     }

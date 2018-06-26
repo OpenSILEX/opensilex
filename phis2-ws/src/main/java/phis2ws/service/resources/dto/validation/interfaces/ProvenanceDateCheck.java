@@ -22,7 +22,7 @@ import javax.validation.Payload;
 
 /**
  *
- * @author Arnaud Charleroy<arnaud.charleroy@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 @Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)

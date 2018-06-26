@@ -1,11 +1,11 @@
 //******************************************************************************
 //                                       ProvenanceDateValidator.java
 //
-// Author(s): Arnaud Charleroy<arnaud.charleroy@inra.fr>
+// Author(s): Arnaud Charleroy <arnaud.charleroy@inra.fr>
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2018
 // Creation date: 21 juin 2018
-// Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  21 juin 2018
 // Subject: Class checks specific date field on provenance object
 //******************************************************************************

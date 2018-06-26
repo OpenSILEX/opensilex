@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.POST;
@@ -151,7 +152,7 @@ public class TokenResourceService {
         @ApiResponse(code = 400, message = "Bad informations send by user")
         ,
         @ApiResponse(code = 200, message = "Access token already exist and send again to user")})
-    public Response getToken(@ApiParam(value = "JSON object needed to login", required = true) TokenDTO jsonToken, @Context UriInfo ui) {
+    public Response getToken(@ApiParam(value = "JSON object needed to login") @Valid TokenDTO jsonToken, @Context UriInfo ui) {
         ArrayList<Status> statusList = new ArrayList<>();
 //        Verification of grant type
         String grantType = jsonToken.getGrant_type();

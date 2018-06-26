@@ -6,8 +6,6 @@
 package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
-import java.util.HashMap;
-import java.util.Map;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
@@ -26,6 +24,7 @@ public class TokenDTO extends AbstractVerifiedClass {
 
     // Uncomment if you use jwt
     // @ApiModelProperty(example = EXAMPLE_TOKEN_JWT_GRANTTYPE)
+    @Required(message = "Wrong grant type")
     @ApiModelProperty(example = "password")
     public String getGrant_type() {
         return grant_type;
@@ -35,7 +34,7 @@ public class TokenDTO extends AbstractVerifiedClass {
         this.grant_type = grant_type;
     }
 
-    @Required
+    @Required(message = "Username must be filled")
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_USER_EMAIL)
     public String getUsername() {
         return username;
@@ -44,7 +43,8 @@ public class TokenDTO extends AbstractVerifiedClass {
     public void setUsername(String username) {
         this.username = username;
     }
-
+    
+    
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_USER_PASSWORD)
     public String getPassword() {
         return password;

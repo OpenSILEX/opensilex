@@ -164,7 +164,8 @@ public class AnnotationResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
             @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_URI) @IsValidURI @QueryParam("uri") String uri,
             //SILEX:conception
-            // Need to specify if it necessary
+            // Need to specify if it necessary 
+            // @ApiParam(value = "Search by creation date", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_CREATED) @hasValidDateFormat  @QueryParam("created") String created,
             //\SILEX:conception
             @ApiParam(value = "Search by creator", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_CREATOR) @IsValidURI  @QueryParam("creator") String creator,
             @ApiParam(value = "Search by motivation", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_MOTIVATEDBY) @IsValidURI @QueryParam("motivatedBy") String motivatedBy,

@@ -150,7 +150,8 @@ public class URINamespaces {
         OBJECTS.put("cVector", CONTEXTS.get("pVoc2017") + "#Vector");
         OBJECTS.put("cSensingDevice", CONTEXTS.get("pVoc2017") + "#SensingDevice");
         OBJECTS.put("cRestriction", "owl:Restriction");
-        OBJECTS.put("cAgent", CONTEXTS.get("pxFoaf") + "/Person");
+        OBJECTS.put("cAgent", CONTEXTS.get("pxFoaf") + "/Agent");
+        OBJECTS.put("cPerson", CONTEXTS.get("pxFoaf") + "/Person");
         OBJECTS.put("cMotivation", CONTEXTS.get("pxOa") + "#Motivation");
         OBJECTS.put("cAnnotation", CONTEXTS.get("pxOa") + "#Annotation");
     }
@@ -210,13 +211,13 @@ public class URINamespaces {
         RELATIONS.put("qualifiedCardinality", "http://www.w3.org/2002/07/owl#qualifiedCardinality");
 
         //Relations oa
-        RELATIONS.put("rOaTarget", CONTEXTS.get("pxOa") + "#hasTarget");
-        RELATIONS.put("rOaBodyValue", CONTEXTS.get("pxOa") + "#bodyValue");
-        RELATIONS.put("rOaMotivatedBy", CONTEXTS.get("pxOa") + "#motivatedBy");
+        RELATIONS.put("rTarget", CONTEXTS.get("pxOa") + "#hasTarget");
+        RELATIONS.put("rBodyValue", CONTEXTS.get("pxOa") + "#bodyValue");
+        RELATIONS.put("rMotivatedBy", CONTEXTS.get("pxOa") + "#motivatedBy");
 
         //Relations dcterms
-        RELATIONS.put("rDCCreator", CONTEXTS.get("pxDublinCore") + "/creator");
-        RELATIONS.put("rDCCreated", CONTEXTS.get("pxDublinCore") + "/created");
+        RELATIONS.put("rCreator", CONTEXTS.get("pxDublinCore") + "/creator");
+        RELATIONS.put("rCreated", CONTEXTS.get("pxDublinCore") + "/created");
 
     }
 }

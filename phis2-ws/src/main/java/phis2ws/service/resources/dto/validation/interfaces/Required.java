@@ -42,7 +42,7 @@ import javax.validation.constraints.NotNull;
 @ReportAsSingleViolation
 public @interface Required {
 
-    String message() default "{phis2ws.service.resources.dto.validation.interfaces.Required.message}";
+    String message() default "is required and must be filled";
 
     Class<?>[] groups() default {};
 

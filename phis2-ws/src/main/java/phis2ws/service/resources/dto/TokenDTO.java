@@ -13,7 +13,7 @@ import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 /**
  * Represente le JSON soumis pour les objets de type token
  *
- * @author A. Charleroy
+ * @author Arnaud Charleroy
  */
 public class TokenDTO extends AbstractVerifiedClass {
 
@@ -24,7 +24,7 @@ public class TokenDTO extends AbstractVerifiedClass {
 
     // Uncomment if you use jwt
     // @ApiModelProperty(example = EXAMPLE_TOKEN_JWT_GRANTTYPE)
-    @Required(message = "Wrong grant type")
+    @Required()
     @ApiModelProperty(example = "password")
     public String getGrant_type() {
         return grant_type;
@@ -34,7 +34,7 @@ public class TokenDTO extends AbstractVerifiedClass {
         this.grant_type = grant_type;
     }
 
-    @Required(message = "Username must be filled")
+    @Required()
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_USER_EMAIL)
     public String getUsername() {
         return username;

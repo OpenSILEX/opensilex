@@ -16,14 +16,14 @@ package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import javax.validation.constraints.Email;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.model.User;
 import phis2ws.service.resources.dto.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.dto.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.Group;
 
 public class GroupDTO extends AbstractVerifiedClass {
@@ -55,6 +55,7 @@ public class GroupDTO extends AbstractVerifiedClass {
         return group;
     }
 
+    @URL
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_GROUP_URI)
     public String getUri() {
@@ -95,6 +96,7 @@ public class GroupDTO extends AbstractVerifiedClass {
         this.description = description;
     }
     
+    @Email
     public ArrayList<String> getUsersEmails() {
         return usersEmails;
     }

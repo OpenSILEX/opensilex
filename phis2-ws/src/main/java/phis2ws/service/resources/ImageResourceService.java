@@ -37,6 +37,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -54,6 +55,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.authentication.Session;
+import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.configuration.URINamespaces;
@@ -62,6 +64,7 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.ImageMetadataDTO;
+import phis2ws.service.resources.dto.validation.interfaces.URL;
 import phis2ws.service.utils.FileUploader;
 import phis2ws.service.utils.ImageWaitingCheck;
 import phis2ws.service.utils.POSTResultsReturn;
@@ -135,7 +138,7 @@ public class ImageResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postImagesMetadata(@Context HttpHeaders headers,
-            @ApiParam(value = "JSON Image metadata", required = true) List<ImageMetadataDTO> imagesMetadata) {
+            @ApiParam(value = "JSON Image metadata", required = true) @Valid List<ImageMetadataDTO> imagesMetadata) {
         AbstractResultForm postResponse;
         if (imagesMetadata != null && !imagesMetadata.isEmpty()) {
             ImageMetadataDaoMongo imageDaoMongo = new ImageMetadataDaoMongo();
@@ -259,7 +262,7 @@ public class ImageResourceService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response postImageFile(
         @ApiParam(value = "File to upload") File in,
-        @ApiParam(value = "Uri given from \"images\" path for upload") @QueryParam("uri") String imageUri,
+        @ApiParam(value = "Uri given from \"images\" path for upload") @QueryParam("uri") @URL String imageUri,
         @Context HttpHeaders headers,
         @Context HttpServletRequest request) throws URISyntaxException, ParseException {
         ResponseFormPOST postResponse;
@@ -436,12 +439,12 @@ public class ImageResourceService {
     public Response getImagesBySearch(
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int pageSize,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
-        @ApiParam(value = "Search by image uri", example = DocumentationAnnotation.EXAMPLE_IMAGE_URI) @QueryParam("uri") String uri,
-        @ApiParam(value = "Search by image type", example = DocumentationAnnotation.EXAMPLE_IMAGE_TYPE) @QueryParam("rdfType") String rdfType,
+        @ApiParam(value = "Search by image uri", example = DocumentationAnnotation.EXAMPLE_IMAGE_URI) @QueryParam("uri") @URL String uri,
+        @ApiParam(value = "Search by image type", example = DocumentationAnnotation.EXAMPLE_IMAGE_TYPE) @QueryParam("rdfType") @URL String rdfType,
         @ApiParam(value = "Search by concerned item uri - each concerned item uri must be separated by ;", example = DocumentationAnnotation.EXAMPLE_IMAGE_CONCERNED_ITEMS) @QueryParam("concernedItems") String concernedItems,
-        @ApiParam(value = "Search by interval - start date", example = DocumentationAnnotation.EXAMPLE_IMAGE_DATE) @QueryParam("startDate") String startDate,
-        @ApiParam(value = "Search by interval - end date", example = DocumentationAnnotation.EXAMPLE_IMAGE_DATE) @QueryParam("endDate") String endDate,
-        @ApiParam(value = "Search by sensor", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("sensor") String sensor) {
+        @ApiParam(value = "Search by interval - start date", example = DocumentationAnnotation.EXAMPLE_IMAGE_DATE) @QueryParam("startDate") @phis2ws.service.resources.dto.validation.interfaces.Date(DateFormat.YMD) String startDate,
+        @ApiParam(value = "Search by interval - end date", example = DocumentationAnnotation.EXAMPLE_IMAGE_DATE) @QueryParam("endDate") @phis2ws.service.resources.dto.validation.interfaces.Date(DateFormat.YMD) String endDate,
+        @ApiParam(value = "Search by sensor", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("sensor") @URL String sensor) {
         
         ImageMetadataDaoMongo imageMetadataDaoMongo = new ImageMetadataDaoMongo();
         

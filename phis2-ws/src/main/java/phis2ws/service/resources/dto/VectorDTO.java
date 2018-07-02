@@ -12,11 +12,13 @@
 package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
-import java.util.HashMap;
-import java.util.Map;
+import javax.validation.constraints.Email;
+import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.dto.validation.interfaces.Date;
+import phis2ws.service.resources.dto.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.Vector;
 
 /**
@@ -61,6 +63,7 @@ public class VectorDTO extends AbstractVerifiedClass {
         return vector;
     }
 
+    @URL
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_VECTOR_URI)
     public String getUri() {
         return uri;
@@ -70,6 +73,7 @@ public class VectorDTO extends AbstractVerifiedClass {
         this.uri = uri;
     }
 
+    @URL
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_VECTOR_RDF_TYPE)
     public String getRdfType() {
@@ -109,6 +113,7 @@ public class VectorDTO extends AbstractVerifiedClass {
         this.serialNumber = serialNumber;
     }
 
+    @Date(DateFormat.YMD)
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_VECTOR_IN_SERVICE_DATE)
     public String getInServiceDate() {
@@ -119,6 +124,7 @@ public class VectorDTO extends AbstractVerifiedClass {
         this.inServiceDate = inServiceDate;
     }
 
+    @Date(DateFormat.YMD)
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_VECTOR_DATE_OF_PURCHASE)
     public String getDateOfPurchase() {
         return dateOfPurchase;
@@ -128,6 +134,7 @@ public class VectorDTO extends AbstractVerifiedClass {
         this.dateOfPurchase = dateOfPurchase;
     }
 
+    @Email
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_VECTOR_PERSON_IN_CHARGE)
     public String getPersonInCharge() {

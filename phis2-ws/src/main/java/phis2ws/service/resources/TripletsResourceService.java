@@ -21,6 +21,7 @@ import io.swagger.annotations.ApiResponses;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
@@ -36,6 +37,7 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.TripletDTO;
+import phis2ws.service.resources.dto.validation.interfaces.Required;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
@@ -105,7 +107,7 @@ public class TripletsResourceService {
                 example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     public Response postTriplets(
-            @ApiParam(value = DocumentationAnnotation.TRIPLET_POST_DATA_DEFINITION) ArrayList<ArrayList<TripletDTO>> triplets,
+            @ApiParam(value = DocumentationAnnotation.TRIPLET_POST_DATA_DEFINITION, required = true) @Required @Valid ArrayList<ArrayList<TripletDTO>> triplets,
             @Context HttpServletRequest context) {
         //SILEX:warning
         //blank nodes are not implemented yet

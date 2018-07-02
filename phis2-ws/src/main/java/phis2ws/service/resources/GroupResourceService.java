@@ -20,6 +20,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -42,6 +43,8 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.GroupDTO;
+import phis2ws.service.resources.dto.validation.interfaces.Required;
+import phis2ws.service.resources.dto.validation.interfaces.URL;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
@@ -94,7 +97,7 @@ public class GroupResourceService {
     public Response getGroupBySearch(
     @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
     @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
-    @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_GROUP_URI) @QueryParam("uri") String uri,
+    @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_GROUP_URI) @QueryParam("uri") @URL String uri,
     @ApiParam(value = "Search by name", example = DocumentationAnnotation.EXAMPLE_GROUP_NAME) @QueryParam("name") String name,
     @ApiParam(value = "Search by level", example = DocumentationAnnotation.EXAMPLE_GROUP_LEVEL) @QueryParam("level") String level) {
         GroupDao groupDao = new GroupDao();
@@ -140,7 +143,7 @@ public class GroupResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getGroupDetails(
-    @ApiParam(value = DocumentationAnnotation.GROUP_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_GROUP_URI) @PathParam("groupURI") String groupUri,
+    @ApiParam(value = DocumentationAnnotation.GROUP_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_GROUP_URI) @PathParam("groupURI") @Required @URL String groupUri,
     @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
     @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
         
@@ -182,7 +185,7 @@ public class GroupResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postGroup(
-    @ApiParam(value = DocumentationAnnotation.GROUP_POST_DATA_DEFINITION) ArrayList<GroupDTO> groups,
+    @ApiParam(value = DocumentationAnnotation.GROUP_POST_DATA_DEFINITION, required = true) @Valid ArrayList<GroupDTO> groups,
     @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         
@@ -230,7 +233,7 @@ public class GroupResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response putGroup(
-    @ApiParam(value = DocumentationAnnotation.GROUP_POST_DATA_DEFINITION) ArrayList<GroupDTO> groups,
+    @ApiParam(value = DocumentationAnnotation.GROUP_POST_DATA_DEFINITION, required = true) @Valid ArrayList<GroupDTO> groups,
     @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         if (groups != null && !groups.isEmpty()) {

@@ -20,6 +20,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -42,6 +43,8 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.UnitDTO;
+import phis2ws.service.resources.dto.validation.interfaces.Required;
+import phis2ws.service.resources.dto.validation.interfaces.URL;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
@@ -76,7 +79,7 @@ public class UnitResourceService {
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response postUnit(@ApiParam(value = DocumentationAnnotation.UNIT_POST_DATA_DEFINITION) ArrayList<UnitDTO> units,
+    public Response postUnit(@ApiParam(value = DocumentationAnnotation.UNIT_POST_DATA_DEFINITION, required = true) @Valid ArrayList<UnitDTO> units,
                               @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         if (units != null && !units.isEmpty()) {
@@ -216,7 +219,7 @@ public class UnitResourceService {
     public Response getUnitsBySearch(
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
-        @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_UNIT_URI) @QueryParam("uri") String uri,
+        @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_UNIT_URI) @QueryParam("uri") @URL String uri,
         @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_UNIT_LABEL) @QueryParam("label") String label
     ) {
         UnitDaoSesame unitDaoSesame = new UnitDaoSesame();
@@ -259,7 +262,7 @@ public class UnitResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUnitDetails(
-        @ApiParam(value = DocumentationAnnotation.UNIT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_UNIT_URI) @PathParam("unit") String unit,
+        @ApiParam(value = DocumentationAnnotation.UNIT_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_UNIT_URI, required = true) @PathParam("unit") @Required @URL String unit,
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
         

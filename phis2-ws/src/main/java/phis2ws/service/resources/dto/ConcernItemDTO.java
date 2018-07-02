@@ -12,12 +12,11 @@
 package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
-import java.util.HashMap;
-import java.util.Map;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.view.model.phis.ConcernItem;
+import phis2ws.service.resources.dto.validation.interfaces.URL;
 
 /**
  * corresponds to the submitted JSON for the objects concerned (by an annotation for example)
@@ -37,6 +36,7 @@ public class ConcernItemDTO extends AbstractVerifiedClass {
         return concernedItem;
     }
     
+    @URL
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI)
     public String getUri() {
@@ -47,6 +47,7 @@ public class ConcernItemDTO extends AbstractVerifiedClass {
         this.uri = uri;
     }
 
+    @URL
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_DOCUMENT_CONCERNED_TYPE_URI)
     public String getTypeURI() {

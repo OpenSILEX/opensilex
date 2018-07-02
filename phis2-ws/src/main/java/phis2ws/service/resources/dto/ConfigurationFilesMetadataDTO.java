@@ -13,8 +13,7 @@ package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import java.util.HashMap;
-import java.util.Map;
+import javax.validation.constraints.Pattern;
 import phis2ws.service.resources.dto.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 
@@ -59,7 +58,7 @@ public class ConfigurationFilesMetadataDTO extends AbstractVerifiedClass {
     }
 
     @Required
-     @ApiModelProperty(example = "m3p")
+    @ApiModelProperty(example = "m3p")
     public String getPlateform() {
         return plateform;
     }
@@ -69,6 +68,7 @@ public class ConfigurationFilesMetadataDTO extends AbstractVerifiedClass {
     }
     
     @Required
+    @Pattern(regexp = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$")
     @ApiModelProperty(example = "147.99.7.11")
     public String getFromIP() {
         return fromIP;

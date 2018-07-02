@@ -20,6 +20,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -42,6 +43,8 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.ProjectDTO;
+import phis2ws.service.resources.dto.validation.interfaces.Required;
+import phis2ws.service.resources.dto.validation.interfaces.URL;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
@@ -180,7 +183,7 @@ public class ProjectResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getProjectDetails(
-    @ApiParam(value = DocumentationAnnotation.PROJECT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_PROJECT_URI) @PathParam("projectURI") String projectURI,
+    @ApiParam(value = DocumentationAnnotation.PROJECT_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_PROJECT_URI, required = true) @PathParam("projectURI") @URL @Required String projectURI,
     @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
     @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
         if (projectURI == null) {
@@ -213,7 +216,7 @@ public class ProjectResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postProject(
-            @ApiParam(value = DocumentationAnnotation.PROJECT_POST_DATA_DEFINITION) ArrayList<ProjectDTO> projects,
+            @ApiParam(value = DocumentationAnnotation.PROJECT_POST_DATA_DEFINITION) @Valid ArrayList<ProjectDTO> projects,
             @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         
@@ -267,7 +270,7 @@ public class ProjectResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response putProject(
-    @ApiParam(value = DocumentationAnnotation.PROJECT_POST_DATA_DEFINITION) ArrayList<ProjectDTO> projects,
+    @ApiParam(value = DocumentationAnnotation.PROJECT_POST_DATA_DEFINITION) @Valid ArrayList<ProjectDTO> projects,
     @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         

@@ -12,11 +12,10 @@
 package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
-import java.util.HashMap;
-import java.util.Map;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.dto.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.Property;
 
 /**
@@ -43,6 +42,7 @@ public class PropertyDTO extends AbstractVerifiedClass {
         return property;
     }
     
+    @URL
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SPECIES_RDF_TYPE)
     public String getRdfType() {
         return rdfType;
@@ -52,6 +52,7 @@ public class PropertyDTO extends AbstractVerifiedClass {
         this.rdfType = rdfType;
     }
     
+    @URL
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SPECIES_FROM_SPECIES)
     public String getRelation() {
@@ -62,6 +63,7 @@ public class PropertyDTO extends AbstractVerifiedClass {
         this.relation = relation;
     }
     
+    @URL
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SPECIES_URI)
     public String getValue() {

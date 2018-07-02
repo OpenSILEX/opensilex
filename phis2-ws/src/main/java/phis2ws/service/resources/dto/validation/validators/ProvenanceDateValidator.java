@@ -13,17 +13,24 @@ package phis2ws.service.resources.dto.validation.validators;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+import org.joda.time.DateTime;
+import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.resources.dto.ProvenanceDTO;
-import phis2ws.service.resources.dto.validation.interfaces.ProvenanceDateCheck;
+import phis2ws.service.resources.dto.validation.interfaces.Date;
+import phis2ws.service.resources.dto.validation.interfaces.ProvenanceDate;
+import phis2ws.service.utils.dates.Dates;
 
 /**
  *
  * @author Arnaud Charleroy<arnaud.charleroy@inra.fr>
  */
-public class ProvenanceDateValidator implements ConstraintValidator<ProvenanceDateCheck, ProvenanceDTO> {
+public class ProvenanceDateValidator implements ConstraintValidator<ProvenanceDate, ProvenanceDTO> {
+
+    private DateFormat dateFormat;
 
     @Override
-    public void initialize(ProvenanceDateCheck constraintAnnotation) {
+    public void initialize(ProvenanceDate constraintAnnotation) {
+        this.dateFormat = constraintAnnotation.value();
     }
 
     @Override
@@ -31,8 +38,23 @@ public class ProvenanceDateValidator implements ConstraintValidator<ProvenanceDa
         if (provenance == null) {
             return true;
         }
+        if(provenance.getUri() != null){
+             return true;
+        }
         // if uri is valid and date not return false
-        return !(provenance.getUri() != null && provenance.getCreationDate() == null);
+        return  provenance.getUri() == null && validateDate(dateFormat, provenance.getCreationDate());
+    }
+
+    public static boolean validateDate(DateFormat pattern, String date) {
+        if(date == null){
+            return false;
+        }
+        
+        DateTime stringToDateTime = Dates.stringToDateTimeWithGivenPattern(date, pattern.toString());
+        if (stringToDateTime == null) {
+            return false;
+        }
+        return true;
     }
 
 }

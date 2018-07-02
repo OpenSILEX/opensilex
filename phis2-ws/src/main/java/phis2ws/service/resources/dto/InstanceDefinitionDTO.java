@@ -16,10 +16,9 @@ package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import phis2ws.service.resources.dto.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.dto.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.InstanceDefinition;
 import phis2ws.service.view.model.phis.OntologyReference;
 
@@ -51,6 +50,7 @@ public class InstanceDefinitionDTO extends AbstractVerifiedClass {
         return instanceDefinition;
     }
 
+    @URL
     @ApiModelProperty(example = "http://www.phenome-fppn.fr/id/variables/v001")
     public String getUri() {
         return uri;

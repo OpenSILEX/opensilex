@@ -12,9 +12,8 @@
 package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import javax.validation.Valid;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
@@ -56,7 +55,8 @@ public class ImageMetadataDTO extends AbstractVerifiedClass {
     public void setRdfType(String rdfType) {
         this.rdfType = rdfType;
     }
-
+    
+    @Valid
     public List<ConcernItemDTO> getConcern() {
         return concern;
     }
@@ -66,6 +66,7 @@ public class ImageMetadataDTO extends AbstractVerifiedClass {
     }
 
     @Required
+    @Valid
     public ShootingConfigurationDTO getConfiguration() {
         return configuration;
     }
@@ -75,6 +76,7 @@ public class ImageMetadataDTO extends AbstractVerifiedClass {
     }
 
     @Required
+    @Valid
     public FileInformationDTO getFileInfo() {
         return fileInfo;
     }

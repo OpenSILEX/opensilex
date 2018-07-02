@@ -19,23 +19,27 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.resources.dto.validation.interfaces.Required;
+import phis2ws.service.resources.dto.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.Method;
 import phis2ws.service.view.model.phis.Trait;
 import phis2ws.service.view.model.phis.Unit;
 import phis2ws.service.view.model.phis.Variable;
 
 public class VariableDTO extends InstanceDefinitionDTO {
+
     final static Logger LOGGER = LoggerFactory.getLogger(VariableDTO.class);
-    
+
     /**
-     * @param trait l'uri du trait (ex. http://www.phenome-fppn.fr/diaphen/id/trait/t001)
-     * @param method l'uri de la méthode (ex. http://www.phenome-fppn.fr/diaphen/id/method/m001)
-     * @param unit l'uri de l'unité (ex. http://www.phenome-fppn.fr/diaphen/id/unit/u001)
+     * @param trait l'uri du trait (ex.
+     * http://www.phenome-fppn.fr/diaphen/id/trait/t001)
+     * @param method l'uri de la méthode (ex.
+     * http://www.phenome-fppn.fr/diaphen/id/method/m001)
+     * @param unit l'uri de l'unité (ex.
+     * http://www.phenome-fppn.fr/diaphen/id/unit/u001)
      */
     private String trait;
     private String method;
     private String unit;
-
 
     @Override
     public Variable createObjectFromDTO() {
@@ -43,11 +47,12 @@ public class VariableDTO extends InstanceDefinitionDTO {
         variable.setTrait(new Trait(trait));
         variable.setMethod(new Method(method));
         variable.setUnit(new Unit(unit));
-        
+
         return variable;
     }
 
-     @Required
+    @URL
+    @Required
     @ApiModelProperty(example = "http://www.phenome-fppn.fr/diaphen/id/traits/t001")
     public String getTrait() {
         return trait;
@@ -56,8 +61,9 @@ public class VariableDTO extends InstanceDefinitionDTO {
     public void setTrait(String trait) {
         this.trait = trait;
     }
-    
-     @Required
+
+    @URL
+    @Required
     @ApiModelProperty(example = "http://www.phenome-fppn.fr/diaphen/id/methods/m001")
     public String getMethod() {
         return method;
@@ -66,8 +72,9 @@ public class VariableDTO extends InstanceDefinitionDTO {
     public void setMethod(String method) {
         this.method = method;
     }
-    
-     @Required
+
+    @URL
+    @Required
     @ApiModelProperty(example = "http://www.phenome-fppn.fr/diaphen/id/units/u001")
     public String getUnit() {
         return unit;

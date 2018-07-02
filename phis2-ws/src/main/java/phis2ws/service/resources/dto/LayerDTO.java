@@ -15,12 +15,12 @@
 package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
-import java.util.HashMap;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.dto.validation.interfaces.URL;
 
 public class LayerDTO extends AbstractVerifiedClass {
     final static Logger LOGGER = LoggerFactory.getLogger(LayerDTO.class);
@@ -45,6 +45,7 @@ public class LayerDTO extends AbstractVerifiedClass {
     }
 
     @Required
+    @URL
     @ApiModelProperty(example = "http://www.phenome-fppn.fr/diaphen/DIA2017-1")
     public String getObjectUri() {
         return objectUri;
@@ -65,7 +66,8 @@ public class LayerDTO extends AbstractVerifiedClass {
     }
 
     @Required
-    @ApiModelProperty(example = "http://www.phenome-fppn.fr/vocabulary/2017#Experiment")
+    @URL
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_AGRONOMICAL_OBJECT_TYPE)
     public String getObjectType() {
         return objectType;
     }
@@ -74,7 +76,7 @@ public class LayerDTO extends AbstractVerifiedClass {
         this.objectType = objectType;
     }    
     
-    @ ApiModelProperty(example = "true")
+    @ApiModelProperty(example = "true")
     public String getGenerateFile() {
         return generateFile;
     }

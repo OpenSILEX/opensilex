@@ -42,6 +42,8 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.MethodDTO;
+import phis2ws.service.resources.dto.validation.interfaces.Required;
+import phis2ws.service.resources.dto.validation.interfaces.URL;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
@@ -216,7 +218,7 @@ public class MethodResourceService {
     public Response getMethodsBySearch(
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
-        @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_METHOD_URI) @QueryParam("uri") String uri,
+        @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_METHOD_URI) @QueryParam("uri") @URL String uri,
         @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_METHOD_LABEL) @QueryParam("label") String label
     ) {
         MethodDaoSesame methodDaoSesame = new MethodDaoSesame();
@@ -260,7 +262,7 @@ public class MethodResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getMethodDetails(
-        @ApiParam(value = DocumentationAnnotation.METHOD_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_METHOD_URI) @PathParam("method") String method,
+        @ApiParam(value = DocumentationAnnotation.METHOD_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_METHOD_URI, required = true) @PathParam("method") @Required String method,
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
         

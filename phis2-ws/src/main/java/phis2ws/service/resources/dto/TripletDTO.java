@@ -12,11 +12,10 @@
 package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
-import java.util.HashMap;
-import java.util.Map;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.dto.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.Triplet;
 
 /**
@@ -41,7 +40,6 @@ public class TripletDTO extends AbstractVerifiedClass {
     //graph of the triplet
     private String g;
 
-
     @Override
     public Triplet createObjectFromDTO() {
         Triplet triplet = new Triplet();
@@ -55,6 +53,7 @@ public class TripletDTO extends AbstractVerifiedClass {
         return triplet;
     }
 
+    @URL
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_TRIPLET_SUBJECT)
     public String getS() {
@@ -65,6 +64,7 @@ public class TripletDTO extends AbstractVerifiedClass {
         this.s = s;
     }
 
+    @URL
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_TRIPLET_PROPERTY)
     public String getP() {
@@ -75,6 +75,7 @@ public class TripletDTO extends AbstractVerifiedClass {
         this.p = p;
     }
 
+    @URL
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_TRIPLET_OBJECT)
     public String getO() {
@@ -85,6 +86,7 @@ public class TripletDTO extends AbstractVerifiedClass {
         this.o = o;
     }
 
+    @URL
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_TRIPLET_OBJECT_TYPE)
     public String getO_type() {
@@ -104,6 +106,7 @@ public class TripletDTO extends AbstractVerifiedClass {
         this.o_lang = o_lang;
     }
 
+    @URL
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_TRIPLET_GRAPH)
     public String getG() {
         return g;

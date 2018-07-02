@@ -7,10 +7,10 @@
 // Creation date: 25 juin 2018
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  25 juin 2018
-// Subject: Class that catches validation error on resources services parameters
-// Contains the validation error form
+// Subject: Class that catches validation error on resources services parameters and
+// return response object with specific error messages.
 //******************************************************************************
-package phis2ws.service.resources.validation.manager;
+package phis2ws.service.resources.validation;
 
 import java.util.ArrayList;
 import javax.validation.ConstraintViolation;
@@ -20,15 +20,16 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
+import org.hibernate.validator.internal.engine.path.PathImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.resources.TokenResourceService;
-import phis2ws.service.utils.JsonConverter;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.ResponseFormGET;
 
 /**
+ * Class that catches validation error on resources services parameters and
+ * return response object with specific error messages.
  *
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
@@ -36,16 +37,19 @@ import phis2ws.service.view.brapi.form.ResponseFormGET;
 @Provider
 public class ValidationExceptionMapper implements ExceptionMapper<javax.validation.ValidationException> {
 
-     final static Logger LOGGER = LoggerFactory.getLogger(ValidationExceptionMapper.class);
-    
+    final static Logger LOGGER = LoggerFactory.getLogger(ValidationExceptionMapper.class);
+
     @Override
     public Response toResponse(javax.validation.ValidationException e) {
         ArrayList<Status> statusList = new ArrayList<>();
         for (ConstraintViolation<?> constraintViolation : ((ConstraintViolationException) e).getConstraintViolations()) {
-            statusList.add(new Status(StatusCodeMsg.BAD_DATA_FORMAT, StatusCodeMsg.ERR, constraintViolation.getPropertyPath() + " " + constraintViolation.getMessage()));
-         LOGGER.debug(JsonConverter.ConvertToJson(constraintViolation));
+            // Message pattern : [object property path] + property name + message + |  invalid value
+            String errorMessage = "[" + constraintViolation.getPropertyPath().toString() + "]" + ((PathImpl) constraintViolation.getPropertyPath()).getLeafNode().getName()
+                    + " " + constraintViolation.getMessage() + "  | Invalid value : "
+                    + constraintViolation.getInvalidValue();
+            statusList.add(new Status(StatusCodeMsg.BAD_DATA_FORMAT, StatusCodeMsg.ERR, errorMessage));
         }
-       
+
         ResponseFormGET validationResponse = new ResponseFormGET(statusList);
         return Response.status(Response.Status.BAD_REQUEST).entity(validationResponse).build();
     }

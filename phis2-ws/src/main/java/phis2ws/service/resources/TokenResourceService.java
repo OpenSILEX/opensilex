@@ -61,6 +61,7 @@ import phis2ws.service.resources.dto.LogoutDTO;
 import phis2ws.service.resources.dto.TokenDTO;
 import phis2ws.service.utils.dates.Dates;
 import phis2ws.service.configuration.DateFormats;
+import phis2ws.service.resources.dto.validation.interfaces.Required;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
 import phis2ws.service.view.brapi.form.ResponseUnique;
@@ -250,7 +251,7 @@ public class TokenResourceService {
         @ApiResponse(code = 400, message = "Bad informations send by user")
         ,
         @ApiResponse(code = 200, message = "Access token already exist and send again to user")})
-    public Response logOut(@ApiParam(value = "JSON object needed to login", required = true) LogoutDTO logout, @Context UriInfo ui) {
+    public Response logOut(@ApiParam(value = "JSON object needed to login" ,required = true) @Valid @Required LogoutDTO logout, @Context UriInfo ui) {
         ArrayList<Status> statusList = new ArrayList<>();
         if (logout == null) {
             statusList.add(new Status("Empty json", StatusCodeMsg.ERR, null));

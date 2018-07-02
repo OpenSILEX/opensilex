@@ -42,6 +42,8 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.TraitDTO;
+import phis2ws.service.resources.dto.validation.interfaces.Required;
+import phis2ws.service.resources.dto.validation.interfaces.URL;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
@@ -252,7 +254,7 @@ public class TraitResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTraitDetails(
-        @ApiParam(value = DocumentationAnnotation.TRAIT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_TRAIT_URI) @PathParam("trait") String trait,
+        @ApiParam(value = DocumentationAnnotation.TRAIT_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_TRAIT_URI, required = true) @PathParam("trait") @Required @URL String trait,
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
         

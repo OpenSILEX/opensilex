@@ -12,11 +12,11 @@
 package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import javax.validation.Valid;
 import phis2ws.service.resources.dto.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.dto.validation.interfaces.URL;
 
 public class DocumentMetadataDTO extends AbstractVerifiedClass {
     private String uri; // /!\ ne sera pas utilisé pour le POST de métadonnées
@@ -50,6 +50,7 @@ public class DocumentMetadataDTO extends AbstractVerifiedClass {
         this.uri = uri;
     }
     
+    @URL
     @Required
     @ApiModelProperty(example = "http://www.phenome-fppn.fr/vocabulary/2015#ScientificDocument")
     public String getDocumentType() {
@@ -104,7 +105,8 @@ public class DocumentMetadataDTO extends AbstractVerifiedClass {
     public void setCreationDate(String creationDate) {
         this.creationDate = creationDate;
     }
-
+    
+    @Valid
     public List<ConcernItemDTO> getConcern() {
         return concern;
     }

@@ -22,6 +22,7 @@ import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
 import java.util.Arrays;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -35,6 +36,7 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.authentication.Session;
+import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.mongo.DatasetDAOMongo;
@@ -42,6 +44,8 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.DatasetDTO;
+import phis2ws.service.resources.dto.validation.interfaces.Date;
+import phis2ws.service.resources.dto.validation.interfaces.URL;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
@@ -105,7 +109,7 @@ public class DatasetResourceService {
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response postDatasetData(@ApiParam(value = DocumentationAnnotation.RAW_DATA_POST_DATA_DEFINITION) ArrayList<DatasetDTO> datasets,
+    public Response postDatasetData(@ApiParam(value = DocumentationAnnotation.RAW_DATA_POST_DATA_DEFINITION, required = true) @Valid ArrayList<DatasetDTO> datasets,
             @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         
@@ -221,12 +225,12 @@ public class DatasetResourceService {
     public Response getDataBySearch(
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int pageSize,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
-        @ApiParam(value = "Search by experiment", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI) @QueryParam("experiment") String experiment,
-        @ApiParam(value = "Search by variable", example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI) @QueryParam("variable") String variable,
+        @ApiParam(value = "Search by experiment", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI) @QueryParam("experiment") @URL String experiment,
+        @ApiParam(value = "Search by variable", example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI) @QueryParam("variable") @URL String variable,
         @ApiParam(value = "Search by agronomical(s) object(s), separated by coma", example = DocumentationAnnotation.EXAMPLE_AGRONOMICAL_OBJECT_URI + "," + DocumentationAnnotation.EXAMPLE_AGRONOMICAL_OBJECT_URI) @QueryParam("agronomicalObjects") String agronomicalObjects,
-        @ApiParam(value = "Search by interval - Start date", example = DocumentationAnnotation.EXAMPLE_DATETIME) @QueryParam("startDate") String startDate,
-        @ApiParam(value = "Search by interval - End date", example = DocumentationAnnotation.EXAMPLE_DATETIME) @QueryParam("endDate") String endDate,
-        @ApiParam(value = "Search by sensor", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("sensor") String sensor,
+        @ApiParam(value = "Search by interval - Start date", example = DocumentationAnnotation.EXAMPLE_DATETIME) @QueryParam("startDate") @Date(DateFormat.YMDHMSZ) String startDate,
+        @ApiParam(value = "Search by interval - End date", example = DocumentationAnnotation.EXAMPLE_DATETIME) @QueryParam("endDate") @Date(DateFormat.YMDHMSZ) String endDate,
+        @ApiParam(value = "Search by sensor", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("sensor")  @URL String sensor,
         @ApiParam(value = "Search by incertitude", example = DocumentationAnnotation.EXAMPLE_DATA_INCERTITUDE) @QueryParam("incertitude") String incertitude) {
         
         DatasetDAOMongo datasetDAOMongo = new DatasetDAOMongo();

@@ -16,12 +16,14 @@ package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import javax.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.resources.dto.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.dto.validation.interfaces.Date;
+import phis2ws.service.resources.dto.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.Contact;
 import phis2ws.service.view.model.phis.Project;
 
@@ -69,6 +71,7 @@ public class ProjectDTO extends AbstractVerifiedClass {
         return project;
     }
 
+    @URL
     @Required
     @ApiModelProperty(example = "http://phenome-fppn.fr/phis_field/projectTest")
     public String getUri() {
@@ -125,6 +128,7 @@ public class ProjectDTO extends AbstractVerifiedClass {
         this.financialName = financialName;
     }
 
+    @Date(DateFormat.YMD)
     @Required
     @ApiModelProperty(example = "2015-07-07")
     public String getDateStart() {
@@ -135,6 +139,7 @@ public class ProjectDTO extends AbstractVerifiedClass {
         this.dateStart = dateStart;
     }
 
+    @Date(DateFormat.YMD)
     @ApiModelProperty(example = "2016-07-07")
     public String getDateEnd() {
         return dateEnd;
@@ -180,6 +185,7 @@ public class ProjectDTO extends AbstractVerifiedClass {
         this.parentProject = parentProject;
     }
 
+    @URL
     @ApiModelProperty(example = "http://example.com")
     public String getWebsite() {
         return website;
@@ -189,10 +195,11 @@ public class ProjectDTO extends AbstractVerifiedClass {
         this.website = website;
     }
 
+    @Valid
     public ArrayList<Contact> getContacts() {
         return contacts;
     }
-
+    
     public void setContacts(ArrayList<Contact> contacts) {
         this.contacts = contacts;
     }

@@ -13,16 +13,18 @@ package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import javax.validation.Valid;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.dto.validation.interfaces.ProvenanceDate;
+import phis2ws.service.resources.dto.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.Provenance;
 
 /**
  * Represents the submitted JSON for the Provenance data
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
+@ProvenanceDate
 public class ProvenanceDTO extends AbstractVerifiedClass {
     
     //Provenance uri (e.g. http://www.phenome-fppn.fr/mtp/2018/pv181515071552)
@@ -62,6 +64,7 @@ public class ProvenanceDTO extends AbstractVerifiedClass {
         return provenance;
     }
     
+    @URL
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROVENANCE_URI)
     public String getUri() {
         return uri;
@@ -79,7 +82,8 @@ public class ProvenanceDTO extends AbstractVerifiedClass {
     public void setCreationDate(String creationDate) {
         this.creationDate = creationDate;
     }
-
+    
+    @Valid
     public WasGeneratedByDTO getWasGeneratedBy() {
         return wasGeneratedBy;
     }
@@ -88,10 +92,11 @@ public class ProvenanceDTO extends AbstractVerifiedClass {
         this.wasGeneratedBy = wasGeneratedBy;
     }
 
+    @URL
     public ArrayList<String> getDocumentsUris() {
         return documentsUris;
     }
-
+    
     public void setDocumentsUris(ArrayList<String> documentsUris) {
         this.documentsUris = documentsUris;
     }

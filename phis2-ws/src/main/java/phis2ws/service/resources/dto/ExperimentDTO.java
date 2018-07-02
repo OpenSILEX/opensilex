@@ -17,12 +17,14 @@ package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import javax.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.resources.dto.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.dto.validation.interfaces.Date;
+import phis2ws.service.resources.dto.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.Contact;
 import phis2ws.service.view.model.phis.Group;
 import phis2ws.service.view.model.phis.Project;
@@ -86,6 +88,7 @@ public class ExperimentDTO extends AbstractVerifiedClass {
         return experiment;
     }
     
+    @URL
     @Required
     @ApiModelProperty(example = "http://www.phenome-fppn.fr/diaphen/drops")
     public String getUri() {
@@ -96,6 +99,7 @@ public class ExperimentDTO extends AbstractVerifiedClass {
         this.uri = uri;
     }
     
+    @Date(DateFormat.YMD)
     @Required
     @ApiModelProperty(example = "2015-07-07")
     public String getStartDate() {
@@ -106,6 +110,7 @@ public class ExperimentDTO extends AbstractVerifiedClass {
         this.startDate = startDate;
     }
     
+    @Date(DateFormat.YMD)
     @Required
     @ApiModelProperty(example = "2015-08-07")
     public String getEndDate() {
@@ -179,6 +184,7 @@ public class ExperimentDTO extends AbstractVerifiedClass {
         this.objective = objective;
     }
     
+    @URL
     public ArrayList<String> getProjectsUris() {
         return projectsUris;
     }
@@ -187,6 +193,7 @@ public class ExperimentDTO extends AbstractVerifiedClass {
         this.projectsUris = projectsUris;
     }
 
+    @URL
     public ArrayList<String> getGroupsUris() {
         return groupsUris;
     }
@@ -204,10 +211,12 @@ public class ExperimentDTO extends AbstractVerifiedClass {
         this.cropSpecies = cropSpecies;
     }
     
+    @Valid
     public ArrayList<Contact> getContacts() {
         return contacts;
     }
 
+    
     public void setContacts(ArrayList<Contact> contacts) {
         this.contacts = contacts;
     }

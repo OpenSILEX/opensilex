@@ -39,4 +39,7 @@ public final class DateFormats {
     
     //Timezones
     public final static String TIMEZONE_EU_PARIS = "Europe/paris";
+    
+    // regex
+    public final static String YEAR_REGEX = "^\\d{4}$";
 }

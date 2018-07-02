@@ -111,6 +111,11 @@
             <artifactId>jersey-media-moxy</artifactId>
             <version>2.25</version>
         </dependency>
+        <dependency>
+    <groupId>org.glassfish.jersey.media</groupId>
+    <artifactId>jersey-media-json-jackson</artifactId>
+    <version>2.25</version>
+</dependency>
         <!-- LOGS -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
@@ -187,7 +192,8 @@
             <artifactId>jquery</artifactId>
             <version>2.1.4</version>
         </dependency>
-        <!--validator-->
+        <!--validator Bean Validation 2.0 (JSR 380)
+         @see https://beanvalidation.org/2.0/ -->
         <dependency>
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>

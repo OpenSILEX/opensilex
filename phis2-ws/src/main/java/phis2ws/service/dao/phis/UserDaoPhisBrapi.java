@@ -273,9 +273,9 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
         userToReturn.setAffiliation(result.getString("affiliation"));
         userToReturn.setOrcid(result.getString("orcid"));
         userToReturn.setAdmin(result.getString("isadmin"));
-        userToReturn.setUri(result.getString("available"));
+        userToReturn.setAvailable(result.getString("available"));
         // Arnaud Charleroy add URI 
-        userToReturn.setAvailable(result.getString("uri"));
+        userToReturn.setUri(result.getString("uri"));
         
         return userToReturn;
     }

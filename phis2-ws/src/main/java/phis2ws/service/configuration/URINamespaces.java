@@ -148,7 +148,8 @@ public class URINamespaces {
         OBJECTS.put("cVector", CONTEXTS.get("pVoc2017") + "#Vector");
         OBJECTS.put("cSensingDevice", CONTEXTS.get("pVoc2017") + "#SensingDevice");
         OBJECTS.put("cRestriction", "owl:Restriction");
-        OBJECTS.put("cAgent", CONTEXTS.get("pxFoaf") + "Person");
+        OBJECTS.put("cAgent", CONTEXTS.get("pxFoaf") + "Agent");
+        OBJECTS.put("cPerson", CONTEXTS.get("pxFoaf") + "Person");
     }
 
     private void setRelations() {

@@ -7,7 +7,7 @@
 // Creation date: may 2016
 // Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr, 
 //         morgane.vidal@inra.fr
-// Last modification date:  May, 2017
+// Last modification date:  04 July, 2018
 // Subject: Manipule les Sessions et leur modifications à partir de la base de données
 //***********************************************************************************************
 package phis2ws.service.dao.phis;
@@ -26,11 +26,13 @@ import java.util.logging.Level;
 import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOPhisBrapi;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.UserDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.ResourcesUtils;
+import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.sql.JoinAttributes;
 import phis2ws.service.utils.sql.SQLQueryBuilder;
 import phis2ws.service.view.brapi.Status;
@@ -44,6 +46,7 @@ import phis2ws.service.view.model.phis.Group;
  * @update [Morgane Vidal] 04/17 suppression des attributs isAdmin, role, type
  * dans la table User ce qui a impliqué la suppression des méthodes isAdmin,
  * getProjectUserType, getUserGroup, getUserRole, getUserExperiment
+ * @update [Arnaud Charleroy] 07/18 Add uri generation from e-mail
  *
  */
 public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
@@ -140,7 +143,7 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
 
                 while (result.next()) {
                     u.setAdmin(result.getString("isadmin"));
-                }           
+                }
 
                 return ResourcesUtils.getStringBooleanValue(u.getAdmin());
             } catch (SQLException ex) {
@@ -270,8 +273,10 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
         userToReturn.setAffiliation(result.getString("affiliation"));
         userToReturn.setOrcid(result.getString("orcid"));
         userToReturn.setAdmin(result.getString("isadmin"));
-        userToReturn.setAvailable(result.getString("available"));
-
+        userToReturn.setUri(result.getString("available"));
+        // Arnaud Charleroy add URI 
+        userToReturn.setAvailable(result.getString("uri"));
+        
         return userToReturn;
     }
 
@@ -432,6 +437,7 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
         if (dataState) {
             PreparedStatement insertPreparedStatementUser = null;
             PreparedStatement insertPreparedStatementAtGroupUsers = null;
+            PreparedStatement insertPreparedStatementUserUri = null;
 
             final String insertGab = "INSERT INTO \"users\""
                     + "(\"email\", \"password\", \"first_name\", \"family_name\", \"address\","
@@ -441,6 +447,12 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
             final String insertGabAtUserGroup = "INSERT INTO \"at_group_users\" "
                     + "(\"users_email\", \"group_uri\")"
                     + " VALUES (?, ?)";
+
+            UriGenerator uriGenerator = new UriGenerator();
+            URINamespaces uriNamespaces = new URINamespaces();
+            final String insertUserURI = "UPDATE \"users\""
+                    + "SET \"uri\" = ? WHERE \"email\" = ?";
+
             Connection connection = null;
             int inserted = 0;
             int exists = 0;
@@ -456,6 +468,7 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
 
                 insertPreparedStatementUser = connection.prepareStatement(insertGab);
                 insertPreparedStatementAtGroupUsers = connection.prepareStatement(insertGabAtUserGroup);
+                insertPreparedStatementUserUri = connection.prepareStatement(insertUserURI);
 
                 for (User u : users) {
                     if (!existInDB(u)) {
@@ -485,11 +498,18 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
 
                         insertPreparedStatementUser.execute();
 
+                        // add new URI to user
+                        String userUri = uriGenerator.generateNewInstanceUri(uriNamespaces.getObjectsProperty("Person"), null, u.getEmail());
+                        insertPreparedStatementUserUri.setString(1, userUri);
+                        insertPreparedStatementUserUri.setString(2, u.getEmail());
+                        LOGGER.trace(log + " query : " + insertPreparedStatementUserUri.toString());
+                        u.setUri(userUri);
+
                         //Ajout dans at_group_users des groupes auxquels l'utilisateur appartient.
                         for (Group group : u.getGroups()) {
                             insertPreparedStatementAtGroupUsers.setString(1, u.getEmail());
                             insertPreparedStatementAtGroupUsers.setString(2, group.getUri());
-                            LOGGER.trace(log + " quert : " + insertPreparedStatementAtGroupUsers.toString());
+                            LOGGER.trace(log + " query : " + insertPreparedStatementAtGroupUsers.toString());
                             insertPreparedStatementAtGroupUsers.execute();
                         }
 
@@ -502,6 +522,7 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
                     if (++count % batchSize == 0) {
                         insertPreparedStatementUser.executeBatch();
                         insertPreparedStatementAtGroupUsers.executeBatch();
+                        insertPreparedStatementUserUri.executeBatch();
                         insertionLeft = false;
                     }
                 }
@@ -509,6 +530,7 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
                 if (insertionLeft) {
                     insertPreparedStatementUser.executeBatch(); // checkAndInsert remaining records
                     insertPreparedStatementAtGroupUsers.executeBatch();
+                    insertPreparedStatementUserUri.executeBatch();
                 }
                 connection.commit(); //Envoi des données dans la BD
 ////////////////////
@@ -551,6 +573,9 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
                 if (insertPreparedStatementAtGroupUsers != null) {
                     insertPreparedStatementAtGroupUsers.close();
                 }
+                if (insertPreparedStatementUserUri != null) {
+                    insertPreparedStatementUserUri.close();
+                }
                 if (connection != null) {
                     connection.close();
                 }
@@ -579,9 +604,10 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
     public POSTResultsReturn checkAndInsert(UserDTO newObject) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
+
     /**
-     * @action fais les modifications des utilisateurs en base de données. Même organisation de code que pour les post
+     * @action fais les modifications des utilisateurs en base de données. Même
+     * organisation de code que pour les post
      * @param updatedUsers
      * @return
      */
@@ -624,7 +650,7 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
             final String deleteGabUserGroup = "DELETE FROM \"at_group_users\" WHERE \"users_email\" = ?";
             final String insertGabUserGroup = "INSERT INTO \"at_group_users\" (\"group_uri\", \"users_email\")"
                     + " VALUES(?, ?)";
-            
+
             final String updateGabUSerPassword = "UPDATE \"users\" SET \"password\"=  ? WHERE \"email\" = ?";
             try {
                 //Batch
@@ -648,7 +674,7 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
                     if (u.getAvailable() != null) {
                         updatePreparedStatementUser.setString(4, u.getAvailable());
                     } else {
-                       updatePreparedStatementUser.setString(4, "f"); 
+                        updatePreparedStatementUser.setString(4, "f");
                     }
                     updatePreparedStatementUser.setString(5, u.getPhone());
                     updatePreparedStatementUser.setString(6, u.getAffiliation());
@@ -664,7 +690,7 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
                     deletePreparedStatementUserGroup.setString(1, u.getEmail());
                     deletePreparedStatementUserGroup.execute();
                     LOGGER.trace(log + " quert : " + deletePreparedStatementUserGroup.toString());
-                    
+
                     if (u.getPassword() != null && !u.getPassword().equals("")) {
                         updatePreparedStatementUserPassword.setString(1, u.getPassword());
                         updatePreparedStatementUserPassword.setString(2, u.getEmail());
@@ -739,7 +765,7 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
             results = new POSTResultsReturn(true, true, allUsersAlreadyInDB);
             results.statusList = insertStatusList;
         }
-        
+
         return results;
     }
 

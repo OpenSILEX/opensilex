@@ -21,18 +21,22 @@ import org.joda.time.DateTime;
  */
 public class Annotation {
 
-  
-
+    // uri of this annotation eg.  http://www.phenome-fppn.fr/platform/id/annotation/8247af37-769c-495b-8e7e-78b1141176c2
     private String uri;
 
+    // Creation date of this annotation format yyyy-MM-dd HH:mm:ssZ eg. 2018-06-25 15:13:59+0200
     private DateTime created;
-
+    
+    // creator of this annotations eg. http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy
     private String creator;
-
+    
+    // Comment that describe this annotation eg. Ustilago maydis infection
     private String bodyValue;
     
+    // motivation instance uri that describe the purpose of this annotation  eg. http://www.w3.org/ns/oa#commenting
     private String motivatedBy;
-
+    
+    // uri that are annoted by this annotation  eg. http://www.phenome-fppn.fr/diaphen/2017/o1032481
     private ArrayList<String> targets;
 
     public String getUri() {
@@ -76,8 +80,9 @@ public class Annotation {
     }
 
     public void addTarget(String target) {
-        if ( this.targets == null) {
-              this.targets = new ArrayList<>();
+        // If null arraylist is initialized
+        if (this.targets == null) {
+            this.targets = new ArrayList<>();
         }
         this.targets.add(target);
     }
@@ -89,7 +94,4 @@ public class Annotation {
     public void setMotivatedBy(String motivatedBy) {
         this.motivatedBy = motivatedBy;
     }
-    
-    
-
 }

@@ -43,7 +43,6 @@ import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
 import phis2ws.service.resources.dto.AnnotationDTO;
-import phis2ws.service.resources.validation.interfaces.IsValidURI;
 import phis2ws.service.view.brapi.form.ResponseFormAnnotation;
 import phis2ws.service.view.model.phis.Annotation;
 
@@ -162,15 +161,15 @@ public class AnnotationResourceService {
     public Response getAnnotationsBySearch(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int pageSize,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
-            @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_URI) @IsValidURI @QueryParam("uri") String uri,
+            @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_URI) @QueryParam("uri") String uri,
             //SILEX:conception
             // Need to specify if it necessary 
             // @ApiParam(value = "Search by creation date", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_CREATED) @hasValidDateFormat  @QueryParam("created") String created,
             //\SILEX:conception
-            @ApiParam(value = "Search by creator", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_CREATOR) @IsValidURI  @QueryParam("creator") String creator,
-            @ApiParam(value = "Search by motivation", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_MOTIVATEDBY) @IsValidURI @QueryParam("motivatedBy") String motivatedBy,
+            @ApiParam(value = "Search by creator", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_CREATOR)  @QueryParam("creator") String creator,
+            @ApiParam(value = "Search by motivation", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_MOTIVATEDBY) @QueryParam("motivatedBy") String motivatedBy,
             @ApiParam(value = "Search by comment", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_COMMENT) @QueryParam("comment") String comment,
-            @ApiParam(value = "Search by target", example = DocumentationAnnotation.EXAMPLE_AGRONOMICAL_OBJECT_URI) @IsValidURI @QueryParam("target") String target) {
+            @ApiParam(value = "Search by target", example = DocumentationAnnotation.EXAMPLE_AGRONOMICAL_OBJECT_URI) @QueryParam("target") String target) {
 
         AnnotationDAOSesame annotationDAO = new AnnotationDAOSesame();
         if (uri != null) {
@@ -206,18 +205,18 @@ public class AnnotationResourceService {
     /**
      * Search annotations corresponding to search params given by a user
      *
-     * @param sensorDAOSesame
+     * @param annotationDAOSesame
      * @return the annotations corresponding to the search
      */
-    private Response getAnnotationData(AnnotationDAOSesame annotationDAO) {
+    private Response getAnnotationData(AnnotationDAOSesame annotationDAOSesame) {
         ArrayList<Annotation> annotations;
         ArrayList<Status> statusList = new ArrayList<>();
         ResponseFormAnnotation getResponse;
 
         // Count all annotations for this specific request
-        Integer totalCount = annotationDAO.count();
+        Integer totalCount = annotationDAOSesame.count();
         // Retreive all annotations returned by the query
-        annotations = annotationDAO.allPaginate();
+        annotations = annotationDAOSesame.allPaginate();
 
         if (annotations == null) {
             getResponse = new ResponseFormAnnotation(0, 0, annotations, true);
@@ -226,7 +225,7 @@ public class AnnotationResourceService {
             getResponse = new ResponseFormAnnotation(0, 0, annotations, true);
             return noResultFound(getResponse, statusList);
         } else {
-            getResponse = new ResponseFormAnnotation(annotationDAO.getPageSize(), annotationDAO.getPage(), annotations, true, totalCount);
+            getResponse = new ResponseFormAnnotation(annotationDAOSesame.getPageSize(), annotationDAOSesame.getPage(), annotations, true, totalCount);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }

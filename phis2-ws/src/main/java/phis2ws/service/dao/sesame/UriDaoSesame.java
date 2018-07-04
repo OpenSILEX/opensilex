@@ -194,7 +194,7 @@ public class UriDaoSesame extends DAOSesame<Uri> {
      * @return SPARQLQueryBuilder
      * query example : 
      * SELECT ?instance ?subclass 
-     * WHERE {?subclass rdfs:subClassOf(*) context URI }
+     * WHERE {?subclass a context URI }
      */
     protected SPARQLQueryBuilder prepareInstanceSearchQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
@@ -210,14 +210,7 @@ public class UriDaoSesame extends DAOSesame<Uri> {
         }
 
         query.appendSelect(" ?instance");
-        query.appendSelect(" ?subclass");
-        // if deep get descendents
-        if (deep) {
-            query.appendTriplet("?subclass", NAMESPACES.getRelationsProperty("subClassOf*"), contextURI, null);
-        } else {
-            query.appendTriplet("?subclass", NAMESPACES.getRelationsProperty("subClassOf"), contextURI, null);
-        }
-        query.appendTriplet("?instance", NAMESPACES.getRelationsProperty("type"), "?subclass", null);
+        query.appendTriplet("?instance", NAMESPACES.getRelationsProperty("type"), contextURI, null);
         LOGGER.debug("sparql select query : " + query.toString());
         return query;
     }
@@ -367,8 +360,7 @@ public class UriDaoSesame extends DAOSesame<Uri> {
                 Uri instance = new Uri();
 
                 instance.setUri(bindingSet.getValue(TRIPLESTORE_FIELDS_INSTANCE).stringValue());
-                instance.setRdfType(bindingSet.getValue(TRIPLESTORE_FIELDS_SUBCLASS).stringValue());
-
+                instance.setRdfType(uri);
                 instances.add(instance);
             }
         }

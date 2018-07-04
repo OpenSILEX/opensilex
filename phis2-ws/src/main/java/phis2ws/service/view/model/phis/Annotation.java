@@ -36,7 +36,7 @@ public class Annotation {
     // motivation instance uri that describe the purpose of this annotation  eg. http://www.w3.org/ns/oa#commenting
     private String motivatedBy;
     
-    // uri that are annoted by this annotation  eg. http://www.phenome-fppn.fr/diaphen/2017/o1032481
+    // uris that are annoted by this annotation  eg. http://www.phenome-fppn.fr/diaphen/2017/o1032481
     private ArrayList<String> targets;
 
     public String getUri() {

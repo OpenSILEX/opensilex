@@ -48,7 +48,6 @@ import phis2ws.service.view.model.phis.Annotation;
 
 /**
  * Represents the annotation service.
- *
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 @Api("/annotations")

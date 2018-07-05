@@ -276,7 +276,7 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
         userToReturn.setAvailable(result.getString("available"));
         // Arnaud Charleroy add URI 
         userToReturn.setUri(result.getString("uri"));
-        
+
         return userToReturn;
     }
 
@@ -448,11 +448,6 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
                     + "(\"users_email\", \"group_uri\")"
                     + " VALUES (?, ?)";
 
-            UriGenerator uriGenerator = new UriGenerator();
-            URINamespaces uriNamespaces = new URINamespaces();
-            final String insertUserURI = "UPDATE \"users\""
-                    + "SET \"uri\" = ? WHERE \"email\" = ?";
-
             Connection connection = null;
             int inserted = 0;
             int exists = 0;
@@ -468,7 +463,6 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
 
                 insertPreparedStatementUser = connection.prepareStatement(insertGab);
                 insertPreparedStatementAtGroupUsers = connection.prepareStatement(insertGabAtUserGroup);
-                insertPreparedStatementUserUri = connection.prepareStatement(insertUserURI);
 
                 for (User u : users) {
                     if (!existInDB(u)) {
@@ -498,13 +492,6 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
 
                         insertPreparedStatementUser.execute();
 
-                        // add new URI to user
-                        String userUri = uriGenerator.generateNewInstanceUri(uriNamespaces.getObjectsProperty("Person"), null, u.getEmail());
-                        insertPreparedStatementUserUri.setString(1, userUri);
-                        insertPreparedStatementUserUri.setString(2, u.getEmail());
-                        LOGGER.trace(log + " query : " + insertPreparedStatementUserUri.toString());
-                        u.setUri(userUri);
-
                         //Ajout dans at_group_users des groupes auxquels l'utilisateur appartient.
                         for (Group group : u.getGroups()) {
                             insertPreparedStatementAtGroupUsers.setString(1, u.getEmail());
@@ -522,7 +509,6 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
                     if (++count % batchSize == 0) {
                         insertPreparedStatementUser.executeBatch();
                         insertPreparedStatementAtGroupUsers.executeBatch();
-                        insertPreparedStatementUserUri.executeBatch();
                         insertionLeft = false;
                     }
                 }
@@ -530,12 +516,43 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
                 if (insertionLeft) {
                     insertPreparedStatementUser.executeBatch(); // checkAndInsert remaining records
                     insertPreparedStatementAtGroupUsers.executeBatch();
-                    insertPreparedStatementUserUri.executeBatch();
                 }
                 connection.commit(); //Envoi des données dans la BD
-////////////////////
-//ATTENTION, vérifications à re regarder et re vérifier
-//////////////////
+
+                //SILEX:conception
+                // Suggestion : ? create user uri directly from firstname and lastname
+                //\SILEX:conception
+                // Insert URI
+                UriGenerator uriGenerator = new UriGenerator();
+                URINamespaces uriNamespaces = new URINamespaces();
+                final String insertUserURI = "UPDATE \"users\""
+                        + "SET \"uri\" = ? WHERE \"email\" = ?";
+                insertPreparedStatementUserUri = connection.prepareStatement(insertUserURI);
+                for (User u : users) {
+                    if (existInDB(u)) {
+                        // add new URI to user
+                        String userUri = uriGenerator.generateNewInstanceUri(uriNamespaces.getObjectsProperty("cPerson"), null, u.getEmail());
+                        u.setUri(userUri);
+                        insertPreparedStatementUserUri.setString(1, u.getUri());
+                        insertPreparedStatementUserUri.setString(2, u.getEmail());
+                        //Add log for client tracability
+                        String log = "";
+                        if (remoteUserAdress != null) {
+                            log += "IP Addess " + remoteUserAdress + " - ";
+                        }
+                        if (user != null) {
+                            log += "User : " + user.getEmail() + " - ";
+                        }
+                        LOGGER.trace(log + " query : " + insertPreparedStatementUserUri.toString());
+                        insertPreparedStatementUserUri.execute();
+                    }
+                }
+                insertPreparedStatementUserUri.executeBatch();
+                connection.commit(); //Send data to database
+
+                ////////////////////
+                //ATTENTION, vérifications à re regarder et re vérifier
+                //////////////////
                 //Si data insérées et existantes
                 if (exists > 0 && inserted > 0) {
                     results = new POSTResultsReturn(resultState, insertionState, dataState);
@@ -589,7 +606,8 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
     }
 
     @Override
-    public POSTResultsReturn checkAndInsertList(List<UserDTO> newObjects) {
+    public POSTResultsReturn checkAndInsertList(List<UserDTO> newObjects
+    ) {
         POSTResultsReturn postResult;
         try {
             postResult = this.checkAndInsertUserList(newObjects);
@@ -601,7 +619,8 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
     }
 
     @Override
-    public POSTResultsReturn checkAndInsert(UserDTO newObject) {
+    public POSTResultsReturn checkAndInsert(UserDTO newObject
+    ) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

@@ -166,6 +166,7 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_USER_ORCID = "orcid";
     public static final String EXAMPLE_USER_ADMIN = "true";
     public static final String EXAMPLE_USER_AVAILABLE = "true";
+    public static final String EXAMPLE_USER_URI = "http://www.phenome-fppn.fr/diaphen/id/agent/mvidal";
 
     public static final String EXAMPLE_DATA_INCERTITUDE = "0.4";
     public static final String EXAMPLE_DATA_VALUE = "3.0000000";

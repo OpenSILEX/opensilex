@@ -4,9 +4,9 @@
 // Author(s): Morgane Vidal <morgane.vidal@inra.fr>
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2018
-// Creation date: 9 mars 2018
+// Creation date: 9 march 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  9 mars 2018
+// Last modification date:  6 july 2018
 // Subject: class to generate differents kinds of uris (vector, sensor, ...)
 //******************************************************************************
 package phis2ws.service.utils;
@@ -18,7 +18,6 @@ import org.slf4j.Logger;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.mongo.ImageMetadataDaoMongo;
-import phis2ws.service.dao.phis.UserDaoPhisBrapi;
 import phis2ws.service.dao.sesame.AgronomicalObjectDAOSesame;
 import phis2ws.service.dao.sesame.AnnotationDAOSesame;
 import phis2ws.service.dao.sesame.MethodDaoSesame;
@@ -28,7 +27,6 @@ import phis2ws.service.dao.sesame.TraitDaoSesame;
 import phis2ws.service.dao.sesame.UnitDaoSesame;
 import phis2ws.service.dao.sesame.VariableDaoSesame;
 import phis2ws.service.dao.sesame.VectorDAOSesame;
-import phis2ws.service.model.User;
 
 /**
  * generate differents kinds of uris (vector, sensor, ...)
@@ -270,30 +268,13 @@ public class UriGenerator {
      * <unic_code> = firstname first letter concat with lastname in lowercase
      * e.g. http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy
      *
-     * @param agentEmail the agent email
+     * @author Arnaud Charleroy
+     * @param agentSuffixe the agent suffixe e.g. acharleroy
      * @return the new agent uri
      */
-    private String generateAgentUri(String agentEmail) {
-        // retreive user information
-        UserDaoPhisBrapi uspb = new UserDaoPhisBrapi();
-        User user = new User(agentEmail);
-        //SILEX:conception
-        // This will be able change when user information will be put in the triplestore
-        //\SILEX:conception
-        try {
-            uspb.find(user);
-        } catch (Exception ex) {
-            LOGGER.error("Can't able to find this user", ex);
-            return null;
-        }
-
-        // format firstname and lastname
-        String userFirstName = user.getFirstName().trim();
-        String userFamilyName = user.getFamilyName().trim();
-        userFamilyName = userFamilyName.replace(" ", "-");
-
+    private String generateAgentUri(String agentSuffixe) {
         // create URI
-        return PLATFORM_URI_ID_AGENT + userFirstName.toLowerCase().charAt(0) + userFamilyName.toLowerCase();
+        return PLATFORM_URI_ID_AGENT + agentSuffixe;
     }
 
     /**

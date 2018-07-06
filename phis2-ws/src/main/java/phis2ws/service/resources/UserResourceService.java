@@ -73,6 +73,7 @@ public class UserResourceService {
      * @param orcid
      * @param admin
      * @param available
+     * @param uri
      * @return liste des utilisateurs correspondant aux critères de recherche 
      *                                  (ou tous les utilisateurs si pas de critères)
      * Le retour (dans "data") est de la forme : 
@@ -109,7 +110,8 @@ public class UserResourceService {
     @ApiParam(value = "Search by affiliation", example = DocumentationAnnotation.EXAMPLE_USER_AFFILIATION) @QueryParam("affiliation") String affiliation,
     @ApiParam(value = "Search by orcid", example = DocumentationAnnotation.EXAMPLE_USER_ORCID) @QueryParam("orcid") String orcid,
     @ApiParam(value = "Search by admin", example = DocumentationAnnotation.EXAMPLE_USER_ADMIN) @QueryParam("admin") String admin,
-    @ApiParam(value = "Search by available", example = DocumentationAnnotation.EXAMPLE_USER_AVAILABLE) @QueryParam("available") String available) {
+    @ApiParam(value = "Search by available", example = DocumentationAnnotation.EXAMPLE_USER_AVAILABLE) @QueryParam("available") String available,
+    @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_USER_URI) @QueryParam("uri") String uri) {
         UserDaoPhisBrapi userDao = new UserDaoPhisBrapi();
         if (email != null) {
             userDao.email = email;
@@ -137,6 +139,10 @@ public class UserResourceService {
         }
         if (userDao.available != null) {
             userDao.available = available;
+        }
+        
+        if (userDao.uri != null) {
+            userDao.uri = uri;
         }
         
         userDao.setPageSize(limit);
@@ -186,6 +192,7 @@ public class UserResourceService {
         
         return getUsersData(userDao);
     }
+    
     
     @POST
     @ApiOperation(value = "Post a user",

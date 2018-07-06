@@ -152,8 +152,6 @@ public class URINamespaces {
         OBJECTS.put("cRestriction", "owl:Restriction");
         OBJECTS.put("cAgent", CONTEXTS.get("pxFoaf") + "/Agent");
         OBJECTS.put("cPerson", CONTEXTS.get("pxFoaf") + "/Person");
-        OBJECTS.put("cMotivation", CONTEXTS.get("pxOa") + "#Motivation");
-        OBJECTS.put("cAnnotation", CONTEXTS.get("pxOa") + "#Annotation");
     }
 
     private void setRelations() {

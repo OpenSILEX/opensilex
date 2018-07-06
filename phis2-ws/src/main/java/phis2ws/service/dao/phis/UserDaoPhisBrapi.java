@@ -441,8 +441,8 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
 
             final String insertGab = "INSERT INTO \"users\""
                     + "(\"email\", \"password\", \"first_name\", \"family_name\", \"address\","
-                    + "\"phone\", \"affiliation\", \"orcid\", \"isadmin\")"
-                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, cast(? as boolean))";
+                    + "\"phone\", \"affiliation\", \"orcid\", \"isadmin\", \"uri\")"
+                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, cast(? as boolean),?)";
 
             final String insertGabAtUserGroup = "INSERT INTO \"at_group_users\" "
                     + "(\"users_email\", \"group_uri\")"
@@ -451,6 +451,9 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
             Connection connection = null;
             int inserted = 0;
             int exists = 0;
+
+            UriGenerator uriGenerator = new UriGenerator();
+            URINamespaces uriNamespaces = new URINamespaces();
 
             try {
                 //batch
@@ -480,7 +483,13 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
                         } else {
                             insertPreparedStatementUser.setString(9, "f");
                         }
-
+                        // add URI 07/2018
+                        // create uri suffix
+                        String userUriSuffix = ResourcesUtils.createUserUriSuffix(u.getFirstName(), u.getFamilyName());
+                        // set uri to agent
+                        u.setUri(uriGenerator.generateNewInstanceUri(uriNamespaces.getObjectsProperty("cPerson"), null, userUriSuffix));
+                        insertPreparedStatementUser.setString(10, u.getUri());
+                        
                         //Ajout dans les logs de qui a fait quoi (traçabilité)
                         String log = "";
                         if (remoteUserAdress != null) {
@@ -518,37 +527,6 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
                     insertPreparedStatementAtGroupUsers.executeBatch();
                 }
                 connection.commit(); //Envoi des données dans la BD
-
-                //SILEX:conception
-                // Suggestion : ? create user uri directly from firstname and lastname
-                //\SILEX:conception
-                // Insert URI
-                UriGenerator uriGenerator = new UriGenerator();
-                URINamespaces uriNamespaces = new URINamespaces();
-                final String insertUserURI = "UPDATE \"users\""
-                        + "SET \"uri\" = ? WHERE \"email\" = ?";
-                insertPreparedStatementUserUri = connection.prepareStatement(insertUserURI);
-                for (User u : users) {
-                    if (existInDB(u)) {
-                        // add new URI to user
-                        String userUri = uriGenerator.generateNewInstanceUri(uriNamespaces.getObjectsProperty("cPerson"), null, u.getEmail());
-                        u.setUri(userUri);
-                        insertPreparedStatementUserUri.setString(1, u.getUri());
-                        insertPreparedStatementUserUri.setString(2, u.getEmail());
-                        //Add log for client tracability
-                        String log = "";
-                        if (remoteUserAdress != null) {
-                            log += "IP Addess " + remoteUserAdress + " - ";
-                        }
-                        if (user != null) {
-                            log += "User : " + user.getEmail() + " - ";
-                        }
-                        LOGGER.trace(log + " query : " + insertPreparedStatementUserUri.toString());
-                        insertPreparedStatementUserUri.execute();
-                    }
-                }
-                insertPreparedStatementUserUri.executeBatch();
-                connection.commit(); //Send data to database
 
                 ////////////////////
                 //ATTENTION, vérifications à re regarder et re vérifier
@@ -606,8 +584,7 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
     }
 
     @Override
-    public POSTResultsReturn checkAndInsertList(List<UserDTO> newObjects
-    ) {
+    public POSTResultsReturn checkAndInsertList(List<UserDTO> newObjects) {
         POSTResultsReturn postResult;
         try {
             postResult = this.checkAndInsertUserList(newObjects);
@@ -619,8 +596,7 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
     }
 
     @Override
-    public POSTResultsReturn checkAndInsert(UserDTO newObject
-    ) {
+    public POSTResultsReturn checkAndInsert(UserDTO newObject) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

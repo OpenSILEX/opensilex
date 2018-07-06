@@ -21,13 +21,15 @@ import org.joda.time.format.DateTimeFormat;
 
 /**
  * List of functions which can be used in ressources
+ *
  * @author Morgane Vidal
  * @author Arnaud Charleroy
  */
 public class ResourcesUtils {
-    
+
     /**
      * generates a unique string of 32 caracters
+     *
      * @author Arnaud Charleroy
      * @see java.util.UUID randomUUID()
      * @return the UUID
@@ -35,15 +37,15 @@ public class ResourcesUtils {
     public static String getUniqueID() {
         return UUID.randomUUID().toString().replace("-", "");
     }
-    
-     /**
+
+    /**
      * return the boolean value of the given string
+     *
      * @param bool String
      * @author Arnaud Charleroy
-     * @return true if the string is equals to "true" or "t" (it is not case 
-     *         sensitive)
-     *         false if the string is not equals to the precedent strings
-     *         
+     * @return true if the string is equals to "true" or "t" (it is not case
+     * sensitive) false if the string is not equals to the precedent strings
+     *
      */
     public static boolean getStringBooleanValue(String bool) {
         return (bool.equalsIgnoreCase("true") || bool.equalsIgnoreCase("t"));
@@ -51,8 +53,9 @@ public class ResourcesUtils {
 
     /**
      * Capitalize the first Letter of the string
+     *
      * @author Arnaud Charleroy
-     * @param original the string for which we wants the first letter to be 
+     * @param original the string for which we wants the first letter to be
      * capitalized
      * @return the given string with the first lettre capitalized
      */
@@ -62,11 +65,12 @@ public class ResourcesUtils {
 
     /**
      * split a string using the given separator
+     *
      * @author Arnaud Charleroy
      * @param values
      * @param separator
-     * @return the list of elements separated by the given separator in the string
-     *         values
+     * @return the list of elements separated by the given separator in the
+     * string values
      */
     public static List<String> splitStringWithGivenPattern(String values, String separator) {
         List<String> listValues;
@@ -80,8 +84,8 @@ public class ResourcesUtils {
     }
 
     /**
-     * extentY to plantHeight
-     * width to plantWidth
+     * extentY to plantHeight width to plantWidth
+     *
      * @author Arnaud Charleroy
      * @param mongoUserVariable
      * @return
@@ -112,7 +116,7 @@ public class ResourcesUtils {
     /**
      * @author Arnaud Charleroy
      * @param uri
-     * @return 
+     * @return
      */
     public static String getValueOfAnURI(String uri) {
         final String[] parts = uri.split("#");
@@ -122,4 +126,20 @@ public class ResourcesUtils {
             return parts[1];
         }
     }
+
+    /**
+     * generates a new agent uri suffix.
+     *
+     * @param firstName .e.g Arnaud
+     * @param familiyName .e.g familiyName
+     * @return the agent suffix e.g. acharleroy
+     */
+    public static String createUserUriSuffix(String firstName, String familiyName) {
+        String trimmedFirstName = firstName.trim();
+        String trimmedFamilyName = familiyName.trim();
+        String checkedFamilyName = trimmedFamilyName.replace(" ", "-");
+        String checkedFirstName = trimmedFirstName.replace(" ", "-");
+        return checkedFirstName.toLowerCase().charAt(0) + checkedFamilyName.toLowerCase();
+    }
+
 }

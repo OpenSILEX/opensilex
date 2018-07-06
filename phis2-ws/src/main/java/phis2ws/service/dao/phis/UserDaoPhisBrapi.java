@@ -437,12 +437,11 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
         if (dataState) {
             PreparedStatement insertPreparedStatementUser = null;
             PreparedStatement insertPreparedStatementAtGroupUsers = null;
-            PreparedStatement insertPreparedStatementUserUri = null;
 
             final String insertGab = "INSERT INTO \"users\""
                     + "(\"email\", \"password\", \"first_name\", \"family_name\", \"address\","
                     + "\"phone\", \"affiliation\", \"orcid\", \"isadmin\", \"uri\")"
-                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, cast(? as boolean),?)";
+                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, cast(? as boolean), ?)";
 
             final String insertGabAtUserGroup = "INSERT INTO \"at_group_users\" "
                     + "(\"users_email\", \"group_uri\")"
@@ -567,9 +566,6 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
                 }
                 if (insertPreparedStatementAtGroupUsers != null) {
                     insertPreparedStatementAtGroupUsers.close();
-                }
-                if (insertPreparedStatementUserUri != null) {
-                    insertPreparedStatementUserUri.close();
                 }
                 if (connection != null) {
                     connection.close();

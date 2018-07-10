@@ -50,6 +50,7 @@ import phis2ws.service.view.model.phis.Annotation;
 
 /**
  * Represents the annotation service.
+ *
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 @Api("/annotations")
@@ -120,7 +121,7 @@ public class AnnotationResourceService {
     }
 
     /**
-     * search annotation by uri, creator, comment, date of creation, targets
+     * search annotation by uri, creator, comment, date of creation, target
      *
      *
      * @param pageSize
@@ -129,15 +130,15 @@ public class AnnotationResourceService {
      * @param creator
      * @param comment
      * @param target
-     * @param motivatedBy 
+     * @param motivatedBy
      * @return list of the annotation corresponding to the search params given
      * e.g { "metadata": { "pagination": { "pageSize": 20, "currentPage": 0,
      * "totalCount": 297, "totalPages": 15 }, "status": [], "datafiles": [] },
      * "result": { "data": [ { "uri":
      * "http://www.phenome-fppn.fr/platform/id/annotation/8247af37-769c-495b-8e7e-78b1141176c2",
      * "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy",
-     * "creationDate": "2018-06-22T14:54:42+0200", "comment": "Ustilago maydis
-     * infection", "targets": [
+     * "creationDate": "2018-06-22 14:54:42+0200", "comments": ["Ustilago maydis
+     * infection"], "targets": [
      * "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy" ] },{...} )}}
      */
     @GET
@@ -167,7 +168,7 @@ public class AnnotationResourceService {
             // Need to specify if it necessary 
             // @ApiParam(value = "Search by creation date", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_CREATED) @hasValidDateFormat  @QueryParam("created") String created,
             //\SILEX:conception
-            @ApiParam(value = "Search by creator", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_CREATOR)  @QueryParam("creator") String creator,
+            @ApiParam(value = "Search by creator", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_CREATOR) @QueryParam("creator") String creator,
             @ApiParam(value = "Search by motivation", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_MOTIVATEDBY) @QueryParam("motivatedBy") String motivatedBy,
             @ApiParam(value = "Search by comment", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_COMMENT) @QueryParam("comment") String comment,
             @ApiParam(value = "Search by target", example = DocumentationAnnotation.EXAMPLE_AGRONOMICAL_OBJECT_URI) @QueryParam("target") String target) {
@@ -186,7 +187,7 @@ public class AnnotationResourceService {
             annotationDAO.creator = creator;
         }
         if (target != null) {
-            annotationDAO.targets.add(target);
+            annotationDAO.target = target;
         }
         if (comment != null) {
             annotationDAO.bodyValue = comment;
@@ -202,45 +203,36 @@ public class AnnotationResourceService {
 
         return getAnnotationData(annotationDAO);
     }
-    
+
     /**
      * get the informations about a annotation
+     *
      * @param uri
      * @param pageSize
      * @param page
-     * @return the informations about the annotation if it exists
-     * e.g.
-     * {
-     *      "metadata": {
-     *          "pagination": null,
-     *          "status": [],
-     *          "datafiles": []
-     *      },
-     *      "result": {
-     *          "data": [
-     *              {
-     *                 "uri": "http://www.phenome-fppn.fr/diaphen/2018/s18025",
-     *                 "rdfType": "http://www.phenome-fppn.fr/vocabulary/2017#HumiditySensor",
-     *                 "label": "aria_hr1_p",
-     *                 "brand": "unknown",
-     *                 "serialNumber": null,
-     *                 "inServiceDate": null,
-     *                 "dateOfPurchase": null,
-     *                 "dateOfLastCalibration": null,
-     *                 "personInCharge": "user@mail.fr"
-     *              }
-     *          ]
-     *      }
-     * }
+     * @return the informations about the annotation if it exists e.g. {
+     * "metadata": { "pagination": null, "status": [], "datafiles": [] },
+     * "result": { "data": [ { 
+     * "uri": "http://www.phenome-fppn.fr/platform/id/annotation/8247af37-769c-495b-8e7e-78b1141176c2",
+     * "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy",
+     * "creationDate": "2018-06-22 14:54:42+0200",
+     * "comments": ["Ustilago maydis
+     * infection"], 
+     * "targets": [
+     * "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy" 
+     * ] } ] } }
      */
     @GET
     @Path("{uri}")
     @ApiOperation(value = "Get a annotation",
-                  notes = "Retrieve a annotation. Need URL encoded annotation URI")
+            notes = "Retrieve a annotation. Need URL encoded annotation URI")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve a annotation", response = Annotation.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 200, message = "Retrieve a annotation", response = Annotation.class, responseContainer = "List")
+        ,
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION)
+        ,
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED)
+        ,
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiImplicitParams({
@@ -251,9 +243,9 @@ public class AnnotationResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getSensorDetails(
-        @ApiParam(value = DocumentationAnnotation.SENSOR_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @PathParam("uri") String uri,
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int pageSize,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
+            @ApiParam(value = DocumentationAnnotation.SENSOR_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @PathParam("uri") String uri,
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int pageSize,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
 
         if (uri == null) {
             final Status status = new Status(StatusCodeMsg.ACCESS_ERROR, StatusCodeMsg.ERR, "Empty annotation uri");
@@ -268,7 +260,6 @@ public class AnnotationResourceService {
 
         return getAnnotationData(annotationDAO);
     }
-    
 
     /**
      * Search annotations corresponding to search params given by a user
@@ -299,6 +290,12 @@ public class AnnotationResourceService {
         }
     }
 
+    /**
+     * Generic reponse for not found annotations
+     * @param getResponse
+     * @param insertStatusList
+     * @return 
+     */
     private Response noResultFound(ResponseFormAnnotation getResponse, ArrayList<Status> insertStatusList) {
         insertStatusList.add(new Status(StatusCodeMsg.NO_RESULTS, StatusCodeMsg.INFO, "No results for the annotations"));
         getResponse.setStatus(insertStatusList);

@@ -26,16 +26,16 @@ public class Annotation {
 
     // Creation date of this annotation format yyyy-MM-dd HH:mm:ssZ eg. 2018-06-25 15:13:59+0200
     private DateTime created;
-    
+
     // creator of this annotations eg. http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy
     private String creator;
-    
-    // Comment that describe this annotation eg. Ustilago maydis infection
-    private String bodyValue;
-    
+
+    // Comments that describe this annotation eg. Ustilago maydis infection
+    private ArrayList<String> bodiesValue;
+
     // motivation instance uri that describe the purpose of this annotation  eg. http://www.w3.org/ns/oa#commenting
     private String motivatedBy;
-    
+
     // uris that are annoted by this annotation  eg. http://www.phenome-fppn.fr/diaphen/2017/o1032481
     private ArrayList<String> targets;
 
@@ -63,12 +63,20 @@ public class Annotation {
         this.creator = creator;
     }
 
-    public String getBodyValue() {
-        return bodyValue;
+    public ArrayList<String> getBodiesValue() {
+        return bodiesValue;
     }
 
-    public void setBodyValue(String bodyValue) {
-        this.bodyValue = bodyValue;
+    public void setBodiesValue(ArrayList<String> bodiesValue) {
+        this.bodiesValue = bodiesValue;
+    }
+
+    public void addBody(String body) {
+        // If null arraylist is initialized
+        if (this.bodiesValue == null) {
+            this.bodiesValue = new ArrayList<>();
+        }
+        this.bodiesValue.add(body);
     }
 
     public ArrayList<String> getTargets() {

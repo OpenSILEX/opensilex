@@ -32,10 +32,10 @@ import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.dao.phis.UserDaoPhisBrapi;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.model.User;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.resources.dto.AnnotationDTO;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.utils.JsonConverter;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.dates.Dates;
@@ -63,7 +63,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
     final static String TRIPLESTORE_RELATION_TARGET = NAMESPACES.getRelationsProperty("rTarget");
     final static String TRIPLESTORE_RELATION_MOTIVATED_BY = NAMESPACES.getRelationsProperty("rMotivatedBy");
     final static String TRIPLESTORE_CONCEPT_ANNOTATION = NAMESPACES.getObjectsProperty("cAnnotation");
- final static String TRIPLESTORE_CONCEPT_MOTIVATION =NAMESPACES.getObjectsProperty("cMotivation");
+    final static String TRIPLESTORE_CONCEPT_MOTIVATION = NAMESPACES.getObjectsProperty("cMotivation");
     // Search parameters
     // uri of an annotation eg.  http://www.phenome-fppn.fr/platform/id/annotation/8247af37-769c-495b-8e7e-78b1141176c2
     public String uri;
@@ -78,7 +78,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
     public String creator;
     public static final String CREATOR = "creator";
     // uri that are annoted by one or multiple annotations  eg. http://www.phenome-fppn.fr/diaphen/2017/o1032481
-    public ArrayList<String> targets = new ArrayList<>();
+    public String target;
     public static final String TARGET = "target";
     // motivation instance uri that describe the purpose of the annotation  eg. http://www.w3.org/ns/oa#commenting
     public String motivatedBy;
@@ -111,6 +111,63 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
             query.appendSelect(annotationUri);
         }
 
+        query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_CREATED, "?" + CREATED, null);
+
+        if (creator != null) {
+            query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_CREATOR, creator, null);
+        } else {
+            query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_CREATOR, "?" + CREATOR, null);
+        }
+
+        if (motivatedBy != null) {
+            query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_MOTIVATED_BY, motivatedBy, null);
+        } else {
+            query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_MOTIVATED_BY, "?" + MOTIVATED_BY, null);
+        }
+
+        if (target != null) {
+            UriDaoSesame uriDao = new UriDaoSesame();
+            if (uriDao.existObject(target)) {
+                query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_TARGET, target, null);
+
+            }
+        } else {
+            query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_TARGET, "?" + TARGET, null);
+        }
+
+        query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_BODYVALUE, "?" + BODY_VALUE, null);
+        if (bodyValue != null) {
+            query.appendFilter("regex(STR(?" + BODY_VALUE + "), '" + bodyValue + "', 'i')");
+        }
+
+        query.appendLimit(this.getPageSize());
+        query.appendOffset(this.getPage() * this.getPageSize());
+        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        return query;
+
+    }
+
+    /**
+     * Query generated for a sigle annotation
+     *
+     * SELECT DISTINCT ?uri ?created ?bodyValue WHERE { ?uri
+     * <http://purl.org/dc/terms/created> ?created . ?uri
+     * <http://purl.org/dc/terms/creator>
+     * <http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy> . ?uri
+     * <http://www.w3.org/ns/oa#motivatedBy>
+     * <http://www.w3.org/ns/oa#commenting> . ?uri
+     * <http://www.w3.org/ns/oa#bodyValue> ?bodyValue . FILTER (
+     * regex(STR(?bodyValue), 'Ustilago maydis infection', 'i') ) } LIMIT 20
+     *
+     * @param uri
+     * @return query generated with the searched parameter above
+     */
+    protected SPARQLQueryBuilder prepareSimpleAnnotationQuery(String uri) {
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        query.appendDistinct(Boolean.TRUE);
+
+        String annotationUri = "<" + uri + ">";
+
         query.appendSelect("?" + CREATED);
         query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_CREATED, "?" + CREATED, null);
 
@@ -128,17 +185,10 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
             query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_MOTIVATED_BY, "?" + MOTIVATED_BY, null);
         }
 
-        if (targets != null && !targets.isEmpty()) {
-            UriDaoSesame uriDao = new UriDaoSesame();
-            for (String target : targets) {
-                if (uriDao.existObject(target)) {
-                    query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_TARGET, target, null);
-                }
-
-            }
-        } else {
-            query.appendSelect("?" + TARGET);
-            query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_TARGET, "?" + TARGET, null);
+        query.appendSelect("?" + TARGET);
+        query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_TARGET, "?" + TARGET, null);
+        if (target != null) {
+            query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_TARGET, target, null);
         }
 
         query.appendSelect("?" + BODY_VALUE);
@@ -147,9 +197,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
             query.appendFilter("regex(STR(?" + BODY_VALUE + "), '" + bodyValue + "', 'i')");
         }
 
-        query.appendLimit(this.getPageSize());
-        query.appendOffset(this.getPage() * this.getPageSize());
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        LOGGER.debug(SPARQL_SELECT_QUERY + "Simple query" +query.toString());
         return query;
 
     }
@@ -174,7 +222,8 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
         return count;
     }
 
-   /**Count query generated by the searched parameters above
+    /**
+     * Count query generated by the searched parameters above
      *
      * (count(distinct ?uri) as ?count) WHERE { ?uri
      * <http://purl.org/dc/terms/created> ?created . ?uri
@@ -201,9 +250,9 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
      * check and insert the given annotations in the triplestore
      *
      * @param annotations
-     * @return the insertion result. Message error if errors founded in data the
-     * list of the generated uri of the annotations if the insertion has been
-     * done
+     * @return the insertion resultAnnotationUri. Message error if errors
+     * founded in data the list of the generated uri of the annotations if the
+     * insertion has been done
      */
     public POSTResultsReturn checkAndInsert(List<AnnotationDTO> annotations) {
         POSTResultsReturn checkResult = check(annotations);
@@ -218,8 +267,8 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
      * insert the given annotations in the triplestore
      *
      * @param annotationsDTO
-     * @return the insertion result, with the errors list or the uri of the
-     * inserted annotations
+     * @return the insertion resultAnnotationUri, with the errors list or the
+     * uri of the inserted annotations
      */
     public POSTResultsReturn insert(List<AnnotationDTO> annotationsDTO) {
         List<Status> insertStatus = new ArrayList<>();
@@ -275,7 +324,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
      * rdf:type  <http://www.w3.org/ns/oa#Annotation> .
      * <http://www.phenome-fppn.fr/platform/id/annotation/a2f9674f-3e49-4a02-8770-e5a43a327b37>
      * <http://purl.org/dc/terms/created>
-     * "2018-06-22T15:18:13+0200"^^xsd:dateTime .
+     * "2018-06-22 15:18:13+0200"^^xsd:dateTime .
      * <http://www.phenome-fppn.fr/platform/id/annotation/a2f9674f-3e49-4a02-8770-e5a43a327b37>
      * <http://purl.org/dc/terms/creator>
      * <http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy> .
@@ -293,11 +342,20 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
 
         query.appendGraphURI(TRIPLESTORE_CONTEXT_ANNOTATION);
         query.appendTriplet(annotation.getUri(), TRIPLESTORE_RELATION_TYPE, NAMESPACES.getObjectsProperty("cAnnotation"), null);
-        DateTimeFormatter formatter = DateTimeFormat.forPattern(DateFormats.YMDTHMSZ_FORMAT);
+        DateTimeFormatter formatter = DateTimeFormat.forPattern(DateFormats.YMDHMSZ_FORMAT);
         query.appendTriplet(annotation.getUri(), TRIPLESTORE_RELATION_CREATED, "\"" + annotation.getCreated().toString(formatter) + "\"^^xsd:dateTime", null);
         query.appendTriplet(annotation.getUri(), TRIPLESTORE_RELATION_CREATOR, annotation.getCreator(), null);
-        query.appendTriplet(annotation.getUri(), TRIPLESTORE_RELATION_BODYVALUE, "\"" + annotation.getBodyValue() + "\"", null);
+
         query.appendTriplet(annotation.getUri(), TRIPLESTORE_RELATION_MOTIVATED_BY, annotation.getMotivatedBy(), null);
+
+        /**
+         * @link
+         */
+        if (annotation.getBodiesValue() != null && !annotation.getBodiesValue().isEmpty()) {
+            for (String annotbodyValue : annotation.getBodiesValue()) {
+                query.appendTriplet(annotation.getUri(), TRIPLESTORE_RELATION_BODYVALUE, "\"" + annotbodyValue + "\"", null);
+            }
+        }
 
         if (annotation.getTargets() != null && !annotation.getTargets().isEmpty()) {
             for (String targetUri : annotation.getTargets()) {
@@ -312,8 +370,8 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
      * check the given annotations's metadata
      *
      * @param annotations
-     * @return the result with the list of the errors founded (empty if no error
-     * founded)
+     * @return the resultAnnotationUri with the list of the errors founded
+     * (empty if no error founded)
      */
     public POSTResultsReturn check(List<AnnotationDTO> annotations) {
         POSTResultsReturn check = null;
@@ -323,14 +381,14 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
 
         UriDaoSesame uriDao = new UriDaoSesame();
         UserDaoPhisBrapi userDao = new UserDaoPhisBrapi();
-        
+
         //1. check data
         for (AnnotationDTO annotation : annotations) {
             //1.1 check required fields
             if ((boolean) annotation.isOk().get(AbstractVerifiedClass.STATE)) {
                 try {
                     //1.2 check motivation
-                    if (!uriDao.isInstanceOf(annotation.getMotivatedBy(), TRIPLESTORE_CONCEPT_MOTIVATION)) {
+                    if (annotation.getMotivatedBy() == null || !uriDao.existObject(annotation.getMotivatedBy()) ||!uriDao.isInstanceOf(annotation.getMotivatedBy(), TRIPLESTORE_CONCEPT_MOTIVATION)) {
                         dataOk = false;
                         checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.WRONG_VALUE + " for the motivatedBy field"));
                     }
@@ -340,20 +398,15 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
                         dataOk = false;
                         checkStatus.add(new Status(StatusCodeMsg.UNKNOWN_URI, StatusCodeMsg.ERR, "Unknown person email"));
                     }
-                  
 
-                    //1.4 check if targets exist
+                    //1.4 check if target exist
                     for (String target : annotation.getTargets()) {
                         if (target.isEmpty() || !uriDao.existObject(target)) {
                             dataOk = false;
                             checkStatus.add(new Status(StatusCodeMsg.UNKNOWN_URI, StatusCodeMsg.ERR, "Unknown target uri"));
                         }
                     }
-                    //1.5 check if motivation exists and is valid
-                    if (annotation.getMotivatedBy() == null || !uriDao.existObject(annotation.getMotivatedBy())) {
-                        dataOk = false;
-                        checkStatus.add(new Status(StatusCodeMsg.UNKNOWN_URI, StatusCodeMsg.ERR, "Unknown motivation"));
-                    }
+                   
 
                 } catch (Exception ex) {
                     LOGGER.error("Data check error", ex);
@@ -378,58 +431,98 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
      * @return the list of the annotations which match the given search params.
      */
     public ArrayList<Annotation> allPaginate() {
+        // retreve uri list
         SPARQLQueryBuilder query = prepareSearchQuery();
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         ArrayList<Annotation> annotations = new ArrayList<>();
 
-        try (TupleQueryResult result = tupleQuery.evaluate()) {
-            while (result.hasNext()) {
-                BindingSet bindingSet = result.next();
-                Annotation annotation = getAnnotationFromBindingSet(bindingSet);
-                annotations.add(annotation);
+        // Retreive all informations
+        // for each uri
+        try (TupleQueryResult resultAnnotationUri = tupleQuery.evaluate()) {
+            if (uri != null) {
+                SPARQLQueryBuilder simpleAnnotationQuery = prepareSimpleAnnotationQuery(uri);
+                TupleQuery tupleQueryUniqueAnnotation = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, simpleAnnotationQuery.toString());
+
+                //iterate on uri
+                try (TupleQueryResult resultFullAnnotation = tupleQueryUniqueAnnotation.evaluate()) {
+                    Annotation annotation = getAnnotationFromResult(resultFullAnnotation,uri);
+                    annotations.add(annotation);
+                }
+            } else {
+                while (resultAnnotationUri.hasNext()) {
+                    BindingSet bindingSet = resultAnnotationUri.next();
+                    String annotationUri = bindingSet.getValue(URI).stringValue();
+
+                    SPARQLQueryBuilder simpleAnnotationQuery = prepareSimpleAnnotationQuery(annotationUri);
+                    TupleQuery tupleQueryUniqueAnnotation = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, simpleAnnotationQuery.toString());
+
+                    //iterate on uri
+                    try (TupleQueryResult resultFullAnnotation = tupleQueryUniqueAnnotation.evaluate()) {
+                        Annotation annotation = getAnnotationFromResult(resultFullAnnotation,annotationUri);
+                        annotations.add(annotation);
+                    }
+                }
             }
+            LOGGER.debug(JsonConverter.ConvertToJson(annotations));
+            return annotations;
         }
-        return annotations;
     }
 
     /**
-     * get a annotation from a given binding set. Assume that the following
-     * attributes exist : uri, creator, created, bodyValue
+     * get a annotation from a given resultAnnotationUri. Assume that the
+     * following attributes exist : uri, creator, created, bodyValue
      *
-     * @param bindingSet a bindingSet from a search query
-     * @return a annotation with data extracted from the given bindingSet
+     * @param result a list of bindingSet from a search query
+     * @param uri the annotation uri 
+     * @return a annotation with data extracted from the given bindingSets
      */
-    private Annotation getAnnotationFromBindingSet(BindingSet bindingSet) {
+    private Annotation getAnnotationFromResult(TupleQueryResult result, String uri) {
         Annotation annotation = new Annotation();
 
-        if (uri != null) {
-            annotation.setUri(uri);
-        } else {
-            annotation.setUri(bindingSet.getValue(URI).stringValue());
+        while (result.hasNext()) {
+            BindingSet bindingSet = result.next();
+
+             annotation.setUri(uri);
+             
+            // created date
+            String creationDate = bindingSet.getValue(CREATED).stringValue();
+            DateTime stringToDateTime = Dates.stringToDateTimeWithGivenPattern(creationDate, DateFormats.YMDHMSZ_FORMAT);
+            annotation.setCreated(stringToDateTime);
+
+            if (creator != null) {
+                annotation.setCreator(creator);
+            } else {
+                annotation.setCreator(bindingSet.getValue(CREATOR).stringValue());
+            }
+
+            if (bindingSet.getValue(BODY_VALUE) != null) {
+                if (annotation.getBodiesValue() != null
+                        && !annotation.getBodiesValue().isEmpty()
+                        && !annotation.getBodiesValue().contains(bindingSet.getValue(BODY_VALUE).stringValue())) {
+                    annotation.addBody(bindingSet.getValue(BODY_VALUE).stringValue());
+                } else {
+                    annotation.addBody(bindingSet.getValue(BODY_VALUE).stringValue());
+                }
+            }
+
+            if (motivatedBy != null) {
+                annotation.setMotivatedBy(motivatedBy);
+            } else {
+                annotation.setMotivatedBy(bindingSet.getValue(MOTIVATED_BY).stringValue());
+            }
+
+            //SILEX:concpetion
+            //For now annotation can takes only one target
+            //\SILEX
+            if (annotation.getTargets() != null
+                    && !annotation.getTargets().isEmpty()
+                    && !annotation.getTargets().contains(bindingSet.getValue(TARGET).stringValue())) {
+                annotation.addTarget(bindingSet.getValue(TARGET).stringValue());
+            } else {
+                annotation.addTarget(bindingSet.getValue(TARGET).stringValue());
+            }
+
         }
-        // created date
-        String creationDate = bindingSet.getValue(CREATED).stringValue();
-        DateTime stringToDateTime = Dates.stringToDateTimeWithGivenPattern(creationDate, DateFormats.YMDTHMSZ_FORMAT);
-        annotation.setCreated(stringToDateTime);
-
-        if (creator != null) {
-            annotation.setCreator(creator);
-        } else {
-            annotation.setCreator(bindingSet.getValue(CREATOR).stringValue());
-        }
-
-        annotation.setBodyValue(bindingSet.getValue(BODY_VALUE).stringValue());
-
-        if (motivatedBy != null) {
-            annotation.setMotivatedBy(motivatedBy);
-        } else {
-            annotation.setMotivatedBy(bindingSet.getValue(MOTIVATED_BY).stringValue());
-        }
-
-        //SILEX:concpetion
-        //For now annotation can takes only one target
-        //\SILEX
-        annotation.addTarget(bindingSet.getValue(TARGET).stringValue());
 
         return annotation;
     }

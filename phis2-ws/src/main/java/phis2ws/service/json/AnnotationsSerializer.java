@@ -38,7 +38,7 @@ public class AnnotationsSerializer implements JsonSerializer<Annotation> {
     public final static String TARGETS_LABEL = "targets";
     public final static String URI_LABEL = "uri";
     public final static String CREATOR_LABEL = "creator";
-    public final static String BODYVALUE_LABEL = "comment";
+    public final static String BODYVALUE_LABEL = "comments";
     public final static String MOTIVATION_LABEL = "motivatedBy";
 
     /**
@@ -47,7 +47,7 @@ public class AnnotationsSerializer implements JsonSerializer<Annotation> {
      * "http://www.phenome-fppn.fr/platform/id/annotation/361ac1e4-dc5a-4fdb-95a3-3f65556b1d32",
      * "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy",
      * "motivatedBy": "http://www.w3.org/ns/oa#commenting", "creationDate":
-     * "2018-06-25T15:25:02+0200", "comment": "Ustilago maydis infection",
+     * "2018-06-25T15:25:02+0200", "comments": [ "Ustilago maydis infection" ],
      * "targets": [ "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy" ] }
      */
     @Override
@@ -59,15 +59,22 @@ public class AnnotationsSerializer implements JsonSerializer<Annotation> {
         annotationJson.add(MOTIVATION_LABEL, new JsonPrimitive(src.getMotivatedBy()));
 
         DateTime created = src.getCreated();
-        DateTimeFormatter formatter = DateTimeFormat.forPattern(DateFormats.YMDTHMSZ_FORMAT);
+        DateTimeFormatter formatter = DateTimeFormat.forPattern(DateFormats.YMDHMSZ_FORMAT);
         annotationJson.add(CREATED_LABEL, new JsonPrimitive(created.toString(formatter)));
-
-        annotationJson.add(BODYVALUE_LABEL, new JsonPrimitive(src.getBodyValue()));
-        JsonArray jsonArray = new JsonArray();
-        for (String target : src.getTargets()) {
-            jsonArray.add(target);
+        
+        JsonArray bodyJsonArray = new JsonArray();
+        if(src.getBodiesValue() != null && !src.getBodiesValue().isEmpty()){
+            for (String body : src.getBodiesValue()) {
+                bodyJsonArray.add(body);
+            }
         }
-        annotationJson.add(TARGETS_LABEL, jsonArray);
+        annotationJson.add(BODYVALUE_LABEL, bodyJsonArray);
+        
+        JsonArray targetJsonArray = new JsonArray();
+        for (String target : src.getTargets()) {
+            targetJsonArray.add(target);
+        }
+        annotationJson.add(TARGETS_LABEL, targetJsonArray);
 
         return annotationJson;
     }

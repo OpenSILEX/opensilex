@@ -35,10 +35,17 @@ public class AnnotationDTO extends AbstractVerifiedClass {
     @NotNull
     private String creator;
 
-    // represent body value
-    private String comment;
+    /**
+     * represents annotation bodies value
+     * @link https://www.w3.org/TR/annotation-model/#cardinality-of-bodies-and-targets
+     */
+    private ArrayList<String> comments;
 
-    // uris that are annoted by this annotation  eg. http://www.phenome-fppn.fr/diaphen/2017/o1032481
+    /**
+     * uris that are annoted by this annotation eg.
+     * http://www.phenome-fppn.fr/diaphen/2017/o1032481
+     * @link https://www.w3.org/TR/annotation-model/#cardinality-of-bodies-and-targets
+     */
     private ArrayList<String> targets;
 
     @Override
@@ -46,7 +53,7 @@ public class AnnotationDTO extends AbstractVerifiedClass {
         Map<String, Boolean> rules = new HashMap<>();
         rules.put("motivatedBy", Boolean.TRUE);
         rules.put("creator", Boolean.TRUE);
-        rules.put("bodyValue", Boolean.TRUE);
+        rules.put("comments", Boolean.FALSE);
         rules.put("targets", Boolean.TRUE);
 
         return rules;
@@ -55,7 +62,7 @@ public class AnnotationDTO extends AbstractVerifiedClass {
     @Override
     public Annotation createObjectFromDTO() {
         Annotation annotation = new Annotation();
-        annotation.setBodyValue(comment);
+        annotation.setBodiesValue(comments);
         DateTime currentTime = DateTime.now();
         annotation.setCreated(currentTime);
         annotation.setCreator(creator);
@@ -82,16 +89,16 @@ public class AnnotationDTO extends AbstractVerifiedClass {
         this.creator = creator;
     }
 
-    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_ANNOTATION_COMMENT)
-    public String getComment() {
-        return comment;
+    @ApiModelProperty(notes = "Need to be an array of text")
+    public ArrayList<String> getComments() {
+        return comments;
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;
+    public void setComments(ArrayList<String> comments) {
+        this.comments = comments;
     }
 
-    @ApiModelProperty(notes = "Need to be an URI array")
+    @ApiModelProperty(notes = "Need to be an array of URI")
     public ArrayList<String> getTargets() {
         return targets;
     }

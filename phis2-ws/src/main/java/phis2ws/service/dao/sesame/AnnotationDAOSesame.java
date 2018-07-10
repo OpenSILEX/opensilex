@@ -396,12 +396,12 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
                     //1.3 check if person exist // PostgresQL
                     if (!userDao.isValidUserUri(annotation.getCreator())) {
                         dataOk = false;
-                        checkStatus.add(new Status(StatusCodeMsg.UNKNOWN_URI, StatusCodeMsg.ERR, "Unknown person email"));
+                        checkStatus.add(new Status(StatusCodeMsg.UNKNOWN_URI, StatusCodeMsg.ERR,  StatusCodeMsg.WRONG_VALUE + " for person uri"));
                     }
 
                     //1.4 check if target exist
                     for (String target : annotation.getTargets()) {
-                        if (target.isEmpty() || !uriDao.existObject(target)) {
+                        if (target.isEmpty()) {
                             dataOk = false;
                             checkStatus.add(new Status(StatusCodeMsg.UNKNOWN_URI, StatusCodeMsg.ERR, "Unknown target uri"));
                         }

@@ -6,7 +6,7 @@
 // Copyright © - INRA - 2016
 // Creation date: august 2016
 // Contact:i.nembrot@laposte.net, arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  June, 2017 (adaptation to PHIS field)
+// Last modification date:  July, 2018 (add special namespace)
 // Subject: personal parameters for global usage
 // G_URI :
 // - M3P URI for further use so that we don"t need to repeat paths in each page
@@ -16,6 +16,7 @@
 //***********************************************************************************************
 package phis2ws.service.configuration;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import phis2ws.service.PropertiesFileManager;
@@ -24,7 +25,7 @@ import phis2ws.service.PropertiesFileManager;
  * Permet de creer des URI de concepts, objets et relation entre objets et
  * proprietes en fonction pour une platform
  *
- * @author A. Charleroy
+ * @author Arnaud Charleroy. Charleroy
  */
 public class URINamespaces {
 
@@ -34,6 +35,18 @@ public class URINamespaces {
     private static final Map<String, String> RELATIONS = new HashMap<>();
     private static final Map<String, String> W3C_NAMESPACES = new HashMap<>();
     private static String platform = null;
+    
+      // Add personal namespaces
+    public static final Map<String, String> USER_SPECIFIC_NAMESPACES;
+
+    static {
+        Map<String, String> temporaryMap = new HashMap<>();
+        String baseUri = PropertiesFileManager.getConfigFileProperty("service", "baseURI");
+        // Can put multiple other namespaces
+        temporaryMap.put("plateform", baseUri);
+        USER_SPECIFIC_NAMESPACES = Collections.unmodifiableMap(temporaryMap);
+    }
+
 
     public URINamespaces() {
         platform = PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "platform");;

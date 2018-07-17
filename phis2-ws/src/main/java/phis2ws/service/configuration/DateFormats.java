@@ -21,6 +21,8 @@ import java.util.List;
 //          Attribute : YMDHMSZ_FORMAT
 //          Purpose : wrong date time format @link https://www.w3.org/TR/xmlschema-2/#dateTime
 //                    must add 'T'separator indicating that time-of-day follows;
+//                    Impact the API clients, internal WS search method parameters and 
+//                    class model with datetime attribute.
  */
 public final class DateFormats {
 
@@ -38,7 +40,7 @@ public final class DateFormats {
 
     //Dates formats
     public final static String YMD_FORMAT = "yyyy-MM-dd";
-    public final static String YMDHMSZ_FORMAT = "yyyy-MM-dd HH:mm:ssZ";
+    public final static String YMDHMSZ_FORMAT = "yyyy-MM-dd HH:mm:ssZ"; // To change to yyyy-MM-ddTHH:mm:ssZ see todo above 
     public final static String YMDHMS_FORMAT = "yyyy-MM-dd HH:mm:ss";
     
     //Timezones

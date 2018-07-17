@@ -1,13 +1,13 @@
 //**********************************************************************************************
-//                                       ResultatExperiment.java 
+//                                       ResultCalls.java 
 //
-// Author(s): Morgane Vidal
+// Author(s): Alice Boizet
 // PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
-// Creation date: august 2017
-// Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  January, 2017
-// Subject: extended from Resultat adapted to the experiment list
+// Copyright © - INRA - 2018
+// Creation date: July 2018
+// Contact: alice.boizet@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Last modification date:  July 2018
+// Subject: extended from Resultat adapted to the calls list
 //***********************************************************************************************
 
 package phis2ws.service.view.brapi.results;

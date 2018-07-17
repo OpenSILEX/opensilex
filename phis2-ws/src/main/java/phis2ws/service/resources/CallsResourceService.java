@@ -1,62 +1,43 @@
 //**********************************************************************************************
-//                                       ExperimentResourceService.java 
+//                                       CallsResourceService.java 
 //
-// Author(s): Morgane Vidal
+// Author(s): Alice Boizet
 // PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
-// Creation date: January 2017
-// Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  October, 31 2017 : Passage de trial à experiment
-// Subject: Represents the experiment data service
+// Copyright © - INRA - 2018
+// Creation date: July 2018
+// Contact: alice.boizet@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Last modification date:  July 2018
+// Subject: Represents the calls service
 //***********************************************************************************************
 
 package phis2ws.service.resources;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
-import java.util.Arrays;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
-import phis2ws.service.configuration.GlobalWebserviceValues;
-
 import phis2ws.service.documentation.DocumentationAnnotation;
-
 import phis2ws.service.view.brapi.Status;
-import phis2ws.service.view.brapi.form.AbstractResultForm;
 import phis2ws.service.view.brapi.form.ResponseFormCalls;
-import phis2ws.service.view.brapi.form.ResponseFormGET;
-import phis2ws.service.view.brapi.form.ResponseFormPOST;
-import phis2ws.service.view.brapi.form.ResponseFormExperiment;
 import phis2ws.service.view.model.phis.Calls;
 
 @Api("/brapi/v1/calls")
 @Path("/brapi/v1/calls")
 public class CallsResourceService {
-    final static Logger LOGGER = LoggerFactory.getLogger(CallsResourceService.class);
-    
-  
-    
+    final static Logger LOGGER = LoggerFactory.getLogger(CallsResourceService.class);  
+      
     /**
      * @param datatype
      * @param limit

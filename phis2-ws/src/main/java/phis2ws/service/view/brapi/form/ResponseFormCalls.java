@@ -1,17 +1,16 @@
 //**********************************************************************************************
 //                                       ResponseFormCalls.java 
 //
-// Author(s): Morgane Vidal
+// Author(s): Alice Boizet
 // PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
-// Creation date: august 2017
-// Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  October, 31 2017 : Passage de trial à experiment
-// Subject: Allows the formating of the results of the queries about experiments
+// Copyright © - INRA - 2018
+// Creation date: July 2018
+// Contact: alice.boizet@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Last modification date:  July 2018
+// Subject: Allows the formating of the results of the queries about calls
 //***********************************************************************************************
 
 package phis2ws.service.view.brapi.form;
-
 import java.util.ArrayList;
 import phis2ws.service.view.brapi.Metadata;
 import phis2ws.service.view.brapi.results.ResultCalls;

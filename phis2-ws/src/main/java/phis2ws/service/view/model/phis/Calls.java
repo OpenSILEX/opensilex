@@ -1,13 +1,13 @@
 //**********************************************************************************************
 //                                       Calls.java 
 //
-// Author(s): Morgane Vidal
+// Author(s): Alice Boizet
 // PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
-// Creation date: January 2017
-// Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  February, 2017
-// Subject: Represents the experiment 
+// Copyright © - INRA - 2018
+// Creation date: July 2018
+// Contact: alice.boizet@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Last modification date:  July 2018
+// Subject: Represents the calls 
 //***********************************************************************************************
 
 package phis2ws.service.view.model.phis;
@@ -38,39 +38,7 @@ public class Calls {
         this.methods = methods;
         this.versions = versions;
     }
-//
-//    
-//
-//    //Accessor
-//    public ArrayList<String> getString() {
-//        return this.datatypes;
-//    }
-//
-//    //Mutator
-//    public void setString(ArrayList<String> datatypes) {
-//        this.datatypes = datatypes;
-//    }
 
-//    //Accessor
-//    public ArrayList<String> getString() {
-//        return this.methods;
-//    }
-//
-//    //Mutator  
-//    public void setString(ArrayList<String> methods) {
-//        this.methods = methods;
-//    }
-//
-//    //Accessor
-//    public ArrayList<String> getString() {
-//        return this.versions;
-//    }
-//
-//    //Mutator
-//    public void setString(ArrayList<String> versions) {
-//        this.versions = versions;
-//    }
-    
 
     public String getCall() {
         return call;

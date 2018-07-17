@@ -196,10 +196,8 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
         if (bodyValue != null) {
             query.appendFilter("regex(STR(?" + BODY_VALUE + "), '" + bodyValue + "', 'i')");
         }
-
         LOGGER.debug(SPARQL_SELECT_QUERY + "Simple query" +query.toString());
         return query;
-
     }
 
     /**
@@ -218,7 +216,6 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
                 count = Integer.parseInt(bindingSet.getValue(COUNT_ELEMENT_QUERY).stringValue());
             }
         }
-
         return count;
     }
 
@@ -310,11 +307,9 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
             results.createdResources = createdResourcesUri;
             results.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, createdResourcesUri.size() + " new resource(s) created"));
         }
-
         if (getConnection() != null) {
             getConnection().close();
         }
-
         return results;
     }
 
@@ -523,7 +518,6 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
             }
 
         }
-
         return annotation;
     }
 }

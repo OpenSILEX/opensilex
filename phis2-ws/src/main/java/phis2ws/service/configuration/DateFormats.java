@@ -16,7 +16,11 @@ import java.util.List;
 
 /**
  * contains the date formats used in the web service
- * @author A. Charleroy
+ * @author Arnaud Charleroy
+ * Todo : - Element: Datetime
+//          Attribute : YMDHMSZ_FORMAT
+//          Purpose : wrong date time format @link https://www.w3.org/TR/xmlschema-2/#dateTime
+//                    must add 'T'separator indicating that time-of-day follows;
  */
 public final class DateFormats {
 

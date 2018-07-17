@@ -6,7 +6,7 @@
 // Copyright © - INRA - 2018
 // Creation date: may 2016
 // Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date: 20 Juin, 2018
+// Last modification date: 18 july, 2018 (Renforce string empty value verification and check rules on every object of a list)
 // Subject: A class which contains methods to verify automatically class's attributes from rules defined by user
 //***********************************************************************************************
 package phis2ws.service.resources.dto.manager;

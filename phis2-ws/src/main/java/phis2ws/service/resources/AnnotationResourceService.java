@@ -65,7 +65,19 @@ public class AnnotationResourceService {
 
     /**
      * insert given annotations in the triplestore
-     *
+     * e.g.
+     * [
+     *   {
+     *     "motivatedBy": "http://www.w3.org/ns/oa#describing",
+     *     "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy",
+     *     "comments": [
+     *       "commentary"
+     *     ],
+     *     "targets": [
+     *       "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy"
+     *     ]
+     *   }
+     * ]
      * @param annotations annotations list to save.
      * @param context
      * @return
@@ -164,10 +176,6 @@ public class AnnotationResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int pageSize,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
             @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_URI) @QueryParam("uri") String uri,
-            //SILEX:conception
-            // Need to specify if it necessary 
-            // @ApiParam(value = "Search by creation date", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_CREATED) @hasValidDateFormat  @QueryParam("created") String created,
-            //\SILEX:conception
             @ApiParam(value = "Search by creator", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_CREATOR) @QueryParam("creator") String creator,
             @ApiParam(value = "Search by motivation", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_MOTIVATEDBY) @QueryParam("motivatedBy") String motivatedBy,
             @ApiParam(value = "Search by comment", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_COMMENT) @QueryParam("comment") String comment,
@@ -177,12 +185,7 @@ public class AnnotationResourceService {
         if (uri != null) {
             annotationDAO.uri = uri;
         }
-        //SILEX:conception
-        // Need to specify if it necessary
-        //\SILEX:conception
-//        if (date != null) {
-//            annotationDAO.created = date;
-//        }
+
         if (creator != null) {
             annotationDAO.creator = creator;
         }

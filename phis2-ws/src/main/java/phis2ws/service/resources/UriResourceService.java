@@ -223,8 +223,10 @@ public class UriResourceService {
     /**
      * Get all the instances of an uri
      * @param uri
+     * @param deep verify subclass or not
      * @param limit
      * @param page
+     * @update Arnaud Charleroy (18/07/2018): change deep string type to real boolean type
      * @return the query result, with the list of the instances or the errors
      */
     @GET
@@ -246,6 +248,7 @@ public class UriResourceService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getInstancesByConcept(
             @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @PathParam("uri") String uri,
+            @ApiParam(value = DocumentationAnnotation.DEEP) @QueryParam("deep") @DefaultValue(DocumentationAnnotation.EXAMPLE_DEEP) Boolean deep, 
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
 
@@ -253,8 +256,13 @@ public class UriResourceService {
         if (uri != null) {
             uriDaoSesame.uri = uri;
         }
-      
-        
+
+        if (deep != null) {
+            uriDaoSesame.deep = deep;
+        } else {
+            uriDaoSesame.deep = true;
+        }
+
         uriDaoSesame.setPageSize(limit);
         uriDaoSesame.setPage(page);
         uriDaoSesame.user = userSession.getUser();

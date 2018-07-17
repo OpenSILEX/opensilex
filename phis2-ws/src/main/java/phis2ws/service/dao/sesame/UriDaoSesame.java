@@ -8,6 +8,9 @@
 // Contact: eloan.lagier@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  Feb 26, 2018
 // Subject: A Dao specific to insert Uri into the triplestore
+// Todo : - Element: Instances
+//          Method : instancesPaginate
+//          Purpose : need to paginate the query instead of retreive all instances and then filtered them
 //***********************************************************************************************
 package phis2ws.service.dao.sesame;
 
@@ -35,6 +38,7 @@ import phis2ws.service.view.model.phis.Uri;
 
 /**
  * Represents the Triplestore Data Access Object for the uris
+ *
  * @author Eloan LAGIER
  */
 public class UriDaoSesame extends DAOSesame<Uri> {
@@ -45,26 +49,24 @@ public class UriDaoSesame extends DAOSesame<Uri> {
     final static String LABEL = "label";
     //used to query the triplestore
     final static String COMMENT = "comment";
-    
+
     final static String TRIPLESTORE_FIELDS_TYPE = "type";
     final static String TRIPLESTORE_FIELDS_CLASS = "class";
     final static String TRIPLESTORE_FIELDS_INSTANCE = "instance";
-    final static String TRIPLESTORE_FIELDS_SUBCLASS = "subclass";    
-    
+    final static String TRIPLESTORE_FIELDS_SUBCLASS = "subclass";
+
     final static Logger LOGGER = LoggerFactory.getLogger(UriDaoSesame.class);
     public Boolean deep;
 
     private final static URINamespaces NAMESPACES = new URINamespaces();
     final static String TRIPLESTORE_RELATION_LABEL = NAMESPACES.getRelationsProperty("label");
     final static String TRIPLESTORE_RELATION_COMMENT = NAMESPACES.getRelationsProperty("comment");
-    
-    
+
     /**
      * prepare a query to get the triplets of an uri (given or not).
-     * @return the query 
-     * e.g.
-     * SELECT DISTINCT  ?class ?type WHERE {
-     * <http://www.phenome-fppn.fr/vocabulary/2017#Document>  ?class  ?type  . }
+     *
+     * @return the query e.g. SELECT DISTINCT ?class ?type WHERE {
+     * <http://www.phenome-fppn.fr/vocabulary/2017#Document> ?class ?type . }
      */
     @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
@@ -86,12 +88,12 @@ public class UriDaoSesame extends DAOSesame<Uri> {
         LOGGER.debug("sparql select query : " + query.toString());
         return query;
     }
-    
+
     /**
      * Search uri with same label
-     * @return the query
-     * query example : 
-     * SELECT ?class WHERE { ?class rdfs:label contextName }
+     *
+     * @return the query query example : SELECT ?class WHERE { ?class rdfs:label
+     * contextName }
      */
     protected SPARQLQueryBuilder prepareLabelSearchQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
@@ -112,8 +114,8 @@ public class UriDaoSesame extends DAOSesame<Uri> {
 
         LOGGER.debug(" sparql select query : " + query.toString());
         return query;
-    }    
-    
+    }
+
     /**
      * Search siblings of concept query example : SELECT DISTINCT ?class WHERE {
      * contextURI rdfs:subClassOf ?parent . ?class rdfs:subClassOf ?parent }
@@ -125,7 +127,7 @@ public class UriDaoSesame extends DAOSesame<Uri> {
         //Siblings take ScientificDocument for exemple but it's different that all the other concept GET
         //where could this can be change?
         //\SILEX:warning
-        
+
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
 
@@ -138,8 +140,8 @@ public class UriDaoSesame extends DAOSesame<Uri> {
             query.appendSelect("?uri");
         }
         query.appendSelect(" ?class ");
-        query.appendTriplet(contextURI,NAMESPACES.getRelationsProperty("subClassOf"), " ?parent ", null);
-        query.appendTriplet("?class",NAMESPACES.getRelationsProperty("subClassOf"), "?parent", null);
+        query.appendTriplet(contextURI, NAMESPACES.getRelationsProperty("subClassOf"), " ?parent ", null);
+        query.appendTriplet("?class", NAMESPACES.getRelationsProperty("subClassOf"), "?parent", null);
         LOGGER.debug(query.toString());
         return query;
     }
@@ -148,11 +150,11 @@ public class UriDaoSesame extends DAOSesame<Uri> {
     public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
+
     /**
      * Ask if an Uri is in the triplestore
-     * @return the ask query
-     * query exemple : ASK { concept ?any1 ?any2 .}
+     *
+     * @return the ask query query exemple : ASK { concept ?any1 ?any2 .}
      */
     protected SPARQLQueryBuilder prepareAskQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
@@ -166,14 +168,15 @@ public class UriDaoSesame extends DAOSesame<Uri> {
             contextURI = "?uri";
             query.appendSelect("?uri");
         }
-        
+
         query.appendAsk(contextURI + " ?any1 ?any2 "); //any = anything
         LOGGER.debug(query.toString());
         return query;
     }
-    
+
     /**
      * check if the given uris exists in the triplestore and return the results
+     *
      * @return a boolean saying if the uri exist
      */
     public ArrayList<Ask> askUriExistance() {
@@ -188,13 +191,14 @@ public class UriDaoSesame extends DAOSesame<Uri> {
 
         return uriExistancesResults;
     }
-    
+
     /**
-     * Search instances by uri, concept 
-     * @return SPARQLQueryBuilder
-     * query example : 
-     * SELECT ?instance ?subclass 
-     * WHERE {?subclass a context URI }
+     * Search instances by uri, concept
+     *
+     * @return SPARQLQueryBuilder query example :
+     * SELECT DISTINCT ?instance
+     * ?subclass WHERE { ?subclass rdfs:subClassOf*
+     *  <http://www.w3.org/ns/oa#Motivation> . ?instance rdf:type ?subclass . }
      */
     protected SPARQLQueryBuilder prepareInstanceSearchQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
@@ -210,17 +214,23 @@ public class UriDaoSesame extends DAOSesame<Uri> {
         }
 
         query.appendSelect(" ?instance");
-        query.appendTriplet("?instance", NAMESPACES.getRelationsProperty("type"), contextURI, null);
-        LOGGER.debug("sparql select query : " + query.toString());
+        query.appendSelect(" ?subclass");
+        // if deep get descendents
+        if (deep) {
+            query.appendTriplet("?subclass", NAMESPACES.getRelationsProperty("subClassOf*"), contextURI, null);
+        } else {
+            query.appendTriplet("?subclass", NAMESPACES.getRelationsProperty("subClassOf"), contextURI, null);
+        }
+        query.appendTriplet("?instance", NAMESPACES.getRelationsProperty("type"), "?subclass", null);
+        LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
         return query;
     }
-    
-   /**
-     * Search ancestors of a concept 
-     * @return SPARQLQueryBuilder
-     * query example : 
-     * SELECT DISTINCT ?class WHERE
-     * { contextURI rdfs:subClassOf* ?class }
+
+    /**
+     * Search ancestors of a concept
+     *
+     * @return SPARQLQueryBuilder query example : SELECT DISTINCT ?class WHERE {
+     * contextURI rdfs:subClassOf* ?class }
      */
     protected SPARQLQueryBuilder prepareAncestorsQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
@@ -235,17 +245,16 @@ public class UriDaoSesame extends DAOSesame<Uri> {
             query.appendSelect("?uri");
         }
         query.appendSelect(" ?class ");
-        query.appendTriplet(contextURI,NAMESPACES.getRelationsProperty("subClassOf"), " ?class ", null);
+        query.appendTriplet(contextURI, NAMESPACES.getRelationsProperty("subClassOf"), " ?class ", null);
         LOGGER.debug(query.toString());
         return query;
     }
-    
+
     /**
-     * Search descendants of concept 
-     * @return SPARQLQueryBuilder
-     * query example : 
-     * SELECT DISTINCT ?class
-     * WHERE { ?class rdfs:subClassOf* contextURI }
+     * Search descendants of concept
+     *
+     * @return SPARQLQueryBuilder query example : SELECT DISTINCT ?class WHERE {
+     * ?class rdfs:subClassOf* contextURI }
      */
     protected SPARQLQueryBuilder prepareDescendantsQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
@@ -260,18 +269,17 @@ public class UriDaoSesame extends DAOSesame<Uri> {
             query.appendSelect("?uri");
         }
         query.appendSelect(" ?class ");
-        query.appendTriplet(" ?class ",NAMESPACES.getRelationsProperty("subClassOf*"), contextURI, null);
+        query.appendTriplet(" ?class ", NAMESPACES.getRelationsProperty("subClassOf*"), contextURI, null);
         LOGGER.debug(query.toString());
 
         return query;
     }
-    
-    
+
     /**
      * return the type of the uri given
-     * @return SPARQLQueryBuilder
-     * query example : 
-     * SELECT DISTINCT ?type WHERE { concept rdf:type ?type . }
+     *
+     * @return SPARQLQueryBuilder query example : SELECT DISTINCT ?type WHERE {
+     * concept rdf:type ?type . }
      */
     /* create the query that return the type of an URI if its in the Tupple */
     protected SPARQLQueryBuilder prepareGetUriType() {
@@ -291,9 +299,10 @@ public class UriDaoSesame extends DAOSesame<Uri> {
         LOGGER.debug(query.toString());
         return query;
     }
-    
+
     /**
      * return all metadata for the uri given
+     *
      * @return the list of the uris corresponding to the search informations
      */
     public ArrayList<Uri> allPaginate() {
@@ -316,21 +325,22 @@ public class UriDaoSesame extends DAOSesame<Uri> {
                 } else {
                     uriFounded.addProperty(classname.substring(classname.indexOf("#") + 1, classname.length()), bindingSet.getValue(TRIPLESTORE_FIELDS_TYPE).stringValue());
                 }
-                 uris.add(uriFounded);
-            }           
+                uris.add(uriFounded);
+            }
         }
         return uris;
     }
-    
+
     /**
-     * search the uris which has the given label as label and return the list 
+     * search the uris which has the given label as label and return the list
+     *
      * @return ArrayList
      */
     public ArrayList<Uri> labelsPaginate() {
         SPARQLQueryBuilder query = prepareLabelSearchQuery();
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         ArrayList<Uri> uris = new ArrayList();
-        
+
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {
                 Uri uriFounded = new Uri();
@@ -341,9 +351,12 @@ public class UriDaoSesame extends DAOSesame<Uri> {
         }
         return uris;
     }
-    
+
     /**
-     * @return the list of the instances, corresponding to the search params given
+     * List of instance
+     * @todo need to paginate the query instead of retreive all instances and then filtered them
+     * @return the list of the instances, corresponding to the search params
+     * given
      */
     public ArrayList<Uri> instancesPaginate() {
 
@@ -360,16 +373,16 @@ public class UriDaoSesame extends DAOSesame<Uri> {
                 Uri instance = new Uri();
 
                 instance.setUri(bindingSet.getValue(TRIPLESTORE_FIELDS_INSTANCE).stringValue());
-                instance.setRdfType(uri);
+                instance.setRdfType(bindingSet.getValue(TRIPLESTORE_FIELDS_SUBCLASS).stringValue());
                 instances.add(instance);
             }
         }
-
         return instances;
     }
 
-   /**
+    /**
      * call the query function for the ancestors GET
+     *
      * @return the ancestors info all paginate
      */
     public ArrayList<Uri> ancestorsAllPaginate() {
@@ -390,9 +403,10 @@ public class UriDaoSesame extends DAOSesame<Uri> {
         }
         return concepts;
     }
-    
+
     /**
      * call the query function for the siblings GET
+     *
      * @return the siblings info all paginate
      */
     public ArrayList<Uri> siblingsAllPaginate() {
@@ -412,9 +426,10 @@ public class UriDaoSesame extends DAOSesame<Uri> {
         }
         return concepts;
     }
-    
+
     /**
      * call the query function for the descendants GET
+     *
      * @return the descendants info all paginate
      */
     public ArrayList<Uri> descendantsAllPaginate() {
@@ -434,20 +449,21 @@ public class UriDaoSesame extends DAOSesame<Uri> {
         }
         return concepts;
     }
-    
+
     /**
      * return the type of the uri if it's in the triplestore
+     *
      * @return a boolean or a type
      */
     public ArrayList<Uri> getAskTypeAnswer() {
-        
+
         SPARQLQueryBuilder query = prepareAskQuery();
         BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
         ArrayList<Uri> uris = new ArrayList<>();
         boolean result = booleanQuery.evaluate();
         Ask ask = new Ask();
         ask.setExist(result);
-        
+
         if (ask.getExist()) {
             Uri uriType = new Uri();
             query = prepareGetUriType();
@@ -457,43 +473,42 @@ public class UriDaoSesame extends DAOSesame<Uri> {
             uriType.setRdfType(bindingSet.getValue(TRIPLESTORE_FIELDS_TYPE).toString());
             uris.add(uriType);
         }
-        
+
         return uris;
     }
-    
+
     /**
-     * generates an ask query to know if the given rdfSubType is a subclass of 
-     * rdfType. 
+     * generates an ask query to know if the given rdfSubType is a subclass of
+     * rdfType.
+     *
      * @param rdfSubType
      * @param rdfType
-     * @return the query. 
-     * e.g.
-     * ASK {
-     *	<http://www.phenome-fppn.fr/vocabulary/2017#HemisphericalCamera> rdfs:subClassOf* <http://www.phenome-fppn.fr/vocabulary/2017#SensingDevice>
-     *  }
+     * @return the query. e.g. ASK {
+     * <http://www.phenome-fppn.fr/vocabulary/2017#HemisphericalCamera>
+     * rdfs:subClassOf*
+     * <http://www.phenome-fppn.fr/vocabulary/2017#SensingDevice> }
      */
     private SPARQLQueryBuilder prepareIsSubclassOf(String rdfSubType, String rdfType) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
-        
+
         query.appendTriplet("<" + rdfSubType + ">", NAMESPACES.getRelationsProperty("subClassOf*"), "<" + rdfType + ">", null);
-        
+
         query.appendAsk(""); //any = anything
         LOGGER.debug(query.toString());
         return query;
     }
-    
-    
+
     /**
-     * generates an ask query to know if the given instance URI is an instance of 
-     * rdfType. 
+     * generates an ask query to know if the given instance URI is an instance
+     * of rdfType.
+     *
      * @param instanceUri
      * @param rdfType
-     * @return the query. 
-     * e.g.
-     * ASK {
-     *	<http://www.phenome-fppn.fr/vocabulary/2017#HemisphericalCamera> rdfs:subClassOf* <http://www.phenome-fppn.fr/vocabulary/2017#SensingDevice>
-     *  }
+     * @return the query. e.g. ASK {
+     * <http://www.phenome-fppn.fr/vocabulary/2017#HemisphericalCamera>
+     * rdf:type
+     * <http://www.phenome-fppn.fr/vocabulary/2017#SensingDevice> }
      */
     private SPARQLQueryBuilder prepareIsInstanceOf(String instanceUri, String rdfType) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
@@ -505,22 +520,22 @@ public class UriDaoSesame extends DAOSesame<Uri> {
             contextURI = "<" + uri + ">";
         } else {
             contextURI = "?uri";
-            query.appendSelect("?uri");
+
         }
-        
+        query.appendSelect(contextURI);
         query.appendTriplet("<" + instanceUri + ">", "rdf:type", "<" + rdfType + ">", null);
-        
-        query.appendAsk(""); //any = anything
+
+        query.appendAsk("");
         LOGGER.debug(query.toString());
         return query;
     }
-    
+
     /**
      * check if the given rdfSubType is a sub class of the given rdfType
+     *
      * @param rdfSubType
      * @param rdfType
-     * @return true if it is a subclass
-     *         false if not
+     * @return true if it is a subclass false if not
      */
     public boolean isSubClassOf(String rdfSubType, String rdfType) {
         SPARQLQueryBuilder query = prepareIsSubclassOf(rdfSubType, rdfType);
@@ -528,81 +543,75 @@ public class UriDaoSesame extends DAOSesame<Uri> {
         BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
         return booleanQuery.evaluate();
     }
-    
+
     /**
      * check if the given uri is an instance of the given rdfType
+     *
      * @param instanceUri
      * @param rdfType
-     * @return true if it is a subclass
-     *         false if not
+     * @return true if it is a subclass false if not
      */
     public boolean isInstanceOf(String instanceUri, String rdfType) {
-        if(instanceUri == null){
+        if (instanceUri == null) {
             return false;
         }
         SPARQLQueryBuilder query = prepareIsInstanceOf(instanceUri, rdfType);
         BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
         return booleanQuery.evaluate();
     }
-    
+
     /**
-     * generates a query to get the list of the labels of the uri attribute
-     * e.g.
-     * SELECT DISTINCT ?label 
-     * WHERE {
-     *      <http://www.phenome-fppn.fr/vocabulary/2017#hasTechnicalContact>  rdfs:label  ?label  . 
-     * }
+     * generates a query to get the list of the labels of the uri attribute e.g.
+     * SELECT DISTINCT ?label WHERE {
+     * <http://www.phenome-fppn.fr/vocabulary/2017#hasTechnicalContact>
+     * rdfs:label ?label . }
+     *
      * @return the generated query
      */
     protected SPARQLQueryBuilder prepareGetLabels() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
-        
+
         query.appendSelect("?" + LABEL);
         query.appendTriplet(uri, TRIPLESTORE_RELATION_LABEL, "?" + LABEL, null);
-        
+
         LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
-        
+
         return query;
     }
-    
+
     /**
      * generates a query to get the list of the comments of the uri attribute
-     * e.g.
-     * SELECT DISTINCT ?comment 
-     * WHERE {
-     *      <http://www.phenome-fppn.fr/vocabulary/2017#hasTechnicalContact>  rdfs:comment  ?comment . 
-     * }
+     * e.g. SELECT DISTINCT ?comment WHERE {
+     * <http://www.phenome-fppn.fr/vocabulary/2017#hasTechnicalContact>
+     * rdfs:comment ?comment . }
+     *
      * @return the generated query
      */
     protected SPARQLQueryBuilder prepareGetComments() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
-        
+
         query.appendSelect("?" + COMMENT);
         query.appendTriplet(uri, TRIPLESTORE_RELATION_COMMENT, "?" + COMMENT, null);
-        
+
         LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
-        
+
         return query;
     }
-    
+
     /**
      * get the labels associated to the uri attribute in the triplestore
-     * @return the list of labels. the key is the language 
-     * e.g.
-     * [
-     *  "fr" : "maison",
-     *  "en" : "home",
-     *  "none" : "dqfgdf"
-     * ]
+     *
+     * @return the list of labels. the key is the language e.g. [ "fr" :
+     * "maison", "en" : "home", "none" : "dqfgdf" ]
      */
     public Multimap<String, String> getLabels() {
         SPARQLQueryBuilder query = prepareGetLabels();
         Multimap<String, String> labels = ArrayListMultimap.create();
-        
+
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-        
+
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
@@ -617,23 +626,19 @@ public class UriDaoSesame extends DAOSesame<Uri> {
         }
         return labels;
     }
-    
+
     /**
      * get the comments associated to the uri attribute in the triplestore
-     * @return the list of comments. the key is the language 
-     * e.g.
-     * [
-     *  "fr" : "maison",
-     *  "en" : "home",
-     *  "none" : "dqfgdf"
-     * ]
+     *
+     * @return the list of comments. the key is the language e.g. [ "fr" :
+     * "maison", "en" : "home", "none" : "dqfgdf" ]
      */
     public Multimap<String, String> getComments() {
         SPARQLQueryBuilder query = prepareGetComments();
         Multimap<String, String> comments = ArrayListMultimap.create();
-        
+
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-        
+
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();

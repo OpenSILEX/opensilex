@@ -25,7 +25,7 @@ import phis2ws.service.PropertiesFileManager;
  * Permet de creer des URI de concepts, objets et relation entre objets et
  * proprietes en fonction pour une platform
  *
- * @author Arnaud Charleroy. Charleroy
+ * @author Arnaud Charleroy
  */
 public class URINamespaces {
 
@@ -38,7 +38,6 @@ public class URINamespaces {
     
       // Add personal namespaces
     public static final Map<String, String> USER_SPECIFIC_NAMESPACES;
-
     static {
         Map<String, String> temporaryMap = new HashMap<>();
         String baseUri = PropertiesFileManager.getConfigFileProperty("service", "baseURI");
@@ -167,7 +166,6 @@ public class URINamespaces {
         OBJECTS.put("cPerson", CONTEXTS.get("pxFoaf") + "/Person");
         OBJECTS.put("cMotivation", CONTEXTS.get("pxOa") + "#Motivation");
         OBJECTS.put("cAnnotation", CONTEXTS.get("pxOa") + "#Annotation");
-
     }
 
     private void setRelations() {

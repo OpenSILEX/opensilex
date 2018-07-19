@@ -65,8 +65,11 @@ public class UriDaoSesame extends DAOSesame<Uri> {
     /**
      * prepare a query to get the triplets of an uri (given or not).
      *
-     * @return the query e.g. SELECT DISTINCT ?class ?type WHERE {
-     * <http://www.phenome-fppn.fr/vocabulary/2017#Document> ?class ?type . }
+     * @return the query 
+     * e.g. SELECT DISTINCT ?class ?type 
+     * WHERE {
+     * <http://www.phenome-fppn.fr/vocabulary/2017#Document> ?class ?type . 
+     * }
      */
     @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
@@ -92,8 +95,10 @@ public class UriDaoSesame extends DAOSesame<Uri> {
     /**
      * Search uri with same label
      *
-     * @return the query query example : SELECT ?class WHERE { ?class rdfs:label
-     * contextName }
+     * @return the query 
+     * query example : 
+     * SELECT ?class 
+     * WHERE { ?class rdfs:label contextName }
      */
     protected SPARQLQueryBuilder prepareLabelSearchQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
@@ -117,8 +122,13 @@ public class UriDaoSesame extends DAOSesame<Uri> {
     }
 
     /**
-     * Search siblings of concept query example : SELECT DISTINCT ?class WHERE {
-     * contextURI rdfs:subClassOf ?parent . ?class rdfs:subClassOf ?parent }
+     * Search siblings of concept. 
+     * query example : 
+     * SELECT DISTINCT ?class 
+     * WHERE {
+     *     contextURI rdfs:subClassOf ?parent .
+     *     ?class rdfs:subClassOf ?parent 
+     * }
      *
      * @return SPARQLQueryBuilder
      */
@@ -154,7 +164,9 @@ public class UriDaoSesame extends DAOSesame<Uri> {
     /**
      * Ask if an Uri is in the triplestore
      *
-     * @return the ask query query exemple : ASK { concept ?any1 ?any2 .}
+     * @return the ask query query 
+     * 
+     * exemple : ASK { concept ?any1 ?any2 .}
      */
     protected SPARQLQueryBuilder prepareAskQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
@@ -195,10 +207,13 @@ public class UriDaoSesame extends DAOSesame<Uri> {
     /**
      * Search instances by uri, concept
      *
-     * @return SPARQLQueryBuilder query example :
-     * SELECT DISTINCT ?instance
-     * ?subclass WHERE { ?subclass rdfs:subClassOf*
-     *  <http://www.w3.org/ns/oa#Motivation> . ?instance rdf:type ?subclass . }
+     * @return SPARQLQueryBuilder the query
+     * query example :
+     * SELECT DISTINCT ?instance ?subclass 
+     * WHERE { 
+     *    ?subclass rdfs:subClassOf* <http://www.w3.org/ns/oa#Motivation> . 
+     *    ?instance rdf:type ?subclass . 
+     * }
      */
     protected SPARQLQueryBuilder prepareInstanceSearchQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
@@ -229,8 +244,12 @@ public class UriDaoSesame extends DAOSesame<Uri> {
     /**
      * Search ancestors of a concept
      *
-     * @return SPARQLQueryBuilder query example : SELECT DISTINCT ?class WHERE {
-     * contextURI rdfs:subClassOf* ?class }
+     * @return SPARQLQueryBuilder the query
+     * query example :
+     * SELECT DISTINCT ?class 
+     * WHERE {
+     *    contextURI rdfs:subClassOf* ?class 
+     * }
      */
     protected SPARQLQueryBuilder prepareAncestorsQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
@@ -253,8 +272,12 @@ public class UriDaoSesame extends DAOSesame<Uri> {
     /**
      * Search descendants of concept
      *
-     * @return SPARQLQueryBuilder query example : SELECT DISTINCT ?class WHERE {
-     * ?class rdfs:subClassOf* contextURI }
+     * @return SPARQLQueryBuilder  the query 
+     * query example : 
+     * SELECT DISTINCT ?class 
+     * WHERE {
+     *    ?class rdfs:subClassOf* contextURI 
+     * }
      */
     protected SPARQLQueryBuilder prepareDescendantsQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
@@ -278,8 +301,12 @@ public class UriDaoSesame extends DAOSesame<Uri> {
     /**
      * return the type of the uri given
      *
-     * @return SPARQLQueryBuilder query example : SELECT DISTINCT ?type WHERE {
-     * concept rdf:type ?type . }
+     * @return SPARQLQueryBuilder the query
+     * query example : 
+     * SELECT DISTINCT ?type 
+     * WHERE {
+     *    concept rdf:type ?type . 
+     * }
      */
     /* create the query that return the type of an URI if its in the Tupple */
     protected SPARQLQueryBuilder prepareGetUriType() {
@@ -483,10 +510,12 @@ public class UriDaoSesame extends DAOSesame<Uri> {
      *
      * @param rdfSubType
      * @param rdfType
-     * @return the query. e.g. ASK {
-     * <http://www.phenome-fppn.fr/vocabulary/2017#HemisphericalCamera>
-     * rdfs:subClassOf*
-     * <http://www.phenome-fppn.fr/vocabulary/2017#SensingDevice> }
+     * @return the query. 
+     * e.g. ASK {
+     *    <http://www.phenome-fppn.fr/vocabulary/2017#HemisphericalCamera>
+     *    rdfs:subClassOf*
+     *    <http://www.phenome-fppn.fr/vocabulary/2017#SensingDevice> 
+     * }
      */
     private SPARQLQueryBuilder prepareIsSubclassOf(String rdfSubType, String rdfType) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
@@ -505,10 +534,10 @@ public class UriDaoSesame extends DAOSesame<Uri> {
      *
      * @param instanceUri
      * @param rdfType
-     * @return the query. e.g. ASK {
-     * <http://www.phenome-fppn.fr/vocabulary/2017#HemisphericalCamera>
-     * rdf:type
-     * <http://www.phenome-fppn.fr/vocabulary/2017#SensingDevice> }
+     * @return the query. 
+     * e.g. ASK { 
+     * <http://www.w3.org/ns/oa#commenting>  rdf:type  <  http://www.w3.org/ns/oa#Motivation>  .  
+     * }
      */
     private SPARQLQueryBuilder prepareIsInstanceOf(String instanceUri, String rdfType) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();

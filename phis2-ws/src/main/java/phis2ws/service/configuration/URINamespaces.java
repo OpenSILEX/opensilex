@@ -36,7 +36,8 @@ public class URINamespaces {
     private static final Map<String, String> W3C_NAMESPACES = new HashMap<>();
     private static String platform = null;
     
-      // Add personal namespaces
+    // Add additionnal personal namespaces to triplestore based namespace.
+    // These one override the namesapce foun in rdf4j
     public static final Map<String, String> USER_SPECIFIC_NAMESPACES;
     static {
         Map<String, String> temporaryMap = new HashMap<>();

@@ -181,7 +181,7 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
     /**
      * Verify if a uri exist in Relationnal DB
      *
-     * @param uri
+     * @param uri user uri
      * @return boolean
      */
     public Boolean isValidUserUri(String uri) {
@@ -191,14 +191,17 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
         Statement stat = null;
         try {
             con = dataSource.getConnection();
-            String query = "SELECT * FROM users WHERE uri='" + uri + "'";
+            SQLQueryBuilder sqlQueryBuilder = new SQLQueryBuilder();
+            sqlQueryBuilder.appendSelect("*");
+            sqlQueryBuilder.appendFrom(table, tableAlias);
+            sqlQueryBuilder.appendANDWhereConditionIfNeeded("uri", uri, "=", null, tableAlias);
+            
             stat = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-            result = stat.executeQuery(query);
-            LOGGER.debug(SQL_SELECT_QUERY + " " + query);
+            result = stat.executeQuery(sqlQueryBuilder.toString());
+            LOGGER.debug(SQL_SELECT_QUERY + " " + sqlQueryBuilder.toString());
             if (result.next()) {
                 valid = true;
             }
-        
 
         } catch (SQLException ex) {
             LOGGER.error(ex.getMessage(), ex);

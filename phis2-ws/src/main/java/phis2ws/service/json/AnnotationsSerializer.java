@@ -44,14 +44,17 @@ public class AnnotationsSerializer implements JsonSerializer<Annotation> {
     public final static String MOTIVATION_LABEL = "motivatedBy";
 
     /**
-     * This function convert an annotation into a json specific representation
-     *eg.{
-     * "uri":
-     * "http://www.phenome-fppn.fr/platform/id/annotation/361ac1e4-dc5a-4fdb-95a3-3f65556b1d32",
+     * This function convert an annotation into a json specific representation.
+     * e.g. 
+     * {
+     * "uri": "http://www.phenome-fppn.fr/platform/id/annotation/361ac1e4-dc5a-4fdb-95a3-3f65556b1d32",
      * "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy",
-     * "motivatedBy": "http://www.w3.org/ns/oa#commenting", "creationDate":
-     * "2018-06-25T15:25:02+0200", "comments": [ "Ustilago maydis infection" ],
-     * "targets": [ "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy" ] }
+     * "motivatedBy": "http://www.w3.org/ns/oa#commenting",
+     * "creationDate": "2018-06-25T15:25:02+0200",
+     * "comments": [ "Ustilago maydis infection" ],
+     * "targets": [ "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy" ] 
+     * }
+     * @param context
      */
     @Override
     public JsonElement serialize(Annotation src, Type typeOfSrc, JsonSerializationContext context) {

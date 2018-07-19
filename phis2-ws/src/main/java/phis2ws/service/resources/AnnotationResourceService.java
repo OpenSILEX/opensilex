@@ -4,9 +4,9 @@
 // Author(s): Arnaud Charleroy <arnaud.charleroy@inra.fr>
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2018
-// Creation date: 21 June 2018
+// Creation date: 21 june 2018
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  23 June 2018
+// Last modification date:  19 july 2018
 // Subject: Represents the annotation service.
 //******************************************************************************
 package phis2ws.service.resources;
@@ -128,7 +128,7 @@ public class AnnotationResourceService {
             return Response.status(insertResult.getHttpStatus()).entity(postResponse).build();
         } else {
             postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty annotations to add"));
-            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormPOST()).build();
+            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }
 
@@ -144,14 +144,27 @@ public class AnnotationResourceService {
      * @param target
      * @param motivatedBy
      * @return list of the annotation corresponding to the search params given
-     * e.g { "metadata": { "pagination": { "pageSize": 20, "currentPage": 0,
-     * "totalCount": 297, "totalPages": 15 }, "status": [], "datafiles": [] },
-     * "result": { "data": [ { "uri":
-     * "http://www.phenome-fppn.fr/platform/id/annotation/8247af37-769c-495b-8e7e-78b1141176c2",
-     * "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy",
-     * "creationDate": "2018-06-22 14:54:42+0200", "comments": ["Ustilago maydis
-     * infection"], "targets": [
-     * "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy" ] },{...} )}}
+     * e.g { 
+     * "metadata": { 
+     *      "pagination": { 
+     *          "pageSize": 20,
+     *          "currentPage": 0,
+     *          "totalCount": 297,
+     *          "totalPages": 15 
+     *      }, 
+     *      "status": [],
+     *      "datafiles": [] 
+     *      },
+     *      "result": { 
+     *          "data": [ { 
+     *              "uri": "http://www.phenome-fppn.fr/platform/id/annotation/8247af37-769c-495b-8e7e-78b1141176c2",
+     *              "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy",
+     *              "creationDate": "2018-06-22 14:54:42+0200",
+     *              "comments": ["Ustilago maydis infection"],
+     *          "targets": [
+     *              "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy" 
+     *            ] 
+     *      },{...} )}}
      */
     @GET
     @ApiOperation(value = "Get all annotations corresponding to the search params given",
@@ -215,15 +228,18 @@ public class AnnotationResourceService {
      * @param page
      * @return the informations about the annotation if it exists e.g. {
      * "metadata": { "pagination": null, "status": [], "datafiles": [] },
-     * "result": { "data": [ { 
-     * "uri": "http://www.phenome-fppn.fr/platform/id/annotation/8247af37-769c-495b-8e7e-78b1141176c2",
-     * "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy",
-     * "creationDate": "2018-06-22 14:54:42+0200",
-     * "comments": ["Ustilago maydis
-     * infection"], 
-     * "targets": [
-     * "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy" 
-     * ] } ] } }
+     * "result": { 
+     * "data": [ { 
+     *   "uri": "http://www.phenome-fppn.fr/platform/id/annotation/8247af37-769c-495b-8e7e-78b1141176c2",
+     *   "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy",
+     *   "creationDate": "2018-06-22 14:54:42+0200",
+     *   "comments": [
+     *          "Ustilago maydis infection"
+     *    ], 
+     *    "targets": [ 
+     *      "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy" 
+     *    ] 
+     * } ] } }
      */
     @GET
     @Path("{uri}")

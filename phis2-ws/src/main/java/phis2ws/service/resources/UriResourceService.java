@@ -6,7 +6,7 @@
 // Copyright © - INRA - 2018
 // Creation date: 26 Feb 2018
 // Contact: eloan.lagier@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  26 Feb, 2018
+// Last modification date:  20 June, 2018
 // Subject: Represents the Uri Resource Service
 //***********************************************************************************************
 package phis2ws.service.resources;

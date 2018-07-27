@@ -388,11 +388,11 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
                             dataOk = false;
                             checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.EXPECTED_DATE_FORMAT_YMD + " for the inServiceDate field"));
                         }
-                        if (!Dates.isDateYMD(sensor.getDateOfPurchase())) {
+                        if (sensor.getDateOfPurchase() != null && !Dates.isDateYMD(sensor.getDateOfPurchase())) {
                             dataOk = false;
                             checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.EXPECTED_DATE_FORMAT_YMD + " for the dateOfPurchase field"));
                         }
-                        if (!Dates.isDateYMD(sensor.getDateOfLastCalibration())) {
+                        if (sensor.getDateOfLastCalibration()!= null && !Dates.isDateYMD(sensor.getDateOfLastCalibration())) {
                             dataOk = false;
                             checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.EXPECTED_DATE_FORMAT_YMD + " for the dateOfLastCalibration field"));
                         }

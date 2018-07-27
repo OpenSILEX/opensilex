@@ -326,7 +326,6 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
         POSTResultsReturn check = null;
         boolean dataOk = true;
         List<Status> checkStatus = new ArrayList<>();
-        
         if (expectedCardinalities != null) {
             for (Map.Entry<String, ArrayList<Cardinality>> entry : expectedCardinalities.entrySet()) {
                 for (Cardinality cardinality : entry.getValue()) {
@@ -390,13 +389,18 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
         
         for (Map.Entry<String, ArrayList<PropertyDTO>> pair : propertiesByRelation.entrySet()) {
             //1. get the number of values already existing for the property
+            //SILEX:refactor
+            //some database calls must be avoided 
+            //(e.g if there is a few wavelength associated, one call is necessary)
+            //\SILEX:refactor
             int numberValues = 0;
             if (objectUri != null) {
                 SPARQLQueryBuilder query = prepareGetProperties(objectUri);
                 TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-                TupleQueryResult result = tupleQuery.evaluate();
-                BindingSet bindingSet = result.next();
-                numberValues = Integer.parseInt(bindingSet.getValue(COUNT).stringValue());
+                try (TupleQueryResult result = tupleQuery.evaluate()) {
+                    BindingSet bindingSet = result.next();
+                    numberValues = Integer.parseInt(bindingSet.getValue(COUNT).stringValue());
+                }
             }
             
             //2. get the total number of values for the property if the new properties are inserted

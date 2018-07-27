@@ -1,5 +1,5 @@
 //**********************************************************************************************
-//                                       ResultCalls.java 
+//                                       ResultCall.java 
 //
 // Author(s): Alice Boizet
 // PHIS-SILEX version 1.0
@@ -15,17 +15,17 @@ package phis2ws.service.view.brapi.results;
 import java.util.ArrayList;
 import phis2ws.service.view.brapi.Pagination;
 import phis2ws.service.view.manager.Resultat;
-import phis2ws.service.view.model.phis.Calls;;
+import phis2ws.service.view.model.phis.Call;;
 
 
-public class ResultCalls extends Resultat<Calls>{
+public class ResultCall extends Resultat<Call>{
     
     /**
      * Constructeur qui appelle celui de la classe mère dans le cas d'une liste 
      * à un seul élément
      * @param callsList liste des calls contenant un seul élément
      */
-    public ResultCalls(ArrayList<Calls> callsList) {
+    public ResultCall(ArrayList<Call> callsList) {
         super(callsList);
     }
     
@@ -36,7 +36,7 @@ public class ResultCalls extends Resultat<Calls>{
      * @param pagination Objet pagination permettant de trier la liste experimentList
      * @param paginate 
      */
-    public ResultCalls(ArrayList<Calls> callsList, Pagination pagination, 
+    public ResultCall(ArrayList<Call> callsList, Pagination pagination, 
             boolean paginate) {
         super(callsList, pagination, paginate);
     }

@@ -33,6 +33,9 @@ import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionFactory;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.injection.SessionInjectResolver;
+import phis2ws.service.resources.BrapiCall;
+import phis2ws.service.resources.CallsResourceService;
+import phis2ws.service.resources.TokenResourceService;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
 
@@ -71,7 +74,9 @@ public class ApplicationInitConfig extends ResourceConfig {
                 bind(SessionInjectResolver.class)
                         .to(new TypeLiteral<InjectionResolver<SessionInject>>() {
                         })
-                        .in(Singleton.class);
+                        .in(Singleton.class);                
+                bind(CallsResourceService.class).to(BrapiCall.class);
+                bind(TokenResourceService.class).to(BrapiCall.class);
             }
         });
     }

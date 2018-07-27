@@ -1,5 +1,5 @@
 //**********************************************************************************************
-//                                       Calls.java 
+//                                       Call.java 
 //
 // Author(s): Alice Boizet
 // PHIS-SILEX version 1.0
@@ -14,25 +14,19 @@ package phis2ws.service.view.model.phis;
 
 import java.util.ArrayList;
 
-public class Calls {
+public class Call {
     private String call;
     private ArrayList<String> datatypes = new ArrayList<>();
     private ArrayList<String> methods = new ArrayList<>();
     private ArrayList<String> versions = new ArrayList<>();
 
     //Default constructor
-    public Calls() {
+    public Call() {
         
     }    
 
-    /*Constructor with param
-    public Calls(String callname) {
-        this.callname = callname;
-    }
-    */
-
     //Constructor with param
-    public Calls(String call, ArrayList<String> datatypes, ArrayList<String> methods, ArrayList<String> versions) {
+    public Call(String call, ArrayList<String> datatypes, ArrayList<String> methods, ArrayList<String> versions) {
         this.call = call;
         this.datatypes = datatypes;
         this.methods = methods;

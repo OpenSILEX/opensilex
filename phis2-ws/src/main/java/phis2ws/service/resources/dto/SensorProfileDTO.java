@@ -29,7 +29,7 @@ public class SensorProfileDTO extends AbstractVerifiedClass {
     //uri of the sensor concerned by the properties
     private String uri;
     //list of the properties of the sensor
-    private ArrayList<PropertyDTO> properties;
+    private ArrayList<PropertyDTO> properties = new ArrayList<>();
 
     @Override
     public Map rules() {
@@ -66,5 +66,9 @@ public class SensorProfileDTO extends AbstractVerifiedClass {
 
     public void setProperties(ArrayList<PropertyDTO> properties) {
         this.properties = properties;
+    }
+    
+    public void addProperty(PropertyDTO property) {
+        properties.add(property);
     }
 }

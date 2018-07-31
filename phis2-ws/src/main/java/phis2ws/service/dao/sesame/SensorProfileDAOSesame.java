@@ -58,7 +58,6 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
     private final static URINamespaces NAMESPACES = new URINamespaces();
     
     private final static String TRIPLESTORE_CONCEPT_SENSING_DEVICE = NAMESPACES.getObjectsProperty("cSensingDevice");
-    
     private final static String TRIPLESTORE_CONTEXT_SENSORS = NAMESPACES.getContextsProperty("sensors");
     private final static String TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE = NAMESPACES.getRelationsProperty("subClassOf*");
     private final static String TRIPLESTORE_RELATION_TYPE = NAMESPACES.getRelationsProperty("type");

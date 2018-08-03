@@ -10,7 +10,7 @@
 // Subject: Represents the calls service : return all Brapi calls information (name,datatypes,methods,versions)
 //***********************************************************************************************
 
-package phis2ws.service.resources;
+package phis2ws.service.resources.brapi;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

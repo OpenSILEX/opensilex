@@ -9,8 +9,9 @@
 // Last modification date:  March, 2018
 // Subject: Represents the token data service
 //***********************************************************************************************
-package phis2ws.service.resources;
+package phis2ws.service.resources.brapi;
 
+import phis2ws.service.resources.brapi.BrapiCall;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.crypto.RSASSAVerifier;

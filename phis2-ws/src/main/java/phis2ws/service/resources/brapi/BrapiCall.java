@@ -9,7 +9,7 @@
 // Last modification date:  26 juil. 2018
 // Subject: interface for dependency injection in order to get Calls attribute
 //******************************************************************************
-package phis2ws.service.resources;
+package phis2ws.service.resources.brapi;
 
 import phis2ws.service.view.model.phis.Call;
 

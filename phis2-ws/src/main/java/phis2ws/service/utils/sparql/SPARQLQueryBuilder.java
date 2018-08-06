@@ -33,7 +33,6 @@ public class SPARQLQueryBuilder extends SPARQLStringBuilder {
 
     public SPARQLQueryBuilder() {
         super();
-        groupBy = "";
     }
 
     public void appendFrom(String from) {
@@ -88,6 +87,9 @@ public class SPARQLQueryBuilder extends SPARQLStringBuilder {
      */
     public void appendGroupBy(String values) {
         if (values != null) {
+            if(this.groupBy == null){
+            this.groupBy = "";
+        }
             this.groupBy += " " + values;
         }
     }

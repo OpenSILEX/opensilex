@@ -8,9 +8,11 @@
 // Contact: eloan.lagier@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  Feb 26, 2018
 // Subject: A Dao specific to insert Uri into the triplestore
-// Todo : - Element: Instances
-//          Method : instancesPaginate
-//          Purpose : need to paginate the query instead of retreive all instances and then filtered them
+// SILEX:todo
+// - Element: Instances
+//   Method : instancesPaginate
+//   Purpose : need to paginate the query instead of retreive all instances and then filtered them
+// \SILEX:todo
 //***********************************************************************************************
 package phis2ws.service.dao.sesame;
 
@@ -98,7 +100,9 @@ public class UriDaoSesame extends DAOSesame<Uri> {
      * @return the query 
      * query example : 
      * SELECT ?class 
-     * WHERE { ?class rdfs:label contextName }
+     * WHERE {
+     * ?class rdfs:label contextName
+     * }
      */
     protected SPARQLQueryBuilder prepareLabelSearchQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
@@ -126,8 +130,8 @@ public class UriDaoSesame extends DAOSesame<Uri> {
      * query example : 
      * SELECT DISTINCT ?class 
      * WHERE {
-     *     contextURI rdfs:subClassOf ?parent .
-     *     ?class rdfs:subClassOf ?parent 
+     *    contextURI rdfs:subClassOf ?parent .
+     *    ?class rdfs:subClassOf ?parent 
      * }
      *
      * @return SPARQLQueryBuilder
@@ -166,7 +170,9 @@ public class UriDaoSesame extends DAOSesame<Uri> {
      *
      * @return the ask query query 
      * 
-     * exemple : ASK { concept ?any1 ?any2 .}
+     * exemple : ASK { 
+     *   concept ?any1 ?any2 .
+     * }
      */
     protected SPARQLQueryBuilder prepareAskQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
@@ -512,9 +518,7 @@ public class UriDaoSesame extends DAOSesame<Uri> {
      * @param rdfType
      * @return the query. 
      * e.g. ASK {
-     *    <http://www.phenome-fppn.fr/vocabulary/2017#HemisphericalCamera>
-     *    rdfs:subClassOf*
-     *    <http://www.phenome-fppn.fr/vocabulary/2017#SensingDevice> 
+     *    <http://www.phenome-fppn.fr/vocabulary/2017#HemisphericalCamera>  rdfs:subClassOf* <http://www.phenome-fppn.fr/vocabulary/2017#SensingDevice> 
      * }
      */
     private SPARQLQueryBuilder prepareIsSubclassOf(String rdfSubType, String rdfType) {
@@ -536,7 +540,7 @@ public class UriDaoSesame extends DAOSesame<Uri> {
      * @param rdfType
      * @return the query. 
      * e.g. ASK { 
-     * <http://www.w3.org/ns/oa#commenting>  rdf:type  <  http://www.w3.org/ns/oa#Motivation>  .  
+     *  <http://www.w3.org/ns/oa#commenting>  rdf:type  <  http://www.w3.org/ns/oa#Motivation>  .  
      * }
      */
     private SPARQLQueryBuilder prepareIsInstanceOf(String instanceUri, String rdfType) {
@@ -552,7 +556,7 @@ public class UriDaoSesame extends DAOSesame<Uri> {
 
         }
         query.appendSelect(contextURI);
-        query.appendTriplet("<" + instanceUri + ">", "rdf:type", "<" + rdfType + ">", null);
+        query.appendTriplet("<" + instanceUri + ">", NAMESPACES.getRelationsProperty("type"), "<" + rdfType + ">", null);
 
         query.appendAsk("");
         LOGGER.debug(query.toString());
@@ -591,9 +595,10 @@ public class UriDaoSesame extends DAOSesame<Uri> {
 
     /**
      * generates a query to get the list of the labels of the uri attribute e.g.
-     * SELECT DISTINCT ?label WHERE {
-     * <http://www.phenome-fppn.fr/vocabulary/2017#hasTechnicalContact>
-     * rdfs:label ?label . }
+     * SELECT DISTINCT ?label 
+     * WHERE {
+     *  <http://www.phenome-fppn.fr/vocabulary/2017#hasTechnicalContact> rdfs:label ?label . 
+     * }
      *
      * @return the generated query
      */
@@ -610,10 +615,12 @@ public class UriDaoSesame extends DAOSesame<Uri> {
     }
 
     /**
-     * generates a query to get the list of the comments of the uri attribute
-     * e.g. SELECT DISTINCT ?comment WHERE {
-     * <http://www.phenome-fppn.fr/vocabulary/2017#hasTechnicalContact>
-     * rdfs:comment ?comment . }
+     * generates a query to get the list of the comments of the uri attribute.
+     * e.g. 
+     * SELECT DISTINCT ?comment 
+     * WHERE {
+     *      <http://www.phenome-fppn.fr/vocabulary/2017#hasTechnicalContact> rdfs:comment ?comment . 
+     * }
      *
      * @return the generated query
      */
@@ -632,8 +639,12 @@ public class UriDaoSesame extends DAOSesame<Uri> {
     /**
      * get the labels associated to the uri attribute in the triplestore
      *
-     * @return the list of labels. the key is the language e.g. [ "fr" :
-     * "maison", "en" : "home", "none" : "dqfgdf" ]
+     * @return the list of labels. the key is the language 
+     * e.g. [ 
+     *          "fr" : "maison", 
+     *          "en" : "home", 
+     *          "none" : "dqfgdf" 
+     * ]
      */
     public Multimap<String, String> getLabels() {
         SPARQLQueryBuilder query = prepareGetLabels();
@@ -659,8 +670,12 @@ public class UriDaoSesame extends DAOSesame<Uri> {
     /**
      * get the comments associated to the uri attribute in the triplestore
      *
-     * @return the list of comments. the key is the language e.g. [ "fr" :
-     * "maison", "en" : "home", "none" : "dqfgdf" ]
+     * @return the list of comments. the key is the language 
+     * e.g.  [ 
+     *          "fr" : "maison", 
+     *          "en" : "home", 
+     *          "none" : "dqfgdf" 
+     *       ]
      */
     public Multimap<String, String> getComments() {
         SPARQLQueryBuilder query = prepareGetComments();

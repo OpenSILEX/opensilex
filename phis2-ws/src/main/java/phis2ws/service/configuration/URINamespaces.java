@@ -6,7 +6,7 @@
 // Copyright © - INRA - 2016
 // Creation date: august 2016
 // Contact:i.nembrot@laposte.net, arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  July, 2018 (add special namespace)
+// Last modification date:  July, 2018 (add custom users namespace, ex : e.g. platform => http://www.phenome-fppn.fr/platform/)
 // Subject: personal parameters for global usage
 // G_URI :
 // - M3P URI for further use so that we don"t need to repeat paths in each page
@@ -36,20 +36,23 @@ public class URINamespaces {
     private static final Map<String, String> W3C_NAMESPACES = new HashMap<>();
     private static String platform = null;
     
-    // Add additionnal personal namespaces to triplestore based namespace.
-    // These one override the namesapce foun in rdf4j
+    // Add additionnal custom users namespaces to triplestore based namespace. e.g. platform => http://www.phenome-fppn.fr/platform/
+    // These one override the namespaces found in rdf4j 
+    /** @see allPaginateNamespacesProperties function for usage **/
+    // For example if "platform" namespace is defined as http://www.phenome-fppn.fr/platform in rdf4j this static function 
+    // below will permit to overrride "plateform" in http://www.phenome-fppn.fr/ephesia for example
     public static final Map<String, String> USER_SPECIFIC_NAMESPACES;
     static {
         Map<String, String> temporaryMap = new HashMap<>();
         String baseUri = PropertiesFileManager.getConfigFileProperty("service", "baseURI");
         // Can put multiple other namespaces
-        temporaryMap.put("plateform", baseUri);
+        temporaryMap.put("platform", baseUri);
         USER_SPECIFIC_NAMESPACES = Collections.unmodifiableMap(temporaryMap);
     }
 
 
     public URINamespaces() {
-        platform = PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "platform");;
+        platform = PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "platform");
         setContexts();
         setNamespaces();
         setW3CNamespaces();

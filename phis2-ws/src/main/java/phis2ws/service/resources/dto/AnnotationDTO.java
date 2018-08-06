@@ -24,14 +24,17 @@ import phis2ws.service.view.model.phis.Annotation;
 /**
  * Represents the JSON submitted by the client for the annotation POST service
  *
- * @author Arnaud Charleroy<arnaud.charleroy@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class AnnotationDTO extends AbstractVerifiedClass {
 
-    // motivation instance uri that describe the purpose of this annotation  eg. http://www.w3.org/ns/oa#commenting
+    // motivation instance uri that describe the purpose of this annotation 
+    // e.g. http://www.w3.org/ns/oa#commenting
     private String motivatedBy;
 
-    // creator of this annotations eg. http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy
+    // Is an uri that represents the author
+    // of this annotations 
+    // e.g. http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy
     @NotNull
     private String creator;
 
@@ -42,7 +45,7 @@ public class AnnotationDTO extends AbstractVerifiedClass {
     private ArrayList<String> comments;
 
     /**
-     * uris that are annoted by this annotation eg.
+     * uris that are annoted by this annotation. e.g.
      * http://www.phenome-fppn.fr/diaphen/2017/o1032481
      * @link https://www.w3.org/TR/annotation-model/#cardinality-of-bodies-and-targets
      */

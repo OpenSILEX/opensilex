@@ -184,7 +184,7 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
      * @param uri user uri
      * @return boolean
      */
-    public Boolean isValidUserUri(String uri) {
+    public Boolean existUserUri(String uri) {
         boolean valid = false;
         ResultSet result = null;
         Connection con = null;

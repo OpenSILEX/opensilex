@@ -13,8 +13,6 @@ package phis2ws.service.dao.sesame;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -25,7 +23,6 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.resources.dto.PropertyVocabularyDTO;
@@ -94,9 +91,10 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
 
     /**
      * generates the SPARQL query to get the list of the contact properties e.g.
-     * SELECT ?contactProperty WHERE { ?contactProperty rdfs:subPropertyOf
-     *
-     * <http://www.phenome-fppn.fr/vocabulary/2017#hasContact> . }
+     * SELECT ?contactProperty 
+     * WHERE { 
+     *  ?contactProperty rdfs:subPropertyOf <http://www.phenome-fppn.fr/vocabulary/2017#hasContact> . 
+     * }
      *
      * @return
      */
@@ -112,9 +110,10 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
 
     /**
      * generates the SPARQL query to get the list of the device properties e.g.
-     * SELECT ?property WHERE { ?property rdfs:subPropertyOf
-     *
-     * <http://www.phenome-fppn.fr/vocabulary/2017#deviceProperty> . }
+     * SELECT ?property 
+     * WHERE { 
+     *  ?property rdfs:subPropertyOf <http://www.phenome-fppn.fr/vocabulary/2017#deviceProperty> . 
+     * }
      *
      * @return
      */
@@ -230,13 +229,18 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
     }
 
     /**
-     * Get all rdf4j namespaces
-     *
+     * Get all rdf4j namespaces.
+     * [
+     *  {
+     *   prefix : oa 
+     *   namespace : https://www.w3.org/ns/oa
+     *  }
+     * ]
      * @return arraylist of namespaces
      */
-    public ArrayList<Namespace> allPaginateNamespacesProperties() {
+    public ArrayList<Namespace> allNamespacesProperties() {
         ArrayList<Namespace> namespacesList = new ArrayList<>();
-        // Set personal namespaces
+        // Set custom namespaces set in the webservice
         URINamespaces.USER_SPECIFIC_NAMESPACES.forEach((prefixSpecific, namespaceSpecific)->{
                 Namespace namespace = new Namespace(prefixSpecific, namespaceSpecific);
                 namespacesList.add(namespace);

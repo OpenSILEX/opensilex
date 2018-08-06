@@ -108,11 +108,37 @@ public class VocabularyResourceService {
      *
      * @param pageSize
      * @param page
-     * @return list of the rdfs properties, with their labels e.g. { "metadata":
-     * { "pagination": { "pageSize": 20, "currentPage": 0, "totalCount": 2,
-     * "totalPages": 1 }, "status": [], "datafiles": [] }, "result": { "data": [
-     * { "relation": "rdfs:label", "labels": { "en": "label" } }, { "relation":
-     * null, "labels": { "en": "comment" } } ] } }
+     * @return list of the rdfs properties, with their labels 
+     * e.g. 
+     * { 
+     *  "metadata":
+     * { 
+     *  "pagination": 
+     *      { 
+     *          "pageSize": 20, 
+     *          "currentPage": 0, 
+     *          "totalCount": 2,
+     *          "totalPages": 1 
+     *      }, 
+     *      "status": [], 
+     *      "datafiles": [] }, 
+     *      "result": { 
+     *          "data": [
+     *              { 
+     *                  "relation": "rdfs:label", 
+     *                  "labels": { 
+     *                              "en": "label" 
+     *                           } 
+     *               }, 
+     *               { 
+     *                  "relation": null, 
+     *                  "labels": { 
+     *                      "en": "comment" 
+     *                  } 
+     *              ] 
+     *          } 
+     *      }
+     *   }
      */
     @GET
     @Path("rdfs/properties")
@@ -185,10 +211,22 @@ public class VocabularyResourceService {
      * @param pageSize
      * @param page
      * @return the list of the properties, with their labels e.g. { "metadata":
-     * { "pagination": null, "status": [], "datafiles": [] }, "result": {
-     * "data": [ { "relation":
-     * "http://www.phenome-fppn.fr/vocabulary/2017#hasTechnicalContact",
-     * "labels": { "en": "technical contact", "fr": "contact technique" } } ] }
+     * { 
+     *  "pagination": null, 
+     *  "status": [], 
+     *  "datafiles": [] 
+     *  }, 
+     *  "result": {
+     *      "data": [ 
+     *          { 
+     *              "relation": "http://www.phenome-fppn.fr/vocabulary/2017#hasTechnicalContact",
+     *              "labels": { 
+     *                  "en": "technical contact", 
+     *                  "fr": "contact technique" 
+     *              } 
+     *          } 
+     *      ] 
+     *  }
      * }
      */
     @GET
@@ -266,15 +304,35 @@ public class VocabularyResourceService {
      * @param rdfType
      * @param pageSize
      * @param page
-     * @return the list of the properties, with their labels e.g. { "metadata":
-     * { "pagination": { "pageSize": 20, "currentPage": 0, "totalCount": 5,
-     * "totalPages": 1 }, "status": [], "datafiles": [] }, "result": { "data": [
-     * { "relation":
-     * "http://www.phenome-fppn.fr/vocabulary/2017#dateOfLastCalibration",
-     * "labels": { "en": "date of last calibration", "fr": "date de la dernière
-     * calibration" } }, { "relation":
-     * "http://www.phenome-fppn.fr/vocabulary/2017#dateOfPurchase", "labels": {
-     * "en": "date of purchase", "fr": "date d'achat" } }, ... ] } }
+     * @return the list of the properties, with their labels e.g. 
+     * { "metadata":
+     *  { 
+     *  "pagination": 
+     *      { 
+     *          "pageSize": 20, 
+     *          "currentPage": 0, 
+     *          "totalCount": 5,
+     *          "totalPages": 1 
+     *      }, 
+     *      "status": [], 
+     *      "datafiles": [] 
+     *  }, 
+     *  "result": { 
+     *      "data": [
+     *              { 
+     *                  "relation": "http://www.phenome-fppn.fr/vocabulary/2017#dateOfLastCalibration",
+     *                  "labels": { 
+     *                      "en": "date of last calibration", 
+     *                      "fr": "date de la dernière calibration" } 
+     *              }, 
+     *              { 
+     *                  "relation": "http://www.phenome-fppn.fr/vocabulary/2017#dateOfPurchase",
+     *                  "labels": {
+     *                      "en": "date of purchase",
+     *                      "fr": "date d'achat" } 
+     *              }, ... ] 
+     *   } 
+     * }
      */
     @GET
     @Path("devices/properties")
@@ -394,7 +452,7 @@ public class VocabularyResourceService {
         ArrayList<Status> statusList = new ArrayList<>();
         ResponseFormVocabularyNamespace getResponse;
 
-        namespaces = vocabularyDAO.allPaginateNamespacesProperties();
+        namespaces = vocabularyDAO.allNamespacesProperties();
 
         if (namespaces == null) {
             getResponse = new ResponseFormVocabularyNamespace(0, 0, namespaces, true);

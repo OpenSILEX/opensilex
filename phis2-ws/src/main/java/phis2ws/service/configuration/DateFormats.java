@@ -17,12 +17,13 @@ import java.util.List;
 /**
  * contains the date formats used in the web service
  * @author Arnaud Charleroy
- * Todo : - Element: Datetime
-//          Attribute : YMDHMSZ_FORMAT
-//          Purpose : wrong date time format @link https://www.w3.org/TR/xmlschema-2/#dateTime
-//                    must add 'T'separator indicating that time-of-day follows;
-//                    Impact the API clients, internal WS search method parameters and 
-//                    class model with datetime attribute.
+ * SILEX:todo : - Element: Datetime
+ *         Attribute : YMDHMSZ_FORMAT
+ *         Purpose : wrong date time format @link https://www.w3.org/TR/xmlschema-2/#dateTime
+ *                    must add 'T'separator indicating that time-of-day follows;
+ *                    Impact the API clients, internal WS search method parameters and 
+ *                    class model with datetime attribute.
+ * SILEX:todo
  */
 public final class DateFormats {
 

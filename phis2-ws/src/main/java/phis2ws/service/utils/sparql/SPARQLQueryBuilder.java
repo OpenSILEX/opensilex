@@ -27,9 +27,13 @@ public class SPARQLQueryBuilder extends SPARQLStringBuilder {
     private String graph = null;
     private String optional = null;
     private String ask = null;
+    private String groupBy = null;
+    
+    public final static String GROUP_CONCAT_SEPARATOR = ",";
 
     public SPARQLQueryBuilder() {
         super();
+        groupBy = "";
     }
 
     public void appendFrom(String from) {
@@ -78,6 +82,33 @@ public class SPARQLQueryBuilder extends SPARQLStringBuilder {
             this.select += " " + values;
         }
     }
+    /**
+     * Use to groupby for paramters that not used in group concatenate function
+     * @param values 
+     */
+    public void appendGroupBy(String values) {
+        if (values != null) {
+            this.groupBy += " " + values;
+        }
+    }
+    
+    /**
+     * Add select group_concat values.
+     * Concatenate a list of values in sparql whitout repeating data.
+     * @see https://en.wikibooks.org/wiki/SPARQL/Aggregate_functions
+     * .e.g (GROUP_CONCAT(DISTINCT ?bodyValue; SEPARATOR=",") AS ?bodyValues)
+     * BodyValues 
+     * "test,test2"
+     * @param values the value name to separate
+     * @param separator the separator betweend returned value
+     * @param outputValueName the name of the labelled value
+     */
+    public void appendSelectConcat(String values,String separator,String outputValueName) {
+        if (values != null) {
+            this.select += " (GROUP_CONCAT(DISTINCT " + values + "; SEPARATOR=\"" + separator + "\") AS "+ outputValueName +")";
+        }
+    }
+    
 
     @Override
     public String toString() {
@@ -136,6 +167,9 @@ public class SPARQLQueryBuilder extends SPARQLStringBuilder {
         if (parameters.length() > 0) {
             queryResource += "\n" + parameters;
         }
+        if (groupBy != null) {
+            queryResource += "\n" + "GROUP BY " + groupBy + " ";
+        }
 
         if (orderBy != null) {
             queryResource += "\n" + "ORDER BY " + orderBy + " ";
@@ -174,5 +208,9 @@ public class SPARQLQueryBuilder extends SPARQLStringBuilder {
 
     public void clearOffset() {
         offset = null;
+    }
+    
+    public void clearGroupBy() {
+        groupBy = null;
     }
 }

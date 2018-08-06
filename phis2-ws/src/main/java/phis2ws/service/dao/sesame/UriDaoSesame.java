@@ -501,10 +501,11 @@ public class UriDaoSesame extends DAOSesame<Uri> {
             Uri uriType = new Uri();
             query = prepareGetUriType();
             TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-            TupleQueryResult resultat = tupleQuery.evaluate();
-            BindingSet bindingSet = resultat.next();
-            uriType.setRdfType(bindingSet.getValue(TRIPLESTORE_FIELDS_TYPE).toString());
-            uris.add(uriType);
+            try (TupleQueryResult resultat = tupleQuery.evaluate()) {
+                BindingSet bindingSet = resultat.next();
+                uriType.setRdfType(bindingSet.getValue(TRIPLESTORE_FIELDS_TYPE).toString());
+                uris.add(uriType);
+            }
         }
 
         return uris;

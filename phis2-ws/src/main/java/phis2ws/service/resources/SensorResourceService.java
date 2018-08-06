@@ -50,6 +50,8 @@ import phis2ws.service.view.brapi.form.AbstractResultForm;
 import phis2ws.service.view.brapi.form.ResponseFormGET;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
 import phis2ws.service.view.brapi.form.ResponseFormSensor;
+import phis2ws.service.view.brapi.form.ResponseFormSensorProfile;
+import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Sensor;
 
 /**
@@ -71,7 +73,7 @@ public class SensorResourceService {
      * @param insertStatusList
      * @return the response "no result found" for the service
      */
-    private Response noResultFound(ResponseFormSensor getResponse, ArrayList<Status> insertStatusList) {
+    private Response noResultFound(ResultForm getResponse, ArrayList<Status> insertStatusList) {
         insertStatusList.add(new Status(StatusCodeMsg.NO_RESULTS, StatusCodeMsg.INFO, "No results for the sensors"));
         getResponse.setStatus(insertStatusList);
         return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
@@ -104,7 +106,36 @@ public class SensorResourceService {
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         }
-    }    
+    }
+    
+    /**
+     * Search sensors profile corresponding to the given sensor uri
+     * @param sensorDAOSesame
+     * @return the sensor profile of the given sensor uri
+     */
+    private Response getSensorProfileData(SensorProfileDAOSesame sensorDAOSesame) {
+        ArrayList<SensorProfileDTO> sensorsProfiles;
+        ArrayList<Status> statusList = new ArrayList<>();
+        ResponseFormSensorProfile getResponse;
+        
+        sensorsProfiles = sensorDAOSesame.allPaginate();
+        
+        if (sensorsProfiles == null) {
+            getResponse = new ResponseFormSensorProfile(0, 0, sensorsProfiles, true);
+            return noResultFound(getResponse, statusList);
+        } else if (sensorsProfiles.isEmpty()) {
+            getResponse = new ResponseFormSensorProfile(0, 0, sensorsProfiles, true);
+            return noResultFound(getResponse, statusList);
+        } else {
+            getResponse = new ResponseFormSensorProfile(sensorDAOSesame.getPageSize(), sensorDAOSesame.getPage(), sensorsProfiles, false);
+            if (getResponse.getResult().dataSize() == 0) {
+                return noResultFound(getResponse, statusList);
+            } else {
+                getResponse.setStatus(statusList);
+                return Response.status(Response.Status.OK).entity(getResponse).build();
+            }
+        } 
+    }
     
     /**
      * search sensors by uri, rdfType, label, brand, in service date, 
@@ -280,6 +311,82 @@ public class SensorResourceService {
         sensorDAO.user = userSession.getUser();
 
         return getSensorsData(sensorDAO);
+    }
+    
+    /**
+     * search sensor's profile by uri
+     * 
+     * @param pageSize
+     * @param page
+     * @param uri
+     * @return list of the sensor's profile corresponding to the search params given
+     * e.g
+     * {
+     *      "metadata": {
+     *          "pagination": {
+     *              "pageSize": 20,
+     *              "currentPage": 0,
+     *              "totalCount": 3,
+     *              "totalPages": 1
+     *          },
+     *          "status": [],
+     *          "datafiles": []
+     *      },
+     *      "result": {
+     *          "data": [
+     *              {
+     *                  "uri": "http://www.phenome-fppn.fr/diaphen/2018/s18560",
+     *                  "properties": [
+     *                      {
+     *                         "rdfType": null,
+     *                         "relation": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+     *                         "value": "http://www.phenome-fppn.fr/vocabulary/2017#MultispectralCamera"
+     *                       },
+     *                       {
+     *                         "rdfType": null,
+     *                         "relation": "http://www.w3.org/2000/01/rdf-schema#label",
+     *                         "value": "testMS-final-peut-etre"
+     *                       },
+     *                  ]
+     *              }
+     *         ]
+     *      }
+     * }
+     */
+    @GET
+    @Path("profiles/{uri}")
+    @ApiOperation(value = "Get a sensor profile",
+                  notes = "Retrieve a sensor profile. Need URL encoded sensor URI")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Retrieve a sensor profile", response = Sensor.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getSensorProfile(
+        @ApiParam(value = DocumentationAnnotation.SENSOR_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @PathParam("uri") String uri,
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int pageSize,
+        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
+        
+        if (uri == null) {
+            final Status status = new Status(StatusCodeMsg.ACCESS_ERROR, StatusCodeMsg.ERR, "Empty sensor uri");
+            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
+        }
+        
+        SensorProfileDAOSesame sensorDAO = new SensorProfileDAOSesame();
+        sensorDAO.uri = uri;
+        sensorDAO.setPage(page);
+        sensorDAO.setPageSize(pageSize);
+        sensorDAO.user = userSession.getUser();
+        
+        return getSensorProfileData(sensorDAO);
     }
     
     /**

@@ -47,13 +47,17 @@ public class AnnotationsSerializer implements JsonSerializer<Annotation> {
      * This function convert an annotation into a json specific representation.
      * e.g. 
      * {
-     * "uri": "http://www.phenome-fppn.fr/platform/id/annotation/361ac1e4-dc5a-4fdb-95a3-3f65556b1d32",
-     * "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy",
-     * "motivatedBy": "http://www.w3.org/ns/oa#commenting",
-     * "creationDate": "2018-06-25T15:25:02+0200",
-     * "comments": [ "Ustilago maydis infection" ],
-     * "targets": [ "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy" ] 
+     *  "uri": "http://www.phenome-fppn.fr/platform/id/annotation/361ac1e4-dc5a-4fdb-95a3-3f65556b1d32",
+     *  "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy",
+     *  "motivatedBy": "http://www.w3.org/ns/oa#commenting",
+     *  "creationDate": "2018-06-25T15:25:02+0200",
+     *  "comments": [ "Ustilago maydis infection" ],
+     *  "targets": [ "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy" ] 
      * }
+     * SILEX:info 
+     * The annotation json schema has been deciced according to the "Web Annotation Ontology".
+     * @link https://www.w3.org/TR/annotation-model/#bodies-and-targets
+     * \SILEX:info
      * @param context
      */
     @Override

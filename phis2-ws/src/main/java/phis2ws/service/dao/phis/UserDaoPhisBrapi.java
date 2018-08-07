@@ -63,7 +63,7 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
     public String orcid;
     public Boolean admin;
     public String available;
-    public String uri; // serch by uri
+    public String uri; // search by uri
 
     public UserDaoPhisBrapi() {
         super();
@@ -182,7 +182,7 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
      * Verify if a uri exist in Relationnal DB
      *
      * @param uri user uri
-     * @return boolean
+     * @return boolean true if user uri exist and false if not
      */
     public Boolean existUserUri(String uri) {
         boolean valid = false;

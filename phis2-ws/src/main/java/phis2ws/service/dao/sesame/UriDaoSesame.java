@@ -386,8 +386,10 @@ public class UriDaoSesame extends DAOSesame<Uri> {
     }
 
     /**
-     * List of instance
-     * @todo need to paginate the query instead of retreive all instances and then filtered them
+     * List of desired instances.
+     * SILEX:todo
+     * need to paginate the query instead of retreive all instances and then filtered them after
+     * \SILEX:todo
      * @return the list of the instances, corresponding to the search params
      * given
      */
@@ -587,6 +589,9 @@ public class UriDaoSesame extends DAOSesame<Uri> {
      */
     public boolean isInstanceOf(String instanceUri, String rdfType) {
         if (instanceUri == null) {
+            return false;
+        }
+        if (rdfType == null) {
             return false;
         }
         SPARQLQueryBuilder query = prepareIsInstanceOf(instanceUri, rdfType);

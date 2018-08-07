@@ -17,8 +17,8 @@ package phis2ws.service.view.model.phis;
  */
 public class Namespace implements Comparable<Namespace>{
 
-    private String prefix;
-    private String namespace;
+    private String prefix; // The prefix of the namespace .e.g oa
+    private String namespace; // The namespace .e.g https://www.w3.org/ns/oa
 
     public Namespace(String prefix, String namespace) {
         this.prefix = prefix;
@@ -46,12 +46,12 @@ public class Namespace implements Comparable<Namespace>{
      * Compares the two prefix strings lexicographically.
      * Use to sort Arraylist<Namespace> in VocabularyDao
      * e.g. Collections.sort(arraylist)
-     * @param o
+     * @param namespaceCompared
      * @return 
      */
     @Override
-    public int compareTo(Namespace o) {
-        return this.getPrefix().compareTo(o.getPrefix());
+    public int compareTo(Namespace namespaceCompared) {
+        return this.getPrefix().compareTo(namespaceCompared.getPrefix());
     }
 
 }

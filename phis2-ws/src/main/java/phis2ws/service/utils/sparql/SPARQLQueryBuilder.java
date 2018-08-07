@@ -7,7 +7,7 @@
 // Creation date: may 2016
 // Contact:eloan.lagier@inra.fr, arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  Janvier 29 , 2018
-// Subject: A class which permit to build a SPARQL query
+// Subject: A class which is used to build a SPARQL query
 //***********************************************************************************************
 package phis2ws.service.utils.sparql;
 
@@ -27,7 +27,7 @@ public class SPARQLQueryBuilder extends SPARQLStringBuilder {
     private String graph = null;
     private String optional = null;
     private String ask = null;
-    private String groupBy = null;
+    private String groupBy = null; // Permits to concatenate a list of values in sparql without repeating data.
     
     public final static String GROUP_CONCAT_SEPARATOR = ",";
 
@@ -96,7 +96,7 @@ public class SPARQLQueryBuilder extends SPARQLStringBuilder {
     
     /**
      * Add select group_concat values.
-     * Concatenate a list of values in sparql whitout repeating data.
+     * Concatenate a list of values in sparql without repeating data.
      * @see https://en.wikibooks.org/wiki/SPARQL/Aggregate_functions
      * .e.g (GROUP_CONCAT(DISTINCT ?bodyValue; SEPARATOR=",") AS ?bodyValues)
      * BodyValues 

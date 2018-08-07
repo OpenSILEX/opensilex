@@ -102,11 +102,12 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
      * .e.g.
      * SELECT DISTINCT ?uri
      * WHERE { 
-     * ?uri <http://purl.org/dc/terms/creationDate> ?creationDate . ?uri
-     * <http://purl.org/dc/terms/creator> ?creator . ?uri
-     * <http://www.w3.org/ns/oa#motivatedBy> ?motivatedBy . ?uri
-     * <http://www.w3.org/ns/oa#bodyValue> ?bodyValue . 
-     * } LIMIT 20
+     *      ?uri <http://purl.org/dc/terms/creationDate> ?creationDate . ?uri
+     *      <http://purl.org/dc/terms/creator> ?creator . ?uri
+     *      <http://www.w3.org/ns/oa#motivatedBy> ?motivatedBy . ?uri
+     *      <http://www.w3.org/ns/oa#bodyValue> ?bodyValue . 
+     * } 
+     * LIMIT 20
      *
      * @return query generated with the searched parameter above
      */
@@ -182,13 +183,13 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
      * Must be done to find the total of instances found in the triplestore using this search parameters 
      * because the query is paginated 
      * (reduce the amount of data retrieved and the time to process data before to send it to the client)
-     * (count(distinct ?uri) as ?count)
+     * SELECT (count(distinct ?uri) as ?count)
      * WHERE { 
-     * ?uri <http://purl.org/dc/terms/creationDate> ?creationDate .
-     * ?uri <http://purl.org/dc/terms/creator> <http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy> .
-     * ?uri <http://www.w3.org/ns/oa#motivatedBy> <http://www.w3.org/ns/oa#commenting> .
-     * ?uri <http://www.w3.org/ns/oa#bodyValue> ?bodyValue .
-     * FILTER ( regex(STR(?bodyValue), 'Ustilago maydis infection', 'i') ) 
+     *      ?uri <http://purl.org/dc/terms/creationDate> ?creationDate .
+     *      ?uri <http://purl.org/dc/terms/creator> <http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy> .
+     *      ?uri <http://www.w3.org/ns/oa#motivatedBy> <http://www.w3.org/ns/oa#commenting> .
+     *      ?uri <http://www.w3.org/ns/oa#bodyValue> ?bodyValue .
+     *      FILTER ( regex(STR(?bodyValue), 'Ustilago maydis infection', 'i') ) 
      * }
      *
      * @return query generated with the searched parameters 
@@ -430,8 +431,10 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
             }
 
             if (bindingSet.getValue(BODY_VALUES) != null) {
+                //SILEX:info
                 // concat query return a list with comma separated value in one column
-                ArrayList<String> bodies = new ArrayList<>(Arrays.asList(bindingSet.getValue(BODY_VALUES).stringValue().split(",")));
+                //\SILEX:info
+                ArrayList<String> bodies = new ArrayList<>(Arrays.asList(bindingSet.getValue(BODY_VALUES).stringValue().split(SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR)));
                 if (annotation.getBodiesValue() != null
                         && !annotation.getBodiesValue().isEmpty()) {
                     annotation.setBodiesValue(bodies);
@@ -447,9 +450,10 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
             }
 
             //SILEX:info
-            // concat query return a list with comma separated value in one column
+            // concat query return a list with comma separated value in one column.
+            // An annotation has a least one target.
             //\SILEX:info
-            ArrayList<String> targets = new ArrayList<>(Arrays.asList(bindingSet.getValue(TARGETS).stringValue().split(",")));
+            ArrayList<String> targets = new ArrayList<>(Arrays.asList(bindingSet.getValue(TARGETS).stringValue().split(SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR)));
             if (annotation.getTargets() != null
                     && !annotation.getTargets().isEmpty()) {
                 annotation.setTargets(targets);

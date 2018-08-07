@@ -93,7 +93,7 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
      * generates the SPARQL query to get the list of the contact properties e.g.
      * SELECT ?contactProperty 
      * WHERE { 
-     *  ?contactProperty rdfs:subPropertyOf <http://www.phenome-fppn.fr/vocabulary/2017#hasContact> . 
+     *  ?contactProperty rdfs:subPropertyOf* <http://www.phenome-fppn.fr/vocabulary/2017#hasContact> . 
      * }
      *
      * @return

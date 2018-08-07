@@ -86,12 +86,9 @@ public class AnnotationResourceService {
     @ApiOperation(value = "Post annotations",
             notes = "Register new annotations in the triplestore")
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Annotations saved", response = ResponseFormPOST.class)
-        ,
-        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION)
-        ,
-        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED)
-        ,
+        @ApiResponse(code = 201, message = "Annotations saved", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
     @ApiImplicitParams({
@@ -170,12 +167,9 @@ public class AnnotationResourceService {
     @ApiOperation(value = "Get all annotations corresponding to the search params given",
             notes = "Retrieve all annotations authorized for the user corresponding to the searched params given")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve all annotations", response = Annotation.class, responseContainer = "List")
-        ,
-        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION)
-        ,
-        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED)
-        ,
+        @ApiResponse(code = 200, message = "Retrieve all annotations", response = Annotation.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiImplicitParams({
@@ -246,12 +240,9 @@ public class AnnotationResourceService {
     @ApiOperation(value = "Get a annotation",
             notes = "Retrieve a annotation. Need URL encoded annotation URI")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve a annotation", response = Annotation.class, responseContainer = "List")
-        ,
-        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION)
-        ,
-        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED)
-        ,
+        @ApiResponse(code = 200, message = "Retrieve a annotation", response = Annotation.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiImplicitParams({
@@ -310,7 +301,10 @@ public class AnnotationResourceService {
     }
 
     /**
-     * Generic reponse for not found annotations
+     * Generic reponse for not found annotations.
+     * SILEX:todo
+     * Need to create an abstract resource class to make this method more generic
+     * \SILEX:todo
      * @param getResponse
      * @param insertStatusList
      * @return 

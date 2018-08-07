@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * Permits to apply rules defined in DTO objects
+ * Allows to apply rules defined in DTO objects
  *
  * @author Arnaud Charleroy
  */
@@ -93,7 +93,7 @@ public abstract class AbstractVerifiedClass implements VerifiedClassInterface {
     }
 
     /**
-     * Permits to transfom an object in a HashMap. Useful for object
+     * Allows to transfom an object in a HashMap. Useful for object
      * transformation
      *
      * @return object in hashmap form

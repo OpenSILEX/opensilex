@@ -133,7 +133,7 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
      *
      * @param property
      * @return true if the class attribute domainRdfType can have the property
-     * false if not
+     *         false if not
      */
     protected boolean isPropertyDomainContainsRdfType(String property) {
         PropertyDAOSesame propertyDAO = new PropertyDAOSesame();

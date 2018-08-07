@@ -179,10 +179,11 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
     }
 
     /**
-     * Verify if a uri exist in Relationnal DB
+     * Verify if an user uri exist in Relationnal DB
      *
      * @param uri user uri
-     * @return boolean true if user uri exist and false if not
+     * @return boolean true if user uri exist 
+     *                 false if not
      */
     public Boolean existUserUri(String uri) {
         boolean valid = false;

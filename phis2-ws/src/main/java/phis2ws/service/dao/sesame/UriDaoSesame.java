@@ -571,7 +571,8 @@ public class UriDaoSesame extends DAOSesame<Uri> {
      *
      * @param rdfSubType
      * @param rdfType
-     * @return true if it is a subclass false if not
+     * @return true if it is a subclass 
+     *         false if not
      */
     public boolean isSubClassOf(String rdfSubType, String rdfType) {
         SPARQLQueryBuilder query = prepareIsSubclassOf(rdfSubType, rdfType);
@@ -585,7 +586,8 @@ public class UriDaoSesame extends DAOSesame<Uri> {
      *
      * @param instanceUri
      * @param rdfType
-     * @return true if it is a subclass false if not
+     * @return true if it is a subclass 
+     *         false if not
      */
     public boolean isInstanceOf(String instanceUri, String rdfType) {
         if (instanceUri == null) {

@@ -85,7 +85,8 @@ public class UriResourceService {
      * search if an uri is in the triplestore or not
      *
      * @param uri
-     * @return a response which contains true if the uri exist, 
+     * @return a response which contains 
+     *         true if the uri exist, 
      *         false if it is an unknown uri
      */
     @GET

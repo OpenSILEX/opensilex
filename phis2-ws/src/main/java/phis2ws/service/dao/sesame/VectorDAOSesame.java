@@ -236,8 +236,15 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
     }
     
     /**
-     * prepare a query to get the higher id of the vector
-     * @return 
+     * prepare a query to get the higher id of the vector 
+     * @return the generated query
+     * e.g.
+     * SELECT ?uri WHERE {
+     *  ?uri  rdf:type  ?type  . 
+     *  ?type  rdfs:subClassOf*  <http://www.phenome-fppn.fr/vocabulary/2017#Vector> . 
+     *  FILTER ( regex(str(?uri), ".*\/2018/.*") ) 
+     * }
+     * ORDER BY desc(?uri)
      */
     private SPARQLQueryBuilder prepareGetLastIdFromYear(String year) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();

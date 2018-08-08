@@ -100,7 +100,6 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
      * @return 
      */
     private SPARQLQueryBuilder prepareGetLastIdFromYear(String year) {
-        URINamespaces uriNamespace = new URINamespaces();
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         
         query.appendSelect("?" + URI);
@@ -116,14 +115,14 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
     }
     
     /**
-     * get the higher id of the variables
+     * get the higher existing id of the sensor for a given year
      * @param year
      * @return the id
      */
     public int getLastIdFromYear(String year) {
         SPARQLQueryBuilder query = prepareGetLastIdFromYear(year);
 
-        //get last variable uri inserted
+        //get last sensor uri inserted
         TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         TupleQueryResult result = tupleQuery.evaluate();
 

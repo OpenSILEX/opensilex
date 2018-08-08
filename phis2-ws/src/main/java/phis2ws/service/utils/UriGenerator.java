@@ -28,7 +28,7 @@ import phis2ws.service.dao.sesame.VectorDAOSesame;
 
 /**
  * generate differents kinds of uris (vector, sensor, ...)
- *
+ * 
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class UriGenerator {
@@ -69,10 +69,11 @@ public class UriGenerator {
     private String generateVectorUri(String year) {
         //1. get the actual number of vectors in the triplestor for the year
         VectorDAOSesame vectorDAO = new VectorDAOSesame();
-        int numberExistingVectors = vectorDAO.getNumberOfVectors(year);
+        int lastVectorIdFromYear = vectorDAO.getLastIdFromYear(year);
 
         //2. generates vectors uri
-        String numberOfVectors = Integer.toString(numberExistingVectors + 1);
+        String numberOfVectors = Integer.toString(lastVectorIdFromYear + 1);
+
         String newVectorNumber;
 
         if (numberOfVectors.length() == 1) {
@@ -90,7 +91,6 @@ public class UriGenerator {
      * <unic_code> = 1 letter type + 2 numbers year + auto incremented number
      * with 2 digits (per year) the year corresponds to the year of insertion in
      * the triplestore e.g. http://www.phenome-fppn.fr/diaphen/2017/s17002
-     *
      * @param year the insertion year of the sensor.
      * @return the new sensor uri
      */
@@ -103,7 +103,6 @@ public class UriGenerator {
         int sensorNumber = lastSensorIdFromYear + 1;
         String numberOfSensors = Integer.toString(sensorNumber);
         String newSensorNumber;
-
         switch (numberOfSensors.length()) {
             case 1:
                 newSensorNumber = "00" + numberOfSensors;
@@ -115,7 +114,6 @@ public class UriGenerator {
                 newSensorNumber = numberOfSensors;
                 break;
         }
-
         return PLATFORM_URI + year + "/" + URI_CODE_SENSOR + year.substring(2, 4) + newSensorNumber;
     }
 
@@ -126,7 +124,6 @@ public class UriGenerator {
      * <unic_code> = 1 letter type + 2 numbers year + auto incremented number
      * with 6 digits (per year) the year corresponds to the year of insertion in
      * the triplestore e.g. http://www.phenome-fppn.fr/diaphen/2017/o17000001
-     *
      * @param year the insertion year of the agronomical object.
      * @return the new agronomical object uri
      */

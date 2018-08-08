@@ -238,7 +238,7 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
     /**
      * prepare a query to get the higher id of the vector 
      * @return the generated query
-     * e.g.
+     * @example
      * SELECT ?uri WHERE {
      *  ?uri  rdf:type  ?type  . 
      *  ?type  rdfs:subClassOf*  <http://www.phenome-fppn.fr/vocabulary/2017#Vector> . 

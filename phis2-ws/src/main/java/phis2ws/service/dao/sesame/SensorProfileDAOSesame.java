@@ -13,9 +13,12 @@ package phis2ws.service.dao.sesame;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
@@ -43,18 +46,35 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(SensorProfile.class);
     
+    //a sensor uri (e.g. http://www.phenome-fppn.fr/diaphen/2018/s18001)
+    public String uri;
+    
+    //The following attributes are used to search sensors in the triplestore
+    private final String RELATION = "relation";
+    private final String PROPERTY = "property";
+    private final String RDF_TYPE = "rdfType";
+    
     //Triplestore relations
     private final static URINamespaces NAMESPACES = new URINamespaces();
     
     private final static String TRIPLESTORE_CONCEPT_SENSING_DEVICE = NAMESPACES.getObjectsProperty("cSensingDevice");
-    
     private final static String TRIPLESTORE_CONTEXT_SENSORS = NAMESPACES.getContextsProperty("sensors");
-    
+    private final static String TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE = NAMESPACES.getRelationsProperty("subClassOf*");
     private final static String TRIPLESTORE_RELATION_TYPE = NAMESPACES.getRelationsProperty("type");
     
     @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        query.appendDistinct(Boolean.TRUE);
+
+        query.appendSelect("?" + RELATION + " ?" + PROPERTY);
+        query.appendTriplet("<" + uri + ">", "?" + RELATION, "?" + PROPERTY, null);
+        query.appendTriplet("<" + uri + ">", TRIPLESTORE_RELATION_TYPE, "?" + RDF_TYPE, null);
+        query.appendTriplet("?" + RDF_TYPE, TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE, TRIPLESTORE_CONCEPT_SENSING_DEVICE, null);
+        
+        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        
+        return query;
     }
 
     @Override
@@ -236,5 +256,47 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
         } else { //errors founded in data
             return checkResult;
         }
+    }
+    
+    /**
+     * get a sensor property from a given binding set/
+     * Assume that the following attributes exist : relation, property
+     * @param bindingSetProperty a binding set from a sensor profile search query
+     * @return a sensor property
+     */
+    private PropertyDTO getPropertyFromBingingSet(BindingSet bindingSetProperty) {
+        PropertyDTO property = new PropertyDTO();
+        
+        property.setRelation(bindingSetProperty.getValue(RELATION).stringValue());
+        property.setValue(bindingSetProperty.getValue(PROPERTY).stringValue());
+        
+        return property;        
+    }
+    
+    /**
+     * search all the sensors profiles corresponding to the given sensor uri
+     * @return the list of the sensors profiles which match the given uri.
+     */
+    public ArrayList<SensorProfileDTO> allPaginate() {        
+        SPARQLQueryBuilder query = prepareSearchQuery();
+        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        ArrayList<SensorProfileDTO> sensorsProfiles = new ArrayList<>();
+        
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
+            SensorProfileDTO sensorProfile = new SensorProfileDTO();
+            while (result.hasNext()) {
+                if (sensorProfile.getUri() == null) {
+                    sensorProfile.setUri(uri);
+                }
+                BindingSet bindingSet = result.next();
+                sensorProfile.addProperty(getPropertyFromBingingSet(bindingSet));
+            }
+            
+            if (sensorProfile.getUri() != null) {
+                sensorsProfiles.add(sensorProfile);
+            }
+        }
+        
+        return sensorsProfiles;
     }
 }

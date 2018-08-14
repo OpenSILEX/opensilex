@@ -100,7 +100,6 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
      * @return 
      */
     private SPARQLQueryBuilder prepareGetLastIdFromYear(String year) {
-        URINamespaces uriNamespace = new URINamespaces();
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         
         query.appendSelect("?" + URI);
@@ -116,14 +115,14 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
     }
     
     /**
-     * get the higher id of the variables
+     * get the higher existing id of the sensor for a given year
      * @param year
      * @return the id
      */
     public int getLastIdFromYear(String year) {
         SPARQLQueryBuilder query = prepareGetLastIdFromYear(year);
 
-        //get last variable uri inserted
+        //get last sensor uri inserted
         TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         TupleQueryResult result = tupleQuery.evaluate();
 
@@ -388,11 +387,11 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
                             dataOk = false;
                             checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.EXPECTED_DATE_FORMAT_YMD + " for the inServiceDate field"));
                         }
-                        if (!Dates.isDateYMD(sensor.getDateOfPurchase())) {
+                        if (sensor.getDateOfPurchase() != null && !Dates.isDateYMD(sensor.getDateOfPurchase())) {
                             dataOk = false;
                             checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.EXPECTED_DATE_FORMAT_YMD + " for the dateOfPurchase field"));
                         }
-                        if (!Dates.isDateYMD(sensor.getDateOfLastCalibration())) {
+                        if (sensor.getDateOfLastCalibration()!= null && !Dates.isDateYMD(sensor.getDateOfLastCalibration())) {
                             dataOk = false;
                             checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.EXPECTED_DATE_FORMAT_YMD + " for the dateOfLastCalibration field"));
                         }

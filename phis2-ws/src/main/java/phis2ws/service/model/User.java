@@ -21,14 +21,14 @@ import phis2ws.service.view.model.phis.Group;
  *
  * @author tireau
  * @update AC 07/16 Ajout des champ de classe user et implémentation du DAO USER
- * @update [Morgane Vidal] 04/26 ajout des attributs phone, affiliation, orcid. 
- *                               suppression des attributs isAdmin, role, type
- *                               a impacté la classe UserDaoPhisBrapi. Et ajout 
- *                               de la liste des groupes auxquels l'utilisateur 
- *                               appartient (utilisé pour la création d'un utilisateur)
+ * @update [Morgane Vidal] 04/26 ajout des attributs phone, affiliation, orcid.
+ * suppression des attributs isAdmin, role, type a impacté la classe
+ * UserDaoPhisBrapi. Et ajout de la liste des groupes auxquels l'utilisateur
+ * appartient (utilisé pour la création d'un utilisateur)
  */
 @ApiModel
 public class User {
+
     private String email;
     private String password;
     private String firstName;
@@ -36,10 +36,11 @@ public class User {
     private String address;
     private String phone;
     private String affiliation;
+    private String uri; // uri of user eg. http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy
     private String orcid;
     private String admin;
     private String available;
-    
+
     private ArrayList<Group> groups = new ArrayList<>();
 
     public User(String email, String password) {
@@ -58,7 +59,8 @@ public class User {
     public void setEmail(String email) {
         this.email = email;
     }
-     @ApiModelProperty(hidden = true)
+
+    @ApiModelProperty(hidden = true)
     public String getFirstName() {
         return firstName;
     }
@@ -74,7 +76,8 @@ public class User {
     public void setFamilyName(String familyName) {
         this.familyName = familyName;
     }
-     @ApiModelProperty(hidden = true)
+
+    @ApiModelProperty(hidden = true)
     public String getAddress() {
         return address;
     }
@@ -82,7 +85,8 @@ public class User {
     public void setAddress(String address) {
         this.address = address;
     }
-     @ApiModelProperty(hidden = true)
+
+    @ApiModelProperty(hidden = true)
     public String getAdmin() {
         return admin;
     }
@@ -99,7 +103,8 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
-     @ApiModelProperty(hidden = true)
+
+    @ApiModelProperty(hidden = true)
     public String getAvailable() {
         return available;
     }
@@ -131,16 +136,24 @@ public class User {
     public void setOrcid(String orcid) {
         this.orcid = orcid;
     }
-    
+
     public ArrayList<Group> getGroups() {
         return this.groups;
     }
-    
+
     public void addGroup(Group group) {
         this.groups.add(group);
     }
-    
+
     public void setGroupList(ArrayList<Group> groups) {
         this.groups = groups;
+    }
+
+    public String getUri() {
+        return uri;
+    }
+
+    public void setUri(String uri) {
+        this.uri = uri;
     }
 }

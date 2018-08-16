@@ -77,6 +77,7 @@ import phis2ws.service.view.model.phis.Call;
  * @author Samuël Chérimont
  * @date 26/11/2015
  * @update 03/08/2016 Ajout du JWT 03/2018 Update for jwt
+ * @update [Alice Boizet] 27 July, 2018 : override callInfo() to add token call description in the brapi calls service
  * @see https://jwt.io/introduction/
  * @see
  * http://connect2id.com/products/nimbus-jose-jwt/examples/jwt-with-rsa-signature
@@ -104,7 +105,7 @@ public class TokenResourceService implements BrapiCall{
     
 
     /**Overriding BrapiCall method
-     * @date 27 Aug 2018 
+     * @date 27 July, 2018 
      * @return Token call information
      */
     @Override

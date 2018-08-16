@@ -1,19 +1,18 @@
 //**********************************************************************************************
-//                                       Call.java 
-//
-// Author(s): Alice Boizet
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: July 2018
-// Contact: alice.boizet@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  July 2018
-// Subject: Represents the calls 
+//                                       Call.java
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //***********************************************************************************************
 
 package phis2ws.service.view.model.phis;
 
 import java.util.ArrayList;
 
+/**
+ * Represents a call
+ * @author Alice Boizet <alice.boizet@inra.fr>
+ */
 public class Call {
     private String call;
     private ArrayList<String> datatypes = new ArrayList<>();

@@ -1,13 +1,8 @@
 //**********************************************************************************************
 //                                       ResultCall.java 
-//
-// Author(s): Alice Boizet
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: July 2018
-// Contact: alice.boizet@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  July 2018
-// Subject: extended from Resultat adapted to the calls list
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //***********************************************************************************************
 
 package phis2ws.service.view.brapi.results;
@@ -21,19 +16,19 @@ import phis2ws.service.view.model.phis.Call;;
 public class ResultCall extends Resultat<Call>{
     
     /**
-     * Constructeur qui appelle celui de la classe mère dans le cas d'une liste 
-     * à un seul élément
-     * @param callsList liste des calls contenant un seul élément
+     * Constructor which calls the mother-class constructor in the case of a list 
+     * with only 1 element
+     * @param callsList List of calls with only one element
      */
     public ResultCall(ArrayList<Call> callsList) {
         super(callsList);
     }
     
     /**
-     * Contructeur qui appelle celui de la classe mère dans le cas d'une liste 
-     * à plusieurs éléments
-     * @param callsList liste des calls
-     * @param pagination Objet pagination permettant de trier la liste experimentList
+     * Contructeur which calls the motehr-class constructor in the case of a list
+     * with several elements 
+     * @param callsList List of calls
+     * @param pagination pagination object allowing to sort the calls list
      * @param paginate 
      */
     public ResultCall(ArrayList<Call> callsList, Pagination pagination, 

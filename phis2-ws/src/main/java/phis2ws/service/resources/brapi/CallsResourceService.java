@@ -1,14 +1,9 @@
-//**********************************************************************************************
+//******************************************************************************
 //                                       CallsResourceService.java 
-//
-// Author(s): Alice Boizet
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: July 2018
-// Contact: alice.boizet@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  July 2018
-// Subject: Represents the calls service : return all Brapi calls information (name,datatypes,methods,versions)
-//***********************************************************************************************
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 
 package phis2ws.service.resources.brapi;
 
@@ -38,6 +33,10 @@ import phis2ws.service.view.model.phis.Call;
 @Api("/brapi/v1/calls")
 @Path("/brapi/v1/calls")
 
+/**
+ * Calls service
+ * @author Alice Boizet <alice.boizet@inra.fr>
+ */
 public class CallsResourceService implements BrapiCall{
     final static Logger LOGGER = LoggerFactory.getLogger(CallsResourceService.class);  
       
@@ -61,7 +60,7 @@ public class CallsResourceService implements BrapiCall{
         return callscall;
     }
          
-    /* Dependancy injection to get all BrapiCalls callInfo() outputs
+    /* Dependency injection to get all BrapiCalls callInfo() outputs
     */    
     @Inject   
     IterableProvider<BrapiCall> brapiCallsList;  
@@ -72,11 +71,11 @@ public class CallsResourceService implements BrapiCall{
      * @param page
      * 
      * 
-     * @return liste des calls brapi
-     *         Le retour (dans "data") est de la forme : 
+     * @return brapi calls list 
+     *  returns in "data" is like this : 
      *          [
-     *              { description du call1 },
-     *              { description du call2 },
+     *              { call1 description },
+     *              { call2 description },
      *          ]
      */
     @GET
@@ -98,14 +97,18 @@ public class CallsResourceService implements BrapiCall{
                
         ArrayList<Status> statuslist = new ArrayList();
         ArrayList<Call> callsInfoList = new ArrayList();
-
+        
         for (BrapiCall bc : brapiCallsList)
         {
-            Call callinfo=bc.callInfo();
-            callsInfoList.add(callinfo);
+            Call callinfo = bc.callInfo();
+            ArrayList<String> datatypesList = callinfo.getDatatypes();
+            
+            if (datatype==null || datatypesList.contains(datatype)==true){
+                callsInfoList.add(callinfo);
+            }                    
         }
                         
-        ResponseFormCall  getResponse = new ResponseFormCall(0, 0, callsInfoList, true, statuslist);
+        ResponseFormCall  getResponse = new ResponseFormCall(limit, page, callsInfoList, false, statuslist);
        
         return Response.status(Response.Status.OK).entity(getResponse).build();
         }   

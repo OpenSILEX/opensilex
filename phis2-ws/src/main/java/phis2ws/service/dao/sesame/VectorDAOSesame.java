@@ -236,6 +236,67 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
     }
     
     /**
+     * prepare a query to get the higher id of the vector 
+     * @return the generated query
+     * @example
+     * SELECT ?uri WHERE {
+     *  ?uri  rdf:type  ?type  . 
+     *  ?type  rdfs:subClassOf*  <http://www.phenome-fppn.fr/vocabulary/2017#Vector> . 
+     *  FILTER ( regex(str(?uri), ".*\/2018/.*") ) 
+     * }
+     * ORDER BY desc(?uri)
+     */
+    private SPARQLQueryBuilder prepareGetLastIdFromYear(String year) {
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        
+        query.appendSelect("?" + URI);
+        query.appendTriplet("?" + URI, TRIPLESTORE_RELATION_TYPE, "?type", null);
+        query.appendTriplet("?type", TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE, TRIPLESTORE_CONCEPT_VECTOR, null);
+        query.appendFilter("regex(str(?uri), \".*/" + year + "/.*\")");
+        query.appendOrderBy("desc(?uri)");
+        query.appendLimit(1);
+        
+        LOGGER.debug(query.toString());
+        
+        return query;
+    }
+    
+    /**
+     * get the higher id of the vector
+     * @param year
+     * @return the id
+     */
+    public int getLastIdFromYear(String year) {
+        SPARQLQueryBuilder query = prepareGetLastIdFromYear(year);
+
+        //get last vector uri inserted
+        TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQueryResult result = tupleQuery.evaluate();
+
+        getConnection().close();
+        
+        String uriVector = null;
+        
+        if (result.hasNext()) {
+            BindingSet bindingSet = result.next();
+            uriVector = bindingSet.getValue(URI).stringValue();
+        }
+        
+        if (uriVector == null) {
+            return 0;
+        } else {
+            //2018 -> 18. to get /v18
+            String split = "/v" + year.substring(2, 4);
+            String[] parts = uriVector.split(split);
+            if (parts.length > 1) {
+                return Integer.parseInt(parts[1]);
+            } else {
+                return 0;
+            }
+        }
+    }
+    
+    /**
      * get a vector from a given binding set.
      * Assume that the following attributes exist :
      * uri, rdfType, label, brand, variable, inServiceDate, dateOfPurchase
@@ -336,7 +397,8 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
                 if ((boolean) vectorDTO.isOk().get(AbstractVerifiedClass.STATE)) {
                     try {
                         //2.2 check date formats
-                        if (!Dates.isDateYMD(vectorDTO.getDateOfPurchase())) {
+                        if (vectorDTO.getDateOfPurchase() != null 
+                                && !Dates.isDateYMD(vectorDTO.getDateOfPurchase())) {
                             dataOk = false;
                             checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.EXPECTED_DATE_FORMAT_YMD + " for the dateOfPurchase field"));
                         }

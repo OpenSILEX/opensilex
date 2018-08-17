@@ -30,8 +30,6 @@ public class ImageMetadataDTO extends AbstractVerifiedClass {
     private ShootingConfigurationDTO configuration;
     private FileInformationDTO fileInfo;
 
-   
-
     @Override
     public ImageMetadata createObjectFromDTO() {
        ImageMetadata imageMetadata = new ImageMetadata();

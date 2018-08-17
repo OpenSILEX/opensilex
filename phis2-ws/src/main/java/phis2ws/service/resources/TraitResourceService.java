@@ -20,6 +20,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -78,7 +79,7 @@ public class TraitResourceService {
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response postTrait(@ApiParam(value = DocumentationAnnotation.TRAIT_POST_DATA_DEFINITION) ArrayList<TraitDTO> traits,
+    public Response postTrait(@ApiParam(value = DocumentationAnnotation.TRAIT_POST_DATA_DEFINITION) @Valid ArrayList<TraitDTO> traits,
                               @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         if (traits != null && !traits.isEmpty()) {
@@ -124,7 +125,7 @@ public class TraitResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response putTrait(
-        @ApiParam(value = DocumentationAnnotation.TRAIT_POST_DATA_DEFINITION) ArrayList<TraitDTO> traits,
+        @ApiParam(value = DocumentationAnnotation.TRAIT_POST_DATA_DEFINITION) @Valid ArrayList<TraitDTO> traits,
         @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         if (traits != null && !traits.isEmpty()) {
@@ -210,7 +211,7 @@ public class TraitResourceService {
     public Response getTraitsBySearch(
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
-        @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_TRAIT_URI) @QueryParam("uri") String uri,
+        @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_TRAIT_URI) @QueryParam("uri") @URL String uri,
         @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_TRAIT_LABEL) @QueryParam("label") String label
     ) {
         TraitDaoSesame traitDaoSesame = new TraitDaoSesame();

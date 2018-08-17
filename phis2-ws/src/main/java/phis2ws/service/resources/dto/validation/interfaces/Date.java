@@ -1,18 +1,13 @@
 //******************************************************************************
 //                                       Date.java
 //
-// Author(s): Arnaud Charleroy <arnaud.charleroy@inra.fr>
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: 29 juin 2018
-// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  29 juin 2018
-// Subject: Use to specify if a string is has a valid date format
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, 
+// pascal.neveu@inra.fr
 //******************************************************************************
 package phis2ws.service.resources.dto.validation.interfaces;
 
-import java.lang.annotation.Documented;
-import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
@@ -27,11 +22,12 @@ import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.resources.dto.validation.validators.DateFormatValidator;
 
 /**
- * Use to specify if a string is has a valid date format
+ * Used to specify if a string has a valid date format.
+ * @see DateFormat
+ * @see DateFormatValidator
  * @author Arnaud Charleroy<arnaud.charleroy@inra.fr>
  */
-
-@Target({ METHOD, FIELD, PARAMETER })
+@Target({METHOD, FIELD, PARAMETER})
 @Retention(RUNTIME)
 @Constraint(validatedBy = DateFormatValidator.class)
 public @interface Date {
@@ -43,5 +39,4 @@ public @interface Date {
     Class<? extends Payload>[] payload() default {};
     
     DateFormat value() default DateFormat.YMDHMSZ;
-    
 }

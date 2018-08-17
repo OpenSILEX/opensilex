@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
@@ -64,6 +63,7 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.ImageMetadataDTO;
+import phis2ws.service.resources.dto.validation.interfaces.Required;
 import phis2ws.service.resources.dto.validation.interfaces.URL;
 import phis2ws.service.utils.FileUploader;
 import phis2ws.service.utils.ImageWaitingCheck;
@@ -262,7 +262,7 @@ public class ImageResourceService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response postImageFile(
         @ApiParam(value = "File to upload") File in,
-        @ApiParam(value = "Uri given from \"images\" path for upload") @QueryParam("uri") @URL String imageUri,
+        @ApiParam(value = "Uri given from \"images\" path for upload") @QueryParam("uri") @URL @Required String imageUri,
         @Context HttpHeaders headers,
         @Context HttpServletRequest request) throws URISyntaxException, ParseException {
         ResponseFormPOST postResponse;
@@ -465,7 +465,7 @@ public class ImageResourceService {
             if (endDate != null) {
                 imageMetadataDaoMongo.endDate = endDate;
             } else {
-                imageMetadataDaoMongo.endDate = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+                imageMetadataDaoMongo.endDate = new SimpleDateFormat(DateFormat.YMD.toString()).format(new Date());
             }
         }
         if (sensor != null) {

@@ -305,11 +305,6 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
     protected SQLQueryBuilder prepareSearchQuery() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-
-    private boolean isElementValid(ExperimentDTO experimentDTO) {
-        Map<String, Object> experimentOk = experimentDTO.isOk();
-        return (boolean) experimentOk.get("state");
-    }
     
     private POSTResultsReturn checkAndInsertExperimentList(List<ExperimentDTO> newExperiments) throws SQLException, Exception {
         //init results returned maps
@@ -321,13 +316,8 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
         ArrayList<Experiment> experiments = new ArrayList<>();
         
         for (ExperimentDTO experimentDTO : newExperiments) {
-            if (isElementValid(experimentDTO)) {
-                Experiment experiment = experimentDTO.createObjectFromDTO();
-                experiments.add(experiment);
-            } else {
-                dataState = false;
-                insertStatusList.add(new Status("Data error", StatusCodeMsg.ERR, "Fields are missing in JSON Data"));
-            }
+            Experiment experiment = experimentDTO.createObjectFromDTO();
+            experiments.add(experiment);
         }
         
         if (dataState) {

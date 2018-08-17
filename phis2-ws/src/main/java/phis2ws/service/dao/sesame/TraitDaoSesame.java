@@ -22,10 +22,8 @@ import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
-import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
@@ -152,26 +150,20 @@ public class TraitDaoSesame extends DAOSesame<Trait> {
         
         //Vérification des traits
         for (TraitDTO traitDTO : traitsDTO) {
-            if ((boolean) traitDTO.isOk().get("state")) { 
-                //Vérification des relations d'ontologies de référence
-                for (OntologyReference ontologyReference : traitDTO.getOntologiesReferences()) {
-                        if (!ontologyReference.getProperty().equals(uriNamespaces.getRelationsProperty("rExactMatch"))
-                           && !ontologyReference.getProperty().equals(uriNamespaces.getRelationsProperty("rCloseMatch"))
-                           && !ontologyReference.getProperty().equals(uriNamespaces.getRelationsProperty("rNarrower"))
-                           && !ontologyReference.getProperty().equals(uriNamespaces.getRelationsProperty("rBroader"))) {
-                            dataOk = false;
-                            checkStatusList.add(new Status("Wrong value", StatusCodeMsg.ERR, 
-                                    "Bad property relation given. Must be one of the following : " + uriNamespaces.getRelationsProperty("rExactMatch")
-                                    + ", " + uriNamespaces.getRelationsProperty("rCloseMatch")
-                                    + ", " + uriNamespaces.getRelationsProperty("rNarrower")
-                                    + ", " + uriNamespaces.getRelationsProperty("rBroader")
-                                    +". Given : " + ontologyReference.getProperty()));
-                        }
-                    }
-            } else { //Données attendues non reçues
-                dataOk = false;
-                traitDTO.isOk().remove("state");
-                checkStatusList.add(new Status("Bad data format", StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.MISSING_FIELDS_LIST).append(traitDTO.isOk()).toString()));
+            //Vérification des relations d'ontologies de référence
+            for (OntologyReference ontologyReference : traitDTO.getOntologiesReferences()) {
+                if (!ontologyReference.getProperty().equals(uriNamespaces.getRelationsProperty("rExactMatch"))
+                   && !ontologyReference.getProperty().equals(uriNamespaces.getRelationsProperty("rCloseMatch"))
+                   && !ontologyReference.getProperty().equals(uriNamespaces.getRelationsProperty("rNarrower"))
+                   && !ontologyReference.getProperty().equals(uriNamespaces.getRelationsProperty("rBroader"))) {
+                    dataOk = false;
+                    checkStatusList.add(new Status("Wrong value", StatusCodeMsg.ERR, 
+                            "Bad property relation given. Must be one of the following : " + uriNamespaces.getRelationsProperty("rExactMatch")
+                            + ", " + uriNamespaces.getRelationsProperty("rCloseMatch")
+                            + ", " + uriNamespaces.getRelationsProperty("rNarrower")
+                            + ", " + uriNamespaces.getRelationsProperty("rBroader")
+                            +". Given : " + ontologyReference.getProperty()));
+                }
             }
         }
         

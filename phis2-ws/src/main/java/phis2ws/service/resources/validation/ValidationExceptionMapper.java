@@ -1,15 +1,10 @@
 //******************************************************************************
 //                                       ValidationExceptionMapper.java
-//
-// Author(s): Arnaud Charleroy
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: 25 juin 2018
+// SILEX-PHIS
+// Copyright © INRA 2018
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  25 juin 2018
-// Subject: Class that catches validation error on resources services parameters and
-// return response object with specific error messages.
 //******************************************************************************
+
 package phis2ws.service.resources.validation;
 
 import java.util.ArrayList;
@@ -28,8 +23,8 @@ import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.ResponseFormGET;
 
 /**
- * Class that catches validation error on resources services parameters and
- * return response object with specific error messages.
+ * Class that catches validation errors (related to validation annotations) 
+ * on resource services parameters and return response object with specific error messages.
  *
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
@@ -42,12 +37,16 @@ public class ValidationExceptionMapper implements ExceptionMapper<javax.validati
     @Override
     public Response toResponse(javax.validation.ValidationException e) {
         ArrayList<Status> statusList = new ArrayList<>();
+        // Loop over violated contraint array 
         for (ConstraintViolation<?> constraintViolation : ((ConstraintViolationException) e).getConstraintViolations()) {
+            //SILEX:info
             // Message pattern : [object property path] + property name + message + |  invalid value
+            //\SILEX:info
+            // Add violation error and associated message
             String errorMessage = "[" + constraintViolation.getPropertyPath().toString() + "]" + ((PathImpl) constraintViolation.getPropertyPath()).getLeafNode().getName()
                     + " " + constraintViolation.getMessage() + "  | Invalid value : "
                     + constraintViolation.getInvalidValue();
-            statusList.add(new Status(StatusCodeMsg.BAD_DATA_FORMAT, StatusCodeMsg.ERR, errorMessage));
+            statusList.add(new Status(StatusCodeMsg.INVALID_INPUT_PARAMETERS, StatusCodeMsg.ERR, errorMessage));
         }
 
         ResponseFormGET validationResponse = new ResponseFormGET(statusList);

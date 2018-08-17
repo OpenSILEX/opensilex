@@ -39,27 +39,27 @@ public abstract class AbstractVerifiedClass implements VerifiedClassInterface {
      *
      * @return object status map
      */
-    @Override
-    public Map<String, Object> isOk() {
-        // Map contains result of format and is empty check
-        Map<String, Object> verificationResultMap = new HashMap<>();
-        // boolean
-        Boolean validationBool = Boolean.FALSE;
-        // retreive constraints
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        Validator validator = factory.getValidator();
-        Set<ConstraintViolation<AbstractVerifiedClass>> constraintViolations = validator.validate(this);
-        // iterate on constraints  
-        if (constraintViolations.size() > 0) {
-            for (ConstraintViolation<AbstractVerifiedClass> contraintes : constraintViolations) {
-                verificationResultMap.put(contraintes.getPropertyPath().toString(), contraintes.getMessage());
-            }
-        } else {
-            validationBool = Boolean.TRUE;
-        }
-        verificationResultMap.put(STATE, validationBool);
-        return verificationResultMap;
-    }
+//    @Override
+//    public Map<String, Object> isOk() {
+//        // Map contains result of format and is empty check
+//        Map<String, Object> verificationResultMap = new HashMap<>();
+//        // boolean
+//        Boolean validationBool = Boolean.FALSE;
+//        // retreive constraints
+//        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+//        Validator validator = factory.getValidator();
+//        Set<ConstraintViolation<AbstractVerifiedClass>> constraintViolations = validator.validate(this);
+//        // iterate on constraints  
+//        if (constraintViolations.size() > 0) {
+//            for (ConstraintViolation<AbstractVerifiedClass> contraintes : constraintViolations) {
+//                verificationResultMap.put(contraintes.getPropertyPath().toString(), contraintes.getMessage());
+//            }
+//        } else {
+//            validationBool = Boolean.TRUE;
+//        }
+//        verificationResultMap.put(STATE, validationBool);
+//        return verificationResultMap;
+//    }
     
     /**
      * Permits to transfom an object in a HashMap. Useful for object

@@ -203,66 +203,58 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
         
         boolean dataOk = true;
         for (AgronomicalObjectDTO agronomicalObject : agronomicalObjectsDTO) {
-            //Vérification des agronomical objects
-            if ((boolean) agronomicalObject.isOk().get(AbstractVerifiedClass.STATE)) { //Données attendues reçues
-               //On vérifie que les types soient effectivement présents dans l'ontologie
-                UriDaoSesame uriDao = new UriDaoSesame();
-                
-                if (!uriDao.isSubClassOf(agronomicalObject.getRdfType(), TRIPLESTORE_CONCEPT_AGRONOMICAL_OBJECT)) {
-                    dataOk = false;
-                    checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Wrong agronomical object type value. See ontology"));
-                }
-                //SILEX:TODO
-                //Il faudra aussi faire une vérification sur les properties de l'ao : est-ce que les types sont
-                //bien présents dans l'ontologie ? Idem pour les relations
-                //\SILEX:TODO
-                
-                //check isPartOf
-                if (agronomicalObject.getIsPartOf() != null) {
-                    if (existObject(agronomicalObject.getIsPartOf())) {
-                        //1. get isPartOf object type
-                        uriDao.uri = agronomicalObject.getIsPartOf();
-                        ArrayList<Uri> typesResult = uriDao.getAskTypeAnswer();
-                        if (!uriDao.isSubClassOf(typesResult.get(0).getRdfType(), TRIPLESTORE_CONCEPT_AGRONOMICAL_OBJECT)) {
-                            dataOk = false;
-                            checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "is part of object type is not agronomical object"));
-                        }
-                    } else {
-                        dataOk = false;
-                        checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "unknown is part of uri"));
-                    }
-                }
-                
-                //check properties
-                boolean missingAlias = true;
-                for (PropertyDTO property : agronomicalObject.getProperties()) {
-                    //check alias
-                    if (property.getRelation().equals(TRIPLESTORE_RELATION_HAS_ALIAS)) {
-                        missingAlias = false;
-                        //check unique alias in the experiment
-                        if (agronomicalObject.getExperiment() != null) {
-                            SPARQLQueryBuilder query = askExistAliasInContext(property.getValue(), agronomicalObject.getExperiment());
-                            BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
-                            boolean result = booleanQuery.evaluate();
-                            
-                            if (result) {
-                                dataOk = false;
-                                checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "already existing alias for the given experiment"));
-                            }
-                        }
-                    }
-                }
-                
-                if (missingAlias) {
-                    dataOk = false;
-                    checkStatusList.add(new Status(StatusCodeMsg.MISSING_FIELDS, StatusCodeMsg.ERR, "missing alias"));
-                }
-            } else {
-                // Format des données non attendu par rapport au schéma demandé
-                dataOk = false;
-                agronomicalObject.isOk().remove(AbstractVerifiedClass.STATE);
-                checkStatusList.add(new Status(StatusCodeMsg.BAD_DATA_FORMAT, StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.MISSING_FIELDS_LIST).append(agronomicalObject.isOk()).toString()));
-            }
+            //On vérifie que les types soient effectivement présents dans l'ontologie
+             UriDaoSesame uriDao = new UriDaoSesame();
+
+             if (!uriDao.isSubClassOf(agronomicalObject.getRdfType(), TRIPLESTORE_CONCEPT_AGRONOMICAL_OBJECT)) {
+                 dataOk = false;
+                 checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Wrong agronomical object type value. See ontology"));
+             }
+             //SILEX:TODO
+             //Il faudra aussi faire une vérification sur les properties de l'ao : est-ce que les types sont
+             //bien présents dans l'ontologie ? Idem pour les relations
+             //\SILEX:TODO
+
+             //check isPartOf
+             if (agronomicalObject.getIsPartOf() != null) {
+                 if (existObject(agronomicalObject.getIsPartOf())) {
+                     //1. get isPartOf object type
+                     uriDao.uri = agronomicalObject.getIsPartOf();
+                     ArrayList<Uri> typesResult = uriDao.getAskTypeAnswer();
+                     if (!uriDao.isSubClassOf(typesResult.get(0).getRdfType(), TRIPLESTORE_CONCEPT_AGRONOMICAL_OBJECT)) {
+                         dataOk = false;
+                         checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "is part of object type is not agronomical object"));
+                     }
+                 } else {
+                     dataOk = false;
+                     checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "unknown is part of uri"));
+                 }
+             }
+
+             //check properties
+             boolean missingAlias = true;
+             for (PropertyDTO property : agronomicalObject.getProperties()) {
+                 //check alias
+                 if (property.getRelation().equals(TRIPLESTORE_RELATION_HAS_ALIAS)) {
+                     missingAlias = false;
+                     //check unique alias in the experiment
+                     if (agronomicalObject.getExperiment() != null) {
+                         SPARQLQueryBuilder query = askExistAliasInContext(property.getValue(), agronomicalObject.getExperiment());
+                         BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
+                         boolean result = booleanQuery.evaluate();
+
+                         if (result) {
+                             dataOk = false;
+                             checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "already existing alias for the given experiment"));
+                         }
+                     }
+                 }
+             }
+
+             if (missingAlias) {
+                 dataOk = false;
+                 checkStatusList.add(new Status(StatusCodeMsg.MISSING_FIELDS, StatusCodeMsg.ERR, "missing alias"));
+             }
         }
         agronomicalObjectsCheck = new POSTResultsReturn(dataOk, null, dataOk);
         agronomicalObjectsCheck.statusList = checkStatusList;

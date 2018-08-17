@@ -127,25 +127,17 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         
         boolean dataOk = true; 
         for (DocumentMetadataDTO documentMetadata : documentsMetadata) {
-            //Check if metadata respect the rules
-            if ((boolean) documentMetadata.isOk().get(AbstractVerifiedClass.STATE)) { 
-                //1. Check document's type
-                if (documentsTypes != null && !documentsTypes.contains(documentMetadata.getDocumentType())) {
-                    dataOk = false;
-                    checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Wrong document type value. Authorized document type values : " + documentsTypes.toString()));
-                }
-                
-                //3. Check status (equals to linked or unlinked)
-                if (!(documentMetadata.getStatus().equals("linked") || documentMetadata.getStatus().equals("unlinked"))) {
-                    dataOk = false;
-                    checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
-                            "Wrong status value given : " + documentMetadata.getStatus() + ". Expected : \"linked\" or \"unlinked\"" ));
-                }
-            } else {
-                // Metadata does not respect rules
+            //1. Check document's type
+            if (documentsTypes != null && !documentsTypes.contains(documentMetadata.getDocumentType())) {
                 dataOk = false;
-                documentMetadata.isOk().remove(AbstractVerifiedClass.STATE);
-                checkStatus.add(new Status(StatusCodeMsg.BAD_DATA_FORMAT, StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.MISSING_FIELDS_LIST).append(documentMetadata.isOk()).toString()));
+                checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Wrong document type value. Authorized document type values : " + documentsTypes.toString()));
+            }
+
+            //3. Check status (equals to linked or unlinked)
+            if (!(documentMetadata.getStatus().equals("linked") || documentMetadata.getStatus().equals("unlinked"))) {
+                dataOk = false;
+                checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
+                        "Wrong status value given : " + documentMetadata.getStatus() + ". Expected : \"linked\" or \"unlinked\"" ));
             }
         }
         documentsMetadataCheck = new POSTResultsReturn(dataOk, null, dataOk);
@@ -215,59 +207,49 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
             //Document has been save
             if (saveFileResult.getResultState()) { 
                 //2. Save document's metadata
-                Map<String, Object> metadataOk = annotObject.isOk(); //check respect of rules
-                
-                documentsMetadataState = (boolean) metadataOk.get(AbstractVerifiedClass.STATE);
                 //SILEX:conception
                 // Here, the triplet corresponding to the concerned element which
                 // does not exist should be added
                 //\SILEX:conception
-                //Document's metadata are correct and can be savec in triplestore
-                if (documentsMetadataState) {                    
-                    //3. Save metadata in triplestore
-                    SPARQLUpdateBuilder spqlInsert = new SPARQLUpdateBuilder();
-                    spqlInsert.appendPrefix("dc", TRIPLESTORE_PREFIX_DUBLIN_CORE);
-                    
-                    spqlInsert.appendGraphURI(TRIPLESTORE_GRAPH_DOCUMENT); //Documents named graph
-                    spqlInsert.appendTriplet(documentName, TRIPLESTORE_RELATION_TYPE, annotObject.getDocumentType(), null);
-                    spqlInsert.appendTriplet(documentName, TRIPLESTORE_RELATION_CREATOR, "\"" + annotObject.getCreator() + "\"", null);
-                    spqlInsert.appendTriplet(documentName, TRIPLESTORE_RELATION_LANGUGAGE, "\"" + annotObject.getLanguage() + "\"", null);
-                    spqlInsert.appendTriplet(documentName, TRIPLESTORE_RELATION_TITLE, "\"" + annotObject.getTitle() + "\"", null);
-                    spqlInsert.appendTriplet(documentName, TRIPLESTORE_RELATION_DATE, "\"" + annotObject.getCreationDate() + "\"", null);
-                    spqlInsert.appendTriplet(documentName, TRIPLESTORE_RELATION_FORMAT, "\"" + annotObject.getExtension() + "\"", null);
-                    spqlInsert.appendTriplet(documentName, TRIPLESTORE_RELATION_STATUS, "\"" + annotObject.getStatus() + "\"", null);
-                    
-                    if (annotObject.getComment() != null) {
-                        spqlInsert.appendTriplet(documentName, TRIPLESTORE_RELATION_COMMENT, "\"" + annotObject.getComment() + "\"", null);
-                    }
-                    
-                    if (!(annotObject.getConcern() == null) && !annotObject.getConcern().isEmpty()) {
-                        for (ConcernItemDTO concernedItem : annotObject.getConcern()) {
-                            spqlInsert.appendTriplet(documentName, TRIPLESTORE_RELATION_CONCERN, concernedItem.getUri(), null);
-                            spqlInsert.appendTriplet(concernedItem.getUri(),TRIPLESTORE_RELATION_TYPE , concernedItem.getTypeURI(), null);
-                        }
-                    }
-                        
-                    try {
-                        // transaction begining
-                        this.getConnection().begin();
-                        Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spqlInsert.toString());
-                        LOGGER.trace(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
-                        prepareUpdate.execute();
-                        
-                        createdResourcesURIs.add(documentName);
-                    } catch (MalformedQueryException e) {
-                        LOGGER.error(e.getMessage(), e);
-                        AnnotationInsert = false;
-                        insertStatus.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.MALFORMED_CREATE_QUERY + " : " + e.getMessage()));
-                    }
-                } else {
-                    // JSON malformé de quelque sorte que ce soit
-                    documentsMetadataState = false;
-                    metadataOk.remove(AbstractVerifiedClass.STATE);
-                    insertStatus.add(new Status(StatusCodeMsg.MISSING_FIELDS, StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.MISSING_FIELDS_LIST).append(metadataOk).toString()));
+                //Document's metadata are correct and can be savec in triplestore                  
+                //3. Save metadata in triplestore
+                SPARQLUpdateBuilder spqlInsert = new SPARQLUpdateBuilder();
+                spqlInsert.appendPrefix("dc", TRIPLESTORE_PREFIX_DUBLIN_CORE);
+
+                spqlInsert.appendGraphURI(TRIPLESTORE_GRAPH_DOCUMENT); //Documents named graph
+                spqlInsert.appendTriplet(documentName, TRIPLESTORE_RELATION_TYPE, annotObject.getDocumentType(), null);
+                spqlInsert.appendTriplet(documentName, TRIPLESTORE_RELATION_CREATOR, "\"" + annotObject.getCreator() + "\"", null);
+                spqlInsert.appendTriplet(documentName, TRIPLESTORE_RELATION_LANGUGAGE, "\"" + annotObject.getLanguage() + "\"", null);
+                spqlInsert.appendTriplet(documentName, TRIPLESTORE_RELATION_TITLE, "\"" + annotObject.getTitle() + "\"", null);
+                spqlInsert.appendTriplet(documentName, TRIPLESTORE_RELATION_DATE, "\"" + annotObject.getCreationDate() + "\"", null);
+                spqlInsert.appendTriplet(documentName, TRIPLESTORE_RELATION_FORMAT, "\"" + annotObject.getExtension() + "\"", null);
+                spqlInsert.appendTriplet(documentName, TRIPLESTORE_RELATION_STATUS, "\"" + annotObject.getStatus() + "\"", null);
+
+                if (annotObject.getComment() != null) {
+                    spqlInsert.appendTriplet(documentName, TRIPLESTORE_RELATION_COMMENT, "\"" + annotObject.getComment() + "\"", null);
                 }
-                
+
+                if (!(annotObject.getConcern() == null) && !annotObject.getConcern().isEmpty()) {
+                    for (ConcernItemDTO concernedItem : annotObject.getConcern()) {
+                        spqlInsert.appendTriplet(documentName, TRIPLESTORE_RELATION_CONCERN, concernedItem.getUri(), null);
+                        spqlInsert.appendTriplet(concernedItem.getUri(),TRIPLESTORE_RELATION_TYPE , concernedItem.getTypeURI(), null);
+                    }
+                }
+
+                try {
+                    // transaction begining
+                    this.getConnection().begin();
+                    Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spqlInsert.toString());
+                    LOGGER.trace(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
+                    prepareUpdate.execute();
+
+                    createdResourcesURIs.add(documentName);
+                } catch (MalformedQueryException e) {
+                    LOGGER.error(e.getMessage(), e);
+                    AnnotationInsert = false;
+                    insertStatus.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.MALFORMED_CREATE_QUERY + " : " + e.getMessage()));
+                }
+
                  // JSON bien formé et pas de problème avant l'insertion
                 if (AnnotationInsert && documentsMetadataState) {
                     resultState = true;
@@ -581,97 +563,77 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         boolean resultState = false; // To know if the metadata where valid and updated
         
         for (DocumentMetadataDTO documentMetadata : documentsMetadata) {
-            
-            //Check that the metadata is valid (rules, status)
-            Map<String, Object> metadataOk = documentMetadata.isOk();
-            boolean documentMetadataState = (boolean) metadataOk.get(AbstractVerifiedClass.STATE);
-            
-            if (!(documentMetadata.getStatus().equals("linked") || documentMetadata.getStatus().equals("unlinked"))) {
-                documentMetadataState = false;
-                updateStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
-                            "Wrong status value given : " + documentMetadata.getStatus() + ". Expected : \"linked\" or \"unlinked\"" ));
-            }
-            
-            //If metadata valid
-            if (documentMetadataState) {
-                //1. Delete actual metadata
-                //1.1 Get informations which will be updated (to remove triplets)
-                DocumentDaoSesame docDaoSesame = new DocumentDaoSesame();
-                docDaoSesame.user = user;
-                docDaoSesame.uri = documentMetadata.getUri();
-                ArrayList<Document> documentsCorresponding = docDaoSesame.allPaginate();
-                
-                String deleteQuery = null;
-                //1.2 Delete metatada associated to the URI
-                if (documentsCorresponding.size() > 0) {
-                    //SILEX:conception
-                    //Such as the existing querybuilder for the insert, create a
-                    //delete query builder and use it
-                    deleteQuery = "PREFIX dc: <" + TRIPLESTORE_PREFIX_DUBLIN_CORE + "#> "
-                                       + "DELETE WHERE { "
-                                       + "<" + documentsCorresponding.get(0).getUri() + "> " + TRIPLESTORE_RELATION_CREATOR + " \"" + documentsCorresponding.get(0).getCreator() + "\" . "
-                                       + "<" + documentsCorresponding.get(0).getUri() + "> " + TRIPLESTORE_RELATION_LANGUGAGE + " \"" + documentsCorresponding.get(0).getLanguage() + "\" . "
-                                       + "<" + documentsCorresponding.get(0).getUri() + "> " + TRIPLESTORE_RELATION_TITLE + " \"" + documentsCorresponding.get(0).getTitle() + "\" . "
-                                       + "<" + documentsCorresponding.get(0).getUri() + "> " + TRIPLESTORE_RELATION_DATE + " \"" + documentsCorresponding.get(0).getCreationDate() + "\" . "
-                                       + "<" + documentsCorresponding.get(0).getUri() + "> " + TRIPLESTORE_RELATION_TYPE + " <" + documentsCorresponding.get(0).getDocumentType() +"> . "
-                                       + "<" + documentsCorresponding.get(0).getUri() + "> <" + TRIPLESTORE_RELATION_STATUS + "> \"" + documentsCorresponding.get(0).getStatus() + "\" . ";
-                                      
-                    if (documentsCorresponding.get(0).getComment() != null) {
-                        deleteQuery += "<" + documentsCorresponding.get(0).getUri() + "> " + TRIPLESTORE_RELATION_COMMENT + " \"" + documentsCorresponding.get(0).getComment() + "\" . ";
-                    }
-                    
-                    for (ConcernItemDTO concernedItem : documentsCorresponding.get(0).getConcernedItems()) {
-                        deleteQuery += "<" + documentsCorresponding.get(0).getUri() + "> <" + TRIPLESTORE_RELATION_CONCERN + "> <" + concernedItem.getUri() + "> . ";
-                    }
-                    deleteQuery += "}";
-                    //\SILEX:conception
-                }
-                
-                //2. Insert updated metadata
-                SPARQLUpdateBuilder spqlInsert = new SPARQLUpdateBuilder();
-                spqlInsert.appendPrefix("dc", TRIPLESTORE_PREFIX_DUBLIN_CORE);
-                spqlInsert.appendGraphURI(TRIPLESTORE_GRAPH_DOCUMENT); 
-                spqlInsert.appendTriplet(documentMetadata.getUri(), TRIPLESTORE_RELATION_TYPE, documentMetadata.getDocumentType(), null);
-                spqlInsert.appendTriplet(documentMetadata.getUri(), TRIPLESTORE_RELATION_CREATOR, "\"" + documentMetadata.getCreator() + "\"", null);
-                spqlInsert.appendTriplet(documentMetadata.getUri(), TRIPLESTORE_RELATION_LANGUGAGE, "\"" + documentMetadata.getLanguage() + "\"", null);
-                spqlInsert.appendTriplet(documentMetadata.getUri(), TRIPLESTORE_RELATION_TITLE, "\"" + documentMetadata.getTitle() + "\"", null);
-                spqlInsert.appendTriplet(documentMetadata.getUri(), TRIPLESTORE_RELATION_DATE, "\"" + documentMetadata.getCreationDate() + "\"", null);
-                spqlInsert.appendTriplet(documentMetadata.getUri(), TRIPLESTORE_RELATION_STATUS, "\"" + documentMetadata.getStatus() + "\"", null);
-                
-                if (documentMetadata.getComment() != null) {
-                    spqlInsert.appendTriplet(documentMetadata.getUri(), TRIPLESTORE_RELATION_COMMENT, "\"" + documentMetadata.getComment() + "\"", null);
-                }
-                
-                if (documentMetadata.getConcern() != null && !documentMetadata.getConcern().isEmpty() && documentMetadata.getConcern().size() > 0) {
-                    for (ConcernItemDTO concernedItem : documentMetadata.getConcern()) {
-                        spqlInsert.appendTriplet(documentMetadata.getUri(), TRIPLESTORE_RELATION_CONCERN, concernedItem.getUri(), null);
-                        spqlInsert.appendTriplet(concernedItem.getUri(), TRIPLESTORE_RELATION_TYPE, concernedItem.getTypeURI(), null);
-                    }
-                }
-                    
-                try {
-                    // début de la transaction : vérification de la requête
-                    this.getConnection().begin();
-                    Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery);
-                    Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spqlInsert.toString());
-                    LOGGER.debug(getTraceabilityLogs() + " query : " + prepareDelete.toString());
-                    LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
-                    prepareDelete.execute();
-                    prepareUpdate.execute();
+            //1. Delete actual metadata
+            //1.1 Get informations which will be updated (to remove triplets)
+            DocumentDaoSesame docDaoSesame = new DocumentDaoSesame();
+            docDaoSesame.user = user;
+            docDaoSesame.uri = documentMetadata.getUri();
+            ArrayList<Document> documentsCorresponding = docDaoSesame.allPaginate();
 
-                    updatedResourcesURIList.add(documentMetadata.getUri());
-                } catch (MalformedQueryException e) {
-                    LOGGER.error(e.getMessage(), e);
-                    annotationUpdate = false;
-                    updateStatusList.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.MALFORMED_UPDATE_QUERY + e.getMessage()));
-                }   
-                    
-            } else {
-                // Missing fields
-                docsMetadataState = false;
-                metadataOk.remove(AbstractVerifiedClass.STATE);
-                updateStatusList.add(new Status(StatusCodeMsg.MISSING_FIELDS, StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.MISSING_FIELDS_LIST).append(metadataOk).toString()));
+            String deleteQuery = null;
+            //1.2 Delete metatada associated to the URI
+            if (documentsCorresponding.size() > 0) {
+                //SILEX:conception
+                //Such as the existing querybuilder for the insert, create a
+                //delete query builder and use it
+                deleteQuery = "PREFIX dc: <" + TRIPLESTORE_PREFIX_DUBLIN_CORE + "#> "
+                                   + "DELETE WHERE { "
+                                   + "<" + documentsCorresponding.get(0).getUri() + "> " + TRIPLESTORE_RELATION_CREATOR + " \"" + documentsCorresponding.get(0).getCreator() + "\" . "
+                                   + "<" + documentsCorresponding.get(0).getUri() + "> " + TRIPLESTORE_RELATION_LANGUGAGE + " \"" + documentsCorresponding.get(0).getLanguage() + "\" . "
+                                   + "<" + documentsCorresponding.get(0).getUri() + "> " + TRIPLESTORE_RELATION_TITLE + " \"" + documentsCorresponding.get(0).getTitle() + "\" . "
+                                   + "<" + documentsCorresponding.get(0).getUri() + "> " + TRIPLESTORE_RELATION_DATE + " \"" + documentsCorresponding.get(0).getCreationDate() + "\" . "
+                                   + "<" + documentsCorresponding.get(0).getUri() + "> " + TRIPLESTORE_RELATION_TYPE + " <" + documentsCorresponding.get(0).getDocumentType() +"> . "
+                                   + "<" + documentsCorresponding.get(0).getUri() + "> <" + TRIPLESTORE_RELATION_STATUS + "> \"" + documentsCorresponding.get(0).getStatus() + "\" . ";
+
+                if (documentsCorresponding.get(0).getComment() != null) {
+                    deleteQuery += "<" + documentsCorresponding.get(0).getUri() + "> " + TRIPLESTORE_RELATION_COMMENT + " \"" + documentsCorresponding.get(0).getComment() + "\" . ";
+                }
+
+                for (ConcernItemDTO concernedItem : documentsCorresponding.get(0).getConcernedItems()) {
+                    deleteQuery += "<" + documentsCorresponding.get(0).getUri() + "> <" + TRIPLESTORE_RELATION_CONCERN + "> <" + concernedItem.getUri() + "> . ";
+                }
+                deleteQuery += "}";
+                //\SILEX:conception
             }
+
+            //2. Insert updated metadata
+            SPARQLUpdateBuilder spqlInsert = new SPARQLUpdateBuilder();
+            spqlInsert.appendPrefix("dc", TRIPLESTORE_PREFIX_DUBLIN_CORE);
+            spqlInsert.appendGraphURI(TRIPLESTORE_GRAPH_DOCUMENT); 
+            spqlInsert.appendTriplet(documentMetadata.getUri(), TRIPLESTORE_RELATION_TYPE, documentMetadata.getDocumentType(), null);
+            spqlInsert.appendTriplet(documentMetadata.getUri(), TRIPLESTORE_RELATION_CREATOR, "\"" + documentMetadata.getCreator() + "\"", null);
+            spqlInsert.appendTriplet(documentMetadata.getUri(), TRIPLESTORE_RELATION_LANGUGAGE, "\"" + documentMetadata.getLanguage() + "\"", null);
+            spqlInsert.appendTriplet(documentMetadata.getUri(), TRIPLESTORE_RELATION_TITLE, "\"" + documentMetadata.getTitle() + "\"", null);
+            spqlInsert.appendTriplet(documentMetadata.getUri(), TRIPLESTORE_RELATION_DATE, "\"" + documentMetadata.getCreationDate() + "\"", null);
+            spqlInsert.appendTriplet(documentMetadata.getUri(), TRIPLESTORE_RELATION_STATUS, "\"" + documentMetadata.getStatus() + "\"", null);
+
+            if (documentMetadata.getComment() != null) {
+                spqlInsert.appendTriplet(documentMetadata.getUri(), TRIPLESTORE_RELATION_COMMENT, "\"" + documentMetadata.getComment() + "\"", null);
+            }
+
+            if (documentMetadata.getConcern() != null && !documentMetadata.getConcern().isEmpty() && documentMetadata.getConcern().size() > 0) {
+                for (ConcernItemDTO concernedItem : documentMetadata.getConcern()) {
+                    spqlInsert.appendTriplet(documentMetadata.getUri(), TRIPLESTORE_RELATION_CONCERN, concernedItem.getUri(), null);
+                    spqlInsert.appendTriplet(concernedItem.getUri(), TRIPLESTORE_RELATION_TYPE, concernedItem.getTypeURI(), null);
+                }
+            }
+
+            try {
+                // début de la transaction : vérification de la requête
+                this.getConnection().begin();
+                Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery);
+                Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spqlInsert.toString());
+                LOGGER.debug(getTraceabilityLogs() + " query : " + prepareDelete.toString());
+                LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
+                prepareDelete.execute();
+                prepareUpdate.execute();
+
+                updatedResourcesURIList.add(documentMetadata.getUri());
+            } catch (MalformedQueryException e) {
+                LOGGER.error(e.getMessage(), e);
+                annotationUpdate = false;
+                updateStatusList.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.MALFORMED_UPDATE_QUERY + e.getMessage()));
+            }   
                 
             // Data ok, update
             if (annotationUpdate && docsMetadataState) {

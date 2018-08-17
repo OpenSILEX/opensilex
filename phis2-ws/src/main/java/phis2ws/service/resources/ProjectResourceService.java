@@ -36,6 +36,7 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.authentication.Session;
+import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.phis.ProjectDao;
@@ -43,6 +44,7 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.ProjectDTO;
+import phis2ws.service.resources.dto.validation.interfaces.Date;
 import phis2ws.service.resources.dto.validation.interfaces.Required;
 import phis2ws.service.resources.dto.validation.interfaces.URL;
 import phis2ws.service.utils.POSTResultsReturn;
@@ -77,7 +79,6 @@ public class ProjectResourceService {
      * @param keywords
      * @param parentProject
      * @param website
-     * @param type
      * @return liste des projets correspondant aux différents critères de recherche 
      *                                                 (ou tous les projets si pas de critères)
      *  Le retour (dans "data") est de la forme : 
@@ -104,17 +105,17 @@ public class ProjectResourceService {
     public Response getProjectsBySearch(
     @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
     @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
-    @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_PROJECT_URI) @QueryParam("uri") String uri,
+    @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_PROJECT_URI) @QueryParam("uri") @URL String uri,
     @ApiParam(value = "Search by name", example = DocumentationAnnotation.EXAMPLE_PROJECT_NAME) @QueryParam("name") String name,
     @ApiParam(value = "Search by acronyme", example = DocumentationAnnotation.EXAMPLE_PROJECT_ACRONYME) @QueryParam("acronyme") String acronyme,
     @ApiParam(value = "Search by subproject type", example = DocumentationAnnotation.EXAMPLE_PROJECT_SUBPROJECT_TYPE) @QueryParam("subprojectType") String subprojectType,
     @ApiParam(value = "Search by financial support", example = DocumentationAnnotation.EXAMPLE_PROJECT_FINANCIAL_SUPPORT) @QueryParam("financialSupport") String financialSupport,
     @ApiParam(value = "Search by financial name", example = DocumentationAnnotation.EXAMPLE_PROJECT_FINANCIAL_NAME) @QueryParam("financialName") String financialName,
-    @ApiParam(value = "Search by date start", example = DocumentationAnnotation.EXAMPLE_PROJECT_DATE_START) @QueryParam("dateStart") String dateStart,
-    @ApiParam(value = "Search by date end", example = DocumentationAnnotation.EXAMPLE_PROJECT_DATE_END) @QueryParam("dateEnd") String dateEnd,
+    @ApiParam(value = "Search by date start", example = DocumentationAnnotation.EXAMPLE_PROJECT_DATE_START) @QueryParam("dateStart") @Date(DateFormat.YMD) String dateStart,
+    @ApiParam(value = "Search by date end", example = DocumentationAnnotation.EXAMPLE_PROJECT_DATE_END) @QueryParam("dateEnd") @Date(DateFormat.YMD) String dateEnd,
     @ApiParam(value = "Searcg by keywords", example = DocumentationAnnotation.EXAMPLE_PROJECT_KEYWORDS) @QueryParam("keywords") String keywords,
     @ApiParam(value = "Search by parent project", example = DocumentationAnnotation.EXAMPLE_PROJECT_PARENT_PROJECT) @QueryParam("parentProject") String parentProject,
-    @ApiParam(value = "Search by website", example = DocumentationAnnotation.EXAMPLE_PROJECT_WEBSITE) @QueryParam("website") String website)  {
+    @ApiParam(value = "Search by website", example = DocumentationAnnotation.EXAMPLE_PROJECT_WEBSITE) @QueryParam("website") @URL String website)  {
         
         ProjectDao projectDao = new ProjectDao();
         if (uri != null) {

@@ -272,7 +272,6 @@ public class TokenResourceService {
         statusList.clear();
         statusList.add(new Status("User has been logged out successfully", null));
         return Response.status(Response.Status.CREATED).entity(new ResponseFormPOST(statusList)).build();
-
     }
 
     /**

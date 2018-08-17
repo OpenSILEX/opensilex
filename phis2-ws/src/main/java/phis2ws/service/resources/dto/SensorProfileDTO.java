@@ -13,12 +13,11 @@ package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import javax.validation.Valid;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.dto.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.SensorProfile;
 
 /**
@@ -45,7 +44,8 @@ public class SensorProfileDTO extends AbstractVerifiedClass {
 
         return sensorProfile;
     }
-
+    
+    @URL
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SENSOR_URI)
     public String getUri() {

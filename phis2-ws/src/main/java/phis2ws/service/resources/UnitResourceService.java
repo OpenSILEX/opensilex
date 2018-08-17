@@ -125,7 +125,7 @@ public class UnitResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response putUnit(
-        @ApiParam(value = DocumentationAnnotation.UNIT_POST_DATA_DEFINITION) ArrayList<UnitDTO> units,
+        @ApiParam(value = DocumentationAnnotation.UNIT_POST_DATA_DEFINITION) @Valid ArrayList<UnitDTO> units,
         @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         if (units != null && !units.isEmpty()) {
@@ -278,6 +278,5 @@ public class UnitResourceService {
         unitDaoSesame.user = userSession.getUser();
         
         return getUnitsData(unitDaoSesame);
-    }
-    
+    }  
 }

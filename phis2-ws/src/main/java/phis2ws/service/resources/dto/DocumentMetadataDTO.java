@@ -14,8 +14,11 @@ package phis2ws.service.resources.dto;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.List;
 import javax.validation.Valid;
+import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.resources.dto.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.dto.validation.interfaces.Date;
+import phis2ws.service.resources.dto.validation.interfaces.DocumentStatus;
 import phis2ws.service.resources.dto.validation.interfaces.URL;
 
 public class DocumentMetadataDTO extends AbstractVerifiedClass {
@@ -42,6 +45,7 @@ public class DocumentMetadataDTO extends AbstractVerifiedClass {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    @URL
     public String getUri() {
         return uri;
     }
@@ -97,6 +101,7 @@ public class DocumentMetadataDTO extends AbstractVerifiedClass {
         this.title = title;
     }
 
+    @Date(DateFormat.YMD)
     @ApiModelProperty(example = "2017-01-01")
     public String getCreationDate() {
         return creationDate;
@@ -141,6 +146,7 @@ public class DocumentMetadataDTO extends AbstractVerifiedClass {
     }
 
     @Required
+    @DocumentStatus
     @ApiModelProperty(example = "linked")
     public String getStatus() {
         return status;

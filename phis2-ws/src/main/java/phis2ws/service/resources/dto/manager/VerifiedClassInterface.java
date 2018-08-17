@@ -10,7 +10,7 @@ import java.util.Map;
 
 public interface VerifiedClassInterface<T> {
     
-    public Map isOk();
+//    public Map isOk();
     
 //    public Map rules();
     

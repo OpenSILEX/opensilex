@@ -33,7 +33,6 @@ public class InstanceDefinitionDTO extends AbstractVerifiedClass {
     protected String comment;
     protected ArrayList<OntologyReference> ontologiesReferences = new ArrayList<>();
 
-
     @Override
     public InstanceDefinition createObjectFromDTO() {
         InstanceDefinition instanceDefinition = new InstanceDefinition();
@@ -78,7 +77,10 @@ public class InstanceDefinitionDTO extends AbstractVerifiedClass {
     public void setComment(String comment) {
         this.comment = comment;
     }
-
+    
+    //SILEX:todo
+    // Do the DTO OntologyReferenceDTO and add the annotation @Valid
+    //\SILEX:todo
     public ArrayList<OntologyReference> getOntologiesReferences() {
         return ontologiesReferences;
     }

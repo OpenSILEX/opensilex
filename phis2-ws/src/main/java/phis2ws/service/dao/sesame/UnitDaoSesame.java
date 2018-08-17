@@ -103,26 +103,20 @@ public class UnitDaoSesame extends DAOSesame<Unit> {
         
         //Vérification des unités
         for (UnitDTO unitDTO : unitsDTO) {
-            if ((boolean) unitDTO.isOk().get("state")) { 
-                //Vérification des relations d'ontologies de référence
-                for (OntologyReference ontologyReference : unitDTO.getOntologiesReferences()) {
-                        if (!ontologyReference.getProperty().equals(uriNamespaces.getRelationsProperty("rExactMatch"))
-                           && !ontologyReference.getProperty().equals(uriNamespaces.getRelationsProperty("rCloseMatch"))
-                           && !ontologyReference.getProperty().equals(uriNamespaces.getRelationsProperty("rNarrower"))
-                           && !ontologyReference.getProperty().equals(uriNamespaces.getRelationsProperty("rBroader"))) {
-                            dataOk = false;
-                            checkStatusList.add(new Status("Wrong value", StatusCodeMsg.ERR, 
-                                    "Bad property relation given. Must be one of the following : " + uriNamespaces.getRelationsProperty("rExactMatch")
-                                    + ", " + uriNamespaces.getRelationsProperty("rCloseMatch")
-                                    + ", " + uriNamespaces.getRelationsProperty("rNarrower")
-                                    + ", " + uriNamespaces.getRelationsProperty("rBroader")
-                                    +". Given : " + ontologyReference.getProperty()));
-                        }
-                    }
-            } else { //Données attendues non reçues
-                dataOk = false;
-                unitDTO.isOk().remove("state");
-                checkStatusList.add(new Status("Bad data format", StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.MISSING_FIELDS_LIST).append(unitDTO.isOk()).toString()));
+            //Vérification des relations d'ontologies de référence
+            for (OntologyReference ontologyReference : unitDTO.getOntologiesReferences()) {
+                if (!ontologyReference.getProperty().equals(uriNamespaces.getRelationsProperty("rExactMatch"))
+                   && !ontologyReference.getProperty().equals(uriNamespaces.getRelationsProperty("rCloseMatch"))
+                   && !ontologyReference.getProperty().equals(uriNamespaces.getRelationsProperty("rNarrower"))
+                   && !ontologyReference.getProperty().equals(uriNamespaces.getRelationsProperty("rBroader"))) {
+                    dataOk = false;
+                    checkStatusList.add(new Status("Wrong value", StatusCodeMsg.ERR, 
+                            "Bad property relation given. Must be one of the following : " + uriNamespaces.getRelationsProperty("rExactMatch")
+                            + ", " + uriNamespaces.getRelationsProperty("rCloseMatch")
+                            + ", " + uriNamespaces.getRelationsProperty("rNarrower")
+                            + ", " + uriNamespaces.getRelationsProperty("rBroader")
+                            +". Given : " + ontologyReference.getProperty()));
+                }
             }
         }
         

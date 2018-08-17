@@ -63,6 +63,10 @@ public class AgronomicalObjectDTO extends AbstractVerifiedClass {
         return agronomicalObject;
     }
     
+    //SILEX:todo
+    // Do the geometry validator (needs discussions about the 
+    // allowed formats and geometry types)
+    //\SILEX:todo
     @Required
     @ApiModelProperty(example = "POLYGON((0 0, 10 0, 10 10, 0 10, 0 0))")
     public String getGeometry() {

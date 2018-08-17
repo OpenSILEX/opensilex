@@ -119,7 +119,7 @@ public class UserDTO extends AbstractVerifiedClass {
         this.phone = phone;
     }
 
-     @Required
+    @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_USER_AFFILIATION)
     public String getAffiliation() {
         return affiliation;

@@ -70,7 +70,6 @@ public class PropertyDTO extends AbstractVerifiedClass {
         return value;
     }
     
-    
     public void setValue(String value) {
         this.value = value;
     }

@@ -14,8 +14,10 @@ package phis2ws.service.resources.dto;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import javax.validation.Valid;
+import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.dto.validation.interfaces.Date;
 import phis2ws.service.resources.dto.validation.interfaces.ProvenanceDate;
 import phis2ws.service.resources.dto.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.Provenance;
@@ -37,22 +39,6 @@ public class ProvenanceDTO extends AbstractVerifiedClass {
     //The liste of the documents associated to the dataset
     private ArrayList<String> documentsUris = new ArrayList<>();
 
-    //SILEX:test
-    // Need to be tested
-    //\SILEX:test
-//    @Override
-//    public Map rules() {
-//        Map<String, Boolean> rules = new HashMap<>();
-//        rules.put("uri", Boolean.TRUE);
-//        if (uri == null) {
-//            rules.put("creationDate", Boolean.TRUE);
-//        } else {
-//            rules.put("creationDate", Boolean.FALSE);
-//        }
-//        rules.put("documentsUris", Boolean.FALSE);
-//        return rules;
-//    }
-
     @Override
     public Provenance createObjectFromDTO() {
         Provenance provenance = new Provenance();
@@ -73,7 +59,8 @@ public class ProvenanceDTO extends AbstractVerifiedClass {
     public void setUri(String uri) {
         this.uri = uri;
     }
-
+    
+    @Date(DateFormat.YMD)
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROVENANCE_DATE)
     public String getCreationDate() {
         return creationDate;

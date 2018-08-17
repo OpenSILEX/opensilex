@@ -23,6 +23,7 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.model.User;
 import phis2ws.service.resources.dto.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.dto.validation.interfaces.GroupLevel;
 import phis2ws.service.resources.dto.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.Group;
 
@@ -75,7 +76,8 @@ public class GroupDTO extends AbstractVerifiedClass {
     public void setName(String name) {
         this.name = name;
     }
-
+    
+    @GroupLevel
     @Required
     @ApiModelProperty(example = "Admin")
     public String getLevel() {

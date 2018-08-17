@@ -20,6 +20,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -78,7 +79,7 @@ public class MethodResourceService {
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response postMethod(@ApiParam(value = DocumentationAnnotation.METHOD_POST_DATA_DEFINITION) ArrayList<MethodDTO> methods,
+    public Response postMethod(@ApiParam(value = DocumentationAnnotation.METHOD_POST_DATA_DEFINITION) @Valid ArrayList<MethodDTO> methods,
                               @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         if (methods != null && !methods.isEmpty()) {
@@ -124,7 +125,7 @@ public class MethodResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response putMethod(
-        @ApiParam(value = DocumentationAnnotation.METHOD_POST_DATA_DEFINITION) ArrayList<MethodDTO> methods,
+        @ApiParam(value = DocumentationAnnotation.METHOD_POST_DATA_DEFINITION) @Valid ArrayList<MethodDTO> methods,
         @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         if (methods != null && !methods.isEmpty()) {
@@ -262,7 +263,7 @@ public class MethodResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getMethodDetails(
-        @ApiParam(value = DocumentationAnnotation.METHOD_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_METHOD_URI, required = true) @PathParam("method") @Required String method,
+        @ApiParam(value = DocumentationAnnotation.METHOD_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_METHOD_URI, required = true) @PathParam("method") @URL @Required String method,
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
         

@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiModelProperty;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.dto.validation.interfaces.GrantType;
 
 /**
  * Represente le JSON soumis pour les objets de type token
@@ -22,9 +23,12 @@ public class TokenDTO extends AbstractVerifiedClass {
     private String password;
     private String client_id;
 
+    //SILEX:info
     // Uncomment if you use jwt
     // @ApiModelProperty(example = EXAMPLE_TOKEN_JWT_GRANTTYPE)
-    @Required()
+    //\SILEX:info
+    @GrantType
+    @Required
     @ApiModelProperty(example = "password")
     public String getGrant_type() {
         return grant_type;
@@ -34,7 +38,7 @@ public class TokenDTO extends AbstractVerifiedClass {
         this.grant_type = grant_type;
     }
 
-    @Required()
+    @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_USER_EMAIL)
     public String getUsername() {
         return username;
@@ -43,7 +47,6 @@ public class TokenDTO extends AbstractVerifiedClass {
     public void setUsername(String username) {
         this.username = username;
     }
-    
     
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_USER_PASSWORD)
     public String getPassword() {
@@ -54,8 +57,10 @@ public class TokenDTO extends AbstractVerifiedClass {
         this.password = password;
     }
 
+    //SILEX:info
     // Uncomment if you use jwt
     // @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_TOKEN_JWT_CLIENTID)
+    //\SILEX:info
     public String getClient_id() {
         return client_id;
     }
@@ -68,5 +73,4 @@ public class TokenDTO extends AbstractVerifiedClass {
     public Object createObjectFromDTO() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-
 }

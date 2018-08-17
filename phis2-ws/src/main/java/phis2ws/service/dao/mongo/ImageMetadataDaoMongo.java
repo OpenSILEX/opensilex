@@ -221,32 +221,26 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
         boolean dataOk = true;
         
         for (ImageMetadataDTO imageMetadata : imagesMetadata) {
-            if ((boolean) imageMetadata.isOk().get(AbstractVerifiedClass.STATE)) { //Metadata correct
-                //1. Check if the image type exist
-                ImageMetadataDaoSesame imageMetadataDaoSesame = new ImageMetadataDaoSesame();
-                if (!imageMetadataDaoSesame.existObject(imageMetadata.getRdfType())) {
-                    dataOk = false;
-                    checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Wrong image type given : " + imageMetadata.getRdfType()));
-                }
-                
-                //2. Check if the concerned items exist in the triplestore
-                for (ConcernItemDTO concernedItem : imageMetadata.getConcern()) {
-                    if (!imageMetadataDaoSesame.existObject(concernedItem.getUri())) {
-                        dataOk = false;
-                        checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Unknown concerned item given : " + concernedItem.getUri()));
-                    }
-                }
-                
-                //3. Check if the sensor exist
-                SensorDAOSesame sensorDAOSesame = new SensorDAOSesame();
-                if (!sensorDAOSesame.existAndIsSensor(imageMetadata.getConfiguration().getSensor())) {
-                    dataOk = false;
-                    checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Unknown sensor given : " + imageMetadata.getConfiguration().getSensor()));
-                }
-            } else {
+            //1. Check if the image type exist
+            ImageMetadataDaoSesame imageMetadataDaoSesame = new ImageMetadataDaoSesame();
+            if (!imageMetadataDaoSesame.existObject(imageMetadata.getRdfType())) {
                 dataOk = false;
-                checkStatusList.add(new Status(StatusCodeMsg.BAD_DATA_FORMAT, StatusCodeMsg.ERR, 
-                        new StringBuilder().append(StatusCodeMsg.MISSING_FIELDS_LIST).append(imageMetadata.isOk()).toString()));
+                checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Wrong image type given : " + imageMetadata.getRdfType()));
+            }
+
+            //2. Check if the concerned items exist in the triplestore
+            for (ConcernItemDTO concernedItem : imageMetadata.getConcern()) {
+                if (!imageMetadataDaoSesame.existObject(concernedItem.getUri())) {
+                    dataOk = false;
+                    checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Unknown concerned item given : " + concernedItem.getUri()));
+                }
+            }
+
+            //3. Check if the sensor exist
+            SensorDAOSesame sensorDAOSesame = new SensorDAOSesame();
+            if (!sensorDAOSesame.existAndIsSensor(imageMetadata.getConfiguration().getSensor())) {
+                dataOk = false;
+                checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Unknown sensor given : " + imageMetadata.getConfiguration().getSensor()));
             }
         }
         

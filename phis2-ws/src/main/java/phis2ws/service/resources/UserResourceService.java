@@ -20,6 +20,8 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+import javax.validation.constraints.Email;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -43,6 +45,7 @@ import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.model.User;
 import phis2ws.service.resources.dto.UserDTO;
+import phis2ws.service.resources.dto.validation.interfaces.Required;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.ResourcesUtils;
 import phis2ws.service.view.brapi.Status;
@@ -101,7 +104,7 @@ public class UserResourceService {
     public Response getUserBySearch(
     @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
     @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
-    @ApiParam(value = "Search by email", example = DocumentationAnnotation.EXAMPLE_USER_EMAIL) @QueryParam("email") String email,
+    @ApiParam(value = "Search by email", example = DocumentationAnnotation.EXAMPLE_USER_EMAIL) @QueryParam("email") @Email String email,
     @ApiParam(value = "Search by first name", example = DocumentationAnnotation.EXAMPLE_USER_FIRST_NAME) @QueryParam("firstName") String firstName,
     @ApiParam(value = "Search by family name", example = DocumentationAnnotation.EXAMPLE_USER_FAMILY_NAME) @QueryParam("familyName") String familyName,
     @ApiParam(value = "Search by address", example = DocumentationAnnotation.EXAMPLE_USER_ADDRESS) @QueryParam("address") String address,
@@ -170,7 +173,7 @@ public class UserResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUserDetails(
-    @ApiParam(value = DocumentationAnnotation.USER_EMAIL_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_USER_EMAIL) @PathParam("userEmail") String userEmail,
+    @ApiParam(value = DocumentationAnnotation.USER_EMAIL_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_USER_EMAIL) @PathParam("userEmail") @Email @Required String userEmail,
     @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
     @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
         if (userEmail == null) {
@@ -205,7 +208,7 @@ public class UserResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postUser(
-    @ApiParam(value = DocumentationAnnotation.USER_POST_DATA_DEFINITION) ArrayList<UserDTO> users,
+    @ApiParam(value = DocumentationAnnotation.USER_POST_DATA_DEFINITION) @Valid ArrayList<UserDTO> users,
     @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         
@@ -253,7 +256,7 @@ public class UserResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response putUser(
-    @ApiParam(value = DocumentationAnnotation.USER_POST_DATA_DEFINITION) ArrayList<UserDTO> users,
+    @ApiParam(value = DocumentationAnnotation.USER_POST_DATA_DEFINITION) @Valid ArrayList<UserDTO> users,
     @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         

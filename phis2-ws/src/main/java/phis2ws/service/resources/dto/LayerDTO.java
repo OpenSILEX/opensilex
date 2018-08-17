@@ -54,7 +54,7 @@ public class LayerDTO extends AbstractVerifiedClass {
     public void setObjectUri(String objectUri) {
         this.objectUri = objectUri;
     }
-    
+
     @Required
     @ApiModelProperty(example = "true")
     public String getDepth() {

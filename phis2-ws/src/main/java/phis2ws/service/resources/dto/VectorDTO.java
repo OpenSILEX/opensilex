@@ -46,8 +46,6 @@ public class VectorDTO extends AbstractVerifiedClass {
     //email of the person in charge of the vector
     private String personInCharge;
 
-   
-
     @Override
     public Vector createObjectFromDTO() {
         Vector vector = new Vector();

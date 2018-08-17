@@ -12,11 +12,13 @@
 package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
-import java.util.HashMap;
-import java.util.Map;
+import javax.validation.constraints.Email;
+import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.dto.validation.interfaces.Date;
+import phis2ws.service.resources.dto.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.Sensor;
 
 /**
@@ -61,7 +63,8 @@ public class SensorDTO extends AbstractVerifiedClass {
 
         return sensor;
     }
-
+    
+    @URL
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SENSOR_URI)
     public String getUri() {
         return uri;
@@ -71,6 +74,7 @@ public class SensorDTO extends AbstractVerifiedClass {
         this.uri = uri;
     }
 
+    @URL
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SENSOR_RDF_TYPE)
     public String getRdfType() {
@@ -110,6 +114,7 @@ public class SensorDTO extends AbstractVerifiedClass {
         this.serialNumber = serialNumber;
     }
 
+    @Date(DateFormat.YMD)
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SENSOR_IN_SERVICE_DATE)
     public String getInServiceDate() {
@@ -120,6 +125,7 @@ public class SensorDTO extends AbstractVerifiedClass {
         this.inServiceDate = inServiceDate;
     }
 
+    @Date(DateFormat.YMD)
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SENSOR_DATE_OF_PURCHASE)
     public String getDateOfPurchase() {
         return dateOfPurchase;
@@ -129,6 +135,7 @@ public class SensorDTO extends AbstractVerifiedClass {
         this.dateOfPurchase = dateOfPurchase;
     }
 
+    @Date(DateFormat.YMD)
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SENSOR_DATE_OF_LAST_CALIBRATION)
     public String getDateOfLastCalibration() {
         return dateOfLastCalibration;
@@ -137,7 +144,8 @@ public class SensorDTO extends AbstractVerifiedClass {
     public void setDateOfLastCalibration(String dateOfLastCalibration) {
         this.dateOfLastCalibration = dateOfLastCalibration;
     }
-
+    
+    @Email
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_USER_EMAIL)
     public String getPersonInCharge() {

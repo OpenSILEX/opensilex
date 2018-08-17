@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiModelProperty;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.dto.validation.interfaces.OType;
 import phis2ws.service.resources.dto.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.Triplet;
 
@@ -77,6 +78,7 @@ public class TripletDTO extends AbstractVerifiedClass {
 
     @URL
     @Required
+    @OType
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_TRIPLET_OBJECT)
     public String getO() {
         return o;
@@ -115,5 +117,4 @@ public class TripletDTO extends AbstractVerifiedClass {
     public void setG(String g) {
         this.g = g;
     }
-
 }

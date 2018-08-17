@@ -11,6 +11,12 @@
 //******************************************************************************
 package phis2ws.service.dao.phis;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -22,6 +28,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.dao.manager.DAOPhisBrapi;
 import phis2ws.service.utils.sql.SQLQueryBuilder;
 import static phis2ws.service.dao.phis.ExperimentDao.LOGGER;
@@ -48,7 +55,7 @@ public class StudyDAO extends DAOPhisBrapi<StudiesSearch, StudiesSearch>{
     public String seasonDbId;    
     public String studyDbId;
     public List<String> germplasmDbIds;
-    public ArrayList<String> observationVariableDbIds;
+    public List<String> observationVariableDbIds;
     public Boolean active;
     public String sortBy;
     public String sortOrder;
@@ -239,7 +246,70 @@ public class StudyDAO extends DAOPhisBrapi<StudiesSearch, StudiesSearch>{
     
     
     
+    public ArrayList<String> getExpFromVar(List<String> observationVariableDbIds){
+       
+        MongoClient mongoClient = new MongoClient(
+            new MongoClientURI(PropertiesFileManager.getConfigFileProperty("mongodb_nosql_config", "url")));
+        DB db = mongoClient.getDB("diaphen");
+        DBCollection collection = db.getCollection("diaphen");
+        ArrayList<String> agroObjectsList = new ArrayList();
+        
+        for (String var : observationVariableDbIds){
+            BasicDBObject queryMongo = new BasicDBObject("variable", var);
+            BasicDBObject projection = new BasicDBObject("agronomicalObject", 1);
+        
+            DBCursor cursor = collection.find(queryMongo,projection);
+            try {
+                while(cursor.hasNext()) {
+                    String agroObject = cursor.next().toString();
+                    if (agroObjectsList.contains(agroObject)==false) {
+                        agroObjectsList.add(agroObject);
+                    }
+                }
+            } finally {
+                cursor.close();
+            }
+        }
+        
+        ResultSet queryResult = null;
+        Connection connection = null;
+        Statement statement = null;
+        ArrayList<String> studiesList = new ArrayList();        
+        try {
+            connection = dataSource.getConnection();
+            statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+            SQLQueryBuilder query = new SQLQueryBuilder();
+            query.appendDistinct();
+            query.appendSelect("named_graph");
+            query.appendFrom("agronomical_object", "ao");
+            query.appendINConditions("uri", agroObjectsList, "ao");
+            
+            queryResult = statement.executeQuery(query.toString());
 
+            while (queryResult.next()) {
+                String studyURI = queryResult.getString("named_graph");
+                studiesList.add(studyURI);
+            }
+    
+        } catch (SQLException ex) {
+            java.util.logging.Logger.getLogger(StudyDAO.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                if (queryResult != null) {
+                    queryResult.close();
+                }
+                if (statement != null) {
+                    statement.close();
+                }
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException ex) {
+                java.util.logging.Logger.getLogger(StudyDAO.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return studiesList;
+    }
     
     
 
@@ -262,6 +332,10 @@ public class StudyDAO extends DAOPhisBrapi<StudiesSearch, StudiesSearch>{
                 query.appendJoin("INNER JOIN", "at_trial_project", "at","at.trial_uri=tr.uri");
             }
             query.appendANDWhereConditionIfNeeded(sqlFields.get("studyDbId"), studyDbId, "ILIKE", null, "tr");
+            if (observationVariableDbIds.size()>0){
+                ArrayList<String> studiesFromVar = getExpFromVar(observationVariableDbIds);
+                query.appendINConditions(sqlFields.get("studyDbId"), studiesFromVar, "tr");
+            }
             query.appendANDWhereConditionIfNeeded(sqlFields.get("programDbId"), programDbId, "ILIKE", null, "at");
             query.appendANDWhereConditionIfNeeded(sqlFields.get("seasonDbId"), seasonDbId,"ILIKE", null, "tr");
             if (commonCropName!=null){

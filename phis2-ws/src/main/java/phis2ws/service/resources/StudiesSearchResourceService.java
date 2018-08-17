@@ -89,8 +89,8 @@ public class StudiesSearchResourceService {
         //@ApiParam(value = "Search by field", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_FIELD) @QueryParam("field") String field,
         @ApiParam(value = "Search by year", example = "") @QueryParam("seasonDbId") String seasonDbId,
         @ApiParam(value = "Search by studyType", example = "") @QueryParam("studyType") String studyType,  
-        @ApiParam(value = "Search by germplasmDbIds", example = "") @QueryParam("germplasmDbIds") List<String> germplasmDbIds,   
-//        @ApiParam(value = "Search by observationVariableDbIds", example = "") @QueryParam("observationVariableDbIds") ArrayList<String> observationVariableDbIds,   
+        //@ApiParam(value = "Search by germplasmDbIds", example = "") @QueryParam("germplasmDbIds") List<String> germplasmDbIds,   
+        @ApiParam(value = "Search by observationVariableDbIds") @QueryParam("observationVariableDbIds") List<String> observationVariableDbIds,   
         @ApiParam(value = "Search by active", example = "") @QueryParam("active") boolean active,
         @ApiParam(value = "sort by", example = "studyDbId") @QueryParam("sortBy") String sortBy,
         @ApiParam(value = "sort order", example = "asc") @QueryParam("sortOrder") String sortOrder
@@ -128,13 +128,13 @@ public class StudiesSearchResourceService {
             studyDAO.studyDbId = studyDbId;
         }
         
-        if (germplasmDbIds != null) {
-            studyDAO.germplasmDbIds = germplasmDbIds;
-        }
-//        
-//        if (observationVariableDbIds != null) {
-//            studyDAO.observationVariableDbIds = observationVariableDbIds;
+//        if (germplasmDbIds != null) {
+//            studyDAO.germplasmDbIds = germplasmDbIds;
 //        }
+////        
+        if (observationVariableDbIds != null) {
+            studyDAO.observationVariableDbIds = observationVariableDbIds;
+        }
      
         if (sortBy != null) {
             studyDAO.sortBy = sortBy;

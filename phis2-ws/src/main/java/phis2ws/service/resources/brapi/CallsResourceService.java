@@ -4,7 +4,6 @@
 // Copyright © INRA 2018
 // Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-
 package phis2ws.service.resources.brapi;
 
 import io.swagger.annotations.Api;
@@ -35,81 +34,74 @@ import phis2ws.service.view.model.phis.Call;
 
 /**
  * Calls service
+ *
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
-public class CallsResourceService implements BrapiCall{
-    final static Logger LOGGER = LoggerFactory.getLogger(CallsResourceService.class);  
-      
-    /**Overriding BrapiCall method
-     * @date 27 Aug 2018 
+public class CallsResourceService implements BrapiCall {
+
+    final static Logger LOGGER = LoggerFactory.getLogger(CallsResourceService.class);
+
+    /**
+     * Overriding BrapiCall method
+     *
+     * @date 27 Aug 2018
      * @return Calls call information
      */
     @Override
-    public Call callInfo(){
-        ArrayList<String> calldatatypes = new ArrayList<>();        
+    public Call callInfo() {
+        ArrayList<String> calldatatypes = new ArrayList<>();
         calldatatypes.add("json");
-        
-        ArrayList<String> callMethods = new ArrayList<>();  
+        ArrayList<String> callMethods = new ArrayList<>();
         callMethods.add("GET");
-        
-        ArrayList<String> callVersions = new ArrayList<>();  
+        ArrayList<String> callVersions = new ArrayList<>();
         callVersions.add("1.1");
         callVersions.add("1.2");
-    
-        Call callscall = new Call("calls",calldatatypes,callMethods,callVersions);
+        Call callscall = new Call("calls", calldatatypes, callMethods, callVersions);
         return callscall;
     }
-         
+
     /* Dependency injection to get all BrapiCalls callInfo() outputs
-    */    
-    @Inject   
-    IterableProvider<BrapiCall> brapiCallsList;  
-           
+     */
+    @Inject
+    IterableProvider<BrapiCall> brapiCallsList;
+
     /**
      * @param datatype
      * @param limit
      * @param page
-     * 
-     * 
-     * @return brapi calls list 
-     *  returns in "data" is like this : 
-     *          [
-     *              { call1 description },
-     *              { call2 description },
-     *          ]
+     *
+     *
+     * @return brapi calls list returns in "data" is like this : [ { call1
+     * description }, { call2 description }, ]
      */
     @GET
     @ApiOperation(value = "Check the available brapi calls",
-                       notes = "Check the available brapi calls")
+            notes = "Check the available brapi calls")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Retrieve brapi calls", response = Call.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
-    
-    @Produces(MediaType.APPLICATION_JSON)    
-    
-    
-    public Response getCalls (
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
-        @ApiParam(value = "The data type supported by the call, example: json") @QueryParam("datatype") String datatype){
-               
+
+    @Produces(MediaType.APPLICATION_JSON)
+
+    public Response getCalls(
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
+            @ApiParam(value = "The data type supported by the call, example: json") @QueryParam("datatype") String datatype) {
+
         ArrayList<Status> statuslist = new ArrayList();
         ArrayList<Call> callsInfoList = new ArrayList();
-        
-        for (BrapiCall bc : brapiCallsList)
-        {
+
+        for (BrapiCall bc : brapiCallsList) {
             Call callinfo = bc.callInfo();
             ArrayList<String> datatypesList = callinfo.getDatatypes();
-            
-            if (datatype==null || datatypesList.contains(datatype)==true){
+            if (datatype == null || datatypesList.contains(datatype) == true) {
                 callsInfoList.add(callinfo);
-            }                    
+            }
         }
-                        
-        ResponseFormCall  getResponse = new ResponseFormCall(limit, page, callsInfoList, false, statuslist);
-       
+
+        ResponseFormCall getResponse = new ResponseFormCall(limit, page, callsInfoList, false, statuslist);
         return Response.status(Response.Status.OK).entity(getResponse).build();
-        }   
+    }
 }

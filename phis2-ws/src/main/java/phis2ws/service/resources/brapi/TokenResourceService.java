@@ -11,7 +11,6 @@
 //***********************************************************************************************
 package phis2ws.service.resources.brapi;
 
-import phis2ws.service.resources.brapi.BrapiCall;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
@@ -88,6 +87,7 @@ import phis2ws.service.view.model.phis.Call;
 @Api(value = "/brapi/v1/token")
 @Path("brapi/v1/token")
 public class TokenResourceService implements BrapiCall{
+    
     final static Logger LOGGER = LoggerFactory.getLogger(TokenResourceService.class);
     static final Map<String, String> ISSUERS_PUBLICKEY;
     static final List<String> GRANTTYPE_AUTHORIZED = Collections.unmodifiableList(Arrays.asList("jwt", "password"));
@@ -111,16 +111,13 @@ public class TokenResourceService implements BrapiCall{
     @Override
     public Call callInfo(){
         ArrayList<String> calldatatypes = new ArrayList<>();        
-        calldatatypes.add("json");
-        
+        calldatatypes.add("json");        
         ArrayList<String> callMethods = new ArrayList<>();  
         callMethods.add("POST");
-        callMethods.add("DELETE");
-        
+        callMethods.add("DELETE");        
         ArrayList<String> callVersions = new ArrayList<>();  
         callVersions.add("1.1");
-        callVersions.add("1.2");
-    
+        callVersions.add("1.2");    
         Call tokencall = new Call("token",calldatatypes,callMethods,callVersions);
         return tokencall;
     }

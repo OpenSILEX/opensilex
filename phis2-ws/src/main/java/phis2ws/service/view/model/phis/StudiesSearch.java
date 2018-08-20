@@ -1,13 +1,8 @@
 //******************************************************************************
 //                                       Study.java
-//
-// Author(s): boizetal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: 7 août 2018
-// Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  7 août 2018
-// Subject:
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package phis2ws.service.view.model.phis;
 
@@ -23,7 +18,7 @@ public class StudiesSearch {
     private String trialDbId;
     private String trialName;
     private String studyType;
-    private String seasons; 
+    private ArrayList<String> seasons; 
     private String locationDbId;
     private String locationName;
     private ArrayList<String> programDbIds;
@@ -79,11 +74,11 @@ public class StudiesSearch {
         this.studyType = studyType;
     }
 
-    public String getSeasons() {
+    public ArrayList<String> getSeasons() {
         return seasons;
     }
 
-    public void setSeasons(String seasons) {
+    public void setSeasons(ArrayList<String> seasons) {
         this.seasons = seasons;
     }
 
@@ -142,11 +137,6 @@ public class StudiesSearch {
     public void setActive(Boolean active) {
         this.active = active;
     }
-    
-    
-    
-    
-    
 }
 
 

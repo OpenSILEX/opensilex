@@ -1,13 +1,8 @@
 //******************************************************************************
 //                                       StudiesSearchResourceService.java
-//
-// Author(s): boizetal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: 30 juil. 2018
-// Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  30 juil. 2018
-// Subject:
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package phis2ws.service.resources;
 
@@ -18,6 +13,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ws.rs.DefaultValue;
@@ -32,13 +28,11 @@ import org.slf4j.LoggerFactory;
 import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.phis.ExperimentDao;
 import phis2ws.service.dao.phis.StudyDAO;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.view.brapi.Status;
-import phis2ws.service.view.brapi.form.ResponseFormExperiment;
 import phis2ws.service.view.brapi.form.ResponseFormStudy;
 import phis2ws.service.view.model.phis.Experiment;
 import phis2ws.service.view.model.phis.StudiesSearch;
@@ -86,15 +80,14 @@ public class StudiesSearchResourceService {
         @ApiParam(value = "Search by program", example = "") @QueryParam("programDbId") String programDbId,
         @ApiParam(value = "Search by crop name from the Program", example = "") @QueryParam("commonCropName") String commonCropName,
         @ApiParam(value = "Search by location", example = "") @QueryParam("locationDbId") String locationDbId,
-        //@ApiParam(value = "Search by field", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_FIELD) @QueryParam("field") String field,
         @ApiParam(value = "Search by year", example = "") @QueryParam("seasonDbId") String seasonDbId,
         @ApiParam(value = "Search by studyType", example = "") @QueryParam("studyType") String studyType,  
-        //@ApiParam(value = "Search by germplasmDbIds", example = "") @QueryParam("germplasmDbIds") List<String> germplasmDbIds,   
+        @ApiParam(value = "Search by germplasmDbIds") @QueryParam("germplasmDbIds") List<String> germplasmDbIds,   
         @ApiParam(value = "Search by observationVariableDbIds") @QueryParam("observationVariableDbIds") List<String> observationVariableDbIds,   
         @ApiParam(value = "Search by active", example = "") @QueryParam("active") boolean active,
         @ApiParam(value = "sort by", example = "studyDbId") @QueryParam("sortBy") String sortBy,
         @ApiParam(value = "sort order", example = "asc") @QueryParam("sortOrder") String sortOrder
-        ){
+        ) throws SQLException {
                
         
         //a modifier
@@ -128,10 +121,10 @@ public class StudiesSearchResourceService {
             studyDAO.studyDbId = studyDbId;
         }
         
-//        if (germplasmDbIds != null) {
-//            studyDAO.germplasmDbIds = germplasmDbIds;
-//        }
-////        
+        if (germplasmDbIds != null) {
+            studyDAO.germplasmDbIds = germplasmDbIds;
+        }
+      
         if (observationVariableDbIds != null) {
             studyDAO.observationVariableDbIds = observationVariableDbIds;
         }
@@ -170,7 +163,7 @@ public class StudiesSearchResourceService {
      * @return la réponse pour l'utilisateur. 
      *          Contient la liste des expérimentations correspondant à la recherche
      */
-    private Response getStudiesData(StudyDAO studyDAO) {
+    private Response getStudiesData(StudyDAO studyDAO) throws SQLException{
         ArrayList<StudiesSearch> studiesList = new ArrayList<>();
         ArrayList<Status> statusList = new ArrayList<>();
         ResponseFormStudy getResponse;
@@ -180,7 +173,7 @@ public class StudiesSearchResourceService {
             getResponse = new ResponseFormStudy(studyDAO.getPageSize(), studyDAO.getPage(), studiesList, true);
             return noResultFound(getResponse, statusList);
         } else {
-            studiesList = studyDAO.allPaginate();
+            studiesList = studyDAO.getStudiesList();
             if (studiesList == null) {
               getResponse = new ResponseFormStudy(0, 0, studiesList, true);
               return sqlError(getResponse, statusList);

@@ -1,20 +1,14 @@
 //******************************************************************************
 //                                       ResultStudy.java
-//
-// Author(s): boizetal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: 18 juil. 2018
-// Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  18 juil. 2018
-// Subject: extended from Resultat adapted to the studies list
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package phis2ws.service.view.brapi.results;
 
 import java.util.ArrayList;
 import phis2ws.service.view.brapi.Pagination;
 import phis2ws.service.view.manager.Resultat;
-import phis2ws.service.view.model.phis.Experiment;
 import phis2ws.service.view.model.phis.StudiesSearch;
 
 

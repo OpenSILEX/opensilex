@@ -1,14 +1,10 @@
 //******************************************************************************
-//                                       StudyDAO.java
-//
-// Author(s): boizetal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: 30 juil. 2018
-// Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  30 juil. 2018
-// Subject:
+//                                       ${StudyDAO}
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
+
 package phis2ws.service.dao.phis;
 
 import com.mongodb.BasicDBObject;
@@ -26,25 +22,29 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
-import phis2ws.service.dao.manager.DAOPhisBrapi;
 import phis2ws.service.utils.sql.SQLQueryBuilder;
-import static phis2ws.service.dao.phis.ExperimentDao.LOGGER;
 import phis2ws.service.model.User;
-import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.sql.JoinAttributes;
-import phis2ws.service.view.model.phis.Group;
-import phis2ws.service.view.model.phis.Project;
+import phis2ws.service.view.model.phis.Experiment;
 import phis2ws.service.view.model.phis.StudiesSearch;
+import phis2ws.service.dao.phis.ExperimentDao;
+import phis2ws.service.dao.sesame.AgronomicalObjectDAOSesame;
+import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 
 
 /**
- *
- * @author boizetal
+ * Get Experiments filtered by StudiesSearchResourceService fields and add 
+ * required attributes to get brapi studies
+ * @author Alice Boizet
  */
-public class StudyDAO extends DAOPhisBrapi<StudiesSearch, StudiesSearch>{
+public class StudyDAO {
     final static Logger LOGGER = LoggerFactory.getLogger(StudyDAO.class);
     
     public String studyType; 
@@ -59,33 +59,36 @@ public class StudyDAO extends DAOPhisBrapi<StudiesSearch, StudiesSearch>{
     public Boolean active;
     public String sortBy;
     public String sortOrder;
-
+    public int page;
+    public int limit;
+    public User user;
 
     public StudyDAO() {
-        super();
-        setTable("trial");
-        setTableAlias("tr");
     }
     
     public StudyDAO(String studyDbId) {
-        super();
         this.studyDbId = studyDbId;
-        setTable("trial");
-        setTableAlias("tr");
     }
-    
-    
-    @Override
-    public Map<String, String> pkeySQLFieldLink() {
-       Map<String, String> pkeySQLFieldLink = new HashMap<>();
-       pkeySQLFieldLink.put("studyDbId", "uri");
-       return pkeySQLFieldLink;
+
+    public int getPageSize() {
+        return limit;
     }
+
+    public void setPageSize(int pageSize) {
+        this.limit = pageSize;
+    }
+
+    public int getPage() {
+        return page;
+    }
+
+    public void setPage(int page) {
+        this.page = page;
+    }
+ 
     
-    
-    
-    @Override
-    public Map<String, String> relationFieldsJavaSQLObject() {
+    //correspondance entre champs en base et champs de recherche du web service
+    public Map<String, String> relationFieldsObject() {
         Map<String, String> createSQLFields = new HashMap<>();
         createSQLFields.put("studyDbId","uri");
         createSQLFields.put("programDbId","project_uri");
@@ -96,158 +99,7 @@ public class StudyDAO extends DAOPhisBrapi<StudiesSearch, StudiesSearch>{
                
         return createSQLFields;
     }
-    
-
-//            
-//        
-
-    
-
-    @Override
-    public StudiesSearch get(ResultSet result) throws SQLException {
-        StudiesSearch study = new StudiesSearch();
-        study.setStudyDbId(result.getString("uri"));
-        study.setName(result.getString("alias"));
-        study.setTrialDbId(trialDbId);
-        study.setTrialName(trialDbId);
-        study.setStudyType(studyType);
-        study.setSeasons(result.getString("campaign"));
-        study.setLocationDbId(locationDbId);
-        study.setLocationName(locationDbId);
-        study.setStartDate(result.getString("start_date"));
-        study.setEndDate(result.getString("end_date"));
-        study.setActive(active);
-
-        
-        ResultSet queryResult = null;
-        Connection connection = null;
-        Statement statement = null;
-        ArrayList<String> programDbIds = new ArrayList();
-        ArrayList<String> programDbNames = new ArrayList();
-        try {
-            connection = dataSource.getConnection();
-            statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-            String query = "SELECT p.uri, p.name FROM project AS p INNER JOIN at_trial_project AS at ON at.project_uri=p.uri WHERE at.trial_uri='"+study.getStudyDbId()+"'";
-            queryResult = statement.executeQuery(query);
-
-            while (queryResult.next()) {
-                String programId = queryResult.getString("uri");
-                String programName = queryResult.getString("name");
-                programDbIds.add(programId);
-                programDbNames.add(programName);
-                }
-            study.setProgramDbIds(programDbIds);
-            study.setProgramNames(programDbNames);
-        }
-        catch (SQLException ex) {
-            java.util.logging.Logger.getLogger(StudyDAO.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            try {
-                if (queryResult != null) {
-                    queryResult.close();
-                }
-                if (statement != null) {
-                    statement.close();
-                }
-                if (connection != null) {
-                    connection.close();
-                }
-            } catch (SQLException ex) {
-                java.util.logging.Logger.getLogger(StudyDAO.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        return study;
-    
-    }
-        
-
-    
-     /**
-     * 
-     * @param study Study
-     * @return la liste des groupes ayant accès à l'expérimentation (lite des noms de groupes)
-     * @throws java.sql.SQLException
-     */
-    public ArrayList<Group> getStudyGroups(StudiesSearch study) throws SQLException {
-        ResultSet result = null;
-        Connection connection = null;
-        Statement statement = null;
-        ArrayList<Group> experimentGroups = new ArrayList<>();
-        
-        try {
-            if (this.existInDB(study)) {
-                //Récupération des groupes dans les tables at_group_trial et group
-                SQLQueryBuilder query = new SQLQueryBuilder();
-                query.appendSelect("gp.uri, gp.level, gp.name");
-                query.appendFrom("at_group_trial", "gt");
-                query.appendANDWhereConditionIfNeeded("trial_uri", study.getStudyDbId(), "=", null, "gt");
-                query.appendJoin(JoinAttributes.INNERJOIN, "group", "gp", "gt.group_uri = gp.uri");
-                
-                connection = dataSource.getConnection();
-                statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY,ResultSet.HOLD_CURSORS_OVER_COMMIT);
-
-                result = statement.executeQuery(query.toString());
-                while (result.next()) {
-                    Group group = new Group(result.getString("uri"));
-                    group.setLevel(result.getString("level"));
-                    group.setName(result.getString("name"));
-                    experimentGroups.add(group);
-                }
-            }
-        } catch (Exception ex) {
-            java.util.logging.Logger.getLogger(ExperimentDao.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            if (connection != null) {
-                connection.close();
-            }
-            if (statement != null) {
-                statement.close();
-            }
-            if (result != null) {
-                result.close();
-            }
-        }
-        
-        return experimentGroups;
-    }
-    
-    
-    
-    /**
-     * 
-     * @param u User 
-     * @param experiment Experiment
-     * @return true si l'utilisateur fait partie d'un des groupes ayant accès à l'experimentation, false sinon
-     */
-    public boolean canUserSeeStudy(User u, StudiesSearch study) {
-        try {
-            UserDaoPhisBrapi userDao = new UserDaoPhisBrapi();
-
-            ArrayList<Group> studyGroups = this.getStudyGroups(study);
-            //Quand l'essai n'est dans aucun groupe, il est public donc l'utilisateur peut le consulter
-            if (studyGroups.isEmpty()) { 
-                return true;
-            } else {
-                ArrayList<Group> userGroups = userDao.getUserGroups(u);
-                for (Group userGroup : userGroups) {
-                    for (Group experimentGroup : studyGroups) {
-                        if (userGroup.getUri().equals(experimentGroup.getUri())) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        } catch (SQLException ex) {
-            java.util.logging.Logger.getLogger(ExperimentDao.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        return false;
-    }
-    
-    
-    
-    public ArrayList<String> getExpFromVar(List<String> observationVariableDbIds){
-       
+    public ArrayList<String> getAgroObjectFromVar(List<String> observationVariableDbIds) {
         MongoClient mongoClient = new MongoClient(
             new MongoClientURI(PropertiesFileManager.getConfigFileProperty("mongodb_nosql_config", "url")));
         DB db = mongoClient.getDB("diaphen");
@@ -256,75 +108,85 @@ public class StudyDAO extends DAOPhisBrapi<StudiesSearch, StudiesSearch>{
         
         for (String var : observationVariableDbIds){
             BasicDBObject queryMongo = new BasicDBObject("variable", var);
-            BasicDBObject projection = new BasicDBObject("agronomicalObject", 1);
-        
-            DBCursor cursor = collection.find(queryMongo,projection);
-            try {
+            BasicDBObject projection = new BasicDBObject("agronomicalObject", 1);        
+            try (DBCursor cursor = collection.find(queryMongo,projection)) {
                 while(cursor.hasNext()) {
                     String agroObject = cursor.next().toString();
                     if (agroObjectsList.contains(agroObject)==false) {
                         agroObjectsList.add(agroObject);
                     }
                 }
-            } finally {
-                cursor.close();
             }
         }
+        return agroObjectsList;
+    }
+    
+    public ArrayList<String> getExpFromAgroObject(ArrayList<String> agroObjectsList) {
+        ExperimentDao experimentDAO = new ExperimentDao();
+        ArrayList<String> studiesList = new ArrayList(); 
         
-        ResultSet queryResult = null;
-        Connection connection = null;
-        Statement statement = null;
-        ArrayList<String> studiesList = new ArrayList();        
-        try {
-            connection = dataSource.getConnection();
-            statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+        try (Connection connection = experimentDAO.getDataSource().getConnection();
+                Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+            ) {            
             SQLQueryBuilder query = new SQLQueryBuilder();
             query.appendDistinct();
             query.appendSelect("named_graph");
             query.appendFrom("agronomical_object", "ao");
             query.appendINConditions("uri", agroObjectsList, "ao");
             
-            queryResult = statement.executeQuery(query.toString());
-
-            while (queryResult.next()) {
+            try (ResultSet queryResult = statement.executeQuery(query.toString())) {
+                while (queryResult.next()) {
                 String studyURI = queryResult.getString("named_graph");
                 studiesList.add(studyURI);
+                }
             }
-    
+            
         } catch (SQLException ex) {
             java.util.logging.Logger.getLogger(StudyDAO.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            try {
-                if (queryResult != null) {
-                    queryResult.close();
-                }
-                if (statement != null) {
-                    statement.close();
-                }
-                if (connection != null) {
-                    connection.close();
-                }
-            } catch (SQLException ex) {
-                java.util.logging.Logger.getLogger(StudyDAO.class.getName()).log(Level.SEVERE, null, ex);
-            }
         }
         return studiesList;
     }
     
     
-
-    @Override
-    public ArrayList<StudiesSearch> allPaginate() {
-        ResultSet queryResult = null;
-        Connection connection = null;
-        Statement statement = null;
-        ArrayList<StudiesSearch> studiesList = new ArrayList();
-        try {
-            connection = dataSource.getConnection();
-            statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-            SQLQueryBuilder query = new SQLQueryBuilder();
+    public ArrayList<String> getAgroObjectsFromGermplasm(List<String> germplasmDbIds) {
+        //retrieve agro objects associated to germplasm (variety)
+        AgronomicalObjectDAOSesame daoSesame= new AgronomicalObjectDAOSesame();
+        daoSesame.getConnection();
+        ArrayList<String> agroObjectsList = new ArrayList();
+        for (String gp : germplasmDbIds){ 
+//            SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+//            query.appendPrefix("p1", "<http://www.phenome-fppn.fr/vocabulary/2017#>");
+//            query.appendTriplet("?uri", "p1:fromVariety", gp, null);   
+            String query = "Prefix p1:<http://www.phenome-fppn.fr/vocabulary/2017#>\n" +
+            "Select ?uri\n" +
+            "where {\n" +
+            " ?uri p1:fromVariety <http://www.phenome-fppn.fr/platform/v/variety4>\n" +
+            "}";
             
-            Map<String, String> sqlFields = relationFieldsJavaSQLObject();
+            TupleQuery selectQuery = daoSesame.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query);
+            TupleQueryResult result = selectQuery.evaluate();
+                                   
+            while(result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                String uriAgronomicalObject = bindingSet.getValue("uri").stringValue();
+                if (agroObjectsList.contains(uriAgronomicalObject)==false) {
+                    agroObjectsList.add(uriAgronomicalObject);
+                }
+            }            
+        }
+        daoSesame.getConnection().close();                
+        return agroObjectsList;
+    }
+    
+    public ArrayList<Experiment> getExperimentsList() {
+        ExperimentDao experimentDAO = new ExperimentDao();
+        ArrayList<Experiment> expList = new ArrayList();
+        
+        try (final Connection connection = experimentDAO.getDataSource().getConnection();
+                final Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+            ) {            
+            SQLQueryBuilder query = new SQLQueryBuilder();
+            Map<String, String> sqlFields = relationFieldsObject();
             
             //Ajout des conditions dans la requête
             query.appendFrom("trial", "tr");
@@ -332,148 +194,109 @@ public class StudyDAO extends DAOPhisBrapi<StudiesSearch, StudiesSearch>{
                 query.appendJoin("INNER JOIN", "at_trial_project", "at","at.trial_uri=tr.uri");
             }
             query.appendANDWhereConditionIfNeeded(sqlFields.get("studyDbId"), studyDbId, "ILIKE", null, "tr");
-            if (observationVariableDbIds.size()>0){
-                ArrayList<String> studiesFromVar = getExpFromVar(observationVariableDbIds);
-                query.appendINConditions(sqlFields.get("studyDbId"), studiesFromVar, "tr");
+            if (observationVariableDbIds.size()>0 && observationVariableDbIds != null) {
+                ArrayList<String> studiesFromVar = getExpFromAgroObject(getAgroObjectFromVar(observationVariableDbIds));
+                query.appendINConditions(sqlFields.get("uri"), studiesFromVar, "tr");
             }
+            if (germplasmDbIds.size()>0) {
+                ArrayList<String> studiesFromGermplasm = getExpFromAgroObject(getAgroObjectsFromGermplasm(germplasmDbIds));
+                query.appendINConditions(sqlFields.get("uri"), studiesFromGermplasm, "tr");
+            }
+            
             query.appendANDWhereConditionIfNeeded(sqlFields.get("programDbId"), programDbId, "ILIKE", null, "at");
             query.appendANDWhereConditionIfNeeded(sqlFields.get("seasonDbId"), seasonDbId,"ILIKE", null, "tr");
             if (commonCropName!=null){
                 query.appendANDWhereConditionIfNeeded(sqlFields.get("commonCropName"), "%"+commonCropName+"%","ILIKE", null, "tr");
             }
             query.appendOrderBy(sqlFields.get(sortBy), sortOrder);
-            query.appendLimit(String.valueOf(pageSize));
+            query.appendLimit(String.valueOf(limit));
             
-            queryResult = statement.executeQuery(query.toString());
-            
-            UserDaoPhisBrapi userDao = new UserDaoPhisBrapi();
-            userDao.isAdmin(user);
-            boolean isAdmin = (user.getAdmin().equals("t") || user.getAdmin().equals("true"));
+            try (final ResultSet queryResult = statement.executeQuery(query.toString())) {
+                UserDaoPhisBrapi userDao = new UserDaoPhisBrapi();
+                userDao.isAdmin(user);
+                boolean isAdmin = (user.getAdmin().equals("t") || user.getAdmin().equals("true"));
+                
 
-            while (queryResult.next()) {
-                //SILEX:access
-                StudiesSearch study = get(queryResult);
-                if (isAdmin || canUserSeeStudy(user, study)) {
-                    studiesList.add(get(queryResult));
+                while (queryResult.next()) {
+                    //SILEX:access
+                    Experiment study = experimentDAO.get(queryResult);                    
+                    if (isAdmin || experimentDAO.canUserSeeExperiment(user, study)) {
+                        expList.add(experimentDAO.get(queryResult));
+                    }
+                    //\SILEX:access
                 }
-                //\SILEX:access
             }
-            
-//            for (Study study : studyList) {
-//                study.setGroupList(this.getStudyGroups(study));
-//            }    
             
         } catch (SQLException ex) {
             java.util.logging.Logger.getLogger(StudyDAO.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            try {
-                if (queryResult != null) {
-                    queryResult.close();
-                }
-                if (statement != null) {
-                    statement.close();
-                }
-                if (connection != null) {
-                    connection.close();
-                }
-            } catch (SQLException ex) {
-                java.util.logging.Logger.getLogger(StudyDAO.class.getName()).log(Level.SEVERE, null, ex);
-            }
         }
+        
+        return expList;
+    }
+    
+    public ArrayList<StudiesSearch>  transformExptoStudy(){        
+        ArrayList<StudiesSearch> studiesList = new ArrayList();
+        ArrayList<Experiment> expList = getExperimentsList();
+                
+        for (Experiment exp : expList){
+            StudiesSearch study = new StudiesSearch();
+            study.setStudyDbId(exp.getUri());
+            study.setName(exp.getAlias());
+            study.setStartDate(exp.getStartDate());
+            study.setEndDate(exp.getEndDate());
+            ArrayList<String> seasons = new ArrayList();
+            seasons.add(exp.getCampaign());
+            study.setSeasons(seasons);
+            studiesList.add(study);
+        }
+
         return studiesList;
     }
     
-    @Override
-    public Integer count() {
-     
-     SQLQueryBuilder query = new SQLQueryBuilder();
-     query.appendCount();
-     query.appendDistinct();
-     query.appendSelect(tableAlias + ".uri");
-     query.appendFrom(table, tableAlias);
-     
-     if (studyDbId != null) {
-         query.appendWhereConditions("uri", studyDbId, "=", null, tableAlias);
-     }
-     
-     Connection connection = null;
-     ResultSet resultSet = null;
-     Statement statement = null;
-     
-     try {
-         connection = dataSource.getConnection();
-         statement = connection.createStatement();
-         resultSet = statement.executeQuery(query.toString());
-         
-         if(resultSet.next()) {
-             return resultSet.getInt(1);
-         }else{
-             return 0;
-         }
-         
-         
-     } catch(SQLException e) {
-         LOGGER.error(e.getMessage(), e);
-         return null;
-     } finally {
-         try {
-             if (statement != null) {
-                 statement.close();
-             }
-             if (resultSet != null) {
-                 resultSet.close();
-             }
-             if (connection != null) {
-                 connection.close();
-             }
-         } catch (SQLException ex) {
-             LOGGER.error(ex.getMessage(), ex);
-         }
-    }
+    public ArrayList<StudiesSearch> getStudiesProjects(ArrayList<StudiesSearch> studies) throws SQLException {
+        ExperimentDao experimentDAO = new ExperimentDao();      
+
+        try (final Connection connection = experimentDAO.getDataSource().getConnection();
+                final Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+            ) {        
+            for (StudiesSearch study : studies) {
+                SQLQueryBuilder query = new SQLQueryBuilder();
+                query.appendSelect("p.name, p.uri");
+                query.appendFrom("at_trial_project", "tp");
+                query.appendANDWhereConditionIfNeeded("trial_uri", study.getStudyDbId(), "=", null, "tp");
+                query.appendJoin(JoinAttributes.INNERJOIN, "project", "p", "p.uri = tp.project_uri");
+                ResultSet queryResult = statement.executeQuery(query.toString());
+                ArrayList<String> projectsIds = new ArrayList();
+                ArrayList<String> projectsNames = new ArrayList();
+                
+                while (queryResult.next()) {                                      
+                    projectsIds.add(queryResult.getString("uri"));
+                    projectsNames.add(queryResult.getString("name"));
+                }
+                
+                study.setProgramDbIds(projectsIds);
+                study.setProgramNames(projectsNames);
+            }            
+        }       
+        return studies;
     }
     
-
-    @Override
-    protected StudiesSearch compareAndMergeObjects(StudiesSearch fromDB, StudiesSearch object) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    protected SQLQueryBuilder prepareSearchQuery() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-        
-    @Override
-    public POSTResultsReturn checkAndInsert(StudiesSearch newObject) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public POSTResultsReturn checkAndInsertList(List<StudiesSearch> newObjects) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public POSTResultsReturn checkAndUpdateList(List<StudiesSearch> newObjects) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-
-    @Override
-    public StudiesSearch findByFields(Map<String, Object> Attr, String table) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public StudiesSearch single(int id) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public ArrayList<StudiesSearch> all() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public ArrayList<StudiesSearch> completeStudies(ArrayList<StudiesSearch> studiesList) throws SQLException {
+        //add projects
+        studiesList = getStudiesProjects(studiesList);
+        //TODO : trialDBId, trialName, StudyType, LocationDbId, locationName        
+        return studiesList;
     }
     
-    
-   
+    public ArrayList<StudiesSearch> getStudiesList() throws SQLException {
+        ArrayList<StudiesSearch> studiesList = transformExptoStudy();
+        studiesList = completeStudies(studiesList);
+        return studiesList;
+    }  
+
+    public Integer count(){
+        ExperimentDao experimentDAO = new ExperimentDao();
+        experimentDAO.uri = studyDbId;
+        return experimentDAO.count();
+    }
 }

@@ -44,9 +44,9 @@ public class URINamespaces {
     public static final Map<String, String> USER_SPECIFIC_NAMESPACES;
     static {
         Map<String, String> temporaryMap = new HashMap<>();
-        String baseUri = PropertiesFileManager.getConfigFileProperty("service", "baseURI");
+        String plateform = PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "platform");
         // Can put multiple other namespaces
-        temporaryMap.put("platform", baseUri);
+        temporaryMap.put("platform", "http://www.phenome-fppn.fr/" + plateform);
         USER_SPECIFIC_NAMESPACES = Collections.unmodifiableMap(temporaryMap);
     }
 

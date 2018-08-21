@@ -33,8 +33,7 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.view.brapi.Status;
-import phis2ws.service.view.brapi.form.ResponseFormStudy;
-import phis2ws.service.view.model.phis.Experiment;
+import phis2ws.service.view.brapi.form.ResponseFormStudies;
 import phis2ws.service.view.model.phis.StudiesSearch;
 //import phis2ws.service.view.model.phis.Call;
 
@@ -53,10 +52,10 @@ public class StudiesSearchResourceService {
     Session userSession;
     
     @GET
-    @ApiOperation(value = "Check the available brapi calls",
-                       notes = "Check the available brapi calls")
+    @ApiOperation(value = "Get list of studies",
+                       notes = "Get list of studies")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve brapi calls", response = Experiment.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Get list of studies", response = StudiesSearch.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
@@ -84,7 +83,7 @@ public class StudiesSearchResourceService {
         @ApiParam(value = "Search by studyType", example = "") @QueryParam("studyType") String studyType,  
         @ApiParam(value = "Search by germplasmDbIds") @QueryParam("germplasmDbIds") List<String> germplasmDbIds,   
         @ApiParam(value = "Search by observationVariableDbIds") @QueryParam("observationVariableDbIds") List<String> observationVariableDbIds,   
-        @ApiParam(value = "Search by active", example = "") @QueryParam("active") boolean active,
+        @ApiParam(value = "Search by active", example = "") @QueryParam("active") Boolean active,
         @ApiParam(value = "sort by", example = "studyDbId") @QueryParam("sortBy") String sortBy,
         @ApiParam(value = "sort order", example = "asc") @QueryParam("sortOrder") String sortOrder
         ) throws SQLException {
@@ -93,7 +92,7 @@ public class StudiesSearchResourceService {
         //a modifier
         StudyDAO studyDAO = new StudyDAO();
         
-        if (studyDbId != null) {
+        if (studyType != null) {
             studyDAO.studyType = studyType;
         }      
         
@@ -128,6 +127,9 @@ public class StudiesSearchResourceService {
         if (observationVariableDbIds != null) {
             studyDAO.observationVariableDbIds = observationVariableDbIds;
         }
+        
+        
+        studyDAO.active = active;
      
         if (sortBy != null) {
             studyDAO.sortBy = sortBy;
@@ -145,13 +147,13 @@ public class StudiesSearchResourceService {
         }  
 
     
-    private Response noResultFound(ResponseFormStudy getResponse, ArrayList<Status> insertStatusList) {
+    private Response noResultFound(ResponseFormStudies getResponse, ArrayList<Status> insertStatusList) {
         insertStatusList.add(new Status("No results", StatusCodeMsg.INFO, "No results for the experiments"));
         getResponse.setStatus(insertStatusList);
         return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
     }
     
-    private Response sqlError(ResponseFormStudy getResponse, ArrayList<Status> insertStatusList) {
+    private Response sqlError(ResponseFormStudies getResponse, ArrayList<Status> insertStatusList) {
          insertStatusList.add(new Status("SQL error" ,StatusCodeMsg.ERR, "can't fetch result"));
          getResponse.setStatus(insertStatusList);
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(getResponse).build();
@@ -166,19 +168,19 @@ public class StudiesSearchResourceService {
     private Response getStudiesData(StudyDAO studyDAO) throws SQLException{
         ArrayList<StudiesSearch> studiesList = new ArrayList<>();
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormStudy getResponse;
+        ResponseFormStudies getResponse;
         Integer studiesCount = studyDAO.count();
         
         if (studiesCount != null && studiesCount == 0) {
-            getResponse = new ResponseFormStudy(studyDAO.getPageSize(), studyDAO.getPage(), studiesList, true);
+            getResponse = new ResponseFormStudies(studyDAO.getPageSize(), studyDAO.getPage(), studiesList, true);
             return noResultFound(getResponse, statusList);
         } else {
             studiesList = studyDAO.getStudiesList();
             if (studiesList == null) {
-              getResponse = new ResponseFormStudy(0, 0, studiesList, true);
+              getResponse = new ResponseFormStudies(0, 0, studiesList, true);
               return sqlError(getResponse, statusList);
             } else if (!studiesList.isEmpty() && studiesCount != null) {
-                getResponse = new ResponseFormStudy(studyDAO.getPageSize(), studyDAO.getPage(), studiesList, false);
+                getResponse = new ResponseFormStudies(studyDAO.getPageSize(), studyDAO.getPage(), studiesList, false);
                 if (getResponse.getResult().dataSize() == 0) {
                     return noResultFound(getResponse, statusList);
                 } else {
@@ -186,7 +188,7 @@ public class StudiesSearchResourceService {
                     return Response.status(Response.Status.OK).entity(getResponse).build();
                 }
             } else {
-                getResponse = new ResponseFormStudy(0, 0, studiesList, true);
+                getResponse = new ResponseFormStudies(0, 0, studiesList, true);
                 return noResultFound(getResponse, statusList);
             }
         }

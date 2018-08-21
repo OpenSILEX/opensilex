@@ -17,6 +17,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -34,9 +35,11 @@ import phis2ws.service.model.User;
 import phis2ws.service.utils.sql.JoinAttributes;
 import phis2ws.service.view.model.phis.Experiment;
 import phis2ws.service.view.model.phis.StudiesSearch;
+import phis2ws.service.view.model.phis.ContactBrapi;
 import phis2ws.service.dao.phis.ExperimentDao;
 import phis2ws.service.dao.sesame.AgronomicalObjectDAOSesame;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
+import phis2ws.service.view.model.phis.StudyDetails;
 
 
 /**
@@ -154,9 +157,6 @@ public class StudyDAO {
         daoSesame.getConnection();
         ArrayList<String> agroObjectsList = new ArrayList();
         for (String gp : germplasmDbIds){ 
-//            SPARQLQueryBuilder query = new SPARQLQueryBuilder();
-//            query.appendPrefix("p1", "<http://www.phenome-fppn.fr/vocabulary/2017#>");
-//            query.appendTriplet("?uri", "p1:fromVariety", gp, null);   
             String query = "Prefix p1:<http://www.phenome-fppn.fr/vocabulary/2017#>\n" +
             "Select ?uri\n" +
             "where {\n" +
@@ -194,13 +194,18 @@ public class StudyDAO {
                 query.appendJoin("INNER JOIN", "at_trial_project", "at","at.trial_uri=tr.uri");
             }
             query.appendANDWhereConditionIfNeeded(sqlFields.get("studyDbId"), studyDbId, "ILIKE", null, "tr");
-            if (observationVariableDbIds.size()>0 && observationVariableDbIds != null) {
-                ArrayList<String> studiesFromVar = getExpFromAgroObject(getAgroObjectFromVar(observationVariableDbIds));
-                query.appendINConditions(sqlFields.get("uri"), studiesFromVar, "tr");
+            
+            if (observationVariableDbIds != null) {
+                if (observationVariableDbIds.size()>0) {
+                    ArrayList<String> studiesFromVar = getExpFromAgroObject(getAgroObjectFromVar(observationVariableDbIds));
+                    query.appendINConditions(sqlFields.get("uri"), studiesFromVar, "tr");
+                }
             }
-            if (germplasmDbIds.size()>0) {
-                ArrayList<String> studiesFromGermplasm = getExpFromAgroObject(getAgroObjectsFromGermplasm(germplasmDbIds));
-                query.appendINConditions(sqlFields.get("uri"), studiesFromGermplasm, "tr");
+            if (germplasmDbIds != null) {
+                if (germplasmDbIds.size()>0) {
+                    ArrayList<String> studiesFromGermplasm = getExpFromAgroObject(getAgroObjectsFromGermplasm(germplasmDbIds));
+                    query.appendINConditions(sqlFields.get("uri"), studiesFromGermplasm, "tr");
+                }
             }
             
             query.appendANDWhereConditionIfNeeded(sqlFields.get("programDbId"), programDbId, "ILIKE", null, "at");
@@ -208,6 +213,20 @@ public class StudyDAO {
             if (commonCropName!=null){
                 query.appendANDWhereConditionIfNeeded(sqlFields.get("commonCropName"), "%"+commonCropName+"%","ILIKE", null, "tr");
             }
+            
+                       
+            if (active != null) {
+                if (query.where.length() > 0) {
+                    query.where = query.where + " AND ";
+                }
+                if (active) {
+                    query.where = query.where + "(tr.start_date<NOW() AND (tr.end_date>NOW() OR tr.end_date= null))"; 
+                } else {
+                    query.where = query.where + "(tr.start_date>NOW() OR tr.end_date<NOW())";    
+                }
+            }
+
+            
             query.appendOrderBy(sqlFields.get(sortBy), sortOrder);
             query.appendLimit(String.valueOf(limit));
             
@@ -247,6 +266,7 @@ public class StudyDAO {
             ArrayList<String> seasons = new ArrayList();
             seasons.add(exp.getCampaign());
             study.setSeasons(seasons);
+            study.setActive(active);
             studiesList.add(study);
         }
 
@@ -282,7 +302,7 @@ public class StudyDAO {
     }
     
     public ArrayList<StudiesSearch> completeStudies(ArrayList<StudiesSearch> studiesList) throws SQLException {
-        //add projects
+        //add projects name and id
         studiesList = getStudiesProjects(studiesList);
         //TODO : trialDBId, trialName, StudyType, LocationDbId, locationName        
         return studiesList;
@@ -293,10 +313,96 @@ public class StudyDAO {
         studiesList = completeStudies(studiesList);
         return studiesList;
     }  
+    
+    public ArrayList<StudyDetails> getStudyInfo() throws SQLException {
+        ArrayList<StudyDetails> studyInfoList = transformExptoStudyDetails();
+        studyInfoList = getStudyContacts(studyInfoList);
+        studyInfoList = getStudyActive(studyInfoList);
+        
+        return studyInfoList;        
+    }
 
     public Integer count(){
         ExperimentDao experimentDAO = new ExperimentDao();
         experimentDAO.uri = studyDbId;
         return experimentDAO.count();
+    }
+
+    
+    
+    private ArrayList<StudyDetails> transformExptoStudyDetails() {
+        ArrayList<StudyDetails> studyInfoList = new ArrayList();
+        ArrayList<Experiment> expList = getExperimentsList();
+                
+        for (Experiment exp : expList){
+            StudyDetails studyInfo = new StudyDetails();
+            studyInfo.setStudyDbId(exp.getUri());
+            studyInfo.setStudyName(exp.getAlias());
+            studyInfo.setStartDate(exp.getStartDate());
+            studyInfo.setEndDate(exp.getEndDate());
+            ArrayList<String> seasons = new ArrayList();
+            seasons.add(exp.getCampaign());
+            studyInfo.setSeasons(seasons);
+            studyInfoList.add(studyInfo);
+        }
+
+        return studyInfoList;
+    }
+
+    private ArrayList<StudyDetails> getStudyContacts(ArrayList<StudyDetails> studyInfoList) throws SQLException {
+        ExperimentDao experimentDAO = new ExperimentDao();      
+
+        try (final Connection connection = experimentDAO.getDataSource().getConnection();
+                final Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+            ) { 
+            for (StudyDetails study : studyInfoList) {
+                SQLQueryBuilder query = new SQLQueryBuilder();
+                query.appendSelect("u.email, u.first_name, u.family_name, tu.type, u.affiliation");
+                query.appendFrom("at_trial_users", "tu");
+                query.appendANDWhereConditionIfNeeded("trial_uri", study.getStudyDbId(), "=", null, "tu");
+                query.appendJoin(JoinAttributes.INNERJOIN, "users", "u", "u.email = tu.users_email");
+
+                ResultSet queryResult = statement.executeQuery(query.toString());
+                while (queryResult.next()) {
+                    ContactBrapi contact = new ContactBrapi();
+                    contact.setEmail(queryResult.getString("email"));
+                    String fullName = queryResult.getString("first_name") + " " + queryResult.getString("family_name");
+                    contact.setName(fullName);                
+                    contact.setType(queryResult.getString("type"));
+                    contact.setInstituteName(queryResult.getString("affiliation"));
+                    study.addContact(contact);
+                }
+            }
+        }
+        return studyInfoList;
+    }
+
+    private ArrayList<StudyDetails> getStudyActive(ArrayList<StudyDetails> studyInfoList) throws SQLException {
+        ExperimentDao experimentDAO = new ExperimentDao();
+        
+            try (final Connection connection = experimentDAO.getDataSource().getConnection();
+            final Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+            ) { 
+            for (StudyDetails study : studyInfoList) {
+                SQLQueryBuilder query = new SQLQueryBuilder();
+                query.appendSelect("t.uri, t.start_date, t.end_date");
+                query.appendFrom("trial", "t");
+                query.appendANDWhereConditionIfNeeded("uri", study.getStudyDbId(), "=", null, "t");
+
+                ResultSet queryResult = statement.executeQuery(query.toString());
+                while (queryResult.next()) {
+                    Timestamp startDate = queryResult.getTimestamp("start_date");
+                    Timestamp endDate = queryResult.getTimestamp("end_date");
+                    Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+                    if (startDate.compareTo(timestamp) <= 0  && (endDate==null | endDate.compareTo(timestamp) >= 0 )) {
+                        study.setActive(true);
+                    } else {
+                        study.setActive(false);                        
+                    }
+                }
+            }
+        }
+        return studyInfoList;
+        
     }
 }

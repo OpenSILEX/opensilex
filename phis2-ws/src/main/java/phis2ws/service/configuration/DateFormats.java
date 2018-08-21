@@ -42,6 +42,7 @@ public final class DateFormats {
     //Dates formats
     public final static String YMD_FORMAT = "yyyy-MM-dd";
     public final static String YMDHMSZ_FORMAT = "yyyy-MM-dd HH:mm:ssZ"; // To change to yyyy-MM-ddTHH:mm:ssZ see todo above 
+    public final static String YMDTHMSZ_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ"; // Resolve the todo but we need remove YMDHMSZ_FORMAT date format in the web service
     public final static String YMDHMS_FORMAT = "yyyy-MM-dd HH:mm:ss";
     
     //Timezones

@@ -69,12 +69,12 @@ public class AnnotationResourceService {
      * [
      *   {
      *     "motivatedBy": "http://www.w3.org/ns/oa#describing",
-     *     "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy",
+     *     "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy",
      *     "comments": [
      *       "commentary"
      *     ],
      *     "targets": [
-     *       "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy"
+     *       "http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy"
      *     ]
      *   }
      * ]
@@ -155,11 +155,11 @@ public class AnnotationResourceService {
      *      "result": { 
      *          "data": [ { 
      *              "uri": "http://www.phenome-fppn.fr/platform/id/annotation/8247af37-769c-495b-8e7e-78b1141176c2",
-     *              "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy",
+     *              "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy",
      *              "creationDate": "2018-06-22 14:54:42+0200",
      *              "comments": ["Ustilago maydis infection"],
      *          "targets": [
-     *              "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy" 
+     *              "http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy" 
      *            ] 
      *      },{...} )}}
      */
@@ -225,13 +225,13 @@ public class AnnotationResourceService {
      * "result": { 
      * "data": [ { 
      *   "uri": "http://www.phenome-fppn.fr/platform/id/annotation/8247af37-769c-495b-8e7e-78b1141176c2",
-     *   "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy",
+     *   "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy",
      *   "creationDate": "2018-06-22 14:54:42+0200",
      *   "comments": [
      *          "Ustilago maydis infection"
      *    ], 
      *    "targets": [ 
-     *      "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy" 
+     *      "http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy" 
      *    ] 
      * } ] } }
      */

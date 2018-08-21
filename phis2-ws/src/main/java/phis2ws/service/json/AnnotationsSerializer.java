@@ -48,11 +48,11 @@ public class AnnotationsSerializer implements JsonSerializer<Annotation> {
      * e.g. 
      * {
      *  "uri": "http://www.phenome-fppn.fr/platform/id/annotation/361ac1e4-dc5a-4fdb-95a3-3f65556b1d32",
-     *  "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy",
+     *  "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy",
      *  "motivatedBy": "http://www.w3.org/ns/oa#commenting",
      *  "creationDate": "2018-06-25T15:25:02+0200",
      *  "comments": [ "Ustilago maydis infection" ],
-     *  "targets": [ "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy" ] 
+     *  "targets": [ "http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy" ] 
      * }
      * SILEX:info 
      * The annotation json schema has been deciced according to the "Web Annotation Ontology".
@@ -69,7 +69,7 @@ public class AnnotationsSerializer implements JsonSerializer<Annotation> {
         annotationJson.add(MOTIVATION_LABEL, new JsonPrimitive(src.getMotivatedBy()));
 
         DateTime created = src.getCreated();
-        DateTimeFormatter formatter = DateTimeFormat.forPattern(DateFormats.YMDHMSZ_FORMAT);
+        DateTimeFormatter formatter = DateTimeFormat.forPattern(DateFormats.YMDTHMSZ_FORMAT);
         annotationJson.add(CREATED_LABEL, new JsonPrimitive(created.toString(formatter)));
         
         JsonArray bodyJsonArray = new JsonArray();

@@ -131,15 +131,15 @@ public class ResourcesUtils {
      * generates a new agent uri suffix.
      *
      * @param firstName .e.g Arnaud
-     * @param familiyName .e.g familiyName
-     * @return the agent suffix e.g. acharleroy
+     * @param familiyName .e.g Charleroy
+     * @return the agent suffix e.g. arnaud_charleroy
      */
     public static String createUserUriSuffix(String firstName, String familiyName) {
         String trimmedFirstName = firstName.trim();
         String trimmedFamilyName = familiyName.trim();
         String checkedFamilyName = trimmedFamilyName.replace(" ", "-");
         String checkedFirstName = trimmedFirstName.replace(" ", "-");
-        return checkedFirstName.toLowerCase().charAt(0) + checkedFamilyName.toLowerCase();
+        return checkedFirstName.toLowerCase() + "_" + checkedFamilyName.toLowerCase();
     }
 
 }

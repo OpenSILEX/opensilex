@@ -24,10 +24,10 @@ public class Annotation {
     // uri of this annotation eg.  http://www.phenome-fppn.fr/platform/id/annotation/8247af37-769c-495b-8e7e-78b1141176c2
     private String uri;
 
-    // Creation date of this annotation format yyyy-MM-dd HH:mm:ssZ eg. 2018-06-25 15:13:59+0200
+    // Creation date of this annotation format yyyy-MM-ddTHH:mm:ssZ eg. 2018-06-25T15:13:59+0200
     private DateTime created;
 
-    // creator of this annotations eg. http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy
+    // creator of this annotations eg. http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy
     private String creator;
 
     // Comments that describe this annotation eg. Ustilago maydis infection

@@ -31,7 +31,16 @@ import phis2ws.service.dao.sesame.VectorDAOSesame;
 /**
  * generate differents kinds of uris (vector, sensor, ...)
  *
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Morgane Vidal <morgane.vidal@inra.fr>, Arnaud Charleroy <arnaud.charleory@inra.fr>
+ * SILEX:todo : 
+ *       - Element: User agent uri
+ *         Purpose : For now, generated user agent uris are not unic. 
+ *         Numbers must be add at the end of user agent uri
+ *         if two user agents have the same family name and first name.
+ *         .e.g :
+ *              - First user : Jean Dupont-Marie http://www.phenome-fppn.fr/diaphen/id/agent/jean_dupont-marie
+ *              - Second user : Jean Dupont-Marie http://www.phenome-fppn.fr/diaphen/id/agent/jean_dupont-marie01
+ * \SILEX:todo
  */
 public class UriGenerator {
 
@@ -265,11 +274,11 @@ public class UriGenerator {
     /**
      * generates a new agent uri. a agent uri follows the pattern :
      * <prefix>:id/agent/<unic_code>
-     * <unic_code> = firstname first letter concat with lastname in lowercase
-     * e.g. http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy
+     * <unic_code> = firstnames concat with lastnames in lowercase
+     * e.g. http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy
      *
      * @author Arnaud Charleroy
-     * @param agentSuffixe the agent suffixe e.g. acharleroy
+     * @param agentSuffixe the agent suffixe e.g. arnaud_charleroy
      * @return the new agent uri
      */
     private String generateAgentUri(String agentSuffixe) {

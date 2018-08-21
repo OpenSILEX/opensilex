@@ -109,6 +109,7 @@ public final class DocumentationAnnotation {
 
     //Global examples
     public static final String EXAMPLE_DATETIME = "2017-06-15 10:51:00+0200";
+    public static final String EXAMPLE_XSDDATETIME = "2017-06-15T10:51:00+0200";
     public static final String EXAMPLE_DATE = "2017-06-15";
 
     //Specific examples
@@ -166,7 +167,7 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_USER_ORCID = "orcid";
     public static final String EXAMPLE_USER_ADMIN = "true";
     public static final String EXAMPLE_USER_AVAILABLE = "true";
-    public static final String EXAMPLE_USER_URI = "http://www.phenome-fppn.fr/diaphen/id/agent/mvidal";
+    public static final String EXAMPLE_USER_URI = "http://www.phenome-fppn.fr/diaphen/id/agent/morgane_vidal";
 
     public static final String EXAMPLE_DATA_INCERTITUDE = "0.4";
     public static final String EXAMPLE_DATA_VALUE = "3.0000000";
@@ -246,5 +247,5 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_ANNOTATION_TARGET = "http://www.phenome-fppn.fr/diaphen/id/variable/v0000001";
     public static final String EXAMPLE_ANNOTATION_MOTIVATEDBY = "http://www.w3.org/ns/oa#commenting";
     public static final String EXAMPLE_ANNOTATION_COMMENT = "Ustilago maydis infection";
-    public static final String EXAMPLE_ANNOTATION_CREATOR = "http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy";
+    public static final String EXAMPLE_ANNOTATION_CREATOR = "http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy";
 }

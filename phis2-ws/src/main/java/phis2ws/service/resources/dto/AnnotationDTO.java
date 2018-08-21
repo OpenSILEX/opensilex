@@ -34,7 +34,7 @@ public class AnnotationDTO extends AbstractVerifiedClass {
 
     // Is an uri that represents the author
     // of this annotations 
-    // e.g. http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy
+    // e.g. http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy
     @NotNull
     private String creator;
 

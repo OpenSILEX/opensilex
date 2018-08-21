@@ -86,7 +86,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
     public String bodyValue;
     public static final String BODY_VALUE = "bodyValue";
     public static final String BODY_VALUES = "bodyValues";
-    // creator of annotations eg. http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy
+    // creator of annotations eg. http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy
     public String creator;
     public static final String CREATOR = "creator";
     // uri that are annoted by one or multiple annotations  eg. http://www.phenome-fppn.fr/diaphen/2017/o1032481
@@ -184,7 +184,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
      * ?count) WHERE { 
      * ?uri <http://purl.org/dc/terms/creationDate> ?creationDate . 
      * ?uri <http://purl.org/dc/terms/creator>
-     * <http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy> . 
+     * <http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy> . 
      * ?uri <http://www.w3.org/ns/oa#motivatedBy> <http://www.w3.org/ns/oa#commenting> . 
      * ?uri <http://www.w3.org/ns/oa#bodyValue> ?bodyValue . 
      * FILTER (regex(STR(?bodyValue), 'Ustilago maydis infection', 'i') ) 
@@ -277,9 +277,9 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
      * generates an insert query for annotations. e.g. INSERT DATA {
      * <http://www.phenome-fppn.fr/platform/id/annotation/a2f9674f-3e49-4a02-8770-e5a43a327b37> rdf:type  <http://www.w3.org/ns/oa#Annotation> .
      * <http://www.phenome-fppn.fr/platform/id/annotation/a2f9674f-3e49-4a02-8770-e5a43a327b37> <http://purl.org/dc/terms/creationDate> "2018-06-22 15:18:13+0200"^^xsd:dateTime .
-     * <http://www.phenome-fppn.fr/platform/id/annotation/a2f9674f-3e49-4a02-8770-e5a43a327b37> <http://purl.org/dc/terms/creator> http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy> .
+     * <http://www.phenome-fppn.fr/platform/id/annotation/a2f9674f-3e49-4a02-8770-e5a43a327b37> <http://purl.org/dc/terms/creator> http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy> .
      * <http://www.phenome-fppn.fr/platform/id/annotation/a2f9674f-3e49-4a02-8770-e5a43a327b37> <http://www.w3.org/ns/oa#bodyValue> "Ustilago maydis infection" .
-     * <http://www.phenome-fppn.fr/platform/id/annotation/a2f9674f-3e49-4a02-8770-e5a43a327b37> <http://www.w3.org/ns/oa#hasTarget> <http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy> . 
+     * <http://www.phenome-fppn.fr/platform/id/annotation/a2f9674f-3e49-4a02-8770-e5a43a327b37> <http://www.w3.org/ns/oa#hasTarget> <http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy> . 
      * 
      * @param annotation
      * @return the query
@@ -289,7 +289,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
 
         query.appendGraphURI(TRIPLESTORE_CONTEXT_ANNOTATION);
         query.appendTriplet(annotation.getUri(), TRIPLESTORE_RELATION_TYPE, NAMESPACES.getObjectsProperty("cAnnotation"), null);
-        DateTimeFormatter formatter = DateTimeFormat.forPattern(DateFormats.YMDHMSZ_FORMAT);
+        DateTimeFormatter formatter = DateTimeFormat.forPattern(DateFormats.YMDTHMSZ_FORMAT);
         query.appendTriplet(annotation.getUri(), TRIPLESTORE_RELATION_CREATED, "\"" + annotation.getCreated().toString(formatter) + "\"^^xsd:dateTime", null);
         query.appendTriplet(annotation.getUri(), TRIPLESTORE_RELATION_CREATOR, annotation.getCreator(), null);
 
@@ -427,7 +427,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
             if (annotation.getUri() != null) {
                 // creationDate date
                 String creationDate = bindingSet.getValue(CREATED).stringValue();
-                DateTime stringToDateTime = Dates.stringToDateTimeWithGivenPattern(creationDate, DateFormats.YMDHMSZ_FORMAT);
+                DateTime stringToDateTime = Dates.stringToDateTimeWithGivenPattern(creationDate, DateFormats.YMDTHMSZ_FORMAT);
                 annotation.setCreated(stringToDateTime);
 
                 if (creator != null) {

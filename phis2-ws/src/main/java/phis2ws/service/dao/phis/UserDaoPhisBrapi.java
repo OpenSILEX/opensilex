@@ -728,17 +728,17 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
                     }
                     updatePreparedStatementUser.setString(8, u.getEmail());
                     updatePreparedStatementUser.execute();
-                    LOGGER.trace(log + " quert : " + updatePreparedStatementUser.toString());
+                    LOGGER.trace(log + " query : " + updatePreparedStatementUser.toString());
                     //Delete des liens user / group
                     deletePreparedStatementUserGroup.setString(1, u.getEmail());
                     deletePreparedStatementUserGroup.execute();
-                    LOGGER.trace(log + " quert : " + deletePreparedStatementUserGroup.toString());
+                    LOGGER.trace(log + " query : " + deletePreparedStatementUserGroup.toString());
 
                     if (u.getPassword() != null && !u.getPassword().equals("")) {
                         updatePreparedStatementUserPassword.setString(1, u.getPassword());
                         updatePreparedStatementUserPassword.setString(2, u.getEmail());
                         updatePreparedStatementUserPassword.execute();
-                        LOGGER.trace(log + " quert : " + updatePreparedStatementUserPassword.toString());
+                        LOGGER.trace(log + " query : " + updatePreparedStatementUserPassword.toString());
                     }
 
                     //Insert des nouveaux liens users / email

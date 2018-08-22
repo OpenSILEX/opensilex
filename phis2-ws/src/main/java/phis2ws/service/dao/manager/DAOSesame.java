@@ -190,7 +190,8 @@ public abstract class DAOSesame<T> {
     /**
      *
      * @param objectURI l'uri de l'objet recherché
-     * @return true si l'objet est dans le triplestore, false sinon
+     * @return true si l'objet est dans le triplestore
+     *         false sinon
      */
     public boolean existObject(String objectURI) {
         if (objectURI == null) {

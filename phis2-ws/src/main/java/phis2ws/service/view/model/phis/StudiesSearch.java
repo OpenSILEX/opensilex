@@ -2,6 +2,7 @@
 //                                       Study.java
 // SILEX-PHIS
 // Copyright © INRA 2018
+// Creation date: 22 août 2018
 // Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package phis2ws.service.view.model.phis;
@@ -9,8 +10,8 @@ package phis2ws.service.view.model.phis;
 import java.util.ArrayList;
 
 /**
- *
- * @author boizetal
+ * Represents the study format for the brapi/studies-search service response
+ * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class StudiesSearch {
     private String studyDbId;

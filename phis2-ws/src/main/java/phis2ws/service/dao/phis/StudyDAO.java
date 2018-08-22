@@ -2,6 +2,7 @@
 //                                       ${StudyDAO}
 // SILEX-PHIS
 // Copyright © INRA 2018
+// Creation date: 22 août 2018
 // Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 
@@ -38,9 +39,7 @@ import phis2ws.service.view.model.phis.StudiesSearch;
 import phis2ws.service.view.model.phis.ContactBrapi;
 import phis2ws.service.dao.phis.ExperimentDao;
 import phis2ws.service.dao.sesame.AgronomicalObjectDAOSesame;
-import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.model.phis.StudyDetails;
-
 
 /**
  * Get Experiments filtered by StudiesSearchResourceService fields and add 
@@ -49,13 +48,12 @@ import phis2ws.service.view.model.phis.StudyDetails;
  */
 public class StudyDAO {
     final static Logger LOGGER = LoggerFactory.getLogger(StudyDAO.class);
-    
     public String studyType; 
     public String trialDbId;
     public String programDbId;
     public String commonCropName;
     public String locationDbId;
-    public String seasonDbId;    
+    public String seasonDbId;   
     public String studyDbId;
     public List<String> germplasmDbIds;
     public List<String> observationVariableDbIds;
@@ -65,10 +63,10 @@ public class StudyDAO {
     public int page;
     public int limit;
     public User user;
-
+    
     public StudyDAO() {
     }
-    
+
     public StudyDAO(String studyDbId) {
         this.studyDbId = studyDbId;
     }
@@ -88,9 +86,11 @@ public class StudyDAO {
     public void setPage(int page) {
         this.page = page;
     }
- 
-    
-    //correspondance entre champs en base et champs de recherche du web service
+     
+    /**
+     * Correspondance between base fields and service research fields
+     * @return createSQLFields
+     */
     public Map<String, String> relationFieldsObject() {
         Map<String, String> createSQLFields = new HashMap<>();
         createSQLFields.put("studyDbId","uri");
@@ -102,6 +102,13 @@ public class StudyDAO {
                
         return createSQLFields;
     }
+
+    /**
+     * Retrieve Agronomical Objects URIs from a list of Variables URIs
+     * The association between agro objects uri and variables uris is in mongo base
+     * @param observationVariableDbIds list of variables uri
+     * @return agroObjectsList list of Agronomical Objects URIs
+     */
     public ArrayList<String> getAgroObjectFromVar(List<String> observationVariableDbIds) {
         MongoClient mongoClient = new MongoClient(
             new MongoClientURI(PropertiesFileManager.getConfigFileProperty("mongodb_nosql_config", "url")));
@@ -124,6 +131,12 @@ public class StudyDAO {
         return agroObjectsList;
     }
     
+    /**
+     * Retrieve Experiments URIs from a list of Agronomical Objects URI.
+     * The association between experiments uri and agronomical objects uris is in the agronomical_object table
+     * @param agroObjectsList list of agro objects uri
+     * @return studiesList list of experiment uris
+     */
     public ArrayList<String> getExpFromAgroObject(ArrayList<String> agroObjectsList) {
         ExperimentDao experimentDAO = new ExperimentDao();
         ArrayList<String> studiesList = new ArrayList(); 
@@ -150,7 +163,12 @@ public class StudyDAO {
         return studiesList;
     }
     
-    
+    /**
+     * Retrieve Agronomical Objects URIs from a list of Germplasm URIs
+     * The association between agro objects uri and germplasms uris is in RDF4j
+     * @param germplasmDbIds list of germplasm uri
+     * @return agroObjectsList list of Agronomical Objects URIs
+     */
     public ArrayList<String> getAgroObjectsFromGermplasm(List<String> germplasmDbIds) {
         //retrieve agro objects associated to germplasm (variety)
         AgronomicalObjectDAOSesame daoSesame= new AgronomicalObjectDAOSesame();
@@ -160,7 +178,7 @@ public class StudyDAO {
             String query = "Prefix p1:<http://www.phenome-fppn.fr/vocabulary/2017#>\n" +
             "Select ?uri\n" +
             "where {\n" +
-            " ?uri p1:fromVariety <http://www.phenome-fppn.fr/platform/v/variety4>\n" +
+            " ?uri p1:fromVariety <" + gp + ">\n" +
             "}";
             
             TupleQuery selectQuery = daoSesame.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query);
@@ -178,6 +196,10 @@ public class StudyDAO {
         return agroObjectsList;
     }
     
+    /**
+     * Collect a list of Experiment objects corresponding to the user research 
+     * @return expList list of Experiment
+     */
     public ArrayList<Experiment> getExperimentsList() {
         ExperimentDao experimentDAO = new ExperimentDao();
         ArrayList<Experiment> expList = new ArrayList();
@@ -188,13 +210,13 @@ public class StudyDAO {
             SQLQueryBuilder query = new SQLQueryBuilder();
             Map<String, String> sqlFields = relationFieldsObject();
             
-            //Ajout des conditions dans la requête
-            query.appendFrom("trial", "tr");
+            //SILEX:info
+            // Building the query
+            query.appendFrom("trial", "tr");            
             if (programDbId != null) {
                 query.appendJoin("INNER JOIN", "at_trial_project", "at","at.trial_uri=tr.uri");
-            }
+            }            
             query.appendANDWhereConditionIfNeeded(sqlFields.get("studyDbId"), studyDbId, "ILIKE", null, "tr");
-            
             if (observationVariableDbIds != null) {
                 if (observationVariableDbIds.size()>0) {
                     ArrayList<String> studiesFromVar = getExpFromAgroObject(getAgroObjectFromVar(observationVariableDbIds));
@@ -206,15 +228,12 @@ public class StudyDAO {
                     ArrayList<String> studiesFromGermplasm = getExpFromAgroObject(getAgroObjectsFromGermplasm(germplasmDbIds));
                     query.appendINConditions(sqlFields.get("uri"), studiesFromGermplasm, "tr");
                 }
-            }
-            
+            }            
             query.appendANDWhereConditionIfNeeded(sqlFields.get("programDbId"), programDbId, "ILIKE", null, "at");
             query.appendANDWhereConditionIfNeeded(sqlFields.get("seasonDbId"), seasonDbId,"ILIKE", null, "tr");
             if (commonCropName!=null){
                 query.appendANDWhereConditionIfNeeded(sqlFields.get("commonCropName"), "%"+commonCropName+"%","ILIKE", null, "tr");
-            }
-            
-                       
+            }          
             if (active != null) {
                 if (query.where.length() > 0) {
                     query.where = query.where + " AND ";
@@ -224,17 +243,15 @@ public class StudyDAO {
                 } else {
                     query.where = query.where + "(tr.start_date>NOW() OR tr.end_date<NOW())";    
                 }
-            }
-
-            
+            }            
             query.appendOrderBy(sqlFields.get(sortBy), sortOrder);
-            query.appendLimit(String.valueOf(limit));
+            query.appendLimit(String.valueOf(limit));            
+            //\SILEX:info
             
             try (final ResultSet queryResult = statement.executeQuery(query.toString())) {
                 UserDaoPhisBrapi userDao = new UserDaoPhisBrapi();
                 userDao.isAdmin(user);
                 boolean isAdmin = (user.getAdmin().equals("t") || user.getAdmin().equals("true"));
-                
 
                 while (queryResult.next()) {
                     //SILEX:access
@@ -244,16 +261,18 @@ public class StudyDAO {
                     }
                     //\SILEX:access
                 }
-            }
-            
+            }            
         } catch (SQLException ex) {
             java.util.logging.Logger.getLogger(StudyDAO.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
+        }        
         return expList;
     }
     
-    public ArrayList<StudiesSearch>  transformExptoStudy(){        
+    /**
+     * Transform the collected Experiments into a list of StudiesSearch objects
+     * @return studiesList list of StudiesSearch objects
+     */
+    private ArrayList<StudiesSearch>  transformExptoStudy(){        
         ArrayList<StudiesSearch> studiesList = new ArrayList();
         ArrayList<Experiment> expList = getExperimentsList();
                 
@@ -273,7 +292,13 @@ public class StudyDAO {
         return studiesList;
     }
     
-    public ArrayList<StudiesSearch> getStudiesProjects(ArrayList<StudiesSearch> studies) throws SQLException {
+    /**
+     * Collect the projects name and uri associated to the searched studies
+     * @param studies
+     * @return
+     * @throws SQLException
+     */
+    private ArrayList<StudiesSearch> getStudiesProjects(ArrayList<StudiesSearch> studies) throws SQLException {
         ExperimentDao experimentDAO = new ExperimentDao();      
 
         try (final Connection connection = experimentDAO.getDataSource().getConnection();
@@ -301,108 +326,138 @@ public class StudyDAO {
         return studies;
     }
     
-    public ArrayList<StudiesSearch> completeStudies(ArrayList<StudiesSearch> studiesList) throws SQLException {
+    /**
+     * Fill the StudiesSearchs missing attributes 
+     * @param studiesList
+     * @return
+     * @throws SQLException
+     */
+    private ArrayList<StudiesSearch> completeStudies(ArrayList<StudiesSearch> studiesList) throws SQLException {
         //add projects name and id
         studiesList = getStudiesProjects(studiesList);
-        //TODO : trialDBId, trialName, StudyType, LocationDbId, locationName        
+        //SILEX:todo
+        //add these information : trialDBId, trialName, StudyType, LocationDbId, locationName
+        //\SILEX:todo
         return studiesList;
     }
     
+    /**
+     * Fill all StudiesSearchs attributes
+     * @return studiesList list of StudiesSearch
+     * @throws SQLException
+     */
     public ArrayList<StudiesSearch> getStudiesList() throws SQLException {
         ArrayList<StudiesSearch> studiesList = transformExptoStudy();
         studiesList = completeStudies(studiesList);
         return studiesList;
     }  
     
-    public ArrayList<StudyDetails> getStudyInfo() throws SQLException {
-        ArrayList<StudyDetails> studyInfoList = transformExptoStudyDetails();
-        studyInfoList = getStudyContacts(studyInfoList);
-        studyInfoList = getStudyActive(studyInfoList);
-        
-        return studyInfoList;        
+    /**
+    * Fill all the StudyDetails attributes
+    * @return study the StudyDetails object corresponding to the study requested by the user
+    * @throws SQLException
+    */
+    public StudyDetails getStudyInfo() throws SQLException {
+        StudyDetails study = transformExptoStudyDetails();
+        if (study.getStudyDbId() != null) {
+            study = getStudyContacts(study);
+            study = getStudyActive(study); 
+            //SILEX : todo
+            //add these information : trialDBId, trialName, StudyType, StudyDescription, License, Location, Datalinks, lastupdate
+            //\SILEX:todo 
+        }
+        return study;        
     }
 
     public Integer count(){
         ExperimentDao experimentDAO = new ExperimentDao();
         experimentDAO.uri = studyDbId;
         return experimentDAO.count();
-    }
-
+    }    
     
-    
-    private ArrayList<StudyDetails> transformExptoStudyDetails() {
-        ArrayList<StudyDetails> studyInfoList = new ArrayList();
+    /**
+    * Transform the collected Experiments into a list of StudiesSearch objects
+    * @return studiesList list of StudiesSearch objects
+    */
+    private StudyDetails transformExptoStudyDetails() {
+        StudyDetails study = new StudyDetails();
+        
+        //SILEX : info
+        //retrieve a list of experiments based on the study URI, the study list has only one element;
         ArrayList<Experiment> expList = getExperimentsList();
-                
-        for (Experiment exp : expList){
-            StudyDetails studyInfo = new StudyDetails();
-            studyInfo.setStudyDbId(exp.getUri());
-            studyInfo.setStudyName(exp.getAlias());
-            studyInfo.setStartDate(exp.getStartDate());
-            studyInfo.setEndDate(exp.getEndDate());
+        //retrieve the requested study;
+        if (expList.size() > 0) {
+            Experiment exp = expList.get(0); 
+            study.setStudyDbId(exp.getUri());
+            study.setStudyName(exp.getAlias());
+            study.setStartDate(exp.getStartDate());
+            study.setEndDate(exp.getEndDate());
             ArrayList<String> seasons = new ArrayList();
             seasons.add(exp.getCampaign());
-            studyInfo.setSeasons(seasons);
-            studyInfoList.add(studyInfo);
+            study.setSeasons(seasons);
         }
-
-        return studyInfoList;
+        //\SILEX : info      
+        
+        return study;
     }
-
-    private ArrayList<StudyDetails> getStudyContacts(ArrayList<StudyDetails> studyInfoList) throws SQLException {
+    
+    /**
+    * Get the BrapiContacts of a StudyDetails
+    * @return study 
+    */
+    private StudyDetails getStudyContacts(StudyDetails study) throws SQLException {
         ExperimentDao experimentDAO = new ExperimentDao();      
 
         try (final Connection connection = experimentDAO.getDataSource().getConnection();
                 final Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-            ) { 
-            for (StudyDetails study : studyInfoList) {
-                SQLQueryBuilder query = new SQLQueryBuilder();
-                query.appendSelect("u.email, u.first_name, u.family_name, tu.type, u.affiliation");
-                query.appendFrom("at_trial_users", "tu");
-                query.appendANDWhereConditionIfNeeded("trial_uri", study.getStudyDbId(), "=", null, "tu");
-                query.appendJoin(JoinAttributes.INNERJOIN, "users", "u", "u.email = tu.users_email");
+            ) {             
+            SQLQueryBuilder query = new SQLQueryBuilder();
+            query.appendSelect("u.email, u.first_name, u.family_name, tu.type, u.affiliation");
+            query.appendFrom("at_trial_users", "tu");
+            query.appendANDWhereConditionIfNeeded("trial_uri", study.getStudyDbId(), "=", null, "tu");
+            query.appendJoin(JoinAttributes.INNERJOIN, "users", "u", "u.email = tu.users_email");
 
-                ResultSet queryResult = statement.executeQuery(query.toString());
-                while (queryResult.next()) {
-                    ContactBrapi contact = new ContactBrapi();
-                    contact.setEmail(queryResult.getString("email"));
-                    String fullName = queryResult.getString("first_name") + " " + queryResult.getString("family_name");
-                    contact.setName(fullName);                
-                    contact.setType(queryResult.getString("type"));
-                    contact.setInstituteName(queryResult.getString("affiliation"));
-                    study.addContact(contact);
-                }
-            }
+            ResultSet queryResult = statement.executeQuery(query.toString());
+            while (queryResult.next()) {
+                ContactBrapi contact = new ContactBrapi();
+                contact.setEmail(queryResult.getString("email"));
+                String fullName = queryResult.getString("first_name") + " " + queryResult.getString("family_name");
+                contact.setName(fullName);                
+                contact.setType(queryResult.getString("type"));
+                contact.setInstituteName(queryResult.getString("affiliation"));
+                study.addContact(contact);
+            }            
         }
-        return studyInfoList;
+        return study;
     }
 
-    private ArrayList<StudyDetails> getStudyActive(ArrayList<StudyDetails> studyInfoList) throws SQLException {
+    /**
+    * Fill the active attribute of a StudyDetails
+    * @return study 
+    */
+    private StudyDetails getStudyActive(StudyDetails study) throws SQLException {
         ExperimentDao experimentDAO = new ExperimentDao();
         
             try (final Connection connection = experimentDAO.getDataSource().getConnection();
             final Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-            ) { 
-            for (StudyDetails study : studyInfoList) {
-                SQLQueryBuilder query = new SQLQueryBuilder();
-                query.appendSelect("t.uri, t.start_date, t.end_date");
-                query.appendFrom("trial", "t");
-                query.appendANDWhereConditionIfNeeded("uri", study.getStudyDbId(), "=", null, "t");
+            ) {             
+            SQLQueryBuilder query = new SQLQueryBuilder();
+            query.appendSelect("t.uri, t.start_date, t.end_date");
+            query.appendFrom("trial", "t");
+            query.appendANDWhereConditionIfNeeded("uri", study.getStudyDbId(), "=", null, "t");
 
-                ResultSet queryResult = statement.executeQuery(query.toString());
-                while (queryResult.next()) {
-                    Timestamp startDate = queryResult.getTimestamp("start_date");
-                    Timestamp endDate = queryResult.getTimestamp("end_date");
-                    Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-                    if (startDate.compareTo(timestamp) <= 0  && (endDate==null | endDate.compareTo(timestamp) >= 0 )) {
-                        study.setActive(true);
-                    } else {
-                        study.setActive(false);                        
-                    }
+            ResultSet queryResult = statement.executeQuery(query.toString());
+            while (queryResult.next()) {
+                Timestamp startDate = queryResult.getTimestamp("start_date");
+                Timestamp endDate = queryResult.getTimestamp("end_date");
+                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+                if (startDate.compareTo(timestamp) <= 0  && (endDate==null | endDate.compareTo(timestamp) >= 0 )) {
+                    study.setActive(true);
+                } else {
+                    study.setActive(false);                        
                 }
-            }
+            }            
         }
-        return studyInfoList;
-        
+        return study;        
     }
 }

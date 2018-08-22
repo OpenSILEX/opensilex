@@ -1,13 +1,9 @@
 //******************************************************************************
 //                                       StudyDetails.java
-//
-// Author(s): boizetal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: 21 août 2018
-// Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  21 août 2018
-// Subject:
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Creation date: 22 août 2018
+// Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package phis2ws.service.view.model.phis;
 
@@ -15,8 +11,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- *
- * @author boizetal
+ * Represents the study format for the brapi/studies service response
+ * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class StudyDetails {
     private String studyDbId;
@@ -147,11 +143,11 @@ public class StudyDetails {
         this.contacts.add(contact);
     }
 
-    public ArrayList<DataLink> getDataLinks() {
+    public ArrayList<String> getDataLinks() {
         return dataLinks;
     }
 
-    public void setDataLinks(ArrayList<DataLink> dataLinks) {
+    public void setDataLinks(ArrayList<String> dataLinks) {
         this.dataLinks = dataLinks;
     }
 
@@ -169,8 +165,6 @@ public class StudyDetails {
 
     public void setAdditionalInfo(HashMap<String, String> additionalInfo) {
         this.additionalInfo = additionalInfo;
-    }
-
-    
+    }    
 }
 

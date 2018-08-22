@@ -240,4 +240,6 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_TOKEN_JWT_GRANTTYPE = "jwt";
     
     public static final String EXAMPLE_CALL_DATATYPE = "json";
+    
+    public static final String EXAMPLE_EXPERIMENT_CROP_SPECIES = "maize";
 }

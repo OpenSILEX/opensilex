@@ -2,10 +2,12 @@
 //                                       StudyDetailsResourceService.java
 // SILEX-PHIS
 // Copyright © INRA 2018
+// Creation date: 22 août 2018
 // Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package phis2ws.service.resources;
+package phis2ws.service.resources.brapi;
 
+import phis2ws.service.resources.brapi.StudiesSearchResourceService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -15,8 +17,6 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.List;
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -33,18 +33,38 @@ import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.ResponseFormStudyDetails;
+import phis2ws.service.view.model.phis.Call;
 import phis2ws.service.view.model.phis.StudyDetails;
-
-/**
- *
- * @author boizetal
- */
 
 @Api("/brapi/v1/studies")
 @Path("/brapi/v1/studies")
-public class StudyDetailsResourceService {
+
+/**
+ * StudyDetails service
+ * @author Alice Boizet <alice.boizet@inra.fr>
+ */
+public class StudyDetailsResourceService implements BrapiCall{
+    
     final static Logger LOGGER = LoggerFactory.getLogger(StudiesSearchResourceService.class);  
-    //Session de l'utilisateur
+    
+     /**
+     * Overriding BrapiCall method
+     * @date 27 Aug 2018
+     * @return Calls call information
+     */
+    @Override
+    public Call callInfo() {
+        ArrayList<String> calldatatypes = new ArrayList<>();
+        calldatatypes.add("json");
+        ArrayList<String> callMethods = new ArrayList<>();
+        callMethods.add("GET");
+        ArrayList<String> callVersions = new ArrayList<>();
+        callVersions.add("1.2");
+        Call callscall = new Call("studies", calldatatypes, callMethods, callVersions);
+        return callscall;
+    }
+    
+    //User session
     @SessionInject
     Session userSession;
     
@@ -65,12 +85,10 @@ public class StudyDetailsResourceService {
     
     @Produces(MediaType.APPLICATION_JSON)   
     
-     public Response getStudyDetails (
+    public Response getStudyDetails (
         @ApiParam(value = "Search by studyDbId", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI ) @QueryParam("studyDbId") String studyDbId
-        ) throws SQLException {
-               
+        ) throws SQLException {               
         
-        //a modifier
         StudyDAO studyDAO = new StudyDAO();
         
         if (studyDbId != null) {
@@ -78,15 +96,13 @@ public class StudyDetailsResourceService {
         }      
         
         studyDAO.limit=1;
-        
-
         studyDAO.user = userSession.getUser();
         
         return getStudyData(studyDAO);
         }
      
     private Response noResultFound(ResponseFormStudyDetails getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status("No results", StatusCodeMsg.INFO, "No results for the experiments"));
+        insertStatusList.add(new Status("No results", StatusCodeMsg.INFO, "This study doesn't exist"));
         getResponse.setStatus(insertStatusList);
         return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
     }
@@ -96,40 +112,22 @@ public class StudyDetailsResourceService {
          getResponse.setStatus(insertStatusList);
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(getResponse).build();
     }
-
      
      /**
-     * Collecte les données issues d'une requête de l'utilisateur (recherche d'expérimentations)
-     * @param experimentDao ExperimentDao
-     * @return la réponse pour l'utilisateur. 
-     *          Contient la liste des expérimentations correspondant à la recherche
+     * Collect data from a user query
+     * @param studyDao StudyDAO
+     * @return Response for the user: contains study corresponding to the query 
      */
     private Response getStudyData(StudyDAO studyDAO) throws SQLException{
-        ArrayList<StudyDetails> studiesList = new ArrayList<>();
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormStudyDetails getResponse;
-        Integer studiesCount = studyDAO.count();
-        
-        if (studiesCount != null && studiesCount == 0) {
-            getResponse = new ResponseFormStudyDetails(studyDAO.getPageSize(), studyDAO.getPage(), studiesList, true);
+        ResponseFormStudyDetails getResponse;    
+        StudyDetails study = studyDAO.getStudyInfo();
+        if (study.getStudyDbId() == null) {
+            getResponse = new ResponseFormStudyDetails(0, 0, study, true);
             return noResultFound(getResponse, statusList);
         } else {
-            studiesList = studyDAO.getStudyInfo();
-            if (studiesList == null) {
-              getResponse = new ResponseFormStudyDetails(0, 0, studiesList, true);
-              return sqlError(getResponse, statusList);
-            } else if (!studiesList.isEmpty() && studiesCount != null) {
-                getResponse = new ResponseFormStudyDetails(studyDAO.getPageSize(), studyDAO.getPage(), studiesList, false);
-                if (getResponse.getResult().dataSize() == 0) {
-                    return noResultFound(getResponse, statusList);
-                } else {
-                    getResponse.setStatus(statusList);
-                    return Response.status(Response.Status.OK).entity(getResponse).build();
-                }
-            } else {
-                getResponse = new ResponseFormStudyDetails(0, 0, studiesList, true);
-                return noResultFound(getResponse, statusList);
-            }
-        }
+            getResponse = new ResponseFormStudyDetails(0, 0, study, true);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
+        }        
     }
 }

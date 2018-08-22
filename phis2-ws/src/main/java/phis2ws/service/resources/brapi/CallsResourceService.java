@@ -34,7 +34,6 @@ import phis2ws.service.view.model.phis.Call;
 
 /**
  * Calls service
- *
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class CallsResourceService implements BrapiCall {
@@ -43,7 +42,6 @@ public class CallsResourceService implements BrapiCall {
 
     /**
      * Overriding BrapiCall method
-     *
      * @date 27 Aug 2018
      * @return Calls call information
      */
@@ -69,8 +67,6 @@ public class CallsResourceService implements BrapiCall {
      * @param datatype
      * @param limit
      * @param page
-     *
-     *
      * @return brapi calls list returns in "data" is like this : [ { call1
      * description }, { call2 description }, ]
      */
@@ -88,7 +84,7 @@ public class CallsResourceService implements BrapiCall {
     public Response getCalls(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
-            @ApiParam(value = "The data type supported by the call, example: json") @QueryParam("datatype") String datatype) {
+            @ApiParam(value = DocumentationAnnotation.CALL_DATATYPE_DEFINITION, example = DocumentationAnnotation.EXAMPLE_CALL_DATATYPE) @QueryParam("datatype") String datatype) {
 
         ArrayList<Status> statuslist = new ArrayList();
         ArrayList<Call> callsInfoList = new ArrayList();

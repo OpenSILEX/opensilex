@@ -15,14 +15,12 @@ import phis2ws.service.view.brapi.Status;
 
 /**
  * Formating the result of the request about Calls
- *
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class ResponseFormCall extends ResultForm<Call> {
 
     /**
      * Initialize metadata and result fields
-     *
      * @param pageSize number of results per page
      * @param currentPage requested page
      * @param list list of calls

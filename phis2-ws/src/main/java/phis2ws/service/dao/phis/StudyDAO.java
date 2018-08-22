@@ -285,7 +285,6 @@ public class StudyDAO {
             ArrayList<String> seasons = new ArrayList();
             seasons.add(exp.getCampaign());
             study.setSeasons(seasons);
-            study.setActive(active);
             studiesList.add(study);
         }
 
@@ -333,8 +332,9 @@ public class StudyDAO {
      * @throws SQLException
      */
     private ArrayList<StudiesSearch> completeStudies(ArrayList<StudiesSearch> studiesList) throws SQLException {
+        studiesList = getStudiesActive(studiesList);
         //add projects name and id
-        studiesList = getStudiesProjects(studiesList);
+        studiesList = getStudiesProjects(studiesList);        
         //SILEX:todo
         //add these information : trialDBId, trialName, StudyType, LocationDbId, locationName
         //\SILEX:todo
@@ -390,6 +390,7 @@ public class StudyDAO {
             Experiment exp = expList.get(0); 
             study.setStudyDbId(exp.getUri());
             study.setStudyName(exp.getAlias());
+            study.setStudyDescription(exp.getComment());
             study.setStartDate(exp.getStartDate());
             study.setEndDate(exp.getEndDate());
             ArrayList<String> seasons = new ArrayList();
@@ -412,7 +413,7 @@ public class StudyDAO {
                 final Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
             ) {             
             SQLQueryBuilder query = new SQLQueryBuilder();
-            query.appendSelect("u.email, u.first_name, u.family_name, tu.type, u.affiliation");
+            query.appendSelect("u.email, u.first_name, u.family_name, tu.type, u.affiliation, u.orcid");
             query.appendFrom("at_trial_users", "tu");
             query.appendANDWhereConditionIfNeeded("trial_uri", study.getStudyDbId(), "=", null, "tu");
             query.appendJoin(JoinAttributes.INNERJOIN, "users", "u", "u.email = tu.users_email");
@@ -425,6 +426,7 @@ public class StudyDAO {
                 contact.setName(fullName);                
                 contact.setType(queryResult.getString("type"));
                 contact.setInstituteName(queryResult.getString("affiliation"));
+                contact.setOrcid("orcid");
                 study.addContact(contact);
             }            
         }
@@ -459,5 +461,37 @@ public class StudyDAO {
             }            
         }
         return study;        
+    }
+    
+    /**
+    * Fill the active attribute of a StudySearch
+    * @return study 
+    */
+    private ArrayList<StudiesSearch> getStudiesActive(ArrayList<StudiesSearch> studies) throws SQLException {
+        ExperimentDao experimentDAO = new ExperimentDao();
+        
+            try (final Connection connection = experimentDAO.getDataSource().getConnection();
+            final Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+            ) {
+                for (StudiesSearch study : studies) {
+                    SQLQueryBuilder query = new SQLQueryBuilder();
+                    query.appendSelect("t.uri, t.start_date, t.end_date");
+                    query.appendFrom("trial", "t");
+                    query.appendANDWhereConditionIfNeeded("uri", study.getStudyDbId(), "=", null, "t");
+
+                    ResultSet queryResult = statement.executeQuery(query.toString());
+                    while (queryResult.next()) {
+                        Timestamp startDate = queryResult.getTimestamp("start_date");
+                        Timestamp endDate = queryResult.getTimestamp("end_date");
+                        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+                        if (startDate.compareTo(timestamp) <= 0  && (endDate == null | endDate.compareTo(timestamp) >= 0 )) {
+                            study.setActive(true);
+                        } else {
+                            study.setActive(false);                        
+                        }
+                    }
+                }
+            }        
+        return studies;        
     }
 }

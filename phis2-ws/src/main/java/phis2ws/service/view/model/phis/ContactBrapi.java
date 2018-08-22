@@ -1,19 +1,15 @@
 //******************************************************************************
 //                                       ContactBrapi.java
-//
-// Author(s): boizetal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: 21 août 2018
-// Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  21 août 2018
-// Subject:
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Creation date: 22 août 2018
+// Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package phis2ws.service.view.model.phis;
 
 /**
- *
- * @author boizetal
+ * Class which represents a study contact
+ * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class ContactBrapi {
     private String contactDbId;

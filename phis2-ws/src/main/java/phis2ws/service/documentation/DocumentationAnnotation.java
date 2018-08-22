@@ -100,9 +100,11 @@ public final class DocumentationAnnotation {
     
     public static final String RAW_DATA_POST_DATA_DEFINITION = "JSON format of raw data";
     
-    public static final String CONCEPT_URI_DEFINITION ="A concept URI (Unique Resource Identifier)";
+    public static final String CONCEPT_URI_DEFINITION = "A concept URI (Unique Resource Identifier)";
     public static final String DEEP ="true or false deppending if you want instances of concept progenity";
-
+    
+    public static final String CALL_DATATYPE_DEFINITION = "The data type supported by the call";
+    
     //Global examples
     public static final String EXAMPLE_DATETIME = "2017-06-15 10:51:00+0200";
     public static final String EXAMPLE_DATE = "2017-06-15";
@@ -233,8 +235,9 @@ public final class DocumentationAnnotation {
 
     public static final String EXAMPLE_WAS_GENERATED_BY_DOCUMENT = EXAMPLE_DOCUMENT_URI;
     public static final String EXAMPLE_WAS_GENERATED_BY_DESCRIPTION = "Phenoscript v1.3";
-    
-    
+        
     public static final String EXAMPLE_TOKEN_JWT_CLIENTID = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJQaGlzIiwic3ViIjoibW9yZ2FuZS52aWRhbEBpbnJhLmZyIiwiaWF0IjoxNTIwMjU5NjY5LCJleHAiOjE1MjM4NTYwNjl9.PjdxAb_U8fJaR6XwkNBa011XLFMM8psi0ym5VpfTV_fLkkIp6ZKFDOM-kTFAjNfPSR8tVUiU90pTkKSje9Ib9T629gA7Xw-8006smUL-n-ZIaQZ18mxzVb6jsVP6tOcJjjlucAmWZIhLIcT1e1KbOlBfToHpdRgOhDWkdkwENVc7n2TAcq-eLIJpcwQeDsCel7Ea2hssCxg4p8jCs68S43wg2mPTudTclW5_Q3HzKpf-DmPBFf6MMZmPtEAqi2aFfOoLp_8GDh92ywPOHJUdwvT9UkL87ELM7j5C8zrDE_CZAC-1IZdINE1KTTp36sScCJBsbm5DGLeIWF8g0e1vug";
     public static final String EXAMPLE_TOKEN_JWT_GRANTTYPE = "jwt";
+    
+    public static final String EXAMPLE_CALL_DATATYPE = "json";
 }

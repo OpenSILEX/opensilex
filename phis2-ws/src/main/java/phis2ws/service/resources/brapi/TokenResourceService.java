@@ -9,7 +9,7 @@
 // Last modification date:  March, 2018
 // Subject: Represents the token data service
 //***********************************************************************************************
-package phis2ws.service.resources;
+package phis2ws.service.resources.brapi;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSVerifier;
@@ -63,6 +63,7 @@ import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
 import phis2ws.service.view.brapi.form.ResponseUnique;
+import phis2ws.service.view.model.phis.Call;
 
 /**
  * REST Web Service
@@ -75,6 +76,7 @@ import phis2ws.service.view.brapi.form.ResponseUnique;
  * @author Samuël Chérimont
  * @date 26/11/2015
  * @update 03/08/2016 Ajout du JWT 03/2018 Update for jwt
+ * @update [Alice Boizet] 27 July, 2018 : override callInfo() to add token call description in the brapi calls service
  * @see https://jwt.io/introduction/
  * @see
  * http://connect2id.com/products/nimbus-jose-jwt/examples/jwt-with-rsa-signature
@@ -84,8 +86,8 @@ import phis2ws.service.view.brapi.form.ResponseUnique;
 //@PermitAll
 @Api(value = "/brapi/v1/token")
 @Path("brapi/v1/token")
-public class TokenResourceService {
-
+public class TokenResourceService implements BrapiCall{
+    
     final static Logger LOGGER = LoggerFactory.getLogger(TokenResourceService.class);
     static final Map<String, String> ISSUERS_PUBLICKEY;
     static final List<String> GRANTTYPE_AUTHORIZED = Collections.unmodifiableList(Arrays.asList("jwt", "password"));
@@ -100,6 +102,26 @@ public class TokenResourceService {
     //SILEX:conception
     // To keep jwt claimset information during the loggin
     private JWTClaimsSet jwtClaimsSet = null;
+    
+
+    /**Overriding BrapiCall method
+     * @date 27 July, 2018 
+     * @return Token call information
+     */
+    @Override
+    public Call callInfo(){
+        ArrayList<String> calldatatypes = new ArrayList<>();        
+        calldatatypes.add("json");        
+        ArrayList<String> callMethods = new ArrayList<>();  
+        callMethods.add("POST");
+        callMethods.add("DELETE");        
+        ArrayList<String> callVersions = new ArrayList<>();  
+        callVersions.add("1.1");
+        callVersions.add("1.2");    
+        Call tokencall = new Call("token",calldatatypes,callMethods,callVersions);
+        return tokencall;
+    }
+    
     //\SILEX:conception
 
     /**
@@ -404,5 +426,5 @@ public class TokenResourceService {
             statusList.add(new Status("JWT Error", StatusCodeMsg.ERR, ex.getMessage()));
         }
         return validJWTToken;
-    }
+    }   
 }

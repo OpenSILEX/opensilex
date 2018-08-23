@@ -1,13 +1,8 @@
 //******************************************************************************
 //                                       UriGenerator.java
-//
-// Author(s): Morgane Vidal <morgane.vidal@inra.fr>
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: 9 march 2018
+// SILEX-PHIS
+// Copyright © INRA 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  6 july 2018
-// Subject: class to generate differents kinds of uris (vector, sensor, ...)
 //******************************************************************************
 package phis2ws.service.utils;
 
@@ -72,19 +67,19 @@ public class UriGenerator {
      * generates a new vector uri. a vector uri has the following form :
      * <prefix>:<year>/<unic_code>
      * <unic_code> = 1 letter type + 2 numbers year + auto incremented number
-     * with 3 digits (per year) e.g.
-     * http://www.phenome-fppn.fr/diaphen/2017/v1702
-     *
+     * with 3 digits (per year)
+     * @example http://www.phenome-fppn.fr/diaphen/2017/v1702
      * @param year the insertion year of the vector.
      * @return the new vector uri
      */
     private String generateVectorUri(String year) {
         //1. get the actual number of vectors in the triplestor for the year
         VectorDAOSesame vectorDAO = new VectorDAOSesame();
-        int numberExistingVectors = vectorDAO.getNumberOfVectors(year);
+        int lastVectorIdFromYear = vectorDAO.getLastIdFromYear(year);
 
         //2. generates vectors uri
-        String numberOfVectors = Integer.toString(numberExistingVectors + 1);
+        String numberOfVectors = Integer.toString(lastVectorIdFromYear + 1);
+
         String newVectorNumber;
 
         if (numberOfVectors.length() == 1) {
@@ -101,8 +96,8 @@ public class UriGenerator {
      * <prefix>:<year>/<unic_code>
      * <unic_code> = 1 letter type + 2 numbers year + auto incremented number
      * with 2 digits (per year) the year corresponds to the year of insertion in
-     * the triplestore e.g. http://www.phenome-fppn.fr/diaphen/2017/s17002
-     *
+     * the triplestore
+     * @example http://www.phenome-fppn.fr/diaphen/2017/s17002
      * @param year the insertion year of the sensor.
      * @return the new sensor uri
      */
@@ -115,7 +110,6 @@ public class UriGenerator {
         int sensorNumber = lastSensorIdFromYear + 1;
         String numberOfSensors = Integer.toString(sensorNumber);
         String newSensorNumber;
-
         switch (numberOfSensors.length()) {
             case 1:
                 newSensorNumber = "00" + numberOfSensors;
@@ -127,7 +121,6 @@ public class UriGenerator {
                 newSensorNumber = numberOfSensors;
                 break;
         }
-
         return PLATFORM_URI + year + "/" + URI_CODE_SENSOR + year.substring(2, 4) + newSensorNumber;
     }
 
@@ -137,8 +130,8 @@ public class UriGenerator {
      * <prefix>:<year>/<unic_code>
      * <unic_code> = 1 letter type + 2 numbers year + auto incremented number
      * with 6 digits (per year) the year corresponds to the year of insertion in
-     * the triplestore e.g. http://www.phenome-fppn.fr/diaphen/2017/o17000001
-     *
+     * the triplestore 
+     * @example http://www.phenome-fppn.fr/diaphen/2017/o17000001
      * @param year the insertion year of the agronomical object.
      * @return the new agronomical object uri
      */
@@ -163,8 +156,7 @@ public class UriGenerator {
      * generates a new variable uri. a variable uri follows the pattern :
      * <prefix>:id/variables/<unic_code>
      * <unic_code> = 1 letter type + auto incremented number with 3 digits e.g.
-     * http://www.phenome-fppn.fr/diaphen/id/variables/v001
-     *
+     * @example http://www.phenome-fppn.fr/diaphen/id/variables/v001
      * @return the new variable uri
      */
     private String generateVariableUri() {
@@ -188,8 +180,7 @@ public class UriGenerator {
      * generates a new trait uri. a trait uri follows the pattern :
      * <prefix>:id/traits/<unic_code>
      * <unic_code> = 1 letter type + auto incremented number with 3 digits e.g.
-     * http://www.phenome-fppn.fr/diaphen/id/traits/t001
-     *
+     * @example http://www.phenome-fppn.fr/diaphen/id/traits/t001
      * @return the new trait uri
      */
     private String generateTraitUri() {
@@ -213,8 +204,7 @@ public class UriGenerator {
      * generates a new method uri. a method uri follows the pattern :
      * <prefix>:id/methods/<unic_code>
      * <unic_code> = 1 letter type + auto incremented number with 3 digits e.g.
-     * http://www.phenome-fppn.fr/diaphen/id/methods/m001
-     *
+     * @example http://www.phenome-fppn.fr/diaphen/id/methods/m001
      * @return the new method uri
      */
     private String generateMethodUri() {
@@ -238,8 +228,7 @@ public class UriGenerator {
      * generates a new unit uri. a unit uri follows the pattern :
      * <prefix>:id/units/<unic_code>
      * <unic_code> = 1 letter type + auto incremented number with 3 digits e.g.
-     * http://www.phenome-fppn.fr/diaphen/id/units/m001
-     *
+     * @example http://www.phenome-fppn.fr/diaphen/id/units/m001
      * @return the new unit uri
      */
     private String generateUnitUri() {
@@ -262,8 +251,7 @@ public class UriGenerator {
     /**
      * generates a new variety uri. a variety uri follows the pattern :
      * <prefix>:v/<varietynameinlowercase>
-     * e.g. http://www.phenome-fppn.fr/diaphen/v/dkc4814
-     *
+     * @example http://www.phenome-fppn.fr/diaphen/v/dkc4814
      * @param variety the variety name
      * @return the new variety uri
      */
@@ -309,8 +297,8 @@ public class UriGenerator {
      * generates a new image uri. an image uri follows the pattern :
      * <prefix>:yyyy/<unic_code>
      * <unic_code> = 1 letter type (i) + 2 digits year + auto incremet with 10
-     * digit e.g. http://www.phenome-fppn.fr/diaphen/2018/i180000000001
-     *
+     * digit
+     * @example http://www.phenome-fppn.fr/diaphen/2018/i180000000001
      * @param year the year of insertion of the image
      * @param lastGeneratedUri if a few uri has been generated but not inserted,
      * corresponds to the last generated uri

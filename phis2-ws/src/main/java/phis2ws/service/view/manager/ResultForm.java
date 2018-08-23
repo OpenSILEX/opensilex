@@ -23,20 +23,20 @@ import phis2ws.service.view.brapi.Status;
  *
  * @author Samuël Chérimont
  * @param <T> classe de spécification de la classe héritée
- * @see Resultat
+ * @see Result
  * @date 03/12/2015
  */
 public abstract class ResultForm<T> {
 
     protected Metadata metadata;
-    protected Resultat result;
+    protected Result result;
 
     /**
      * resultSize() - Récupère le nombre d'éléments de la liste data qui est
  un champ de result
      *
      * @return le nombre d'éléments de la liste
-     * @see Resultat
+     * @see Result
      * @date 04/12/2015
      */
     public int resultSize() {
@@ -47,7 +47,7 @@ public abstract class ResultForm<T> {
         return metadata;
     }
 
-    public Resultat getResult() {
+    public Result getResult() {
         return result;
     }
     

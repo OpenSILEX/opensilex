@@ -14,16 +14,16 @@ package phis2ws.service.view.brapi.form;
 import java.util.ArrayList;
 import phis2ws.service.view.brapi.Metadata;
 import phis2ws.service.view.brapi.Status;
-import phis2ws.service.view.brapi.results.ResultatDocumentType;
+import phis2ws.service.view.brapi.results.ResultDocumentType;
 import phis2ws.service.view.manager.ResultForm;
 
 public class ResponseFormDocumentType extends ResultForm<String> {
     public ResponseFormDocumentType(int pageSize, int currentPage, ArrayList<String> list, boolean paginate) {
         metadata = new Metadata(pageSize, currentPage, list.size());
         if (list.size() > 1) {
-            result = new ResultatDocumentType(list, metadata.getPagination(), paginate);
+            result = new ResultDocumentType(list, metadata.getPagination(), paginate);
         } else {
-            result = new ResultatDocumentType(list);
+            result = new ResultDocumentType(list);
         }
         
     }
@@ -31,36 +31,36 @@ public class ResponseFormDocumentType extends ResultForm<String> {
     public ResponseFormDocumentType(int pageSize, int currentPage, ArrayList<String> list, boolean paginate, Integer totalCount) {
         metadata = new Metadata(pageSize, currentPage, totalCount);
         if (list.size() > 1) {
-            result = new ResultatDocumentType(list, metadata.getPagination(), paginate);
+            result = new ResultDocumentType(list, metadata.getPagination(), paginate);
         } else {
-            result = new ResultatDocumentType(list);
+            result = new ResultDocumentType(list);
         }
     }
 
     public ResponseFormDocumentType(int pageSize, int currentPage, ArrayList<String> list, boolean paginate, Status status) {
         metadata = new Metadata(pageSize, currentPage, list.size(),status);
         if (list.size() > 1) {
-            result = new ResultatDocumentType(list, metadata.getPagination(), paginate);
+            result = new ResultDocumentType(list, metadata.getPagination(), paginate);
         } else {
-            result = new ResultatDocumentType(list);
+            result = new ResultDocumentType(list);
         }
     }
     
     public ResponseFormDocumentType(int pageSize, int currentPage, ArrayList<String> list, boolean paginate, ArrayList<Status> status) {
         metadata = new Metadata(pageSize, currentPage, list.size(),status);
         if (list.size() > 1) {
-            result = new ResultatDocumentType(list, metadata.getPagination(), paginate);
+            result = new ResultDocumentType(list, metadata.getPagination(), paginate);
         } else {
-            result = new ResultatDocumentType(list);
+            result = new ResultDocumentType(list);
         }
     }
 
     public ResponseFormDocumentType(int pageSize, int currentPage, ArrayList<String> list, boolean paginate, Integer totalCount, ArrayList<Status> status) {
         metadata = new Metadata(pageSize, currentPage, totalCount,status);
         if (list.size() > 1) {
-            result = new ResultatDocumentType(list, metadata.getPagination(), paginate);
+            result = new ResultDocumentType(list, metadata.getPagination(), paginate);
         } else {
-            result = new ResultatDocumentType(list);
+            result = new ResultDocumentType(list);
         }
     }
 }

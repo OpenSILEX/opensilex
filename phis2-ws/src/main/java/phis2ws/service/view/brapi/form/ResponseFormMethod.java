@@ -13,7 +13,7 @@ package phis2ws.service.view.brapi.form;
 
 import java.util.ArrayList;
 import phis2ws.service.view.brapi.Metadata;
-import phis2ws.service.view.brapi.results.ResultatMethod;
+import phis2ws.service.view.brapi.results.ResultMethod;
 import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Method;
 
@@ -28,9 +28,9 @@ public class ResponseFormMethod extends ResultForm<Method> {
     public ResponseFormMethod(int pageSize, int currentPage, ArrayList<Method> list, boolean paginate) {
         metadata = new Metadata(pageSize, currentPage, list.size());
         if (list.size() > 1) {
-            result = new ResultatMethod(list, metadata.getPagination(), paginate);
+            result = new ResultMethod(list, metadata.getPagination(), paginate);
         } else {
-            result = new ResultatMethod(list);
+            result = new ResultMethod(list);
         }
     }
 }

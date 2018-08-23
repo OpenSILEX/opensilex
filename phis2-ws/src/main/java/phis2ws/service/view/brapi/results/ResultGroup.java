@@ -1,8 +1,8 @@
 //**********************************************************************************************
-//                                       ResultDataset.java 
+//                                       ResultGroup.java 
 // SILEX-PHIS
 // Copyright © INRA 2017
-// Creation date: October, 18 2017
+// Creation date: April 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //***********************************************************************************************
 package phis2ws.service.view.brapi.results;
@@ -10,31 +10,32 @@ package phis2ws.service.view.brapi.results;
 import java.util.ArrayList;
 import phis2ws.service.view.brapi.Pagination;
 import phis2ws.service.view.manager.Result;
-import phis2ws.service.view.model.phis.Dataset;
+import phis2ws.service.view.model.phis.Group;
 
 /**
- * A class which represents the result part in the response form, adapted to the 
- * dataset
+ * A class which represents the result part in the response form, adapted to the
+ * groups.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class ResultDataset extends Result<Dataset> {
+public class ResultGroup extends Result<Group> {
     /**
      * Constructor which calls the mother-class constructor in the case of a
      * list with only 1 element
-     * @param datasets 
+     * @param groups 
      */
-    public ResultDataset(ArrayList<Dataset> datasets) {
-        super(datasets);
+    public ResultGroup(ArrayList<Group> groups) {
+        super(groups);
     }
     
     /**
      * Contructor which calls the mother-class constructor in the case of a
      * list with several elements
-     * @param datasets
+     * @param groups
      * @param pagination
      * @param paginate 
      */
-    public ResultDataset(ArrayList<Dataset> datasets, Pagination pagination, boolean paginate) {
-        super(datasets, pagination, paginate);
+    public ResultGroup(ArrayList<Group> groups, Pagination pagination, boolean paginate) {
+        super(groups, pagination, paginate);
     }
 }
+

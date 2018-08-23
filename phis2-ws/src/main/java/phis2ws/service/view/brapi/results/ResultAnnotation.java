@@ -13,14 +13,14 @@ package phis2ws.service.view.brapi.results;
 
 import java.util.ArrayList;
 import phis2ws.service.view.brapi.Pagination;
-import phis2ws.service.view.manager.Resultat;
+import phis2ws.service.view.manager.Result;
 import phis2ws.service.view.model.phis.Annotation;
 
 /**
  * A class which represents the result part in the response form, adapted to the annotation
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
-public class ResultAnnotation extends Resultat<Annotation> {
+public class ResultAnnotation extends Result<Annotation> {
     /**
      * @param annotations the annotations of the result 
      */

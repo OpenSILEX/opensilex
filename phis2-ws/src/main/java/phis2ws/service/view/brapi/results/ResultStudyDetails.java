@@ -8,7 +8,7 @@
 package phis2ws.service.view.brapi.results;
 
 import java.util.ArrayList;
-import phis2ws.service.view.manager.Resultat;
+import phis2ws.service.view.manager.Result;
 import phis2ws.service.view.model.phis.StudyDetails;
 
 /**
@@ -16,7 +16,7 @@ import phis2ws.service.view.model.phis.StudyDetails;
  * StudyDetails
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
-public class ResultStudyDetails extends Resultat<StudyDetails> {
+public class ResultStudyDetails extends Result<StudyDetails> {
      /**
      * Constructor which calls the mother-class constructor
      * @param study  the study to detail

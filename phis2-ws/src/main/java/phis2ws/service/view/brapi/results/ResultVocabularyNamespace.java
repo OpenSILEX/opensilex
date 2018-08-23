@@ -13,14 +13,14 @@ package phis2ws.service.view.brapi.results;
 
 import java.util.ArrayList;
 import phis2ws.service.view.brapi.Pagination;
-import phis2ws.service.view.manager.Resultat;
+import phis2ws.service.view.manager.Result;
 import phis2ws.service.view.model.phis.Namespace;
 
 /**
  * A class which represents the result part in the response form, adapted to the vocabulary namespace
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
-public class ResultVocabularyNamespace extends Resultat<Namespace> {
+public class ResultVocabularyNamespace extends Result<Namespace> {
     
     /**
      * @param properties the namespaces of the result 

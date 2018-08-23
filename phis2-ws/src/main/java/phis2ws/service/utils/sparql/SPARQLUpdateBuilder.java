@@ -29,6 +29,10 @@ public class SPARQLUpdateBuilder extends SPARQLStringBuilder {
         add = "";
     }
 
+    /**
+     * Specifiy a particular graph
+     * @param graph 
+     */
     public void appendGraphURI(String graph) {
         if (graph != null) {
             if (graph.contains("<") && graph.contains(">")) {
@@ -37,7 +41,6 @@ public class SPARQLUpdateBuilder extends SPARQLStringBuilder {
             this.graph += "GRAPH <" + graph + "> { ";
         }
     }
-    
     
     public void appendUpdateWhereTriplet(String subject, String predicate, String object, Boolean semicolon) {
         if (whereBody.length() > 0) {

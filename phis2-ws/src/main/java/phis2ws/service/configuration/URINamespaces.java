@@ -44,9 +44,12 @@ public class URINamespaces {
     public static final Map<String, String> USER_SPECIFIC_NAMESPACES;
     static {
         Map<String, String> temporaryMap = new HashMap<>();
-        String plateform = PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "platform");
+        //SILEX:info
+        // Uncomment if you want to add other namespace
+        // String plateform = PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "platform");
         // Can put multiple other namespaces
-        temporaryMap.put("platform", "http://www.phenome-fppn.fr/" + plateform);
+        // temporaryMap.put("platform", "http://www.phenome-fppn.fr/" + plateform);
+        //\SILEX:info
         USER_SPECIFIC_NAMESPACES = Collections.unmodifiableMap(temporaryMap);
     }
 
@@ -132,7 +135,7 @@ public class URINamespaces {
         CONTEXTS.put("variables", CONTEXTS.get("pxPlatform") + "/variables");
         CONTEXTS.put("vectors", CONTEXTS.get("pxPlatform") + "/vectors");
         CONTEXTS.put("sensors", CONTEXTS.get("pxPlatform") + "/sensors");
-        CONTEXTS.put("annotations", CONTEXTS.get("pxPlatform") + "/annotations");
+        CONTEXTS.put("annotations", CONTEXTS.get("pxPlatform") + "/set/annotation");
     }
 
     private void setNamespaces() {

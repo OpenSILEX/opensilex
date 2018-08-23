@@ -1,13 +1,9 @@
 //******************************************************************************
-//                                       AnnotationDAOSesame.java
-//
-// Author(s): Arnaud Charleroy <arnaud.charleroy@inra.fr>
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: 14 juin 2018
+//                            AnnotationDAOSesame.java
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Creation date: 14 Jun, 2018
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  21 juin 2018
-// Subject: This class manages operation on annotations in database
 //******************************************************************************
 package phis2ws.service.dao.sesame;
 
@@ -45,8 +41,8 @@ import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.Annotation;
 
 /**
- * This class is a DAO for annotation
- *
+ * This class is a DAO for annotation.
+ * This class manages operation on annotations in database.
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class AnnotationDAOSesame extends DAOSesame<Annotation> {
@@ -65,6 +61,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
     final static String TRIPLESTORE_RELATION_MOTIVATED_BY = NAMESPACES.getRelationsProperty("rMotivatedBy");
     final static String TRIPLESTORE_CONCEPT_ANNOTATION = NAMESPACES.getObjectsProperty("cAnnotation");
     final static String TRIPLESTORE_CONCEPT_MOTIVATION = NAMESPACES.getObjectsProperty("cMotivation");
+    
     // Search parameters
     // uri of an annotation eg.  http://www.phenome-fppn.fr/platform/id/annotation/8247af37-769c-495b-8e7e-78b1141176c2
     public String uri;
@@ -154,10 +151,8 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
         if (bodyValue != null) {
             query.appendFilter("regex(STR(?" + BODY_VALUE + "), '" + bodyValue + "', 'i')");
         }
-        
         query.appendLimit(this.getPageSize());
         query.appendOffset(this.getPage()* this.getPageSize());
-        
         LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
         return query;
     }
@@ -189,11 +184,11 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
      * data before to send it to the client) 
      * SELECT (count(distinct ?uri) as ?count) 
      * WHERE { 
-     * ?uri <http://purl.org/dc/terms/creationDate> ?creationDate . 
-     * ?uri <http://purl.org/dc/terms/creator>
-     * <http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy> . 
-     * ?uri <http://www.w3.org/ns/oa#motivatedBy> <http://www.w3.org/ns/oa#commenting> . 
-     * ?uri <http://www.w3.org/ns/oa#bodyValue> ?bodyValue . 
+     *     ?uri <http://purl.org/dc/terms/creationDate> ?creationDate . 
+     *     ?uri <http://purl.org/dc/terms/creator>
+     *     <http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy> . 
+     *     ?uri <http://www.w3.org/ns/oa#motivatedBy> <http://www.w3.org/ns/oa#commenting> . 
+     *     ?uri <http://www.w3.org/ns/oa#bodyValue> ?bodyValue . 
      * FILTER (regex(STR(?bodyValue), 'Ustilago maydis infection', 'i') ) 
      * }
      *
@@ -391,13 +386,11 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
         SPARQLQueryBuilder query = prepareSearchQuery();
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         ArrayList<Annotation> annotations = new ArrayList<>();
-
         // Retreive all informations
         // for each uri
         try (TupleQueryResult resultAnnotationUri = tupleQuery.evaluate()) {
             annotations = getAnnotationsFromResult(resultAnnotationUri);
         }
-
         LOGGER.debug(JsonConverter.ConvertToJson(annotations));
         return annotations;
     }

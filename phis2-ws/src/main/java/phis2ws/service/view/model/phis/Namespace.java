@@ -53,5 +53,4 @@ public class Namespace implements Comparable<Namespace>{
     public int compareTo(Namespace namespaceCompared) {
         return this.getPrefix().compareTo(namespaceCompared.getPrefix());
     }
-
 }

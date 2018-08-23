@@ -1,21 +1,18 @@
-//**********************************************************************************************
-//                                       DateFormats.java 
-//
-// Author(s): Arnaud Charleroy
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2016
-// Creation date: august 2016
-// Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  February, 05 2018 - add constants 
-// Subject: Dates formats used in the WS
-//***********************************************************************************************
+//******************************************************************************
+//                           DateFormats.java
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Creation date: 6 Aug, 2017
+// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package phis2ws.service.configuration;
 
 import java.util.Arrays;
 import java.util.List;
 
 /**
- * contains the date formats used in the web service
+ * Dates formats used in the WS.
+ * Contains the date formats used in the web service.
  * @author Arnaud Charleroy
  * SILEX:todo : - Element: Datetime
  *         Attribute : YMDHMSZ_FORMAT
@@ -26,7 +23,6 @@ import java.util.List;
  * \SILEX:todo
  */
 public final class DateFormats {
-
     
     public final static String DATETIME_MONGO_MEASURE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSSZZ";
     public final static String DATETIME_JSON_SERIALISATION_FORMAT = "yyyy-MM-dd HH:mm:ssZZ";

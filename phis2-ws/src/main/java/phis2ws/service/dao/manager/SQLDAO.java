@@ -38,7 +38,6 @@ import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.postgis.Geometry;
-import org.postgresql.util.PGobject;
 import phis2ws.service.authentication.TokenManager;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.dao.datasource.DataSourceDAOPhisBrapi;
@@ -339,7 +338,6 @@ public abstract class SQLDAO<T> extends DAO<T> {
                     field.setAccessible(true);
                     if (objectFields.containsKey(field.getName())
                             && rs.getObject(objectFields.get(field.getName())) != null) {
-
                         if (rs.getObject(objectFields.get(field.getName())) instanceof Date) {
                             if (field.getType() == String.class) {
                                 LocalDate fromDateFields = LocalDate.fromDateFields((Date) rs.getObject(objectFields.get(field.getName())));
@@ -348,7 +346,6 @@ public abstract class SQLDAO<T> extends DAO<T> {
                                 Timestamp ts = new Timestamp(((Date) rs.getObject(objectFields.get(field.getName()))).getTime());
                                 field.set(obj, new DateTime(ts));
                             }
-
                         } else if (rs.getObject(objectFields.get(field.getName())) instanceof Geometry) {
                             if (field.getType() == String.class) {
                                 field.set(obj, field.toString());
@@ -426,9 +423,7 @@ public abstract class SQLDAO<T> extends DAO<T> {
             if (con != null) {
                 con.close();
             }
-
         }
-
     }
 
     /**
@@ -498,7 +493,6 @@ public abstract class SQLDAO<T> extends DAO<T> {
                     }
                 }
             }
-
         } catch (SecurityException | IllegalArgumentException | IllegalAccessException ex) {
             LOGGER.error(ex.getMessage(), ex);
             return null;

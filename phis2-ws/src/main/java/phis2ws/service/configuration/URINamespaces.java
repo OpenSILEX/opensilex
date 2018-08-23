@@ -1,19 +1,10 @@
-//**********************************************************************************************
-//                                       URINamespaces.java from uris.php
-//
-// Author(s): Isabelle NEMBROT, Arnaud Charleroy, Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2016
-// Creation date: august 2016
-// Contact:i.nembrot@laposte.net, arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  July, 2018 (add custom users namespace, ex : e.g. platform => http://www.phenome-fppn.fr/platform/)
-// Subject: personal parameters for global usage
-// G_URI :
-// - M3P URI for further use so that we don"t need to repeat paths in each page
-// Usage :
-// ~~~~~~ URINamespaces uris = new URINamespaces("m3p");
-// ~~~~~~ String vocabulary = URINamespaces.getContextsProperty("pVocaPlateform")
-//***********************************************************************************************
+//******************************************************************************
+//                            URINamespaces.java
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Creation date: 6 Aug, 2017
+// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package phis2ws.service.configuration;
 
 import java.util.Collections;
@@ -22,10 +13,15 @@ import java.util.Map;
 import phis2ws.service.PropertiesFileManager;
 
 /**
- * Permet de creer des URI de concepts, objets et relation entre objets et
- * proprietes en fonction pour une platform
- *
- * @author Arnaud Charleroy
+ * Personal parameters for global usage.
+ * G_URI :
+ *      - M3P URI for further use so that we don"t need to repeat paths in each page
+ * Usage :
+ * ~~~~~~ URINamespaces uris = new URINamespaces("m3p");
+ * ~~~~~~ String vocabulary = URINamespaces.getContextsProperty("pVocaPlateform"
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * @author Isabelle Nembrot <i.nembrot@laposte.net>
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class URINamespaces {
 

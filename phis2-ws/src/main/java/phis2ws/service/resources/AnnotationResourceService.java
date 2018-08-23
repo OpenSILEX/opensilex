@@ -1,13 +1,9 @@
 //******************************************************************************
-//                                       AnnotationResourceService.java
-//
-// Author(s): Arnaud Charleroy <arnaud.charleroy@inra.fr>
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: 21 june 2018
+//                            AnnotationResourceService.java
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Creation date: 21 Jun, 2018
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  19 july 2018
-// Subject: Represents the annotation service.
 //******************************************************************************
 package phis2ws.service.resources;
 
@@ -52,8 +48,8 @@ import phis2ws.service.view.model.phis.Annotation;
 
 /**
  * Represents the annotation service.
- *
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * @update [Arnaud Charleroy] 23 August, 2018 : update coding style.
  */
 @Api("/annotations")
 @Path("/annotations")
@@ -104,7 +100,6 @@ public class AnnotationResourceService {
             @Context HttpServletRequest context) {
 
         AbstractResultForm postResponse = null;
-
         //If there are at least one list of annotations
         if (annotations != null && !annotations.isEmpty()) {
             AnnotationDAOSesame annotationDAOSesame = new AnnotationDAOSesame();
@@ -114,7 +109,6 @@ public class AnnotationResourceService {
             annotationDAOSesame.user = userSession.getUser();
 
             POSTResultsReturn insertResult = annotationDAOSesame.checkAndInsert(annotations);
-
             //annotations inserted
             if (insertResult.getHttpStatus().equals(Response.Status.CREATED)) {
                 postResponse = new ResponseFormPOST(insertResult.statusList);
@@ -133,8 +127,6 @@ public class AnnotationResourceService {
 
     /**
      * search annotation by uri, creator, comment, date of creation, target
-     *
-     *
      * @param pageSize
      * @param page
      * @param uri
@@ -184,7 +176,7 @@ public class AnnotationResourceService {
     public Response getAnnotationsBySearch(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int pageSize,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
-            @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_URI) @QueryParam("uri") String uri,
+            @ApiParam(value = "Search by annotation uri", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_URI) @QueryParam("uri") String uri,
             @ApiParam(value = "Search by creator", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_CREATOR) @QueryParam("creator") String creator,
             @ApiParam(value = "Search by motivation", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_MOTIVATEDBY) @QueryParam("motivatedBy") String motivatedBy,
             @ApiParam(value = "Search by comment", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_COMMENT) @QueryParam("comment") String comment,

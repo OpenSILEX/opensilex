@@ -1,13 +1,9 @@
 //******************************************************************************
-//                                       VocabularyDAOSesame.java
-//
-// Author(s): Morgane Vidal <morgane.vidal@inra.fr>
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: 18 juin 2018
-// Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  18 juin 2018
-// Subject: dao to get the vocabulary (and add data) of the phis instance
+//                            VocabularyDAOSesame.java
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Creation date: 18 Jun, 2018
+// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package phis2ws.service.dao.sesame;
 
@@ -30,9 +26,9 @@ import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.model.phis.Namespace;
 
 /**
- * dao to get the vocabulary (and add data) of the phis instance
- *
+ * Dao to get the vocabulary (and add data) of the phis instance
  * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class VocabularyDAOSesame extends DAOSesame<Object> {
 
@@ -102,9 +98,7 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendSelect("?" + PROPERTY);
         query.appendTriplet("?" + PROPERTY, TRIPLESTORE_RELATION_SUBPROPERTY_OF_MULTIPLE, TRIPLESTORE_RELATION_HAS_CONTACT, null);
-
         LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
-
         return query;
     }
 
@@ -121,9 +115,7 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendSelect("?" + PROPERTY);
         query.appendTriplet("?" + PROPERTY, TRIPLESTORE_RELATION_SUBPROPERTY_OF_MULTIPLE, TRIPLESTORE_RELATION_DEVICE_PROPERTY, null);
-
         LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
-
         return query;
     }
 
@@ -148,7 +140,6 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
                 return true;
             }
         }
-
         return false;
     }
 
@@ -168,7 +159,6 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
         uriDao.uri = propertyUri;
         property.setLabels(uriDao.getLabels().asMap());
         property.setComments(uriDao.getComments().asMap());
-
         return property;
     }
 
@@ -196,7 +186,6 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
                 }
             }
         }
-
         return properties;
     }
 
@@ -224,7 +213,6 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
                 }
             }
         }
-
         return properties;
     }
 
@@ -259,7 +247,6 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
         
         // Sort list after addition of specific concepts (order namespace)
         Collections.sort(namespacesList);
-        
         return namespacesList;
     }
 }

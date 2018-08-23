@@ -92,7 +92,6 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
             String query = "SELECT password FROM users WHERE email = '" + email + "'";
             stat = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
             result = stat.executeQuery(query);
-
             while (result.next()) {
                 return result.getString("password");
             }

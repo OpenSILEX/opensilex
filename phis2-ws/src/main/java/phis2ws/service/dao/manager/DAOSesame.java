@@ -183,7 +183,6 @@ public abstract class DAOSesame<T> {
                 exist = true;
             }
         }
-//        LOGGER.trace(query.toString());
         return exist;
     }
 
@@ -211,7 +210,6 @@ public abstract class DAOSesame<T> {
         } catch (Exception e) {
             return false;
         }
-
         return false;
     }
 
@@ -271,7 +269,6 @@ public abstract class DAOSesame<T> {
         if (user != null) {
             log += "User : " + user.getEmail() + " - ";
         }
-
         return log;
     }
 

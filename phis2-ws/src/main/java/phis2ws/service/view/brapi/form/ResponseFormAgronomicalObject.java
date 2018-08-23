@@ -15,7 +15,7 @@ package phis2ws.service.view.brapi.form;
 
 import java.util.ArrayList;
 import phis2ws.service.view.brapi.Metadata;
-import phis2ws.service.view.brapi.results.ResultatAgronomicalObject;
+import phis2ws.service.view.brapi.results.ResultAgronomicalObject;
 import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.AgronomicalObject;
 
@@ -31,9 +31,9 @@ public class ResponseFormAgronomicalObject  extends ResultForm<AgronomicalObject
     public ResponseFormAgronomicalObject(int pageSize, int currentPage, ArrayList<AgronomicalObject> list, boolean paginate) {
         metadata = new Metadata(pageSize, currentPage, list.size());
         if (list.size() > 1) {
-            result = new ResultatAgronomicalObject(list, metadata.getPagination(), paginate);
+            result = new ResultAgronomicalObject(list, metadata.getPagination(), paginate);
         } else {
-            result = new ResultatAgronomicalObject(list);
+            result = new ResultAgronomicalObject(list);
         }
     }
 }

@@ -13,7 +13,7 @@ package phis2ws.service.view.brapi.form;
 
 import java.util.ArrayList;
 import phis2ws.service.view.brapi.Metadata;
-import phis2ws.service.view.brapi.results.ResultatTrait;
+import phis2ws.service.view.brapi.results.ResultTrait;
 import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Trait;
 
@@ -28,9 +28,9 @@ public class ResponseFormTrait extends ResultForm<Trait> {
     public ResponseFormTrait(int pageSize, int currentPage, ArrayList<Trait> list, boolean paginate) {
         metadata = new Metadata(pageSize, currentPage, list.size());
         if (list.size() > 1) {
-            result = new ResultatTrait(list, metadata.getPagination(), paginate);
+            result = new ResultTrait(list, metadata.getPagination(), paginate);
         } else {
-            result = new ResultatTrait(list);
+            result = new ResultTrait(list);
         }
     }
 }

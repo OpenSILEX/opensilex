@@ -35,7 +35,6 @@ import phis2ws.service.injection.SessionInject;
 import phis2ws.service.injection.SessionInjectResolver;
 import phis2ws.service.resources.brapi.BrapiCall;
 import phis2ws.service.resources.brapi.CallsResourceService;
-import phis2ws.service.resources.brapi.StudiesSearchResourceService;
 import phis2ws.service.resources.brapi.StudyDetailsResourceService;
 import phis2ws.service.resources.brapi.TokenResourceService;
 import phis2ws.service.view.brapi.Status;
@@ -80,7 +79,6 @@ public class ApplicationInitConfig extends ResourceConfig {
                 //Brapi services injection
                 bind(CallsResourceService.class).to(BrapiCall.class);
                 bind(TokenResourceService.class).to(BrapiCall.class);
-                bind(StudiesSearchResourceService.class).to(BrapiCall.class);
                 bind(StudyDetailsResourceService.class).to(BrapiCall.class);
             }
         });

@@ -7,7 +7,6 @@
 //******************************************************************************
 package phis2ws.service.resources.brapi;
 
-import phis2ws.service.resources.brapi.StudiesSearchResourceService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -45,7 +44,7 @@ import phis2ws.service.view.model.phis.StudyDetails;
  */
 public class StudyDetailsResourceService implements BrapiCall{
     
-    final static Logger LOGGER = LoggerFactory.getLogger(StudiesSearchResourceService.class);  
+    final static Logger LOGGER = LoggerFactory.getLogger(StudyDetailsResourceService.class);  
     
      /**
      * Overriding BrapiCall method

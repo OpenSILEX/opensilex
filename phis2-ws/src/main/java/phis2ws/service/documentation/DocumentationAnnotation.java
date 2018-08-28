@@ -160,8 +160,8 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_GROUP_LEVEL = "Owner";
     public static final String EXAMPLE_GROUP_AVAILABLE = "true";
 
-    public static final String EXAMPLE_USER_EMAIL = "morgane.vidal@inra.fr";
-    public static final String EXAMPLE_USER_PASSWORD = "b30aebada8cb09d2cb686a1fdaec38fd";
+    public static final String EXAMPLE_USER_EMAIL = "admin@phis.fr";
+    public static final String EXAMPLE_USER_PASSWORD = "21232f297a57a5a743894a0e4a801fc3";
     public static final String EXAMPLE_USER_FIRST_NAME = "Morgane";
     public static final String EXAMPLE_USER_FAMILY_NAME = "Vidal";
     public static final String EXAMPLE_USER_ADDRESS = "2 place Pierre Viala, Bat 29, Montpellier";

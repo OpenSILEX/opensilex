@@ -146,9 +146,6 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_PROJECT_DATE_END = "2016-07-07";
     public static final String EXAMPLE_PROJECT_KEYWORDS = "keywords";
     public static final String EXAMPLE_PROJECT_PARENT_PROJECT = "parent project";
-    public static final String EXAMPLE_PROJECT_SCIENTIFIC_CONTACT = "Morgane Vidal";
-    public static final String EXAMPLE_PROJECT_ADMINISTRATIVE_CONTACT = "Morgane Vidal";
-    public static final String EXAMPLE_PROJECT_PROJECT_COORDINATOR = "Morgane Vidal";
     public static final String EXAMPLE_PROJECT_WEBSITE = "http://example.com";
     public static final String EXAMPLE_PROJECT_TYPE = "project type";
 
@@ -162,15 +159,15 @@ public final class DocumentationAnnotation {
 
     public static final String EXAMPLE_USER_EMAIL = "admin@phis.fr";
     public static final String EXAMPLE_USER_PASSWORD = "21232f297a57a5a743894a0e4a801fc3";
-    public static final String EXAMPLE_USER_FIRST_NAME = "Morgane";
-    public static final String EXAMPLE_USER_FAMILY_NAME = "Vidal";
-    public static final String EXAMPLE_USER_ADDRESS = "2 place Pierre Viala, Bat 29, Montpellier";
+    public static final String EXAMPLE_USER_FIRST_NAME = "Marie";
+    public static final String EXAMPLE_USER_FAMILY_NAME = "Dupont";
+    public static final String EXAMPLE_USER_ADDRESS = "2 place Pierre Viala, Montpellier";
     public static final String EXAMPLE_USER_PHONE = "0400000000";
     public static final String EXAMPLE_USER_AFFILIATION = "affiliation";
     public static final String EXAMPLE_USER_ORCID = "orcid";
     public static final String EXAMPLE_USER_ADMIN = "true";
     public static final String EXAMPLE_USER_AVAILABLE = "true";
-    public static final String EXAMPLE_USER_URI = "http://www.phenome-fppn.fr/diaphen/id/agent/morgane_vidal";
+    public static final String EXAMPLE_USER_URI = "http://www.phenome-fppn.fr/diaphen/id/agent/marie_dupond";
 
     public static final String EXAMPLE_DATA_INCERTITUDE = "0.4";
     public static final String EXAMPLE_DATA_VALUE = "3.0000000";
@@ -252,7 +249,7 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_ANNOTATION_TARGET = "http://www.phenome-fppn.fr/diaphen/id/variable/v0000001";
     public static final String EXAMPLE_ANNOTATION_MOTIVATEDBY = "http://www.w3.org/ns/oa#commenting";
     public static final String EXAMPLE_ANNOTATION_COMMENT = "Ustilago maydis infection";
-    public static final String EXAMPLE_ANNOTATION_CREATOR = "http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy";
+    public static final String EXAMPLE_ANNOTATION_CREATOR = "http://www.phenome-fppn.fr/diaphen/id/agent/marie_dupond";
   
     public static final String EXAMPLE_EXPERIMENT_CROP_SPECIES = "maize";
 

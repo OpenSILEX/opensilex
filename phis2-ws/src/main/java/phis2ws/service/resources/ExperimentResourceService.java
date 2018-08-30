@@ -79,27 +79,27 @@ public class ExperimentResourceService {
      * @param place
      * @param alias
      * @param keywords
-     * @return liste des expérimentations correspondant aux différents critères
-     * de recherche (ou toutes les expérimentations si pas de critères) Le
-     * retour (dans "data") est de la forme : [ { description de
-     * l'expérimentation1 }, { description de l'expérimentation2 }, ]
+     * @return liste des expérimentations correspondant aux différents critères de recherche 
+     *                                                              (ou toutes les expérimentations si pas de critères)
+     *         Le retour (dans "data") est de la forme : 
+     *          [
+     *              { description de l'expérimentation1 },
+     *              { description de l'expérimentation2 },
+     *          ]
      */
     @GET
     @ApiOperation(value = "Get all experiments corresponding to the searched params given",
-            notes = "Retrieve all experiments authorized for the user corresponding to the searched params given")
+                  notes = "Retrieve all experiments authorized for the user corresponding to the searched params given")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve all experiments", response = Experiment.class, responseContainer = "List")
-        ,
-        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION)
-        ,
-        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED)
-        ,
+        @ApiResponse(code = 200, message = "Retrieve all experiments", response = Experiment.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
     @ApiImplicitParams({
         @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+                          dataType = "string", paramType = "header",
+                          value = DocumentationAnnotation.ACCES_TOKEN,
+                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getExperimentsBySearch(
@@ -158,21 +158,18 @@ public class ExperimentResourceService {
     @GET
     @Path("{experiment}")
     @ApiOperation(value = "Get an experiment",
-            notes = "Retrieve an experiment. Need URL encoded experiment URI (Unique resource identifier).")
+                  notes = "Retrieve an experiment. Need URL encoded experiment URI (Unique resource identifier).")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve an experiment.", response = Experiment.class, responseContainer = "List")
-        ,
-        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION)
-        ,
-        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED)
-        ,
+        @ApiResponse(code = 200, message = "Retrieve an experiment.", response = Experiment.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiImplicitParams({
         @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+                          dataType = "string", paramType = "header",
+                          value = DocumentationAnnotation.ACCES_TOKEN,
+                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getExperimentDetail(
@@ -200,21 +197,18 @@ public class ExperimentResourceService {
      */
     @POST
     @ApiOperation(value = "Post a experiment",
-            notes = "Register a new experiment in the database")
+                  notes = "Register a new experiment in the database")
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Experiment saved", response = ResponseFormPOST.class)
-        ,
-        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION)
-        ,
-        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED)
-        ,
+        @ApiResponse(code = 201, message = "Experiment saved", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
     @ApiImplicitParams({
         @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+                          dataType = "string", paramType = "header",
+                          value = DocumentationAnnotation.ACCES_TOKEN,
+                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -259,19 +253,16 @@ public class ExperimentResourceService {
     @PUT
     @ApiOperation(value = "Update experiment")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Experiment updated", response = ResponseFormPOST.class)
-        ,
-        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION)
-        ,
-        @ApiResponse(code = 404, message = "Experiment not found")
-        ,
+        @ApiResponse(code = 200, message = "Experiment updated", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 404, message = "Experiment not found"),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
     @ApiImplicitParams({
         @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+                          dataType = "string", paramType = "header",
+                          value = DocumentationAnnotation.ACCES_TOKEN,
+                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

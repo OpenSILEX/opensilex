@@ -2,6 +2,7 @@
 //                                       ValidationExceptionMapper.java
 // SILEX-PHIS
 // Copyright © INRA 2018
+// Creation date: 25 Jun, 2018
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 
@@ -25,7 +26,6 @@ import phis2ws.service.view.brapi.form.ResponseFormGET;
 /**
  * Class that catches validation errors (related to validation annotations) 
  * on resource services parameters and return response object with specific error messages.
- *
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 @Produces(MediaType.APPLICATION_JSON)

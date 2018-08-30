@@ -1,13 +1,10 @@
 //******************************************************************************
-//                                       URLListValidator.java
-//
-// Author(s): Arnaud Charleroy
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: 29 juin 2018
-// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  29 juin 2018
-// Subject: Class used by URL annotation to validate that a string value list contains an URL
+//                        URLListValidator.java
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Creation date: 21, Jun 2018
+// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, 
+// pascal.neveu@inra.fr
 //******************************************************************************
 package phis2ws.service.resources.validation.validators;
 
@@ -18,10 +15,9 @@ import javax.validation.ConstraintValidatorContext;
 import phis2ws.service.resources.validation.interfaces.URL;
 
 /**
- * Class used by URL annotation to validate that a string value list contains an URL
- *
+ * Class used by URL annotation to validate that a string value list contains an URL.
  * @see phis2ws.service.resources.validation.interfaces.URL
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class URLListValidator implements ConstraintValidator<URL, List<String>> {
 
@@ -56,7 +52,6 @@ public class URLListValidator implements ConstraintValidator<URL, List<String>> 
                     "The string at the index [" + valueList.indexOf(lastUrlCheck) + "] is not an URL"
             ).addConstraintViolation();
         }
-
         return allValid;
     }
     

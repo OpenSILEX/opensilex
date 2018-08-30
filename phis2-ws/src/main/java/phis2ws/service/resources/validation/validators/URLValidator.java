@@ -1,14 +1,11 @@
 
 //******************************************************************************
 //                                       URLValidator.java
-//
-// Author(s): Arnaud Charleroy, Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: 28 juin 2018
-// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  28 juin 2018
-// Subject: Class used by URL annotation to validate that a string value is an URL
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Creation date: 21, Jun 2018
+// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, 
+// pascal.neveu@inra.fr
 //******************************************************************************
 package phis2ws.service.resources.validation.validators;
 
@@ -20,7 +17,7 @@ import phis2ws.service.resources.validation.interfaces.URL;
 /**
  * Class used by URL annotation to validate that a string value is an URL
  * @see  phis2ws.service.resources.validation.interfaces.URL
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class URLValidator implements ConstraintValidator<URL, String> {
 

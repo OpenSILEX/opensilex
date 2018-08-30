@@ -2,7 +2,9 @@
 //                                       OTypeValidator.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Creation date: 21, Jun 2018
+// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, 
+// pascal.neveu@inra.fr
 //******************************************************************************
 package phis2ws.service.resources.validation.validators;
 
@@ -14,7 +16,7 @@ import phis2ws.service.resources.validation.interfaces.OType;
  * Validator used to validate "o" type
  * @see OType
  * @see https://www.w3.org/wiki/JSON_Triple_Sets
- * @author Arnaud Charleroy<arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class OTypeValidator implements ConstraintValidator<OType, String> {
     /**

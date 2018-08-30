@@ -1,13 +1,10 @@
 //******************************************************************************
-//                                       ProvenanceDateValidator.java
-//
-// Author(s): Arnaud Charleroy <arnaud.charleroy@inra.fr>
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: 21 juin 2018
-// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  21 juin 2018
-// Subject: Class checks specific date field on provenance object
+//                        ProvenanceDateValidator.java
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Creation date: 21, Jun 2018
+// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, 
+// pascal.neveu@inra.fr
 //******************************************************************************
 package phis2ws.service.resources.validation.validators;
 
@@ -16,13 +13,12 @@ import javax.validation.ConstraintValidatorContext;
 import org.joda.time.DateTime;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.resources.dto.ProvenanceDTO;
-import phis2ws.service.resources.validation.interfaces.Date;
 import phis2ws.service.resources.validation.interfaces.ProvenanceDate;
 import phis2ws.service.utils.dates.Dates;
 
 /**
- *
- * @author Arnaud Charleroy<arnaud.charleroy@inra.fr>
+ * Class checks specific date field on provenance object.
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ProvenanceDateValidator implements ConstraintValidator<ProvenanceDate, ProvenanceDTO> {
 

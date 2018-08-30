@@ -49,8 +49,6 @@ public class ExperimentDTO extends AbstractVerifiedClass {
     private ArrayList<String> groupsUris;
     private ArrayList<Contact> contacts;
     
-    
-
     @Override
     public Experiment createObjectFromDTO() {
         Experiment experiment = new Experiment(uri);
@@ -84,7 +82,6 @@ public class ExperimentDTO extends AbstractVerifiedClass {
                 experiment.addContact(contact);
             }
         }
-        
         return experiment;
     }
     
@@ -215,7 +212,6 @@ public class ExperimentDTO extends AbstractVerifiedClass {
     public ArrayList<Contact> getContacts() {
         return contacts;
     }
-
     
     public void setContacts(ArrayList<Contact> contacts) {
         this.contacts = contacts;

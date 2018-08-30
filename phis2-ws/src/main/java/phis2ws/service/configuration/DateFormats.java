@@ -35,15 +35,15 @@ public final class DateFormats {
     public final static List<String> AUTHORIZED_USER_TRIPLESTORE_DATE_FORMATS = Arrays.asList("yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd", "yyyy-MM-dd HH:mm:ssZZ");
     public final static List<String> AUTHORIZED_USER_MONGO_DATE_FORMATS = Arrays.asList("yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd", "yyyy-MM-dd HH:mm:ss.SSS", "yyyy-MM-dd HH:mm:ssZZ", "yyyy-MM-dd HH:mm:ss.SSSZZ");
 
-    //Dates formats
+    // Dates formats
     public final static String YMD_FORMAT = "yyyy-MM-dd";
     public final static String YMDHMSZ_FORMAT = "yyyy-MM-dd HH:mm:ssZ"; // To change to yyyy-MM-ddTHH:mm:ssZ see todo above 
     public final static String YMDTHMSZ_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ"; // Resolve the todo but we need remove YMDHMSZ_FORMAT date format in the web service
     public final static String YMDHMS_FORMAT = "yyyy-MM-dd HH:mm:ss";
     
-    //Timezones
+    // Timezones
     public final static String TIMEZONE_EU_PARIS = "Europe/paris";
     
-    // regex
+    // Regex to get a four digits year
     public final static String YEAR_REGEX = "^\\d{4}$";
 }

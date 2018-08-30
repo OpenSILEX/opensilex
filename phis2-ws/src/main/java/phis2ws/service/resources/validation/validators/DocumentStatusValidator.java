@@ -2,7 +2,9 @@
 //                                       DocumentStatusValidator.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Creation date: 21, Jun 2018
+// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, 
+// pascal.neveu@inra.fr
 //******************************************************************************
 package phis2ws.service.resources.validation.validators;
 
@@ -13,7 +15,7 @@ import phis2ws.service.resources.validation.interfaces.DocumentStatus;
 /**
  * Validator used to validate document's status
  * @see DocumentStatus
- * @author Arnaud Charleroy<arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class DocumentStatusValidator implements ConstraintValidator<DocumentStatus, String> {
     /**

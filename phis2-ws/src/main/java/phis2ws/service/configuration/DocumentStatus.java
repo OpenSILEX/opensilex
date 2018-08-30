@@ -1,7 +1,8 @@
 //******************************************************************************
 //                                       DocumentStatus.java
 // SILEX-PHIS
-// Copyright © INRA 2018
+// Copyright © INRA 2017
+// Creation date: 6 Aug, 2017
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package phis2ws.service.configuration;

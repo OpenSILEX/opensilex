@@ -402,7 +402,8 @@ public class DocumentResourceService {
     
     /**
      * SILEX:todo
-     * We must find a way to send validation errors in json when an error occured
+     * We must find a way to send validation errors in json when an error occured.
+     * Maybe just change the response status.
      * \SILEX:todo
      * @param documentURI l'uri du document à télécharger
      * @return la réponse, avec le document si l'uri existe bien

@@ -3,6 +3,7 @@
 //
 // SILEX-PHIS
 // Copyright © INRA 2018
+// Creation date: 21, Jun 2018
 // Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, 
 // pascal.neveu@inra.fr
 //******************************************************************************
@@ -20,7 +21,7 @@ import phis2ws.service.resources.validation.interfaces.Date;
  * specific date format
  * @see Date
  * @see DateFormat
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class DateFormatValidator implements ConstraintValidator<Date, String> {
 

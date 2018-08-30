@@ -145,6 +145,8 @@ public final class CustomJsonWriterReader<T> implements MessageBodyWriter<T>,
         try {
             Gson g = new GsonBuilder()
                     .registerTypeAdapter(Dataset.class, new DatasetsSerializer())
+                    // specific serializer for Annotation
+                    .registerTypeAdapter(phis2ws.service.view.model.phis.Annotation.class, new AnnotationsSerializer())
                    
                     .serializeNulls() // Pour serialiser les variables null en nulll json
                     //                    see https://github.com/plantbreeding/documentation/wiki/Best-Practices-and-Conventions

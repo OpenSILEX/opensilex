@@ -63,6 +63,7 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
     public String orcid;
     public Boolean admin;
     public String available;
+    public String uri; // search by uri
 
     public UserDaoPhisBrapi() {
         super();
@@ -91,7 +92,6 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
             String query = "SELECT password FROM users WHERE email = '" + email + "'";
             stat = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
             result = stat.executeQuery(query);
-
             while (result.next()) {
                 return result.getString("password");
             }
@@ -175,6 +175,54 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
             return ResourcesUtils.getStringBooleanValue(u.getAdmin());
         }
         return false;
+    }
+
+    /**
+     * Verify if an user uri exist in Relationnal DB
+     *
+     * @param uri user uri
+     * @return boolean true if user uri exist 
+     *                 false if not
+     */
+    public Boolean existUserUri(String uri) {
+        boolean valid = false;
+        ResultSet result = null;
+        Connection con = null;
+        Statement stat = null;
+        try {
+            con = dataSource.getConnection();
+            SQLQueryBuilder sqlQueryBuilder = new SQLQueryBuilder();
+            sqlQueryBuilder.appendSelect("*");
+            sqlQueryBuilder.appendFrom(table, tableAlias);
+            sqlQueryBuilder.appendANDWhereConditionIfNeeded("uri", uri, "=", null, tableAlias);
+            
+            stat = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+            result = stat.executeQuery(sqlQueryBuilder.toString());
+            LOGGER.debug(SQL_SELECT_QUERY + " " + sqlQueryBuilder.toString());
+            if (result.next()) {
+                valid = true;
+            }
+
+        } catch (SQLException ex) {
+            LOGGER.error(ex.getMessage(), ex);
+        } finally {
+            if (result != null) {
+                try {
+                    result.close();
+                } catch (SQLException ex) {
+                    LOGGER.error(ex.getMessage(), ex);
+                }
+            }
+            if (stat != null) {
+                try {
+                    stat.close();
+                } catch (SQLException ex) {
+                    LOGGER.error(ex.getMessage(), ex);
+                }
+            }
+        }
+
+        return valid;
     }
 
     @Override
@@ -309,6 +357,9 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
             }
             if (available != null) {
                 query.appendANDWhereConditionIfNeeded(sqlFields.get("available"), String.valueOf(available), "=", null, tableAlias);
+            }
+            if (uri != null) {
+                query.appendANDWhereConditionIfNeeded(sqlFields.get("uri"), String.valueOf(uri), "=", null, tableAlias);
             }
             query.appendLimit(String.valueOf(pageSize));
 
@@ -478,7 +529,7 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
                         // set uri to agent
                         u.setUri(uriGenerator.generateNewInstanceUri(uriNamespaces.getObjectsProperty("cPerson"), null, userUriSuffix));
                         insertPreparedStatementUser.setString(10, u.getUri());
-                        
+
                         //Ajout dans les logs de qui a fait quoi (traçabilité)
                         String log = "";
                         if (remoteUserAdress != null) {
@@ -666,17 +717,17 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
                     }
                     updatePreparedStatementUser.setString(8, u.getEmail());
                     updatePreparedStatementUser.execute();
-                    LOGGER.trace(log + " quert : " + updatePreparedStatementUser.toString());
+                    LOGGER.trace(log + " query : " + updatePreparedStatementUser.toString());
                     //Delete des liens user / group
                     deletePreparedStatementUserGroup.setString(1, u.getEmail());
                     deletePreparedStatementUserGroup.execute();
-                    LOGGER.trace(log + " quert : " + deletePreparedStatementUserGroup.toString());
+                    LOGGER.trace(log + " query : " + deletePreparedStatementUserGroup.toString());
 
                     if (u.getPassword() != null && !u.getPassword().equals("")) {
                         updatePreparedStatementUserPassword.setString(1, u.getPassword());
                         updatePreparedStatementUserPassword.setString(2, u.getEmail());
                         updatePreparedStatementUserPassword.execute();
-                        LOGGER.trace(log + " quert : " + updatePreparedStatementUserPassword.toString());
+                        LOGGER.trace(log + " query : " + updatePreparedStatementUserPassword.toString());
                     }
 
                     //Insert des nouveaux liens users / email

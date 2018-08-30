@@ -38,7 +38,6 @@ import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.postgis.Geometry;
-import org.postgresql.util.PGobject;
 import phis2ws.service.authentication.TokenManager;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.dao.datasource.DataSourceDAOPhisBrapi;
@@ -61,7 +60,7 @@ public abstract class SQLDAO<T> extends DAO<T> {
 
     static final Map<String, DataSource> JWT_ISSUER_DATASOURCE;
     protected static final String PHIS_MODEL_DB_LOCATION = "Phis";
-        protected static final String GNPIS_MODEL_DB_LOCATION = "GnpIS";
+    protected static final String GNPIS_MODEL_DB_LOCATION = "GnpIS";
 
     // to manage multiple database switch 
     static {
@@ -71,6 +70,9 @@ public abstract class SQLDAO<T> extends DAO<T> {
         JWT_ISSUER_DATASOURCE = Collections.unmodifiableMap(tmpMap);
     }
 
+    // For query logging
+    protected static final String SQL_SELECT_QUERY = "SQL query : ";
+    
     /**
      * user c'est l'objet qui représente l'utilisateur
      */
@@ -89,7 +91,7 @@ public abstract class SQLDAO<T> extends DAO<T> {
      * Connexion du DAO pool de con ;)
      */
     protected DataSource dataSource;
-    
+
     /**
      * pour le batch
      */
@@ -270,7 +272,7 @@ public abstract class SQLDAO<T> extends DAO<T> {
         ResultSet rs = null;
         PreparedStatement statement = null;
         Connection con = null;
-        
+
         LOGGER.debug(query);
         try {
             con = dataSource.getConnection();
@@ -334,9 +336,8 @@ public abstract class SQLDAO<T> extends DAO<T> {
             if (rs != null && rs.first()) {
                 for (Field field : attributes) {
                     field.setAccessible(true);
-                    if (objectFields.containsKey(field.getName()) 
-                            && rs.getObject(objectFields.get(field.getName())) != null ) {
-
+                    if (objectFields.containsKey(field.getName())
+                            && rs.getObject(objectFields.get(field.getName())) != null) {
                         if (rs.getObject(objectFields.get(field.getName())) instanceof Date) {
                             if (field.getType() == String.class) {
                                 LocalDate fromDateFields = LocalDate.fromDateFields((Date) rs.getObject(objectFields.get(field.getName())));
@@ -345,7 +346,6 @@ public abstract class SQLDAO<T> extends DAO<T> {
                                 Timestamp ts = new Timestamp(((Date) rs.getObject(objectFields.get(field.getName()))).getTime());
                                 field.set(obj, new DateTime(ts));
                             }
-
                         } else if (rs.getObject(objectFields.get(field.getName())) instanceof Geometry) {
                             if (field.getType() == String.class) {
                                 field.set(obj, field.toString());
@@ -361,7 +361,7 @@ public abstract class SQLDAO<T> extends DAO<T> {
             LOGGER.error("SQL error Exist Request ", e);
             LOGGER.error(strSQLBuilder.toString());
 //            e.printStackTrace();
-        return null;
+            return null;
         } finally {
             if (Statement != null) {
                 try {
@@ -408,7 +408,7 @@ public abstract class SQLDAO<T> extends DAO<T> {
             LOGGER.trace(log + " query : " + preparedStatement.toString());
 //            logger.trace(preparedStatement.toString());
 //            logger.debug(preparedStatement.toString());
-        return true;
+            return true;
         } catch (SQLException e) {
             if (e.getSQLState().contains(DUPLICATE_KEY_ERROR_POSTGRE)) {
                 return null;
@@ -423,9 +423,7 @@ public abstract class SQLDAO<T> extends DAO<T> {
             if (con != null) {
                 con.close();
             }
-
         }
-
     }
 
     /**
@@ -495,7 +493,6 @@ public abstract class SQLDAO<T> extends DAO<T> {
                     }
                 }
             }
-
         } catch (SecurityException | IllegalArgumentException | IllegalAccessException ex) {
             LOGGER.error(ex.getMessage(), ex);
             return null;
@@ -657,9 +654,10 @@ public abstract class SQLDAO<T> extends DAO<T> {
      * @return SQLQueryBuilder
      */
     protected abstract SQLQueryBuilder prepareSearchQuery();
-    
+
     /**
-     * Switch database according to jwt payload information 
+     * Switch database according to jwt payload information
+     *
      * @param jwtClaimsSet set of claims in the jwt payload
      */
     public void setDataSourceFromJwtClaimsSet(JWTClaimsSet jwtClaimsSet) {

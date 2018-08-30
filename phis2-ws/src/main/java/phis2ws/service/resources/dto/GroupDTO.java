@@ -21,10 +21,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.model.User;
-import phis2ws.service.resources.dto.validation.interfaces.Required;
+import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
-import phis2ws.service.resources.dto.validation.interfaces.GroupLevel;
-import phis2ws.service.resources.dto.validation.interfaces.URL;
+import phis2ws.service.resources.validation.interfaces.GroupLevel;
+import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.Group;
 
 public class GroupDTO extends AbstractVerifiedClass {

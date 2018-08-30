@@ -21,6 +21,7 @@ import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -43,8 +44,8 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.MethodDTO;
-import phis2ws.service.resources.dto.validation.interfaces.Required;
-import phis2ws.service.resources.dto.validation.interfaces.URL;
+import phis2ws.service.resources.validation.interfaces.Required;
+import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
@@ -217,8 +218,8 @@ public class MethodResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getMethodsBySearch(
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
+        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
         @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_METHOD_URI) @QueryParam("uri") @URL String uri,
         @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_METHOD_LABEL) @QueryParam("label") String label
     ) {
@@ -264,8 +265,8 @@ public class MethodResourceService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getMethodDetails(
         @ApiParam(value = DocumentationAnnotation.METHOD_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_METHOD_URI, required = true) @PathParam("method") @URL @Required String method,
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
+        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
         
         if (method == null) {
             final Status status = new Status("Access error", StatusCodeMsg.ERR, "Empty method URI");

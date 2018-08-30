@@ -21,6 +21,7 @@ import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -44,9 +45,9 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.ProjectDTO;
-import phis2ws.service.resources.dto.validation.interfaces.Date;
-import phis2ws.service.resources.dto.validation.interfaces.Required;
-import phis2ws.service.resources.dto.validation.interfaces.URL;
+import phis2ws.service.resources.validation.interfaces.Date;
+import phis2ws.service.resources.validation.interfaces.Required;
+import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
@@ -103,8 +104,8 @@ public class ProjectResourceService {
                           example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")})
     @Produces(MediaType.APPLICATION_JSON)
     public Response getProjectsBySearch(
-    @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
-    @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
+    @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
+    @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
     @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_PROJECT_URI) @QueryParam("uri") @URL String uri,
     @ApiParam(value = "Search by name", example = DocumentationAnnotation.EXAMPLE_PROJECT_NAME) @QueryParam("name") String name,
     @ApiParam(value = "Search by acronyme", example = DocumentationAnnotation.EXAMPLE_PROJECT_ACRONYME) @QueryParam("acronyme") String acronyme,
@@ -185,8 +186,8 @@ public class ProjectResourceService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getProjectDetails(
     @ApiParam(value = DocumentationAnnotation.PROJECT_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_PROJECT_URI, required = true) @PathParam("projectURI") @URL @Required String projectURI,
-    @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
-    @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
+    @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
+    @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
         if (projectURI == null) {
             final Status status = new Status("Access error", StatusCodeMsg.ERR, "Empty Project URI");
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();

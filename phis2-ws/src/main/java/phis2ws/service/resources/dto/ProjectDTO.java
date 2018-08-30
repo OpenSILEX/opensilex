@@ -20,10 +20,10 @@ import javax.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.DateFormat;
-import phis2ws.service.resources.dto.validation.interfaces.Required;
+import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
-import phis2ws.service.resources.dto.validation.interfaces.Date;
-import phis2ws.service.resources.dto.validation.interfaces.URL;
+import phis2ws.service.resources.validation.interfaces.Date;
+import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.Contact;
 import phis2ws.service.view.model.phis.Project;
 

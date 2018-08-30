@@ -12,7 +12,7 @@
 package phis2ws.service.view.model.phis;
 
 import io.swagger.annotations.ApiModelProperty;
-import phis2ws.service.resources.dto.validation.interfaces.URL;
+import phis2ws.service.resources.validation.interfaces.URL;
 
 public class OntologyReference {
     /**

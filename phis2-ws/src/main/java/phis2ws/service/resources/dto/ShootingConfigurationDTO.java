@@ -14,10 +14,10 @@ package phis2ws.service.resources.dto;
 import io.swagger.annotations.ApiModelProperty;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.documentation.DocumentationAnnotation;
-import phis2ws.service.resources.dto.validation.interfaces.Required;
+import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
-import phis2ws.service.resources.dto.validation.interfaces.Date;
-import phis2ws.service.resources.dto.validation.interfaces.URL;
+import phis2ws.service.resources.validation.interfaces.Date;
+import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.ShootingConfiguration;
 
 /**

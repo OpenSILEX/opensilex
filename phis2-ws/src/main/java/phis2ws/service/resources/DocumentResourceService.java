@@ -35,6 +35,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -68,8 +69,9 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.DocumentMetadataDTO;
-import phis2ws.service.resources.dto.validation.interfaces.Date;
-import phis2ws.service.resources.dto.validation.interfaces.URL;
+import phis2ws.service.resources.validation.interfaces.Date;
+import phis2ws.service.resources.validation.interfaces.Required;
+import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.utils.DocumentWaitingCheck;
 import phis2ws.service.utils.FileUploader;
 import phis2ws.service.utils.POSTResultsReturn;
@@ -297,8 +299,8 @@ public class DocumentResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDocumentsType(
-            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
-            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
         DocumentDaoSesame documentsDao = new DocumentDaoSesame();
         Status errorStatus = null;
         try {
@@ -344,8 +346,8 @@ public class DocumentResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDocumentsMetadataBySearch(
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
+        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
         @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_DOCUMENT_URI) @QueryParam("uri") @URL String uri,
         @ApiParam(value = "Search by document type", example = DocumentationAnnotation.EXAMPLE_DOCUMENT_TYPE) @QueryParam("documentType") @URL String documentType,
         @ApiParam(value = "Search by creator", example = DocumentationAnnotation.EXAMPLE_DOCUMENT_CREATOR) @QueryParam("creator") String creator,
@@ -399,7 +401,9 @@ public class DocumentResourceService {
     }
     
     /**
-     * 
+     * SILEX:todo
+     * We must find a way to send validation errors in json when an error occured
+     * \SILEX:todo
      * @param documentURI l'uri du document à télécharger
      * @return la réponse, avec le document si l'uri existe bien
      */
@@ -420,17 +424,9 @@ public class DocumentResourceService {
                           example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getDocumentByUri(@ApiParam(value = DocumentationAnnotation.DOCUMENT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_DOCUMENT_URI) @PathParam("documentURI") @URL String documentURI) {
-        //SILEX:conception
-        //Est-ce qu'il serait mieux d'envoyer directement l'InputStream récupéré dans mongoDB plutôt 
-        //que d'écrire le fichier sur le disque avant de l'envoyer ?
-        if (documentURI == null) {
-            final Status status = new Status("Access error", StatusCodeMsg.ERR, "Empty document URI");
-            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
-        }
-        
+    public Response getDocumentByUri(
+            @ApiParam(value = DocumentationAnnotation.DOCUMENT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_DOCUMENT_URI) @PathParam("documentURI") String documentURI) {
         return getFile(documentURI);
-        //\SILEX:conception
     }
     
     /**
@@ -531,7 +527,7 @@ public class DocumentResourceService {
         File file = documentDaoMongo.getDocument(documentURI);
         
         if (file == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+            return Response.noContent().build();
         } else {
             return Response.ok(file, MediaType.APPLICATION_OCTET_STREAM)
                            .header("Content-Disposition", "attachement; filename=\"" + file.getName() + "\"")

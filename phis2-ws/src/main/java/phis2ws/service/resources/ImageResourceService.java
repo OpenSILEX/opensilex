@@ -37,6 +37,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -63,8 +64,8 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.ImageMetadataDTO;
-import phis2ws.service.resources.dto.validation.interfaces.Required;
-import phis2ws.service.resources.dto.validation.interfaces.URL;
+import phis2ws.service.resources.validation.interfaces.Required;
+import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.utils.FileUploader;
 import phis2ws.service.utils.ImageWaitingCheck;
 import phis2ws.service.utils.POSTResultsReturn;
@@ -437,13 +438,13 @@ public class ImageResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getImagesBySearch(
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int pageSize,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
         @ApiParam(value = "Search by image uri", example = DocumentationAnnotation.EXAMPLE_IMAGE_URI) @QueryParam("uri") @URL String uri,
         @ApiParam(value = "Search by image type", example = DocumentationAnnotation.EXAMPLE_IMAGE_TYPE) @QueryParam("rdfType") @URL String rdfType,
         @ApiParam(value = "Search by concerned item uri - each concerned item uri must be separated by ;", example = DocumentationAnnotation.EXAMPLE_IMAGE_CONCERNED_ITEMS) @QueryParam("concernedItems") String concernedItems,
-        @ApiParam(value = "Search by interval - start date", example = DocumentationAnnotation.EXAMPLE_IMAGE_DATE) @QueryParam("startDate") @phis2ws.service.resources.dto.validation.interfaces.Date(DateFormat.YMD) String startDate,
-        @ApiParam(value = "Search by interval - end date", example = DocumentationAnnotation.EXAMPLE_IMAGE_DATE) @QueryParam("endDate") @phis2ws.service.resources.dto.validation.interfaces.Date(DateFormat.YMD) String endDate,
+        @ApiParam(value = "Search by interval - start date", example = DocumentationAnnotation.EXAMPLE_IMAGE_DATE) @QueryParam("startDate") @phis2ws.service.resources.validation.interfaces.Date(DateFormat.YMDHMSZ) String startDate,
+        @ApiParam(value = "Search by interval - end date", example = DocumentationAnnotation.EXAMPLE_IMAGE_DATE) @QueryParam("endDate") @phis2ws.service.resources.validation.interfaces.Date(DateFormat.YMDHMSZ) String endDate,
         @ApiParam(value = "Search by sensor", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("sensor") @URL String sensor) {
         
         ImageMetadataDaoMongo imageMetadataDaoMongo = new ImageMetadataDaoMongo();

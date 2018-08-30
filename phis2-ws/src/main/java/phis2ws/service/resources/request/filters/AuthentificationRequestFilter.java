@@ -51,7 +51,7 @@ public class AuthentificationRequestFilter implements ContainerRequestFilter {
         final String resourcePath = uriInfo.getPath();
 //        logger.debug(resourcePath);
         // Swagger.json and token authorized
-        if (resourcePath != null && !resourcePath.contains("token") && !resourcePath.contains("swagger.json")) {
+        if (resourcePath != null && !resourcePath.contains("token") && !resourcePath.contains("calls") && !resourcePath.contains("swagger.json")) {
             //Get request headers
             final MultivaluedMap<String, String> headers = requestContext.getHeaders();
             if (headers != null && !headers.containsKey(GlobalWebserviceValues.AUTHORIZATION_PROPERTY)) {

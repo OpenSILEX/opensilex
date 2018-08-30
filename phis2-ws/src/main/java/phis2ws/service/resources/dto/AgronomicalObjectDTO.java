@@ -18,10 +18,10 @@ import java.util.ArrayList;
 import javax.validation.Valid;
 import javax.validation.constraints.Pattern;
 import phis2ws.service.configuration.DateFormats;
-import phis2ws.service.resources.dto.validation.interfaces.Required;
+import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.view.model.phis.AgronomicalObject;
-import phis2ws.service.resources.dto.validation.interfaces.URL;
+import phis2ws.service.resources.validation.interfaces.URL;
 
 /**
  * Represents the submitted JSON for the agronomical objects

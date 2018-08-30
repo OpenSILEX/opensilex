@@ -14,7 +14,7 @@ package phis2ws.service.resources.dto;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import javax.validation.constraints.Pattern;
-import phis2ws.service.resources.dto.validation.interfaces.Required;
+import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 
 @ApiModel

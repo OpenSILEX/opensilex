@@ -7,7 +7,7 @@
 // Creation date: may 2016
 // Contact:eloan.lagier@inra.fr, arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  Janvier 29 , 2018
-// Subject: A class which permit to build a SPARQL query
+// Subject: A class which is used to build a SPARQL query
 //***********************************************************************************************
 package phis2ws.service.utils.sparql;
 
@@ -27,15 +27,18 @@ public class SPARQLQueryBuilder extends SPARQLStringBuilder {
     private String graph = null;
     private String optional = null;
     private String ask = null;
+    private String groupBy = null; // Permits to concatenate a list of values in sparql without repeating data.
+    
+    public final static String GROUP_CONCAT_SEPARATOR = ",";
 
     public SPARQLQueryBuilder() {
         super();
     }
-    
+
     public void appendFrom(String from) {
         this.from = from;
     }
-     
+
     public void appendOrderBy(String orderBy) {
         this.orderBy = orderBy;
     }
@@ -55,19 +58,19 @@ public class SPARQLQueryBuilder extends SPARQLStringBuilder {
     public void appendDistinct(Boolean distinct) {
         this.distinct = distinct;
     }
-    
+
     public void appendGraph(String graph) {
         this.graph = graph;
     }
-    
+
     public void appendOptional(String optional) {
         this.optional = optional;
     }
-    
+
     public void appendAsk(String ask) {
         this.ask = ask;
     }
-    
+
     /**
      * Ajout du sélect
      *
@@ -75,9 +78,39 @@ public class SPARQLQueryBuilder extends SPARQLStringBuilder {
      */
     public void appendSelect(String values) {
         if (values != null) {
-            this.select  += values;
+            this.select += " " + values;
         }
     }
+    /**
+     * Use to groupby for paramters that not used in group concatenate function
+     * @param values 
+     */
+    public void appendGroupBy(String values) {
+        if (values != null) {
+            if(this.groupBy == null){
+            this.groupBy = "";
+        }
+            this.groupBy += " " + values;
+        }
+    }
+    
+    /**
+     * Add select group_concat values.
+     * Concatenate a list of values in sparql without repeating data.
+     * @see https://en.wikibooks.org/wiki/SPARQL/Aggregate_functions
+     * .e.g (GROUP_CONCAT(DISTINCT ?bodyValue; SEPARATOR=",") AS ?bodyValues)
+     * BodyValues 
+     * "test,test2"
+     * @param values the value name to separate
+     * @param separator the separator betweend returned value
+     * @param outputValueName the name of the labelled value
+     */
+    public void appendSelectConcat(String values,String separator,String outputValueName) {
+        if (values != null) {
+            this.select += " (GROUP_CONCAT(DISTINCT " + values + "; SEPARATOR=\"" + separator + "\") AS "+ outputValueName +")";
+        }
+    }
+    
 
     @Override
     public String toString() {
@@ -85,7 +118,7 @@ public class SPARQLQueryBuilder extends SPARQLStringBuilder {
         if (prefix != null) {
             queryResource += prefix + "\n";
         }
-        if (ask == null){
+        if (ask == null) {
             if (count != null && count) {
                 if (select.length() == 0) {
                     queryResource += "SELECT ( COUNT ( DISTINCT * ) as ?count) ";
@@ -104,7 +137,7 @@ public class SPARQLQueryBuilder extends SPARQLStringBuilder {
                 queryResource += "SELECT " + select + " ";
             }
         }
-        
+
         if (from != null) {
             queryResource += "FROM " + from + "\n";
         }
@@ -112,13 +145,13 @@ public class SPARQLQueryBuilder extends SPARQLStringBuilder {
             if (ask.equals("")) {
                 queryResource += "\n" + "ASK {";
             } else {
-                queryResource += "\n" + "ASK {"+ ask + " .";
+                queryResource += "\n" + "ASK {" + ask + " .";
             }
-            
-        }   else{
-                queryResource += "WHERE {\n";
-            }
-        
+
+        } else {
+            queryResource += "WHERE {\n";
+        }
+
         if (graph != null) {
             queryResource += "GRAPH <" + graph + "> {";
         }
@@ -136,6 +169,9 @@ public class SPARQLQueryBuilder extends SPARQLStringBuilder {
         if (parameters.length() > 0) {
             queryResource += "\n" + parameters;
         }
+        if (groupBy != null) {
+            queryResource += "\n" + "GROUP BY " + groupBy + " ";
+        }
 
         if (orderBy != null) {
             queryResource += "\n" + "ORDER BY " + orderBy + " ";
@@ -146,7 +182,7 @@ public class SPARQLQueryBuilder extends SPARQLStringBuilder {
         if (offset != null) {
             queryResource += "\n" + "OFFSET " + offset + " ";
         }
-        
+
         return queryResource;
     }
 
@@ -161,6 +197,22 @@ public class SPARQLQueryBuilder extends SPARQLStringBuilder {
         where = null;
         filter = "";
         optional = null;
-        ask =  null;
+        ask = null;
+    }
+
+    public void clearSelect() {
+        select = "";
+    }
+
+    public void clearLimit() {
+        limit = null;
+    }
+
+    public void clearOffset() {
+        offset = null;
+    }
+    
+    public void clearGroupBy() {
+        groupBy = null;
     }
 }

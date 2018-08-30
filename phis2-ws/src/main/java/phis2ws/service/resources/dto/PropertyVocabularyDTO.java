@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
-import phis2ws.service.resources.dto.validation.interfaces.URL;
+import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.Property;
 
 /**

@@ -7,12 +7,14 @@
 package phis2ws.service.utils;
 
 import java.util.Calendar;
+import java.util.UUID;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.mongo.ImageMetadataDaoMongo;
 import phis2ws.service.dao.sesame.AgronomicalObjectDAOSesame;
+import phis2ws.service.dao.sesame.AnnotationDAOSesame;
 import phis2ws.service.dao.sesame.MethodDaoSesame;
 import phis2ws.service.dao.sesame.SensorDAOSesame;
 import phis2ws.service.dao.sesame.UriDaoSesame;
@@ -23,8 +25,17 @@ import phis2ws.service.dao.sesame.VectorDAOSesame;
 
 /**
  * generate differents kinds of uris (vector, sensor, ...)
- * 
- * @author Morgane Vidal <morgane.vidal@inra.fr>, Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ *
+ * @author Morgane Vidal <morgane.vidal@inra.fr>, Arnaud Charleroy <arnaud.charleory@inra.fr>
+ * SILEX:todo : 
+ *       - Element: User agent uri
+ *         Purpose : For now, generated user agent uris are not unic. 
+ *         Numbers must be add at the end of user agent uri
+ *         if two user agents have the same family name and first name.
+ *         .e.g :
+ *              - First user : Jean Dupont-Marie http://www.phenome-fppn.fr/diaphen/id/agent/jean_dupont-marie
+ *              - Second user : Jean Dupont-Marie http://www.phenome-fppn.fr/diaphen/id/agent/jean_dupont-marie01
+ * \SILEX:todo
  */
 public class UriGenerator {
 
@@ -50,6 +61,7 @@ public class UriGenerator {
     private static final String PLATFORM_URI_ID_VARIABLES = PLATFORM_URI_ID + "variables/";
     private static final String PLATFORM_URI_ID_VARIETY = PLATFORM_URI + "v/";
     private static final String PLATFORM_URI_ID_AGENT = PLATFORM_URI_ID + "agent/";
+    private static final String PLATFORM_URI_ID_ANNOTATION = PLATFORM_URI_ID + "annotation/";
 
     /**
      * generates a new vector uri. a vector uri has the following form :
@@ -250,15 +262,35 @@ public class UriGenerator {
     /**
      * generates a new agent uri. a agent uri follows the pattern :
      * <prefix>:id/agent/<unic_code>
-     * <unic_code> = firstname first letter concat with lastname in lowercase
-     * @example http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy
+     * <unic_code> = firstnames concat with lastnames in lowercase
+     * e.g. http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy
+     *
      * @author Arnaud Charleroy
-     * @param agentSuffixe the agent suffixe e.g. acharleroy
+     * @param agentSuffixe the agent suffixe e.g. arnaud_charleroy
      * @return the new agent uri
      */
     private String generateAgentUri(String agentSuffixe) {
         // create URI
         return PLATFORM_URI_ID_AGENT + agentSuffixe;
+    }
+
+    /**
+     * generates a new annotation uri. a unit annotation follows the pattern :
+     * <prefix>:id/annotation/<unic_code>
+     * <unic_code> = 1 letter type + java.util.UUID.randomUUID(); e.g.
+     * http://www.phenome-fppn.fr/diaphen/id/annotation/e073961b-e766-4493-b98f-74a8b2846893
+     *
+     * @return the new annotation uri
+     */
+    private String generateAnnotationUri() {
+        //1. check if uri already exist
+        AnnotationDAOSesame annotationDao = new AnnotationDAOSesame();
+        String newAnnotationUri = PLATFORM_URI_ID_ANNOTATION + UUID.randomUUID();
+        while (annotationDao.existObject(newAnnotationUri)) {
+            newAnnotationUri = PLATFORM_URI_ID_ANNOTATION + UUID.randomUUID();
+        }
+
+        return newAnnotationUri;
     }
 
     /**
@@ -339,6 +371,8 @@ public class UriGenerator {
             return generateImageUri(year, additionalInformation);
         } else if (instanceType.equals(uriNamespaces.getObjectsProperty("cAgent")) || uriDaoSesame.isSubClassOf(instanceType, uriNamespaces.getObjectsProperty("cAgent"))) {
             return generateAgentUri(additionalInformation);
+        } else if (instanceType.equals(uriNamespaces.getObjectsProperty("cAnnotation"))) {
+            return generateAnnotationUri();
         }
 
         return null;

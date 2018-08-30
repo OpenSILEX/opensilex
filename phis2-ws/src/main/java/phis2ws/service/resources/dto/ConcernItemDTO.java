@@ -13,10 +13,10 @@ package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import phis2ws.service.documentation.DocumentationAnnotation;
-import phis2ws.service.resources.dto.validation.interfaces.Required;
+import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.view.model.phis.ConcernItem;
-import phis2ws.service.resources.dto.validation.interfaces.URL;
+import phis2ws.service.resources.validation.interfaces.URL;
 
 /**
  * corresponds to the submitted JSON for the objects concerned (by an annotation for example)

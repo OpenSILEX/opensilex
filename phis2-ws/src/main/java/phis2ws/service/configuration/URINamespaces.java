@@ -1,30 +1,27 @@
-//**********************************************************************************************
-//                                       URINamespaces.java from uris.php
-//
-// Author(s): Isabelle NEMBROT, Arnaud Charleroy, Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2016
-// Creation date: august 2016
-// Contact:i.nembrot@laposte.net, arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  June, 2017 (adaptation to PHIS field)
-// Subject: personal parameters for global usage
-// G_URI :
-// - M3P URI for further use so that we don"t need to repeat paths in each page
-// Usage :
-// ~~~~~~ URINamespaces uris = new URINamespaces("m3p");
-// ~~~~~~ String vocabulary = URINamespaces.getContextsProperty("pVocaPlateform")
-//***********************************************************************************************
+//******************************************************************************
+//                            URINamespaces.java
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Creation date: 6 Aug, 2017
+// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package phis2ws.service.configuration;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import phis2ws.service.PropertiesFileManager;
 
 /**
- * Permet de creer des URI de concepts, objets et relation entre objets et
- * proprietes en fonction pour une platform
- *
- * @author A. Charleroy
+ * Personal parameters for global usage.
+ * G_URI :
+ *      - M3P URI for further use so that we don"t need to repeat paths in each page
+ * Usage :
+ * ~~~~~~ URINamespaces uris = new URINamespaces("m3p");
+ * ~~~~~~ String vocabulary = URINamespaces.getContextsProperty("pVocaPlateform"
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * @author Isabelle Nembrot <i.nembrot@laposte.net>
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class URINamespaces {
 
@@ -34,9 +31,27 @@ public class URINamespaces {
     private static final Map<String, String> RELATIONS = new HashMap<>();
     private static final Map<String, String> W3C_NAMESPACES = new HashMap<>();
     private static String platform = null;
+    
+    // Add additionnal custom users namespaces to triplestore based namespace. e.g. platform => http://www.phenome-fppn.fr/platform/
+    // These one override the namespaces found in rdf4j 
+    /** @see allPaginateNamespacesProperties function for usage **/
+    // For example if "platform" namespace is defined as http://www.phenome-fppn.fr/platform in rdf4j, this static function 
+    // below will allow to override "plateform" in http://www.phenome-fppn.fr/ephesia 
+    public static final Map<String, String> USER_SPECIFIC_NAMESPACES;
+    static {
+        Map<String, String> temporaryMap = new HashMap<>();
+        //SILEX:info
+        // Uncomment if you want to add other namespace
+        // String plateform = PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "platform");
+        // Can put multiple other namespaces
+        // temporaryMap.put("platform", "http://www.phenome-fppn.fr/" + plateform);
+        //\SILEX:info
+        USER_SPECIFIC_NAMESPACES = Collections.unmodifiableMap(temporaryMap);
+    }
+
 
     public URINamespaces() {
-        platform = PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "platform");;
+        platform = PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "platform");
         setContexts();
         setNamespaces();
         setW3CNamespaces();
@@ -116,7 +131,7 @@ public class URINamespaces {
         CONTEXTS.put("variables", CONTEXTS.get("pxPlatform") + "/variables");
         CONTEXTS.put("vectors", CONTEXTS.get("pxPlatform") + "/vectors");
         CONTEXTS.put("sensors", CONTEXTS.get("pxPlatform") + "/sensors");
-        CONTEXTS.put("annotations", CONTEXTS.get("pxPlatform") + "/annotations");
+        CONTEXTS.put("annotations", CONTEXTS.get("pxPlatform") + "/set/annotation");
     }
 
     private void setNamespaces() {
@@ -152,6 +167,8 @@ public class URINamespaces {
         OBJECTS.put("cRestriction", "owl:Restriction");
         OBJECTS.put("cAgent", CONTEXTS.get("pxFoaf") + "/Agent");
         OBJECTS.put("cPerson", CONTEXTS.get("pxFoaf") + "/Person");
+        OBJECTS.put("cMotivation", CONTEXTS.get("pxOa") + "#Motivation");
+        OBJECTS.put("cAnnotation", CONTEXTS.get("pxOa") + "#Annotation");
     }
 
     private void setRelations() {

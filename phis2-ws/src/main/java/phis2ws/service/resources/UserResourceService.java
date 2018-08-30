@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.Pattern;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -45,7 +47,8 @@ import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.model.User;
 import phis2ws.service.resources.dto.UserDTO;
-import phis2ws.service.resources.dto.validation.interfaces.Required;
+import phis2ws.service.resources.validation.interfaces.Required;
+import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.ResourcesUtils;
 import phis2ws.service.view.brapi.Status;
@@ -76,6 +79,7 @@ public class UserResourceService {
      * @param orcid
      * @param admin
      * @param available
+     * @param uri
      * @return liste des utilisateurs correspondant aux critères de recherche 
      *                                  (ou tous les utilisateurs si pas de critères)
      * Le retour (dans "data") est de la forme : 
@@ -102,8 +106,8 @@ public class UserResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUserBySearch(
-    @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
-    @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
+    @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
+    @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
     @ApiParam(value = "Search by email", example = DocumentationAnnotation.EXAMPLE_USER_EMAIL) @QueryParam("email") @Email String email,
     @ApiParam(value = "Search by first name", example = DocumentationAnnotation.EXAMPLE_USER_FIRST_NAME) @QueryParam("firstName") String firstName,
     @ApiParam(value = "Search by family name", example = DocumentationAnnotation.EXAMPLE_USER_FAMILY_NAME) @QueryParam("familyName") String familyName,
@@ -112,7 +116,8 @@ public class UserResourceService {
     @ApiParam(value = "Search by affiliation", example = DocumentationAnnotation.EXAMPLE_USER_AFFILIATION) @QueryParam("affiliation") String affiliation,
     @ApiParam(value = "Search by orcid", example = DocumentationAnnotation.EXAMPLE_USER_ORCID) @QueryParam("orcid") String orcid,
     @ApiParam(value = "Search by admin", example = DocumentationAnnotation.EXAMPLE_USER_ADMIN) @QueryParam("admin") String admin,
-    @ApiParam(value = "Search by available", example = DocumentationAnnotation.EXAMPLE_USER_AVAILABLE) @QueryParam("available") String available) {
+    @ApiParam(value = "Search by available", example = DocumentationAnnotation.EXAMPLE_USER_AVAILABLE) @QueryParam("available") String available,
+    @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_USER_URI) @QueryParam("uri") @URL String uri) {
         UserDaoPhisBrapi userDao = new UserDaoPhisBrapi();
         if (email != null) {
             userDao.email = email;
@@ -140,6 +145,10 @@ public class UserResourceService {
         }
         if (userDao.available != null) {
             userDao.available = available;
+        }
+        
+        if (userDao.uri != null) {
+            userDao.uri = uri;
         }
         
         userDao.setPageSize(limit);
@@ -174,8 +183,8 @@ public class UserResourceService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUserDetails(
     @ApiParam(value = DocumentationAnnotation.USER_EMAIL_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_USER_EMAIL) @PathParam("userEmail") @Email @Required String userEmail,
-    @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
-    @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
+    @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
+    @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
         if (userEmail == null) {
             final Status status = new Status("Access error", StatusCodeMsg.ERR, "Empty User email");
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
@@ -189,6 +198,7 @@ public class UserResourceService {
         
         return getUsersData(userDao);
     }
+    
     
     @POST
     @ApiOperation(value = "Post a user",

@@ -16,9 +16,10 @@ package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
-import phis2ws.service.resources.dto.validation.interfaces.Required;
+import javax.validation.Valid;
+import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
-import phis2ws.service.resources.dto.validation.interfaces.URL;
+import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.InstanceDefinition;
 import phis2ws.service.view.model.phis.OntologyReference;
 
@@ -79,8 +80,9 @@ public class InstanceDefinitionDTO extends AbstractVerifiedClass {
     }
     
     //SILEX:todo
-    // Do the DTO OntologyReferenceDTO and add the annotation @Valid
+    // Do the DTO OntologyReferenceDTO
     //\SILEX:todo
+    @Valid
     public ArrayList<OntologyReference> getOntologiesReferences() {
         return ontologiesReferences;
     }

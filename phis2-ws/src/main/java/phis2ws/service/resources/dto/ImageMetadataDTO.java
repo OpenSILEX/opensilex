@@ -15,8 +15,9 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.List;
 import javax.validation.Valid;
 import phis2ws.service.documentation.DocumentationAnnotation;
-import phis2ws.service.resources.dto.validation.interfaces.Required;
+import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.ImageMetadata;
 
 /**
@@ -44,6 +45,7 @@ public class ImageMetadataDTO extends AbstractVerifiedClass {
        return imageMetadata;
     }
     
+    @URL
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_IMAGE_TYPE)
     public String getRdfType() {
@@ -63,7 +65,6 @@ public class ImageMetadataDTO extends AbstractVerifiedClass {
         this.concern = concern;
     }
 
-    @Required
     @Valid
     public ShootingConfigurationDTO getConfiguration() {
         return configuration;
@@ -73,7 +74,6 @@ public class ImageMetadataDTO extends AbstractVerifiedClass {
         this.configuration = configuration;
     }
 
-    @Required
     @Valid
     public FileInformationDTO getFileInfo() {
         return fileInfo;

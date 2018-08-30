@@ -36,7 +36,7 @@ public class User {
     private String address;
     private String phone;
     private String affiliation;
-    private String uri; // uri of user eg. http://www.phenome-fppn.fr/diaphen/id/agent/acharleroy
+    private String uri; // uri of user eg. http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy
     private String orcid;
     private String admin;
     private String available;

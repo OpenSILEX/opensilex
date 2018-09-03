@@ -26,22 +26,39 @@ import phis2ws.service.view.model.phis.BrapiTrait;
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class BrapiTraitDAO extends DAOSesame<BrapiTrait> {
-   
+    public String traitDbId;
+
+    public BrapiTraitDAO() {
+        super();
+    }     
+
+    public BrapiTraitDAO(String traitDbId) {
+        super();
+        this.traitDbId = traitDbId;
+    }  
+       
     @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
         final URINamespaces uriNamespaces = new URINamespaces();
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
         query.appendGraph(uriNamespaces.getContextsProperty("variables"));
+        
+        String traitUri = new String();
+        if (this.traitDbId == null) {
+            traitUri = "?uri";
+            query.appendSelect(traitUri);
+        } else {
+            traitUri = "<" + this.traitDbId + ">";
+        }        
+        
+        query.appendTriplet(traitUri, "rdf:type", uriNamespaces.getObjectsProperty("cTrait"), null);
 
-        query.appendSelect("?uri");
-        query.appendTriplet("?uri", "rdf:type", uriNamespaces.getObjectsProperty("cTrait"), null);
-
-        query.appendSelect(" ?label");
-        query.appendTriplet("?uri", "rdfs:label", "?label", null);
+        query.appendSelect("?label");
+        query.appendTriplet(traitUri, "rdfs:label", "?label", null);
 
         query.appendSelect(" ?comment");
-        query.appendTriplet("?uri", "rdfs:comment", "?comment", null);
+        query.appendTriplet(traitUri, "rdfs:comment", "?comment", null);
                 
         LOGGER.trace("sparql select query : " + query.toString());
         return query;
@@ -90,10 +107,19 @@ public class BrapiTraitDAO extends DAOSesame<BrapiTrait> {
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 BrapiTrait trait = new BrapiTrait();
-                trait.setTraitDbId(bindingSet.getValue("uri").stringValue());
+                if (this.traitDbId == null) { 
+                    if (bindingSet.getValue("uri") != null) {
+                    trait.setTraitDbId(bindingSet.getValue("uri").stringValue());
+                    }
+                } else {
+                    trait.setTraitDbId(this.traitDbId);
+                }
+                if (bindingSet.getValue("comment") != null){
                 trait.setDescription(bindingSet.getValue("comment").stringValue());
+                }
+                if (bindingSet.getValue("label") != null){
                 trait.setName(bindingSet.getValue("label").stringValue());
-               
+                }
                 traits.add(trait);
             }
         }

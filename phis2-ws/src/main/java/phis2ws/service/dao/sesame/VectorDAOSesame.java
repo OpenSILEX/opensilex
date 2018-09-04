@@ -77,6 +77,7 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
     //Triplestore relations
     private final static URINamespaces NAMESPACES = new URINamespaces();
     final static String TRIPLESTORE_CONCEPT_VECTOR = NAMESPACES.getObjectsProperty("cVector");
+    final static String TRIPLESTORE_CONCEPT_UAV = NAMESPACES.getObjectsProperty("cUAV");
     final static String TRIPLESTORE_CONTEXT_VECTORS = NAMESPACES.getContextsProperty("vectors");
     
     final static String TRIPLESTORE_RELATION_BRAND = NAMESPACES.getRelationsProperty("rHasBrand");
@@ -308,25 +309,25 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
 
         if (uri != null) {
             vector.setUri(uri);
-        } else {
+        } else if (bindingSet.getValue(URI) != null) {
             vector.setUri(bindingSet.getValue(URI).stringValue());
         }
 
         if (rdfType != null) {
             vector.setRdfType(rdfType);
-        } else {
+        } else if (bindingSet.getValue(RDF_TYPE) != null) {
             vector.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
         }
 
         if (label != null) {
             vector.setLabel(label);
-        } else if (bindingSet.getValue(LABEL) != null ){
+        } else if (bindingSet.getValue(LABEL) != null) {
             vector.setLabel(bindingSet.getValue(LABEL).stringValue());
         }
 
         if (brand != null) {
             vector.setBrand(brand);
-        } else {
+        } else if (bindingSet.getValue(BRAND) != null) {
             vector.setBrand(bindingSet.getValue(BRAND).stringValue());
         }
 
@@ -350,7 +351,7 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
         
         if (personInCharge != null) {
             vector.setPersonInCharge(personInCharge);
-        } else {
+        } else if (bindingSet.getValue(PERSON_IN_CHARGE) != null) {
             vector.setPersonInCharge(bindingSet.getValue(PERSON_IN_CHARGE).stringValue());
         }
 
@@ -669,5 +670,48 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
         } else { //errors founded in data
             return checkResult;
         }
+    }
+    
+    /**
+     * Generates the query to get the uri, label and rdf type of all the uav
+     * @return the query
+     *  e.g. 
+     * SELECT DISTINCT  ?uri ?label ?rdfType WHERE {
+     *      ?uri  rdfs:subClassOf*  <http://www.phenome-fppn.fr/vocabulary/2017#UAV> . 
+     *      ?uri rdf:type ?rdfType .
+     *      ?uri  rdfs:label  ?label  .
+     * }
+     */
+    private SPARQLQueryBuilder prepareSearchUAVsQuery() {
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        
+        query.appendSelect("?" + URI + " ?" + RDF_TYPE + " ?" + LABEL );
+        query.appendTriplet("?" + RDF_TYPE, TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE, TRIPLESTORE_CONCEPT_UAV, null);
+        query.appendTriplet("?" + URI, TRIPLESTORE_RELATION_TYPE, "?" + RDF_TYPE, null);
+        query.appendTriplet("?" + URI, TRIPLESTORE_RELATION_LABEL, "?" + LABEL, null);
+        query.appendOrderBy("desc(?" + LABEL + ")");
+        
+        LOGGER.debug(query.toString());
+        
+        return query;
+    }
+    
+    /**
+     * get the uav (type, label, uri) of the triplestore.
+     * @return the list of the uav
+     */
+    public ArrayList<Vector> getUAVs() {
+        SPARQLQueryBuilder query = prepareSearchUAVsQuery();
+        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        ArrayList<Vector> uavs = new ArrayList<>();
+
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
+            while (result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                Vector uav = getVectorFromBindingSet(bindingSet);
+                uavs.add(uav);
+            }
+        }
+        return uavs;
     }
 }

@@ -1,13 +1,9 @@
 //**********************************************************************************************
 //                                       ExperimentDao.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
+// SILEX-PHIS
+// Copyright © INRA 2018
 // Creation date: January 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  October, 31 2017 : Passage de trial à experiment
-// Subject: A DAO specific to retrieve experiment data
 //***********************************************************************************************
 
 package phis2ws.service.dao.phis;
@@ -26,10 +22,12 @@ import javax.ws.rs.core.Response;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOPhisBrapi;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.model.User;
+import phis2ws.service.resources.AcquisitionSessionResourceService;
 import phis2ws.service.resources.dto.ExperimentDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.sql.JoinAttributes;
@@ -39,7 +37,10 @@ import phis2ws.service.view.model.phis.Group;
 import phis2ws.service.view.model.phis.Project;
 import phis2ws.service.view.model.phis.Experiment;
 
-
+/**
+ * DAO for the experiments in the relational database. It allows CRUD operations.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(ExperimentDao.class);
@@ -125,6 +126,63 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
         experiment.setCropSpecies(result.getString("crop_species"));
 
         return experiment;
+    }
+    
+    /**
+     * Get the list of the experiments, with only the minimal informations 
+     * required to generate the lists for 4P acquisition session files. 
+     * Returned informations for each experiment : 
+     *  alias, uri, species
+     * @see AcquisitionSessionResourceService
+     * @return the list of the experiments founded in the database
+     */
+    public ArrayList<Experiment> getAllExperimentsForAcquisitionSessionFile() {
+        ResultSet queryResult = null;
+        Connection connection = null;
+        Statement statement = null;
+        ArrayList<Experiment> experiments = new ArrayList();
+        
+        try {
+            connection = dataSource.getConnection();
+            statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+            SQLQueryBuilder query = new SQLQueryBuilder();
+            
+            //Query database            
+            Map<String, String> sqlFields = relationFieldsJavaSQLObject();
+           
+            query.appendFrom(table, tableAlias);
+            query.appendSelect(sqlFields.get("uri") + ", " + sqlFields.get("alias") + ", " + sqlFields.get("cropSpecies"));
+            
+            queryResult = statement.executeQuery(query.toString());
+            
+            //Manipulates database results
+            while (queryResult.next()) {
+                Experiment experiment = new Experiment();
+                experiment.setUri(queryResult.getString(sqlFields.get("uri")));
+                experiment.setAlias(queryResult.getString(sqlFields.get("alias")));
+                experiment.setCropSpecies(queryResult.getString(sqlFields.get("cropSpecies")));
+                
+                experiments.add(experiment);
+            }
+            
+        } catch (SQLException ex) {
+            java.util.logging.Logger.getLogger(ExperimentDao.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                if (queryResult != null) {
+                    queryResult.close();
+                }
+                if (statement != null) {
+                    statement.close();
+                }
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException ex) {
+                java.util.logging.Logger.getLogger(ExperimentDao.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return experiments;
     }
 
     @Override

@@ -54,6 +54,11 @@ public abstract class DAOSesame<T> {
     protected static final String SPARQL_SELECT_QUERY = "SPARQL query : ";
     
     protected static final String COUNT_ELEMENT_QUERY = "count";
+    
+    //The following constants are the constants used for each type to query the triplestore.
+    protected static final String URI = "uri";
+    protected static final String RDF_TYPE = "rdfType";
+    protected static final String LABEL = "label";
 
     protected static Repository rep;
     private RepositoryConnection connection;

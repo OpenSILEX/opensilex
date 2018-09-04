@@ -1,13 +1,9 @@
 //******************************************************************************
 //                                       SensorDAOSesame.java
-//
-// Author(s): Morgane Vidal <morgane.vidal@inra.fr>
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
+// SILEX-PHIS
+// Copyright © INRA 2018
 // Creation date: 9 mars 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  9 mars 2018
-// Subject: access to the sensors in the triplestore
 //******************************************************************************
 package phis2ws.service.dao.sesame;
 
@@ -82,6 +78,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
     
     final static String TRIPLESTORE_CONTEXT_SENSOR = NAMESPACES.getContextsProperty("sensors");
     
+    final static String TRIPLESTORE_CONCEPT_CAMERA = NAMESPACES.getObjectsProperty("cCamera");
     final static String TRIPLESTORE_CONCEPT_SENSING_DEVICE = NAMESPACES.getObjectsProperty("cSensingDevice");
     
     final static String TRIPLESTORE_RELATION_BRAND = NAMESPACES.getRelationsProperty("rHasBrand");
@@ -257,13 +254,13 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
 
         if (uri != null) {
             sensor.setUri(uri);
-        } else {
+        } else if (bindingSet.getValue(URI) != null) {
             sensor.setUri(bindingSet.getValue(URI).stringValue());
         }
 
         if (rdfType != null) {
             sensor.setRdfType(rdfType);
-        } else {
+        } else if (bindingSet.getValue(RDF_TYPE) != null) {
             sensor.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
         }
 
@@ -275,7 +272,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
 
         if (brand != null) {
             sensor.setBrand(brand);
-        } else {
+        } else if (bindingSet.getValue(BRAND) != null) {
             sensor.setBrand(bindingSet.getValue(BRAND).stringValue());
         }
         
@@ -305,7 +302,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         
         if (personInCharge != null) {
             sensor.setPersonInCharge(personInCharge);
-        } else {
+        } else if (bindingSet.getValue(PERSON_IN_CHARGE) != null) {
             sensor.setPersonInCharge(bindingSet.getValue(PERSON_IN_CHARGE).stringValue());
         }
 
@@ -665,5 +662,48 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         } else { //errors founded in data
             return checkResult;
         }
+    }
+    
+    /**
+     * Generates the query to get the uri, label and rdf type of all the cameras
+     * @return the query
+     * e.g. 
+     * SELECT DISTINCT  ?uri ?label ?rdfType WHERE {
+     *      ?uri  rdfs:subClassOf*  <http://www.phenome-fppn.fr/vocabulary/2017#Camera> . 
+     *      ?uri rdf:type ?rdfType .
+     *      ?uri  rdfs:label  ?label  .
+     * }
+     */
+    private SPARQLQueryBuilder prepareSearchCamerasQuery() {
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        
+        query.appendSelect("?" + URI + " ?" + RDF_TYPE + " ?" + LABEL );
+        query.appendTriplet("?" + RDF_TYPE, TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE, TRIPLESTORE_CONCEPT_CAMERA, null);
+        query.appendTriplet("?" + URI, TRIPLESTORE_RELATION_TYPE, "?" + RDF_TYPE, null);
+        query.appendTriplet("?" + URI, TRIPLESTORE_RELATION_LABEL, "?" + LABEL, null);
+        query.appendOrderBy("desc(?" + LABEL + ")");
+        
+        LOGGER.debug(query.toString());
+        
+        return query;
+    }
+    
+    /**
+     * get the cameras (type, label, uri) of the triplestore.
+     * @return the list of the cameras
+     */
+    public ArrayList<Sensor> getCameras() {
+        SPARQLQueryBuilder query = prepareSearchCamerasQuery();
+        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        ArrayList<Sensor> cameras = new ArrayList<>();
+
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
+            while (result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                Sensor camera = getSensorFromBindingSet(bindingSet);
+                cameras.add(camera);
+            }
+        }
+        return cameras;
     }
 }

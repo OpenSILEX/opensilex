@@ -94,6 +94,7 @@ public final class DocumentationAnnotation {
     public static final String VARIABLES_DEFINITION = "A variable or comma-separated variables list";
 
     public static final String VECTOR_POST_DEFINITION = "JSON format of vector data";
+    public static final String VECTOR_RDF_TYPE_DEFINITION = "A vector rdf type URI";
 
     public static final String ADMIN_ONLY_NOTES = "This can only be done by a PHIS-SILEX admin.";
     public static final String USER_ONLY_NOTES = "This can only be done by a PHIS-SILEX user.";

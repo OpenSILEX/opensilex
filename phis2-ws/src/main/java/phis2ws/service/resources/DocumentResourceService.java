@@ -1,13 +1,11 @@
 //**********************************************************************************************
 //                                       DocumentResourceService.java 
 //
-// Author(s): Arnaud Charleroy, Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2016
-// Creation date: august 2016
-// Contact:arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  March, 2017
-// Subject: Represents the documents service
+// SILEX-PHIS
+// Copyright © INRA 2016
+// Creation date: Aug, 2016
+// Contact:  arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr,
+//           pascal.neveu@inra.fr
 //***********************************************************************************************
 package phis2ws.service.resources;
 
@@ -43,6 +41,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -78,6 +77,12 @@ import phis2ws.service.view.brapi.form.ResponseFormGET;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
 import phis2ws.service.view.model.phis.Document;
 
+/**
+ * Represents the documents service.
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
+ * @update [Morgane Vidal] March, 2017 : no explanation
+ * @update [Arnaud Charleroy] 04 September, 2018 : create automatically document directory if not
+ */
 @Api("/documents")
 @Path("/documents")
 public class DocumentResourceService {
@@ -221,6 +226,23 @@ public class DocumentResourceService {
         try {
             waitingAnnotFileCheck.put(docUri, Boolean.TRUE); // Traitement en cours du fichier
             LOGGER.debug(jsch.getSFTPWorkingDirectory() + "/" + media);
+            // create document directory if it is not
+            File documentDirectoy = new File(jsch.getSFTPWorkingDirectory());
+            if (!documentDirectoy.isDirectory()) {
+                if (!documentDirectoy.mkdirs()) {
+                    LOGGER.error("Can't create temporary documents directory");
+                    throw new WebApplicationException(
+                            Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                            .entity(new ResponseFormPOST(new Status("Can't create log directory", StatusCodeMsg.ERR, null))).build());
+                }
+            }
+            // make the good rights on the document directory on remote server
+            try {
+                Runtime.getRuntime().exec("chmod -R 755 " + jsch.getSFTPWorkingDirectory());
+                LOGGER.info("Documents directory rights successful update");
+            } catch (IOException e) {
+                LOGGER.error("Can't change rights on documents directory");
+            }
             //SILEX:test
             jsch.getChannelSftp().cd(jsch.getSFTPWorkingDirectory());
             //\SILEX:test

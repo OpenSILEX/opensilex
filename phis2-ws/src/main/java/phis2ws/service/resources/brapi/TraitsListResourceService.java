@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -106,13 +107,9 @@ public class TraitsListResourceService implements BrapiCall {
     @Produces(MediaType.APPLICATION_JSON)
     
     public Response getTraitDetails ( 
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page, 
-        @ApiParam(value = DocumentationAnnotation.TRAIT_URI_DEFINITION, required = true, example=DocumentationAnnotation.EXAMPLE_TRAIT_URI) @QueryParam("traitDbId") @DefaultValue(DefaultBrapiPaginationValues.PAGE) String traitDbId
+        @ApiParam(value = DocumentationAnnotation.TRAIT_URI_DEFINITION, required = true, example=DocumentationAnnotation.EXAMPLE_TRAIT_URI) @PathParam("traitDbId") @DefaultValue(DefaultBrapiPaginationValues.PAGE) String traitDbId
     ) throws SQLException {        
-        BrapiTraitDAO traitDAO = new BrapiTraitDAO(traitDbId);
-        traitDAO.setPageSize(limit);
-        traitDAO.setPage(page);           
+        BrapiTraitDAO traitDAO = new BrapiTraitDAO(traitDbId);           
         return getTraitsData(traitDAO);
     }
     

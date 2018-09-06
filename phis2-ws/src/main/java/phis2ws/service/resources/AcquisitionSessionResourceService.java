@@ -83,7 +83,7 @@ public class AcquisitionSessionResourceService {
         fileMetadata = acquisitionSessionDAOSesame.allPaginateFileMetadata();
         
         if (fileMetadata == null) {
-            getResponse = new ResponseFormMetadataFile(0, 0, fileMetadata, true);
+            getResponse = new ResponseFormMetadataFile(0, 0, new ArrayList<>(), true);
             return noResultFound(getResponse, statusList);
         } else if (fileMetadata.isEmpty()) {
             getResponse = new ResponseFormMetadataFile(0, 0, fileMetadata, true);

@@ -22,7 +22,6 @@ import javax.ws.rs.core.Response;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOPhisBrapi;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.documentation.StatusCodeMsg;
@@ -45,15 +44,36 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(ExperimentDao.class);
     
+    //Search parameters :
+    //The uri of an experiment.
+    //e.g. http://www.phenome-fppn.fr/diaphen/DIA2017-1
     public String uri;
+    //The start date of an experiment
+    //e.g. 2018-01-15
     public String startDate;
+    //The end date of an experiment
+    //e.g. 2018-08-02
     public String endDate;
+    //The field of an experiment
+    //e.g. field003
     public String field;
+    //The campaign of an experiment
+    //e.g. 2017
     public String campaign;
+    //The place of an experiment
+    //e.g. Madone
     public String place;
+    //The alias of the experiment
+    //e.g. exp-16-03
     public String alias;
+    //The keywords of the experiment
+    //e.g. maize, phenotyping
     public String keyword;
+    //The groups uris that can access an experiment
+    //e.g. http://www.phenome-fppn.fr/diaphen/DROPS,http://www.phenome-fppn.fr/diaphen/MISTEAGAMMA
     public String groups;
+    //The crop species of an experiment
+    //e.g. Maize, Wheat
     public String cropSpecies;
     
     public ExperimentDao() {
@@ -199,7 +219,7 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
             Map<String, String> sqlFields = relationFieldsJavaSQLObject();
            
             //Ajout des conditions dans la requête
-            query.appendFrom("trial", tableAlias);
+            query.appendFrom(table, tableAlias);
             query.appendANDWhereConditionIfNeeded(sqlFields.get("uri"), uri, "ILIKE", null, tableAlias);
             query.appendANDWhereConditionIfNeeded(sqlFields.get("startDate"), startDate, "ILIKE", null, tableAlias);
             query.appendANDWhereConditionIfNeeded(sqlFields.get("endDate"), endDate, "ILIKE", null, tableAlias);
@@ -307,51 +327,50 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
     
     @Override
     public Integer count() {
-     
-     SQLQueryBuilder query = new SQLQueryBuilder();
-     query.appendCount();
-     query.appendDistinct();
-     query.appendSelect(tableAlias + ".uri");
-     query.appendFrom(table, tableAlias);
-     
-     if (uri != null) {
-         query.appendWhereConditions("uri", uri, "=", null, tableAlias);
-     }
-     
-     Connection connection = null;
-     ResultSet resultSet = null;
-     Statement statement = null;
-     
-     try {
-         connection = dataSource.getConnection();
-         statement = connection.createStatement();
-         resultSet = statement.executeQuery(query.toString());
-         
-         if(resultSet.next()) {
-             return resultSet.getInt(1);
-         }else{
-             return 0;
-         }
-         
-         
-     } catch(SQLException e) {
-         LOGGER.error(e.getMessage(), e);
-         return null;
-     } finally {
-         try {
-             if (statement != null) {
-                 statement.close();
-             }
-             if (resultSet != null) {
-                 resultSet.close();
-             }
-             if (connection != null) {
-                 connection.close();
-             }
-         } catch (SQLException ex) {
-             LOGGER.error(ex.getMessage(), ex);
-         }
-     }
+        SQLQueryBuilder query = new SQLQueryBuilder();
+        query.appendCount();
+        query.appendDistinct();
+        query.appendSelect(tableAlias + ".uri");
+        query.appendFrom(table, tableAlias);
+
+        if (uri != null) {
+            query.appendWhereConditions("uri", uri, "=", null, tableAlias);
+        }
+
+        Connection connection = null;
+        ResultSet resultSet = null;
+        Statement statement = null;
+
+        try {
+            connection = dataSource.getConnection();
+            statement = connection.createStatement();
+            resultSet = statement.executeQuery(query.toString());
+
+            if(resultSet.next()) {
+                return resultSet.getInt(1);
+            }else{
+                return 0;
+            }
+
+
+        } catch(SQLException e) {
+            LOGGER.error(e.getMessage(), e);
+            return null;
+        } finally {
+            try {
+                if (statement != null) {
+                    statement.close();
+                }
+                if (resultSet != null) {
+                    resultSet.close();
+                }
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException ex) {
+                LOGGER.error(ex.getMessage(), ex);
+            }
+        }
     }
 
     @Override

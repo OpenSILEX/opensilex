@@ -223,6 +223,7 @@ public class DocumentResourceService {
         String media = waitingAnnotInformation.get(docUri).getDocumentType();
         media = media.substring(media.lastIndexOf("#") + 1, media.length());
         FileUploader jsch = new FileUploader();
+        final String webAppApiDocsName = PropertiesFileManager.getConfigFileProperty("service", "webAppApiDocsName");
         try {
             waitingAnnotFileCheck.put(docUri, Boolean.TRUE); // Traitement en cours du fichier
             LOGGER.debug(jsch.getSFTPWorkingDirectory() + "/" + media);
@@ -230,18 +231,18 @@ public class DocumentResourceService {
             File documentDirectoy = new File(jsch.getSFTPWorkingDirectory());
             if (!documentDirectoy.isDirectory()) {
                 if (!documentDirectoy.mkdirs()) {
-                    LOGGER.error("Can't create temporary documents directory");
+                    LOGGER.error("Can't create " + webAppApiDocsName + " temporary documents directory");
                     throw new WebApplicationException(
                             Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                            .entity(new ResponseFormPOST(new Status("Can't create log directory", StatusCodeMsg.ERR, null))).build());
+                            .entity(new ResponseFormPOST(new Status("Can't create " + webAppApiDocsName + " temporary documents directory", StatusCodeMsg.ERR, null))).build());
                 }
             }
             // make the good rights on the document directory on remote server
             try {
                 Runtime.getRuntime().exec("chmod -R 755 " + jsch.getSFTPWorkingDirectory());
-                LOGGER.info("Documents directory rights successful update");
+                LOGGER.info( webAppApiDocsName + " temporary documents directory rights successful update");
             } catch (IOException e) {
-                LOGGER.error("Can't change rights on documents directory");
+                LOGGER.error("Can't change rights on " + webAppApiDocsName + " temporary documents directory");
             }
             //SILEX:test
             jsch.getChannelSftp().cd(jsch.getSFTPWorkingDirectory());

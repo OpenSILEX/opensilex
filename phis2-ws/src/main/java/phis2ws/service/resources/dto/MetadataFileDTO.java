@@ -8,7 +8,6 @@
 package phis2ws.service.resources.dto;
 
 import com.google.gson.annotations.SerializedName;
-import java.util.Map;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 
 /**
@@ -42,11 +41,6 @@ import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
     // e.g. john.doe@email.fr
     @SerializedName("Pilot")
     protected String pilot;
-    
-    @Override
-    public Map rules() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 
     @Override
     public Object createObjectFromDTO() {

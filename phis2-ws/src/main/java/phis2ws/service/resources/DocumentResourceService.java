@@ -230,22 +230,23 @@ public class DocumentResourceService {
         try {
             waitingAnnotFileCheck.put(docUri, Boolean.TRUE); // Traitement en cours du fichier
             LOGGER.debug(jsch.getSFTPWorkingDirectory() + "/" + media);
-            // create document directory if it is not
-            File documentDirectoy = new File(jsch.getSFTPWorkingDirectory());
-            if (!documentDirectoy.isDirectory()) {
-                if (!documentDirectoy.mkdirs()) {
+            // create document directory if it doesn't exists
+            File documentDirectory = new File(jsch.getSFTPWorkingDirectory());
+            if (!documentDirectory.isDirectory()) {
+                if (!documentDirectory.mkdirs()) {
                     LOGGER.error("Can't create " + webAppApiDocsName + " temporary documents directory");
                     throw new WebApplicationException(
                             Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                             .entity(new ResponseFormPOST(new Status("Can't create " + webAppApiDocsName + " temporary documents directory", StatusCodeMsg.ERR, null))).build());
+                }else{
+                    // make the good rights on the document directory on remote server
+                    try {
+                        Runtime.getRuntime().exec("chmod -R 755 " + jsch.getSFTPWorkingDirectory());
+                        LOGGER.info( webAppApiDocsName + " temporary documents directory rights successfully updated");
+                    } catch (IOException e) {
+                        LOGGER.error("Can't change rights on " + webAppApiDocsName + " temporary documents directory");
+                    }
                 }
-            }
-            // make the good rights on the document directory on remote server
-            try {
-                Runtime.getRuntime().exec("chmod -R 755 " + jsch.getSFTPWorkingDirectory());
-                LOGGER.info( webAppApiDocsName + " temporary documents directory rights successful update");
-            } catch (IOException e) {
-                LOGGER.error("Can't change rights on " + webAppApiDocsName + " temporary documents directory");
             }
             //SILEX:test
             jsch.getChannelSftp().cd(jsch.getSFTPWorkingDirectory());

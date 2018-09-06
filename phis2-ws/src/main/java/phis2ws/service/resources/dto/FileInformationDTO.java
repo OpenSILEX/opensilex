@@ -12,9 +12,8 @@
 package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
-import java.util.HashMap;
-import java.util.Map;
 import phis2ws.service.documentation.DocumentationAnnotation;
+import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.view.model.phis.FileInformations;
 
@@ -28,14 +27,6 @@ public class FileInformationDTO extends AbstractVerifiedClass {
     private String checksum;
     //the file extension (e.g. PNG)
     private String extension;
-    
-    @Override
-    public Map rules() {
-        Map<String, Boolean> rules = new HashMap<>();
-        rules.put("checksum", Boolean.TRUE);
-        rules.put("extension", Boolean.TRUE);
-        return rules;
-    }
 
     @Override
     public FileInformations createObjectFromDTO() {
@@ -45,6 +36,7 @@ public class FileInformationDTO extends AbstractVerifiedClass {
         return fileInformations;
     }
 
+    @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_FILE_INFORMATION_CHECKSUM)
     public String getChecksum() {
         return checksum;
@@ -54,6 +46,7 @@ public class FileInformationDTO extends AbstractVerifiedClass {
         this.checksum = checksum;
     }
     
+    @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_FILE_INFORMATION_EXTENSION)
     public String getExtension() {
         return extension;

@@ -17,11 +17,14 @@ package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import javax.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import phis2ws.service.configuration.DateFormat;
+import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.validation.interfaces.Date;
+import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.Contact;
 import phis2ws.service.view.model.phis.Group;
 import phis2ws.service.view.model.phis.Project;
@@ -46,27 +49,6 @@ public class ExperimentDTO extends AbstractVerifiedClass {
     private ArrayList<String> groupsUris;
     private ArrayList<Contact> contacts;
     
-    @Override
-    public Map rules() {
-        Map<String, Boolean> rules = new HashMap<>();
-        rules.put("uri", Boolean.TRUE);
-        rules.put("startDate", Boolean.TRUE);
-        rules.put("endDate", Boolean.TRUE);
-        rules.put("field", Boolean.FALSE);
-        rules.put("campaign", Boolean.FALSE);
-        rules.put("place", Boolean.FALSE);
-        rules.put("alias", Boolean.FALSE);
-        rules.put("comment", Boolean.FALSE);
-        rules.put("keywords", Boolean.FALSE);
-        rules.put("objective", Boolean.FALSE);
-        rules.put("cropSpecies", Boolean.FALSE);
-        rules.put("projectsUris", Boolean.FALSE);
-        rules.put("groupsUris", Boolean.FALSE);
-        rules.put("contacts", Boolean.FALSE);
-        
-        return rules;
-    }
-
     @Override
     public Experiment createObjectFromDTO() {
         Experiment experiment = new Experiment(uri);
@@ -100,10 +82,11 @@ public class ExperimentDTO extends AbstractVerifiedClass {
                 experiment.addContact(contact);
             }
         }
-        
         return experiment;
     }
-
+    
+    @URL
+    @Required
     @ApiModelProperty(example = "http://www.phenome-fppn.fr/diaphen/drops")
     public String getUri() {
         return uri;
@@ -112,7 +95,9 @@ public class ExperimentDTO extends AbstractVerifiedClass {
     public void setUri(String uri) {
         this.uri = uri;
     }
-
+    
+    @Date(DateFormat.YMD)
+    @Required
     @ApiModelProperty(example = "2015-07-07")
     public String getStartDate() {
         return startDate;
@@ -121,7 +106,9 @@ public class ExperimentDTO extends AbstractVerifiedClass {
     public void setStartDate(String startDate) {
         this.startDate = startDate;
     }
-
+    
+    @Date(DateFormat.YMD)
+    @Required
     @ApiModelProperty(example = "2015-08-07")
     public String getEndDate() {
         return endDate;
@@ -194,6 +181,7 @@ public class ExperimentDTO extends AbstractVerifiedClass {
         this.objective = objective;
     }
     
+    @URL
     public ArrayList<String> getProjectsUris() {
         return projectsUris;
     }
@@ -202,6 +190,7 @@ public class ExperimentDTO extends AbstractVerifiedClass {
         this.projectsUris = projectsUris;
     }
 
+    @URL
     public ArrayList<String> getGroupsUris() {
         return groupsUris;
     }
@@ -219,10 +208,11 @@ public class ExperimentDTO extends AbstractVerifiedClass {
         this.cropSpecies = cropSpecies;
     }
     
+    @Valid
     public ArrayList<Contact> getContacts() {
         return contacts;
     }
-
+    
     public void setContacts(ArrayList<Contact> contacts) {
         this.contacts = contacts;
     }

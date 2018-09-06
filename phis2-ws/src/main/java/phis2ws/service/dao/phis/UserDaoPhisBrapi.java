@@ -506,11 +506,6 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    private boolean isElementValid(UserDTO userDTO) {
-        Map<String, Object> userOk = userDTO.isOk();
-        return (boolean) userOk.get("state");
-    }
-
     private POSTResultsReturn checkAndInsertUserList(List<UserDTO> newUsers) throws SQLException, Exception {
         //init result returned maps
         List<Status> insertStatusList = new ArrayList<>();
@@ -521,13 +516,8 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
         ArrayList<User> users = new ArrayList<>();
 
         for (UserDTO userDTO : newUsers) {
-            if (isElementValid(userDTO)) {
-                User u = userDTO.createObjectFromDTO();
-                users.add(u);
-            } else {
-                dataState = false;
-                insertStatusList.add(new Status("Data error", StatusCodeMsg.ERR, "Fields are missing in JSON data"));
-            }
+            User u = userDTO.createObjectFromDTO();
+            users.add(u);
         }
 
         if (dataState) {

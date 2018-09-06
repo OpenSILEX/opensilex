@@ -20,6 +20,8 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -42,6 +44,8 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.UnitDTO;
+import phis2ws.service.resources.validation.interfaces.Required;
+import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
@@ -76,7 +80,7 @@ public class UnitResourceService {
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response postUnit(@ApiParam(value = DocumentationAnnotation.UNIT_POST_DATA_DEFINITION) ArrayList<UnitDTO> units,
+    public Response postUnit(@ApiParam(value = DocumentationAnnotation.UNIT_POST_DATA_DEFINITION, required = true) @Valid ArrayList<UnitDTO> units,
                               @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         if (units != null && !units.isEmpty()) {
@@ -122,7 +126,7 @@ public class UnitResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response putUnit(
-        @ApiParam(value = DocumentationAnnotation.UNIT_POST_DATA_DEFINITION) ArrayList<UnitDTO> units,
+        @ApiParam(value = DocumentationAnnotation.UNIT_POST_DATA_DEFINITION) @Valid ArrayList<UnitDTO> units,
         @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         if (units != null && !units.isEmpty()) {
@@ -214,9 +218,9 @@ public class UnitResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUnitsBySearch(
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
-        @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_UNIT_URI) @QueryParam("uri") String uri,
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
+        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
+        @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_UNIT_URI) @QueryParam("uri") @URL String uri,
         @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_UNIT_LABEL) @QueryParam("label") String label
     ) {
         UnitDaoSesame unitDaoSesame = new UnitDaoSesame();
@@ -259,9 +263,9 @@ public class UnitResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUnitDetails(
-        @ApiParam(value = DocumentationAnnotation.UNIT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_UNIT_URI) @PathParam("unit") String unit,
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
+        @ApiParam(value = DocumentationAnnotation.UNIT_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_UNIT_URI, required = true) @PathParam("unit") @Required @URL String unit,
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
+        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
         
         if (unit == null) {
             final Status status = new Status("Access error", StatusCodeMsg.ERR, "Empty unit URI");
@@ -275,6 +279,5 @@ public class UnitResourceService {
         unitDaoSesame.user = userSession.getUser();
         
         return getUnitsData(unitDaoSesame);
-    }
-    
+    }  
 }

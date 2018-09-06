@@ -335,37 +335,21 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
 
         //1. check data
         for (AnnotationDTO annotation : annotations) {
-            //1.1 check required fields
-            if ((boolean) annotation.isOk().get(AbstractVerifiedClass.STATE)) {
-                try {
-                    //1.2 check motivation
-                    if (annotation.getMotivatedBy() == null || !uriDao.existObject(annotation.getMotivatedBy()) || !uriDao.isInstanceOf(annotation.getMotivatedBy(), TRIPLESTORE_CONCEPT_MOTIVATION)) {
-                        dataOk = false;
-                        checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.WRONG_VALUE + " for the motivatedBy field"));
-                    }
-
-                    //1.3 check if person exist // PostgresQL
-                    if (!userDao.existUserUri(annotation.getCreator())) {
-                        dataOk = false;
-                        checkStatus.add(new Status(StatusCodeMsg.UNKNOWN_URI, StatusCodeMsg.ERR, StatusCodeMsg.WRONG_VALUE + " for person uri"));
-                    }
-
-                    //1.4 check if target exist
-                    for (String target : annotation.getTargets()) {
-                        if (target.isEmpty()) {
-                            dataOk = false;
-                            checkStatus.add(new Status(StatusCodeMsg.UNKNOWN_URI, StatusCodeMsg.ERR, "Unknown target uri"));
-                        }
-                    }
-
-                } catch (Exception ex) {
-                    LOGGER.error("Data check error", ex);
+            try {
+                //1.1 check motivation
+                if (!uriDao.existObject(annotation.getMotivatedBy())
+                        || !uriDao.isInstanceOf(annotation.getMotivatedBy(), TRIPLESTORE_CONCEPT_MOTIVATION)) {
+                    dataOk = false;
+                    checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.WRONG_VALUE + " for the motivatedBy field"));
                 }
-            } else { //Missing required fields
-                dataOk = false;
-                Map<String, Object> fieldsNotValid = annotation.isOk();
-                fieldsNotValid.remove(AbstractVerifiedClass.STATE);
-                checkStatus.add(new Status(StatusCodeMsg.BAD_DATA_FORMAT, StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.MISSING_FIELDS_LIST).append(fieldsNotValid).toString()));
+
+                //1.2 check if person exist // PostgresQL
+                if (!userDao.existUserUri(annotation.getCreator())) {
+                    dataOk = false;
+                    checkStatus.add(new Status(StatusCodeMsg.UNKNOWN_URI, StatusCodeMsg.ERR, StatusCodeMsg.WRONG_VALUE + " for person uri"));
+                }
+            } catch (Exception ex) {
+                LOGGER.error(StatusCodeMsg.INVALID_INPUT_PARAMETERS, ex);
             }
         }
 

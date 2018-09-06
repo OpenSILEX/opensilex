@@ -12,6 +12,7 @@
 package phis2ws.service.view.model.phis;
 
 import io.swagger.annotations.ApiModelProperty;
+import phis2ws.service.resources.validation.interfaces.URL;
 
 public class OntologyReference {
     /**
@@ -27,6 +28,7 @@ public class OntologyReference {
         
     }
 
+    @URL
     @ApiModelProperty(example = "http://www.w3.org/2004/02/skos/core#closeMatch")
     public String getProperty() {
         return property;
@@ -36,6 +38,7 @@ public class OntologyReference {
         this.property = property;
     }
     
+    @URL
     @ApiModelProperty(example = "http://www.cropontology.org/rdf/CO_715:0000139")
     public String getObject() {
         return object;
@@ -45,6 +48,7 @@ public class OntologyReference {
         this.object = object;
     }
     
+    @URL
     @ApiModelProperty(example = "http://www.cropontology.org/ontology/CO_715/")
     public String getSeeAlso() {
         return seeAlso;

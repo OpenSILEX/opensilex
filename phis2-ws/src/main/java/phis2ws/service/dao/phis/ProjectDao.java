@@ -70,11 +70,6 @@ public class ProjectDao extends DAOPhisBrapi<Project, ProjectDTO> {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
-    private boolean isElementValid(ProjectDTO projectDTO) {
-        Map<String, Object> projectOk = projectDTO.isOk();
-        return (boolean) projectOk.get("state");
-    }
-    
     private POSTResultsReturn checkAndInsertProjectList(List<ProjectDTO> newProjects) throws SQLException, Exception {
         //init resuts returned maps
         List<Status> insertStatusList = new ArrayList<>();
@@ -85,13 +80,8 @@ public class ProjectDao extends DAOPhisBrapi<Project, ProjectDTO> {
         ArrayList<Project> projects = new ArrayList<>();
         
         for (ProjectDTO projectDTO : newProjects) {
-            if (isElementValid(projectDTO)) {
-                Project project = projectDTO.createObjectFromDTO();
-                projects.add(project);
-            } else {
-                dataState = false;
-                insertStatusList.add(new Status("Data error", StatusCodeMsg.ERR, "Fields are missing in JSON Data"));
-            }
+            Project project = projectDTO.createObjectFromDTO();
+            projects.add(project);
         }
         if (dataState) {
             PreparedStatement insertPreparedStatementProject = null;

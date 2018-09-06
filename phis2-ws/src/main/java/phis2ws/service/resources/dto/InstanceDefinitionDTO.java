@@ -16,9 +16,10 @@ package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import javax.validation.Valid;
+import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.InstanceDefinition;
 import phis2ws.service.view.model.phis.OntologyReference;
 
@@ -32,17 +33,6 @@ public class InstanceDefinitionDTO extends AbstractVerifiedClass {
     protected String label;
     protected String comment;
     protected ArrayList<OntologyReference> ontologiesReferences = new ArrayList<>();
-
-    @Override
-    public Map rules() {
-        Map<String, Boolean> rules = new HashMap<>();
-        rules.put("label", Boolean.TRUE);
-        rules.put("uri", Boolean.FALSE);
-        rules.put("comment", Boolean.FALSE);
-        rules.put("ontologiesReferences", Boolean.FALSE);
-        
-        return rules;
-    }
 
     @Override
     public InstanceDefinition createObjectFromDTO() {
@@ -60,6 +50,7 @@ public class InstanceDefinitionDTO extends AbstractVerifiedClass {
         return instanceDefinition;
     }
 
+    @URL
     @ApiModelProperty(example = "http://www.phenome-fppn.fr/id/variables/v001")
     public String getUri() {
         return uri;
@@ -68,6 +59,8 @@ public class InstanceDefinitionDTO extends AbstractVerifiedClass {
     public void setUri(String uri) {
         this.uri = uri;
     }
+    
+    @Required
     @ApiModelProperty(example = "LAI")
     public String getLabel() {
         return label;
@@ -85,7 +78,11 @@ public class InstanceDefinitionDTO extends AbstractVerifiedClass {
     public void setComment(String comment) {
         this.comment = comment;
     }
-
+    
+    //SILEX:todo
+    // Do the DTO OntologyReferenceDTO
+    //\SILEX:todo
+    @Valid
     public ArrayList<OntologyReference> getOntologiesReferences() {
         return ontologiesReferences;
     }

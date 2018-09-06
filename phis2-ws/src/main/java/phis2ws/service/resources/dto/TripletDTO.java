@@ -12,19 +12,21 @@
 package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
-import java.util.HashMap;
-import java.util.Map;
 import phis2ws.service.documentation.DocumentationAnnotation;
+import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.validation.interfaces.OType;
+import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.Triplet;
 
 /**
  * Corresponds to the submitted json for a triplet
+ *
  * @see https://www.w3.org/wiki/JSON_Triple_Sets
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class TripletDTO extends AbstractVerifiedClass {
-    
+
     //subject of the triplet
     private String s;
     //property of the triplet 
@@ -40,19 +42,6 @@ public class TripletDTO extends AbstractVerifiedClass {
     private String g;
 
     @Override
-    public Map rules() {
-        Map<String, Boolean> rules = new HashMap<>();
-        rules.put("s", Boolean.TRUE);
-        rules.put("p", Boolean.TRUE);
-        rules.put("o", Boolean.TRUE);
-        rules.put("o_type", Boolean.TRUE);
-        rules.put("o_lang", Boolean.FALSE);
-        rules.put("g", Boolean.FALSE);
-        
-        return rules;
-    }
-
-    @Override
     public Triplet createObjectFromDTO() {
         Triplet triplet = new Triplet();
         triplet.setS(s);
@@ -61,10 +50,12 @@ public class TripletDTO extends AbstractVerifiedClass {
         triplet.setO_type(o_type);
         triplet.setO_lang(o_lang);
         triplet.setG(g);
-        
+
         return triplet;
     }
-    
+
+    @URL
+    @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_TRIPLET_SUBJECT)
     public String getS() {
         return s;
@@ -73,6 +64,9 @@ public class TripletDTO extends AbstractVerifiedClass {
     public void setS(String s) {
         this.s = s;
     }
+
+    @URL
+    @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_TRIPLET_PROPERTY)
     public String getP() {
         return p;
@@ -81,6 +75,10 @@ public class TripletDTO extends AbstractVerifiedClass {
     public void setP(String p) {
         this.p = p;
     }
+
+    @URL
+    @Required
+    @OType
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_TRIPLET_OBJECT)
     public String getO() {
         return o;
@@ -89,6 +87,9 @@ public class TripletDTO extends AbstractVerifiedClass {
     public void setO(String o) {
         this.o = o;
     }
+
+    @URL
+    @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_TRIPLET_OBJECT_TYPE)
     public String getO_type() {
         return o_type;
@@ -97,7 +98,7 @@ public class TripletDTO extends AbstractVerifiedClass {
     public void setO_type(String o_type) {
         this.o_type = o_type;
     }
-    
+
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_TRIPLET_OBJECT_LANGUAGE)
     public String getO_lang() {
         return o_lang;
@@ -106,7 +107,8 @@ public class TripletDTO extends AbstractVerifiedClass {
     public void setO_lang(String o_lang) {
         this.o_lang = o_lang;
     }
-    
+
+    @URL
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_TRIPLET_GRAPH)
     public String getG() {
         return g;
@@ -115,5 +117,4 @@ public class TripletDTO extends AbstractVerifiedClass {
     public void setG(String g) {
         this.g = g;
     }
-    
 }

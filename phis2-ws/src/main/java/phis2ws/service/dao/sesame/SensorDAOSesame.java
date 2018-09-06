@@ -376,43 +376,22 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         if (userDao.isAdmin(user)) {
             //2. check data
             for (SensorDTO sensor : sensors) {
-                //2.1 check required fields
-                if ((boolean) sensor.isOk().get(AbstractVerifiedClass.STATE)) {
-                    try {
-                        //2.2 check date formats
-                        if (!Dates.isDateYMD(sensor.getInServiceDate())) {
-                            dataOk = false;
-                            checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.EXPECTED_DATE_FORMAT_YMD + " for the inServiceDate field"));
-                        }
-                        if (sensor.getDateOfPurchase() != null && !Dates.isDateYMD(sensor.getDateOfPurchase())) {
-                            dataOk = false;
-                            checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.EXPECTED_DATE_FORMAT_YMD + " for the dateOfPurchase field"));
-                        }
-                        if (sensor.getDateOfLastCalibration()!= null && !Dates.isDateYMD(sensor.getDateOfLastCalibration())) {
-                            dataOk = false;
-                            checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.EXPECTED_DATE_FORMAT_YMD + " for the dateOfLastCalibration field"));
-                        }
-                        
-                        //2.3 check type (subclass of SensingDevice)
-                        UriDaoSesame uriDaoSesame = new UriDaoSesame();
-                        if (!uriDaoSesame.isSubClassOf(sensor.getRdfType(), TRIPLESTORE_CONCEPT_SENSING_DEVICE)) {
-                            dataOk = false;
-                            checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Bad sensor type given. Must be sublass of SensingDevice concept"));
-                        }
-                        
-                        //2.4 check if person in charge exist
-                        User u = new User(sensor.getPersonInCharge());
-                        if (!userDao.existInDB(u)) {
-                            dataOk = false;
-                            checkStatus.add(new Status(StatusCodeMsg.UNKNOWN_URI, StatusCodeMsg.ERR, "Unknown person in charge email"));
-                        }
-                    } catch (Exception ex) {
-                        java.util.logging.Logger.getLogger(SensorDAOSesame.class.getName()).log(Level.SEVERE, null, ex);
+                try {
+                    //2.1 check type (subclass of SensingDevice)
+                    UriDaoSesame uriDaoSesame = new UriDaoSesame();
+                    if (!uriDaoSesame.isSubClassOf(sensor.getRdfType(), TRIPLESTORE_CONCEPT_SENSING_DEVICE)) {
+                        dataOk = false;
+                        checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Bad sensor type given. Must be sublass of SensingDevice concept"));
                     }
-                } else { //Missing required fields
-                    dataOk = false;
-                    sensor.isOk().remove(AbstractVerifiedClass.STATE);
-                    checkStatus.add(new Status(StatusCodeMsg.BAD_DATA_FORMAT, StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.MISSING_FIELDS_LIST).append(sensor.isOk()).toString()));
+
+                    //2.2 check if person in charge exist
+                    User u = new User(sensor.getPersonInCharge());
+                    if (!userDao.existInDB(u)) {
+                        dataOk = false;
+                        checkStatus.add(new Status(StatusCodeMsg.UNKNOWN_URI, StatusCodeMsg.ERR, "Unknown person in charge email"));
+                    }
+                } catch (Exception ex) {
+                    java.util.logging.Logger.getLogger(SensorDAOSesame.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         } else { //user is not an admin

@@ -12,10 +12,12 @@
 package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
-import java.util.HashMap;
-import java.util.Map;
+import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.documentation.DocumentationAnnotation;
+import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.validation.interfaces.Date;
+import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.ShootingConfiguration;
 
 /**
@@ -32,15 +34,6 @@ public class ShootingConfigurationDTO extends AbstractVerifiedClass {
     private String sensor;
     
     @Override
-    public Map rules() {
-        Map<String, Boolean> rules = new HashMap<>();
-        rules.put("date", Boolean.TRUE);
-        rules.put("sensor", Boolean.TRUE);
-        rules.put("position", Boolean.FALSE);
-        return rules;
-    }
-
-    @Override
     public ShootingConfiguration createObjectFromDTO() {
         ShootingConfiguration shootingConfiguration = new ShootingConfiguration();
         shootingConfiguration.setDate(date);
@@ -50,6 +43,8 @@ public class ShootingConfigurationDTO extends AbstractVerifiedClass {
         return shootingConfiguration;
     }
     
+    @Date(DateFormat.YMDHMSZ)
+    @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SHOOTING_CONFIGURATION_DATE)
     public String getDate() {
         return date;
@@ -68,6 +63,8 @@ public class ShootingConfigurationDTO extends AbstractVerifiedClass {
         this.position = position;
     }
 
+    @URL
+    @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SENSOR_URI)
     public String getSensor() {
         return sensor;

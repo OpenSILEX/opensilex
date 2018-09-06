@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.resources.dto.OType;
+import phis2ws.service.configuration.OType;
 import phis2ws.service.resources.dto.TripletDTO;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.utils.POSTResultsReturn;
@@ -77,61 +77,37 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
         
         //check triplets
         for (TripletDTO tripletDTO : tripletsGroup) {
-            if ((boolean) tripletDTO.isOk().get(AbstractVerifiedClass.STATE)) {
-                UriDaoSesame uriDaoSesame = new UriDaoSesame();
-                
-                //1. check if triplet.s is an uri and if it exist
-                UrlValidator urlValidator = new UrlValidator();
-                if (urlValidator.isValid(tripletDTO.getS())) {
-                    if (!uriDaoSesame.existObject(tripletDTO.getS())) { //unknown uri
-                        dataOk = false;
-                        checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, StatusCodeMsg.UNKNOWN_URI + " " + tripletDTO.getS()));
-                    }
-                } else {
-                    if (!tripletDTO.getS().equals(REQUEST_GENERATION_URI_STRING)) {//malformed uri
-                        dataOk = false;
-                        checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, StatusCodeMsg.MALFORMED_URI + " " + tripletDTO.getS()));
-                    }
-                }
-                
-                //2. check if triplet.p is an existing relation
-                if (!uriDaoSesame.existObject(tripletDTO.getP())
-                        && !tripletDTO.getP().equals(TRIPLESTORE_RELATION_TYPE)
-                        && !tripletDTO.getP().equals(TRIPLESTORE_RELATION_LABEL)) {
-                    dataOk = false;
-                    checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, StatusCodeMsg.UNKNOWN_URI + " " + tripletDTO.getP()));
-                }
-                
-                //3. check if triplet.o_type is equals to "literal" or "uri" 
-                //   and check the value of triplet.o
-                if (tripletDTO.getO_type().equals(OType.URI.toString())) { //if value is supposed to be an uri
-                    // check if triplet.o is a valid uri
-                    if (urlValidator.isValid(tripletDTO.getO())) {
-                        //if the uri does not exist in the triplestore, error
-                        if (!uriDaoSesame.existObject(tripletDTO.getO())) {
-                            dataOk = false;
-                            checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, StatusCodeMsg.UNKNOWN_URI + " " + tripletDTO.getO()));
-                        }
-                    } else {
-                        dataOk = false;
-                        checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, StatusCodeMsg.MALFORMED_URI + " " + tripletDTO.getO()));
-                    }
-                } else if (tripletDTO.getO_type().equals(OType.LITERAL.toString())) {
-                    if (tripletDTO.getO_lang() != null) {
-                        //if the triplet.o_lang isn't an ISO language
-                        if (!Arrays.asList(Locale.getISOLanguages()).contains(tripletDTO.getO_lang())) {
-                            dataOk = false;
-                            checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, StatusCodeMsg.BAD_DATA_FORMAT + " " + tripletDTO.getO_lang()));
-                        }
-                    }
-                } else {
-                    dataOk = false;
-                    checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, StatusCodeMsg.BAD_DATA_FORMAT + " " + tripletDTO.getO_type()));
-                }
-            } else { //missing data
+            UriDaoSesame uriDaoSesame = new UriDaoSesame();
+
+            //1. check if triplet.s is exist
+            if (!uriDaoSesame.existObject(tripletDTO.getS())) { //unknown uri
                 dataOk = false;
-                tripletDTO.isOk().remove(AbstractVerifiedClass.STATE);
-                checkStatusList.add(new Status(StatusCodeMsg.BAD_DATA_FORMAT, StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.MISSING_FIELDS_LIST).append(tripletDTO.isOk()).toString()));
+                checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, StatusCodeMsg.UNKNOWN_URI + " " + tripletDTO.getS()));
+            }
+            //2. check if triplet.p is an existing relation
+            if (!uriDaoSesame.existObject(tripletDTO.getP())
+                    && !tripletDTO.getP().equals(TRIPLESTORE_RELATION_TYPE)
+                    && !tripletDTO.getP().equals(TRIPLESTORE_RELATION_LABEL)) {
+                dataOk = false;
+                checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, StatusCodeMsg.UNKNOWN_URI + " " + tripletDTO.getP()));
+            }
+
+            //3. check if triplet.o_type is equals to "literal" or "uri" 
+            //   and check the value of triplet.o
+            if (tripletDTO.getO_type().equals(OType.URI.toString())) { //if value is supposed to be an uri
+                //if the uri does not exist in the triplestore, error
+                if (!uriDaoSesame.existObject(tripletDTO.getO())) {
+                    dataOk = false;
+                    checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, StatusCodeMsg.UNKNOWN_URI + " " + tripletDTO.getO()));
+                }
+            } else if (tripletDTO.getO_type().equals(OType.LITERAL.toString())) {
+                if (tripletDTO.getO_lang() != null) {
+                    //if the triplet.o_lang isn't an ISO language
+                    if (!Arrays.asList(Locale.getISOLanguages()).contains(tripletDTO.getO_lang())) {
+                        dataOk = false;
+                        checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, StatusCodeMsg.BAD_DATA_FORMAT + " " + tripletDTO.getO_lang()));
+                    }
+                }
             }
         }
         
@@ -205,7 +181,6 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
      */
     private String generateUriIfNeeded(ArrayList<TripletDTO> tripletsGroup) {
         String rdfType = null;
-        URINamespaces uriNamespaces = new URINamespaces();
 
         //1. get the type (if exist)
         for (TripletDTO triplet : tripletsGroup) {

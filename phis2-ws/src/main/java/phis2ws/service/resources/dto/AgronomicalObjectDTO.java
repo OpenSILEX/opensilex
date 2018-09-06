@@ -15,10 +15,13 @@ package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import javax.validation.Valid;
+import javax.validation.constraints.Pattern;
+import phis2ws.service.configuration.DateFormats;
+import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.view.model.phis.AgronomicalObject;
+import phis2ws.service.resources.validation.interfaces.URL;
 
 /**
  * Represents the submitted JSON for the agronomical objects
@@ -42,18 +45,6 @@ public class AgronomicalObjectDTO extends AbstractVerifiedClass {
     private String year;
     //the properties of the agronomical object
     private ArrayList<PropertyDTO> properties;
-            
-    @Override
-    public Map rules() {
-        Map<String, Boolean> rules = new HashMap<>();
-        rules.put("rdfType", Boolean.TRUE);
-        rules.put("geometry", Boolean.TRUE);
-        rules.put("experiment", Boolean.FALSE);
-        rules.put("isPartOf", Boolean.FALSE);
-        rules.put("year", Boolean.FALSE);
-        
-        return rules;
-    }
 
     @Override
     public AgronomicalObject createObjectFromDTO() {
@@ -71,12 +62,19 @@ public class AgronomicalObjectDTO extends AbstractVerifiedClass {
         
         return agronomicalObject;
     }
-
+    
+    //SILEX:todo
+    // Do the geometry validator (needs discussions about the 
+    // allowed formats and geometry types)
+    //\SILEX:todo
+    @Required
     @ApiModelProperty(example = "POLYGON((0 0, 10 0, 10 10, 0 10, 0 0))")
     public String getGeometry() {
         return geometry;
     }
     
+    @Required
+    @URL
     @ApiModelProperty(example = "http://www.phenome-fppn.fr/vocabulary/2017#Plot")
     public String getRdfType() {
         return rdfType;
@@ -90,6 +88,7 @@ public class AgronomicalObjectDTO extends AbstractVerifiedClass {
         this.geometry = geometry;
     }
 
+    @Pattern(regexp = DateFormats.YEAR_REGEX, message = "This is not a valid year. Excepted format : YYYY (e.g. 2017)")
     @ApiModelProperty(example = "2017")
     public String getYear() {
         return year;
@@ -98,7 +97,8 @@ public class AgronomicalObjectDTO extends AbstractVerifiedClass {
     public void setYear(String year) {
         this.year = year;
     }
-
+    
+    @URL
     @ApiModelProperty(example = "http://www.phenome-fppn.fr/diaphen/DIA2017-1")
     public String getExperiment() {
         return experiment;
@@ -108,6 +108,7 @@ public class AgronomicalObjectDTO extends AbstractVerifiedClass {
         this.experiment = experiment;
     }
 
+    @URL
     public String getIsPartOf() {
         return isPartOf;
     }
@@ -115,7 +116,8 @@ public class AgronomicalObjectDTO extends AbstractVerifiedClass {
     public void setIsPartOf(String isPartOf) {
         this.isPartOf = isPartOf;
     }
-
+    
+    @Valid
     public ArrayList<PropertyDTO> getProperties() {
         return properties;
     }

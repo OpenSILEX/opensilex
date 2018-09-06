@@ -13,10 +13,9 @@
 package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
-import java.util.HashMap;
-import java.util.Map;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.WasGeneratedBy;
 
 /**
@@ -35,14 +34,6 @@ public class WasGeneratedByDTO extends AbstractVerifiedClass {
     private String wasGeneratedByDescription;
 
     @Override
-    public Map rules() {
-        HashMap<String, Boolean> rules = new HashMap<>();
-        rules.put("wasGeneratedByDocument", Boolean.FALSE);
-        rules.put("wasGeneratedByDescrition", Boolean.FALSE);
-        return rules;
-    }
-
-    @Override
     public WasGeneratedBy createObjectFromDTO() {
         WasGeneratedBy wasGeneratedBy = new WasGeneratedBy();
         wasGeneratedBy.setWasGeneratedBy(wasGeneratedByDocument);
@@ -50,6 +41,7 @@ public class WasGeneratedByDTO extends AbstractVerifiedClass {
         return wasGeneratedBy;
     }
 
+    @URL
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_WAS_GENERATED_BY_DOCUMENT)
     public String getWasGeneratedByDocument() {
         return wasGeneratedByDocument;

@@ -6,14 +6,15 @@
 package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
-import java.util.HashMap;
-import java.util.Map;
 import phis2ws.service.documentation.DocumentationAnnotation;
+import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.validation.interfaces.GrantType;
 
 /**
- *  Represente le JSON soumis pour les objets de type token
- * @author A. Charleroy
+ * Represente le JSON soumis pour les objets de type token
+ *
+ * @author Arnaud Charleroy
  */
 public class TokenDTO extends AbstractVerifiedClass {
 
@@ -22,8 +23,12 @@ public class TokenDTO extends AbstractVerifiedClass {
     private String password;
     private String client_id;
 
+    //SILEX:info
     // Uncomment if you use jwt
     // @ApiModelProperty(example = EXAMPLE_TOKEN_JWT_GRANTTYPE)
+    //\SILEX:info
+    @GrantType
+    @Required
     @ApiModelProperty(example = "password")
     public String getGrant_type() {
         return grant_type;
@@ -33,6 +38,7 @@ public class TokenDTO extends AbstractVerifiedClass {
         this.grant_type = grant_type;
     }
 
+    @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_USER_EMAIL)
     public String getUsername() {
         return username;
@@ -41,7 +47,7 @@ public class TokenDTO extends AbstractVerifiedClass {
     public void setUsername(String username) {
         this.username = username;
     }
-
+    
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_USER_PASSWORD)
     public String getPassword() {
         return password;
@@ -50,8 +56,11 @@ public class TokenDTO extends AbstractVerifiedClass {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    //SILEX:info
     // Uncomment if you use jwt
     // @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_TOKEN_JWT_CLIENTID)
+    //\SILEX:info
     public String getClient_id() {
         return client_id;
     }
@@ -61,18 +70,7 @@ public class TokenDTO extends AbstractVerifiedClass {
     }
 
     @Override
-    public Map rules() {
-        Map<String, Boolean> rules = new HashMap<>();
-        rules.put("grant_type", Boolean.FALSE);
-        rules.put("username", Boolean.TRUE);
-        rules.put("password", Boolean.FALSE);
-        rules.put("client_id", Boolean.FALSE);
-        return rules;
-    }
-
-    @Override
     public Object createObjectFromDTO() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-
 }

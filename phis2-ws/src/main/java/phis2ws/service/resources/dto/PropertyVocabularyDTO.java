@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.Property;
 
 /**
@@ -36,17 +37,13 @@ public class PropertyVocabularyDTO extends AbstractVerifiedClass {
     //the list of the comments of the property. Map with the languages if knowned. 
     //if there is no language, the key will be "none"
     private Map<String, Collection<String>> comments = new HashMap<>();
-    
-    @Override
-    public Map rules() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 
     @Override
     public Property createObjectFromDTO() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    @URL
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SPECIES_FROM_SPECIES)
     public String getRelation() {
         return relation;

@@ -18,8 +18,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
@@ -70,6 +70,7 @@ public class StudyDetailsResourceService implements BrapiCall{
     Session userSession;
     
     @GET
+    @Path("{studyDbId}")
     @ApiOperation(value = "Retrieve study details", notes = "Retrieve study details")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Retrieve study details", response = StudyDetails.class, responseContainer = "List"),

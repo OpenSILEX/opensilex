@@ -12,7 +12,7 @@ import phis2ws.service.resources.validation.validators.ProvenanceDateValidator;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Target;
 import javax.validation.Constraint;
 import javax.validation.Payload;
@@ -23,7 +23,7 @@ import phis2ws.service.configuration.DateFormat;
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE})
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RUNTIME)
 @Constraint(validatedBy = ProvenanceDateValidator.class)
 @Documented
 public @interface ProvenanceDate {

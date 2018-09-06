@@ -18,6 +18,7 @@ import phis2ws.service.utils.dates.Dates;
 
 /**
  * Class checks specific date field on provenance object.
+ * {@code null} elements are considered valid.
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ProvenanceDateValidator implements ConstraintValidator<ProvenanceDate, ProvenanceDTO> {
@@ -47,10 +48,6 @@ public class ProvenanceDateValidator implements ConstraintValidator<ProvenanceDa
         }
         
         DateTime stringToDateTime = Dates.stringToDateTimeWithGivenPattern(date, pattern.toString());
-        if (stringToDateTime == null) {
-            return false;
-        }
-        return true;
+        return stringToDateTime != null;
     }
-
 }

@@ -28,9 +28,10 @@ import phis2ws.service.resources.validation.validators.URLValidator;
  * Annotation used to check if a string is a valid URL
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
-@Target(value={METHOD,FIELD,ANNOTATION_TYPE,CONSTRUCTOR,PARAMETER})
+@Target({METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER})
 @Retention(RUNTIME)
-@Constraint(validatedBy = {URLValidator.class,URLListValidator.class})
+@Constraint(validatedBy = {URLValidator.class, URLListValidator.class})
+@Documented
 public @interface URL {
     String message() default "is not an URL";
  
@@ -41,8 +42,8 @@ public @interface URL {
     /**
      * Apply this interface on list of elements
      */
-    @Target(value = {METHOD,FIELD,ANNOTATION_TYPE,CONSTRUCTOR,PARAMETER})
-    @Retention(value =RUNTIME)
+    @Target({METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER})
+    @Retention(RUNTIME)
     @Documented
     public @interface List {
         public URL[] value();

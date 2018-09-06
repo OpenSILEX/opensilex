@@ -15,7 +15,8 @@ import javax.validation.ConstraintValidatorContext;
 import phis2ws.service.resources.validation.interfaces.URL;
 
 /**
- * Class used by URL annotation to validate that a string value is an URL
+ * Class used by URL annotation to validate that a string value is an URL.
+ * {@code null} elements are considered valid.
  * @see  phis2ws.service.resources.validation.interfaces.URL
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */

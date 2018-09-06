@@ -16,6 +16,7 @@ import phis2ws.service.resources.validation.interfaces.URL;
 
 /**
  * Class used by URL annotation to validate that a string value list contains an URL.
+ * {@code null} elements are considered valid.
  * @see phis2ws.service.resources.validation.interfaces.URL
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */
@@ -54,5 +55,4 @@ public class URLListValidator implements ConstraintValidator<URL, List<String>> 
         }
         return allValid;
     }
-    
 }

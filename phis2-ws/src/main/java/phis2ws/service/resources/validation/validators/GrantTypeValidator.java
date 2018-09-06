@@ -14,7 +14,8 @@ import phis2ws.service.configuration.GrantTypes;
 import phis2ws.service.resources.validation.interfaces.GrantType;
 
 /**
- * Validator used to validate grant types
+ * Validator used to validate grant types.
+ * {@code null} elements are considered valid.
  * @see GrantType
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */

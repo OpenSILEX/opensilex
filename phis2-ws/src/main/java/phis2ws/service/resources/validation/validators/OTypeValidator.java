@@ -13,7 +13,8 @@ import javax.validation.ConstraintValidatorContext;
 import phis2ws.service.resources.validation.interfaces.OType;
 
 /**
- * Validator used to validate "o" type
+ * Validator used to validate "o" type.
+ * {@code null} elements are considered valid.
  * @see OType
  * @see https://www.w3.org/wiki/JSON_Triple_Sets
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>

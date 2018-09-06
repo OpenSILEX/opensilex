@@ -89,7 +89,7 @@ public class AgronomicalObjectResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postAgronomicalObject(
-            @ApiParam(value = DocumentationAnnotation.AGRONOMICAL_OBJECT_POST_DATA_DEFINITION,required = true ) @Valid ArrayList<AgronomicalObjectDTO> agronomicalObjectsDTO,
+            @ApiParam(value = DocumentationAnnotation.AGRONOMICAL_OBJECT_POST_DATA_DEFINITION, required = true) @Valid ArrayList<AgronomicalObjectDTO> agronomicalObjectsDTO,
             @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         //S'il y a au moins un objet agronomique

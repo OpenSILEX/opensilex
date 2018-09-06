@@ -36,7 +36,7 @@ import javax.validation.constraints.NotNull;
 @NotNull
 @NotBlank
 @NotEmpty
-@Target( { METHOD, FIELD, ANNOTATION_TYPE,TYPE ,PARAMETER})
+@Target({METHOD, FIELD, ANNOTATION_TYPE, TYPE, PARAMETER})
 @Retention(RUNTIME)
 @Constraint(validatedBy = {})
 @Documented

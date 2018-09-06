@@ -18,7 +18,8 @@ import phis2ws.service.resources.validation.interfaces.Date;
 
 /**
  * Class used by DateFormat annotation to validate a string value with a
- * specific date format
+ * specific date format.
+ * {@code null} elements are considered valid.
  * @see Date
  * @see DateFormat
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>

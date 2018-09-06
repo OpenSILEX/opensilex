@@ -13,7 +13,8 @@ import javax.validation.ConstraintValidatorContext;
 import phis2ws.service.resources.validation.interfaces.DocumentStatus;
 
 /**
- * Validator used to validate document's status
+ * Validator used to validate document's status.
+ * {@code null} elements are considered valid.
  * @see DocumentStatus
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */

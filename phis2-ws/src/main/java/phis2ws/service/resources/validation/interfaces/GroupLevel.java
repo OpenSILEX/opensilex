@@ -8,6 +8,7 @@
 //******************************************************************************
 package phis2ws.service.resources.validation.interfaces;
 
+import java.lang.annotation.Documented;
 import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
 import static java.lang.annotation.ElementType.CONSTRUCTOR;
 import static java.lang.annotation.ElementType.FIELD;
@@ -25,9 +26,10 @@ import phis2ws.service.resources.validation.validators.GroupLevelValidator;
  * @see GroupLevelValidator
  * @author Arnaud Charleroy<arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */
-@Target(value={METHOD,FIELD,ANNOTATION_TYPE,CONSTRUCTOR,PARAMETER})
+@Target(value={METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER})
 @Retention(RUNTIME)
 @Constraint(validatedBy = GroupLevelValidator.class)
+@Documented
 public @interface GroupLevel {
     String message() default "is not a valid group level";
  

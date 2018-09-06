@@ -14,12 +14,12 @@ import phis2ws.service.configuration.GroupLevels;
 import phis2ws.service.resources.validation.interfaces.GroupLevel;
 
 /**
- * Validator used to validate group levels
+ * Validator used to validate group levels.
+ * {@code null} elements are considered valid.
  * @see GroupLevel
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class GroupLevelValidator implements ConstraintValidator<GroupLevel, String> {
-    
     /**
      * {@inheritDoc}
      */

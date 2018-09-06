@@ -12,6 +12,6 @@ package phis2ws.service.resources.dto;
  * session excel file for the 4P platform, specific to the phenomobile.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class FileMetadataPhenomobileDTO extends FileMetadataDTO {
+public class MetadataFilePhenomobileDTO extends MetadataFileDTO {
     
 }

@@ -8,7 +8,7 @@
 package phis2ws.service.view.brapi.results;
 
 import java.util.ArrayList;
-import phis2ws.service.resources.dto.FileMetadataDTO;
+import phis2ws.service.resources.dto.MetadataFileDTO;
 import phis2ws.service.view.brapi.Pagination;
 import phis2ws.service.view.manager.Result;
 
@@ -16,11 +16,11 @@ import phis2ws.service.view.manager.Result;
  * A class which represents the result part in the response form, adapted to the file metadata
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class ResultFileMetadata extends Result<FileMetadataDTO> {
+public class ResultMetadataFile extends Result<MetadataFileDTO> {
     /**
      * @param fileMetadata the file metadata of the result 
      */
-    public ResultFileMetadata(ArrayList<FileMetadataDTO> fileMetadata) {
+    public ResultMetadataFile(ArrayList<MetadataFileDTO> fileMetadata) {
         super(fileMetadata);
     }
     
@@ -29,7 +29,7 @@ public class ResultFileMetadata extends Result<FileMetadataDTO> {
      * @param pagination
      * @param paginate 
      */
-    public ResultFileMetadata(ArrayList<FileMetadataDTO> fileMetadata, Pagination pagination, boolean paginate) {
+    public ResultMetadataFile(ArrayList<MetadataFileDTO> fileMetadata, Pagination pagination, boolean paginate) {
         super(fileMetadata, pagination, paginate);
     }
 }

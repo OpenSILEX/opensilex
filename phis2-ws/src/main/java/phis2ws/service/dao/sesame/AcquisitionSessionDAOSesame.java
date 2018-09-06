@@ -9,7 +9,6 @@ package phis2ws.service.dao.sesame;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import org.codehaus.janino.Java;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.repository.RepositoryException;
@@ -20,9 +19,9 @@ import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.dao.phis.ExperimentDao;
 import phis2ws.service.dao.phis.UserDaoPhisBrapi;
 import phis2ws.service.model.User;
-import phis2ws.service.resources.dto.FileMetadataDTO;
-import phis2ws.service.resources.dto.FileMetadataPhenomobileDTO;
-import phis2ws.service.resources.dto.FileMetadataUAVDTO;
+import phis2ws.service.resources.dto.MetadataFileDTO;
+import phis2ws.service.resources.dto.MetadataFilePhenomobileDTO;
+import phis2ws.service.resources.dto.MetadataFileUAVDTO;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.model.phis.Experiment;
 import phis2ws.service.view.model.phis.RadiometricTarget;
@@ -67,8 +66,8 @@ public class AcquisitionSessionDAOSesame extends DAOSesame<Object> {
      * @see AcquisitionSessionDAOSesame#allPaginateFileMetadata() 
      * @return the content of the metadata required.
      */
-    private ArrayList<FileMetadataDTO> getFileMetadata() {
-        ArrayList<FileMetadataDTO> fileMetadataList = new ArrayList<>();
+    private ArrayList<MetadataFileDTO> getFileMetadata() {
+        ArrayList<MetadataFileDTO> fileMetadataList = new ArrayList<>();
         UriDaoSesame uriDaoSesame = new UriDaoSesame();
         //size of the higher list to generate all the FileMetadataDTO
         ArrayList<Integer> sizes = new ArrayList<>();
@@ -122,7 +121,7 @@ public class AcquisitionSessionDAOSesame extends DAOSesame<Object> {
         //field robot metadata
         if (uriDaoSesame.isSubClassOf(vectorRdfType, TRIPLESTORE_CONCEPT_FIELD_ROBOT)) {
             for (int i = 0; i < maxListSize; i++) {
-                FileMetadataPhenomobileDTO fileMetadata = new FileMetadataPhenomobileDTO();
+                MetadataFilePhenomobileDTO fileMetadata = new MetadataFilePhenomobileDTO();
                 
                 if (experiments.size() > i) {
                     fileMetadata.setGroupPlotUri(experiments.get(i).getUri());
@@ -140,7 +139,7 @@ public class AcquisitionSessionDAOSesame extends DAOSesame<Object> {
         } else if (uriDaoSesame.isSubClassOf(vectorRdfType, TRIPLESTORE_CONCEPT_UAV)) {
             //uav metadata
             for (int i = 0; i < maxListSize; i++) {
-                FileMetadataUAVDTO fileMetadata = new FileMetadataUAVDTO();
+                MetadataFileUAVDTO fileMetadata = new MetadataFileUAVDTO();
                 
                 if (installations.size() > i) {
                     fileMetadata.setInstallation(TRIPLESTORE_PLATFORM);
@@ -187,7 +186,7 @@ public class AcquisitionSessionDAOSesame extends DAOSesame<Object> {
      * @return the content of the metadata required. 
      *         null if no metadata for the given vector type
      */
-    public ArrayList<FileMetadataDTO> allPaginateFileMetadata() {
+    public ArrayList<MetadataFileDTO> allPaginateFileMetadata() {
         //Check if the rdf type is a subclass of vector
         UriDaoSesame uriDAOSesame = new UriDaoSesame();
         if (uriDAOSesame.isSubClassOf(vectorRdfType, TRIPLESTORE_CONCEPT_VECTOR)) {

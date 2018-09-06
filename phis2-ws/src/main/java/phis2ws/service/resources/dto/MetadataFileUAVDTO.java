@@ -14,7 +14,7 @@ import com.google.gson.annotations.SerializedName;
  * session excel file for the 4P platform, specific to the uav.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class FileMetadataUAVDTO extends FileMetadataDTO {
+public class MetadataFileUAVDTO extends MetadataFileDTO {
     //The camera type, associated to cameraAlias and cameraUri.
     //e.g. http://www.phenome-fppn.fr/vocabulary/2017#RGBCamera
     @SerializedName("Camera_type")

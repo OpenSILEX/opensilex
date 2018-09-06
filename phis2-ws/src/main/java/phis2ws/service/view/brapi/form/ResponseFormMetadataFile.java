@@ -8,16 +8,16 @@
 package phis2ws.service.view.brapi.form;
 
 import java.util.ArrayList;
-import phis2ws.service.resources.dto.FileMetadataDTO;
+import phis2ws.service.resources.dto.MetadataFileDTO;
 import phis2ws.service.view.brapi.Metadata;
-import phis2ws.service.view.brapi.results.ResultFileMetadata;
+import phis2ws.service.view.brapi.results.ResultMetadataFile;
 import phis2ws.service.view.manager.ResultForm;
 
 /**
  * Allows the formatting of the result of the request about FileMetadata
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class ResponseFormFileMetadata extends ResultForm<FileMetadataDTO> {
+public class ResponseFormMetadataFile extends ResultForm<MetadataFileDTO> {
     /**
      * Initialize fields metadata and result
      * @param pageSize results per page
@@ -25,12 +25,12 @@ public class ResponseFormFileMetadata extends ResultForm<FileMetadataDTO> {
      * @param list results list
      * @param paginate 
      */
-    public ResponseFormFileMetadata(int pageSize, int currentPage, ArrayList<FileMetadataDTO> list, boolean paginate) {
+    public ResponseFormMetadataFile(int pageSize, int currentPage, ArrayList<MetadataFileDTO> list, boolean paginate) {
         metadata = new Metadata(pageSize, currentPage, list.size());
         if (list.size() > 1) {
-            result = new ResultFileMetadata(list, metadata.getPagination(), paginate);
+            result = new ResultMetadataFile(list, metadata.getPagination(), paginate);
         } else {
-            result = new ResultFileMetadata(list);
+            result = new ResultMetadataFile(list);
         }
     }
     
@@ -42,12 +42,12 @@ public class ResponseFormFileMetadata extends ResultForm<FileMetadataDTO> {
      * @param paginate 
      * @param totalCount number of result
      */
-    public ResponseFormFileMetadata(int pageSize, int currentPage, ArrayList<FileMetadataDTO> list, boolean paginate, int totalCount) {
+    public ResponseFormMetadataFile(int pageSize, int currentPage, ArrayList<MetadataFileDTO> list, boolean paginate, int totalCount) {
         metadata = new Metadata(pageSize, currentPage, totalCount);
         if (list.size() > 1) {
-            result = new ResultFileMetadata(list, metadata.getPagination(), paginate);
+            result = new ResultMetadataFile(list, metadata.getPagination(), paginate);
         } else {
-            result = new ResultFileMetadata(list);
+            result = new ResultMetadataFile(list);
         }
     }
 }

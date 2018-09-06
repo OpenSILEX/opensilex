@@ -17,7 +17,7 @@ import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
  * The FileMetadataDTO class has the basic informations contained for the acquisition sessions of all types of vectors.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class FileMetadataDTO extends AbstractVerifiedClass {
+    public class MetadataFileDTO extends AbstractVerifiedClass {
     // The current installation uri. 
     // e.g. http://www.phenome-fppn.fr/diaphen
     @SerializedName("Installation")

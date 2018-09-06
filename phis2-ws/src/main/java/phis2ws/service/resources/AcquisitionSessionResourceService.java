@@ -32,9 +32,9 @@ import phis2ws.service.dao.sesame.AcquisitionSessionDAOSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
-import phis2ws.service.resources.dto.FileMetadataDTO;
+import phis2ws.service.resources.dto.MetadataFileDTO;
 import phis2ws.service.view.brapi.Status;
-import phis2ws.service.view.brapi.form.ResponseFormFileMetadata;
+import phis2ws.service.view.brapi.form.ResponseFormMetadataFile;
 import phis2ws.service.view.manager.ResultForm;
 
 /**
@@ -66,27 +66,27 @@ public class AcquisitionSessionResourceService {
     }
 
     /**
-     * Search acquisition session file metadata corresponding to the given type of file wanted.
+     * Search acquisition session metadata file metadata corresponding to the given type of file wanted.
      * @param acquisitionSessionDAOSesame
      * @return the acquisition session file metadata content for the hiddenPhis 
      *         part of the acquisition session file used for 4P.
      */
-    private Response getAcquisitionSessionFileMetadata(AcquisitionSessionDAOSesame acquisitionSessionDAOSesame) {       
-        ArrayList<FileMetadataDTO> fileMetadata;
+    private Response getAcquisitionSessionMetadataFile(AcquisitionSessionDAOSesame acquisitionSessionDAOSesame) {       
+        ArrayList<MetadataFileDTO> fileMetadata;
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormFileMetadata getResponse;
+        ResponseFormMetadataFile getResponse;
         
         //Retrieve file format.
         fileMetadata = acquisitionSessionDAOSesame.allPaginateFileMetadata();
         
         if (fileMetadata == null) {
-            getResponse = new ResponseFormFileMetadata(0, 0, fileMetadata, true);
+            getResponse = new ResponseFormMetadataFile(0, 0, fileMetadata, true);
             return noResultFound(getResponse, statusList);
         } else if (fileMetadata.isEmpty()) {
-            getResponse = new ResponseFormFileMetadata(0, 0, fileMetadata, true);
+            getResponse = new ResponseFormMetadataFile(0, 0, fileMetadata, true);
             return noResultFound(getResponse, statusList);
         } else {
-            getResponse = new ResponseFormFileMetadata(1, 0, fileMetadata, true);
+            getResponse = new ResponseFormMetadataFile(1, 0, fileMetadata, true);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }
@@ -136,11 +136,11 @@ public class AcquisitionSessionResourceService {
      * }
      */
     @GET
-    @Path("fileMetadata")
+    @Path("metadataFile")
     @ApiOperation(value = "Get the metadata for the acquisition session file",
             notes = "Retrieve the metadata for the acquisition session file. Need URL encoded of the vector type of the acquisition session (uav or drone)")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve a annotation", response = FileMetadataDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Retrieve a annotation", response = MetadataFileDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
@@ -152,7 +152,7 @@ public class AcquisitionSessionResourceService {
                 example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_JSON)
-    public Response get4PFileMetadata(
+    public Response get4PMetadataFile(
             @ApiParam(value = DocumentationAnnotation.VECTOR_RDF_TYPE_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_VECTOR_RDF_TYPE) @QueryParam("vectorRdfType") String vectorRdfType,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int pageSize,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
@@ -162,6 +162,6 @@ public class AcquisitionSessionResourceService {
         acquisitionSessionDAO.setPageSize(pageSize);
         acquisitionSessionDAO.user = userSession.getUser();
         
-        return getAcquisitionSessionFileMetadata(acquisitionSessionDAO);
+        return getAcquisitionSessionMetadataFile(acquisitionSessionDAO);
     }
 }

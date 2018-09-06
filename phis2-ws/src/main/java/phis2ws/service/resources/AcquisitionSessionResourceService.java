@@ -101,8 +101,7 @@ public class AcquisitionSessionResourceService {
      * @param vectorRdfType
      * @param pageSize
      * @param page
-     * @return e.g.
-     * {
+     * @example {
      *      "metadata": {
      *          "pagination": {
      *              "pageSize": 1,
@@ -134,6 +133,7 @@ public class AcquisitionSessionResourceService {
      *          ]
      *      }
      * }
+     * @return the query result, which will be json formatted
      */
     @GET
     @Path("metadataFile")

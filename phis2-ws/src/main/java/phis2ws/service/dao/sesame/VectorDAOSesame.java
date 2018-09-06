@@ -674,13 +674,13 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
     
     /**
      * Generates the query to get the uri, label and rdf type of all the uav
-     * @return the query
-     *  e.g. 
+     * @example
      * SELECT DISTINCT  ?uri ?label ?rdfType WHERE {
      *      ?uri  rdfs:subClassOf*  <http://www.phenome-fppn.fr/vocabulary/2017#UAV> . 
      *      ?uri rdf:type ?rdfType .
      *      ?uri  rdfs:label  ?label  .
      * }
+     * @return the query
      */
     private SPARQLQueryBuilder prepareSearchUAVsQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();

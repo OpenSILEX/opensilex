@@ -41,12 +41,12 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
     
     /**
      * Generates the query to get the uri and the label of the radiometric targets
-     * @return the query
-     * e.g.
+     * @example
      * SELECT DISTINCT  ?uri ?label WHERE {
      *      ?uri  rdf:type  <http://www.phenome-fppn.fr/vocabulary/2017#RadiometricTarget> . 
      *      ?uri  rdfs:label  ?label  .
      * }
+     * @return the query
      */
     @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {

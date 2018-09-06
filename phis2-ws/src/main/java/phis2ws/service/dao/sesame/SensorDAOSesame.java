@@ -668,8 +668,8 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
     }
     
     /**
-     * get the cameras (type, label, uri) of the triplestore.
-     * @return the list of the cameras
+     * Get the cameras (type, label, uri) of the triplestore.
+     * @return The list of the cameras
      */
     public ArrayList<Sensor> getCameras() {
         SPARQLQueryBuilder query = prepareSearchCamerasQuery();

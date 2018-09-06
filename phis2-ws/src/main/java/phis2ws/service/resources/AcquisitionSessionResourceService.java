@@ -95,9 +95,6 @@ public class AcquisitionSessionResourceService {
         }
     }
     
-    //SILEX:todo
-    //add the rules
-    //\SILEX:todo
     /**
      * Service to get the hidenPhis content of the excel file used to define 
      * acquisition session for the 4P platform.

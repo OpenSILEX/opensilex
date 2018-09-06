@@ -31,10 +31,8 @@ import phis2ws.service.dao.phis.UserDaoPhisBrapi;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.model.User;
 import phis2ws.service.resources.dto.VectorDTO;
-import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.UriGenerator;
-import phis2ws.service.utils.dates.Dates;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.utils.sparql.SPARQLUpdateBuilder;
 import phis2ws.service.view.brapi.Status;
@@ -678,8 +676,8 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
     }
     
     /**
-     * get the uav (type, label, uri) of the triplestore.
-     * @return the list of the uav
+     * Get the uav (type, label, uri) of the triplestore.
+     * @return The list of the uav
      */
     public ArrayList<Vector> getUAVs() {
         SPARQLQueryBuilder query = prepareSearchUAVsQuery();

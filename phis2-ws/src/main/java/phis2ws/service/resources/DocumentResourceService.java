@@ -223,6 +223,9 @@ public class DocumentResourceService {
         String media = waitingAnnotInformation.get(docUri).getDocumentType();
         media = media.substring(media.lastIndexOf("#") + 1, media.length());
         FileUploader jsch = new FileUploader();
+        //SILEX:conception
+        // Add a class to group constants for properties
+        //\SILEX:conception
         final String webAppApiDocsName = PropertiesFileManager.getConfigFileProperty("service", "webAppApiDocsName");
         try {
             waitingAnnotFileCheck.put(docUri, Boolean.TRUE); // Traitement en cours du fichier

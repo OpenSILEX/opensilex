@@ -236,17 +236,6 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
         return phenotypes;
     }
     
-    /**
-     * check if a dataset is valid (follows rules).
-     * @see phis2ws.service.resources.dto.DatasetDTO rules()
-     * @param datasetDTO
-     * @return 
-     */
-    private boolean isElementValid(DatasetDTO datasetDTO) {
-        Map<String, Object> phenotypeOk = datasetDTO.isOk();
-        return (boolean) phenotypeOk.get(AbstractVerifiedClass.STATE);
-    }
-    
     //SILEX:todo
     //- Separate the check and the insert actions
     //- The check function must be also used in the update
@@ -273,40 +262,33 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
         //check if data is valid
         for (DatasetDTO datasetDTO : datasetsDTO) {
             //if the datasetDTO follows the rules
-            if (isElementValid(datasetDTO)) { 
-                for (DataDTO data : datasetDTO.getData()) {
-                    //is agronomical object exist ?
-                    AgronomicalObjectDAO agronomicalObjectDao = new AgronomicalObjectDAO();
-                    if (!agronomicalObjectDao.existInDB(new AgronomicalObject(data.getAgronomicalObject()))) {
-                        dataState = false;
-                        insertStatusList.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Unknown Agronomical Object URI : " + data.getAgronomicalObject()));
-                    }
-                    
-                    //is sensor exist ?
-                    if (data.getSensor() != null) {
-                        SensorDAOSesame sensorDAO = new SensorDAOSesame();
-                        if (!sensorDAO.existObject(data.getSensor())) {
-                            dataState = false;
-                            insertStatusList.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Unknown sensor : " + data.getSensor()));
-                        }
-                    }
-                }
-                
-                //is variable exist ? 
-                VariableDaoSesame variableDaoSesame = new VariableDaoSesame();
-                if (!variableDaoSesame.existObject(datasetDTO.getVariableUri())) {
+            for (DataDTO data : datasetDTO.getData()) {
+                //is agronomical object exist ?
+                AgronomicalObjectDAO agronomicalObjectDao = new AgronomicalObjectDAO();
+                if (!agronomicalObjectDao.existInDB(new AgronomicalObject(data.getAgronomicalObject()))) {
                     dataState = false;
-                    insertStatusList.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Unknown Variable : " + datasetDTO.getVariableUri()));
+                    insertStatusList.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Unknown Agronomical Object URI : " + data.getAgronomicalObject()));
                 }
-                
-                Dataset phenotype = datasetDTO.createObjectFromDTO();
-                datasets.add(phenotype);
-                
-            } else { //if the datasetDTO does not follow the rules, 
-                //it means that at least of the fields is missing
-                dataState = false;
-                insertStatusList.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.MISSING_FIELDS));
+
+                //is sensor exist ?
+                if (data.getSensor() != null) {
+                    SensorDAOSesame sensorDAO = new SensorDAOSesame();
+                    if (!sensorDAO.existObject(data.getSensor())) {
+                        dataState = false;
+                        insertStatusList.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Unknown sensor : " + data.getSensor()));
+                    }
+                }
             }
+
+            //is variable exist ? 
+            VariableDaoSesame variableDaoSesame = new VariableDaoSesame();
+            if (!variableDaoSesame.existObject(datasetDTO.getVariableUri())) {
+                dataState = false;
+                insertStatusList.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Unknown Variable : " + datasetDTO.getVariableUri()));
+            }
+
+            Dataset phenotype = datasetDTO.createObjectFromDTO();
+            datasets.add(phenotype);
         }
         
         //if data is valid, insert in mongo

@@ -198,35 +198,28 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
         URINamespaces uriNamespaces = new URINamespaces();
         
         for (VariableDTO variableDTO : variablesDTO) {
-            //Vérification des variables
-            if ((boolean) variableDTO.isOk().get("state")) { //Données attendues reçues
-                //On vérifie que le trait, la méthode et l'unité sont bien dans la base de données
-                if (!existObject(variableDTO.getMethod()) 
-                       || !existObject(variableDTO.getTrait())
-                       || !existObject(variableDTO.getUnit())) {
-                    dataOk = false;
-                    checkStatusList.add(new Status("Wrong value", StatusCodeMsg.ERR, "Unknown trait(" + variableDTO.getTrait() + ") or method (" + variableDTO.getMethod() + ") or unit (" + variableDTO.getUnit() + ")"));
-                } else {
-                    //Vérification des relations d'ontologies reference
-                    for (OntologyReference ontologyReference : variableDTO.getOntologiesReferences()) {
-                        if (!ontologyReference.getProperty().equals(uriNamespaces.getRelationsProperty("rExactMatch"))
-                           && !ontologyReference.getProperty().equals(uriNamespaces.getRelationsProperty("rCloseMatch"))
-                           && !ontologyReference.getProperty().equals(uriNamespaces.getRelationsProperty("rNarrower"))
-                           && !ontologyReference.getProperty().equals(uriNamespaces.getRelationsProperty("rBroader"))) {
-                            dataOk = false;
-                            checkStatusList.add(new Status("Wrong value", StatusCodeMsg.ERR, 
-                                    "Bad property relation given. Must be one of the following : " + uriNamespaces.getRelationsProperty("rExactMatch")
-                                    + ", " + uriNamespaces.getRelationsProperty("rCloseMatch")
-                                    + ", " + uriNamespaces.getRelationsProperty("rNarrower")
-                                    + ", " + uriNamespaces.getRelationsProperty("rBroader")
-                                    +". Given : " + ontologyReference.getProperty()));
-                        }
+            //On vérifie que le trait, la méthode et l'unité sont bien dans la base de données
+            if (!existObject(variableDTO.getMethod()) 
+                   || !existObject(variableDTO.getTrait())
+                   || !existObject(variableDTO.getUnit())) {
+                dataOk = false;
+                checkStatusList.add(new Status("Wrong value", StatusCodeMsg.ERR, "Unknown trait(" + variableDTO.getTrait() + ") or method (" + variableDTO.getMethod() + ") or unit (" + variableDTO.getUnit() + ")"));
+            } else {
+                //Vérification des relations d'ontologies reference
+                for (OntologyReference ontologyReference : variableDTO.getOntologiesReferences()) {
+                    if (!ontologyReference.getProperty().equals(uriNamespaces.getRelationsProperty("rExactMatch"))
+                       && !ontologyReference.getProperty().equals(uriNamespaces.getRelationsProperty("rCloseMatch"))
+                       && !ontologyReference.getProperty().equals(uriNamespaces.getRelationsProperty("rNarrower"))
+                       && !ontologyReference.getProperty().equals(uriNamespaces.getRelationsProperty("rBroader"))) {
+                        dataOk = false;
+                        checkStatusList.add(new Status("Wrong value", StatusCodeMsg.ERR, 
+                                "Bad property relation given. Must be one of the following : " + uriNamespaces.getRelationsProperty("rExactMatch")
+                                + ", " + uriNamespaces.getRelationsProperty("rCloseMatch")
+                                + ", " + uriNamespaces.getRelationsProperty("rNarrower")
+                                + ", " + uriNamespaces.getRelationsProperty("rBroader")
+                                +". Given : " + ontologyReference.getProperty()));
                     }
                 }
-            } else {
-                dataOk = false;
-                variableDTO.isOk().remove("state");
-                checkStatusList.add(new Status("Bad data format", StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.MISSING_FIELDS_LIST).append(variableDTO.isOk()).toString()));
             }
         }
         

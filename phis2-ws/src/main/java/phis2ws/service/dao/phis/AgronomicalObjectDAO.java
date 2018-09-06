@@ -58,11 +58,6 @@ public class AgronomicalObjectDAO extends DAOPhisBrapi<AgronomicalObject, Agrono
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
-     private boolean isElementValid(AgronomicalObjectDTO agronomicalObjectDTO) {
-        Map<String, Object> agronomicalObjectOk = agronomicalObjectDTO.isOk();
-        return (boolean) agronomicalObjectOk.get(AbstractVerifiedClass.STATE);
-    }
-    
     private POSTResultsReturn checkAndInsertAgronomicalObjectsList(List<AgronomicalObject> newAgronomicalObjects) throws Exception {
         //init result returned maps
         List<Status> insertStatusList = new ArrayList<>();

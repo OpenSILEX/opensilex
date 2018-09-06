@@ -12,10 +12,14 @@
 package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import javax.validation.Valid;
+import phis2ws.service.configuration.DateFormat;
+import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.validation.interfaces.Date;
+import phis2ws.service.resources.validation.interfaces.DocumentStatus;
+import phis2ws.service.resources.validation.interfaces.URL;
 
 public class DocumentMetadataDTO extends AbstractVerifiedClass {
     private String uri; // /!\ ne sera pas utilisé pour le POST de métadonnées
@@ -34,28 +38,14 @@ public class DocumentMetadataDTO extends AbstractVerifiedClass {
     private String serverFilePath; // ce champ n'est pas à fournir par le client. 
                                    // Sa valeur sera déterminée coté WS
     
-    @Override
-    public Map rules() {
-        Map<String, Boolean> rules = new HashMap<>();
-        rules.put("documentType", Boolean.TRUE);
-        rules.put("checksum", Boolean.FALSE);
-        rules.put("uri", Boolean.FALSE);
-        rules.put("creator", Boolean.FALSE);
-        rules.put("language", Boolean.FALSE);
-        rules.put("title", Boolean.FALSE);
-        rules.put("creationDate", Boolean.FALSE);
-        rules.put("extension", Boolean.FALSE);
-        rules.put("concern", Boolean.FALSE);
-        rules.put("comment", Boolean.FALSE);
-        rules.put("status", Boolean.TRUE);
-        return rules;
-    }
+   
 
     @Override
     public Object createObjectFromDTO() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    @URL
     public String getUri() {
         return uri;
     }
@@ -63,7 +53,9 @@ public class DocumentMetadataDTO extends AbstractVerifiedClass {
     public void setUri(String uri) {
         this.uri = uri;
     }
-
+    
+    @URL
+    @Required
     @ApiModelProperty(example = "http://www.phenome-fppn.fr/vocabulary/2015#ScientificDocument")
     public String getDocumentType() {
         return documentType;
@@ -109,6 +101,7 @@ public class DocumentMetadataDTO extends AbstractVerifiedClass {
         this.title = title;
     }
 
+    @Date(DateFormat.YMD)
     @ApiModelProperty(example = "2017-01-01")
     public String getCreationDate() {
         return creationDate;
@@ -117,7 +110,8 @@ public class DocumentMetadataDTO extends AbstractVerifiedClass {
     public void setCreationDate(String creationDate) {
         this.creationDate = creationDate;
     }
-
+    
+    @Valid
     public List<ConcernItemDTO> getConcern() {
         return concern;
     }
@@ -151,6 +145,8 @@ public class DocumentMetadataDTO extends AbstractVerifiedClass {
         this.comment = comment;
     }
 
+    @Required
+    @DocumentStatus
     @ApiModelProperty(example = "linked")
     public String getStatus() {
         return status;

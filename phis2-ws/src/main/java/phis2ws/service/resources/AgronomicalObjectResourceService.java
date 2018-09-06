@@ -20,6 +20,8 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -40,6 +42,7 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.AgronomicalObjectDTO;
+import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
@@ -86,7 +89,7 @@ public class AgronomicalObjectResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postAgronomicalObject(
-            @ApiParam(value = DocumentationAnnotation.AGRONOMICAL_OBJECT_POST_DATA_DEFINITION) ArrayList<AgronomicalObjectDTO> agronomicalObjectsDTO,
+            @ApiParam(value = DocumentationAnnotation.AGRONOMICAL_OBJECT_POST_DATA_DEFINITION, required = true) @Valid ArrayList<AgronomicalObjectDTO> agronomicalObjectsDTO,
             @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         //S'il y a au moins un objet agronomique
@@ -179,12 +182,12 @@ public class AgronomicalObjectResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAgronomicalObjectsBySearch(
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
-        @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_AGRONOMICAL_OBJECT_URI) @QueryParam("uri") String uri,
-        @ApiParam(value = "Search by experiment URI", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI) @QueryParam("experiment") String experimentURI,
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
+        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
+        @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_AGRONOMICAL_OBJECT_URI) @QueryParam("uri") @URL String uri,
+        @ApiParam(value = "Search by experiment URI", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI) @QueryParam("experiment") @URL String experimentURI,
         @ApiParam(value = "Search by alias", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_ALIAS) @QueryParam("alias") String alias,
-        @ApiParam(value = "Search by rdfType", example = DocumentationAnnotation.EXAMPLE_AGRONOMICAL_OBJECT_TYPE) @QueryParam("rdfType") String rdfType
+        @ApiParam(value = "Search by rdfType", example = DocumentationAnnotation.EXAMPLE_AGRONOMICAL_OBJECT_TYPE) @QueryParam("rdfType") @URL String rdfType
     ) {
         AgronomicalObjectDAOSesame agronomicalObjectDaoSesame = new AgronomicalObjectDAOSesame();
         

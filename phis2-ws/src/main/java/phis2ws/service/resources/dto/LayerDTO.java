@@ -15,11 +15,12 @@
 package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
-import java.util.HashMap;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import phis2ws.service.documentation.DocumentationAnnotation;
+import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.validation.interfaces.URL;
 
 public class LayerDTO extends AbstractVerifiedClass {
     final static Logger LOGGER = LoggerFactory.getLogger(LayerDTO.class);
@@ -37,22 +38,14 @@ public class LayerDTO extends AbstractVerifiedClass {
     private String depth; 
     private String generateFile;
     
-    @Override
-    public Map rules() {
-        Map<String, Boolean> rules = new HashMap<>();
-        rules.put("objectUri", Boolean.TRUE);
-        rules.put("objectType", Boolean.TRUE);
-        rules.put("depth", Boolean.TRUE);
-        rules.put("generateFile", Boolean.FALSE);
-        
-        return rules;
-    }
 
     @Override
     public Object createObjectFromDTO() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    @Required
+    @URL
     @ApiModelProperty(example = "http://www.phenome-fppn.fr/diaphen/DIA2017-1")
     public String getObjectUri() {
         return objectUri;
@@ -61,7 +54,8 @@ public class LayerDTO extends AbstractVerifiedClass {
     public void setObjectUri(String objectUri) {
         this.objectUri = objectUri;
     }
-    
+
+    @Required
     @ApiModelProperty(example = "true")
     public String getDepth() {
         return depth;
@@ -71,7 +65,9 @@ public class LayerDTO extends AbstractVerifiedClass {
         this.depth = depth;
     }
 
-    @ApiModelProperty(example = "http://www.phenome-fppn.fr/vocabulary/2017#Experiment")
+    @Required
+    @URL
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_AGRONOMICAL_OBJECT_TYPE)
     public String getObjectType() {
         return objectType;
     }
@@ -80,7 +76,7 @@ public class LayerDTO extends AbstractVerifiedClass {
         this.objectType = objectType;
     }    
     
-    @ ApiModelProperty(example = "true")
+    @ApiModelProperty(example = "true")
     public String getGenerateFile() {
         return generateFile;
     }

@@ -13,12 +13,13 @@ package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import org.joda.time.DateTime;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.validation.interfaces.Required;
+import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.Annotation;
 
 /**
@@ -30,12 +31,15 @@ public class AnnotationDTO extends AbstractVerifiedClass {
 
     // motivation instance uri that describe the purpose of this annotation 
     // e.g. http://www.w3.org/ns/oa#commenting
+    @URL
+    @Required
     private String motivatedBy;
 
     // Is an uri that represents the author
     // of this annotations 
     // e.g. http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy
-    @NotNull
+    @URL
+    @Required
     private String creator;
 
     /**
@@ -49,18 +53,10 @@ public class AnnotationDTO extends AbstractVerifiedClass {
      * http://www.phenome-fppn.fr/diaphen/2017/o1032481
      * @link https://www.w3.org/TR/annotation-model/#cardinality-of-bodies-and-targets
      */
+    @URL
+    @NotEmpty
+    @NotNull
     private ArrayList<String> targets;
-
-    @Override
-    public Map rules() {
-        Map<String, Boolean> rules = new HashMap<>();
-        rules.put("motivatedBy", Boolean.TRUE);
-        rules.put("creator", Boolean.TRUE);
-        rules.put("comments", Boolean.FALSE);
-        rules.put("targets", Boolean.TRUE);
-
-        return rules;
-    }
 
     @Override
     public Annotation createObjectFromDTO() {

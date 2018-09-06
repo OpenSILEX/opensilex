@@ -13,6 +13,8 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
 import javax.inject.Inject;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.Pattern;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -80,11 +82,10 @@ public class CallsResourceService implements BrapiCall {
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
 
     @Produces(MediaType.APPLICATION_JSON)
-
     public Response getCalls(
-            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
-            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
-            @ApiParam(value = DocumentationAnnotation.CALL_DATATYPE_DEFINITION, example = DocumentationAnnotation.EXAMPLE_CALL_DATATYPE) @QueryParam("datatype") String datatype) {
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
+            @ApiParam(value = DocumentationAnnotation.CALL_DATATYPE_DEFINITION, example = DocumentationAnnotation.EXAMPLE_CALL_DATATYPE) @QueryParam("datatype") @Pattern(regexp = "json") String datatype) {
 
         ArrayList<Status> statuslist = new ArrayList();
         ArrayList<Call> callsInfoList = new ArrayList();

@@ -12,18 +12,22 @@
 package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
-import java.util.HashMap;
-import java.util.Map;
+import javax.validation.constraints.Email;
+import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.documentation.DocumentationAnnotation;
+import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.validation.interfaces.Date;
+import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.Vector;
 
 /**
  * corresponds to the submitted JSON for a vector
+ *
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class VectorDTO extends AbstractVerifiedClass {
-    
+
     //uri of the vector
     private String uri;
     //type of the vector. Uri of the concept (must be subclass of Vector)
@@ -41,21 +45,6 @@ public class VectorDTO extends AbstractVerifiedClass {
     private String dateOfPurchase;
     //email of the person in charge of the vector
     private String personInCharge;
-    
-    @Override
-    public Map rules() {
-        Map<String, Boolean> rules = new HashMap<>();
-        rules.put("rdfType", Boolean.TRUE);
-        rules.put("label", Boolean.TRUE);
-        rules.put("brand", Boolean.TRUE);
-        rules.put("serialNumber", Boolean.FALSE);
-        rules.put("inServiceDate", Boolean.TRUE);
-        rules.put("dateOfPurchase", Boolean.FALSE);
-        rules.put("personInCharge", Boolean.TRUE);
-        rules.put("uri", Boolean.FALSE);
-        
-        return rules;
-    }
 
     @Override
     public Vector createObjectFromDTO() {
@@ -68,10 +57,11 @@ public class VectorDTO extends AbstractVerifiedClass {
         vector.setInServiceDate(inServiceDate);
         vector.setDateOfPurchase(dateOfPurchase);
         vector.setPersonInCharge(personInCharge);
-        
+
         return vector;
     }
-    
+
+    @URL
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_VECTOR_URI)
     public String getUri() {
         return uri;
@@ -80,6 +70,9 @@ public class VectorDTO extends AbstractVerifiedClass {
     public void setUri(String uri) {
         this.uri = uri;
     }
+
+    @URL
+    @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_VECTOR_RDF_TYPE)
     public String getRdfType() {
         return rdfType;
@@ -89,6 +82,7 @@ public class VectorDTO extends AbstractVerifiedClass {
         this.rdfType = rdfType;
     }
 
+    @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_VECTOR_LABEL)
     public String getLabel() {
         return label;
@@ -97,7 +91,8 @@ public class VectorDTO extends AbstractVerifiedClass {
     public void setLabel(String label) {
         this.label = label;
     }
-    
+
+    @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_VECTOR_BRAND)
     public String getBrand() {
         return brand;
@@ -116,6 +111,8 @@ public class VectorDTO extends AbstractVerifiedClass {
         this.serialNumber = serialNumber;
     }
 
+    @Date(DateFormat.YMD)
+    @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_VECTOR_IN_SERVICE_DATE)
     public String getInServiceDate() {
         return inServiceDate;
@@ -125,6 +122,7 @@ public class VectorDTO extends AbstractVerifiedClass {
         this.inServiceDate = inServiceDate;
     }
 
+    @Date(DateFormat.YMD)
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_VECTOR_DATE_OF_PURCHASE)
     public String getDateOfPurchase() {
         return dateOfPurchase;
@@ -134,6 +132,8 @@ public class VectorDTO extends AbstractVerifiedClass {
         this.dateOfPurchase = dateOfPurchase;
     }
 
+    @Email
+    @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_VECTOR_PERSON_IN_CHARGE)
     public String getPersonInCharge() {
         return personInCharge;

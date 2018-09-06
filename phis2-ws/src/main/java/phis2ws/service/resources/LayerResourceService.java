@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -79,7 +80,7 @@ public class LayerResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postLayer(
-        @ApiParam(value = DocumentationAnnotation.LAYER_POST_DATA_DEFINITION) ArrayList<LayerDTO> layers,
+        @ApiParam(value = DocumentationAnnotation.LAYER_POST_DATA_DEFINITION) @Valid ArrayList<LayerDTO> layers,
         @Context HttpServletRequest context) throws IOException {
         AbstractResultForm postResponse = null;
         

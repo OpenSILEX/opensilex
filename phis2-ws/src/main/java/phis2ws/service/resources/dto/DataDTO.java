@@ -12,11 +12,12 @@
 package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
-import java.util.HashMap;
-import java.util.Map;
 import phis2ws.service.documentation.DocumentationAnnotation;
+import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.validation.interfaces.Date;
 import phis2ws.service.view.model.phis.Data;
+import phis2ws.service.resources.validation.interfaces.URL;
 
 /**
  * corresponds to the submitted JSON for the data 
@@ -31,17 +32,6 @@ public class DataDTO extends AbstractVerifiedClass {
     private String incertitude;
 
     @Override
-    public Map rules() {
-        Map<String, Boolean> rules = new HashMap<>();
-        rules.put("agronomicalObject", Boolean.TRUE);
-        rules.put("data", Boolean.TRUE);
-        rules.put("value", Boolean.TRUE);
-        rules.put("sensor", Boolean.FALSE);
-        rules.put("incertitude", Boolean.FALSE);
-        return rules;
-    }
-
-    @Override
     public Data createObjectFromDTO() {
         Data data = new Data();
         data.setAgronomicalObject(agronomicalObject);
@@ -53,6 +43,8 @@ public class DataDTO extends AbstractVerifiedClass {
         return data;
     }
     
+    @URL
+    @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_AGRONOMICAL_OBJECT_URI)
     public String getAgronomicalObject() {
         return agronomicalObject;
@@ -62,6 +54,8 @@ public class DataDTO extends AbstractVerifiedClass {
         this.agronomicalObject = agronomicalObject;
     }
 
+    @Date
+    @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_DATETIME)
     public String getDate() {
         return date;
@@ -80,6 +74,7 @@ public class DataDTO extends AbstractVerifiedClass {
         this.value = value;
     }
 
+    @URL
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SENSOR_URI)
     public String getSensor() {
         return sensor;

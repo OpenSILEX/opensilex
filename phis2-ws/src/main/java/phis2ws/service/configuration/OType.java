@@ -10,7 +10,7 @@
 // Subject: an enum used for the possible values of the type of an object in the 
 // tripletDTO
 //******************************************************************************
-package phis2ws.service.resources.dto;
+package phis2ws.service.configuration;
 
 /**
  * Used to get the values of the o_type in the TripletDTO.

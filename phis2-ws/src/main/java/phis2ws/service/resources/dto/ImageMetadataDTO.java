@@ -12,11 +12,12 @@
 package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import javax.validation.Valid;
 import phis2ws.service.documentation.DocumentationAnnotation;
+import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.ImageMetadata;
 
 /**
@@ -29,16 +30,6 @@ public class ImageMetadataDTO extends AbstractVerifiedClass {
     private List<ConcernItemDTO> concern;
     private ShootingConfigurationDTO configuration;
     private FileInformationDTO fileInfo;
-
-    @Override
-    public Map rules() {
-         Map<String, Boolean> rules = new HashMap<>();
-        rules.put("rdfType", Boolean.TRUE);
-        rules.put("concern", Boolean.FALSE);
-        rules.put("configuration", Boolean.TRUE);
-        rules.put("fileInfo", Boolean.TRUE);
-        return rules;
-    }
 
     @Override
     public ImageMetadata createObjectFromDTO() {
@@ -54,6 +45,8 @@ public class ImageMetadataDTO extends AbstractVerifiedClass {
        return imageMetadata;
     }
     
+    @URL
+    @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_IMAGE_TYPE)
     public String getRdfType() {
         return rdfType;
@@ -62,7 +55,8 @@ public class ImageMetadataDTO extends AbstractVerifiedClass {
     public void setRdfType(String rdfType) {
         this.rdfType = rdfType;
     }
-
+    
+    @Valid
     public List<ConcernItemDTO> getConcern() {
         return concern;
     }
@@ -71,6 +65,7 @@ public class ImageMetadataDTO extends AbstractVerifiedClass {
         this.concern = concern;
     }
 
+    @Valid
     public ShootingConfigurationDTO getConfiguration() {
         return configuration;
     }
@@ -79,6 +74,7 @@ public class ImageMetadataDTO extends AbstractVerifiedClass {
         this.configuration = configuration;
     }
 
+    @Valid
     public FileInformationDTO getFileInfo() {
         return fileInfo;
     }

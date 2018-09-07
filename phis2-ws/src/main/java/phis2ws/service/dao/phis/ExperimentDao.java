@@ -345,12 +345,12 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
             statement = connection.createStatement();
             resultSet = statement.executeQuery(query.toString());
 
-            if(resultSet.next()) {
+            if (resultSet.next()) {
                 return resultSet.getInt(1);
-            }else{
+            } else {
                 return 0;
             }
-        } catch(SQLException e) {
+        } catch (SQLException e) {
             LOGGER.error(e.getMessage(), e);
             return null;
         } finally {

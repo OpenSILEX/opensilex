@@ -228,15 +228,30 @@ public class DocumentResourceService {
         
         String media = waitingAnnotInformation.get(docUri).getDocumentType();
         media = media.substring(media.lastIndexOf("#") + 1, media.length());
-        FileUploader jsch = new FileUploader();
+        
+        //SILEX:info
+        // Manage authentication error
+        //SILEX:info
+        FileUploader jsch = null;    
+        try {
+            jsch = new FileUploader();
+        } catch (Exception exp) {
+            LOGGER.error(exp.getMessage(), exp);
+            throw new WebApplicationException(
+                      Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                      .entity(new ResponseFormPOST(new Status("FileUploaderException",
+                                                            StatusCodeMsg.ERR,
+                                                            "Connection to the file server fail due to a baduser configuration")
+                                                )).build());
+        }
         //SILEX:conception
         // Add a class to group constants for properties
         //\SILEX:conception
         final String webAppApiDocsName = PropertiesFileManager.getConfigFileProperty("service", "webAppApiDocsName");
         try {
-            waitingAnnotFileCheck.put(docUri, Boolean.TRUE); // Traitement en cours du fichier
+            waitingAnnotFileCheck.put(docUri, Boolean.TRUE); // Processing file
             LOGGER.debug(jsch.getSFTPWorkingDirectory() + "/" + media);
-            // create document directory if it doesn't exists
+            // Create document directory if it doesn't exists
             File documentDirectory = new File(jsch.getSFTPWorkingDirectory());
             if (!documentDirectory.isDirectory()) {
                 if (!documentDirectory.mkdirs()) {
@@ -245,7 +260,7 @@ public class DocumentResourceService {
                             Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                             .entity(new ResponseFormPOST(new Status("Can't create " + webAppApiDocsName + " temporary documents directory", StatusCodeMsg.ERR, null))).build());
                 }else{
-                    // make the good rights on the document directory on remote server
+                    // Add good rights on the document directory which is on the server
                     try {
                         Runtime.getRuntime().exec("chmod -R 755 " + jsch.getSFTPWorkingDirectory());
                         LOGGER.info( webAppApiDocsName + " temporary documents directory rights successfully updated");

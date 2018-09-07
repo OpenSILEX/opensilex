@@ -223,6 +223,7 @@ public class DocumentResourceService {
         
         String media = waitingAnnotInformation.get(docUri).getDocumentType();
         media = media.substring(media.lastIndexOf("#") + 1, media.length());
+        
         FileUploader jsch = new FileUploader();
         try {
             waitingAnnotFileCheck.put(docUri, Boolean.TRUE); // Traitement en cours du fichier
@@ -356,7 +357,8 @@ public class DocumentResourceService {
         @ApiParam(value = "Search by creation date", example = DocumentationAnnotation.EXAMPLE_DOCUMENT_CREATION_DATE) @QueryParam("creationDate") @Date(DateFormat.YMD) String creationDate,
         @ApiParam(value = "Search by extension", example = DocumentationAnnotation.EXAMPLE_DOCUMENT_EXTENSION) @QueryParam("extension") String extension,
         @ApiParam(value = "Search by concerned item", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI) @QueryParam("concernedItem") @URL String concernedItem,
-        @ApiParam(value = "Search by status", example = DocumentationAnnotation.EXAMPLE_DOCUMENT_STATUS) @QueryParam("status") String status) {
+        @ApiParam(value = "Search by status", example = DocumentationAnnotation.EXAMPLE_DOCUMENT_STATUS) @QueryParam("status") String status,
+        @ApiParam(value = "Order the result", allowableValues = "asc,desc") @QueryParam("order") String order) {
         
         //SILEX:conception
         //Pour l'instant la recherche de documents liés à un élément se fait sur un seul élément. 

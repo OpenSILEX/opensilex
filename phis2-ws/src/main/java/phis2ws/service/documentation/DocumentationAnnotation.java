@@ -254,7 +254,7 @@ public final class DocumentationAnnotation {
   
     public static final String EXAMPLE_EXPERIMENT_CROP_SPECIES = "maize";
     
-     // API global parameter
+    // API global parameter
     public static final String EXAMPLE_ORDER_ALLOWABLE_VALUES = "asc,desc";
 
 }

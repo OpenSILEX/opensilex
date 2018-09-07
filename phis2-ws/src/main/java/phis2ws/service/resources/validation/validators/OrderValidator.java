@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                       GrantTypeValidator.java
+//                                       OrderValidator.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 21, Jun 2018
@@ -10,21 +10,21 @@ package phis2ws.service.resources.validation.validators;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
-import phis2ws.service.configuration.GrantTypes;
-import phis2ws.service.resources.validation.interfaces.GrantType;
+import phis2ws.service.configuration.Orders;
+import phis2ws.service.resources.validation.interfaces.Order;
 
 /**
- * Validator used to validate grant types.
+ * Validator used to validate sort parameters.
  * {@code null} elements are considered valid.
- * @see GrantType
+ * @see Order
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class GrantTypeValidator implements ConstraintValidator<GrantType, String> {
+public class OrderValidator implements ConstraintValidator<Order, String> {
     /**
      * {@inheritDoc}
      */
     @Override
-    public void initialize(GrantType constraintAnnotation) {
+    public void initialize(Order constraintAnnotation) {
     }
 
     /**
@@ -36,18 +36,18 @@ public class GrantTypeValidator implements ConstraintValidator<GrantType, String
             return true;
         }
 
-        return validateGrantType(value);
+        return validateOrder(value);
     }
     
     /**
-     * Check if the given grant type level is one of the existings grant types 
-     * from GrantTypes (jwt or password)
-     * @param grantType
-     * @return true if the grant type exist
+     * Check if the sort parameter is one of these provide by
+     * Orders (asc or desc)
+     * @param order
+     * @return true if the sort parameter exist
      *         false if it does not exist
      */
-    public boolean validateGrantType(String grantType) {
-         return grantType.equals(GrantTypes.JWT.toString())
-                 || grantType.equals(GrantTypes.PASSWORD.toString());
+    public boolean validateOrder(String order) {
+         return order.equals(Orders.DESC.toString())
+                 || order.equals(Orders.ASC.toString());
     }
 }

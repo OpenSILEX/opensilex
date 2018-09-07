@@ -1,14 +1,11 @@
-//**********************************************************************************************
-//                                       DocumentResourceService.java 
-//
-// Author(s): Arnaud Charleroy, Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2016
-// Creation date: august 2016
-// Contact:arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  March, 2017
-// Subject: Represents the documents service
-//***********************************************************************************************
+//******************************************************************************
+//                                       DocumentResourceService.java
+// SILEX-PHIS
+// Copyright © INRA 2016
+// Creation date: Aug, 2016
+// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, 
+// pascal.neveu@inra.fr
+//******************************************************************************
 package phis2ws.service.resources;
 
 import com.jcraft.jsch.SftpException;
@@ -70,7 +67,7 @@ import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.DocumentMetadataDTO;
 import phis2ws.service.resources.validation.interfaces.Date;
-import phis2ws.service.resources.validation.interfaces.Required;
+import phis2ws.service.resources.validation.interfaces.Order;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.utils.DocumentWaitingCheck;
 import phis2ws.service.utils.FileUploader;
@@ -84,6 +81,13 @@ import phis2ws.service.view.brapi.form.ResponseFormGET;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
 import phis2ws.service.view.model.phis.Document;
 
+/**
+ * Represents the documents service.
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
+ * @update [Morgane Vidal] March, 2017 : no explanation
+ * @update [Arnaud Charleroy] 07, September 2018 : add sort feature, query optimization (limit , offset, group_concat)
+ *                                                 add comments and CONSTANTS to the code
+ */
 @Api("/documents")
 @Path("/documents")
 public class DocumentResourceService {
@@ -329,6 +333,7 @@ public class DocumentResourceService {
      * @param extension
      * @param concernedItem
      * @param status
+     * @param order order the results by date (DESC by default)
      * @return le résultat de la requête
      */
     @GET
@@ -358,7 +363,7 @@ public class DocumentResourceService {
         @ApiParam(value = "Search by extension", example = DocumentationAnnotation.EXAMPLE_DOCUMENT_EXTENSION) @QueryParam("extension") String extension,
         @ApiParam(value = "Search by concerned item", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI) @QueryParam("concernedItem") @URL String concernedItem,
         @ApiParam(value = "Search by status", example = DocumentationAnnotation.EXAMPLE_DOCUMENT_STATUS) @QueryParam("status") String status,
-        @ApiParam(value = "Order the result", allowableValues = "asc,desc") @QueryParam("order") String order) {
+        @ApiParam(value = "Order the result by date", allowableValues = DocumentationAnnotation.EXAMPLE_ORDER_ALLOWABLE_VALUES) @QueryParam("order") @Order String order) {
         
         //SILEX:conception
         //Pour l'instant la recherche de documents liés à un élément se fait sur un seul élément. 
@@ -393,6 +398,10 @@ public class DocumentResourceService {
         }
         if (status != null) {
             documentDao.status = status;
+        }
+        // Order the result list by date (DESC by default)
+        if (order != null) {
+            documentDao.order = order;
         }
         
         documentDao.user = userSession.getUser();
@@ -502,12 +511,16 @@ public class DocumentResourceService {
         ResponseFormDocumentMetadata getResponse;
         
         documentDao.user = userSession.getUser();
+        // Count all documents for this specific request
+        Integer totalCount = documentDao.count();
+        // Retreive all documents for this specific request
         documentsMetadata = documentDao.allPaginate();
+        
         if (documentsMetadata == null) {
             getResponse = new ResponseFormDocumentMetadata(0, 0, documentsMetadata, true);
             return noResultFound(getResponse, statusList);
         } else if (!documentsMetadata.isEmpty()) {
-            getResponse = new ResponseFormDocumentMetadata(documentDao.getPageSize(), documentDao.getPage(), documentsMetadata, false);
+            getResponse = new ResponseFormDocumentMetadata(documentDao.getPageSize(), documentDao.getPage(), documentsMetadata, true, totalCount);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {

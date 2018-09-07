@@ -1,9 +1,10 @@
 //******************************************************************************
-//                                       GrantTypes.java
+//                                       Orders.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 6 Aug, 2018
-// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Creation date: 07, Sep 2018
+// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, 
+// pascal.neveu@inra.fr
 //******************************************************************************
 package phis2ws.service.configuration;
 
@@ -12,21 +13,23 @@ package phis2ws.service.configuration;
 //\SILEX:todo
 
 /**
- * The list of the authorized grant types formats
+ * The list of the authorized sort parameters formats.
+ * If you modify orders values changes the linked documentation below.
+ * @see DocumentationAnnotation.EXAMPLE_ORDER_ALLOWABLE_VALUES
  * @author Arnaud Charleroy<arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */
-public enum GrantTypes {
+public enum Orders {
     
-    PASSWORD {
+    ASC {
         @Override
         public String toString(){
-            return "password";
+            return "asc";
         }
     },
-    JWT {
+    DESC {
         @Override
         public String toString(){
-            return "jwt";
+            return "desc";
         }
     }
 }

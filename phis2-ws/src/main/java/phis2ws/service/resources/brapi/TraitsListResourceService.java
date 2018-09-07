@@ -16,10 +16,10 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import javax.validation.constraints.Min;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -80,40 +80,15 @@ public class TraitsListResourceService implements BrapiCall {
     @Produces(MediaType.APPLICATION_JSON)
     
     public Response getTraitsList ( 
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page 
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
+        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0)int page 
         ) throws SQLException {        
         BrapiTraitDAO traitDAO = new BrapiTraitDAO();
         traitDAO.setPageSize(limit);
         traitDAO.setPage(page);           
         return getTraitsData(traitDAO);
     }
-    
-    @GET
-    @Path("{traitDbId}")
-    @ApiOperation(value = "Retrieve trait details by id",
-            notes = "Retrieve trait details by id")
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve trait details", response = BrapiTrait.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})    
-    @ApiImplicitParams({
-       @ApiImplicitParam(name = "Authorization", required = true,
-                         dataType = "string", paramType = "header",
-                         value = DocumentationAnnotation.ACCES_TOKEN,
-                         example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
-    @Produces(MediaType.APPLICATION_JSON)
-    
-    public Response getTraitDetails ( 
-        @ApiParam(value = DocumentationAnnotation.TRAIT_URI_DEFINITION, required = true, example=DocumentationAnnotation.EXAMPLE_TRAIT_URI) @PathParam("traitDbId") @DefaultValue(DefaultBrapiPaginationValues.PAGE) String traitDbId
-    ) throws SQLException {        
-        BrapiTraitDAO traitDAO = new BrapiTraitDAO(traitDbId);           
-        return getTraitsData(traitDAO);
-    }
-    
-    
+     
     private Response noResultFound(ResponseFormBrapiTraits getResponse, ArrayList<Status> insertStatusList) {
         insertStatusList.add(new Status("No results", StatusCodeMsg.INFO, "No results"));
         getResponse.setStatus(insertStatusList);
@@ -137,7 +112,7 @@ public class TraitsListResourceService implements BrapiCall {
             }
         } else {
             getResponse = new ResponseFormBrapiTraits(0, 0, traits, true);
-            return Response.status(Response.Status.OK).entity(getResponse).build();
+            return noResultFound(getResponse, statusList);
         }
     }
 }

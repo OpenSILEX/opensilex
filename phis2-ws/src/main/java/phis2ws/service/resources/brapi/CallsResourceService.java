@@ -91,6 +91,7 @@ public class CallsResourceService implements BrapiCall {
         ArrayList<Call> callsInfoList = new ArrayList();
 
         for (BrapiCall bc : brapiCallsList) {
+            
             Call callinfo = bc.callInfo();
             ArrayList<String> datatypesList = callinfo.getDatatypes();
             if (datatype == null || datatypesList.contains(datatype) == true) {

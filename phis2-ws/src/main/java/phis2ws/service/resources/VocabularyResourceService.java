@@ -19,6 +19,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import javax.validation.constraints.Min;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -36,6 +37,8 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.PropertyVocabularyDTO;
+import phis2ws.service.resources.validation.interfaces.Required;
+import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.ResponseFormVocabularyNamespace;
 import phis2ws.service.view.brapi.form.ResponseFormVocabularyProperty;
@@ -161,8 +164,8 @@ public class VocabularyResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getRdfs(
-            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int pageSize,
-            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
 
         VocabularyDAOSesame vocabularyDAO = new VocabularyDAOSesame();
 
@@ -250,9 +253,9 @@ public class VocabularyResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getContacts(
-            @ApiParam(value = "Search by rdfType", example = DocumentationAnnotation.EXAMPLE_SENSOR_RDF_TYPE) @QueryParam("rdfType") String rdfType,
-            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int pageSize,
-            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
+            @ApiParam(value = "Search by rdfType", example = DocumentationAnnotation.EXAMPLE_SENSOR_RDF_TYPE) @QueryParam("rdfType") @URL @Required String rdfType,
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
 
         VocabularyDAOSesame vocabularyDAO = new VocabularyDAOSesame();
 
@@ -355,9 +358,9 @@ public class VocabularyResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDeviceProperties(
-            @ApiParam(value = "Search by rdfType", example = DocumentationAnnotation.EXAMPLE_SENSOR_RDF_TYPE) @QueryParam("rdfType") String rdfType,
-            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int pageSize,
-            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
+            @ApiParam(value = "Search by rdfType", example = DocumentationAnnotation.EXAMPLE_SENSOR_RDF_TYPE) @QueryParam("rdfType") @URL @Required String rdfType,
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
         VocabularyDAOSesame vocabularyDAO = new VocabularyDAOSesame();
 
         if (rdfType != null) {
@@ -428,8 +431,8 @@ public class VocabularyResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getNamespaces(
-            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int pageSize,
-            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
 
         VocabularyDAOSesame vocabularyDAO = new VocabularyDAOSesame();
 

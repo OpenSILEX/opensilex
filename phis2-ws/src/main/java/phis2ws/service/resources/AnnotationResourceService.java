@@ -14,10 +14,10 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -42,9 +42,11 @@ import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
 import phis2ws.service.resources.dto.AnnotationDTO;
+import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.form.ResponseFormAnnotation;
 import phis2ws.service.view.brapi.form.ResponseFormGET;
 import phis2ws.service.view.model.phis.Annotation;
+
 
 /**
  * Represents the annotation service.
@@ -96,7 +98,7 @@ public class AnnotationResourceService {
                 example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     public Response postAnnotations(
-            @ApiParam(value = DocumentationAnnotation.ANNOTATION_POST_DATA_DEFINITION) ArrayList<AnnotationDTO> annotations,
+            @ApiParam(value = DocumentationAnnotation.ANNOTATION_POST_DATA_DEFINITION) @Valid ArrayList<AnnotationDTO> annotations,
             @Context HttpServletRequest context) {
 
         AbstractResultForm postResponse = null;
@@ -174,13 +176,13 @@ public class AnnotationResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAnnotationsBySearch(
-            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int pageSize,
-            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
-            @ApiParam(value = "Search by annotation uri", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_URI) @QueryParam("uri") String uri,
-            @ApiParam(value = "Search by creator", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_CREATOR) @QueryParam("creator") String creator,
-            @ApiParam(value = "Search by motivation", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_MOTIVATEDBY) @QueryParam("motivatedBy") String motivatedBy,
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
+            @ApiParam(value = "Search by annotation uri", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_URI) @QueryParam("uri") @URL String uri,
+            @ApiParam(value = "Search by creator", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_CREATOR) @QueryParam("creator") @URL String creator,
+            @ApiParam(value = "Search by motivation", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_MOTIVATEDBY) @QueryParam("motivatedBy") @URL String motivatedBy,
             @ApiParam(value = "Search by comment", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_COMMENT) @QueryParam("comment") String comment,
-            @ApiParam(value = "Search by target", example = DocumentationAnnotation.EXAMPLE_AGRONOMICAL_OBJECT_URI) @QueryParam("target") String target) {
+            @ApiParam(value = "Search by target", example = DocumentationAnnotation.EXAMPLE_AGRONOMICAL_OBJECT_URI) @QueryParam("target") @URL String target) {
 
         AnnotationDAOSesame annotationDAO = new AnnotationDAOSesame();
         if (uri != null) {
@@ -247,24 +249,15 @@ public class AnnotationResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAnnotationByUri(
-            @ApiParam(value = DocumentationAnnotation.SENSOR_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @PathParam("uri") String uri,
-            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int pageSize,
-            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
+            @ApiParam(value = DocumentationAnnotation.SENSOR_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @URL @PathParam("uri") String uri,
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
 
         if (uri == null) {
             final Status status = new Status(StatusCodeMsg.ACCESS_ERROR, StatusCodeMsg.ERR, "Empty annotation uri");
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
         }
-        //SILEX:info
-        // Test if is a valid uri. this test will be replaced by JSR 380 given by validation rules functionnality
-        //\SILEX
-        try{
-            URL url = new URL(uri);
-        }catch(MalformedURLException e){
-            final Status status = new Status(StatusCodeMsg.ACCESS_ERROR, StatusCodeMsg.ERR, "Not a valid uri format");
-            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
-        }
-
+       
         AnnotationDAOSesame annotationDAO = new AnnotationDAOSesame();
         annotationDAO.uri = uri;
         annotationDAO.setPage(page);

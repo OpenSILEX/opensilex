@@ -150,7 +150,7 @@
             <artifactId>commons-logging</artifactId>
             <version>1.1.1</version>
         </dependency>
-<!--To correct this error : 
+        <!--To correct this error : 
         java.lang.NoClassDefFoundError: com/fasterxml/jackson/annotation/JsonInclude$Value-->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -187,8 +187,26 @@
             <artifactId>jquery</artifactId>
             <version>2.1.4</version>
         </dependency>
+        <!--validator Bean Validation 2.0 (JSR 380)
+         @see https://beanvalidation.org/2.0/ -->
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>6.0.10.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <version>2.0.0.Final</version>
+        </dependency>
+        <!--jersey validator request parameters-->
+        <dependency>
+            <groupId>org.glassfish.jersey.ext</groupId>
+            <artifactId>jersey-bean-validation</artifactId>
+            <version>2.25</version>
+        </dependency>
     </dependencies>
-
+    
     <build>
         <plugins>
             <plugin>

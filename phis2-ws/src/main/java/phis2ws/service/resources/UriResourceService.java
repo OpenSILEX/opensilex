@@ -19,6 +19,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import javax.validation.constraints.Min;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -36,6 +37,8 @@ import phis2ws.service.dao.sesame.UriDaoSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
+import phis2ws.service.resources.validation.interfaces.Required;
+import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.ResponseFormAsk;
 import phis2ws.service.view.brapi.form.ResponseFormUri;
@@ -107,7 +110,7 @@ public class UriResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response isUriExisting(
-            @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @PathParam("uri") String uri) {
+            @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @PathParam("uri") @URL @Required String uri) {
 
         UriDaoSesame uriDaoSesame = new UriDaoSesame();
         if (uri != null) {
@@ -164,9 +167,9 @@ public class UriResourceService {
 
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUriMetadata(
-            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
-            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
-            @ApiParam(value = "Search by uri", required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @PathParam("uri") String uri) {
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
+            @ApiParam(value = "Search by uri", required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @PathParam("uri") @URL @Required String uri) {
 
         UriDaoSesame uriDaoSesame = new UriDaoSesame();
         if (uri != null) {
@@ -205,9 +208,9 @@ public class UriResourceService {
 
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUrisByLabel(
-            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
-            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
-            @ApiParam(value = "Search by label", required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_LABEL) @QueryParam("label") String label) {
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
+            @ApiParam(value = "Search by label", required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_LABEL) @QueryParam("label") @Required String label) {
 
         UriDaoSesame uriDaoSesame = new UriDaoSesame();
         if (label != null) {
@@ -248,10 +251,10 @@ public class UriResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getInstancesByConcept(
-            @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @PathParam("uri") String uri,
+            @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @Required @URL @PathParam("uri") String uri,
             @ApiParam(value = DocumentationAnnotation.DEEP) @QueryParam("deep") @DefaultValue(DocumentationAnnotation.EXAMPLE_DEEP) Boolean deep, 
-            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
-            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
 
         UriDaoSesame uriDaoSesame = new UriDaoSesame();
         if (uri != null) {
@@ -314,9 +317,9 @@ public class UriResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAncestors(
-            @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @PathParam("uri") String uri,
-            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
-            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
+            @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @PathParam("uri") @URL @Required String uri,
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
 
         UriDaoSesame uriDaoSesame = new UriDaoSesame();
         if (uri != null) {
@@ -378,9 +381,9 @@ public class UriResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getSibblings(
-            @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_SIBLING_URI) @PathParam("uri") String uri,
-            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
-            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
+            @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_SIBLING_URI) @PathParam("uri") @URL @Required String uri,
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
 
         UriDaoSesame uriDaoSesame = new UriDaoSesame();
         if (uri != null) {
@@ -441,9 +444,9 @@ public class UriResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDescendants(
-            @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @PathParam("uri") String uri,
-            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
-            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
+            @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @PathParam("uri") @URL @Required String uri,
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
 
         UriDaoSesame uriDaoSesame = new UriDaoSesame();
         if (uri != null) {
@@ -480,7 +483,7 @@ public class UriResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTypeIfUriExist(
-            @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @PathParam("uri") String uri) {
+            @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @PathParam("uri") @URL @Required String uri) {
 
         UriDaoSesame uriDaoSesame = new UriDaoSesame();
         if (uri != null) {

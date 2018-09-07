@@ -61,11 +61,6 @@ public class GroupDao extends DAOPhisBrapi<Group, GroupDTO> {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
-    private boolean isElementValid(GroupDTO groupDTO) {
-        Map<String, Object> groupOk = groupDTO.isOk();
-        return (boolean) groupOk.get("state");
-    }
-    
     private POSTResultsReturn checkAndInsertGroupList(List<GroupDTO> newGroups) throws SQLException, Exception {
         //init result returned maps
         List<Status> insertStatusList = new ArrayList<>();
@@ -76,13 +71,8 @@ public class GroupDao extends DAOPhisBrapi<Group, GroupDTO> {
         ArrayList<Group> groups = new ArrayList<>();
         
         for (GroupDTO groupDTO : newGroups) {
-            if (isElementValid(groupDTO)) {
-                Group group = groupDTO.createObjectFromDTO();
-                groups.add(group);
-            } else {
-                dataState = false;
-                insertStatusList.add(new Status("Data error", StatusCodeMsg.ERR, "Fields are missing in JSON data"));
-            }
+            Group group = groupDTO.createObjectFromDTO();
+            groups.add(group);
         }
         if (dataState) {
             PreparedStatement insertPreparedStatement = null;

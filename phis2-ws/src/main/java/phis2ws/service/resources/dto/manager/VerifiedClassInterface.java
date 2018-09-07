@@ -1,18 +1,20 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+//                           VerifiedClassInterface.java
+// SILEX-PHIS
+// Copyright © INRA 2016
+// Creation date: 25 Jun, 2016
+// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
+
 package phis2ws.service.resources.dto.manager;
 
-import java.util.Map;
-
-
+/**
+ * Interface implemented by DTO class which will be verified
+ * during a POST Request
+ * @author Arnaud Charleroy<arnaud.charleroy@inra.fr>
+ * @param <T> Object returned by the class
+ */
 public interface VerifiedClassInterface<T> {
-    
-    public Map isOk();
-    
-    public Map rules();
     
     public T createObjectFromDTO();
 }

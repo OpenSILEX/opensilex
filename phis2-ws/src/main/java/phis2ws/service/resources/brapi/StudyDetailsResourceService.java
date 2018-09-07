@@ -18,8 +18,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
@@ -30,6 +30,8 @@ import phis2ws.service.dao.phis.StudyDAO;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
+import phis2ws.service.resources.validation.interfaces.Required;
+import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.ResponseFormStudyDetails;
 import phis2ws.service.view.model.phis.Call;
@@ -86,8 +88,8 @@ public class StudyDetailsResourceService implements BrapiCall{
     @Produces(MediaType.APPLICATION_JSON)   
     
     public Response getStudyDetails (
-        @ApiParam(value = "Search by studyDbId", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI ) @PathParam("studyDbId") String studyDbId
-        ) throws SQLException { 
+        @ApiParam(value = "Search by studyDbId", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI ) @QueryParam("studyDbId") @URL @Required String studyDbId
+        ) throws SQLException {               
         
         StudyDAO studyDAO = new StudyDAO();
         

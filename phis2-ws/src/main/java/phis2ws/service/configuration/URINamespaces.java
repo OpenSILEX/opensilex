@@ -164,11 +164,16 @@ public class URINamespaces {
         OBJECTS.put("cUnit", CONTEXTS.get("pVoc2017") + "#Unit");
         OBJECTS.put("cVector", CONTEXTS.get("pVoc2017") + "#Vector");
         OBJECTS.put("cSensingDevice", CONTEXTS.get("pVoc2017") + "#SensingDevice");
+        OBJECTS.put("cFieldRobot", CONTEXTS.get("pVoc2017") + "#FieldRobot");
+        OBJECTS.put("cUAV", CONTEXTS.get("pVoc2017") + "#UAV");
+        OBJECTS.put("cCamera", CONTEXTS.get("pVoc2017") + "#Camera");
+        OBJECTS.put("cRadiometricTarget", CONTEXTS.get("pVoc2017") + "#RadiometricTarget");
         OBJECTS.put("cRestriction", "owl:Restriction");
         OBJECTS.put("cAgent", CONTEXTS.get("pxFoaf") + "/Agent");
         OBJECTS.put("cPerson", CONTEXTS.get("pxFoaf") + "/Person");
         OBJECTS.put("cMotivation", CONTEXTS.get("pxOa") + "#Motivation");
         OBJECTS.put("cAnnotation", CONTEXTS.get("pxOa") + "#Annotation");
+        OBJECTS.put("cFieldRobot", CONTEXTS.get("pVoc2017") + "#FieldRobot");
     }
 
     private void setRelations() {

@@ -32,6 +32,8 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -55,6 +57,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.authentication.Session;
+import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.configuration.URINamespaces;
@@ -65,6 +68,9 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.DocumentMetadataDTO;
+import phis2ws.service.resources.validation.interfaces.Date;
+import phis2ws.service.resources.validation.interfaces.Required;
+import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.utils.DocumentWaitingCheck;
 import phis2ws.service.utils.FileUploader;
 import phis2ws.service.utils.POSTResultsReturn;
@@ -123,7 +129,7 @@ public class DocumentResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postDocuments(@Context HttpHeaders headers,
-            @ApiParam(value = "JSON Document metadata", required = true) List<DocumentMetadataDTO> documentsAnnotations) throws RepositoryException {
+            @ApiParam(value = "JSON Document metadata", required = true) @Valid List<DocumentMetadataDTO> documentsAnnotations) throws RepositoryException {
         AbstractResultForm postResponse;
         if (documentsAnnotations != null && !documentsAnnotations.isEmpty()) {
             //Insertion du document
@@ -193,7 +199,7 @@ public class DocumentResourceService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response postDocumentFile(
             @ApiParam(value = "File to upload") File in,
-            @ApiParam(value = "URI given from \"/documents\" path for upload") @QueryParam("uri") String docUri,
+            @ApiParam(value = "URI given from \"/documents\" path for upload") @QueryParam("uri") @URL String docUri,
             @Context HttpHeaders headers,
             @Context HttpServletRequest request) throws URISyntaxException {
         ResponseFormPOST postResponse = null;
@@ -320,8 +326,8 @@ public class DocumentResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDocumentsType(
-            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
-            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page) {
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
         DocumentDaoSesame documentsDao = new DocumentDaoSesame();
         Status errorStatus = null;
         try {
@@ -367,16 +373,16 @@ public class DocumentResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDocumentsMetadataBySearch(
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) int limit,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) int page,
-        @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_DOCUMENT_URI) @QueryParam("uri") String uri,
-        @ApiParam(value = "Search by document type", example = DocumentationAnnotation.EXAMPLE_DOCUMENT_TYPE) @QueryParam("documentType") String documentType,
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
+        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
+        @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_DOCUMENT_URI) @QueryParam("uri") @URL String uri,
+        @ApiParam(value = "Search by document type", example = DocumentationAnnotation.EXAMPLE_DOCUMENT_TYPE) @QueryParam("documentType") @URL String documentType,
         @ApiParam(value = "Search by creator", example = DocumentationAnnotation.EXAMPLE_DOCUMENT_CREATOR) @QueryParam("creator") String creator,
         @ApiParam(value = "Search by language", example = DocumentationAnnotation.EXAMPLE_DOCUMENT_LANGUAGE) @QueryParam("language") String language,
         @ApiParam(value = "Search by title", example = DocumentationAnnotation.EXAMPLE_DOCUMENT_TITLE) @QueryParam("title") String title,
-        @ApiParam(value = "Search by creation date", example = DocumentationAnnotation.EXAMPLE_DOCUMENT_CREATION_DATE) @QueryParam("creationDate") String creationDate,
+        @ApiParam(value = "Search by creation date", example = DocumentationAnnotation.EXAMPLE_DOCUMENT_CREATION_DATE) @QueryParam("creationDate") @Date(DateFormat.YMD) String creationDate,
         @ApiParam(value = "Search by extension", example = DocumentationAnnotation.EXAMPLE_DOCUMENT_EXTENSION) @QueryParam("extension") String extension,
-        @ApiParam(value = "Search by concerned item", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI) @QueryParam("concernedItem") String concernedItem,
+        @ApiParam(value = "Search by concerned item", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI) @QueryParam("concernedItem") @URL String concernedItem,
         @ApiParam(value = "Search by status", example = DocumentationAnnotation.EXAMPLE_DOCUMENT_STATUS) @QueryParam("status") String status) {
         
         //SILEX:conception
@@ -422,7 +428,10 @@ public class DocumentResourceService {
     }
     
     /**
-     * 
+     * SILEX:todo
+     * We must find a way to send validation errors in json when an error occured.
+     * Maybe just change the response status.
+     * \SILEX:todo
      * @param documentURI l'uri du document à télécharger
      * @return la réponse, avec le document si l'uri existe bien
      */
@@ -443,17 +452,9 @@ public class DocumentResourceService {
                           example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getDocumentByUri(@ApiParam(value = DocumentationAnnotation.DOCUMENT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_DOCUMENT_URI) @PathParam("documentURI") String documentURI) {
-        //SILEX:conception
-        //Est-ce qu'il serait mieux d'envoyer directement l'InputStream récupéré dans mongoDB plutôt 
-        //que d'écrire le fichier sur le disque avant de l'envoyer ?
-        if (documentURI == null) {
-            final Status status = new Status("Access error", StatusCodeMsg.ERR, "Empty document URI");
-            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
-        }
-        
+    public Response getDocumentByUri(
+            @ApiParam(value = DocumentationAnnotation.DOCUMENT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_DOCUMENT_URI) @PathParam("documentURI") String documentURI) {
         return getFile(documentURI);
-        //\SILEX:conception
     }
     
     /**
@@ -554,7 +555,7 @@ public class DocumentResourceService {
         File file = documentDaoMongo.getDocument(documentURI);
         
         if (file == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+            return Response.noContent().build();
         } else {
             return Response.ok(file, MediaType.APPLICATION_OCTET_STREAM)
                            .header("Content-Disposition", "attachement; filename=\"" + file.getName() + "\"")

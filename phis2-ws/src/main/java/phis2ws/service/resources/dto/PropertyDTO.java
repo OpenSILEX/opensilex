@@ -12,10 +12,10 @@
 package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
-import java.util.HashMap;
-import java.util.Map;
 import phis2ws.service.documentation.DocumentationAnnotation;
+import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.Property;
 
 /**
@@ -31,16 +31,6 @@ public class PropertyDTO extends AbstractVerifiedClass {
     private String relation;
     //the value (e.g. http://www.phenome-fppn.fr/id/species/maize)
     private String value;
-    
-    @Override
-    public Map rules() {
-        Map<String, Boolean> rules = new HashMap<>();
-        rules.put("rdfType", Boolean.FALSE);
-        rules.put("relation", Boolean.TRUE);
-        rules.put("value", Boolean.TRUE);
-        
-        return rules;
-    }
 
     @Override
     public Property createObjectFromDTO() {
@@ -52,6 +42,7 @@ public class PropertyDTO extends AbstractVerifiedClass {
         return property;
     }
     
+    @URL
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SPECIES_RDF_TYPE)
     public String getRdfType() {
         return rdfType;
@@ -61,6 +52,8 @@ public class PropertyDTO extends AbstractVerifiedClass {
         this.rdfType = rdfType;
     }
     
+    @URL
+    @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SPECIES_FROM_SPECIES)
     public String getRelation() {
         return relation;
@@ -69,12 +62,14 @@ public class PropertyDTO extends AbstractVerifiedClass {
     public void setRelation(String relation) {
         this.relation = relation;
     }
-
+    
+    @URL
+    @Required
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SPECIES_URI)
     public String getValue() {
         return value;
     }
     
-    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SPECIES_URI)
     public void setValue(String value) {
         this.value = value;
     }

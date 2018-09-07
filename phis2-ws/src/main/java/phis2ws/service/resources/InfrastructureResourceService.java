@@ -30,12 +30,16 @@ import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.sesame.InfrastructureDAOSesame;
+import phis2ws.service.dao.sesame.PropertyDAOSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
+import phis2ws.service.resources.dto.PropertiesDTO;
+import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.ResponseFormInfrastructure;
+import phis2ws.service.view.brapi.form.ResponseFormProperties;
 import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Infrastructure;
 
@@ -166,4 +170,89 @@ public class InfrastructureResourceService {
         return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
     }
     
+    /**
+     * search infrastructure details for a given uri
+     * 
+     * @param pageSize
+     * @param page
+     * @param uri
+     * @return list of the infrastructures corresponding to the search params given
+     * e.g
+     * {
+     *      "metadata": {
+     *          "pagination": {
+     *              "pageSize": 20,
+     *              "currentPage": 0,
+     *              "totalCount": 3,
+     *              "totalPages": 1
+     *          },
+     *          "status": [],
+     *          "datafiles": []
+     *      },
+     *      "result": {
+     *          "data": [
+     *              {
+     *                  "uri": "http://www.phenome-fppn.fr",
+     *                  "properties": [
+     *                      {
+     *              
+     *                      },
+     *                      {
+     * 
+     *                      }
+     *                  ]
+     *              },
+     *          ]
+     *      }
+     * }
+     */
+    @GET
+    @ApiOperation(value = "Get all infrastructures corresponding to the search params given",
+                  notes = "Retrieve all infrastructures authorized for the user corresponding to the searched params given")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Retrieve all infrastructures", response = Infrastructure.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getInfrastructureDetails(
+        @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_URI) @QueryParam("uri") @URL @Required String uri,
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
+    ) {
+        PropertyDAOSesame propertiesDAO = new PropertyDAOSesame();
+        
+        propertiesDAO.uri = uri;
+        propertiesDAO.subClassOf = InfrastructureDAOSesame.TRIPLESTORE_CONCEPT_INFRASTRUCTURE;
+                
+        propertiesDAO.user = userSession.getUser();
+        propertiesDAO.setPage(page);
+        propertiesDAO.setPageSize(pageSize);
+        
+        ;
+        ArrayList<Status> statusList = new ArrayList<>();
+        ResponseFormProperties getResponse;
+
+        // Retreive all annotations returned by the query
+        ArrayList<PropertiesDTO> infrastructureDetails = propertiesDAO.allPaginate();
+
+        if (infrastructureDetails == null) {
+            getResponse = new ResponseFormProperties(0, 0, infrastructureDetails, true, 0);
+            return noResultFound(getResponse, statusList);
+        } else if (infrastructureDetails.isEmpty()) {
+            getResponse = new ResponseFormProperties(0, 0, infrastructureDetails, true, 0);
+            return noResultFound(getResponse, statusList);
+        } else {
+            getResponse = new ResponseFormProperties(propertiesDAO.getPageSize(), propertiesDAO.getPage(), infrastructureDetails, true, infrastructureDetails.size());
+            getResponse.setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
+        }
+    }
 }

@@ -47,7 +47,7 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
     //Triplestore relations
     private final static URINamespaces NAMESPACES = new URINamespaces();
     
-    final static String TRIPLESTORE_CONCEPT_INFRASTRUCTURE = NAMESPACES.getObjectsProperty("cInfrastructure");
+    final public static String TRIPLESTORE_CONCEPT_INFRASTRUCTURE = NAMESPACES.getObjectsProperty("cInfrastructure");
     
     final static String TRIPLESTORE_RELATION_LABEL = NAMESPACES.getRelationsProperty("label");
     final static String TRIPLESTORE_RELATION_TYPE = NAMESPACES.getRelationsProperty("type");

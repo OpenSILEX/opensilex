@@ -123,8 +123,8 @@ public class BrapiTraitDAO extends DAOSesame<BrapiTrait> {
                 traits.add(trait);
             }
         }
-        traits = getVariables(traits);
         
+        traits = getVariables(traits);        
         return traits;
     }    
 }

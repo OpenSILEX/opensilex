@@ -90,8 +90,7 @@ public class CallsResourceService implements BrapiCall {
         ArrayList<Status> statuslist = new ArrayList();
         ArrayList<Call> callsInfoList = new ArrayList();
 
-        for (BrapiCall bc : brapiCallsList) {
-            
+        for (BrapiCall bc : brapiCallsList) {            
             Call callinfo = bc.callInfo();
             ArrayList<String> datatypesList = callinfo.getDatatypes();
             if (datatype == null || datatypesList.contains(datatype) == true) {

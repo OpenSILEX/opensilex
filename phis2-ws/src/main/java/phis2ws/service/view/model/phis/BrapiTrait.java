@@ -10,8 +10,8 @@ package phis2ws.service.view.model.phis;
 import java.util.ArrayList;
 
 /**
- *
- * @author boizetal
+ * Represents a trait according to brapi specifications
+ * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class BrapiTrait {
     private String defaultValue;

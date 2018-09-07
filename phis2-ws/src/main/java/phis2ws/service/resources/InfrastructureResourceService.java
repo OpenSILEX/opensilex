@@ -1,7 +1,7 @@
 //******************************************************************************
 //                                       InfrastructureResourceService.java
 // SILEX-PHIS
-// Copyright Â© INRA 2018
+// Copyright © INRA 2018
 // Creation date: 5 sept. 2018
 // Contact: vincent.migot@inra.fr anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Subject: represnet infrastructures API

@@ -37,7 +37,6 @@ import phis2ws.service.resources.brapi.BrapiCall;
 import phis2ws.service.resources.brapi.CallsResourceService;
 import phis2ws.service.resources.brapi.StudyDetailsResourceService;
 import phis2ws.service.resources.brapi.TokenResourceService;
-import phis2ws.service.resources.brapi.TraitDetailsResourceService;
 import phis2ws.service.resources.brapi.TraitsListResourceService;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
@@ -83,7 +82,6 @@ public class ApplicationInitConfig extends ResourceConfig {
                 bind(TokenResourceService.class).to(BrapiCall.class);
                 bind(StudyDetailsResourceService.class).to(BrapiCall.class);
                 bind(TraitsListResourceService.class).to(BrapiCall.class);
-                bind(TraitDetailsResourceService.class).to(BrapiCall.class);
             }
         });
     }

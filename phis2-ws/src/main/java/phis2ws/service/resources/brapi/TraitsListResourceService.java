@@ -90,7 +90,7 @@ public class TraitsListResourceService implements BrapiCall {
     }
      
     private Response noResultFound(ResponseFormBrapiTraits getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status("No results", StatusCodeMsg.INFO, "No results"));
+        insertStatusList.add(new Status("No result", StatusCodeMsg.INFO, "No results"));
         getResponse.setStatus(insertStatusList);
         return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
     }

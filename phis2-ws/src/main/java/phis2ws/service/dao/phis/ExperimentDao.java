@@ -184,7 +184,6 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
                 
                 experiments.add(experiment);
             }
-            
         } catch (SQLException ex) {
             java.util.logging.Logger.getLogger(ExperimentDao.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
@@ -351,8 +350,6 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
             }else{
                 return 0;
             }
-
-
         } catch(SQLException e) {
             LOGGER.error(e.getMessage(), e);
             return null;

@@ -55,6 +55,14 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
     
      /**
      * generates a paginated search query (search by uri, type, label)
+     * SELECT  ?uri ?rdfType  ?label 
+     * WHERE {
+     *   ?uri  ?0  ?rdfType  . 
+     *   ?rdfType  rdfs:subClassOf*  <http://www.phenome-fppn.fr/vocabulary/2017#Infrastructure> . 
+     *   OPTIONAL {
+     *     ?uri rdfs:label ?label . 
+     *   }
+     * } 
      * @return the query to execute.
      */
     @Override
@@ -83,7 +91,6 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
         query.endBodyOptional();
             
         if (label != null) {
-//            query.appendTriplet(infrastructureUri, TRIPLESTORE_RELATION_LABEL, "\"" + label + "\"", null);
             query.appendFilter("REGEX ( ?" + LABEL + ",\".*" + label + ".*\",\"i\")");
         } 
         
@@ -113,6 +120,14 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
     
     /**
      * return prepared count query based on the current search query
+     * SELECT (COUNT(DISTINCT ?uri) as ?count)
+     * WHERE {
+     *   ?uri  ?0  ?rdfType  . 
+     *   ?rdfType  rdfs:subClassOf*  <http://www.phenome-fppn.fr/vocabulary/2017#Infrastructure> . 
+     *   OPTIONAL {
+     *     ?uri rdfs:label ?label . 
+     *   }
+     * } 
      * @return query
      */
     private SPARQLQueryBuilder prepareCount() {

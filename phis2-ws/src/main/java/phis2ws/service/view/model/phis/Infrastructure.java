@@ -14,11 +14,11 @@ package phis2ws.service.view.model.phis;
  */
 public class Infrastructure {
     
-    //infrastructure uri
+    //infrastructure uri eg. http://www.phenome-fppn.fr/m3p
     private String uri;
-    //infrastructure type
+    //infrastructure type eg. http://www.phenome-fppn.fr/vocabulary/2017#LocalInfrastructure
     private String rdfType;
-    //infrastructure alias
+    //infrastructure alias string eg. M3P
     private String label;
 
     public String getUri() {
@@ -44,6 +44,4 @@ public class Infrastructure {
     public void setLabel(String label) {
         this.label = label;
     }
-    
-    
 }

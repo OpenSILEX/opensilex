@@ -49,6 +49,7 @@ public class AcquisitionSessionDAOSesame extends DAOSesame<Object> {
     final static String TRIPLESTORE_CONCEPT_UAV = NAMESPACES.getObjectsProperty("cUAV");
     final static String TRIPLESTORE_CONCEPT_VECTOR = NAMESPACES.getObjectsProperty("cVector");
     final static String TRIPLESTORE_PLATFORM = NAMESPACES.getContextsProperty("pxPlatform");
+    final static String TRIPLESTORE_CONCEPT_CAMERA = NAMESPACES.getContextsProperty("cCamera");
 
     @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
@@ -58,6 +59,51 @@ public class AcquisitionSessionDAOSesame extends DAOSesame<Object> {
     @Override
     public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    /**
+     * Count the number of rows for the metadata file
+     * @return The number of rows
+     */
+    public Integer countFileMetadataRows() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
+        UriDaoSesame uriDaoSesame = new UriDaoSesame();
+        //size of the higher list to generate all the FileMetadataDTO
+        ArrayList<Integer> sizes = new ArrayList<>();
+        
+        //if the vector is an uav or a field robot, it has specific file metadata
+        if (uriDaoSesame.isSubClassOf(vectorRdfType, TRIPLESTORE_CONCEPT_FIELD_ROBOT)
+                || uriDaoSesame.isSubClassOf(vectorRdfType, TRIPLESTORE_CONCEPT_UAV)) {
+            //Common metadata
+            //1. get the number of group plots (just the experiments in this version)
+            ExperimentDao experimentDAO = new ExperimentDao();
+            sizes.add(experimentDAO.count());
+            
+            //2. get the number of pilots
+            UserDaoPhisBrapi userDAO = new UserDaoPhisBrapi();
+            sizes.add(userDAO.count());
+            
+            //3. platform
+            sizes.add(1);
+            
+            //uav
+            if (uriDaoSesame.isSubClassOf(vectorRdfType, TRIPLESTORE_CONCEPT_UAV)) {
+                //3. get the number of cameras
+                SensorDAOSesame sensorDAO = new SensorDAOSesame();
+                sensorDAO.rdfType = TRIPLESTORE_CONCEPT_CAMERA;
+                sizes.add(sensorDAO.countCameras());
+
+                //4. get the number of vectors
+                VectorDAOSesame vectorDAO = new VectorDAOSesame();
+                vectorDAO.rdfType = TRIPLESTORE_CONCEPT_UAV;
+                sizes.add(vectorDAO.countUAVs());
+
+                //5. get the number of radiometric targets
+                RadiometricTargetDAOSesame radiometricTargetDAO = new RadiometricTargetDAOSesame();
+                sizes.add(radiometricTargetDAO.count());
+            }
+        }
+        
+        return Collections.max(sizes);
     }
     
     /**
@@ -86,11 +132,15 @@ public class AcquisitionSessionDAOSesame extends DAOSesame<Object> {
             //Common metadata
             //1. get the group plot list with the alias, uri and species (just the experiments in this version)
             ExperimentDao experimentDAO = new ExperimentDao();
+            experimentDAO.setPage(page);
+            experimentDAO.setPageSize(pageSize);
             experiments = experimentDAO.getAllExperimentsForAcquisitionSessionFile();
             sizes.add(experiments.size());
             
             //2. get the pilots list
             UserDaoPhisBrapi userDAO = new UserDaoPhisBrapi();
+            userDAO.setPage(page);
+            userDAO.setPageSize(pageSize);
             users = userDAO.getAllUsersEmails();
             sizes.add(users.size());
             
@@ -101,16 +151,22 @@ public class AcquisitionSessionDAOSesame extends DAOSesame<Object> {
             if (uriDaoSesame.isSubClassOf(vectorRdfType, TRIPLESTORE_CONCEPT_UAV)) {
                 //3. get the camera list
                 SensorDAOSesame sensorDAO = new SensorDAOSesame();
+                sensorDAO.setPage(page);
+                sensorDAO.setPageSize(pageSize);
                 sensors = sensorDAO.getCameras();
                 sizes.add(sensors.size());
 
                 //4. get the vectors list
                 VectorDAOSesame vectorDAO = new VectorDAOSesame();
+                vectorDAO.setPage(page);
+                vectorDAO.setPageSize(pageSize);
                 vectors = vectorDAO.getUAVs();
                 sizes.add(vectors.size());
 
                 //5. get the radiometric targets
                 RadiometricTargetDAOSesame radiometricTargetDAO = new RadiometricTargetDAOSesame();
+                radiometricTargetDAO.setPage(page);
+                radiometricTargetDAO.setPageSize(pageSize);
                 radiometricTargets = radiometricTargetDAO.getRadiometricTargets();
                 sizes.add(radiometricTargets.size());
             }

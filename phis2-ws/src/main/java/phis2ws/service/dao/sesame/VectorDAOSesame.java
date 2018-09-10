@@ -290,7 +290,12 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
     /**
      * Count query to get the number of UAV in the triplestore
      * @example
-     * 
+     * SELECT  (count(distinct ?uri) as ?count) 
+     * WHERE {
+     *      ?rdfType  rdfs:subClassOf*  <http://www.phenome-fppn.fr/vocabulary/2017#UAV> . 
+     *      ?uri  rdf:type  ?rdfType  . 
+     *      ?uri  rdfs:label  ?label  . 
+     * }
      * @return Query generated to count the elements
      */
     private SPARQLQueryBuilder prepareCountUAVs() {

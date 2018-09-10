@@ -241,7 +241,7 @@ public class DocumentResourceService {
                       Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                       .entity(new ResponseFormPOST(new Status("FileUploaderException",
                                                             StatusCodeMsg.ERR,
-                                                            "Connection to the file server fail due to a baduser configuration")
+                                                            "Problem with file system configuration")
                                                 )).build());
         }
         //SILEX:conception

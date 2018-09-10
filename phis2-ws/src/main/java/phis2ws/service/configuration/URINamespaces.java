@@ -221,6 +221,7 @@ public class URINamespaces {
         RELATIONS.put("domain", "rdfs:domain");
         RELATIONS.put("rest", "rdf:rest");
         RELATIONS.put("first", "rdf:first");
+        RELATIONS.put("seeAlso", "rdfs:seeAlso");
 
         //relations owl
         RELATIONS.put("unionOf", "owl:unionOf");

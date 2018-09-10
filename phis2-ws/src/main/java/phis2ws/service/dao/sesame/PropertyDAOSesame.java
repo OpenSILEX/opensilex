@@ -26,7 +26,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOSesame;
+import static phis2ws.service.dao.sesame.SensorDAOSesame.TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE;
 import phis2ws.service.documentation.StatusCodeMsg;
+import phis2ws.service.resources.dto.PropertiesDTO;
 import phis2ws.service.resources.dto.PropertyDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
@@ -45,6 +47,12 @@ import phis2ws.service.view.model.phis.Property;
 public class PropertyDAOSesame extends DAOSesame<Property> {
     final static Logger LOGGER = LoggerFactory.getLogger(SensorDAOSesame.class);
     
+    // This attribute is used to search all properties of the given uri
+    public String uri;
+    
+    // This attribute is used to restrict available uri to a specific set of subclass
+    public String subClassOf;
+        
     //The following attributes are used to search properties in the triplestore
     //the property relation name. 
     //the relation term is used because it only represents the "vocabulary:property" 
@@ -87,11 +95,69 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     private final static String TRIPLESTORE_RELATION_QUALIFIED_CARDINALITY = NAMESPACES.getRelationsProperty("qualifiedCardinality");
     private final static String TRIPLESTORE_RELATION_SUBCLASS_OF = NAMESPACES.getRelationsProperty("subClassOf");
 
+    /**
+     * prepare the sparql query to get the list of properties and their relations
+     * to the given uri. If subClassOf is specified, the object corresponding to the uri must be
+     * a subclass of the given type.
+     * @return the builded query
+     * eg.
+     * SELECT DISTINCT  ?relation ?property 
+     * WHERE {
+     *   <http://www.phenome-fppn.fr/diaphen>  ?relation  ?property  . 
+     *   <http://www.phenome-fppn.fr/diaphen>  rdf:type  ?rdfType  . 
+     *   ?rdfType  rdfs:subClassOf*  <http://www.phenome-fppn.fr/vocabulary/2017#Infrastructure> . 
+     * }
+     */
     @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        query.appendDistinct(Boolean.TRUE);
+
+        query.appendSelect("?" + RELATION + " ?" + PROPERTY);
+        query.appendTriplet("<" + uri + ">", "?" + RELATION, "?" + PROPERTY, null);
+        query.appendTriplet("<" + uri + ">", TRIPLESTORE_RELATION_TYPE, "?" + RDF_TYPE, null);
+        
+        if (subClassOf != null) {
+            query.appendTriplet("?" + RDF_TYPE, TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE, subClassOf, null);
+        }
+        
+        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        
+        return query;
     }
 
+     /**
+     * search all the properties corresponding to the given object uri
+     * @return the list of the properties which match the given uri.
+     */
+    public ArrayList<PropertiesDTO> allPaginate() {        
+        SPARQLQueryBuilder query = prepareSearchQuery();
+        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        ArrayList<PropertiesDTO> propertiesContainer = new ArrayList<>();
+        
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
+            PropertiesDTO properties = new PropertiesDTO();
+            while (result.hasNext()) {
+                if (properties.getUri() == null) {
+                    properties.setUri(uri);
+                }
+                BindingSet bindingSet = result.next();
+                PropertyDTO property = new PropertyDTO();
+        
+                property.setRelation(bindingSet.getValue(RELATION).stringValue());
+                property.setValue(bindingSet.getValue(PROPERTY).stringValue());
+        
+                properties.addProperty(property);
+            }
+            
+            if (properties.getUri() != null) {
+                propertiesContainer.add(properties);
+            }
+        }
+        
+        return propertiesContainer;
+    }
+    
     @Override
     public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.

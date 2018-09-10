@@ -174,6 +174,7 @@ public class URINamespaces {
         OBJECTS.put("cMotivation", CONTEXTS.get("pxOa") + "#Motivation");
         OBJECTS.put("cAnnotation", CONTEXTS.get("pxOa") + "#Annotation");
         OBJECTS.put("cFieldRobot", CONTEXTS.get("pVoc2017") + "#FieldRobot");
+        OBJECTS.put("cInfrastructure", CONTEXTS.get("pVoc2017") + "#Infrastructure");
     }
 
     private void setRelations() {

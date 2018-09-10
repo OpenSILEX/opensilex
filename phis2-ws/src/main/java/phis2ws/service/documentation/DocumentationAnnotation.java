@@ -257,4 +257,8 @@ public final class DocumentationAnnotation {
     // API global parameter
     public static final String EXAMPLE_ORDER_ALLOWABLE_VALUES = "asc,desc";
 
+    public static final String EXAMPLE_INFRASTRUCTURE_URI = "http://www.phenome-fppn.fr/diaphen";
+    public static final String EXAMPLE_INFRASTRUCTURE_RDF_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#Infrastructure";
+    public static final String EXAMPLE_INFRASTRUCTURE_LABEL = "EMPHASIS";
+
 }

@@ -334,7 +334,25 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         }
         return documentsSchemasUri;
     }
-
+    /**
+     * @example
+     * SELECT DISTINCT  ?documentUri ?documentType ?creator ?title ?creationDate ?format ?status (GROUP_CONCAT(DISTINCT ?comment; SEPARATOR=",") AS ?comments) WHERE {
+     * GRAPH <http://www.phenome-fppn.fr/phis2/documents> { ?documentUri  rdf:type  ?documentType  . 
+     *  ?documentUri  dc:creator  ?creator  . 
+     *  ?documentUri  dc:language  "en"  . 
+     *  ?documentUri  dc:title  ?title  . 
+     *  ?documentUri  dc:date  ?creationDate  . 
+     *  ?documentUri  dc:format  ?format  . 
+     *  ?documentUri  <http://www.phenome-fppn.fr/vocabulary/2017#status>  ?status  . 
+     *  ?documentUri  rdfs:comment  ?comment  . 
+     * FILTER ( (regex(STR(?creator), 'admin', 'i')) && (regex(STR(?title), 'liste', 'i')) ) 
+     * }}
+     * GROUP BY  ?documentUri ?documentType ?creator ?title ?creationDate ?format ?status 
+     * ORDER BY DESC(?creationDate) 
+     * LIMIT 20 
+     * OFFSET 0 
+     * @return the query
+     */
     @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
         SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
@@ -359,7 +377,10 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         }
         
         if (creator != null) {
-            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_CREATOR, "\"" + creator + "\"", null);
+            sparqlQuery.appendGroupBy("?" + CREATOR);
+            sparqlQuery.appendSelect("?" + CREATOR);
+            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_CREATOR, "?" + CREATOR, null);
+            sparqlQuery.appendAndFilter("regex(STR(?" + CREATOR +"), '" + creator + "', 'i')");
         } else {
             sparqlQuery.appendGroupBy("?" + CREATOR);
             sparqlQuery.appendSelect("?" + CREATOR);
@@ -375,7 +396,10 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         }
         
         if (title != null) {
-            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_TITLE, "\"" + title + "\"", null);
+            sparqlQuery.appendGroupBy("?" + TITLE);
+            sparqlQuery.appendSelect("?" + TITLE);
+            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_TITLE, "?" + TITLE, null);
+            sparqlQuery.appendAndFilter("regex(STR(?" + TITLE +"), '" + title + "', 'i')");
         } else {
             sparqlQuery.appendGroupBy("?" + TITLE);
             sparqlQuery.appendSelect("?" + TITLE);
@@ -438,7 +462,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
     }
     
     /**
-     * prepare the query to search the elements which are concerned by the document
+     * Prepare the query to search the elements which are concerned by the document
      * @param uriDocument
      * @return the search query
      */
@@ -465,17 +489,17 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
      * data before to send it to the client) 
      * @example
      * SELECT DISTINCT  (count(distinct ?documentUri) as ?count) WHERE {
-     *   GRAPH <http://www.phenome-fppn.fr/phis2/documents> { 
-     *       ?documentUri  rdf:type  ?documentType  . 
-     *       ?documentUri  dc:creator  ?creator  . 
-     *       ?documentUri  dc:language  ?language  . 
-     *       ?documentUri  dc:title  ?title  . 
-     *       ?documentUri  dc:date  ?creationDate  . 
-     *       ?documentUri  dc:format  ?format  . 
-     *       ?documentUri  <http://www.phenome-fppn.fr/vocabulary/2017#status>  ?status  . 
-     *       ?documentUri  rdfs:comment  ?comment  . 
-     *      }
-     * }
+     * GRAPH <http://www.phenome-fppn.fr/phis2/documents> { 
+     *  ?documentUri  rdf:type  ?documentType  . 
+     *  ?documentUri  dc:creator  ?creator  . 
+     *  ?documentUri  dc:language  "en"  . 
+     *  ?documentUri  dc:title  ?title  . 
+     *  ?documentUri  dc:date  ?creationDate  . 
+     *  ?documentUri  dc:format  ?format  . 
+     *  ?documentUri  <http://www.phenome-fppn.fr/vocabulary/2017#status>  ?status  . 
+     *  ?documentUri  rdfs:comment  ?comment  . 
+     * FILTER ( (regex(STR(?creator), 'admin', 'i')) && (regex(STR(?title), 'liste', 'i')) ) 
+     * }}
      * @return query generated with the searched parameters
      */
     private SPARQLQueryBuilder prepareCount() {
@@ -552,80 +576,82 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
                 if (uri != null) {
                     document.setUri(uri);
                 } else {
-                    document.setUri(bindingSet.getValue(URI).stringValue());
-                }
-                
-                if (documentType != null) {
-                    document.setDocumentType(documentType);
-                } else {
-                    document.setDocumentType(bindingSet.getValue(DOCUMENT_TYPE).stringValue());
-                }
-                
-                if (creator != null) {
-                    document.setCreator(creator);
-                } else {
-                    document.setCreator(bindingSet.getValue(CREATOR).stringValue());
-                }
-                
-                if (language != null) {
-                    document.setLanguage(language);
-                } else {
-                    document.setLanguage(bindingSet.getValue(LANGUAGE).stringValue());
-                }
-                
-                if (title != null) {
-                    document.setTitle(title);
-                } else {
-                    document.setTitle(bindingSet.getValue(TITLE).stringValue());
-                }
-                
-                if (creationDate != null) {
-                    document.setCreationDate(creationDate);
-                } else {
-                    document.setCreationDate(bindingSet.getValue(CREATION_DATE).stringValue());
-                }
-                
-                if (format != null) {
-                    document.setFormat(format);
-                } else {
-                    document.setFormat(bindingSet.getValue(FORMAT).stringValue());
-                }
-                
-                if (status != null) {
-                    document.setStatus(status);
-                } else {
-                    document.setStatus(bindingSet.getValue(STATUS).stringValue());
-                }
-                
-                if (bindingSet.getValue(COMMENTS) != null) {
                     //SILEX:info
-                    // concat query return a list with comma separated value in one column
-                    //\SILEX:info
-                    ArrayList<String> comments = new ArrayList<>(Arrays.asList(bindingSet.getValue(COMMENTS).stringValue().split(SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR)));
-                    if (comments != null && !comments.isEmpty()) {
-                        //SILEX:info
-                        // for now only one comment can be linked to document
-                        //\SILEX:info
-                        document.setComment(comments.get(0));
-                    } 
-                }
- 
-                //Check if document is linked to other elements
-                SPARQLQueryBuilder sparqlQueryConcern = prepareSearchConcernQuery(document.getUri());
-                TupleQuery tupleQueryConcern = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQueryConcern.toString());
-                TupleQueryResult resultConcern = tupleQueryConcern.evaluate();
-                while (resultConcern.hasNext()) {
-                    BindingSet bindingSetConcern = resultConcern.next();
-                    if (bindingSetConcern.getValue(CONCERN) != null) {
-                        ConcernItemDTO concernedItem = new ConcernItemDTO();
-                        concernedItem.setTypeURI(bindingSetConcern.getValue(CONCERN_TYPE).stringValue());
-                        concernedItem.setUri(bindingSetConcern.getValue(CONCERN).stringValue());
-                        document.addConcernedItem(concernedItem);
+                    // Group concat on comment may return empty line
+                    // @example
+                    //             DocumentUri	DocumentType	Creator	Title	CreationDate	Format	Status	Comments
+                    // Document 1                                                                                  ""
+                    //SILEX:info
+                    if(bindingSet.getValue(URI) != null){
+                        document.setUri(bindingSet.getValue(URI).stringValue());
                     }
                 }
-                
-                if (canUserSeeDocument(user, document)) {
-                    documents.add(document);
+                // See SILEX:info above
+                if(document.getUri() != null){
+                    if (documentType != null) {
+                        document.setDocumentType(documentType);
+                    } else {
+                        document.setDocumentType(bindingSet.getValue(DOCUMENT_TYPE).stringValue());
+                    }
+
+                    document.setCreator(bindingSet.getValue(CREATOR).stringValue());
+
+                    if (language != null) {
+                        document.setLanguage(language);
+                    } else {
+                        document.setLanguage(bindingSet.getValue(LANGUAGE).stringValue());
+                    }
+
+                    document.setTitle(bindingSet.getValue(TITLE).stringValue());
+
+                    if (creationDate != null) {
+                        document.setCreationDate(creationDate);
+                    } else {
+                        document.setCreationDate(bindingSet.getValue(CREATION_DATE).stringValue());
+                    }
+
+                    if (format != null) {
+                        document.setFormat(format);
+                    } else {
+                        document.setFormat(bindingSet.getValue(FORMAT).stringValue());
+                    }
+
+                    if (status != null) {
+                        document.setStatus(status);
+                    } else {
+                        document.setStatus(bindingSet.getValue(STATUS).stringValue());
+                    }
+
+                    if (bindingSet.getValue(COMMENTS) != null) {
+                        //SILEX:info
+                        // concat query return a list with comma separated value in one column
+                        //\SILEX:info
+                        ArrayList<String> comments = new ArrayList<>(Arrays.asList(bindingSet.getValue(COMMENTS).stringValue().split(SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR)));
+                        if (comments != null && !comments.isEmpty()) {
+                            //SILEX:info
+                            // for now only one comment can be linked to document
+                            //\SILEX:info
+                            document.setComment(comments.get(0));
+                        } 
+                    }
+
+                    //Check if document is linked to other elements
+                    SPARQLQueryBuilder sparqlQueryConcern = prepareSearchConcernQuery(document.getUri());
+                    TupleQuery tupleQueryConcern = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQueryConcern.toString());
+                    TupleQueryResult resultConcern = tupleQueryConcern.evaluate();
+                    while (resultConcern.hasNext()) {
+                        BindingSet bindingSetConcern = resultConcern.next();
+                        if (bindingSetConcern.getValue(CONCERN) != null) {
+                            ConcernItemDTO concernedItem = new ConcernItemDTO();
+                            concernedItem.setTypeURI(bindingSetConcern.getValue(CONCERN_TYPE).stringValue());
+                            concernedItem.setUri(bindingSetConcern.getValue(CONCERN).stringValue());
+                            document.addConcernedItem(concernedItem);
+                        }
+                    }
+
+                    if (canUserSeeDocument(user, document)) {
+                        documents.add(document);
+                    }
                 }
             }
         }

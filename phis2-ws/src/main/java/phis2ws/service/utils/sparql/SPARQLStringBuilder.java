@@ -1,24 +1,21 @@
-//**********************************************************************************************
-//                                       SPARQLStringBuilder.java 
-//
-// Author(s): Arnaud Charleroy 
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2016
-// Creation date: may 2016
-// Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  October, 2016
-// Subject: A class which provide method to manipulate SPARQL 
-//***********************************************************************************************
+//******************************************************************************
+//                                       SPARQLStringBuilder.java
+// SILEX-PHIS
+// Copyright © INRA 2016
+// Creation date: May, 2016
+// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package phis2ws.service.utils.sparql;
 
 import java.util.Iterator;
 import java.util.List;
 
 /**
- * Classe abstraite qui permet la création de constructeur qui facilite
- * l'écriture de requête SPARQL à partir de chaîne de caractères
- *
- * @author Arnaud Charleroy
+ * Abstract class which provides common methods and attributes 
+ * to manipulate SPARQL query and update.
+ * @update [No information] October, 2016 : no explanation
+ * @update [Arnaud Charleroy] 10 September, 2018 : Add "And" and "Or" filter choices
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public abstract class SPARQLStringBuilder {
 
@@ -115,10 +112,41 @@ public abstract class SPARQLStringBuilder {
         sesameUriFormObject = false;
     }
 
+    /**
+     * @example
+     * FILTER ( (regex(STR(?creator), 'admin', 'i') ) 
+     * @param filter the filter which will be applied e.g. regex(STR(?creator), 'admin', 'i')
+     */
     public void appendFilter(String filter) {
-        this.filter += filter;
+        this.filter +=  "(" + filter + ")";
+    }
+    
+    /**
+     * @example
+     * FILTER ( (regex(STR(?creator), 'admin', 'i')) && (regex(STR(?title), 'liste', 'i')) ) 
+     * @param filter the filter which will be applied e.g. regex(STR(?creator), 'admin', 'i')
+     */
+    public void appendAndFilter(String filter) {
+        if(this.filter != ""){
+             this.filter += " && (" + filter  + ")";
+        }else{
+            this.appendFilter(filter);
+        }
     }
 
+    /**
+     * @example
+     * FILTER ( (regex(STR(?creator), 'admin', 'i')) || (regex(STR(?title), 'liste', 'i')) ) 
+     * @param filter the filter which will be applied e.g. regex(STR(?creator), 'admin', 'i')
+     */
+    public void appendOrFilter(String filter) {
+        if(this.filter != ""){
+             this.filter += " || (" + filter  + ")";
+        }else{
+            this.appendFilter(filter);
+        }
+    }
+    
     /**
      * Ajout du corps de la requête possibilité de mettre des semi colon
      *

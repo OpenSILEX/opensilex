@@ -254,4 +254,8 @@ public final class DocumentationAnnotation {
   
     public static final String EXAMPLE_EXPERIMENT_CROP_SPECIES = "maize";
 
+    public static final String EXAMPLE_INFRASTRUCTURE_URI = "http://www.phenome-fppn.fr/diaphen";
+    public static final String EXAMPLE_INFRASTRUCTURE_RDF_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#Infrastructure";
+    public static final String EXAMPLE_INFRASTRUCTURE_LABEL = "EMPHASIS";
+
 }

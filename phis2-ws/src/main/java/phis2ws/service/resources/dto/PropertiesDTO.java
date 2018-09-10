@@ -1,13 +1,13 @@
 //******************************************************************************
-//                                       SensorProfileDTO.java
+//                                       PropertiesDTO.java
 //
-// Author(s): Morgane Vidal <morgane.vidal@inra.fr>
+// Author(s): Vincent Migot <vincent.migot@inra.fr>
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2018
-// Creation date: 28 mai 2018
-// Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  28 mai 2018
-// Subject: Represents the submitted JSON for the sensor's profile
+// Creation date: 10 septembre 2018
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Last modification date:  10 septembre 2018
+// Subject: Represents the JSON for an object protperties with its uri
 //******************************************************************************
 package phis2ws.service.resources.dto;
 
@@ -23,16 +23,16 @@ import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.SensorProfile;
 
 /**
- * Represents the submitted JSON for the sensor's profile
+ * Represents the JSON for an object protperties with its uri
  *
  * @see PropertyDTO
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Vincent Migot <vincent.migot@inra.fr>
  */
 public class PropertiesDTO extends AbstractVerifiedClass {
 
-    //uri of the sensor concerned by the properties
+    //uri of the object concerned by the properties
     private String uri;
-    //list of the properties of the sensor
+    //list of the properties of the object
     private ArrayList<PropertyDTO> properties = new ArrayList<>();
 
     @Override
@@ -49,7 +49,7 @@ public class PropertiesDTO extends AbstractVerifiedClass {
     
     @URL
     @Required
-    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SENSOR_URI)
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_URI)
     public String getUri() {
         return uri;
     }

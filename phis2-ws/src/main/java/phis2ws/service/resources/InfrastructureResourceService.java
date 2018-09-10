@@ -176,41 +176,51 @@ public class InfrastructureResourceService {
      * @param pageSize
      * @param page
      * @param uri
-     * @return list of the infrastructures corresponding to the search params given
+     * @return list of the infrastructure's detail corresponding to the search uri
      * e.g
      * {
-     *      "metadata": {
-     *          "pagination": {
-     *              "pageSize": 20,
-     *              "currentPage": 0,
-     *              "totalCount": 3,
-     *              "totalPages": 1
-     *          },
-     *          "status": [],
-     *          "datafiles": []
-     *      },
-     *      "result": {
-     *          "data": [
-     *              {
-     *                  "uri": "http://www.phenome-fppn.fr",
-     *                  "properties": [
-     *                      {
-     *              
-     *                      },
-     *                      {
-     * 
-     *                      }
-     *                  ]
-     *              },
-     *          ]
-     *      }
+     *   "metadata": {
+     *     "pagination": null,
+     *     "status": [],
+     *     "datafiles": []
+     *   },
+     *   "result": {
+     *     "data": [
+     *       {
+     *         "uri": "http://www.phenome-fppn.fr/diaphen",
+     *         "properties": [
+     *           {
+     *             "rdfType": null,
+     *             "relation": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+     *             "value": "http://www.phenome-fppn.fr/vocabulary/2017#Installation"
+     *           },
+     *           {
+     *             "rdfType": null,
+     *             "relation": "http://www.w3.org/2000/01/rdf-schema#label",
+     *             "value": "DIAPHEN"
+     *           },
+     *           {
+     *             "rdfType": null,
+     *             "relation": "http://www.phenome-fppn.fr/vocabulary/2017#hasPart",
+     *             "value": "http://www.phenome-fppn.fr/diaphen/ea1"
+     *           },
+     *           {
+     *             "rdfType": null,
+     *             "relation": "http://www.phenome-fppn.fr/vocabulary/2017#hasPart",
+     *             "value": "http://www.phenome-fppn.fr/diaphen/ef1"
+     *           }
+     *         ]
+     *       }
+     *     ]
+     *   }
      * }
      */
     @GET
-    @ApiOperation(value = "Get all infrastructures corresponding to the search params given",
-                  notes = "Retrieve all infrastructures authorized for the user corresponding to the searched params given")
+    @Path("{uri}")
+    @ApiOperation(value = "Get all infrastructure's details corresponding to the search uri",
+                  notes = "Retrieve all infrastructure's details authorized for the user corresponding to the searched uri")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve all infrastructures", response = Infrastructure.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Retrieve infrastructure's details", response = Infrastructure.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)

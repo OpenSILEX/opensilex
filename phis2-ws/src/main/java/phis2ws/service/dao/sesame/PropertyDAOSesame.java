@@ -95,6 +95,19 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     private final static String TRIPLESTORE_RELATION_QUALIFIED_CARDINALITY = NAMESPACES.getRelationsProperty("qualifiedCardinality");
     private final static String TRIPLESTORE_RELATION_SUBCLASS_OF = NAMESPACES.getRelationsProperty("subClassOf");
 
+    /**
+     * prepare the sparql query to get the list of properties and their relations
+     * to the given uri. If subClassOf is specified, the object corresponding to the uri must be
+     * a subclass of the given type.
+     * @return the builded query
+     * eg.
+     * SELECT DISTINCT  ?relation ?property 
+     * WHERE {
+     *   <http://www.phenome-fppn.fr/diaphen>  ?relation  ?property  . 
+     *   <http://www.phenome-fppn.fr/diaphen>  rdf:type  ?rdfType  . 
+     *   ?rdfType  rdfs:subClassOf*  <http://www.phenome-fppn.fr/vocabulary/2017#Infrastructure> . 
+     * }
+     */
     @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();

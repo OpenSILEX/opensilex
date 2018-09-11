@@ -172,6 +172,8 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
            
             query.appendFrom(table, tableAlias);
             query.appendSelect(sqlFields.get("uri") + ", " + sqlFields.get("alias") + ", " + sqlFields.get("cropSpecies"));
+            query.appendLimit(String.valueOf(pageSize));
+            query.appendOffset(Integer.toString(this.getPage()* this.getPageSize()));
             
             queryResult = statement.executeQuery(query.toString());
             
@@ -181,7 +183,6 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
                 experiment.setUri(queryResult.getString(sqlFields.get("uri")));
                 experiment.setAlias(queryResult.getString(sqlFields.get("alias")));
                 experiment.setCropSpecies(queryResult.getString(sqlFields.get("cropSpecies")));
-                
                 experiments.add(experiment);
             }
         } catch (SQLException ex) {

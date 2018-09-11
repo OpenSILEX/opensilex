@@ -345,6 +345,7 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
             query.appendFrom(table, tableAlias);
             query.appendSelect(sqlFields.get("email"));
             query.appendLimit(String.valueOf(pageSize));
+            query.appendOffset(Integer.toString(this.getPage()* this.getPageSize()));
 
             queryResult = statement.executeQuery(query.toString());
 

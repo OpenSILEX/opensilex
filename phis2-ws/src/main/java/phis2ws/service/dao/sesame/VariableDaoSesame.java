@@ -241,7 +241,7 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
     private SPARQLUpdateBuilder prepareInsertQuery(VariableDTO variable) {
         SPARQLUpdateBuilder spql = new SPARQLUpdateBuilder();
         
-        spql.appendGraphURI(TRIPLESTORE_CONCEPT_VARIABLE);
+        spql.appendGraphURI(TRIPLESTORE_CONTEXT_VARIABLES);
         spql.appendTriplet(variable.getUri(), TRIPLESTORE_RELATION_TYPE, TRIPLESTORE_CONCEPT_VARIABLE, null);
         spql.appendTriplet(variable.getUri(), TRIPLESTORE_RELATION_LABEL, "\"" + variable.getLabel() + "\"", null);
         if (variable.getComment() != null) {
@@ -399,7 +399,7 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
                 
                 if (comment != null) {
                     variable.setComment(comment);
-                } else {
+                } else if (bindingSet.getValue(COMMENT) != null) {
                     variable.setComment(bindingSet.getValue(COMMENT).stringValue());
                 }
                 

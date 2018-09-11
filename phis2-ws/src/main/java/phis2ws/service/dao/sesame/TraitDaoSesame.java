@@ -309,7 +309,7 @@ public class TraitDaoSesame extends DAOSesame<Trait> {
                 
                 if (comment != null) {
                     trait.setComment(comment);
-                } else {
+                } else if (bindingSet.getValue(COMMENT) != null) {
                     trait.setComment(bindingSet.getValue(COMMENT).stringValue());
                 }
                 

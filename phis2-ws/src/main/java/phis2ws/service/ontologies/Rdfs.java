@@ -20,6 +20,25 @@ public enum Rdfs {
             return "https://www.w3.org/2000/01/rdf-schema#";
         }
     },
+    
+    RELATION_DOMAIN {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "domain";
+        }
+    },
+    RELATION_COMMENT {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "comment";
+        }
+    },
+    RELATION_LABEL {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "label";
+        }
+    },
     RELATION_SUBCLASS_OF {
         @Override
         public String toString() {
@@ -36,24 +55,6 @@ public enum Rdfs {
         @Override
         public String toString() {
             return NAMESPACE.toString() + "subPropertyOf*";
-        }
-    },
-    RELATION_LABEL {
-        @Override
-        public String toString() {
-            return NAMESPACE.toString() + "label";
-        }
-    },
-    RELATION_COMMENT {
-        @Override
-        public String toString() {
-            return NAMESPACE.toString() + "comment";
-        }
-    },
-    RELATION_DOMAIN {
-        @Override
-        public String toString() {
-            return NAMESPACE.toString() + "domain";
         }
     }
 }

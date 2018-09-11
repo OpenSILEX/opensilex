@@ -19,6 +19,7 @@ public enum Foaf {
             return "http://xmlns.com/foaf/0.1/";
         }
     },
+    
     CONCEPT_AGENT {
         @Override
         public String toString() {

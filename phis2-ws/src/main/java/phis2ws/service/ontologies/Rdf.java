@@ -19,10 +19,11 @@ public enum Rdf {
             return "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
         }
     },
-    RELATION_TYPE {
+    
+    RELATION_FIRST {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "type";
+            return NAMESPACE.toString() + "first";
         }
     },
     RELATION_REST {
@@ -31,10 +32,10 @@ public enum Rdf {
             return NAMESPACE.toString() + "rest";
         }
     },
-    RELATION_FIRST {
+    RELATION_TYPE {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "first";
+            return NAMESPACE.toString() + "type";
         }
     }
 }

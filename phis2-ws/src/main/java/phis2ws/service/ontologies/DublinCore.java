@@ -20,16 +20,17 @@ public enum DublinCore {
             return "http://purl.org/dc/terms/";
         }
     },
-    RELATION_CREATOR {
-        @Override
-        public String toString() {
-            return NAMESPACE.toString() + "creator";
-        }
-    },
+    
     RELATION_CREATED {
         @Override
         public String toString() {
             return NAMESPACE.toString() + "created";
         }
-    }
+    },
+    RELATION_CREATOR {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "creator";
+        }
+    }    
 }

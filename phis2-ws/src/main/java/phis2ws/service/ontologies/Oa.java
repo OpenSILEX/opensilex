@@ -19,28 +19,30 @@ public enum Oa {
             return "http://www.w3.org/ns/oa#";
         }
     },
-    CONCEPT_MOTIVATION {
-        @Override
-        public String toString() {
-            return NAMESPACE.toString() + "Motivation";
-        }
-    },
+    
     CONCEPT_ANNOTATION {
         @Override
         public String toString() {
             return NAMESPACE.toString() + "Annotation";
         }
     },
-    RELATION_HAS_TARGET {
+    CONCEPT_MOTIVATION {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "hasTarget";
+            return NAMESPACE.toString() + "Motivation";
         }
     },
+    
     RELATION_BODY_VALUE {
         @Override
         public String toString() {
             return NAMESPACE.toString() + "bodyValue";
+        }
+    },
+    RELATION_HAS_TARGET {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasTarget";
         }
     },
     RELATION_MOTIVATED_BY {

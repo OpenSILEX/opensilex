@@ -179,7 +179,9 @@ public class UnitDaoSesame extends DAOSesame<Unit> {
         spql.appendGraphURI(uriNamespaces.getContextsProperty("variables"));
         spql.appendTriplet(unitDTO.getUri(), "rdf:type", uriNamespaces.getObjectsProperty("cUnit"), null);
         spql.appendTriplet(unitDTO.getUri(), "rdfs:label", "\"" + unitDTO.getLabel() + "\"", null);
-        spql.appendTriplet(unitDTO.getUri(), "rdfs:comment", "\"" + unitDTO.getComment() + "\"", null);
+        if (unitDTO.getComment() != null) {
+            spql.appendTriplet(unitDTO.getUri(), "rdfs:comment", "\"" + unitDTO.getComment() + "\"", null);
+        }
         
         for (OntologyReference ontologyReference : unitDTO.getOntologiesReferences()) {
             spql.appendTriplet(unitDTO.getUri(), ontologyReference.getProperty(), ontologyReference.getObject(), null);

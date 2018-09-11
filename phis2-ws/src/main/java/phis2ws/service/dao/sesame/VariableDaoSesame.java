@@ -244,7 +244,9 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
         spql.appendGraphURI(TRIPLESTORE_CONCEPT_VARIABLE);
         spql.appendTriplet(variable.getUri(), TRIPLESTORE_RELATION_TYPE, TRIPLESTORE_CONCEPT_VARIABLE, null);
         spql.appendTriplet(variable.getUri(), TRIPLESTORE_RELATION_LABEL, "\"" + variable.getLabel() + "\"", null);
-        spql.appendTriplet(variable.getUri(), TRIPLESTORE_RELATION_COMMENT, "\"" + variable.getComment() + "\"", null);
+        if (variable.getComment() != null) {
+            spql.appendTriplet(variable.getUri(), TRIPLESTORE_RELATION_COMMENT, "\"" + variable.getComment() + "\"", null);
+        }
         spql.appendTriplet(variable.getUri(), TRIPLESTORE_RELATION_HAS_TRAIT, variable.getTrait(), null);
         spql.appendTriplet(variable.getUri(), TRIPLESTORE_RELATION_HAS_METHOD, variable.getMethod(), null);
         spql.appendTriplet(variable.getUri(), TRIPLESTORE_RELATION_HAS_UNIT, variable.getUnit(), null);

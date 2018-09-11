@@ -177,7 +177,9 @@ public class TraitDaoSesame extends DAOSesame<Trait> {
         spql.appendGraphURI(ONTOLOGIES.getContextsProperty("variables"));
         spql.appendTriplet(traitDTO.getUri(), TRIPLESTORE_RELATION_TYPE, ONTOLOGIES.getObjectsProperty("cTrait"), null);
         spql.appendTriplet(traitDTO.getUri(), TRIPLESTORE_RELATION_LABEL, "\"" + traitDTO.getLabel() + "\"", null);
-        spql.appendTriplet(traitDTO.getUri(), TRIPLESTORE_RELATION_COMMENT, "\"" + traitDTO.getComment() + "\"", null);
+        if (traitDTO.getComment() != null) {
+            spql.appendTriplet(traitDTO.getUri(), TRIPLESTORE_RELATION_COMMENT, "\"" + traitDTO.getComment() + "\"", null);
+        }
         
         for (OntologyReference ontologyReference : traitDTO.getOntologiesReferences()) {
             spql.appendTriplet(traitDTO.getUri(), ontologyReference.getProperty(), ontologyReference.getObject(), null);

@@ -180,7 +180,9 @@ public class MethodDaoSesame extends DAOSesame<Method> {
         spql.appendGraphURI(uriNamespaces.getContextsProperty("variables"));
         spql.appendTriplet(methodDTO.getUri(), "rdf:type", uriNamespaces.getObjectsProperty("cMethod"), null);
         spql.appendTriplet(methodDTO.getUri(), "rdfs:label", "\"" + methodDTO.getLabel() + "\"", null);
-        spql.appendTriplet(methodDTO.getUri(), "rdfs:comment", "\"" + methodDTO.getComment() + "\"", null);
+        if (methodDTO.getComment() != null) {
+           spql.appendTriplet(methodDTO.getUri(), "rdfs:comment", "\"" + methodDTO.getComment() + "\"", null); 
+        }
         
         for (OntologyReference ontologyReference : methodDTO.getOntologiesReferences()) {
             spql.appendTriplet(methodDTO.getUri(), ontologyReference.getProperty(), ontologyReference.getObject(), null);

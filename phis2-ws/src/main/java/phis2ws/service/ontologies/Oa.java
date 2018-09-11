@@ -16,37 +16,37 @@ public enum Oa {
     NAMESPACE {
         @Override
         public String toString() {
-            return "http://www.w3.org/ns/oa";
+            return "http://www.w3.org/ns/oa#";
         }
     },
     CONCEPT_MOTIVATION {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "#Motivation";
+            return NAMESPACE.toString() + "Motivation";
         }
     },
     CONCEPT_ANNOTATION {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "#Annotation";
+            return NAMESPACE.toString() + "Annotation";
         }
     },
     RELATION_HAS_TARGET {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "#hasTarget";
+            return NAMESPACE.toString() + "hasTarget";
         }
     },
     RELATION_BODY_VALUE {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "#bodyValue";
+            return NAMESPACE.toString() + "bodyValue";
         }
     },
     RELATION_MOTIVATED_BY {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "#motivatedBy";
+            return NAMESPACE.toString() + "motivatedBy";
         }
     }
 }

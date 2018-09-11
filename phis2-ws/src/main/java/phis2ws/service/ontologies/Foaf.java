@@ -16,19 +16,19 @@ public enum Foaf {
     NAMESPACE {
         @Override
         public String toString() {
-            return "http://xmlns.com/foaf/0.1";
+            return "http://xmlns.com/foaf/0.1/";
         }
     },
     CONCEPT_AGENT {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "/Agent";
+            return NAMESPACE.toString() + "Agent";
         }
     },
     CONCEPT_PERSON {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "/Person";
+            return NAMESPACE.toString() + "Person";
         }
     }
 }

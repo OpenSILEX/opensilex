@@ -16,31 +16,31 @@ public enum Skos {
     NAMESPACE {
         @Override
         public String toString() {
-            return "http://www.w3.org/2008/05/skos";
+            return "http://www.w3.org/2008/05/skos#";
         }
     },
     RELATION_BROADER {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "#broader";
+            return NAMESPACE.toString() + "broader";
         }
     },
     RELATION_CLOSE_MATCH {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "#closeMatch";
+            return NAMESPACE.toString() + "closeMatch";
         }
     },
     RELATION_EXACT_MATCH {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "#exactMatch";
+            return NAMESPACE.toString() + "exactMatch";
         }
     },
     RELATION_NARROWER {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "#narrower";
+            return NAMESPACE.toString() + "narrower";
         }
     }
 }

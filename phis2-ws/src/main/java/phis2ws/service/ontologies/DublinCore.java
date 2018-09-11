@@ -17,19 +17,19 @@ public enum DublinCore {
     NAMESPACE {
         @Override
         public String toString() {
-            return "http://purl.org/dc/terms";
+            return "http://purl.org/dc/terms/";
         }
     },
     RELATION_CREATOR {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "/creator";
+            return NAMESPACE.toString() + "creator";
         }
     },
     RELATION_CREATED {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "/created";
+            return NAMESPACE.toString() + "created";
         }
     }
 }

@@ -220,8 +220,8 @@ public class AcquisitionSessionDAOSesame extends DAOSesame<Object> {
                 
                 if (vectors.size() > i) {
                     fileMetadata.setVectorUri(vectors.get(i).getUri());
-                    fileMetadata.setVectorAlias(sensors.get(i).getLabel());
-                    fileMetadata.setVectorType(sensors.get(i).getRdfType());
+                    fileMetadata.setVectorAlias(vectors.get(i).getLabel());
+                    fileMetadata.setVectorType(vectors.get(i).getRdfType());
                 }
                 
                 if (radiometricTargets.size() > i) {

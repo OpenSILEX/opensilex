@@ -4,8 +4,9 @@
 // Copyright © INRA 2016
 // Creation date: Aug, 2016
 // Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, 
-// pascal.neveu@inra.fr
+//          pascal.neveu@inra.fr
 //******************************************************************************
+
 package phis2ws.service.resources;
 
 import com.jcraft.jsch.SftpException;
@@ -42,6 +43,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -67,7 +69,6 @@ import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.DocumentMetadataDTO;
 import phis2ws.service.resources.validation.interfaces.Date;
-import phis2ws.service.resources.validation.interfaces.Order;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.utils.DocumentWaitingCheck;
 import phis2ws.service.utils.FileUploader;
@@ -80,11 +81,13 @@ import phis2ws.service.view.brapi.form.ResponseFormDocumentType;
 import phis2ws.service.view.brapi.form.ResponseFormGET;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
 import phis2ws.service.view.model.phis.Document;
+import phis2ws.service.resources.validation.interfaces.SortingValue;
 
 /**
  * Represents the documents service.
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  * @update [Morgane Vidal] March, 2017 : no explanation
+ * @update [Arnaud Charleroy] 04 September, 2018 : create automatically document directory if not
  * @update [Arnaud Charleroy] 07, September 2018 : add sort feature, query optimization (limit , offset, group_concat)
  *                                                 add comments and CONSTANTS to the code
  */
@@ -228,10 +231,46 @@ public class DocumentResourceService {
         String media = waitingAnnotInformation.get(docUri).getDocumentType();
         media = media.substring(media.lastIndexOf("#") + 1, media.length());
         
-        FileUploader jsch = new FileUploader();
+        //SILEX:info
+        // Manage authentication error
+        //SILEX:info
+        FileUploader jsch = null;    
         try {
-            waitingAnnotFileCheck.put(docUri, Boolean.TRUE); // Traitement en cours du fichier
+            jsch = new FileUploader();
+        } catch (Exception exp) {
+            LOGGER.error(exp.getMessage(), exp);
+            throw new WebApplicationException(
+                      Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                      .entity(new ResponseFormPOST(new Status("FileUploaderException",
+                                                            StatusCodeMsg.ERR,
+                                                            "Problem with file system configuration")
+                                                )).build());
+        }
+        //SILEX:conception
+        // Add a class to group constants for properties
+        //\SILEX:conception
+        final String webAppApiDocsName = PropertiesFileManager.getConfigFileProperty("service", "webAppApiDocsName");
+        try {
+            waitingAnnotFileCheck.put(docUri, Boolean.TRUE); // Processing file
             LOGGER.debug(jsch.getSFTPWorkingDirectory() + "/" + media);
+            // Create document directory if it doesn't exists
+            File documentDirectory = new File(jsch.getSFTPWorkingDirectory());
+            if (!documentDirectory.isDirectory()) {
+                if (!documentDirectory.mkdirs()) {
+                    LOGGER.error("Can't create " + webAppApiDocsName + " temporary documents directory");
+                    throw new WebApplicationException(
+                            Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                            .entity(new ResponseFormPOST(new Status("Can't create " + webAppApiDocsName + " temporary documents directory", StatusCodeMsg.ERR, null))).build());
+                }else{
+                    // Add good rights on the document directory which is on the server
+                    try {
+                        Runtime.getRuntime().exec("chmod -R 755 " + jsch.getSFTPWorkingDirectory());
+                        LOGGER.info( webAppApiDocsName + " temporary documents directory rights successfully updated");
+                    } catch (IOException e) {
+                        LOGGER.error("Can't change rights on " + webAppApiDocsName + " temporary documents directory");
+                    }
+                }
+            }
             //SILEX:test
             jsch.getChannelSftp().cd(jsch.getSFTPWorkingDirectory());
             //\SILEX:test
@@ -333,7 +372,7 @@ public class DocumentResourceService {
      * @param extension
      * @param concernedItem
      * @param status
-     * @param order order the results by date (DESC by default)
+     * @param sortByDate sortByDate the results by date (DESC by default)
      * @return le résultat de la requête
      */
     @GET
@@ -363,7 +402,7 @@ public class DocumentResourceService {
         @ApiParam(value = "Search by extension", example = DocumentationAnnotation.EXAMPLE_DOCUMENT_EXTENSION) @QueryParam("extension") String extension,
         @ApiParam(value = "Search by concerned item", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI) @QueryParam("concernedItem") @URL String concernedItem,
         @ApiParam(value = "Search by status", example = DocumentationAnnotation.EXAMPLE_DOCUMENT_STATUS) @QueryParam("status") String status,
-        @ApiParam(value = "Order the result by date", allowableValues = DocumentationAnnotation.EXAMPLE_ORDER_ALLOWABLE_VALUES) @QueryParam("order") @Order String order) {
+        @ApiParam(value = "Sort results by date", allowableValues = DocumentationAnnotation.EXAMPLE_SORTING_ALLOWABLE_VALUES) @QueryParam("sortByDate") @SortingValue String sortByDate) {
         
         //SILEX:conception
         //Pour l'instant la recherche de documents liés à un élément se fait sur un seul élément. 
@@ -399,9 +438,9 @@ public class DocumentResourceService {
         if (status != null) {
             documentDao.status = status;
         }
-        // Order the result list by date (DESC by default)
-        if (order != null) {
-            documentDao.order = order;
+        // Sorting value the result list by date (DESC by default)
+        if (sortByDate != null) {
+            documentDao.sortByDate = sortByDate;
         }
         
         documentDao.user = userSession.getUser();

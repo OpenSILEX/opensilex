@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                       OrderValidator.java
+//                                       SortingValueValidator.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 21, Jun 2018
@@ -10,21 +10,21 @@ package phis2ws.service.resources.validation.validators;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
-import phis2ws.service.configuration.Orders;
-import phis2ws.service.resources.validation.interfaces.Order;
+import phis2ws.service.configuration.SortingValues;
+import phis2ws.service.resources.validation.interfaces.SortingValue;
 
 /**
  * Validator used to validate sort parameters.
  * {@code null} elements are considered valid.
- * @see Order
+ * @see SortingValue
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class OrderValidator implements ConstraintValidator<Order, String> {
+public class SortingValueValidator implements ConstraintValidator<SortingValue, String> {
     /**
      * {@inheritDoc}
      */
     @Override
-    public void initialize(Order constraintAnnotation) {
+    public void initialize(SortingValue constraintAnnotation) {
     }
 
     /**
@@ -41,13 +41,13 @@ public class OrderValidator implements ConstraintValidator<Order, String> {
     
     /**
      * Check if the sort parameter is one of these provide by
-     * Orders (asc or desc)
+ SortingValues (asc or desc)
      * @param order
      * @return true if the sort parameter exist
      *         false if it does not exist
      */
     public boolean validateOrder(String order) {
-         return order.equals(Orders.DESC.toString())
-                 || order.equals(Orders.ASC.toString());
+         return order.equals(SortingValues.DESC.toString())
+                 || order.equals(SortingValues.ASC.toString());
     }
 }

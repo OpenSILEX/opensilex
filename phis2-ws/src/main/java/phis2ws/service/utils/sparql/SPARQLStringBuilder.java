@@ -13,9 +13,9 @@ import java.util.List;
 /**
  * Abstract class which provides common methods and attributes 
  * to manipulate SPARQL query and update.
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  * @update [No information] October, 2016 : no explanation
  * @update [Arnaud Charleroy] 10 September, 2018 : Add "And" and "Or" filter choices
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public abstract class SPARQLStringBuilder {
 
@@ -127,9 +127,9 @@ public abstract class SPARQLStringBuilder {
      * @param filter the filter which will be applied e.g. regex(STR(?creator), 'admin', 'i')
      */
     public void appendAndFilter(String filter) {
-        if(this.filter != ""){
+        if(this.filter != "") {
              this.filter += " && (" + filter  + ")";
-        }else{
+        } else {
             this.appendFilter(filter);
         }
     }
@@ -140,9 +140,9 @@ public abstract class SPARQLStringBuilder {
      * @param filter the filter which will be applied e.g. regex(STR(?creator), 'admin', 'i')
      */
     public void appendOrFilter(String filter) {
-        if(this.filter != ""){
+        if(this.filter != "") {
              this.filter += " || (" + filter  + ")";
-        }else{
+        } else {
             this.appendFilter(filter);
         }
     }

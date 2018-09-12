@@ -82,6 +82,8 @@ public class AcquisitionSessionResourceService {
         //Retrieve file format.
         fileMetadata = acquisitionSessionDAOSesame.allPaginateFileMetadata();
         
+        Integer count = acquisitionSessionDAOSesame.countFileMetadataRows();
+        
         if (fileMetadata == null) {
             getResponse = new ResponseFormMetadataFile(0, 0, new ArrayList<>(), true);
             return noResultFound(getResponse, statusList);
@@ -89,7 +91,10 @@ public class AcquisitionSessionResourceService {
             getResponse = new ResponseFormMetadataFile(0, 0, fileMetadata, true);
             return noResultFound(getResponse, statusList);
         } else {
-            getResponse = new ResponseFormMetadataFile(1, 0, fileMetadata, true);
+            //SILEX:info
+            //In this service, the total count is equals to the number of rows
+            //\SILEX:info
+            getResponse = new ResponseFormMetadataFile(acquisitionSessionDAOSesame.getPageSize(), acquisitionSessionDAOSesame.getPage(), fileMetadata, true, count);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }

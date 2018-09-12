@@ -4,7 +4,7 @@
 // Copyright © INRA 2017
 // Creation date: Jun, 2017
 // Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, 
-// pascal.neveu@inra.fr
+//          pascal.neveu@inra.fr
 //******************************************************************************
 package phis2ws.service.view.brapi.form;
 

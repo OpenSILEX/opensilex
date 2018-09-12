@@ -29,6 +29,7 @@ public class SQLQueryBuilder {
     public String join;
     public String orderBy;
     public String limit;
+    public String offset;
 //    public static JoinAttributes JoinAttributes = new JoinAttributes(;
 
     public SQLQueryBuilder() {
@@ -37,6 +38,7 @@ public class SQLQueryBuilder {
         join = "";
         orderBy = "";
         limit = "";
+        offset = "";
     }
 
 //    public JoinAttributes getJoinAttributes(){
@@ -260,6 +262,10 @@ public void appendORWhereConditions(String attribute, String value, String opera
         this.limit += limit;
     }
     
+    public void appendOffset(String offset) {
+        this.offset += offset;
+    }
+    
     public void appendANDWhereTableConstraintConditions(String attribute, String secondAttribute, String operator, String tableAlias, String secondTableAlias) {
         if (attribute != null && secondAttribute != null) {
             if (where.length() > 0) {
@@ -350,6 +356,11 @@ public void appendORWhereConditions(String attribute, String value, String opera
             query += "\n";
             query += "LIMIT ";
             query += limit;
+        }
+        if (offset != null && offset.length() > 0) {
+            query += "\n";
+            query += "OFFSET ";
+            query += offset;
         }
         return query;
     }

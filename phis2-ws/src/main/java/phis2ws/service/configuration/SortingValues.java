@@ -1,10 +1,10 @@
 //******************************************************************************
-//                                       Orders.java
+//                                       SortingValues.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 07, Sep 2018
 // Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, 
-// pascal.neveu@inra.fr
+//          pascal.neveu@inra.fr
 //******************************************************************************
 package phis2ws.service.configuration;
 
@@ -18,7 +18,7 @@ package phis2ws.service.configuration;
  * @see DocumentationAnnotation.EXAMPLE_ORDER_ALLOWABLE_VALUES
  * @author Arnaud Charleroy<arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */
-public enum Orders {
+public enum SortingValues {
     
     ASC {
         @Override

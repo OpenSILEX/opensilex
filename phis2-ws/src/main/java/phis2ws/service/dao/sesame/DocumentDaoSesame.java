@@ -471,7 +471,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         sparqlQuery.appendDistinct(true);
         sparqlQuery.appendGraph(TRIPLESTORE_GRAPH_DOCUMENT);
 
-        sparqlQuery.appendSelect(" ?" + CONCERN  + " ?" +CONCERN_TYPE );
+        sparqlQuery.appendSelect(" ?" + CONCERN  + " ?" + CONCERN_TYPE );
         sparqlQuery.appendTriplet(uriDocument, TRIPLESTORE_RELATION_CONCERN, "?" + CONCERN, null);
         sparqlQuery.appendTriplet("?" + CONCERN, TRIPLESTORE_RELATION_TYPE, "?" + CONCERN_TYPE, null);
 
@@ -488,7 +488,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
      * is paginated (reduce the amount of data retrieved and the time to process
      * data before to send it to the client) 
      * @example
-     * SELECT DISTINCT  (COUNT(DISTINCT ?documentUri) as ?count) WHERE {
+     * SELECT (COUNT(DISTINCT ?documentUri) as ?count) WHERE {
      * GRAPH <http://www.phenome-fppn.fr/phis2/documents> { 
      *  ?documentUri  rdf:type  ?documentType  . 
      *  ?documentUri  dc:creator  ?creator  . 

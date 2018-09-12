@@ -42,7 +42,7 @@ public class UriGenerator {
 
     final static Logger LOGGER = LoggerFactory.getLogger(UriGenerator.class);
 
-    private static final String PROPERTIES_SERVICE_FILE_NAME = "service";
+    private static final String PROPERTIES_SERVICE_FILE_NAME = "sesame_rdf_config";
     private static final String PROPERTIES_SERVICE_BASE_URI = "baseURI";
 
     private static final String URI_CODE_AGRONOMICAL_OBJECT = "o";

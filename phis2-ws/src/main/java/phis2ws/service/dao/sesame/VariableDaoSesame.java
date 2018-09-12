@@ -26,9 +26,13 @@ import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
-import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
+import phis2ws.service.ontologies.Contexts;
+import phis2ws.service.ontologies.Rdf;
+import phis2ws.service.ontologies.Rdfs;
+import phis2ws.service.ontologies.Skos;
+import phis2ws.service.ontologies.Vocabulary;
 import phis2ws.service.resources.dto.VariableDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.UriGenerator;
@@ -62,10 +66,9 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
         //SILEX:todo
         //Ajouter la recherche par référence vers d'autres ontologies aussi
         //\SILEX:todo
-        final URINamespaces uriNamespaces = new URINamespaces();
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
-        query.appendGraph(uriNamespaces.getContextsProperty("variables"));
+        query.appendGraph(Contexts.VARIABLES.toString());
         String variableURI;
         if (uri != null) {
             variableURI = "<" + uri + ">";
@@ -73,44 +76,44 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
             variableURI = "?uri";
             query.appendSelect("?uri");
         }
-        query.appendTriplet(variableURI, "rdf:type", uriNamespaces.getObjectsProperty("cVariable"), null);
+        query.appendTriplet(variableURI, Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_VARIABLE.toString(), null);
         
         if (label != null) {
-            query.appendTriplet(variableURI, "rdfs:label","\"" + label + "\"", null);
+            query.appendTriplet(variableURI, Rdfs.RELATION_LABEL.toString(),"\"" + label + "\"", null);
         } else {
             query.appendSelect(" ?label");
-            query.appendTriplet(variableURI, "rdfs:label", "?label", null);
+            query.appendTriplet(variableURI, Rdfs.RELATION_LABEL.toString(), "?label", null);
         }
         
         if (comment != null) {
-            query.appendTriplet(variableURI, "rdfs:comment", "\"" + comment + "\"", null);
+            query.appendTriplet(variableURI, Rdfs.RELATION_COMMENT.toString(), "\"" + comment + "\"", null);
         } else {
             query.appendSelect(" ?comment");
-            query.appendTriplet(variableURI, "rdfs:comment", " ?comment", null);
+            query.appendTriplet(variableURI, Rdfs.RELATION_COMMENT.toString(), " ?comment", null);
         }
         
         if (trait != null) {
-            query.appendTriplet(variableURI, uriNamespaces.getRelationsProperty("rHasTrait"), trait, null);
+            query.appendTriplet(variableURI, Vocabulary.RELATION_HAS_TRAIT.toString(), trait, null);
         } else {
             query.appendSelect(" ?trait");
-            query.appendTriplet(variableURI, uriNamespaces.getRelationsProperty("rHasTrait"), "?trait", null);
+            query.appendTriplet(variableURI, Vocabulary.RELATION_HAS_TRAIT.toString(), "?trait", null);
         }
         
         if (method != null) {
-            query.appendTriplet(variableURI, uriNamespaces.getRelationsProperty("rHasMethod"), method, null);
+            query.appendTriplet(variableURI, Vocabulary.RELATION_HAS_METHOD.toString(), method, null);
         } else {
             query.appendSelect(" ?method");
-            query.appendTriplet(variableURI, uriNamespaces.getRelationsProperty("rHasMethod"), "?method", null);
+            query.appendTriplet(variableURI, Vocabulary.RELATION_HAS_METHOD.toString(), "?method", null);
         }
         
         if (unit != null) {
-            query.appendTriplet(variableURI, uriNamespaces.getRelationsProperty("rHasUnit"), unit, null);
+            query.appendTriplet(variableURI, Vocabulary.RELATION_HAS_UNIT.toString(), unit, null);
         } else {
             query.appendSelect(" ?unit");
-            query.appendTriplet(variableURI, uriNamespaces.getRelationsProperty("rHasUnit"), "?unit", null);
+            query.appendTriplet(variableURI, Vocabulary.RELATION_HAS_UNIT.toString(), "?unit", null);
         }
         
-        LOGGER.trace("sparql select query : " + query.toString());
+        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
         return query;
     }
     
@@ -119,12 +122,11 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
      * @return 
      */
     private SPARQLQueryBuilder prepareGetLastId() {
-        URINamespaces uriNamespace = new URINamespaces();
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         
         query.appendSelect("?uri");
-        query.appendTriplet("?uri", uriNamespace.getRelationsProperty("type"), uriNamespace.getObjectsProperty("cVariable"), null);
-        query.appendOrderBy("desc(?uri)");
+        query.appendTriplet("?uri", Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_VARIABLE.toString(), null);
+        query.appendOrderBy("DESC(?uri)");
         query.appendLimit(1);
         
         return query;
@@ -195,28 +197,26 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
         List<Status> checkStatusList = new ArrayList<>();
         boolean dataOk = true;
         
-        URINamespaces uriNamespaces = new URINamespaces();
-        
         for (VariableDTO variableDTO : variablesDTO) {
             //On vérifie que le trait, la méthode et l'unité sont bien dans la base de données
             if (!existObject(variableDTO.getMethod()) 
                    || !existObject(variableDTO.getTrait())
                    || !existObject(variableDTO.getUnit())) {
                 dataOk = false;
-                checkStatusList.add(new Status("Wrong value", StatusCodeMsg.ERR, "Unknown trait(" + variableDTO.getTrait() + ") or method (" + variableDTO.getMethod() + ") or unit (" + variableDTO.getUnit() + ")"));
+                checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Unknown trait(" + variableDTO.getTrait() + ") or method (" + variableDTO.getMethod() + ") or unit (" + variableDTO.getUnit() + ")"));
             } else {
                 //Vérification des relations d'ontologies reference
                 for (OntologyReference ontologyReference : variableDTO.getOntologiesReferences()) {
-                    if (!ontologyReference.getProperty().equals(uriNamespaces.getRelationsProperty("rExactMatch"))
-                       && !ontologyReference.getProperty().equals(uriNamespaces.getRelationsProperty("rCloseMatch"))
-                       && !ontologyReference.getProperty().equals(uriNamespaces.getRelationsProperty("rNarrower"))
-                       && !ontologyReference.getProperty().equals(uriNamespaces.getRelationsProperty("rBroader"))) {
+                    if (!ontologyReference.getProperty().equals(Skos.RELATION_EXACT_MATCH.toString())
+                       && !ontologyReference.getProperty().equals(Skos.RELATION_CLOSE_MATCH.toString())
+                       && !ontologyReference.getProperty().equals(Skos.RELATION_NARROWER.toString())
+                       && !ontologyReference.getProperty().equals(Skos.RELATION_BROADER.toString())) {
                         dataOk = false;
                         checkStatusList.add(new Status("Wrong value", StatusCodeMsg.ERR, 
-                                "Bad property relation given. Must be one of the following : " + uriNamespaces.getRelationsProperty("rExactMatch")
-                                + ", " + uriNamespaces.getRelationsProperty("rCloseMatch")
-                                + ", " + uriNamespaces.getRelationsProperty("rNarrower")
-                                + ", " + uriNamespaces.getRelationsProperty("rBroader")
+                                "Bad property relation given. Must be one of the following : " + Skos.RELATION_EXACT_MATCH.toString()
+                                + ", " + Skos.RELATION_CLOSE_MATCH.toString()
+                                + ", " + Skos.RELATION_NARROWER.toString()
+                                + ", " + Skos.RELATION_BROADER.toString()
                                 +". Given : " + ontologyReference.getProperty()));
                     }
                 }
@@ -230,19 +230,18 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
     
     private SPARQLUpdateBuilder prepareInsertQuery(VariableDTO variable) {
         SPARQLUpdateBuilder spql = new SPARQLUpdateBuilder();
-        final URINamespaces uriNamespaces = new URINamespaces();
         
-        spql.appendGraphURI(uriNamespaces.getContextsProperty("variables"));
-        spql.appendTriplet(variable.getUri(), "rdf:type", uriNamespaces.getObjectsProperty("cVariable"), null);
-        spql.appendTriplet(variable.getUri(), "rdfs:label", "\"" + variable.getLabel() + "\"", null);
-        spql.appendTriplet(variable.getUri(), "rdfs:comment", "\"" + variable.getComment() + "\"", null);
-        spql.appendTriplet(variable.getUri(), uriNamespaces.getRelationsProperty("rHasTrait"), variable.getTrait(), null);
-        spql.appendTriplet(variable.getUri(), uriNamespaces.getRelationsProperty("rHasMethod"), variable.getMethod(), null);
-        spql.appendTriplet(variable.getUri(), uriNamespaces.getRelationsProperty("rHasUnit"), variable.getUnit(), null);
+        spql.appendGraphURI(Contexts.VARIABLES.toString());
+        spql.appendTriplet(variable.getUri(), Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_VARIABLE.toString(), null);
+        spql.appendTriplet(variable.getUri(), Rdfs.RELATION_LABEL.toString(), "\"" + variable.getLabel() + "\"", null);
+        spql.appendTriplet(variable.getUri(), Rdfs.RELATION_COMMENT.toString(), "\"" + variable.getComment() + "\"", null);
+        spql.appendTriplet(variable.getUri(), Vocabulary.RELATION_HAS_TRAIT.toString(), variable.getTrait(), null);
+        spql.appendTriplet(variable.getUri(), Vocabulary.RELATION_HAS_METHOD.toString(), variable.getMethod(), null);
+        spql.appendTriplet(variable.getUri(), Vocabulary.RELATION_HAS_UNIT.toString(), variable.getUnit(), null);
         
         for (OntologyReference ontologyReference : variable.getOntologiesReferences()) {
             spql.appendTriplet(variable.getUri(), ontologyReference.getProperty(), ontologyReference.getObject(), null);
-            spql.appendTriplet(ontologyReference.getObject(), "rdfs:seeAlso", "\"" + ontologyReference.getSeeAlso() + "\"", null);
+            spql.appendTriplet(ontologyReference.getObject(), Rdfs.RELATION_SEE_ALSO.toString(), "\"" + ontologyReference.getSeeAlso() + "\"", null);
         }
         
         return spql;
@@ -264,13 +263,12 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
         boolean annotationInsert = true; //Si l'insertion a bien été effectuée
         
         UriGenerator uriGenerator = new UriGenerator();
-        URINamespaces uriNamespaces = new URINamespaces();
         final Iterator<VariableDTO> iteratorVariablesDTO = variablesDTO.iterator();      
         
         while (iteratorVariablesDTO.hasNext() && annotationInsert) {
             VariableDTO variableDTO = iteratorVariablesDTO.next();
             
-            variableDTO.setUri(uriGenerator.generateNewInstanceUri(uriNamespaces.getObjectsProperty("cVariable"), null, null));
+            variableDTO.setUri(uriGenerator.generateNewInstanceUri(Vocabulary.CONCEPT_VARIABLE.toString(), null, null));
             
             //Enregistrement dans le triplestore
             SPARQLUpdateBuilder spqlInsert = prepareInsertQuery(variableDTO);
@@ -302,7 +300,7 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
             } catch (MalformedQueryException e) {
                     LOGGER.error(e.getMessage(), e);
                     annotationInsert = false;
-                    insertStatusList.add(new Status("Query error", StatusCodeMsg.ERR, "Malformed insertion query: " + e.getMessage()));
+                    insertStatusList.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, "Malformed insertion query: " + e.getMessage()));
             } 
         }
         
@@ -311,7 +309,7 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
         results.setCreatedResources(createdResourcesURIList);
         if (resultState && !createdResourcesURIList.isEmpty()) {
             results.createdResources = createdResourcesURIList;
-            results.statusList.add(new Status("Resources created", StatusCodeMsg.INFO, createdResourcesURIList.size() + " new resource(s) created."));
+            results.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, createdResourcesURIList.size() + " new resource(s) created."));
         }
 
         return results;
@@ -337,28 +335,27 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
      * @return la liste des liens vers d'autres ontologies
      */
     private SPARQLQueryBuilder prepareSearchOntologiesReferencesQuery(String uri) {
-        final URINamespaces uriNamespaces = new URINamespaces();
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         
         query.appendDistinct(Boolean.TRUE);
-        query.appendGraph(uriNamespaces.getContextsProperty("variables"));
+        query.appendGraph(Contexts.VARIABLES.toString());
         
         if (ontologiesReferences.isEmpty()) {
             query.appendSelect(" ?property ?object ?seeAlso");
             query.appendTriplet(uri, "?property", "?object", null);
-            query.appendOptional("{?object rdfs:seeAlso ?seeAlso}");
-            query.appendFilter("?property IN(<" + uriNamespaces.getRelationsProperty("rCloseMatch") + ">, <"
-                                               + uriNamespaces.getRelationsProperty("rExactMatch") + ">, <"
-                                               + uriNamespaces.getRelationsProperty("rNarrower") + ">, <"
-                                               + uriNamespaces.getRelationsProperty("rBroader") + ">)");
+            query.appendOptional("{?object <" + Rdfs.RELATION_SEE_ALSO.toString() + "> ?seeAlso}");
+            query.appendFilter("?property IN(<" + Skos.RELATION_CLOSE_MATCH.toString() + ">, <"
+                                               + Skos.RELATION_EXACT_MATCH.toString() + ">, <"
+                                               + Skos.RELATION_NARROWER.toString() + ">, <"
+                                               + Skos.RELATION_BROADER.toString() + ">)");
         } else {
             for (OntologyReference ontologyReference : ontologiesReferences) {
                 query.appendTriplet(uri, ontologyReference.getProperty(), ontologyReference.getObject(), null);
-                query.appendTriplet(ontologyReference.getObject(), "rdfs:seeAlso", ontologyReference.getSeeAlso(), null);
+                query.appendTriplet(ontologyReference.getObject(), Rdfs.RELATION_SEE_ALSO.toString(), ontologyReference.getSeeAlso(), null);
             }
         }
         
-        LOGGER.trace("SPARQL select query : " + query.toString());
+        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
         return query;
     }
     
@@ -450,19 +447,18 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
     }
     
     private String prepareDeleteQuery(Variable variable) {
-        URINamespaces uriNamespaces = new URINamespaces();
         String deleteQuery;
         deleteQuery = "DELETE WHERE {"
-                + "<" + variable.getUri() + "> rdfs:label \"" + variable.getLabel() + "\" . "
-                + "<" + variable.getUri() + "> rdfs:comment \"" + variable.getComment() + "\" . "
-                + "<" + variable.getUri() + "> <" + uriNamespaces.getRelationsProperty("rHasTrait") + "> <" + variable.getTrait() + "> . "
-                + "<" + variable.getUri() + "> <" + uriNamespaces.getRelationsProperty("rHasMethod") + "> <" + variable.getMethod() + "> . "
-                + "<" + variable.getUri() + "> <" + uriNamespaces.getRelationsProperty("rHasUnit") + "> <" + variable.getUnit() + "> . ";
+                + "<" + variable.getUri() + "> <" + Rdfs.RELATION_LABEL.toString() + "> \"" + variable.getLabel() + "\" . "
+                + "<" + variable.getUri() + "> <" + Rdfs.RELATION_COMMENT.toString() + "> \"" + variable.getComment() + "\" . "
+                + "<" + variable.getUri() + "> <" + Vocabulary.RELATION_HAS_TRAIT.toString() + "> <" + variable.getTrait() + "> . "
+                + "<" + variable.getUri() + "> <" + Vocabulary.RELATION_HAS_METHOD.toString() + "> <" + variable.getMethod() + "> . "
+                + "<" + variable.getUri() + "> <" + Vocabulary.RELATION_HAS_UNIT.toString() + "> <" + variable.getUnit() + "> . ";
 
         for (OntologyReference ontologyReference : variable.getOntologiesReferences()) {
             deleteQuery += "<" + variable.getUri() + "> <" + ontologyReference.getProperty() + "> <" + ontologyReference.getObject() + "> . ";
             if (ontologyReference.getSeeAlso() != null) {
-                deleteQuery += "<" + ontologyReference.getObject() + "> rdfs:seeAlso " + ontologyReference.getSeeAlso() + " . ";
+                deleteQuery += "<" + ontologyReference.getObject() + "> <" + Rdfs.RELATION_SEE_ALSO.toString() + "> " + ontologyReference.getSeeAlso() + " . ";
             }
         }
 
@@ -503,7 +499,7 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
                     } catch (MalformedQueryException e) {
                         LOGGER.error(e.getMessage(), e);
                         annotationUpdate = false;
-                        updateStatusList.add(new Status("Query error", StatusCodeMsg.ERR, "Malformed update query: " + e.getMessage()));
+                        updateStatusList.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, "Malformed update query: " + e.getMessage()));
                     }   
             } else {
                 annotationUpdate = false;
@@ -531,7 +527,7 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
         results.statusList = updateStatusList;
         if (resultState && !updatedResourcesURIList.isEmpty()) {
             results.createdResources = updatedResourcesURIList;
-            results.statusList.add(new Status("Resources updated", StatusCodeMsg.INFO, updatedResourcesURIList.size() + " resources updated"));
+            results.statusList.add(new Status(StatusCodeMsg.RESOURCES_UPDATED, StatusCodeMsg.INFO, updatedResourcesURIList.size() + " resources updated"));
         }
         
         return results;

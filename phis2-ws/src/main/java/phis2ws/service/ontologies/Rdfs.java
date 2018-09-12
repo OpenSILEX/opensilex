@@ -39,6 +39,12 @@ public enum Rdfs {
             return NAMESPACE.toString() + "label";
         }
     },
+    RELATION_SEE_ALSO {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "seeAlso";
+        }
+    },
     RELATION_SUBCLASS_OF {
         @Override
         public String toString() {
@@ -48,13 +54,19 @@ public enum Rdfs {
     RELATION_SUBCLASS_OF_MULTIPLE {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "subClassOf*";
+            return NAMESPACE.toString() + RELATION_SUBCLASS_OF.toString() + "*";
+        }
+    },
+    RELATION_SUBPROPERTY_OF {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "subPropertyOf";
         }
     },
     RELATION_SUBPROPERTY_OF_MULTIPLE {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "subPropertyOf*";
+            return NAMESPACE.toString() + RELATION_SUBPROPERTY_OF.toString() + "*";
         }
     }
 }

@@ -32,8 +32,9 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOSesame;
+import phis2ws.service.ontologies.Rdf;
+import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.model.phis.Ask;
 import phis2ws.service.view.model.phis.Uri;
@@ -48,8 +49,6 @@ public class UriDaoSesame extends DAOSesame<Uri> {
     public String uri;
     public String label;
     //used to query the triplestore
-    final static String LABEL = "label";
-    //used to query the triplestore
     final static String COMMENT = "comment";
 
     final static String TRIPLESTORE_FIELDS_TYPE = "type";
@@ -59,10 +58,6 @@ public class UriDaoSesame extends DAOSesame<Uri> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(UriDaoSesame.class);
     public Boolean deep;
-
-    private final static URINamespaces NAMESPACES = new URINamespaces();
-    final static String TRIPLESTORE_RELATION_LABEL = NAMESPACES.getRelationsProperty("label");
-    final static String TRIPLESTORE_RELATION_COMMENT = NAMESPACES.getRelationsProperty("comment");
 
     /**
      * prepare a query to get the triplets of an uri (given or not).
@@ -90,7 +85,7 @@ public class UriDaoSesame extends DAOSesame<Uri> {
         query.appendSelect(" ?class ?type");
         query.appendTriplet(contextURI, "?class", "?type", null);
 
-        LOGGER.debug("sparql select query : " + query.toString());
+        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
         return query;
     }
 
@@ -119,9 +114,9 @@ public class UriDaoSesame extends DAOSesame<Uri> {
         }
 
         query.appendSelect(" ?class ");
-        query.appendTriplet(" ?class ", NAMESPACES.getRelationsProperty("label"), selectLabel, null);
+        query.appendTriplet(" ?class ", Rdfs.RELATION_LABEL.toString(), selectLabel, null);
 
-        LOGGER.debug(" sparql select query : " + query.toString());
+        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
         return query;
     }
 
@@ -154,8 +149,8 @@ public class UriDaoSesame extends DAOSesame<Uri> {
             query.appendSelect("?uri");
         }
         query.appendSelect(" ?class ");
-        query.appendTriplet(contextURI, NAMESPACES.getRelationsProperty("subClassOf"), " ?parent ", null);
-        query.appendTriplet("?class", NAMESPACES.getRelationsProperty("subClassOf"), "?parent", null);
+        query.appendTriplet(contextURI, Rdfs.RELATION_SUBCLASS_OF.toString(), " ?parent ", null);
+        query.appendTriplet("?class", Rdfs.RELATION_SUBCLASS_OF.toString(), "?parent", null);
         LOGGER.debug(query.toString());
         return query;
     }
@@ -238,11 +233,11 @@ public class UriDaoSesame extends DAOSesame<Uri> {
         query.appendSelect(" ?subclass");
         // if deep get descendents
         if (deep) {
-            query.appendTriplet("?subclass", NAMESPACES.getRelationsProperty("subClassOf*"), contextURI, null);
+            query.appendTriplet("?subclass", Rdfs.RELATION_SUBCLASS_OF_MULTIPLE.toString(), contextURI, null);
         } else {
-            query.appendTriplet("?subclass", NAMESPACES.getRelationsProperty("subClassOf"), contextURI, null);
+            query.appendTriplet("?subclass", Rdfs.RELATION_SUBCLASS_OF.toString(), contextURI, null);
         }
-        query.appendTriplet("?instance", NAMESPACES.getRelationsProperty("type"), "?subclass", null);
+        query.appendTriplet("?instance", Rdf.RELATION_TYPE.toString(), "?subclass", null);
         LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
         return query;
     }
@@ -270,7 +265,7 @@ public class UriDaoSesame extends DAOSesame<Uri> {
             query.appendSelect("?uri");
         }
         query.appendSelect(" ?class ");
-        query.appendTriplet(contextURI, NAMESPACES.getRelationsProperty("subClassOf"), " ?class ", null);
+        query.appendTriplet(contextURI, Rdfs.RELATION_SUBCLASS_OF.toString(), " ?class ", null);
         LOGGER.debug(query.toString());
         return query;
     }
@@ -298,7 +293,7 @@ public class UriDaoSesame extends DAOSesame<Uri> {
             query.appendSelect("?uri");
         }
         query.appendSelect(" ?class ");
-        query.appendTriplet(" ?class ", NAMESPACES.getRelationsProperty("subClassOf*"), contextURI, null);
+        query.appendTriplet(" ?class ", Rdfs.RELATION_SUBCLASS_OF_MULTIPLE.toString(), contextURI, null);
         LOGGER.debug(query.toString());
 
         return query;
@@ -328,7 +323,7 @@ public class UriDaoSesame extends DAOSesame<Uri> {
             query.appendSelect("?uri");
         }
         query.appendSelect(" ?type ");
-        query.appendTriplet(contextURI, NAMESPACES.getRelationsProperty("type"), " ?type ", null);
+        query.appendTriplet(contextURI, Rdf.RELATION_TYPE.toString(), " ?type ", null);
         LOGGER.debug(query.toString());
         return query;
     }
@@ -528,7 +523,7 @@ public class UriDaoSesame extends DAOSesame<Uri> {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
 
-        query.appendTriplet("<" + rdfSubType + ">", NAMESPACES.getRelationsProperty("subClassOf*"), "<" + rdfType + ">", null);
+        query.appendTriplet("<" + rdfSubType + ">", Rdfs.RELATION_SUBCLASS_OF_MULTIPLE.toString(), "<" + rdfType + ">", null);
 
         query.appendAsk(""); //any = anything
         LOGGER.debug(query.toString());
@@ -559,7 +554,7 @@ public class UriDaoSesame extends DAOSesame<Uri> {
 
         }
         query.appendSelect(contextURI);
-        query.appendTriplet("<" + instanceUri + ">", NAMESPACES.getRelationsProperty("type"), "<" + rdfType + ">", null);
+        query.appendTriplet("<" + instanceUri + ">", Rdf.RELATION_TYPE.toString(), "<" + rdfType + ">", null);
 
         query.appendAsk("");
         LOGGER.debug(query.toString());
@@ -615,7 +610,7 @@ public class UriDaoSesame extends DAOSesame<Uri> {
         query.appendDistinct(Boolean.TRUE);
 
         query.appendSelect("?" + LABEL);
-        query.appendTriplet(uri, TRIPLESTORE_RELATION_LABEL, "?" + LABEL, null);
+        query.appendTriplet(uri, Rdfs.RELATION_LABEL.toString(), "?" + LABEL, null);
 
         LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
 
@@ -637,9 +632,9 @@ public class UriDaoSesame extends DAOSesame<Uri> {
         query.appendDistinct(Boolean.TRUE);
 
         query.appendSelect("?" + COMMENT);
-        query.appendTriplet(uri, TRIPLESTORE_RELATION_COMMENT, "?" + COMMENT, null);
+        query.appendTriplet(uri, Rdfs.RELATION_COMMENT.toString(), "?" + COMMENT, null);
 
-        LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
+        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
 
         return query;
     }

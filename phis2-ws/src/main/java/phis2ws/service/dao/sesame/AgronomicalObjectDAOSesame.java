@@ -32,14 +32,17 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.dao.phis.AgronomicalObjectDAO;
 import phis2ws.service.documentation.StatusCodeMsg;
+import phis2ws.service.ontologies.Contexts;
+import phis2ws.service.ontologies.GeoSPARQL;
+import phis2ws.service.ontologies.Rdf;
+import phis2ws.service.ontologies.Rdfs;
+import phis2ws.service.ontologies.Vocabulary;
 import phis2ws.service.resources.dto.AgronomicalObjectDTO;
 import phis2ws.service.resources.dto.LayerDTO;
 import phis2ws.service.resources.dto.PropertyDTO;
-import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.ResourcesUtils;
 import phis2ws.service.utils.UriGenerator;
@@ -58,11 +61,9 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
     //The following attributes are used to search agronomical objects in the triplestore
     //uri of the agronomical object
     public String uri;
-    private final String URI = "uri";
     
     //type of the agronomical object
     public String rdfType;
-    private final String RDF_TYPE = "rdfType";
     
     //experiment of the agronomical object
     public String experiment;
@@ -78,28 +79,8 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
     private final String CHILD = "child";
     private final String RELATION = "relation";
     
-    
-    private static final String PROPERTIES_SERVICE_FILE_NAME = "service";
-    private static final String PROPERTIES_SERVICE_BASE_URI = "baseURI";
-    
     private static final String URI_CODE_AGRONOMICAL_OBJECT = "o";
-    
-    private final static URINamespaces NAMESPACES = new URINamespaces();
-    
-    final static String TRIPLESTORE_CONCEPT_AGRONOMICAL_OBJECT = NAMESPACES.getObjectsProperty("cAgronomicalObject");
-    final static String TRIPLESTORE_CONCEPT_EXPERIMENT = NAMESPACES.getObjectsProperty("cExperiment");
-    final static String TRIPLESTORE_CONCEPT_VARIETY = NAMESPACES.getObjectsProperty("cVariety");
-    
-    final static String TRIPLESTORE_CONTEXT_AGRONOMICAL_OBJECTS = NAMESPACES.getContextsProperty("agronomicalObjects");
-    final static String TRIPLESTORE_CONTEXT_GEOSPARQL = NAMESPACES.getContextsProperty("pxGeoSPARQL");
-    final static String TRIPLESTORE_CONTEXY_VOCABULARY = NAMESPACES.getContextsProperty("pVoc2017");
-    
-    final static String TRIPLESTORE_RELATION_HAS_ALIAS = NAMESPACES.getRelationsProperty("rHasAlias");
-    final static String TRIPLESTORE_RELATION_HAS_PLOT = NAMESPACES.getRelationsProperty("rHasPlot");
-    final static String TRIPLESTORE_RELATION_IS_PART_OF = NAMESPACES.getRelationsProperty("rIsPartOf");
-    final static String TRIPLESTORE_RELATION_TYPE = NAMESPACES.getRelationsProperty("type");
-    final static String TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE = NAMESPACES.getRelationsProperty("subClassOf*");
-        
+
     public AgronomicalObjectDAOSesame() {
         super();
     }
@@ -121,8 +102,8 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
     private SPARQLQueryBuilder prepareGetLastAgronomicalObjectUriFromYear(String year) {
         SPARQLQueryBuilder queryLastAgronomicalObjectURi = new SPARQLQueryBuilder();
         queryLastAgronomicalObjectURi.appendSelect("?" + URI);
-        queryLastAgronomicalObjectURi.appendTriplet("?" + URI, TRIPLESTORE_RELATION_TYPE, "?" + RDF_TYPE, null);
-        queryLastAgronomicalObjectURi.appendTriplet("?" + RDF_TYPE, TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE, TRIPLESTORE_CONCEPT_AGRONOMICAL_OBJECT, null);
+        queryLastAgronomicalObjectURi.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
+        queryLastAgronomicalObjectURi.appendTriplet("?" + RDF_TYPE, Rdfs.RELATION_SUBCLASS_OF_MULTIPLE.toString(), Vocabulary.CONCEPT_AGRONOMICAL_OBJECT.toString(), null);
         queryLastAgronomicalObjectURi.appendFilter("regex(str(?" + URI + "), \".*/" + year + "/.*\")");
         queryLastAgronomicalObjectURi.appendOrderBy("desc(?" + URI + ")");
         queryLastAgronomicalObjectURi.appendLimit(1);
@@ -183,7 +164,7 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
 
         query.appendGraph(context);
         query.appendAsk("");
-        query.appendToBody("?x <" + TRIPLESTORE_RELATION_HAS_ALIAS + "> \"" + alias + "\"");
+        query.appendToBody("?x <" + Vocabulary.RELATION_HAS_ALIAS.toString() + "> \"" + alias + "\"");
         
         LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
         return query;
@@ -206,7 +187,7 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
             //On vérifie que les types soient effectivement présents dans l'ontologie
              UriDaoSesame uriDao = new UriDaoSesame();
 
-             if (!uriDao.isSubClassOf(agronomicalObject.getRdfType(), TRIPLESTORE_CONCEPT_AGRONOMICAL_OBJECT)) {
+             if (!uriDao.isSubClassOf(agronomicalObject.getRdfType(), Vocabulary.CONCEPT_AGRONOMICAL_OBJECT.toString())) {
                  dataOk = false;
                  checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Wrong agronomical object type value. See ontology"));
              }
@@ -221,7 +202,7 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
                      //1. get isPartOf object type
                      uriDao.uri = agronomicalObject.getIsPartOf();
                      ArrayList<Uri> typesResult = uriDao.getAskTypeAnswer();
-                     if (!uriDao.isSubClassOf(typesResult.get(0).getRdfType(), TRIPLESTORE_CONCEPT_AGRONOMICAL_OBJECT)) {
+                     if (!uriDao.isSubClassOf(typesResult.get(0).getRdfType(), Vocabulary.CONCEPT_AGRONOMICAL_OBJECT.toString())) {
                          dataOk = false;
                          checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "is part of object type is not agronomical object"));
                      }
@@ -235,7 +216,7 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
              boolean missingAlias = true;
              for (PropertyDTO property : agronomicalObject.getProperties()) {
                  //check alias
-                 if (property.getRelation().equals(TRIPLESTORE_RELATION_HAS_ALIAS)) {
+                 if (property.getRelation().equals(Vocabulary.RELATION_HAS_ALIAS.toString())) {
                      missingAlias = false;
                      //check unique alias in the experiment
                      if (agronomicalObject.getExperiment() != null) {
@@ -291,23 +272,23 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
             SPARQLUpdateBuilder spqlInsert = new SPARQLUpdateBuilder();
             
             String graphURI = agronomicalObject.getUriExperiment() != null ? agronomicalObject.getUriExperiment() 
-                                                                      : TRIPLESTORE_CONTEXT_AGRONOMICAL_OBJECTS;
+                                                                      : Contexts.AGONOMICAL_OBJECTS.toString();
             spqlInsert.appendGraphURI(graphURI);
-            spqlInsert.appendTriplet(agronomicalObject.getUri(), TRIPLESTORE_RELATION_TYPE, agronomicalObject.getRdfType(), null);
+            spqlInsert.appendTriplet(agronomicalObject.getUri(), Rdf.RELATION_TYPE.toString(), agronomicalObject.getRdfType(), null);
             
             //Propriétés associées à l'AO
             for (Property property : agronomicalObject.getProperties()) {
                 if (property.getRdfType() != null && !property.getRdfType().equals("")) {//Propriété typée
-                    if (property.getRdfType().equals(TRIPLESTORE_CONCEPT_VARIETY)) {
+                    if (property.getRdfType().equals(Vocabulary.CONCEPT_VARIETY.toString())) {
                         //On génère l'uri de la variété
                         //SILEX:TODO
                         //move the uri generation in the UriGenerator (#45)
                         //\SILEX:TODO
-                        String propertyURI = uriGenerator.generateNewInstanceUri(TRIPLESTORE_CONCEPT_VARIETY, null, property.getValue());
-                        spqlInsert.appendTriplet(propertyURI, TRIPLESTORE_RELATION_TYPE, property.getRdfType(), null);
+                        String propertyURI = uriGenerator.generateNewInstanceUri(Vocabulary.CONCEPT_VARIETY.toString(), null, property.getValue());
+                        spqlInsert.appendTriplet(propertyURI, Rdf.RELATION_TYPE.toString(), property.getRdfType(), null);
                         spqlInsert.appendTriplet(agronomicalObject.getUri(), property.getRelation(), propertyURI, null);
                     } else {
-                        spqlInsert.appendTriplet(property.getValue(), TRIPLESTORE_RELATION_TYPE, property.getRdfType(), null);
+                        spqlInsert.appendTriplet(property.getValue(), Rdf.RELATION_TYPE.toString(), property.getRdfType(), null);
                         spqlInsert.appendTriplet(agronomicalObject.getUri(), property.getRelation(), property.getValue(), null);
                     }
                 } else {
@@ -316,12 +297,12 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
             }
             
             if (agronomicalObject.getUriExperiment() != null) {
-                spqlInsert.appendTriplet(agronomicalObject.getUriExperiment(), TRIPLESTORE_RELATION_HAS_PLOT, agronomicalObject.getUri(), null);
+                spqlInsert.appendTriplet(agronomicalObject.getUriExperiment(), Vocabulary.RELATION_HAS_PLOT.toString(), agronomicalObject.getUri(), null);
             }
             
             //isPartOf : the object which has part the element must not be a plot    
             if (agronomicalObject.getIsPartOf()!= null) {
-                spqlInsert.appendTriplet(agronomicalObject.getUri(), TRIPLESTORE_RELATION_IS_PART_OF, agronomicalObject.getIsPartOf(), null);
+                spqlInsert.appendTriplet(agronomicalObject.getUri(), Vocabulary.RELATION_IS_PART_OF.toString(), agronomicalObject.getIsPartOf(), null);
             }
             
             try {
@@ -390,12 +371,12 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
         sparqlQuery.appendGraph(experimentURI);
         sparqlQuery.appendSelect("?" + CHILD +" ?" + RDF_TYPE + " ?" + PROPERTY + " ?" + PROPERTY_RELATION + " ?" + PROPERTY_TYPE);
         
-        sparqlQuery.appendTriplet(experimentURI, TRIPLESTORE_RELATION_HAS_PLOT, "?" + CHILD, null);
-        sparqlQuery.appendTriplet("?" + CHILD, TRIPLESTORE_RELATION_TYPE, "?" + RDF_TYPE, null);
+        sparqlQuery.appendTriplet(experimentURI, Vocabulary.RELATION_HAS_PLOT.toString(), "?" + CHILD, null);
+        sparqlQuery.appendTriplet("?" + CHILD, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
         sparqlQuery.appendTriplet("?" + CHILD, "?" + PROPERTY_RELATION, "?" + PROPERTY, null);
         
         sparqlQuery.beginBodyOptional();
-        sparqlQuery.appendToBody("?" + PROPERTY +" " + TRIPLESTORE_RELATION_TYPE + " ?" + PROPERTY_TYPE);
+        sparqlQuery.appendToBody("?" + PROPERTY +" <" + Rdf.RELATION_TYPE.toString() + "> ?" + PROPERTY_TYPE);
         sparqlQuery.endBodyOptional();
         
         LOGGER.debug(SPARQL_SELECT_QUERY + sparqlQuery.toString());
@@ -412,13 +393,13 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
     private SPARQLQueryBuilder prepareSearchChildrenWithContains(String objectURI, String objectType) {
         SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
         sparqlQuery.appendDistinct(true);
-        sparqlQuery.appendPrefix("geo", TRIPLESTORE_CONTEXT_GEOSPARQL);
-        if (objectType.equals(TRIPLESTORE_CONCEPT_EXPERIMENT)) {
+        sparqlQuery.appendPrefix("geo", GeoSPARQL.NAMESPACE.toString());
+        if (objectType.equals(Vocabulary.CONCEPT_EXPERIMENT.toString())) {
             sparqlQuery.appendGraph(objectURI);
         }
         sparqlQuery.appendSelect("?" + CHILD + " ?" + RDF_TYPE);
-        sparqlQuery.appendTriplet(objectURI, "geo:contains*", "?" + CHILD, null);
-        sparqlQuery.appendTriplet("?" + CHILD, TRIPLESTORE_RELATION_TYPE, "?" + RDF_TYPE, null);
+        sparqlQuery.appendTriplet(objectURI, GeoSPARQL.RELATION_CONTAINS_MULTIPLE.toString(), "?" + CHILD, null);
+        sparqlQuery.appendTriplet("?" + CHILD, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
         
         LOGGER.debug(SPARQL_SELECT_QUERY + sparqlQuery.toString());
 
@@ -433,10 +414,10 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
     private SPARQLQueryBuilder prepareSearchFirstChildrenWithContains(String objectURI) {
         SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
         sparqlQuery.appendDistinct(true);
-        sparqlQuery.appendPrefix("geo", TRIPLESTORE_CONTEXT_GEOSPARQL);
+        sparqlQuery.appendPrefix("geo", GeoSPARQL.NAMESPACE.toString());
         sparqlQuery.appendSelect("?" + CHILD + " ?" + RDF_TYPE);
-        sparqlQuery.appendTriplet(objectURI, "geo:contains", "?" + CHILD, null);
-        sparqlQuery.appendTriplet("?" + CHILD, TRIPLESTORE_RELATION_TYPE, "?" + RDF_TYPE, null);
+        sparqlQuery.appendTriplet(objectURI, GeoSPARQL.RELATION_CONTAINS.toString(), "?" + CHILD, null);
+        sparqlQuery.appendTriplet("?" + CHILD, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
         
         LOGGER.debug(SPARQL_SELECT_QUERY + sparqlQuery.toString());
 
@@ -454,7 +435,7 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
         
         //Si c'est une expérimentation, le nom du lien n'est pas le même donc, 
         //on commence par récupérer la liste des enfants directs
-        if (layerDTO.getObjectType().equals(TRIPLESTORE_CONCEPT_EXPERIMENT)) {
+        if (layerDTO.getObjectType().equals(Vocabulary.CONCEPT_EXPERIMENT.toString())) {
             //SILEX:test
             //Pour les soucis de pool de connexion
             rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID); //Stockage triplestore Sesame
@@ -506,7 +487,7 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
         //Si il faut aussi tous les descendants
         if (ResourcesUtils.getStringBooleanValue(layerDTO.getDepth())) {
             //Si c'est les descendants d'un essai, il y a un traitement particulier
-            if (layerDTO.getObjectType().equals(TRIPLESTORE_CONCEPT_EXPERIMENT)) {
+            if (layerDTO.getObjectType().equals(Vocabulary.CONCEPT_EXPERIMENT.toString())) {
                 //On recherche tous les fils des plots de l'experimentation, récupérés précédemment
                     //SILEX:test
                     //Pour les soucis de pool de connexion
@@ -562,7 +543,7 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
                 }
             }
             
-        } else if (!layerDTO.getObjectType().equals(TRIPLESTORE_CONCEPT_EXPERIMENT)) { //S'il ne faut que les enfants directs et que ce n'est pas une expérimentation
+        } else if (!layerDTO.getObjectType().equals(Vocabulary.CONCEPT_EXPERIMENT.toString())) { //S'il ne faut que les enfants directs et que ce n'est pas une expérimentation
             //SILEX:test
             //Pour les soucis de pool de connexion
             rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID); //Stockage triplestore Sesame
@@ -710,25 +691,25 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
         }
         
         if (experiment != null) {
-            sparqlQuery.appendFrom("<" + TRIPLESTORE_CONTEXY_VOCABULARY + "> \n FROM <" + experiment + ">");
+              sparqlQuery.appendFrom("<" + Contexts.VOCABULARY.toString() + "> \n FROM <" + experiment + ">");
         } else {
             sparqlQuery.appendSelect("?" + EXPERIMENT);
-            sparqlQuery.appendOptional("?" + EXPERIMENT + " <" + TRIPLESTORE_RELATION_HAS_PLOT + "> " + agronomicalObjectURI);
+            sparqlQuery.appendOptional("?" + EXPERIMENT + " <" + Vocabulary.RELATION_HAS_PLOT.toString() + "> " + agronomicalObjectURI);
         }
         
         if (alias != null) {
-            sparqlQuery.appendTriplet(agronomicalObjectURI, TRIPLESTORE_RELATION_HAS_ALIAS, "\"" + alias + "\"", null);
+            sparqlQuery.appendTriplet(agronomicalObjectURI, Vocabulary.RELATION_HAS_ALIAS.toString(), "\"" + alias + "\"", null);
         } else {
             sparqlQuery.appendSelect(" ?" + ALIAS);
-            sparqlQuery.appendTriplet(agronomicalObjectURI, TRIPLESTORE_RELATION_HAS_ALIAS, "?" + ALIAS, null);
+            sparqlQuery.appendTriplet(agronomicalObjectURI, Vocabulary.RELATION_HAS_ALIAS.toString(), "?" + ALIAS, null);
         }
         
         if (rdfType != null) {
-            sparqlQuery.appendTriplet(agronomicalObjectURI, TRIPLESTORE_RELATION_TYPE, rdfType, null);
+            sparqlQuery.appendTriplet(agronomicalObjectURI, Rdf.RELATION_TYPE.toString(), rdfType, null);
         } else {
             sparqlQuery.appendSelect(" ?" + RDF_TYPE);
-            sparqlQuery.appendTriplet(agronomicalObjectURI, TRIPLESTORE_RELATION_TYPE, "?" + RDF_TYPE, null);
-            sparqlQuery.appendTriplet("?" + RDF_TYPE, TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE, TRIPLESTORE_CONCEPT_AGRONOMICAL_OBJECT, null);
+            sparqlQuery.appendTriplet(agronomicalObjectURI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
+            sparqlQuery.appendTriplet("?" + RDF_TYPE, Rdfs.RELATION_SUBCLASS_OF_MULTIPLE.toString(), Vocabulary.CONCEPT_AGRONOMICAL_OBJECT.toString(), null);
         }
         
         sparqlQuery.appendSelect(" ?" + RELATION + " ?" + PROPERTY);

@@ -24,10 +24,11 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOSesame;
-import static phis2ws.service.dao.sesame.SensorDAOSesame.TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE;
 import phis2ws.service.documentation.StatusCodeMsg;
+import phis2ws.service.ontologies.Owl;
+import phis2ws.service.ontologies.Rdf;
+import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.resources.dto.PropertiesDTO;
 import phis2ws.service.resources.dto.PropertyDTO;
 import phis2ws.service.utils.POSTResultsReturn;
@@ -72,28 +73,8 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     private final String PROPERTY = "property";
     //a count result, used to query the triplestore (count properties)
     private final String COUNT = "count";
-    //the rdf type, used to query the triplestore (cardinalities)
-    private final String RDF_TYPE = "rdfType";
     //the relation, used to query the triplestore (cardinalities)
     private final String RELATION = "relation";
-    
-    
-    //Triplestore relations and concepts
-    private final static URINamespaces NAMESPACES = new URINamespaces();
-    
-    private final static String TRIPLESTORE_CONCEPT_RESTRICTION = NAMESPACES.getObjectsProperty("cRestriction");
-    
-    private final static String TRIPLESTORE_RELATION_DOMAIN = NAMESPACES.getRelationsProperty("domain");
-    private final static String TRIPLESTORE_RELATION_UNION_OF = NAMESPACES.getRelationsProperty("unionOf");
-    private final static String TRIPLESTORE_RELATION_REST = NAMESPACES.getRelationsProperty("rest");
-    private final static String TRIPLESTORE_RELATION_FIRST = NAMESPACES.getRelationsProperty("first");
-    private final static String TRIPLESTORE_RELATION_TYPE = NAMESPACES.getRelationsProperty("type");
-    private final static String TRIPLESTORE_RELATION_ON_PROPERTY = NAMESPACES.getRelationsProperty("onProperty");
-    private final static String TRIPLESTORE_RELATION_CARDINALITY = NAMESPACES.getRelationsProperty("cardinality");
-    private final static String TRIPLESTORE_RELATION_MIN_CARDINALITY = NAMESPACES.getRelationsProperty("minCardinality");
-    private final static String TRIPLESTORE_RELATION_MAX_CARDINALITY = NAMESPACES.getRelationsProperty("maxCardinality");
-    private final static String TRIPLESTORE_RELATION_QUALIFIED_CARDINALITY = NAMESPACES.getRelationsProperty("qualifiedCardinality");
-    private final static String TRIPLESTORE_RELATION_SUBCLASS_OF = NAMESPACES.getRelationsProperty("subClassOf");
 
     /**
      * prepare the sparql query to get the list of properties and their relations
@@ -115,10 +96,10 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
 
         query.appendSelect("?" + RELATION + " ?" + PROPERTY);
         query.appendTriplet("<" + uri + ">", "?" + RELATION, "?" + PROPERTY, null);
-        query.appendTriplet("<" + uri + ">", TRIPLESTORE_RELATION_TYPE, "?" + RDF_TYPE, null);
+        query.appendTriplet("<" + uri + ">", "<" + Rdf.RELATION_TYPE.toString() + ">", "?" + RDF_TYPE, null);
         
         if (subClassOf != null) {
-            query.appendTriplet("?" + RDF_TYPE, TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE, subClassOf, null);
+            query.appendTriplet("?" + RDF_TYPE, Rdfs.RELATION_SUBCLASS_OF_MULTIPLE.toString(), subClassOf, null);
         }
         
         LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
@@ -176,7 +157,8 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendSelect("?" + DOMAIN);
         query.appendTriplet(relation, 
-                TRIPLESTORE_RELATION_DOMAIN + "/(" + TRIPLESTORE_RELATION_UNION_OF + "/" + TRIPLESTORE_RELATION_REST + "*/" + TRIPLESTORE_RELATION_FIRST + ")*" , "?" + DOMAIN, null);
+                "<" + Rdfs.RELATION_DOMAIN.toString() + "> "
+                        + "/( <" + Owl.RELATION_UNION_OF.toString() + "> / <" + Rdf.RELATION_REST.toString() + ">*/ <" + Rdf.RELATION_FIRST.toString() + ">)*" , "?" + DOMAIN, null);
         
         LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
         
@@ -211,16 +193,16 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendSelect("?" + RDF_TYPE + " ?" + CARDINALITY + " ?" + RESTRICTION);
         
-        query.appendTriplet(BLANCK_NODE, TRIPLESTORE_RELATION_TYPE, TRIPLESTORE_CONCEPT_RESTRICTION, null);
-        query.appendTriplet(BLANCK_NODE, TRIPLESTORE_RELATION_ON_PROPERTY, relation, null);
+        query.appendTriplet(BLANCK_NODE, Rdf.RELATION_TYPE.toString(), Owl.CONCEPT_RESTRICTION.toString(), null);
+        query.appendTriplet(BLANCK_NODE, Owl.RELATION_ON_PROPERTY.toString(), relation, null);
         query.appendTriplet(BLANCK_NODE, "?" + RESTRICTION, "?_" + CARDINALITY, null);
-        query.appendTriplet("?" + RDF_TYPE, TRIPLESTORE_RELATION_SUBCLASS_OF, "_:x", null);
+        query.appendTriplet("?" + RDF_TYPE, Rdfs.RELATION_SUBCLASS_OF.toString(), "_:x", null);
         
         query.appendFilter("?" + RESTRICTION + " IN (" 
-                                    + "<" + TRIPLESTORE_RELATION_CARDINALITY + ">, " 
-                                    + "<" + TRIPLESTORE_RELATION_MIN_CARDINALITY + ">, " 
-                                    + "<" + TRIPLESTORE_RELATION_MAX_CARDINALITY + ">, "
-                                    + "<" + TRIPLESTORE_RELATION_QUALIFIED_CARDINALITY + ">)");
+                                    + "<" + Owl.RELATION_CARDINALITY.toString() + ">, " 
+                                    + "<" + Owl.RELATION_MIN_CARDINALITY.toString() + ">, " 
+                                    + "<" + Owl.RELATION_MAX_CARDINALITY.toString() + ">, "
+                                    + "<" + Owl.RELATION_QUALIFIED_CARDINALITY.toString() + ">)");
         query.appendToBody("bind( xsd:integer(?_" + CARDINALITY + ") as ?" + CARDINALITY + ")");
         
         LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
@@ -249,16 +231,16 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendSelect("?" + RELATION + " ?" + CARDINALITY + " ?" + RESTRICTION);
         
-        query.appendTriplet(BLANCK_NODE, TRIPLESTORE_RELATION_TYPE, TRIPLESTORE_CONCEPT_RESTRICTION, null);
-        query.appendTriplet(BLANCK_NODE, TRIPLESTORE_RELATION_ON_PROPERTY, "?" + RELATION, null);
+        query.appendTriplet(BLANCK_NODE, Rdf.RELATION_TYPE.toString(), Owl.CONCEPT_RESTRICTION.toString(), null);
+        query.appendTriplet(BLANCK_NODE, Owl.RELATION_ON_PROPERTY.toString(), "?" + RELATION, null);
         query.appendTriplet(BLANCK_NODE, "?" + RESTRICTION, "?_" + CARDINALITY, null);
-        query.appendTriplet(concept, TRIPLESTORE_RELATION_SUBCLASS_OF, "_:x", null);
+        query.appendTriplet(concept, Rdfs.RELATION_SUBCLASS_OF.toString(), "_:x", null);
         
         query.appendFilter("?" + RESTRICTION + " IN (" 
-                                    + "<" + TRIPLESTORE_RELATION_CARDINALITY + ">, " 
-                                    + "<" + TRIPLESTORE_RELATION_MIN_CARDINALITY + ">, " 
-                                    + "<" + TRIPLESTORE_RELATION_MAX_CARDINALITY + ">, "
-                                    + "<" + TRIPLESTORE_RELATION_QUALIFIED_CARDINALITY + ">)");
+                                    + "<" + Owl.RELATION_CARDINALITY.toString() + ">, " 
+                                    + "<" + Owl.RELATION_MIN_CARDINALITY.toString() + ">, " 
+                                    + "<" + Owl.RELATION_MAX_CARDINALITY.toString() + ">, "
+                                    + "<" + Owl.RELATION_QUALIFIED_CARDINALITY.toString() + ">)");
         query.appendToBody("bind( xsd:integer(?_" + CARDINALITY + ") as ?" + CARDINALITY + ")");
         
         LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
@@ -395,7 +377,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
         if (expectedCardinalities != null) {
             for (Map.Entry<String, ArrayList<Cardinality>> entry : expectedCardinalities.entrySet()) {
                 for (Cardinality cardinality : entry.getValue()) {
-                    if (cardinality.getRdfType().equals(TRIPLESTORE_RELATION_CARDINALITY)) {
+                    if (cardinality.getRdfType().equals(Owl.RELATION_CARDINALITY.toString())) {
                         if (!numberOfRelations.containsKey(entry.getKey())) { //missing property
                             dataOk = false;
                             checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.BAD_CARDINALITY + " missing " + entry.getKey()));
@@ -403,7 +385,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
                             dataOk = false;
                             checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.BAD_CARDINALITY + " for " + entry.getKey()));
                         }
-                    } else if (cardinality.getRdfType().equals(TRIPLESTORE_RELATION_MIN_CARDINALITY)) {
+                    } else if (cardinality.getRdfType().equals(Owl.RELATION_MIN_CARDINALITY.toString())) {
                         if (!numberOfRelations.containsKey(entry.getKey())) { //missing property
                             dataOk = false;
                             checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.BAD_CARDINALITY + " not enought " + entry.getKey()));
@@ -411,14 +393,14 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
                             dataOk = false;
                             checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.BAD_CARDINALITY + " " + "not enought " + entry.getKey()));
                         }
-                    } else if (cardinality.getRdfType().equals(TRIPLESTORE_RELATION_MAX_CARDINALITY)) {
+                    } else if (cardinality.getRdfType().equals(Owl.RELATION_MAX_CARDINALITY.toString())) {
                         if ((numberOfRelations.get(entry.getKey()) != null) 
                                 && (numberOfRelations.get(entry.getKey()) > cardinality.getCardinaity())) {
                             //error, bad cardinality
                             dataOk = false;
                             checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.BAD_CARDINALITY + " " + "too many " + relation));
                         }
-                    } else if (cardinality.getRdfType().equals(TRIPLESTORE_RELATION_QUALIFIED_CARDINALITY)) {
+                    } else if (cardinality.getRdfType().equals(Owl.RELATION_QUALIFIED_CARDINALITY.toString())) {
                         if (!numberOfRelations.containsKey(entry.getKey())) { //missing property
                             dataOk = false;
                             checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.BAD_CARDINALITY + " missing " + entry.getKey()));

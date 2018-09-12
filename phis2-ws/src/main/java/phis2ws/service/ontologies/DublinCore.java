@@ -21,6 +21,12 @@ public enum DublinCore {
         }
     },
     
+    RELATION_DATE {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "date";
+        }
+    },
     RELATION_CREATED {
         @Override
         public String toString() {
@@ -32,5 +38,23 @@ public enum DublinCore {
         public String toString() {
             return NAMESPACE.toString() + "creator";
         }
-    }    
+    },
+    RELATION_FORMAT {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "format";
+        }
+    },
+    RELATION_LANGUAGE {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "language";
+        }
+    },
+    RELATION_TITLE {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "title";
+        }
+    },
 }

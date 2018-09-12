@@ -17,8 +17,10 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOSesame;
+import phis2ws.service.ontologies.Rdf;
+import phis2ws.service.ontologies.Rdfs;
+import phis2ws.service.ontologies.Vocabulary;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.model.phis.RadiometricTarget;
 
@@ -31,13 +33,6 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
     
     //The following params are used to search in the triplestore
     public String rdfType;
-    
-    //Triplestore relations
-    private final static URINamespaces NAMESPACES = new URINamespaces();
-    
-    final static String TRIPLESTORE_CONCEPT_RADIOMETRIC_TARGET = NAMESPACES.getObjectsProperty("cRadiometricTarget");
-    final static String TRIPLESTORE_RELATION_LABEL = NAMESPACES.getRelationsProperty("label");
-    final static String TRIPLESTORE_RELATION_TYPE = NAMESPACES.getRelationsProperty("type");
     
     /**
      * Generates the query to get the uri and the label of the radiometric targets
@@ -54,11 +49,11 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
         query.appendDistinct(Boolean.TRUE);
         
         query.appendSelect("?" + URI + " ?" + LABEL);
-        query.appendTriplet("?" + URI, TRIPLESTORE_RELATION_TYPE, TRIPLESTORE_CONCEPT_RADIOMETRIC_TARGET, null);
-        query.appendTriplet("?" + URI, TRIPLESTORE_RELATION_LABEL, "?" + LABEL, null);
+        query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_RADIOMETRIC_TARGET.toString(), null);
+        query.appendTriplet("?" + URI, Rdfs.RELATION_LABEL.toString(), "?" + LABEL, null);
         
         query.appendLimit(this.getPageSize());
-        query.appendOffset(this.getPage()* this.getPageSize());
+        query.appendOffset(this.getPage() * this.getPageSize());
         
         LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
         return query;
@@ -115,7 +110,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
         query.clearLimit();
         query.clearOffset();
         query.clearGroupBy();
-        query.appendSelect("(count(distinct ?" + URI + ") as ?" + COUNT_ELEMENT_QUERY + ")");
+        query.appendSelect("(COUNT(DISTINCT ?" + URI + ") AS ?" + COUNT_ELEMENT_QUERY + ")");
         LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
         return query;
     }

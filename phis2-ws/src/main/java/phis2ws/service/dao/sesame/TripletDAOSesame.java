@@ -18,7 +18,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import org.apache.commons.validator.routines.UrlValidator;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
@@ -26,12 +25,12 @@ import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.configuration.OType;
+import phis2ws.service.ontologies.Rdf;
+import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.resources.dto.TripletDTO;
-import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
@@ -50,10 +49,6 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
     //pattern to generate uri for the subject of a triplet
     private final static String REQUEST_GENERATION_URI_STRING = "?";
     private final static String LITERAL = "literal";
-    
-    private final static URINamespaces NAMESPACES = new URINamespaces();
-    final static String TRIPLESTORE_RELATION_TYPE = NAMESPACES.getRelationsProperty("type");
-    final static String TRIPLESTORE_RELATION_LABEL = NAMESPACES.getRelationsProperty("label");
 
     @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
@@ -86,8 +81,8 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
             }
             //2. check if triplet.p is an existing relation
             if (!uriDaoSesame.existObject(tripletDTO.getP())
-                    && !tripletDTO.getP().equals(TRIPLESTORE_RELATION_TYPE)
-                    && !tripletDTO.getP().equals(TRIPLESTORE_RELATION_LABEL)) {
+                    && !tripletDTO.getP().equals(Rdf.RELATION_TYPE.toString())
+                    && !tripletDTO.getP().equals(Rdfs.RELATION_LABEL.toString())) {
                 dataOk = false;
                 checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, StatusCodeMsg.UNKNOWN_URI + " " + tripletDTO.getP()));
             }
@@ -185,7 +180,7 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
         //1. get the type (if exist)
         for (TripletDTO triplet : tripletsGroup) {
             //if there is a type, generate the uri
-            if (triplet.getP().equals(TRIPLESTORE_RELATION_TYPE)
+            if (triplet.getP().equals(Rdf.RELATION_TYPE.toString())
                     && triplet.getS().equals(REQUEST_GENERATION_URI_STRING)) {
                 rdfType = triplet.getO();
             }

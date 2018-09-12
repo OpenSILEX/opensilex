@@ -253,7 +253,7 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
      */
     private Document prepareGetLastId() {        
           Document regQuery = new Document();
-          String regex = Contexts.PLATFORM + Year.now().toString() + "*";
+          String regex = Contexts.PLATFORM.toString() + Year.now().toString() + "*";
           regQuery.append("$regex", regex);
           
           Document findQuery = new Document();

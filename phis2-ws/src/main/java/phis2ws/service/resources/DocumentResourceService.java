@@ -60,16 +60,15 @@ import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOFactory;
 import phis2ws.service.dao.mongo.DocumentDaoMongo;
 import phis2ws.service.dao.sesame.DocumentDaoSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
+import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.resources.dto.DocumentMetadataDTO;
 import phis2ws.service.resources.validation.interfaces.Date;
-import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.utils.DocumentWaitingCheck;
 import phis2ws.service.utils.FileUploader;
@@ -101,10 +100,10 @@ public class DocumentResourceService {
     final static Logger LOGGER = LoggerFactory.getLogger(DocumentResourceService.class);
     
     // Gère les annotations en attene
-    public final static ExecutorService threadPool = Executors.newCachedThreadPool();
+    public final static ExecutorService THREAD_POOL = Executors.newCachedThreadPool();
     // Deux Maps qui contiennent les informations sur les annotations en attentes
-    public final static Map<String, Boolean> waitingAnnotFileCheck = new HashMap<>();
-    public final static Map<String, DocumentMetadataDTO> waitingAnnotInformation = new HashMap<>();
+    public final static Map<String, Boolean> WAITING_ANNOT_FILE_CHECK = new HashMap<>();
+    public final static Map<String, DocumentMetadataDTO> WAITING_ANNOT_INFORMATION = new HashMap<>();
     
     /**
      * Vérifie un ensemble d'annotation au format JSON
@@ -121,10 +120,10 @@ public class DocumentResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)})
     @ApiImplicitParams({
-       @ApiImplicitParam(name = "Authorization", required = true,
-                         dataType = "string", paramType = "header",
-                         value = DocumentationAnnotation.ACCES_TOKEN,
-                         example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -148,15 +147,14 @@ public class DocumentResourceService {
                     //Construction des URI
                     final UriBuilder uploadPath = uri.getBaseUriBuilder();
                     String name = new StringBuilder("document").append(ResourcesUtils.getUniqueID()).toString(); // docsM + idUni
-                    final URINamespaces uriNS = new URINamespaces(); 
-                    final String docsUri = uriNS.getContextsProperty("documents") + "/" + name;
+                    final String docsUri = Contexts.DOCUMENTS.toString() + "/" + name;
                     final String uploadLink = uploadPath.path("documents").path("upload").queryParam("uri", docsUri).toString();
 //                  //Ajout URI en attente
                     uriList.add(uploadLink);
-                    waitingAnnotFileCheck.put(docsUri, false); // fichier en attente
-                    waitingAnnotInformation.put(docsUri, docsM);
+                    WAITING_ANNOT_FILE_CHECK.put(docsUri, false); // fichier en attente
+                    WAITING_ANNOT_INFORMATION.put(docsUri, docsM);
 //                        //Lancement THREAD pour le fichier en attente
-                    threadPool.submit(new DocumentWaitingCheck(docsUri));
+                    THREAD_POOL.submit(new DocumentWaitingCheck(docsUri));
                 }
                 final Status waitingTimeStatus = new Status("Timeout", StatusCodeMsg.INFO, " Timeout :" + PropertiesFileManager.getConfigFileProperty("service", "waitingFileTime") + " seconds");
                 checkAnnots.statusList.add(waitingTimeStatus);
@@ -190,10 +188,10 @@ public class DocumentResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)})
     @ApiImplicitParams({
-       @ApiImplicitParam(name = "Authorization", required = true,
-                         dataType = "string", paramType = "header",
-                         value = DocumentationAnnotation.ACCES_TOKEN,
-                         example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_JSON)
@@ -206,7 +204,7 @@ public class DocumentResourceService {
         List<Status> statusList = new ArrayList();
         
         // Annotation présente
-        if (!waitingAnnotFileCheck.containsKey(docUri)) { 
+        if (!WAITING_ANNOT_FILE_CHECK.containsKey(docUri)) { 
             statusList.add(new Status("No waiting file", "Error", "No waiting file for the following uri : " + docUri));
             postResponse = new ResponseFormPOST(statusList);
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
@@ -220,13 +218,13 @@ public class DocumentResourceService {
         
         // Vérification du checksum md5
         String hash = getHash(in);
-        if (hash != null && !waitingAnnotInformation.get(docUri).getChecksum().equals(hash)) {
+        if (hash != null && !WAITING_ANNOT_INFORMATION.get(docUri).getChecksum().equals(hash)) {
             statusList.add(new Status("MD5 error", "Error", "Checksum MD5 doesn't match. Corrupted File."));
             postResponse = new ResponseFormPOST(statusList);
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
         
-        String media = waitingAnnotInformation.get(docUri).getDocumentType();
+        String media = WAITING_ANNOT_INFORMATION.get(docUri).getDocumentType();
         media = media.substring(media.lastIndexOf("#") + 1, media.length());
         
         //SILEX:info
@@ -249,7 +247,7 @@ public class DocumentResourceService {
         //\SILEX:conception
         final String webAppApiDocsName = PropertiesFileManager.getConfigFileProperty("service", "webAppApiDocsName");
         try {
-            waitingAnnotFileCheck.put(docUri, Boolean.TRUE); // Processing file
+            WAITING_ANNOT_FILE_CHECK.put(docUri, Boolean.TRUE); // Processing file
             LOGGER.debug(jsch.getSFTPWorkingDirectory() + "/" + media);
             // Create document directory if it doesn't exists
             File documentDirectory = new File(jsch.getSFTPWorkingDirectory());
@@ -277,7 +275,7 @@ public class DocumentResourceService {
             LOGGER.error(e.getMessage(), e);
         }
         
-        final String serverFileName = ResourcesUtils.getUniqueID() + "." + waitingAnnotInformation.get(docUri).getExtension();
+        final String serverFileName = ResourcesUtils.getUniqueID() + "." + WAITING_ANNOT_INFORMATION.get(docUri).getExtension();
         final String serverFilePath = jsch.getSFTPWorkingDirectory() + "/" + serverFileName;
         
         boolean fileTransfered = jsch.fileTransfer(in, serverFileName);
@@ -289,19 +287,19 @@ public class DocumentResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
         
-        waitingAnnotInformation.get(docUri).setServerFilePath(serverFilePath);
+        WAITING_ANNOT_INFORMATION.get(docUri).setServerFilePath(serverFilePath);
         DocumentDaoSesame documentsDao = DAOFactory.getSESAMEDAOFactory().getDocumentsDaoSesame();
         if (request.getRemoteAddr() != null) {
             documentsDao.remoteUserAdress = request.getRemoteAddr();
         }
         documentsDao.user = userSession.getUser();
-        final POSTResultsReturn insertAnnotationJSON = documentsDao.insert(Arrays.asList(waitingAnnotInformation.get(docUri)));
+        final POSTResultsReturn insertAnnotationJSON = documentsDao.insert(Arrays.asList(WAITING_ANNOT_INFORMATION.get(docUri)));
 
         postResponse = new ResponseFormPOST(insertAnnotationJSON.statusList);
 
         if (insertAnnotationJSON.getDataState()) { // Etat du fichier JSON
-            waitingAnnotFileCheck.remove(docUri);
-            waitingAnnotInformation.remove(docUri);
+            WAITING_ANNOT_FILE_CHECK.remove(docUri);
+            WAITING_ANNOT_INFORMATION.remove(docUri);
             if (insertAnnotationJSON.getHttpStatus() == Response.Status.CREATED) {
                 postResponse.getMetadata().setDatafiles((ArrayList) insertAnnotationJSON.createdResources);
                 final URI newUri = new URI(uri.getPath());
@@ -329,15 +327,14 @@ public class DocumentResourceService {
             notes = "Retrieve all documents types ")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Retrieve all documents type"),
-//                , response = Experiment.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
     @ApiImplicitParams({
-       @ApiImplicitParam(name = "Authorization", required = true,
-                         dataType = "string", paramType = "header",
-                         value = DocumentationAnnotation.ACCES_TOKEN,
-                         example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDocumentsType(
@@ -381,10 +378,10 @@ public class DocumentResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                          dataType = "string", paramType = "header",
-                          value = DocumentationAnnotation.ACCES_TOKEN,
-                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDocumentsMetadataBySearch(
@@ -461,10 +458,10 @@ public class DocumentResourceService {
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                          dataType = "string", paramType = "header",
-                          value = DocumentationAnnotation.ACCES_TOKEN,
-                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getDocumentByUri(
@@ -487,10 +484,10 @@ public class DocumentResourceService {
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                          dataType = "string", paramType = "header",
-                          value = DocumentationAnnotation.ACCES_TOKEN,
-                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

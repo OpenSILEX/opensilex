@@ -33,7 +33,7 @@ public class URINamespaces {
         Map<String, String> temporaryMap = new HashMap<>();
         //SILEX:info
         // Uncomment if you want to add other namespace
-        // String plateform = PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "platform");
+        // String plateform = PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "infrastructure");
         // Can put multiple other namespaces
         // temporaryMap.put("platform", "http://www.phenome-fppn.fr/" + plateform);
         //\SILEX:info

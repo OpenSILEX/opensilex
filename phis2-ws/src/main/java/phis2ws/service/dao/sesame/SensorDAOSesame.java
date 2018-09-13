@@ -80,7 +80,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         
         query.appendSelect("?" + URI);
         query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?type", null);
-        query.appendTriplet("?type", Rdfs.RELATION_SUBCLASS_OF_MULTIPLE.toString(), Vocabulary.CONCEPT_SENSING_DEVICE.toString(), null);
+        query.appendTriplet("?type", "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_SENSING_DEVICE.toString(), null);
         query.appendFilter("regex(str(?uri), \".*/" + year + "/.*\")");
         query.appendOrderBy("desc(?uri)");
         query.appendLimit(1);
@@ -149,7 +149,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         } else {
             query.appendSelect("?" + RDF_TYPE);
             query.appendTriplet(sensorUri, rdfType, "?" + RDF_TYPE, null);
-            query.appendTriplet("?" + RDF_TYPE, Rdfs.RELATION_SUBCLASS_OF_MULTIPLE.toString(), Vocabulary.CONCEPT_SENSING_DEVICE.toString(), null);
+            query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_SENSING_DEVICE.toString(), null);
         }        
 
         if (label != null) {
@@ -157,7 +157,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         } else {
             query.appendSelect(" ?" + LABEL);
             query.beginBodyOptional();
-            query.appendToBody(sensorUri + " " + Rdfs.RELATION_LABEL.toString() + " " + "?" + LABEL + " . ");
+            query.appendToBody(sensorUri + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + LABEL + " . ");
             query.endBodyOptional();
         }
 
@@ -408,7 +408,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
     private SPARQLQueryBuilder prepareIsSensorQuery(String uri) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendTriplet("<" + uri + ">", Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
-        query.appendTriplet("?" + RDF_TYPE, Rdfs.RELATION_SUBCLASS_OF_MULTIPLE.toString(), Vocabulary.CONCEPT_SENSING_DEVICE.toString(), null);
+        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_SENSING_DEVICE.toString(), null);
         
         query.appendAsk("");
         LOGGER.debug(query.toString());
@@ -734,7 +734,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         
         query.appendSelect("?" + URI + " ?" + RDF_TYPE + " ?" + LABEL );
-        query.appendTriplet("?" + RDF_TYPE, Rdfs.RELATION_SUBCLASS_OF_MULTIPLE.toString(), Vocabulary.CONCEPT_CAMERA.toString(), null);
+        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_CAMERA.toString(), null);
         query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
         query.appendTriplet("?" + URI, Rdfs.RELATION_LABEL.toString(), "?" + LABEL, null);
         query.appendOrderBy("DESC(?" + LABEL + ")");

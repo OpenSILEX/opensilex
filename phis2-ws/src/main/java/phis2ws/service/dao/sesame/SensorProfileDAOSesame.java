@@ -64,7 +64,7 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
         query.appendSelect("?" + RELATION + " ?" + PROPERTY);
         query.appendTriplet("<" + uri + ">", "?" + RELATION, "?" + PROPERTY, null);
         query.appendTriplet("<" + uri + ">", Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
-        query.appendTriplet("?" + RDF_TYPE, Rdfs.RELATION_SUBCLASS_OF_MULTIPLE.toString(), Vocabulary.CONCEPT_SENSING_DEVICE.toString(), null);
+        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_SENSING_DEVICE.toString(), null);
         
         LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
         

@@ -103,7 +103,7 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
         SPARQLQueryBuilder queryLastAgronomicalObjectURi = new SPARQLQueryBuilder();
         queryLastAgronomicalObjectURi.appendSelect("?" + URI);
         queryLastAgronomicalObjectURi.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
-        queryLastAgronomicalObjectURi.appendTriplet("?" + RDF_TYPE, Rdfs.RELATION_SUBCLASS_OF_MULTIPLE.toString(), Vocabulary.CONCEPT_AGRONOMICAL_OBJECT.toString(), null);
+        queryLastAgronomicalObjectURi.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_AGRONOMICAL_OBJECT.toString(), null);
         queryLastAgronomicalObjectURi.appendFilter("regex(str(?" + URI + "), \".*/" + year + "/.*\")");
         queryLastAgronomicalObjectURi.appendOrderBy("desc(?" + URI + ")");
         queryLastAgronomicalObjectURi.appendLimit(1);
@@ -709,7 +709,7 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
         } else {
             sparqlQuery.appendSelect(" ?" + RDF_TYPE);
             sparqlQuery.appendTriplet(agronomicalObjectURI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
-            sparqlQuery.appendTriplet("?" + RDF_TYPE, Rdfs.RELATION_SUBCLASS_OF_MULTIPLE.toString(), Vocabulary.CONCEPT_AGRONOMICAL_OBJECT.toString(), null);
+            sparqlQuery.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_AGRONOMICAL_OBJECT.toString(), null);
         }
         
         sparqlQuery.appendSelect(" ?" + RELATION + " ?" + PROPERTY);

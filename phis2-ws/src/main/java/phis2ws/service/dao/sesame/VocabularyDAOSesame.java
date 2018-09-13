@@ -91,7 +91,7 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
     protected SPARQLQueryBuilder prepareGetContactProperties() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendSelect("?" + PROPERTY);
-        query.appendTriplet("?" + PROPERTY, Rdfs.RELATION_SUBPROPERTY_OF_MULTIPLE.toString(), Vocabulary.RELATION_HAS_CONTACT.toString(), null);
+        query.appendTriplet("?" + PROPERTY, "<" + Rdfs.RELATION_SUBPROPERTY_OF.toString() + ">*", Vocabulary.RELATION_HAS_CONTACT.toString(), null);
         LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
         return query;
     }
@@ -108,7 +108,7 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
     protected SPARQLQueryBuilder prepareGetDeviceProperties() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendSelect("?" + PROPERTY);
-        query.appendTriplet("?" + PROPERTY, Rdfs.RELATION_SUBPROPERTY_OF_MULTIPLE.toString(), Vocabulary.RELATION_DEVICE_PROPERTY.toString(), null);
+        query.appendTriplet("?" + PROPERTY, "<" + Rdfs.RELATION_SUBPROPERTY_OF.toString() + ">*", Vocabulary.RELATION_DEVICE_PROPERTY.toString(), null);
         LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
         return query;
     }

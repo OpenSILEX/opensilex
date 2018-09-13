@@ -265,7 +265,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         SPARQLQueryBuilder sparqlQ = new SPARQLQueryBuilder();
         sparqlQ.appendDistinct(true);
         sparqlQ.appendSelect("?documentType");
-        sparqlQ.appendTriplet("?documentType", Rdfs.RELATION_SUBPROPERTY_OF_MULTIPLE.toString(), Vocabulary.CONCEPT_DOCUMENT.toString(), null);
+        sparqlQ.appendTriplet("?documentType", "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_DOCUMENT.toString(), null);
         sparqlQ.appendFilter("?documentType != <" + Vocabulary.CONCEPT_DOCUMENT.toString() +">");
         LOGGER.debug(sparqlQ.toString());
         TupleQuery tupleQueryTo = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQ.toString());

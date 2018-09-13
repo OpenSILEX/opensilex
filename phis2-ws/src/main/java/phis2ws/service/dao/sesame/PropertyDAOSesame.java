@@ -99,7 +99,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
         query.appendTriplet("<" + uri + ">", "<" + Rdf.RELATION_TYPE.toString() + ">", "?" + RDF_TYPE, null);
         
         if (subClassOf != null) {
-            query.appendTriplet("?" + RDF_TYPE, Rdfs.RELATION_SUBCLASS_OF_MULTIPLE.toString(), subClassOf, null);
+            query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", subClassOf, null);
         }
         
         LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());

@@ -51,22 +51,10 @@ public enum Rdfs {
             return NAMESPACE.toString() + "subClassOf";
         }
     },
-    RELATION_SUBCLASS_OF_MULTIPLE {
-        @Override
-        public String toString() {
-            return NAMESPACE.toString() + RELATION_SUBCLASS_OF.toString() + "*";
-        }
-    },
     RELATION_SUBPROPERTY_OF {
         @Override
         public String toString() {
             return NAMESPACE.toString() + "subPropertyOf";
-        }
-    },
-    RELATION_SUBPROPERTY_OF_MULTIPLE {
-        @Override
-        public String toString() {
-            return NAMESPACE.toString() + RELATION_SUBPROPERTY_OF.toString() + "*";
         }
     }
 }

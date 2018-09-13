@@ -81,8 +81,8 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
     private SPARQLQueryBuilder prepareGetVectorsNumber(String year) {
         SPARQLQueryBuilder queryNumberVectors = new SPARQLQueryBuilder();
         queryNumberVectors.appendSelect("(COUNT(DISTINCT ?vector) AS ?count)");
-        queryNumberVectors.appendTriplet("?vector", Rdf.RELATION_TYPE.toString(), "?rdfType", null);
-        queryNumberVectors.appendTriplet("?rdfType", Rdfs.RELATION_SUBCLASS_OF_MULTIPLE.toString(), Vocabulary.CONCEPT_VECTOR.toString(), null);
+        queryNumberVectors.appendTriplet("?vector", "<" + Rdf.RELATION_TYPE.toString() + ">", "?rdfType", null);
+        queryNumberVectors.appendTriplet("?rdfType", "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", "<" + Vocabulary.CONCEPT_VECTOR.toString() + ">", null);
         queryNumberVectors.appendFilter("REGEX(STR(?vector), \".*/" + year + "/.*\")");
         
         LOGGER.debug(SPARQL_SELECT_QUERY + queryNumberVectors.toString());
@@ -151,19 +151,19 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
         }
         
         if (rdfType != null) {
-            query.appendTriplet(sensorUri, Rdf.RELATION_TYPE.toString(), rdfType, null);
+            query.appendTriplet(sensorUri, "<" + Rdf.RELATION_TYPE.toString() + ">", rdfType, null);
         } else {
             query.appendSelect("?" + RDF_TYPE);
-            query.appendTriplet(sensorUri, rdfType, "?" + RDF_TYPE, null);
-            query.appendTriplet("?" + RDF_TYPE, Rdfs.RELATION_SUBCLASS_OF_MULTIPLE.toString(), Vocabulary.CONCEPT_VECTOR.toString(), null);
+            query.appendTriplet(sensorUri, "<" + rdfType + ">", "?" + RDF_TYPE, null);
+            query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", "<" + Vocabulary.CONCEPT_VECTOR.toString() + ">", null);
         }        
 
         if (label != null) {
-            query.appendTriplet(sensorUri, Rdfs.RELATION_LABEL.toString(), "\"" + label + "\"", null);
+            query.appendTriplet(sensorUri, "<" + Rdfs.RELATION_LABEL.toString() + ">", "\"" + label + "\"", null);
         } else {
             query.appendSelect(" ?" + LABEL);
             query.beginBodyOptional();
-            query.appendToBody(sensorUri + " " + Rdfs.RELATION_LABEL.toString() + " " + "?" + LABEL + " . ");
+            query.appendToBody(sensorUri + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + LABEL + " . ");
             query.endBodyOptional();
         }
 
@@ -334,7 +334,7 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
         
         query.appendSelect("?" + URI);
         query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?type", null);
-        query.appendTriplet("?type", Rdfs.RELATION_SUBCLASS_OF_MULTIPLE.toString(), Vocabulary.CONCEPT_VECTOR.toString(), null);
+        query.appendTriplet("?type", "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_VECTOR.toString(), null);
         query.appendFilter("regex(str(?uri), \".*/" + year + "/.*\")");
         query.appendOrderBy("desc(?uri)");
         query.appendLimit(1);
@@ -749,7 +749,7 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         
         query.appendSelect("?" + URI + " ?" + RDF_TYPE + " ?" + LABEL );
-        query.appendTriplet("?" + RDF_TYPE, Rdfs.RELATION_SUBCLASS_OF_MULTIPLE.toString(), Vocabulary.CONCEPT_UAV.toString(), null);
+        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_UAV.toString(), null);
         query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
         query.appendTriplet("?" + URI, Rdfs.RELATION_LABEL.toString(), "?" + LABEL, null);
         query.appendOrderBy("desc(?" + LABEL + ")");

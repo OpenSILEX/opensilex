@@ -72,7 +72,7 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
         } else {
             query.appendSelect("?" + RDF_TYPE);
             query.appendTriplet(infrastructureUri, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
-            query.appendTriplet("?" + RDF_TYPE, Rdfs.RELATION_SUBCLASS_OF_MULTIPLE.toString(), Vocabulary.CONCEPT_INFRASTRUCTURE.toString(), null);
+            query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_INFRASTRUCTURE.toString(), null);
         }        
 
         query.appendSelect(" ?" + LABEL);

@@ -372,8 +372,8 @@ public class DocumentResourceService {
      * @param extension
      * @param concernedItem
      * @param status
-     * @param sortByDate sortByDate the results by date (DESC by default)
-     * @return le résultat de la requête
+     * @param sortByDate sort the results by date (Descending by default)
+     * @return the result of the request
      */
     @GET
     @ApiOperation(value = "Get all documents metadata corresponding to the searched params given",
@@ -438,7 +438,7 @@ public class DocumentResourceService {
         if (status != null) {
             documentDao.status = status;
         }
-        // Sorting value the result list by date (DESC by default)
+        // Sort the result list by date, descending by default
         if (sortByDate != null) {
             documentDao.sortByDate = sortByDate;
         }

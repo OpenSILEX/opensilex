@@ -14,8 +14,8 @@ package phis2ws.service.configuration;
 
 /**
  * The list of the authorized sort parameters formats.
- * If you modify orders values changes the linked documentation below.
- * @see DocumentationAnnotation.EXAMPLE_ORDER_ALLOWABLE_VALUES
+ * If you modify sorting values changes the linked documentation below.
+ * @see DocumentationAnnotation.EXAMPLE_SORTING_ALLOWABLE_VALUES
  * @author Arnaud Charleroy<arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */
 public enum SortingValues {

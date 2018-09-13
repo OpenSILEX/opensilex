@@ -94,6 +94,7 @@ public final class DocumentationAnnotation {
     public static final String VARIABLES_DEFINITION = "A variable or comma-separated variables list";
 
     public static final String VECTOR_POST_DEFINITION = "JSON format of vector data";
+    public static final String VECTOR_RDF_TYPE_DEFINITION = "A vector rdf type URI";
 
     public static final String ADMIN_ONLY_NOTES = "This can only be done by a PHIS-SILEX admin.";
     public static final String USER_ONLY_NOTES = "This can only be done by a PHIS-SILEX user.";
@@ -252,5 +253,9 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_ANNOTATION_CREATOR = "http://www.phenome-fppn.fr/diaphen/id/agent/marie_dupond";
   
     public static final String EXAMPLE_EXPERIMENT_CROP_SPECIES = "maize";
+
+    public static final String EXAMPLE_INFRASTRUCTURE_URI = "http://www.phenome-fppn.fr/diaphen";
+    public static final String EXAMPLE_INFRASTRUCTURE_RDF_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#Infrastructure";
+    public static final String EXAMPLE_INFRASTRUCTURE_LABEL = "EMPHASIS";
 
 }

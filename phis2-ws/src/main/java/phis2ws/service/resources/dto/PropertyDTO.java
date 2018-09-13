@@ -1,13 +1,13 @@
 //******************************************************************************
 //                                       PropertyDTO.java
 //
-// Author(s): Morgane Vidal <morgane.vidal@inra.fr>
+// Author(s): Vincent Migot <vincent.migot@inra.fr>
 // PHIS-SILEX version 1.0
 // Copyright © - INRA - 2018
-// Creation date: 30 avr. 2018
-// Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  30 avr. 2018
-// Subject:
+// Creation date: 10 septembre 2018
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Last modification date:  10 septembre 2018
+// Subject: Represents the submitted JSON for a property
 //******************************************************************************
 package phis2ws.service.resources.dto;
 
@@ -19,7 +19,7 @@ import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.Property;
 
 /**
- * Represents the submitted JSON for the properties
+ * Represents the submitted JSON for a property
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class PropertyDTO extends AbstractVerifiedClass {

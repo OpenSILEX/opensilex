@@ -1,13 +1,11 @@
 //**********************************************************************************************
 //                                       DocumentResourceService.java 
 //
-// Author(s): Arnaud Charleroy, Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2016
-// Creation date: august 2016
-// Contact:arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  March, 2017
-// Subject: Represents the documents service
+// SILEX-PHIS
+// Copyright © INRA 2016
+// Creation date: Aug, 2016
+// Contact:  arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr,
+//           pascal.neveu@inra.fr
 //***********************************************************************************************
 package phis2ws.service.resources;
 
@@ -45,6 +43,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -84,6 +83,12 @@ import phis2ws.service.view.brapi.form.ResponseFormGET;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
 import phis2ws.service.view.model.phis.Document;
 
+/**
+ * Represents the documents service.
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
+ * @update [Morgane Vidal] March, 2017 : no explanation
+ * @update [Arnaud Charleroy] 04 September, 2018 : create automatically document directory if not
+ */
 @Api("/documents")
 @Path("/documents")
 public class DocumentResourceService {
@@ -223,10 +228,47 @@ public class DocumentResourceService {
         
         String media = waitingAnnotInformation.get(docUri).getDocumentType();
         media = media.substring(media.lastIndexOf("#") + 1, media.length());
-        FileUploader jsch = new FileUploader();
+        
+        //SILEX:info
+        // Manage authentication error
+        //SILEX:info
+        FileUploader jsch = null;    
         try {
-            waitingAnnotFileCheck.put(docUri, Boolean.TRUE); // Traitement en cours du fichier
+            jsch = new FileUploader();
+        } catch (Exception exp) {
+            LOGGER.error(exp.getMessage(), exp);
+            throw new WebApplicationException(
+                      Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                      .entity(new ResponseFormPOST(new Status("FileUploaderException",
+                                                            StatusCodeMsg.ERR,
+                                                            "Problem with file system configuration")
+                                                )).build());
+        }
+        //SILEX:conception
+        // Add a class to group constants for properties
+        //\SILEX:conception
+        final String webAppApiDocsName = PropertiesFileManager.getConfigFileProperty("service", "webAppApiDocsName");
+        try {
+            waitingAnnotFileCheck.put(docUri, Boolean.TRUE); // Processing file
             LOGGER.debug(jsch.getSFTPWorkingDirectory() + "/" + media);
+            // Create document directory if it doesn't exists
+            File documentDirectory = new File(jsch.getSFTPWorkingDirectory());
+            if (!documentDirectory.isDirectory()) {
+                if (!documentDirectory.mkdirs()) {
+                    LOGGER.error("Can't create " + webAppApiDocsName + " temporary documents directory");
+                    throw new WebApplicationException(
+                            Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                            .entity(new ResponseFormPOST(new Status("Can't create " + webAppApiDocsName + " temporary documents directory", StatusCodeMsg.ERR, null))).build());
+                }else{
+                    // Add good rights on the document directory which is on the server
+                    try {
+                        Runtime.getRuntime().exec("chmod -R 755 " + jsch.getSFTPWorkingDirectory());
+                        LOGGER.info( webAppApiDocsName + " temporary documents directory rights successfully updated");
+                    } catch (IOException e) {
+                        LOGGER.error("Can't change rights on " + webAppApiDocsName + " temporary documents directory");
+                    }
+                }
+            }
             //SILEX:test
             jsch.getChannelSftp().cd(jsch.getSFTPWorkingDirectory());
             //\SILEX:test

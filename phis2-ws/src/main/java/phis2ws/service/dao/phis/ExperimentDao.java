@@ -1,13 +1,9 @@
 //**********************************************************************************************
 //                                       ExperimentDao.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
+// SILEX-PHIS
+// Copyright © INRA 2018
 // Creation date: January 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  October, 31 2017 : Passage de trial à experiment
-// Subject: A DAO specific to retrieve experiment data
 //***********************************************************************************************
 
 package phis2ws.service.dao.phis;
@@ -30,6 +26,7 @@ import phis2ws.service.dao.manager.DAOPhisBrapi;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.model.User;
+import phis2ws.service.resources.AcquisitionSessionResourceService;
 import phis2ws.service.resources.dto.ExperimentDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.sql.JoinAttributes;
@@ -39,20 +36,44 @@ import phis2ws.service.view.model.phis.Group;
 import phis2ws.service.view.model.phis.Project;
 import phis2ws.service.view.model.phis.Experiment;
 
-
+/**
+ * DAO for the experiments in the relational database. It allows CRUD operations.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(ExperimentDao.class);
     
+    //Search parameters :
+    //The uri of an experiment.
+    //e.g. http://www.phenome-fppn.fr/diaphen/DIA2017-1
     public String uri;
+    //The start date of an experiment
+    //e.g. 2018-01-15
     public String startDate;
+    //The end date of an experiment
+    //e.g. 2018-08-02
     public String endDate;
+    //The field of an experiment
+    //e.g. field003
     public String field;
+    //The campaign of an experiment
+    //e.g. 2017
     public String campaign;
+    //The place of an experiment
+    //e.g. Madone
     public String place;
+    //The alias of the experiment
+    //e.g. exp-16-03
     public String alias;
+    //The keywords of the experiment
+    //e.g. maize, phenotyping
     public String keyword;
+    //The groups uris that can access an experiment
+    //e.g. http://www.phenome-fppn.fr/diaphen/DROPS,http://www.phenome-fppn.fr/diaphen/MISTEAGAMMA
     public String groups;
+    //The crop species of an experiment
+    //e.g. Maize, Wheat
     public String cropSpecies;
     
     public ExperimentDao() {
@@ -126,6 +147,63 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
 
         return experiment;
     }
+    
+    /**
+     * Get the list of the experiments, with only the minimal informations 
+     * required to generate the lists for 4P acquisition session files. 
+     * Returned informations for each experiment : 
+     *  alias, uri, species
+     * @see AcquisitionSessionResourceService
+     * @return the list of the experiments founded in the database
+     */
+    public ArrayList<Experiment> getAllExperimentsForAcquisitionSessionFile() {
+        ResultSet queryResult = null;
+        Connection connection = null;
+        Statement statement = null;
+        ArrayList<Experiment> experiments = new ArrayList();
+        
+        try {
+            connection = dataSource.getConnection();
+            statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+            SQLQueryBuilder query = new SQLQueryBuilder();
+            
+            //Query database            
+            Map<String, String> sqlFields = relationFieldsJavaSQLObject();
+           
+            query.appendFrom(table, tableAlias);
+            query.appendSelect(sqlFields.get("uri") + ", " + sqlFields.get("alias") + ", " + sqlFields.get("cropSpecies"));
+            query.appendLimit(String.valueOf(pageSize));
+            query.appendOffset(Integer.toString(this.getPage()* this.getPageSize()));
+            
+            queryResult = statement.executeQuery(query.toString());
+            
+            //Manipulates database results
+            while (queryResult.next()) {
+                Experiment experiment = new Experiment();
+                experiment.setUri(queryResult.getString(sqlFields.get("uri")));
+                experiment.setAlias(queryResult.getString(sqlFields.get("alias")));
+                experiment.setCropSpecies(queryResult.getString(sqlFields.get("cropSpecies")));
+                experiments.add(experiment);
+            }
+        } catch (SQLException ex) {
+            java.util.logging.Logger.getLogger(ExperimentDao.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                if (queryResult != null) {
+                    queryResult.close();
+                }
+                if (statement != null) {
+                    statement.close();
+                }
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException ex) {
+                java.util.logging.Logger.getLogger(ExperimentDao.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return experiments;
+    }
 
     @Override
     public ArrayList<Experiment> allPaginate() {
@@ -141,7 +219,7 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
             Map<String, String> sqlFields = relationFieldsJavaSQLObject();
            
             //Ajout des conditions dans la requête
-            query.appendFrom("trial", tableAlias);
+            query.appendFrom(table, tableAlias);
             query.appendANDWhereConditionIfNeeded(sqlFields.get("uri"), uri, "ILIKE", null, tableAlias);
             query.appendANDWhereConditionIfNeeded(sqlFields.get("startDate"), startDate, "ILIKE", null, tableAlias);
             query.appendANDWhereConditionIfNeeded(sqlFields.get("endDate"), endDate, "ILIKE", null, tableAlias);
@@ -249,51 +327,48 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
     
     @Override
     public Integer count() {
-     
-     SQLQueryBuilder query = new SQLQueryBuilder();
-     query.appendCount();
-     query.appendDistinct();
-     query.appendSelect(tableAlias + ".uri");
-     query.appendFrom(table, tableAlias);
-     
-     if (uri != null) {
-         query.appendWhereConditions("uri", uri, "=", null, tableAlias);
-     }
-     
-     Connection connection = null;
-     ResultSet resultSet = null;
-     Statement statement = null;
-     
-     try {
-         connection = dataSource.getConnection();
-         statement = connection.createStatement();
-         resultSet = statement.executeQuery(query.toString());
-         
-         if(resultSet.next()) {
-             return resultSet.getInt(1);
-         }else{
-             return 0;
-         }
-         
-         
-     } catch(SQLException e) {
-         LOGGER.error(e.getMessage(), e);
-         return null;
-     } finally {
-         try {
-             if (statement != null) {
-                 statement.close();
-             }
-             if (resultSet != null) {
-                 resultSet.close();
-             }
-             if (connection != null) {
-                 connection.close();
-             }
-         } catch (SQLException ex) {
-             LOGGER.error(ex.getMessage(), ex);
-         }
-     }
+        SQLQueryBuilder query = new SQLQueryBuilder();
+        query.appendCount();
+        query.appendDistinct();
+        query.appendSelect(tableAlias + ".uri");
+        query.appendFrom(table, tableAlias);
+
+        if (uri != null) {
+            query.appendWhereConditions("uri", uri, "=", null, tableAlias);
+        }
+
+        Connection connection = null;
+        ResultSet resultSet = null;
+        Statement statement = null;
+
+        try {
+            connection = dataSource.getConnection();
+            statement = connection.createStatement();
+            resultSet = statement.executeQuery(query.toString());
+
+            if (resultSet.next()) {
+                return resultSet.getInt(1);
+            } else {
+                return 0;
+            }
+        } catch (SQLException e) {
+            LOGGER.error(e.getMessage(), e);
+            return null;
+        } finally {
+            try {
+                if (statement != null) {
+                    statement.close();
+                }
+                if (resultSet != null) {
+                    resultSet.close();
+                }
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException ex) {
+                LOGGER.error(ex.getMessage(), ex);
+            }
+        }
     }
 
     @Override

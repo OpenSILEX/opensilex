@@ -1,14 +1,10 @@
 //**********************************************************************************************
 //                                       UserDaoPhisBrapi.java 
-//
-// Author(s): Anne TIREAU, Arnaud Charleroy, Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
+// SILEX-PHIS
+// Copyright © INRA 2018
 // Creation date: may 2016
 // Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr, 
 //         morgane.vidal@inra.fr
-// Last modification date:  04 July, 2018
-// Subject: Manipule les Sessions et leur modifications à partir de la base de données
 //***********************************************************************************************
 package phis2ws.service.dao.phis;
 
@@ -328,6 +324,56 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
         return userToReturn;
     }
 
+    /**
+     * Get all the users emails from the database.
+     * @return the list of the users
+     */
+    public ArrayList<User> getAllUsersEmails() {
+        ResultSet queryResult = null;
+        Connection connection = null;
+        Statement statement = null;
+
+        ArrayList<User> users = new ArrayList<>();
+        try {
+            connection = dataSource.getConnection();
+            statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+            SQLQueryBuilder query = new SQLQueryBuilder();
+
+            Map<String, String> sqlFields = relationFieldsJavaSQLObject();
+            
+            //Query database
+            query.appendFrom(table, tableAlias);
+            query.appendSelect(sqlFields.get("email"));
+            query.appendLimit(String.valueOf(pageSize));
+            query.appendOffset(Integer.toString(this.getPage()* this.getPageSize()));
+
+            queryResult = statement.executeQuery(query.toString());
+
+            //Manipulates result
+            while (queryResult.next()) {
+                User u = new User(queryResult.getString("email"));
+                users.add(u);
+            }
+        } catch (SQLException ex) {
+            java.util.logging.Logger.getLogger(UserDaoPhisBrapi.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                if (queryResult != null) {
+                    queryResult.close();
+                }
+                if (statement != null) {
+                    statement.close();
+                }
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException ex) {
+                java.util.logging.Logger.getLogger(UserDaoPhisBrapi.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return users;
+    }
+    
     @Override
     public ArrayList<User> allPaginate() {
         ResultSet queryResult = null;

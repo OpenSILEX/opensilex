@@ -17,7 +17,7 @@ public enum Rdfs {
     NAMESPACE {
         @Override
         public String toString() {
-            return "https://www.w3.org/2000/01/rdf-schema#";
+            return "http://www.w3.org/2000/01/rdf-schema#";
         }
     },
     

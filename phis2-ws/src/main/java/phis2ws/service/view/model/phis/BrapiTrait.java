@@ -2,7 +2,7 @@
 //                                       BrapiTrait.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 28 août 2018
+// Creation date: 28 august 2018
 // Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package phis2ws.service.view.model.phis;

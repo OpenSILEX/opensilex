@@ -2,7 +2,7 @@
 //                                       TraitsListResourceService.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 28 août 2018
+// Creation date: 28 Aug, 2018
 // Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package phis2ws.service.resources.brapi;
@@ -63,22 +63,66 @@ public class TraitsListResourceService implements BrapiCall {
         return call;
     }
     
+    /**
+     * search traits 
+     * 
+     * @param limit
+     * @param page
+     * 
+     * @return list of the traits corresponding to the search params given
+     * e.g
+     * {
+        "metadata": {
+          "pagination": {
+            "pageSize": 20,
+            "currentPage": 0,
+            "totalCount": 2,
+            "totalPages": 1
+          },
+          "status": [],
+          "datafiles": []
+        },
+        "result": {
+          "data": [
+            {
+              "defaultValue": null,
+              "description": "",
+              "name": "Leaf_Area_Index",
+              "observationVariables": [
+                "http://www.phenome-fppn.fr/platform/id/variables/v001"
+              ],
+              "traitDbId": "http://www.phenome-fppn.fr/platform/id/traits/t001",
+              "traitId": null
+            },
+            {
+              "defaultValue": null,
+              "description": "",
+              "name": "NDVI",
+              "observationVariables": [
+                "http://www.phenome-fppn.fr/platform/id/variables/v002"
+              ],
+              "traitDbId": "http://www.phenome-fppn.fr/platform/id/traits/t002",
+              "traitId": null
+            }
+          ]
+        }
+      }
+     */
     @GET
     @ApiOperation(value = "Retrieve the list of all traits available in the system",
                        notes = "Retrieve the list of all traits available in the system")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve all experiments", response = BrapiTrait.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Retrieve all traits", response = BrapiTrait.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})    
     @ApiImplicitParams({
-       @ApiImplicitParam(name = "Authorization", required = true,
+        @ApiImplicitParam(name = "Authorization", required = true,
                          dataType = "string", paramType = "header",
                          value = DocumentationAnnotation.ACCES_TOKEN,
                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
-    @Produces(MediaType.APPLICATION_JSON)
-    
+    @Produces(MediaType.APPLICATION_JSON)    
     public Response getTraitsList ( 
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0)int page 
@@ -88,13 +132,24 @@ public class TraitsListResourceService implements BrapiCall {
         traitDAO.setPage(page);           
         return getTraitsData(traitDAO);
     }
-     
+    
+    /**
+     * Return a generic response when no result are found
+     * @param getResponse
+     * @param insertStatusList
+     * @return the response "no result found" for the service
+     */
     private Response noResultFound(ResponseFormBrapiTraits getResponse, ArrayList<Status> insertStatusList) {
         insertStatusList.add(new Status("No result", StatusCodeMsg.INFO, "No results"));
         getResponse.setStatus(insertStatusList);
         return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
     }
     
+    /**
+     * Search Traits corresponding to search params given by a user
+     * @param BrapiTraitDAO
+     * @return the infrastructures corresponding to the search
+     */
     private Response getTraitsData(BrapiTraitDAO traitDAO) {
         ArrayList<Status> statusList = new ArrayList<>();
         ResponseFormBrapiTraits getResponse;    

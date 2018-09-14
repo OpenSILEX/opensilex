@@ -1,12 +1,12 @@
-//**********************************************************************************************
-//                                       DocumentResourceService.java 
-//
+//******************************************************************************
+//                                       DocumentResourceService.java
 // SILEX-PHIS
 // Copyright © INRA 2016
 // Creation date: Aug, 2016
-// Contact:  arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr,
-//           pascal.neveu@inra.fr
-//***********************************************************************************************
+// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, 
+//          pascal.neveu@inra.fr
+//******************************************************************************
+
 package phis2ws.service.resources;
 
 import com.jcraft.jsch.SftpException;
@@ -81,12 +81,15 @@ import phis2ws.service.view.brapi.form.ResponseFormDocumentType;
 import phis2ws.service.view.brapi.form.ResponseFormGET;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
 import phis2ws.service.view.model.phis.Document;
+import phis2ws.service.resources.validation.interfaces.SortingValue;
 
 /**
  * Represents the documents service.
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  * @update [Morgane Vidal] March, 2017 : no explanation
  * @update [Arnaud Charleroy] 04 September, 2018 : create automatically document directory if not
+ * @update [Arnaud Charleroy] 07, September 2018 : add sort feature, query optimization (limit , offset, group_concat)
+ *                                                 add comments and CONSTANTS to the code
  */
 @Api("/documents")
 @Path("/documents")
@@ -367,7 +370,8 @@ public class DocumentResourceService {
      * @param extension
      * @param concernedItem
      * @param status
-     * @return le résultat de la requête
+     * @param sortByDate sort the results by date (Descending by default)
+     * @return the result of the request
      */
     @GET
     @ApiOperation(value = "Get all documents metadata corresponding to the searched params given",
@@ -395,7 +399,8 @@ public class DocumentResourceService {
         @ApiParam(value = "Search by creation date", example = DocumentationAnnotation.EXAMPLE_DOCUMENT_CREATION_DATE) @QueryParam("creationDate") @Date(DateFormat.YMD) String creationDate,
         @ApiParam(value = "Search by extension", example = DocumentationAnnotation.EXAMPLE_DOCUMENT_EXTENSION) @QueryParam("extension") String extension,
         @ApiParam(value = "Search by concerned item", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI) @QueryParam("concernedItem") @URL String concernedItem,
-        @ApiParam(value = "Search by status", example = DocumentationAnnotation.EXAMPLE_DOCUMENT_STATUS) @QueryParam("status") String status) {
+        @ApiParam(value = "Search by status", example = DocumentationAnnotation.EXAMPLE_DOCUMENT_STATUS) @QueryParam("status") String status,
+        @ApiParam(value = "Sort results by date", allowableValues = DocumentationAnnotation.EXAMPLE_SORTING_ALLOWABLE_VALUES) @QueryParam("sortByDate") @SortingValue String sortByDate) {
         
         //SILEX:conception
         //Pour l'instant la recherche de documents liés à un élément se fait sur un seul élément. 
@@ -430,6 +435,10 @@ public class DocumentResourceService {
         }
         if (status != null) {
             documentDao.status = status;
+        }
+        // Sort the result list by date, descending by default
+        if (sortByDate != null) {
+            documentDao.sortByDate = sortByDate;
         }
         
         documentDao.user = userSession.getUser();
@@ -539,12 +548,16 @@ public class DocumentResourceService {
         ResponseFormDocumentMetadata getResponse;
         
         documentDao.user = userSession.getUser();
+        // Count all documents for this specific request
+        Integer totalCount = documentDao.count();
+        // Retreive all documents for this specific request
         documentsMetadata = documentDao.allPaginate();
+        
         if (documentsMetadata == null) {
             getResponse = new ResponseFormDocumentMetadata(0, 0, documentsMetadata, true);
             return noResultFound(getResponse, statusList);
         } else if (!documentsMetadata.isEmpty()) {
-            getResponse = new ResponseFormDocumentMetadata(documentDao.getPageSize(), documentDao.getPage(), documentsMetadata, false);
+            getResponse = new ResponseFormDocumentMetadata(documentDao.getPageSize(), documentDao.getPage(), documentsMetadata, true, totalCount);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {

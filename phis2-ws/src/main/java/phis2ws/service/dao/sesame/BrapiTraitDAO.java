@@ -45,7 +45,8 @@ public class BrapiTraitDAO extends DAOSesame<BrapiTrait> {
      * GRAPH <http://www.phenome-fppn.fr/platform/variables> {
      * ?uri rdf:type <http://www.phenome-fppn.fr/vocabulary/2017#Trait> . 
      * ?uri rdfs:label ?label .
-     * ?uri rdfs:comment ?comment. }}
+     * OPTIONAL {?uri rdfs:comment ?comment. }
+     * }}
      *
      * @return query generated with the searched parameter above
      */
@@ -70,8 +71,10 @@ public class BrapiTraitDAO extends DAOSesame<BrapiTrait> {
         query.appendTriplet(traitUri, "rdfs:label", "?label", null);
 
         query.appendSelect(" ?comment");
+        query.beginBodyOptional();
         query.appendTriplet(traitUri, "rdfs:comment", "?comment", null);
-                
+        query.endBodyOptional();
+        
         LOGGER.trace("sparql select query : " + query.toString());
         return query;
     }

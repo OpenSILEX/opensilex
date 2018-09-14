@@ -98,8 +98,7 @@ public class GroupDTO extends AbstractVerifiedClass {
         this.description = description;
     }
     
-    @Email
-    public ArrayList<String> getUsersEmails() {
+    public ArrayList<@Email String> getUsersEmails() {
         return usersEmails;
     }
 

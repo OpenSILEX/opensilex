@@ -23,7 +23,7 @@ import phis2ws.service.view.model.phis.BrapiTrait;
 
 /**
  * Get all traits available in the system according to brapi specifications
- * @see https://brapi.docs.apiary.io/#
+ * @see https://brapi.docs.apiary.io/#reference/traits/list-all-traits/list-all-traits
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class BrapiTraitDAO extends DAOSesame<BrapiTrait> {

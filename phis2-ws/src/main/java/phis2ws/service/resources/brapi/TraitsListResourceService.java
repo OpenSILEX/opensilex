@@ -64,7 +64,7 @@ public class TraitsListResourceService implements BrapiCall {
     }
     
     /**
-     * search traits 
+     * retrieve the list of traits 
      * 
      * @param limit
      * @param page
@@ -108,11 +108,12 @@ public class TraitsListResourceService implements BrapiCall {
         }
       }
      */
+    
     @GET
-    @ApiOperation(value = "Retrieve the list of all traits available in the system",
-                       notes = "Retrieve the list of all traits available in the system")
+    @ApiOperation(value = DocumentationAnnotation.TRAIT_CALL_MESSAGE,
+                       notes = DocumentationAnnotation.TRAIT_CALL_MESSAGE)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve all traits", response = BrapiTrait.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = DocumentationAnnotation.TRAIT_CALL_MESSAGE, response = BrapiTrait.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})    
@@ -148,11 +149,11 @@ public class TraitsListResourceService implements BrapiCall {
     /**
      * Search Traits corresponding to search params given by a user
      * @param BrapiTraitDAO
-     * @return the infrastructures corresponding to the search
+     * @return the traits available in the system
      */
     private Response getTraitsData(BrapiTraitDAO traitDAO) {
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormBrapiTraits getResponse;    
+        ResponseFormBrapiTraits getResponse;
         ArrayList<BrapiTrait> traits = traitDAO.allPaginate();
         if (traits == null) {
             getResponse = new ResponseFormBrapiTraits(0, 0, traits, true);

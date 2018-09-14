@@ -215,7 +215,7 @@ public class SPARQLQueryBuilder extends SPARQLStringBuilder {
     public void clearGroupBy() {
         groupBy = null;
     }
-    
+
     public void clearOrderBy() {
         orderBy = null;
     }

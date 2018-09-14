@@ -60,30 +60,35 @@ public class MethodDaoSesame extends DAOSesame<Method> {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
         query.appendGraph(Contexts.VARIABLES.toString());
-        String traitURI;
+        String methodUri;
+        
         if (uri != null) {
-            traitURI = "<" + uri + ">";
+            methodUri = "<" + uri + ">";
         } else {
-            traitURI = "?uri";
+            methodUri = "?uri";
             query.appendSelect("?uri");
         }
-        query.appendTriplet(traitURI, Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_METHOD.toString(), null);
+        
+        query.appendTriplet(methodUri, Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_METHOD.toString(), null);
         
         if (label != null) {
-            query.appendTriplet(traitURI, Rdfs.RELATION_LABEL.toString(),"\"" + label + "\"", null);
+            query.appendTriplet(methodUri, Rdfs.RELATION_LABEL.toString(),"\"" + label + "\"", null);
         } else {
-            query.appendSelect(" ?label");
-            query.appendTriplet(traitURI, Rdfs.RELATION_LABEL.toString(), "?label", null);
+            query.appendSelect(" ?" + LABEL);
+            query.appendTriplet(methodUri, Rdfs.RELATION_LABEL.toString(), "?" + LABEL, null);
         }
         
         if (comment != null) {
-            query.appendTriplet(traitURI, Rdfs.RELATION_COMMENT.toString(), "\"" + comment + "\"", null);
+            query.appendTriplet(methodUri, Rdfs.RELATION_COMMENT.toString(), "\"" + comment + "\"", null);
         } else {
-            query.appendSelect(" ?comment");
-            query.appendTriplet(traitURI, Rdfs.RELATION_COMMENT.toString(), " ?comment", null);
+            query.appendSelect(" ?" + COMMENT);
+            query.beginBodyOptional();
+            query.appendToBody(methodUri + " <" + Rdfs.RELATION_COMMENT.toString() + "> " + "?" + COMMENT + " . ");
+            query.endBodyOptional();
         }
         
         LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+
         return query;
     }
 
@@ -184,7 +189,9 @@ public class MethodDaoSesame extends DAOSesame<Method> {
         spql.appendGraphURI(Vocabulary.CONCEPT_VARIABLE.toString());
         spql.appendTriplet(methodDTO.getUri(), Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_METHOD.toString(), null);
         spql.appendTriplet(methodDTO.getUri(), Rdfs.RELATION_LABEL.toString(), "\"" + methodDTO.getLabel() + "\"", null);
-        spql.appendTriplet(methodDTO.getUri(), Rdfs.RELATION_COMMENT.toString(), "\"" + methodDTO.getComment() + "\"", null);
+        if (methodDTO.getComment() != null) {
+            spql.appendTriplet(methodDTO.getUri(), Rdfs.RELATION_COMMENT.toString(), "\"" + methodDTO.getComment() + "\"", null);
+        }
         
         for (OntologyReference ontologyReference : methodDTO.getOntologiesReferences()) {
             spql.appendTriplet(methodDTO.getUri(), ontologyReference.getProperty(), ontologyReference.getObject(), null);
@@ -329,8 +336,8 @@ public class MethodDaoSesame extends DAOSesame<Method> {
                 
                 if (comment != null) {
                     method.setComment(comment);
-                } else {
-                    method.setComment(bindingSet.getValue("comment").stringValue());
+                } else if (bindingSet.getValue(COMMENT) != null) {
+                    method.setComment(bindingSet.getValue(COMMENT).stringValue());
                 }
                 
                 //On récupère maintenant la liste des références vers des ontologies... 

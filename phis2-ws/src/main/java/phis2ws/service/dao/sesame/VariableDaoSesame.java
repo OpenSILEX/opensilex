@@ -1,13 +1,9 @@
 //**********************************************************************************************
 //                                       VariableDaoSesame.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
+// SILEX-PHIS
+// Copyright © INRA 2018
 // Creation date: November, 16 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  November, 16 2017
-// Subject: A specific DAO to retreive data on variables
 //***********************************************************************************************
 package phis2ws.service.dao.sesame;
 
@@ -45,13 +41,21 @@ import phis2ws.service.view.model.phis.Trait;
 import phis2ws.service.view.model.phis.Unit;
 import phis2ws.service.view.model.phis.Variable;
 
+/**
+ * This class is a DAO for annotation.
+ * It manages operation on variables in the triplestore.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class VariableDaoSesame extends DAOSesame<Variable> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(VariableDaoSesame.class);
     
     public String trait;
+    protected static final String TRAIT = "trait";
     public String method;
+    protected static final String METHOD = "method";
     public String unit;
+    protected static final String UNIT = "unit";
     public String uri;
     public String label;
     public String comment;
@@ -68,13 +72,15 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
         //\SILEX:todo
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
+        
         query.appendGraph(Contexts.VARIABLES.toString());
+        
         String variableURI;
         if (uri != null) {
             variableURI = "<" + uri + ">";
         } else {
-            variableURI = "?uri";
-            query.appendSelect("?uri");
+            variableURI = "?" + URI;
+            query.appendSelect("?" + URI);
         }
         query.appendTriplet(variableURI, Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_VARIABLE.toString(), null);
         
@@ -88,8 +94,10 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
         if (comment != null) {
             query.appendTriplet(variableURI, Rdfs.RELATION_COMMENT.toString(), "\"" + comment + "\"", null);
         } else {
-            query.appendSelect(" ?comment");
-            query.appendTriplet(variableURI, Rdfs.RELATION_COMMENT.toString(), " ?comment", null);
+            query.appendSelect(" ?" + COMMENT);
+            query.beginBodyOptional();
+            query.appendToBody(variableURI + " <" + Rdfs.RELATION_COMMENT.toString() + "> " + "?" + COMMENT + " . ");
+            query.endBodyOptional();
         }
         
         if (trait != null) {
@@ -124,9 +132,9 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
     private SPARQLQueryBuilder prepareGetLastId() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         
-        query.appendSelect("?uri");
+        query.appendSelect("?" + URI);
         query.appendTriplet("?uri", Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_VARIABLE.toString(), null);
-        query.appendOrderBy("DESC(?uri)");
+        query.appendOrderBy("DESC(?" + URI + ")");
         query.appendLimit(1);
         
         return query;
@@ -164,7 +172,7 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
         
         if (result.hasNext()) {
             BindingSet bindingSet = result.next();
-            uriVariable = bindingSet.getValue("uri").stringValue();
+            uriVariable = bindingSet.getValue(URI).stringValue();
         }
         
         if (uriVariable == null) {
@@ -269,7 +277,7 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
             VariableDTO variableDTO = iteratorVariablesDTO.next();
             
             variableDTO.setUri(uriGenerator.generateNewInstanceUri(Vocabulary.CONCEPT_VARIABLE.toString(), null, null));
-            
+
             //Enregistrement dans le triplestore
             SPARQLUpdateBuilder spqlInsert = prepareInsertQuery(variableDTO);
             try {
@@ -283,7 +291,7 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
                 this.setConnection(rep.getConnection());
                 this.getConnection().begin();
                 Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spqlInsert.toString());
-                LOGGER.trace(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
+                LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                 prepareUpdate.execute();
                 //\SILEX:test
 
@@ -376,40 +384,40 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
                 if (uri != null) {
                     variable.setUri(uri);
                 } else {
-                    variable.setUri(bindingSet.getValue("uri").stringValue());
+                    variable.setUri(bindingSet.getValue(URI).stringValue());
                 }
                 
                 if (label != null) {
                     variable.setLabel(label);
                 } else {
-                    variable.setLabel(bindingSet.getValue("label").stringValue());
+                    variable.setLabel(bindingSet.getValue(LABEL).stringValue());
                 }
                 
                 if (comment != null) {
                     variable.setComment(comment);
-                } else {
-                    variable.setComment(bindingSet.getValue("comment").stringValue());
+                } else if (bindingSet.getValue(COMMENT) != null) {
+                    variable.setComment(bindingSet.getValue(COMMENT).stringValue());
                 }
                 
                 TraitDaoSesame traitDaoSesame = new TraitDaoSesame();
                 if (trait != null) {
                     traitDaoSesame.uri = trait;
                 } else {
-                    traitDaoSesame.uri = bindingSet.getValue("trait").stringValue();
+                    traitDaoSesame.uri = bindingSet.getValue(TRAIT).stringValue();
                 }
                 
                 MethodDaoSesame methodDaoSesame = new MethodDaoSesame();
                 if (method != null) {
                     methodDaoSesame.uri = method;
                 } else {
-                    methodDaoSesame.uri = bindingSet.getValue("method").stringValue();
+                    methodDaoSesame.uri = bindingSet.getValue(METHOD).stringValue();
                 }
                 
                 UnitDaoSesame unitDaoSesame = new UnitDaoSesame();
                 if (unit != null) {
                     unitDaoSesame.uri = unit;
                 } else {
-                    unitDaoSesame.uri = bindingSet.getValue("unit").stringValue();
+                    unitDaoSesame.uri = bindingSet.getValue(UNIT).stringValue();
                 }
                 
                 //On récupère maintenant la liste des références vers des ontologies... 
@@ -490,8 +498,8 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
                         this.getConnection().begin();
                         Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery);
                         Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, queryInsert.toString());
-                        LOGGER.trace(getTraceabilityLogs() + " query : " + prepareDelete.toString());
-                        LOGGER.trace(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
+                        LOGGER.debug(getTraceabilityLogs() + " query : " + prepareDelete.toString());
+                        LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                         prepareDelete.execute();
                         prepareUpdate.execute();
 

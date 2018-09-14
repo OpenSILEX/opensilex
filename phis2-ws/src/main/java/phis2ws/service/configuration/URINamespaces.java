@@ -13,14 +13,9 @@ import java.util.Map;
 
 /**
  * Personal parameters for global usage.
- * G_URI :
- *      - M3P URI for further use so that we don"t need to repeat paths in each page
- * Usage :
- * ~~~~~~ URINamespaces uris = new URINamespaces("m3p");
- * ~~~~~~ String vocabulary = URINamespaces.getContextsProperty("pVocaPlateform"
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
- * @author Isabelle Nembrot <i.nembrot@laposte.net>
  * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @update [Morgane Vidal] 12 Sept, 2018 : remove ontologies references (moved in the ontologies package)
  */
 public class URINamespaces {
     // Add additionnal custom users namespaces to triplestore based namespace. e.g. platform => http://www.phenome-fppn.fr/platform/

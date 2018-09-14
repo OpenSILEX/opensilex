@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.authentication.TokenManager;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
+import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.model.User;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
@@ -59,6 +60,10 @@ public abstract class DAOSesame<T> {
     protected static final String URI = "uri";
     protected static final String RDF_TYPE = "rdfType";
     protected static final String LABEL = "label";
+    protected static final String COMMENT = "comment";
+    
+    //Triplestore relations
+    protected final static URINamespaces ONTOLOGIES = new URINamespaces();
 
     protected static Repository rep;
     private RepositoryConnection connection;

@@ -63,8 +63,8 @@ public class TraitDaoSesame extends DAOSesame<Trait> {
         if (uri != null) {
             traitURI = "<" + uri + ">";
         } else {
-            traitURI = "?uri";
-            query.appendSelect("?uri");
+            traitURI = "?" + URI;
+            query.appendSelect("?" + URI);
         }
         query.appendTriplet(traitURI, Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_TRAIT.toString(), null);
         
@@ -78,8 +78,12 @@ public class TraitDaoSesame extends DAOSesame<Trait> {
         if (comment != null) {
             query.appendTriplet(traitURI, Rdfs.RELATION_COMMENT.toString(), "\"" + comment + "\"", null);
         } else {
-            query.appendSelect(" ?comment");
-            query.appendTriplet(traitURI, Rdfs.RELATION_COMMENT.toString(), " ?comment", null);
+            query.appendSelect(" ?" + COMMENT);
+            query.beginBodyOptional();
+            query.appendToBody(traitURI + " <" + Rdfs.RELATION_COMMENT.toString() + "> " + "?" + COMMENT + " . ");
+            query.endBodyOptional();
+            
+            
         }
         
         LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
@@ -121,7 +125,7 @@ public class TraitDaoSesame extends DAOSesame<Trait> {
         
         if (result.hasNext()) {
             BindingSet bindingSet = result.next();
-            uriTrait = bindingSet.getValue("uri").stringValue();
+            uriTrait = bindingSet.getValue(URI).stringValue();
         }
         
         if (uriTrait == null) {
@@ -297,19 +301,19 @@ public class TraitDaoSesame extends DAOSesame<Trait> {
                 if (uri != null) {
                     trait.setUri(uri);
                 } else {
-                    trait.setUri(bindingSet.getValue("uri").stringValue());
+                    trait.setUri(bindingSet.getValue(URI).stringValue());
                 }
                 
                 if (label != null) {
                     trait.setLabel(label);
                 } else {
-                    trait.setLabel(bindingSet.getValue("label").stringValue());
+                    trait.setLabel(bindingSet.getValue(LABEL).stringValue());
                 }
                 
                 if (comment != null) {
                     trait.setComment(comment);
-                } else {
-                    trait.setComment(bindingSet.getValue("comment").stringValue());
+                } else if (bindingSet.getValue(COMMENT) != null) {
+                    trait.setComment(bindingSet.getValue(COMMENT).stringValue());
                 }
                 
                 //On récupère maintenant la liste des références vers des ontologies... 
@@ -379,8 +383,8 @@ public class TraitDaoSesame extends DAOSesame<Trait> {
                         this.getConnection().begin();
                         Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery);
                         Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, queryInsert.toString());
-                        LOGGER.trace(getTraceabilityLogs() + " query : " + prepareDelete.toString());
-                        LOGGER.trace(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
+                        LOGGER.debug(getTraceabilityLogs() + " query : " + prepareDelete.toString());
+                        LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                         prepareDelete.execute();
                         prepareUpdate.execute();
 

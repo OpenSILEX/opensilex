@@ -73,10 +73,10 @@ public class MethodResourceService {
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                          dataType = "string", paramType = "header",
-                          value = DocumentationAnnotation.ACCES_TOKEN,
-                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

@@ -63,7 +63,6 @@ public class PropertyDTO extends AbstractVerifiedClass {
         this.relation = relation;
     }
     
-    @URL
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SPECIES_URI)
     public String getValue() {

@@ -59,27 +59,30 @@ public class UnitDaoSesame extends DAOSesame<Unit> {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
         query.appendGraph(Contexts.VARIABLES.toString());
-        String traitURI;
+        String unitUri;
+        
         if (uri != null) {
-            traitURI = "<" + uri + ">";
+            unitUri = "<" + uri + ">";
         } else {
-            traitURI = "?uri";
+            unitUri = "?uri";
             query.appendSelect("?uri");
         }
-        query.appendTriplet(traitURI, Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_UNIT.toString(), null);
+        query.appendTriplet(unitUri, Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_UNIT.toString(), null);
         
         if (label != null) {
-            query.appendTriplet(traitURI, Rdfs.RELATION_LABEL.toString(),"\"" + label + "\"", null);
+            query.appendTriplet(unitUri, Rdfs.RELATION_LABEL.toString(),"\"" + label + "\"", null);
         } else {
             query.appendSelect(" ?label");
-            query.appendTriplet(traitURI, Rdfs.RELATION_LABEL.toString(), "?label", null);
+            query.appendTriplet(unitUri, Rdfs.RELATION_LABEL.toString(), "?label", null);
         }
         
         if (comment != null) {
-            query.appendTriplet(traitURI, Rdfs.RELATION_COMMENT.toString(), "\"" + comment + "\"", null);
+            query.appendTriplet(unitUri, Rdfs.RELATION_COMMENT.toString(), "\"" + comment + "\"", null);
         } else {
-            query.appendSelect(" ?comment");
-            query.appendTriplet(traitURI, Rdfs.RELATION_COMMENT.toString(), " ?comment", null);
+            query.appendSelect(" ?" + COMMENT);
+            query.beginBodyOptional();
+            query.appendToBody(unitUri + " <" + Rdfs.RELATION_COMMENT.toString() + "> " + "?" + COMMENT + " . ");
+            query.endBodyOptional();
         }
         
         LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
@@ -179,7 +182,9 @@ public class UnitDaoSesame extends DAOSesame<Unit> {
         spql.appendGraphURI(Contexts.VARIABLES.toString());
         spql.appendTriplet(unitDTO.getUri(), Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_UNIT.toString(), null);
         spql.appendTriplet(unitDTO.getUri(), Rdfs.RELATION_LABEL.toString(), "\"" + unitDTO.getLabel() + "\"", null);
-        spql.appendTriplet(unitDTO.getUri(), Rdfs.RELATION_COMMENT.toString(), "\"" + unitDTO.getComment() + "\"", null);
+        if (unitDTO.getComment() != null) {
+            spql.appendTriplet(unitDTO.getUri(), Rdfs.RELATION_COMMENT.toString(), "\"" + unitDTO.getComment() + "\"", null);
+        }
         
         for (OntologyReference ontologyReference : unitDTO.getOntologiesReferences()) {
             spql.appendTriplet(unitDTO.getUri(), ontologyReference.getProperty(), ontologyReference.getObject(), null);
@@ -323,8 +328,8 @@ public class UnitDaoSesame extends DAOSesame<Unit> {
                 
                 if (comment != null) {
                     unit.setComment(comment);
-                } else {
-                    unit.setComment(bindingSet.getValue("comment").stringValue());
+                } else if (bindingSet.getValue(COMMENT) != null) {
+                    unit.setComment(bindingSet.getValue(COMMENT).stringValue());
                 }
                 
                 //On récupère maintenant la liste des références vers des ontologies... 

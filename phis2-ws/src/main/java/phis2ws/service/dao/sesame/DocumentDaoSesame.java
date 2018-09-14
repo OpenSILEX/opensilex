@@ -1,14 +1,44 @@
-//**********************************************************************************************
-//                                       DocumentsDaoSesame.java 
-//
-// Author(s): Arnaud Charleroy, Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2016
-// Creation date: august 2016
-// Contact:arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  October, 12 2017 (add status on documents : linked/unlinked)
-// Subject: A Dao specific to insert the metadata of a document inside the triplestore
-//***********************************************************************************************
+//******************************************************************************
+//                                       DocumentsDaoSesame.java
+// SILEX-PHIS
+// Copyright © INRA 2016
+// Creation date: Aug, 2016
+// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, 
+//          pascal.neveu@inra.fr
+//******************************************************************************
+package phis2ws.service.dao.sesame;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.MalformedQueryException;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.Update;
+import org.eclipse.rdf4j.repository.RepositoryException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import phis2ws.service.configuration.SortingValues;
+import phis2ws.service.configuration.URINamespaces;
+import phis2ws.service.dao.manager.DAOSesame;
+import phis2ws.service.dao.mongo.DocumentDaoMongo;
+import phis2ws.service.dao.phis.ExperimentDao;
+import phis2ws.service.dao.phis.UserDaoPhisBrapi;
+import phis2ws.service.documentation.StatusCodeMsg;
+import phis2ws.service.model.User;
+import phis2ws.service.resources.dto.ConcernItemDTO;
+import phis2ws.service.resources.dto.DocumentMetadataDTO;
+import phis2ws.service.utils.POSTResultsReturn;
+import phis2ws.service.utils.ResourcesUtils;
+import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
+import phis2ws.service.utils.sparql.SPARQLUpdateBuilder;
+import phis2ws.service.view.brapi.Status;
+import phis2ws.service.view.model.phis.Document;
+import phis2ws.service.view.model.phis.Experiment;
 
 //SILEX:warning
 //After the update of the June 12, 2018 document's metadata are inserted inside 
@@ -20,57 +50,56 @@
 //dont add the triplet (element rdf:type elementType). It allows more genericity
 //but might need to be updated in the future
 //\SILEX:conception
-package phis2ws.service.dao.sesame;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import org.eclipse.rdf4j.query.BindingSet;
-import org.eclipse.rdf4j.query.MalformedQueryException;
-import org.eclipse.rdf4j.query.QueryEvaluationException;
-import org.eclipse.rdf4j.query.QueryLanguage;
-import org.eclipse.rdf4j.query.TupleQuery;
-import org.eclipse.rdf4j.query.TupleQueryResult;
-import org.eclipse.rdf4j.query.Update;
-import org.eclipse.rdf4j.repository.RepositoryException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import phis2ws.service.configuration.URINamespaces;
-import phis2ws.service.dao.manager.DAOSesame;
-import phis2ws.service.dao.mongo.DocumentDaoMongo;
-import phis2ws.service.dao.phis.ExperimentDao;
-import phis2ws.service.dao.phis.UserDaoPhisBrapi;
-import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.model.User;
-import phis2ws.service.resources.dto.ConcernItemDTO;
-import phis2ws.service.resources.dto.DocumentMetadataDTO;
-import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
-import phis2ws.service.utils.POSTResultsReturn;
-import phis2ws.service.utils.ResourcesUtils;
-import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
-import phis2ws.service.utils.sparql.SPARQLUpdateBuilder;
-import phis2ws.service.view.brapi.Status;
-import phis2ws.service.view.model.phis.Document;
-import phis2ws.service.view.model.phis.Experiment;
-
+/**
+ * A Dao specific to insert the metadata of a document inside the triplestore.
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
+ * @update [Morgane Vidal] 12 October, 2017 : add status on documents : linked/unlinked
+ */
 public class DocumentDaoSesame extends DAOSesame<Document> {
     final static Logger LOGGER = LoggerFactory.getLogger(DocumentDaoSesame.class);
     public String uri;
+    public static final String URI = "documentUri";
+    
     public String documentType;
+    public static final String DOCUMENT_TYPE = "documentType";
+    
     public String creator;
+    public static final String CREATOR = "creator";
+    
     public String language;
+    public static final String LANGUAGE = "language";
+    
     public String title;
+    public static final String TITLE = "title";
+    
     public String creationDate;
+    public static final String CREATION_DATE = "creationDate";
+    
     public String format;
+    public static final String FORMAT = "format";
+    
     public String comment;
+    public static final String COMMENT = "comment";
+    public static final String COMMENTS = "comments";
+
+    /**
+     * Sort document by date
+     * Allowable values : asc, desc
+     */
+    public String sortByDate;
+    
     //List of the elements concerned by the document
     public List<String> concernedItemsUris = new ArrayList<>();
+    public static final String CONCERN = "concern";
+    public static final String CONCERN_TYPE = "concernType";
+    
     //Document's status. Equals to linked if the document has been linked to at 
     //least one element (concernedItems). Unlinked if the document isnt linked 
     //to any element
     public String status;
-    
+    public static final String STATUS = "status";
+            
     /**
      * Triplestore relations, graph, context, concept labels  
      * @see https://www.w3.org/TR/rdf-schema/ 
@@ -146,7 +175,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
     }
     
     /**
-     * save the document in mongodb
+     * Save the document in mongodb
      * @param filePath the file path of the document to save in mongodb
      * @return true document saved in mongodb
      *         false an error occurred
@@ -157,7 +186,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
     }
     
     /**
-     * generate a unique document uri. 
+     * Generate a unique document uri. 
      * @see phis2ws.service.utils.ResourcesUtils#getUniqueID() 
      * @return the generated document's uri
      */
@@ -178,7 +207,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
     }
 
     /**
-     * insert document's metadata in the triplestore and the file in mongo
+     * Insert document's metadata in the triplestore and the file in mongo
      * @param documentsMetadata
      * @return the insert result, with each error or information
      */
@@ -275,9 +304,9 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
             results.createdResources = createdResourcesURIs;
             results.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, createdResourcesURIs.size() + " new resource(s) created."));
         }
-
         return results;
     }
+    
     /**
      * Return the list of documents types Retourne les types de documents disponibles
      * @return List de concepts de document 
@@ -289,78 +318,108 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         ArrayList<String> documentsSchemasUri = new ArrayList<>();
         SPARQLQueryBuilder sparqlQ = new SPARQLQueryBuilder();
         sparqlQ.appendDistinct(true);
-        sparqlQ.appendSelect("?documentType");
-        sparqlQ.appendTriplet("?documentType", "rdfs:subClassOf*", TRIPLESTORE_CONCEPT_DOCUMENT, null);
-        sparqlQ.appendFilter("?documentType != <" + TRIPLESTORE_CONCEPT_DOCUMENT +">");
+        sparqlQ.appendSelect("?" + DOCUMENT_TYPE);
+        sparqlQ.appendTriplet("?" + DOCUMENT_TYPE, "rdfs:subClassOf*", TRIPLESTORE_CONCEPT_DOCUMENT, null);
+        sparqlQ.appendFilter("?" + DOCUMENT_TYPE + " != <" + TRIPLESTORE_CONCEPT_DOCUMENT +">");
         LOGGER.debug(sparqlQ.toString());
         TupleQuery tupleQueryTo = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQ.toString());
         
         try (TupleQueryResult resultTo = tupleQueryTo.evaluate()) {
             while (resultTo.hasNext()) {
                 BindingSet bindingSet = resultTo.next();
-                if (bindingSet.getValue("documentType") != null) {
-                    documentsSchemasUri.add(bindingSet.getValue("documentType").stringValue());
+                if (bindingSet.getValue(DOCUMENT_TYPE) != null) {
+                    documentsSchemasUri.add(bindingSet.getValue(DOCUMENT_TYPE).stringValue());
                 }
             }
         }
         return documentsSchemasUri;
     }
-
+    /**
+     * @example
+     * SELECT DISTINCT  ?documentUri ?documentType ?creator ?title ?creationDate ?format ?status (GROUP_CONCAT(DISTINCT ?comment; SEPARATOR=",") AS ?comments) WHERE {
+     * GRAPH <http://www.phenome-fppn.fr/phis2/documents> { ?documentUri  rdf:type  ?documentType  . 
+     *  ?documentUri  dc:creator  ?creator  . 
+     *  ?documentUri  dc:language  "en"  . 
+     *  ?documentUri  dc:title  ?title  . 
+     *  ?documentUri  dc:date  ?creationDate  . 
+     *  ?documentUri  dc:format  ?format  . 
+     *  ?documentUri  <http://www.phenome-fppn.fr/vocabulary/2017#status>  ?status  . 
+     *  ?documentUri  rdfs:comment  ?comment  . 
+     * FILTER ( (regex(STR(?creator), 'admin', 'i')) && (regex(STR(?title), 'liste', 'i')) ) 
+     * }}
+     * GROUP BY  ?documentUri ?documentType ?creator ?title ?creationDate ?format ?status 
+     * ORDER BY DESC(?creationDate) 
+     * LIMIT 20 
+     * OFFSET 0 
+     * @return the query
+     */
     @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
-       SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
-       sparqlQuery.appendPrefix("dc", TRIPLESTORE_PREFIX_DUBLIN_CORE);
-       sparqlQuery.appendDistinct(true);
-       sparqlQuery.appendGraph(TRIPLESTORE_GRAPH_DOCUMENT);
-       String select;
-       if (uri != null) {
-           select = "<" + uri + ">";
-           sparqlQuery.appendSelect("");
-       } else {
-           select = "?documentUri";
-           sparqlQuery.appendSelect(select);
-       }
+        SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
+        sparqlQuery.appendPrefix("dc", TRIPLESTORE_PREFIX_DUBLIN_CORE);
+        sparqlQuery.appendDistinct(true);
+        sparqlQuery.appendGraph(TRIPLESTORE_GRAPH_DOCUMENT);
+        String select;
+        if (uri != null) {
+            select = "<" + uri + ">";
+        } else {
+            select = "?" + URI;
+            sparqlQuery.appendSelect(select);
+            sparqlQuery.appendGroupBy(select);
+        }
 
         if (documentType != null) {
              sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_TYPE, documentType, null);
         } else {
-            sparqlQuery.appendSelect(" ?documentType");
-            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_TYPE, "?documentType", null);
+            sparqlQuery.appendGroupBy("?" + DOCUMENT_TYPE);
+            sparqlQuery.appendSelect("?" + DOCUMENT_TYPE);
+            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_TYPE, "?" + DOCUMENT_TYPE, null);
         }
         
         if (creator != null) {
-            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_CREATOR, "\"" + creator + "\"", null);
+            sparqlQuery.appendGroupBy("?" + CREATOR);
+            sparqlQuery.appendSelect("?" + CREATOR);
+            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_CREATOR, "?" + CREATOR, null);
+            sparqlQuery.appendAndFilter("regex(STR(?" + CREATOR +"), '" + creator + "', 'i')");
         } else {
-            sparqlQuery.appendSelect(" ?creator");
-            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_CREATOR, "?creator", null);
+            sparqlQuery.appendGroupBy("?" + CREATOR);
+            sparqlQuery.appendSelect("?" + CREATOR);
+            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_CREATOR, "?" + CREATOR, null);
         }
         
         if (language != null) {
             sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_LANGUGAGE, "\"" + language + "\"", null);
         } else {
-            sparqlQuery.appendSelect(" ?language");
-            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_LANGUGAGE, "?language", null);
+            sparqlQuery.appendGroupBy("?" + LANGUAGE);
+            sparqlQuery.appendSelect("?" + LANGUAGE);
+            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_LANGUGAGE, "?" + LANGUAGE, null);
         }
         
         if (title != null) {
-            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_TITLE, "\"" + title + "\"", null);
+            sparqlQuery.appendGroupBy("?" + TITLE);
+            sparqlQuery.appendSelect("?" + TITLE);
+            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_TITLE, "?" + TITLE, null);
+            sparqlQuery.appendAndFilter("regex(STR(?" + TITLE +"), '" + title + "', 'i')");
         } else {
-            sparqlQuery.appendSelect(" ?title");
-            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_TITLE, "?title", null);
+            sparqlQuery.appendGroupBy("?" + TITLE);
+            sparqlQuery.appendSelect("?" + TITLE);
+            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_TITLE, "?" + TITLE, null);
         }
         
         if (creationDate != null) {
             sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_DATE, "\"" + creationDate + "\"", null);
         } else {
-            sparqlQuery.appendSelect(" ?date");
-            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_DATE, "?date", null);
+            sparqlQuery.appendGroupBy("?" + CREATION_DATE);
+            sparqlQuery.appendSelect("?" + CREATION_DATE);
+            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_DATE, "?" + CREATION_DATE, null);
         }
         
         if (format != null) {
             sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_FORMAT, "\"" + format + "\"", null);
         } else {
-            sparqlQuery.appendSelect(" ?format");
-            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_FORMAT, "?format", null);
+            sparqlQuery.appendGroupBy("?" + FORMAT);
+            sparqlQuery.appendSelect("?" + FORMAT);
+            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_FORMAT, "?" + FORMAT, null);
         }
         
         if (!concernedItemsUris.isEmpty() && concernedItemsUris.size() > 0) {
@@ -372,33 +431,38 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         if (status != null) {
             sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_STATUS, "\"" + status + "\"", null);
         } else {
-            sparqlQuery.appendSelect(" ?status");
-            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_STATUS, "?status", null);
+            sparqlQuery.appendGroupBy("?" + STATUS);
+            sparqlQuery.appendSelect("?" + STATUS);
+            sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_STATUS, "?" + STATUS, null);
         }
         
-       LOGGER.debug("sparql select query : " + sparqlQuery.toString());
+        //SILEX:info
+        // Add group concat to prevent multiple triplestore requests
+        // the query return a list with comma separated value in one column
+        //\SILEX:info
+        sparqlQuery.appendSelectConcat("?" + COMMENT, SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR, "?" + COMMENTS);
+        sparqlQuery.appendTriplet(select, TRIPLESTORE_RELATION_COMMENT, "?" + COMMENT, null);
+        if (comment != null) {
+            sparqlQuery.appendFilter("regex(STR(?" + COMMENT +"), '" + comment + "', 'i')");
+        }
         
-       return sparqlQuery;
-    }
-    
-    /**
-     * prepare the query to search the comments of a document
-     * @param uriDocument
-     * @return the document's comments search query
-     */
-    private SPARQLQueryBuilder prepareSearchCommentQuery(String uriDocument) {
-        SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
-        sparqlQuery.appendDistinct(true);
-        sparqlQuery.appendGraph(TRIPLESTORE_GRAPH_DOCUMENT);
-        sparqlQuery.appendSelect("?comment");
-        sparqlQuery.appendTriplet(uriDocument, TRIPLESTORE_RELATION_COMMENT, "?comment", null);
+        if (sortByDate != null) {
+            sparqlQuery.appendOrderBy(sortByDate.toUpperCase() + "(?" + CREATION_DATE + ")");
+        } else {
+            // Use by default DESC if the sortByDate parameter is null
+            sparqlQuery.appendOrderBy(SortingValues.DESC.toString().toUpperCase() + "(?" + CREATION_DATE + ")");
+        }
+        
+        sparqlQuery.appendLimit(this.getPageSize());
+        sparqlQuery.appendOffset(this.getPage() * this.getPageSize());
         
         LOGGER.debug("sparql select query : " + sparqlQuery.toString());
+        
         return sparqlQuery;
     }
     
     /**
-     * prepare the query to search the elements which are concerned by the document
+     * Prepare the query to search the elements which are concerned by the document
      * @param uriDocument
      * @return the search query
      */
@@ -407,25 +471,73 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         sparqlQuery.appendDistinct(true);
         sparqlQuery.appendGraph(TRIPLESTORE_GRAPH_DOCUMENT);
 
-        sparqlQuery.appendSelect(" ?concern ?typeConcern");
-        sparqlQuery.appendTriplet(uriDocument, TRIPLESTORE_RELATION_CONCERN, "?concern", null);
-        sparqlQuery.appendTriplet("?concern", TRIPLESTORE_RELATION_TYPE, "?typeConcern", null);
+        sparqlQuery.appendSelect(" ?" + CONCERN  + " ?" + CONCERN_TYPE );
+        sparqlQuery.appendTriplet(uriDocument, TRIPLESTORE_RELATION_CONCERN, "?" + CONCERN, null);
+        sparqlQuery.appendTriplet("?" + CONCERN, TRIPLESTORE_RELATION_TYPE, "?" + CONCERN_TYPE, null);
 
         LOGGER.debug("sparql select query : " + sparqlQuery.toString());
 
         return sparqlQuery;
     }
 
-    @Override
-    public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+     /**
+     * Count query generated by the searched parameters (class attributes)
+ (uri, documentType, creator, language, title, creationDate, format, comment, sortByDate). 
+     * Must be done to find the total of instances
+     * found in the triplestore using these search parameters because the query
+     * is paginated (reduce the amount of data retrieved and the time to process
+     * data before to send it to the client) 
+     * @example
+     * SELECT (COUNT(DISTINCT ?documentUri) as ?count) WHERE {
+     * GRAPH <http://www.phenome-fppn.fr/phis2/documents> { 
+     *  ?documentUri  rdf:type  ?documentType  . 
+     *  ?documentUri  dc:creator  ?creator  . 
+     *  ?documentUri  dc:language  "en"  . 
+     *  ?documentUri  dc:title  ?title  . 
+     *  ?documentUri  dc:date  ?creationDate  . 
+     *  ?documentUri  dc:format  ?format  . 
+     *  ?documentUri  <http://www.phenome-fppn.fr/vocabulary/2017#status>  ?status  . 
+     *  ?documentUri  rdfs:comment  ?comment  . 
+     * FILTER ( (regex(STR(?creator), 'admin', 'i')) && (regex(STR(?title), 'liste', 'i')) ) 
+     * }}
+     * @return query generated with the searched parameters
+     */
+    private SPARQLQueryBuilder prepareCount() {
+        SPARQLQueryBuilder query = this.prepareSearchQuery();
+        query.clearSelect();
+        query.clearLimit();
+        query.clearOffset();
+        query.clearGroupBy();
+        query.clearOrderBy();
+        query.appendSelect("( COUNT( DISTINCT ?" + URI + " ) as ?" + COUNT_ELEMENT_QUERY + " )");
+        LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
+        return query;
     }
     
     /**
-     * check if the given user has the right to see the document
+     * @return number of total annotation returned with the search fields
+     * @inheritdoc
+     */
+    @Override
+    public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
+        SPARQLQueryBuilder prepareCount = prepareCount();
+        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
+        Integer count = 0;
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
+            if (result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                count = Integer.parseInt(bindingSet.getValue(COUNT_ELEMENT_QUERY).stringValue());
+            }
+        }
+        return count;
+    }
+    
+    /**
+     * Check if the given user has the right to see the document
      * @param u the user
      * @param document
      * @return true if the user can see the document
+     *         false if not
      */
     private boolean canUserSeeDocument(User u, Document document) {
         UserDaoPhisBrapi userDao = new UserDaoPhisBrapi();
@@ -443,14 +555,13 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
                     }
                 } 
             }
-            
             return false;
         }
     }
     
     /**
-     * 
-     * @return  liste de documents, résultat de la recherche, vide si pas de résultats.
+     * Retreive the list of the searched documents.
+     * @return  a list of documents
      */
     public ArrayList<Document> allPaginate() {
         SPARQLQueryBuilder sparqlQuery = prepareSearchQuery();
@@ -465,82 +576,85 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
                 if (uri != null) {
                     document.setUri(uri);
                 } else {
-                    document.setUri(bindingSet.getValue("documentUri").stringValue());
-                }
-                
-                if (documentType != null) {
-                    document.setDocumentType(documentType);
-                } else {
-                    document.setDocumentType(bindingSet.getValue("documentType").stringValue());
-                }
-                
-                if (creator != null) {
-                    document.setCreator(creator);
-                } else {
-                    document.setCreator(bindingSet.getValue("creator").stringValue());
-                }
-                
-                if (language != null) {
-                    document.setLanguage(language);
-                } else {
-                    document.setLanguage(bindingSet.getValue("language").stringValue());
-                }
-                
-                if (title != null) {
-                    document.setTitle(title);
-                } else {
-                    document.setTitle(bindingSet.getValue("title").stringValue());
-                }
-                
-                if (creationDate != null) {
-                    document.setCreationDate(creationDate);
-                } else {
-                    document.setCreationDate(bindingSet.getValue("date").stringValue());
-                }
-                
-                if (format != null) {
-                    document.setFormat(format);
-                } else {
-                    document.setFormat(bindingSet.getValue("format").stringValue());
-                }
-                
-                if (status != null) {
-                    document.setStatus(status);
-                } else {
-                    document.setStatus(bindingSet.getValue("status").stringValue());
-                }
-
-                //After having metadata, get comments
-                SPARQLQueryBuilder sparqlQueryComment = prepareSearchCommentQuery(document.getUri());
-                TupleQuery tupleQueryComment = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQueryComment.toString());
-                TupleQueryResult resultComment = tupleQueryComment.evaluate();
-                while (resultComment.hasNext()) {
-                    BindingSet bindingSetComment = resultComment.next();
-                    if (bindingSetComment.getValue("comment") != null) {
-                        document.setComment(bindingSetComment.getValue("comment").stringValue());
+                    //SILEX:info
+                    // Group concat on comment may return empty line
+                    // @example
+                    //             DocumentUri	DocumentType	Creator	Title	CreationDate	Format	Status	Comments
+                    // Document 1                                                                                  ""
+                    //SILEX:info
+                    if(bindingSet.getValue(URI) != null){
+                        document.setUri(bindingSet.getValue(URI).stringValue());
                     }
                 }
-
-                //Check if document is linked to other elements
-                SPARQLQueryBuilder sparqlQueryConcern = prepareSearchConcernQuery(document.getUri());
-                TupleQuery tupleQueryConcern = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQueryConcern.toString());
-                TupleQueryResult resultConcern = tupleQueryConcern.evaluate();
-                while (resultConcern.hasNext()) {
-                    BindingSet bindingSetConcern = resultConcern.next();
-                    if (bindingSetConcern.getValue("concern") != null) {
-                        ConcernItemDTO concernedItem = new ConcernItemDTO();
-                        concernedItem.setTypeURI(bindingSetConcern.getValue("typeConcern").stringValue());
-                        concernedItem.setUri(bindingSetConcern.getValue("concern").stringValue());
-                        document.addConcernedItem(concernedItem);
+                // See SILEX:info above
+                if(document.getUri() != null){
+                    if (documentType != null) {
+                        document.setDocumentType(documentType);
+                    } else {
+                        document.setDocumentType(bindingSet.getValue(DOCUMENT_TYPE).stringValue());
                     }
-                }
-                
-                if (canUserSeeDocument(user, document)) {
-                    documents.add(document);
+
+                    document.setCreator(bindingSet.getValue(CREATOR).stringValue());
+
+                    if (language != null) {
+                        document.setLanguage(language);
+                    } else {
+                        document.setLanguage(bindingSet.getValue(LANGUAGE).stringValue());
+                    }
+
+                    document.setTitle(bindingSet.getValue(TITLE).stringValue());
+
+                    if (creationDate != null) {
+                        document.setCreationDate(creationDate);
+                    } else {
+                        document.setCreationDate(bindingSet.getValue(CREATION_DATE).stringValue());
+                    }
+
+                    if (format != null) {
+                        document.setFormat(format);
+                    } else {
+                        document.setFormat(bindingSet.getValue(FORMAT).stringValue());
+                    }
+
+                    if (status != null) {
+                        document.setStatus(status);
+                    } else {
+                        document.setStatus(bindingSet.getValue(STATUS).stringValue());
+                    }
+
+                    if (bindingSet.getValue(COMMENTS) != null) {
+                        //SILEX:info
+                        // concat query return a list with comma separated value in one column
+                        //\SILEX:info
+                        ArrayList<String> comments = new ArrayList<>(Arrays.asList(bindingSet.getValue(COMMENTS).stringValue().split(SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR)));
+                        if (comments != null && !comments.isEmpty()) {
+                            //SILEX:info
+                            // for now only one comment can be linked to document
+                            //\SILEX:info
+                            document.setComment(comments.get(0));
+                        } 
+                    }
+
+                    //Check if document is linked to other elements
+                    SPARQLQueryBuilder sparqlQueryConcern = prepareSearchConcernQuery(document.getUri());
+                    TupleQuery tupleQueryConcern = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQueryConcern.toString());
+                    TupleQueryResult resultConcern = tupleQueryConcern.evaluate();
+                    while (resultConcern.hasNext()) {
+                        BindingSet bindingSetConcern = resultConcern.next();
+                        if (bindingSetConcern.getValue(CONCERN) != null) {
+                            ConcernItemDTO concernedItem = new ConcernItemDTO();
+                            concernedItem.setTypeURI(bindingSetConcern.getValue(CONCERN_TYPE).stringValue());
+                            concernedItem.setUri(bindingSetConcern.getValue(CONCERN).stringValue());
+                            document.addConcernedItem(concernedItem);
+                        }
+                    }
+
+                    if (canUserSeeDocument(user, document)) {
+                        documents.add(document);
+                    }
                 }
             }
         }
-        
         return documents;
     }
     

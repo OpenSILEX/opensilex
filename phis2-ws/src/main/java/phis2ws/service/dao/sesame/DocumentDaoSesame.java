@@ -338,7 +338,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
        String select;
        if (uri != null) {
            select = "<" + uri + ">";
-           sparqlQuery.appendSelect("");
+           sparqlQuery.appendSelect(select);
        } else {
             select = "?" + URI;
             sparqlQuery.appendSelect(select);
@@ -435,7 +435,6 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         sparqlQuery.appendSelect("?comment");
         sparqlQuery.appendTriplet(uriDocument, Rdfs.RELATION_COMMENT.toString(), "?comment", null);
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + sparqlQuery.toString());
         if (sortByDate != null) {
             sparqlQuery.appendOrderBy(sortByDate.toUpperCase() + "(?" + CREATION_DATE + ")");
         } else {
@@ -446,7 +445,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         sparqlQuery.appendLimit(this.getPageSize());
         sparqlQuery.appendOffset(this.getPage() * this.getPageSize());
         
-        LOGGER.debug("sparql select query : " + sparqlQuery.toString());
+        LOGGER.debug(SPARQL_SELECT_QUERY + sparqlQuery.toString());
         
         return sparqlQuery;
     }

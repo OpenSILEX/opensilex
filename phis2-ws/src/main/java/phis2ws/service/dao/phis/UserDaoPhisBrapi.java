@@ -345,7 +345,7 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
             query.appendFrom(table, tableAlias);
             query.appendSelect(sqlFields.get("email"));
             query.appendLimit(String.valueOf(pageSize));
-            query.appendOffset(Integer.toString(this.getPage()* this.getPageSize()));
+            query.appendOffset(Integer.toString(this.getPageForDBQuery() * this.getPageSize()));
 
             queryResult = statement.executeQuery(query.toString());
 
@@ -408,7 +408,7 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
                 query.appendANDWhereConditionIfNeeded(sqlFields.get("uri"), String.valueOf(uri), "=", null, tableAlias);
             }
             query.appendLimit(String.valueOf(pageSize));
-            query.appendOffset(Integer.toString(this.getPage() * this.getPageSize()));
+            query.appendOffset(Integer.toString(this.getPageForDBQuery() * this.getPageSize()));
 
             queryResult = statement.executeQuery(query.toString());
 

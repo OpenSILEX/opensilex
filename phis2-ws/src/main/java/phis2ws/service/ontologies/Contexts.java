@@ -25,21 +25,21 @@ public enum Contexts {
     ANNOTATIONS {
         @Override
         public String toString() {
-            return PLATFORM.toString() + "/set/annotation";
+            return PLATFORM.toString() + "set/annotation";
         }
     },
     //The context which contains all the declared sensors
     SENSORS {
         @Override
         public String toString() {
-            return PLATFORM.toString() + "/sensors";
+            return PLATFORM.toString() + "sensors";
         }
     },
     //The context which contains all the declared documents metadata
     DOCUMENTS {
         @Override
         public String toString() {
-            return PLATFORM.toString() + "/documents";
+            return PLATFORM.toString() + "documents";
         }
     },
     //The context platform. 
@@ -48,21 +48,21 @@ public enum Contexts {
         @Override
         public String toString() {
             return PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "baseURI") 
-                    + PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "platform") + "/";
+                    + PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "infrastructure") + "/";
         }
     },
     //The context which contains the variables, traits, methods and units.
     VARIABLES {
         @Override
         public String toString() {
-            return PLATFORM.toString() + "/variables";
+            return PLATFORM.toString() + "variables";
         }
     },
     //The context which contains the vectors.
     VECTORS {
         @Override
         public String toString() {
-            return PLATFORM.toString() + "/vectors";
+            return PLATFORM.toString() + "vectors";
         }
     },
     //The context which contains the vocabulary ontology

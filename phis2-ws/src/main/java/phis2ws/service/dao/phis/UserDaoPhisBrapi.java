@@ -1,7 +1,7 @@
 //**********************************************************************************************
 //                                       UserDaoPhisBrapi.java 
 // SILEX-PHIS
-// Copyright © INRA 2018
+// Copyright © INRA 2016
 // Creation date: may 2016
 // Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr, 
 //         morgane.vidal@inra.fr
@@ -39,11 +39,11 @@ import phis2ws.service.view.model.phis.Group;
  *
  * @date 05/2016
  * @author Arnaud Charleroy
- * @update [Morgane Vidal] 04/17 suppression des attributs isAdmin, role, type
+ * @update [Morgane Vidal] April, 2017 : suppression des attributs isAdmin, role, type
  * dans la table User ce qui a impliqué la suppression des méthodes isAdmin,
  * getProjectUserType, getUserGroup, getUserRole, getUserExperiment
- * @update [Arnaud Charleroy] 07/18 Add uri generation from e-mail
- *
+ * @update [Arnaud Charleroy] July, 2018 : Add uri generation from e-mail
+ * @update [Arnaud Charleroy] September, 2018 : Pagination fixed
  */
 public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
 
@@ -345,7 +345,7 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
             query.appendFrom(table, tableAlias);
             query.appendSelect(sqlFields.get("email"));
             query.appendLimit(String.valueOf(pageSize));
-            query.appendOffset(Integer.toString(this.getPageForDBQuery() * this.getPageSize()));
+            query.appendOffset(Integer.toString(this.getPage()* this.getPageSize()));
 
             queryResult = statement.executeQuery(query.toString());
 
@@ -408,7 +408,7 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
                 query.appendANDWhereConditionIfNeeded(sqlFields.get("uri"), String.valueOf(uri), "=", null, tableAlias);
             }
             query.appendLimit(String.valueOf(pageSize));
-            query.appendOffset(Integer.toString(this.getPageForDBQuery() * this.getPageSize()));
+            query.appendOffset(Integer.toString(this.getPage() * this.getPageSize()));
 
             queryResult = statement.executeQuery(query.toString());
 

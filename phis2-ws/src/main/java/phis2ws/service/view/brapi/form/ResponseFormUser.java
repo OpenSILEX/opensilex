@@ -26,7 +26,7 @@ public class ResponseFormUser extends ResultForm<User> {
      * @param pageSize results per page
      * @param currentPage current page
      * @param users users results list
-     * @param paginate need to be paginate or not
+     * @param paginate define if the list is paginated or not
      */
     public ResponseFormUser(int pageSize, int currentPage, ArrayList<User> users, boolean paginate) {
         metadata = new Metadata(pageSize, currentPage, users.size());
@@ -42,7 +42,7 @@ public class ResponseFormUser extends ResultForm<User> {
      * @param pageSize results per page
      * @param currentPage current page
      * @param users users results list
-     * @param paginate need to be paginate or not
+     * @param paginate define if the list is paginated or not
      * @param totalCount the number of the items returned by the query
      */
     public ResponseFormUser(int pageSize, int currentPage, ArrayList<User> users, boolean paginate, int totalCount) {

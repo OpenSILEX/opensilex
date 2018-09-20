@@ -57,7 +57,7 @@ import phis2ws.service.view.brapi.form.ResponseFormUser;
  * Represents the user data service.
  * @author Morgane Vidal <morgane.vidal@inra.fr>, Arnaud Charleroy <arnaud.charleroy@inra.fr>
  * @update [Morgane Vidal] April, 2017 : no explanation
- * @update [Arnaud Charleroy] 13 Sept, 2018 : add total count to response object
+ * @update [Arnaud Charleroy] 13 September, 2018 : add total count to response object
  */
 @Api("/user")
 @Path("users")
@@ -322,7 +322,7 @@ public class UserResourceService {
         Integer usersCount = userDao.count();
         
         if (usersCount != null && usersCount == 0) {
-            getResponse = new ResponseFormUser((userDao.getPageSize()), userDao.getPage(), users, true);
+            getResponse = new ResponseFormUser((userDao.getPageSize()), userDao.getPage(), users, false);
             return noResultFound(getResponse, statusList);
         } else {
             users = userDao.allPaginate();
@@ -331,7 +331,7 @@ public class UserResourceService {
                 getResponse = new ResponseFormUser(0, 0, users, true);
                 return sqlError(getResponse, statusList);
             } else if (!users.isEmpty() && usersCount != null) {
-                getResponse = new ResponseFormUser(userDao.getPageSize(), userDao.getPage(), users, false, usersCount);
+                getResponse = new ResponseFormUser(userDao.getPageSize(), userDao.getPage(), users, true, usersCount);
                 if (getResponse.getResult().dataSize() == 0) {
                     return noResultFound(getResponse, statusList);
                 } else {

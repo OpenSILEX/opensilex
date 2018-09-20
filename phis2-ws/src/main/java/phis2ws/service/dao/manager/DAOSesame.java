@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.authentication.TokenManager;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
+import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.model.User;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
@@ -59,6 +60,20 @@ public abstract class DAOSesame<T> {
     protected static final String URI = "uri";
     protected static final String RDF_TYPE = "rdfType";
     protected static final String LABEL = "label";
+    protected static final String COMMENT = "comment";
+    
+    //Triplestore relations
+    protected final static URINamespaces ONTOLOGIES = new URINamespaces();
+    
+    protected final static String TRIPLESTORE_RELATION_BROADER = ONTOLOGIES.getRelationsProperty("rBroader");
+    protected final static String TRIPLESTORE_RELATION_CLOSE_MATCH = ONTOLOGIES.getRelationsProperty("rCloseMatch");
+    protected final static String TRIPLESTORE_RELATION_COMMENT = ONTOLOGIES.getRelationsProperty("comment");
+    protected final static String TRIPLESTORE_RELATION_EXACT_MATCH = ONTOLOGIES.getRelationsProperty("rExactMatch");
+    protected final static String TRIPLESTORE_RELATION_LABEL = ONTOLOGIES.getRelationsProperty("label");
+    protected final static String TRIPLESTORE_RELATION_NARROWER = ONTOLOGIES.getRelationsProperty("rNarrower");
+    protected final static String TRIPLESTORE_RELATION_SEE_ALSO = ONTOLOGIES.getRelationsProperty("seeAlso");
+    protected final static String TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE = ONTOLOGIES.getRelationsProperty("subClassOf*");
+    protected final static String TRIPLESTORE_RELATION_TYPE = ONTOLOGIES.getRelationsProperty("type");
 
     protected static Repository rep;
     private RepositoryConnection connection;

@@ -37,4 +37,21 @@ public class ResponseFormSensor extends ResultForm<Sensor> {
             result = new ResultSensor(list);
         }
     }
+    
+    /**
+     * Initialize fields metadata and result
+     * @param pageSize results per page
+     * @param currentPage current page
+     * @param list results list
+     * @param paginate 
+     * @param totalCount number of result
+     */
+    public ResponseFormSensor(int pageSize, int currentPage, ArrayList<Sensor> list, boolean paginate, int totalCount) {
+        metadata = new Metadata(pageSize, currentPage, totalCount);
+        if (list.size() > 1) {
+            result = new ResultSensor(list, metadata.getPagination(), paginate);
+        } else {
+            result = new ResultSensor(list);
+        }
+    }
 }

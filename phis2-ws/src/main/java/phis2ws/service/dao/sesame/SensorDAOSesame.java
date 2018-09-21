@@ -148,7 +148,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
             query.appendTriplet(sensorUri, Rdf.RELATION_TYPE.toString(), rdfType, null);
         } else {
             query.appendSelect("?" + RDF_TYPE);
-            query.appendTriplet(sensorUri, rdfType, "?" + RDF_TYPE, null);
+            query.appendTriplet(sensorUri, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
             query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_SENSING_DEVICE.toString(), null);
         }        
 

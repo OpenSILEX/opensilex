@@ -23,10 +23,13 @@ import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.dao.phis.UserDaoPhisBrapi;
 import phis2ws.service.documentation.StatusCodeMsg;
+import phis2ws.service.ontologies.Contexts;
+import phis2ws.service.ontologies.Rdf;
+import phis2ws.service.ontologies.Rdfs;
+import phis2ws.service.ontologies.Vocabulary;
 import phis2ws.service.resources.dto.PropertyDTO;
 import phis2ws.service.resources.dto.SensorProfileDTO;
 import phis2ws.service.utils.POSTResultsReturn;
@@ -52,15 +55,6 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
     //The following attributes are used to search sensors in the triplestore
     private final String RELATION = "relation";
     private final String PROPERTY = "property";
-    private final String RDF_TYPE = "rdfType";
-    
-    //Triplestore relations
-    private final static URINamespaces NAMESPACES = new URINamespaces();
-    
-    private final static String TRIPLESTORE_CONCEPT_SENSING_DEVICE = NAMESPACES.getObjectsProperty("cSensingDevice");
-    private final static String TRIPLESTORE_CONTEXT_SENSORS = NAMESPACES.getContextsProperty("sensors");
-    private final static String TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE = NAMESPACES.getRelationsProperty("subClassOf*");
-    private final static String TRIPLESTORE_RELATION_TYPE = NAMESPACES.getRelationsProperty("type");
     
     @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
@@ -69,8 +63,8 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
 
         query.appendSelect("?" + RELATION + " ?" + PROPERTY);
         query.appendTriplet("<" + uri + ">", "?" + RELATION, "?" + PROPERTY, null);
-        query.appendTriplet("<" + uri + ">", TRIPLESTORE_RELATION_TYPE, "?" + RDF_TYPE, null);
-        query.appendTriplet("?" + RDF_TYPE, TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE, TRIPLESTORE_CONCEPT_SENSING_DEVICE, null);
+        query.appendTriplet("<" + uri + ">", Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
+        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_SENSING_DEVICE.toString(), null);
         
         LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
         
@@ -105,7 +99,7 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
                 if (urisTypes.size() > 0) {
                     String rdfType = urisTypes.get(0).getRdfType();
                     
-                    if (!uriDaoSesame.isSubClassOf(rdfType, TRIPLESTORE_CONCEPT_SENSING_DEVICE)) {
+                    if (!uriDaoSesame.isSubClassOf(rdfType, Vocabulary.CONCEPT_SENSING_DEVICE.toString())) {
                         validData = false;
                         checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "The type of the given uri is not a Sensing Device"));
                     }
@@ -180,12 +174,12 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
     private SPARQLUpdateBuilder prepareInsertQuery(SensorProfile sensorProfile) {
         SPARQLUpdateBuilder query = new SPARQLUpdateBuilder();
         
-        query.appendGraphURI(TRIPLESTORE_CONTEXT_SENSORS);
+        query.appendGraphURI(Contexts.SENSORS.toString());
         
         for (Property property : sensorProfile.getProperties()) {
             if (property.getRdfType() != null) {
                 query.appendTriplet(sensorProfile.getUri(), property.getRelation(), property.getValue(), null);
-                query.appendTriplet(property.getValue(), TRIPLESTORE_RELATION_TYPE, property.getRdfType(), null);
+                query.appendTriplet(property.getValue(), Rdf.RELATION_TYPE.toString(), property.getRdfType(), null);
             } else {
                 query.appendTriplet(sensorProfile.getUri(), property.getRelation(), "\"" + property.getValue() + "\"", null);
             }

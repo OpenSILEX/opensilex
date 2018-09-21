@@ -1,0 +1,274 @@
+//******************************************************************************
+//                                       Vocabulary.java
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Creation date: 11 sept. 2018
+// Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
+package phis2ws.service.ontologies;
+
+import phis2ws.service.PropertiesFileManager;
+
+/**
+ * Used to get the vocabulary of SILEX-PHIS. 
+ * Contains the ontology (oepo here) relations and context.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
+public enum Vocabulary {
+    NAMESPACE {
+        @Override
+        public String toString() {
+            return "http://www.phenome-fppn.fr/vocabulary/2017#";
+        }
+    },
+    
+    CONCEPT_AGRONOMICAL_OBJECT {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "AgronomicalObject";
+        }
+    },
+    CONCEPT_ANNOTATION {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "Annotation";
+        }
+    },
+    CONCEPT_CAMERA {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "Camera";
+        }
+    },
+    CONCEPT_DOCUMENT {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "Document";
+        }
+    },
+    CONCEPT_EXPERIMENT {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "Experiment";
+        }
+    },
+    CONCEPT_FIELD_ROBOT {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "FieldRobot";
+        }
+    },
+    CONCEPT_GENOTYPE {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "Genotype";
+        }
+    },
+    CONCEPT_INFRASTRUCTURE {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "Infrastructure";
+        }
+    },
+    CONCEPT_IMAGE {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "Image";
+        }
+    },
+    CONCEPT_METHOD {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "Method";
+        }
+    },
+    CONCEPT_RADIOMETRIC_TARGET {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "RadiometricTarget";
+        }
+    },
+    CONCEPT_SENSING_DEVICE {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "SensingDevice";
+        }
+    },
+    CONCEPT_SPECIES {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "Species";
+        }
+    },
+    CONCEPT_TRAIT {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "Trait";
+        }
+    },
+    CONCEPT_UAV {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "UAV";
+        }
+    },
+    CONCEPT_UNIT {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "Unit";
+        }
+    },
+    CONCEPT_VARIABLE {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "Variable";
+        }
+    },
+    CONCEPT_VARIETY {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "Variety";
+        }
+    },
+    CONCEPT_VECTOR {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "Vector";
+        }
+    },
+    
+    PLATFORM_URI {
+        @Override
+        public String toString() {
+            return PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "baseURI") 
+                    + PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "platform");
+        }
+    },
+    
+    RELATION_CONCERN {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "concern";
+        }
+    },
+    RELATION_DATE_OF_LAST_CALIBRATION {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "dateOfLastCalibration";
+        }
+    },
+    RELATION_DATE_OF_PURCHASE {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "dateOfPurchase";
+        }
+    },
+    RELATION_DEVICE_PROPERTY {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "deviceProperty";
+        }
+    },
+    RELATION_FROM_GENOTYPE {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "fromGenotype";
+        }
+    },
+    RELATION_FROM_SPECIES {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "fromSpecies";
+        }
+    },
+    RELATION_FROM_VARIETY {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "fromVariety";
+        }
+    },
+    RELATION_HAS_ALIAS {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasAlias";
+        }
+    },
+    RELATION_HAS_BRAND {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasBrand";
+        }
+    },
+    RELATION_HAS_CONTACT {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasContact";
+        }
+    },
+    RELATION_HAS_EXPERIMENT_MODALITIES {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasExperimentModalities";
+        }
+    },
+    RELATION_HAS_METHOD {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasMethod";
+        }
+    },
+    RELATION_HAS_PLOT {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasPlot";
+        }
+    },
+    RELATION_HAS_REPETITION {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasRepetition";
+        }
+    },
+    RELATION_HAS_TRAIT {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasTrait";
+        }
+    },
+    RELATION_HAS_UNIT {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasUnit";
+        }
+    },
+    RELATION_IN_SERVICE_DATE {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "inServiceDate";
+        }
+    },
+    RELATION_IS_PART_OF {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "isPartOf";
+        }
+    },
+    RELATION_PERSON_IN_CHARGE {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "personInCharge";
+        }
+    },
+    RELATION_SERIAL_NUMBER {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "serialNumber";
+        }
+    },
+    RELATION_STATUS {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "status";
+        }
+    },
+}

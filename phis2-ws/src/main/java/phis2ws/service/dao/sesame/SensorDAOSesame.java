@@ -21,16 +21,17 @@ import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.dao.phis.UserDaoPhisBrapi;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.model.User;
+import phis2ws.service.ontologies.Contexts;
+import phis2ws.service.ontologies.Rdf;
+import phis2ws.service.ontologies.Rdfs;
+import phis2ws.service.ontologies.Vocabulary;
 import phis2ws.service.resources.dto.SensorDTO;
-import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.UriGenerator;
-import phis2ws.service.utils.dates.Dates;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.utils.sparql.SPARQLUpdateBuilder;
 import phis2ws.service.view.brapi.Status;
@@ -47,13 +48,10 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
     //The following attributes are used to search sensors in the triplestore
     //uri of the sensor
     public String uri;
-    private final String URI = "uri";
     //type uri of the sensor(s)
     public String rdfType;
-    private final String RDF_TYPE = "rdfType";
     //alias of the sensor(s)
     public String label;
-    private final String LABEL = "label";
     //brand of the sensor(s)
     public String brand;
     private final String BRAND = "brand";
@@ -73,25 +71,6 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
     public String personInCharge;
     private final String PERSON_IN_CHARGE = "personInCharge";
 
-    //Triplestore relations
-    private final static URINamespaces NAMESPACES = new URINamespaces();
-    
-    final static String TRIPLESTORE_CONTEXT_SENSOR = NAMESPACES.getContextsProperty("sensors");
-    
-    final static String TRIPLESTORE_CONCEPT_CAMERA = NAMESPACES.getObjectsProperty("cCamera");
-    final static String TRIPLESTORE_CONCEPT_SENSING_DEVICE = NAMESPACES.getObjectsProperty("cSensingDevice");
-    
-    final static String TRIPLESTORE_RELATION_BRAND = NAMESPACES.getRelationsProperty("rHasBrand");
-    final static String TRIPLESTORE_RELATION_DATE_OF_LAST_CALIBRATION = NAMESPACES.getRelationsProperty("rDateOfLastCalibration");
-    final static String TRIPLESTORE_RELATION_DATE_OF_PURCHASE = NAMESPACES.getRelationsProperty("rDateOfPurchase");
-    final static String TRIPLESTORE_RELATION_IN_SERVICE_DATE = NAMESPACES.getRelationsProperty("rInServiceDate");
-    final static String TRIPLESTORE_RELATION_LABEL = NAMESPACES.getRelationsProperty("label");
-    final static String TRIPLESTORE_RELATION_PERSON_IN_CHARGE = NAMESPACES.getRelationsProperty("rPersonInCharge");
-    final static String TRIPLESTORE_RELATION_TYPE = NAMESPACES.getRelationsProperty("type");
-    final static String TRIPLESTORE_RELATION_SERIAL_NUMBER = NAMESPACES.getRelationsProperty("rSerialNumber");
-    final static String TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE = NAMESPACES.getRelationsProperty("subClassOf*");
-    final static String TRIPLESTORE_RELATION_VARIABLE = NAMESPACES.getRelationsProperty("rMeasuredVariable");
-
     /**
      * prepare a query to get the higher id of the sensors
      * @return 
@@ -100,8 +79,8 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         
         query.appendSelect("?" + URI);
-        query.appendTriplet("?" + URI, TRIPLESTORE_RELATION_TYPE, "?type", null);
-        query.appendTriplet("?type", TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE, TRIPLESTORE_CONCEPT_SENSING_DEVICE, null);
+        query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?type", null);
+        query.appendTriplet("?type", "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_SENSING_DEVICE.toString(), null);
         query.appendFilter("regex(str(?uri), \".*/" + year + "/.*\")");
         query.appendOrderBy("desc(?uri)");
         query.appendLimit(1);
@@ -166,74 +145,74 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         }
         
         if (rdfType != null) {
-            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_TYPE, rdfType, null);
+            query.appendTriplet(sensorUri, Rdf.RELATION_TYPE.toString(), rdfType, null);
         } else {
             query.appendSelect("?" + RDF_TYPE);
             query.appendTriplet(sensorUri, rdfType, "?" + RDF_TYPE, null);
-            query.appendTriplet("?" + RDF_TYPE, TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE, TRIPLESTORE_CONCEPT_SENSING_DEVICE, null);
+            query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_SENSING_DEVICE.toString(), null);
         }        
 
         if (label != null) {
-            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_LABEL, "\"" + label + "\"", null);
+            query.appendTriplet(sensorUri, Rdfs.RELATION_LABEL.toString(), "\"" + label + "\"", null);
         } else {
             query.appendSelect(" ?" + LABEL);
             query.beginBodyOptional();
-            query.appendToBody(sensorUri + " " + TRIPLESTORE_RELATION_LABEL + " " + "?" + LABEL + " . ");
+            query.appendToBody(sensorUri + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + LABEL + " . ");
             query.endBodyOptional();
         }
 
         if (brand != null) {
-            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_BRAND, "\"" + brand + "\"", null);
+            query.appendTriplet(sensorUri, Vocabulary.RELATION_HAS_BRAND.toString(), "\"" + brand + "\"", null);
         } else {
             query.appendSelect(" ?" + BRAND);
-            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_BRAND, "?" + BRAND, null);
+            query.appendTriplet(sensorUri, Vocabulary.RELATION_HAS_BRAND.toString(), "?" + BRAND, null);
         }
         
         if (serialNumber != null) {
-            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_SERIAL_NUMBER, "\"" + serialNumber + "\"", null);
+            query.appendTriplet(sensorUri, Vocabulary.RELATION_SERIAL_NUMBER.toString(), "\"" + serialNumber + "\"", null);
         } else {
             query.appendSelect("?" + SERIAL_NUMBER);
             query.beginBodyOptional();
-            query.appendToBody(sensorUri + " <" + TRIPLESTORE_RELATION_SERIAL_NUMBER + "> ?" + SERIAL_NUMBER + " . ");
+            query.appendToBody(sensorUri + " <" + Vocabulary.RELATION_SERIAL_NUMBER.toString() + "> ?" + SERIAL_NUMBER + " . ");
             query.endBodyOptional();
         }
 
         if (inServiceDate != null) {
-            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_IN_SERVICE_DATE, "\"" + inServiceDate + "\"", null);
+            query.appendTriplet(sensorUri, Vocabulary.RELATION_IN_SERVICE_DATE.toString(), "\"" + inServiceDate + "\"", null);
         } else {
             query.appendSelect(" ?" + IN_SERVICE_DATE);
             query.beginBodyOptional();
-            query.appendToBody(sensorUri + " <" + TRIPLESTORE_RELATION_IN_SERVICE_DATE + "> " + "?" + IN_SERVICE_DATE + " . ");
+            query.appendToBody(sensorUri + " <" + Vocabulary.RELATION_IN_SERVICE_DATE.toString() + "> " + "?" + IN_SERVICE_DATE + " . ");
             query.endBodyOptional();
         }
 
         if (dateOfPurchase != null) {
-            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_DATE_OF_PURCHASE, "\"" + dateOfPurchase + "\"", null);
+            query.appendTriplet(sensorUri, Vocabulary.RELATION_DATE_OF_PURCHASE.toString(), "\"" + dateOfPurchase + "\"", null);
         } else {
             query.appendSelect("?" + DATE_OF_PURCHASE);
             query.beginBodyOptional();
-            query.appendToBody(sensorUri + " <" + TRIPLESTORE_RELATION_DATE_OF_PURCHASE + "> " + "?" + DATE_OF_PURCHASE + " . ");
+            query.appendToBody(sensorUri + " <" + Vocabulary.RELATION_DATE_OF_PURCHASE.toString() + "> " + "?" + DATE_OF_PURCHASE + " . ");
             query.endBodyOptional();
         }
 
         if (dateOfLastCalibration != null) {
-            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_DATE_OF_LAST_CALIBRATION, "\"" + dateOfLastCalibration + "\"", null);
+            query.appendTriplet(sensorUri, Vocabulary.RELATION_DATE_OF_LAST_CALIBRATION.toString(), "\"" + dateOfLastCalibration + "\"", null);
         } else {
             query.appendSelect("?" + DATE_OF_LAST_CALIBRATION);
             query.beginBodyOptional();
-            query.appendToBody(sensorUri + " <" + TRIPLESTORE_RELATION_DATE_OF_LAST_CALIBRATION + "> " + "?" + DATE_OF_LAST_CALIBRATION + " . ");
+            query.appendToBody(sensorUri + " <" + Vocabulary.RELATION_DATE_OF_LAST_CALIBRATION.toString() + "> " + "?" + DATE_OF_LAST_CALIBRATION + " . ");
             query.endBodyOptional();
         }
         
         if (personInCharge != null) {
-            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_PERSON_IN_CHARGE, "\"" + personInCharge + "\"", null);
+            query.appendTriplet(sensorUri, Vocabulary.RELATION_PERSON_IN_CHARGE.toString(), "\"" + personInCharge + "\"", null);
         } else {
             query.appendSelect(" ?" + PERSON_IN_CHARGE);
-            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_PERSON_IN_CHARGE, "?" + PERSON_IN_CHARGE, null);
+            query.appendTriplet(sensorUri, Vocabulary.RELATION_PERSON_IN_CHARGE.toString(), "?" + PERSON_IN_CHARGE, null);
         }
         
         query.appendLimit(this.getPageSize());
-        query.appendOffset(this.getPage()* this.getPageSize());
+        query.appendOffset(this.getPage() * this.getPageSize());
 
         LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
         return query;
@@ -273,7 +252,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         query.clearLimit();
         query.clearOffset();
         query.clearGroupBy();
-        query.appendSelect("(count(distinct ?" + URI + ") as ?" + COUNT_ELEMENT_QUERY + ")");
+        query.appendSelect("(COUNT(DISTINCT ?" + URI + ") AS ?" + COUNT_ELEMENT_QUERY + ")");
         LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
         return query;
     }
@@ -316,7 +295,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         query.clearOffset();
         query.clearGroupBy();
         query.clearOrderBy();
-        query.appendSelect("(count(distinct ?" + URI + ") as ?" + COUNT_ELEMENT_QUERY + ")");
+        query.appendSelect("(COUNT(DISTINCT ?" + URI + ") AS ?" + COUNT_ELEMENT_QUERY + ")");
         LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
         return query;
     }
@@ -428,8 +407,8 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
     
     private SPARQLQueryBuilder prepareIsSensorQuery(String uri) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
-        query.appendTriplet("<" + uri + ">", TRIPLESTORE_RELATION_TYPE, "?" + RDF_TYPE, null);
-        query.appendTriplet("?" + RDF_TYPE, TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE, TRIPLESTORE_CONCEPT_SENSING_DEVICE, null);
+        query.appendTriplet("<" + uri + ">", Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
+        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_SENSING_DEVICE.toString(), null);
         
         query.appendAsk("");
         LOGGER.debug(query.toString());
@@ -477,7 +456,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
                 try {
                     //2.1 check type (subclass of SensingDevice)
                     UriDaoSesame uriDaoSesame = new UriDaoSesame();
-                    if (!uriDaoSesame.isSubClassOf(sensor.getRdfType(), TRIPLESTORE_CONCEPT_SENSING_DEVICE)) {
+                    if (!uriDaoSesame.isSubClassOf(sensor.getRdfType(), Vocabulary.CONCEPT_SENSING_DEVICE.toString())) {
                         dataOk = false;
                         checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Bad sensor type given. Must be sublass of SensingDevice concept"));
                     }
@@ -523,23 +502,23 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
     private SPARQLUpdateBuilder prepareInsertQuery(Sensor sensor) {
         SPARQLUpdateBuilder query = new SPARQLUpdateBuilder();
         
-        query.appendGraphURI(TRIPLESTORE_CONTEXT_SENSOR);
-        query.appendTriplet(sensor.getUri(), TRIPLESTORE_RELATION_TYPE, sensor.getRdfType(), null);
-        query.appendTriplet(sensor.getUri(), TRIPLESTORE_RELATION_LABEL, "\"" + sensor.getLabel() + "\"", null);
-        query.appendTriplet(sensor.getUri(), TRIPLESTORE_RELATION_BRAND, "\"" + sensor.getBrand() + "\"", null);
-        query.appendTriplet(sensor.getUri(), TRIPLESTORE_RELATION_IN_SERVICE_DATE, "\"" + sensor.getInServiceDate() + "\"", null);
-        query.appendTriplet(sensor.getUri(), TRIPLESTORE_RELATION_PERSON_IN_CHARGE, "\"" + sensor.getPersonInCharge() + "\"", null);
+        query.appendGraphURI(Contexts.SENSORS.toString());
+        query.appendTriplet(sensor.getUri(), Rdf.RELATION_TYPE.toString(), sensor.getRdfType(), null);
+        query.appendTriplet(sensor.getUri(), Rdfs.RELATION_LABEL.toString(), "\"" + sensor.getLabel() + "\"", null);
+        query.appendTriplet(sensor.getUri(), Vocabulary.RELATION_HAS_BRAND.toString(), "\"" + sensor.getBrand() + "\"", null);
+        query.appendTriplet(sensor.getUri(), Vocabulary.RELATION_IN_SERVICE_DATE.toString(), "\"" + sensor.getInServiceDate() + "\"", null);
+        query.appendTriplet(sensor.getUri(), Vocabulary.RELATION_PERSON_IN_CHARGE.toString(), "\"" + sensor.getPersonInCharge() + "\"", null);
         
         if (sensor.getSerialNumber() != null) {
-            query.appendTriplet(sensor.getUri(), TRIPLESTORE_RELATION_SERIAL_NUMBER, "\"" + sensor.getSerialNumber() + "\"", null);
+            query.appendTriplet(sensor.getUri(), Vocabulary.RELATION_SERIAL_NUMBER.toString(), "\"" + sensor.getSerialNumber() + "\"", null);
         }
         
         if (sensor.getDateOfPurchase() != null) {
-            query.appendTriplet(sensor.getUri(), TRIPLESTORE_RELATION_DATE_OF_PURCHASE, "\"" + sensor.getDateOfPurchase() + "\"", null);
+            query.appendTriplet(sensor.getUri(), Vocabulary.RELATION_DATE_OF_PURCHASE.toString(), "\"" + sensor.getDateOfPurchase() + "\"", null);
         }
         
         if (sensor.getDateOfLastCalibration() != null) {
-            query.appendTriplet(sensor.getUri(), TRIPLESTORE_RELATION_DATE_OF_LAST_CALIBRATION, "\"" + sensor.getDateOfLastCalibration() + "\"", null);
+            query.appendTriplet(sensor.getUri(), Vocabulary.RELATION_DATE_OF_LAST_CALIBRATION.toString(), "\"" + sensor.getDateOfLastCalibration() + "\"", null);
         }
         
         LOGGER.debug(getTraceabilityLogs() + " query : " + query.toString());
@@ -634,20 +613,20 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
     private String prepareDeleteQuery(Sensor sensor) {
         String query;
         query = "DELETE WHERE { "
-                + "<" + sensor.getUri() + "> " + TRIPLESTORE_RELATION_TYPE + " <" + sensor.getRdfType() + "> . "
-                + "<" + sensor.getUri() + "> " + TRIPLESTORE_RELATION_LABEL + " \"" + sensor.getLabel() + "\" . "
-                + "<" + sensor.getUri() + "> <" + TRIPLESTORE_RELATION_BRAND + "> \"" + sensor.getBrand() + "\" . "
-                + "<" + sensor.getUri() + "> <" + TRIPLESTORE_RELATION_IN_SERVICE_DATE + "> \"" + sensor.getInServiceDate() + "\" . "
-                + "<" + sensor.getUri() + "> <" + TRIPLESTORE_RELATION_PERSON_IN_CHARGE + "> \"" + sensor.getPersonInCharge() + "\" . ";
+                + "<" + sensor.getUri() + "> <" + Rdf.RELATION_TYPE.toString() + "> <" + sensor.getRdfType() + "> . "
+                + "<" + sensor.getUri() + "> <" + Rdfs.RELATION_LABEL.toString() + "> \"" + sensor.getLabel() + "\" . "
+                + "<" + sensor.getUri() + "> <" + Vocabulary.RELATION_HAS_BRAND.toString() + "> \"" + sensor.getBrand() + "\" . "
+                + "<" + sensor.getUri() + "> <" + Vocabulary.RELATION_IN_SERVICE_DATE.toString() + "> \"" + sensor.getInServiceDate() + "\" . "
+                + "<" + sensor.getUri() + "> <" + Vocabulary.RELATION_PERSON_IN_CHARGE.toString() + "> \"" + sensor.getPersonInCharge() + "\" . ";
         
         if (sensor.getSerialNumber() != null) {
-            query += "<" + sensor.getUri() + "> <" + TRIPLESTORE_RELATION_SERIAL_NUMBER + "> \"" + sensor.getSerialNumber() + "\" . ";
+            query += "<" + sensor.getUri() + "> <" + Vocabulary.RELATION_SERIAL_NUMBER.toString() + "> \"" + sensor.getSerialNumber() + "\" . ";
         }
         if (sensor.getDateOfPurchase() != null) {
-            query += "<" + sensor.getUri() + "> <" + TRIPLESTORE_RELATION_DATE_OF_PURCHASE + "> \"" + sensor.getDateOfPurchase() + "\" . ";
+            query += "<" + sensor.getUri() + "> <" + Vocabulary.RELATION_DATE_OF_PURCHASE.toString() + "> \"" + sensor.getDateOfPurchase() + "\" . ";
         }
         if (sensor.getDateOfLastCalibration() != null) {
-            query += "<" + sensor.getUri() + "> <" + TRIPLESTORE_RELATION_DATE_OF_LAST_CALIBRATION + "> \"" + sensor.getDateOfLastCalibration() + "\" . ";
+            query += "<" + sensor.getUri() + "> <" + Vocabulary.RELATION_DATE_OF_LAST_CALIBRATION.toString() + "> \"" + sensor.getDateOfLastCalibration() + "\" . ";
         }
         
         query += " }";
@@ -755,13 +734,13 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         
         query.appendSelect("?" + URI + " ?" + RDF_TYPE + " ?" + LABEL );
-        query.appendTriplet("?" + RDF_TYPE, TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE, TRIPLESTORE_CONCEPT_CAMERA, null);
-        query.appendTriplet("?" + URI, TRIPLESTORE_RELATION_TYPE, "?" + RDF_TYPE, null);
-        query.appendTriplet("?" + URI, TRIPLESTORE_RELATION_LABEL, "?" + LABEL, null);
-        query.appendOrderBy("desc(?" + LABEL + ")");
+        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_CAMERA.toString(), null);
+        query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
+        query.appendTriplet("?" + URI, Rdfs.RELATION_LABEL.toString(), "?" + LABEL, null);
+        query.appendOrderBy("DESC(?" + LABEL + ")");
         
         query.appendLimit(this.getPageSize());
-        query.appendOffset(this.getPage()* this.getPageSize());
+        query.appendOffset(this.getPage() * this.getPageSize());
         
         LOGGER.debug(query.toString());
         

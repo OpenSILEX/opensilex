@@ -34,6 +34,7 @@ import phis2ws.service.dao.sesame.PropertyDAOSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
+import phis2ws.service.ontologies.Vocabulary;
 import phis2ws.service.resources.dto.PropertiesDTO;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
@@ -240,7 +241,7 @@ public class InfrastructureResourceService {
         PropertyDAOSesame propertiesDAO = new PropertyDAOSesame();
         
         propertiesDAO.uri = uri;
-        propertiesDAO.subClassOf = InfrastructureDAOSesame.TRIPLESTORE_CONCEPT_INFRASTRUCTURE;
+        propertiesDAO.subClassOf = Vocabulary.CONCEPT_INFRASTRUCTURE.toString();
                 
         propertiesDAO.user = userSession.getUser();
         propertiesDAO.setPage(page);

@@ -164,7 +164,7 @@ public abstract class SPARQLStringBuilder {
             body += " ?" + blankNodeCounter + " ";
             blankNodeCounter++;
         } else if (sesameUriFormSubject == null) {
-            if (subject.contains(":") && !subject.contains("http://")) {
+            if (subject.contains(":") && (!subject.contains("http://") && !subject.contains("https://"))) {
                 body += " " + subject + " ";
             }
              else if (subject.contains("\"")) {
@@ -184,7 +184,7 @@ public abstract class SPARQLStringBuilder {
             body += " ?" + blankNodeCounter + " ";
             blankNodeCounter++;
         } else if (sesameUriFormPredicat == null) {
-            if (predicate.contains(":") && !predicate.contains("http://")) {
+            if (predicate.contains(":") && (!predicate.contains("http://") && !predicate.contains("https://"))) {
                 body += " " + predicate + " ";
             } else if (predicate.contains("\"")) {
                 body += " " + predicate + " ";
@@ -203,7 +203,7 @@ public abstract class SPARQLStringBuilder {
             body += " ?" + blankNodeCounter + " ";
             blankNodeCounter++;
         } else if (sesameUriFormObject == null) {
-            if (object.contains(":") && !object.contains("http://")) {
+            if (object.contains(":") && (!object.contains("http://") && !object.contains("http://"))) {
                 body += " " + object + " ";
             } else if (object.contains("'")){
                 body += " " + object + " ";

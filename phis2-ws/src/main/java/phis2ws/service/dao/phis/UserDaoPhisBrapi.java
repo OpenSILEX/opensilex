@@ -22,9 +22,9 @@ import java.util.logging.Level;
 import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOPhisBrapi;
 import phis2ws.service.documentation.StatusCodeMsg;
+import phis2ws.service.ontologies.Foaf;
 import phis2ws.service.resources.dto.UserDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.ResourcesUtils;
@@ -540,7 +540,6 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
             int exists = 0;
 
             UriGenerator uriGenerator = new UriGenerator();
-            URINamespaces uriNamespaces = new URINamespaces();
 
             try {
                 //batch
@@ -574,7 +573,7 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
                         // create uri suffix
                         String userUriSuffix = ResourcesUtils.createUserUriSuffix(u.getFirstName(), u.getFamilyName());
                         // set uri to agent
-                        u.setUri(uriGenerator.generateNewInstanceUri(uriNamespaces.getObjectsProperty("cPerson"), null, userUriSuffix));
+                        u.setUri(uriGenerator.generateNewInstanceUri(Foaf.CONCEPT_PERSON.toString(), null, userUriSuffix));
                         insertPreparedStatementUser.setString(10, u.getUri());
 
                         //Ajout dans les logs de qui a fait quoi (traçabilité)

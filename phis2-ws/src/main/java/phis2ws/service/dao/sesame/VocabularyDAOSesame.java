@@ -21,6 +21,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOSesame;
+import phis2ws.service.ontologies.Rdfs;
+import phis2ws.service.ontologies.Vocabulary;
 import phis2ws.service.resources.dto.PropertyVocabularyDTO;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.model.phis.Namespace;
@@ -38,14 +40,6 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
     //e.g. http://www.phenome-fppn.fr/vocabulary/2018#UAV
     public String domainRdfType;
 
-    //Triplestore relations
-    private final static URINamespaces NAMESPACES = new URINamespaces();
-
-    final static String TRIPLESTORE_RELATION_HAS_CONTACT = NAMESPACES.getRelationsProperty("rHasContact");
-    final static String TRIPLESTORE_RELATION_COMMENT = NAMESPACES.getRelationsProperty("comment");
-    final static String TRIPLESTORE_RELATION_DEVICE_PROPERTY = NAMESPACES.getRelationsProperty("rDeviceProperty");
-    final static String TRIPLESTORE_RELATION_LABEL = NAMESPACES.getRelationsProperty("label");
-    final static String TRIPLESTORE_RELATION_SUBPROPERTY_OF_MULTIPLE = NAMESPACES.getRelationsProperty("subPropertyOf*");
     final static String LANGUAGE_EN = "en";
     final static String LABEL_LABEL_EN = "label";
     final static String LABEL_COMMENT_EN = "comment";
@@ -72,13 +66,13 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
 
         //label property
         PropertyVocabularyDTO label = new PropertyVocabularyDTO();
-        label.setRelation(TRIPLESTORE_RELATION_LABEL);
+        label.setRelation(Rdfs.RELATION_LABEL.toString());
         label.addLabel(LANGUAGE_EN, LABEL_LABEL_EN);
         rdfsPropertyes.add(label);
 
         //comment property
         PropertyVocabularyDTO comment = new PropertyVocabularyDTO();
-        comment.setRelation(TRIPLESTORE_RELATION_COMMENT);
+        comment.setRelation(Rdfs.RELATION_COMMENT.toString());
         comment.addLabel(LANGUAGE_EN, LABEL_COMMENT_EN);
         rdfsPropertyes.add(comment);
 
@@ -97,7 +91,7 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
     protected SPARQLQueryBuilder prepareGetContactProperties() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendSelect("?" + PROPERTY);
-        query.appendTriplet("?" + PROPERTY, TRIPLESTORE_RELATION_SUBPROPERTY_OF_MULTIPLE, TRIPLESTORE_RELATION_HAS_CONTACT, null);
+        query.appendTriplet("?" + PROPERTY, "<" + Rdfs.RELATION_SUBPROPERTY_OF.toString() + ">*", Vocabulary.RELATION_HAS_CONTACT.toString(), null);
         LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
         return query;
     }
@@ -114,7 +108,7 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
     protected SPARQLQueryBuilder prepareGetDeviceProperties() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendSelect("?" + PROPERTY);
-        query.appendTriplet("?" + PROPERTY, TRIPLESTORE_RELATION_SUBPROPERTY_OF_MULTIPLE, TRIPLESTORE_RELATION_DEVICE_PROPERTY, null);
+        query.appendTriplet("?" + PROPERTY, "<" + Rdfs.RELATION_SUBPROPERTY_OF.toString() + ">*", Vocabulary.RELATION_DEVICE_PROPERTY.toString(), null);
         LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
         return query;
     }

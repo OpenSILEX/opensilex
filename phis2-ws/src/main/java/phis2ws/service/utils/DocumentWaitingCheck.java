@@ -48,14 +48,14 @@ public class DocumentWaitingCheck implements Callable<Boolean> {
 //         Sinon on ne fait rien
         
   
-        boolean find = DocumentResourceService.waitingAnnotFileCheck.containsKey(annotationsUri);
+        boolean find = DocumentResourceService.WAITING_ANNOT_FILE_CHECK.containsKey(annotationsUri);
         if(find){
-            final Boolean running = DocumentResourceService.waitingAnnotFileCheck.get(annotationsUri);
+            final Boolean running = DocumentResourceService.WAITING_ANNOT_FILE_CHECK.get(annotationsUri);
             if(!running){
                 // Suppression tableau d'attente
-                DocumentResourceService.waitingAnnotFileCheck.remove(annotationsUri);
+                DocumentResourceService.WAITING_ANNOT_FILE_CHECK.remove(annotationsUri);
                 //Suppression de l'information
-                DocumentResourceService.waitingAnnotInformation.remove(annotationsUri);
+                DocumentResourceService.WAITING_ANNOT_INFORMATION.remove(annotationsUri);
 //                logger.debug("Remove : " + annotationsUri);
             } 
 //            logger.debug("sending : " + annotationsUri);

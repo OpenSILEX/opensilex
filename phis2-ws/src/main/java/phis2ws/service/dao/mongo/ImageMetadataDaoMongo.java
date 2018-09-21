@@ -14,7 +14,6 @@ package phis2ws.service.dao.mongo;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
-import com.mongodb.DBCursor;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
@@ -32,14 +31,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.DateFormats;
-import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOMongo;
 import phis2ws.service.dao.sesame.ImageMetadataDaoSesame;
 import phis2ws.service.dao.sesame.SensorDAOSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
+import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.resources.dto.ConcernItemDTO;
 import phis2ws.service.resources.dto.ImageMetadataDTO;
-import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.ConcernItem;
@@ -79,8 +77,6 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
         //Represents the mongodb documents label for the storage
     final static String DB_FIELDS_STORAGE = "storage";
     
-    
-
     public ImageMetadataDaoMongo() {
         super();
     }
@@ -257,8 +253,7 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
      */
     private Document prepareGetLastId() {        
           Document regQuery = new Document();
-          URINamespaces uriNamespaces = new URINamespaces();
-          String regex = uriNamespaces.getContextsProperty("pxPlatform") + "/" + Year.now().toString() + "*";
+          String regex = Contexts.PLATFORM.toString() + Year.now().toString() + "*";
           regQuery.append("$regex", regex);
           
           Document findQuery = new Document();

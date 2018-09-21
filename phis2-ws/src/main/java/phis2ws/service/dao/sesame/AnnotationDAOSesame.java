@@ -10,7 +10,6 @@ package phis2ws.service.dao.sesame;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -25,13 +24,16 @@ import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.DateFormats;
-import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.dao.phis.UserDaoPhisBrapi;
 import phis2ws.service.documentation.StatusCodeMsg;
+import phis2ws.service.ontologies.Contexts;
+import phis2ws.service.ontologies.DublinCore;
+import phis2ws.service.ontologies.Oa;
+import phis2ws.service.ontologies.Rdf;
+import phis2ws.service.ontologies.Vocabulary;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.resources.dto.AnnotationDTO;
-import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.utils.JsonConverter;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.UriGenerator;
@@ -48,24 +50,10 @@ import phis2ws.service.view.model.phis.Annotation;
 public class AnnotationDAOSesame extends DAOSesame<Annotation> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(AnnotationDAOSesame.class);
-
-    private final static URINamespaces NAMESPACES = new URINamespaces();
-
-    final static String TRIPLESTORE_CONTEXT_ANNOTATION = NAMESPACES.getContextsProperty("annotations");
-
-    final static String TRIPLESTORE_RELATION_TYPE = NAMESPACES.getRelationsProperty("type");
-    final static String TRIPLESTORE_RELATION_BODYVALUE = NAMESPACES.getRelationsProperty("rBodyValue");
-    final static String TRIPLESTORE_RELATION_CREATOR = NAMESPACES.getRelationsProperty("rCreator");
-    final static String TRIPLESTORE_RELATION_CREATED = NAMESPACES.getRelationsProperty("rCreated");
-    final static String TRIPLESTORE_RELATION_TARGET = NAMESPACES.getRelationsProperty("rTarget");
-    final static String TRIPLESTORE_RELATION_MOTIVATED_BY = NAMESPACES.getRelationsProperty("rMotivatedBy");
-    final static String TRIPLESTORE_CONCEPT_ANNOTATION = NAMESPACES.getObjectsProperty("cAnnotation");
-    final static String TRIPLESTORE_CONCEPT_MOTIVATION = NAMESPACES.getObjectsProperty("cMotivation");
     
     // Search parameters
     // uri of an annotation eg.  http://www.phenome-fppn.fr/platform/id/annotation/8247af37-769c-495b-8e7e-78b1141176c2
     public String uri;
-    public static final String URI = "uri";
     /**
      * Creation date of an annotation. e.g. 2018-08-01 09:34:50.235Z
      * @link https://www.w3.org/TR/annotation-vocab/#dcterms-created
@@ -122,37 +110,37 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
         
         query.appendSelect("?" + CREATED);
         query.appendGroupBy("?" + CREATED);
-        query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_CREATED, "?" + CREATED, null);
+        query.appendTriplet(annotationUri, DublinCore.RELATION_CREATED.toString(), "?" + CREATED, null);
 
         if (creator != null) {
-            query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_CREATOR, creator, null);
+            query.appendTriplet(annotationUri, DublinCore.RELATION_CREATOR.toString(), creator, null);
         } else {
             query.appendSelect("?" + CREATOR);
             query.appendGroupBy("?" + CREATOR);
-            query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_CREATOR, "?" + CREATOR, null);
+            query.appendTriplet(annotationUri, DublinCore.RELATION_CREATOR.toString(), "?" + CREATOR, null);
         }
 
         if (motivatedBy != null) {
-            query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_MOTIVATED_BY, motivatedBy, null);
+            query.appendTriplet(annotationUri, Oa.RELATION_MOTIVATED_BY.toString(), motivatedBy, null);
         } else {
             query.appendSelect("?" + MOTIVATED_BY);
             query.appendGroupBy("?" + MOTIVATED_BY);
-            query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_MOTIVATED_BY, "?" + MOTIVATED_BY, null);
+            query.appendTriplet(annotationUri, Oa.RELATION_MOTIVATED_BY.toString(), "?" + MOTIVATED_BY, null);
         }
 
         query.appendSelectConcat("?" + TARGET, SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR, "?" + TARGETS);
-        query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_TARGET, "?" + TARGET, null);
+        query.appendTriplet(annotationUri, Oa.RELATION_HAS_TARGET.toString(), "?" + TARGET, null);
         if (target != null) {
-            query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_TARGET, target, null);
+            query.appendTriplet(annotationUri, Oa.RELATION_HAS_TARGET.toString(), target, null);
         }
 
         query.appendSelectConcat("?" + BODY_VALUE, SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR, "?" + BODY_VALUES);
-        query.appendTriplet(annotationUri, TRIPLESTORE_RELATION_BODYVALUE, "?" + BODY_VALUE, null);
+        query.appendTriplet(annotationUri, Oa.RELATION_BODY_VALUE.toString(), "?" + BODY_VALUE, null);
         if (bodyValue != null) {
             query.appendFilter("regex(STR(?" + BODY_VALUE + "), '" + bodyValue + "', 'i')");
         }
         query.appendLimit(this.getPageSize());
-        query.appendOffset(this.getPage()* this.getPageSize());
+        query.appendOffset(this.getPage() * this.getPageSize());
         LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
         return query;
     }
@@ -200,7 +188,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
         query.clearLimit();
         query.clearOffset();
         query.clearGroupBy();
-        query.appendSelect("(count(distinct ?" + URI + ") as ?" + COUNT_ELEMENT_QUERY + ")");
+        query.appendSelect("(COUNT(DISTINCT ?" + URI + ") AS ?" + COUNT_ELEMENT_QUERY + ")");
         LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
         return query;
     }
@@ -246,7 +234,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
 
         for (AnnotationDTO annotationDTO : annotationsDTO) {
             Annotation annotation = annotationDTO.createObjectFromDTO();
-            annotation.setUri(uriGenerator.generateNewInstanceUri(TRIPLESTORE_CONCEPT_ANNOTATION, null, null));
+            annotation.setUri(uriGenerator.generateNewInstanceUri(Vocabulary.CONCEPT_ANNOTATION.toString(), null, null));
 
             SPARQLUpdateBuilder query = prepareInsertQuery(annotation);
             Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
@@ -289,20 +277,20 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
     private SPARQLUpdateBuilder prepareInsertQuery(Annotation annotation) {
         SPARQLUpdateBuilder query = new SPARQLUpdateBuilder();
 
-        query.appendGraphURI(TRIPLESTORE_CONTEXT_ANNOTATION);
-        query.appendTriplet(annotation.getUri(), TRIPLESTORE_RELATION_TYPE, NAMESPACES.getObjectsProperty("cAnnotation"), null);
+        query.appendGraphURI(Contexts.ANNOTATIONS.toString());
+        query.appendTriplet(annotation.getUri(), Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_ANNOTATION.toString(), null);
         DateTimeFormatter formatter = DateTimeFormat.forPattern(DateFormats.YMDTHMSZ_FORMAT);
-        query.appendTriplet(annotation.getUri(), TRIPLESTORE_RELATION_CREATED, "\"" + annotation.getCreated().toString(formatter) + "\"^^xsd:dateTime", null);
-        query.appendTriplet(annotation.getUri(), TRIPLESTORE_RELATION_CREATOR, annotation.getCreator(), null);
+        query.appendTriplet(annotation.getUri(), DublinCore.RELATION_CREATED.toString(), "\"" + annotation.getCreated().toString(formatter) + "\"^^xsd:dateTime", null);
+        query.appendTriplet(annotation.getUri(), DublinCore.RELATION_CREATOR.toString(), annotation.getCreator(), null);
 
-        query.appendTriplet(annotation.getUri(), TRIPLESTORE_RELATION_MOTIVATED_BY, annotation.getMotivatedBy(), null);
+        query.appendTriplet(annotation.getUri(), Oa.RELATION_MOTIVATED_BY.toString(), annotation.getMotivatedBy(), null);
 
         /**
          * @link https://www.w3.org/TR/annotation-model/#bodies-and-targets
          */
         if (annotation.getBodiesValue() != null && !annotation.getBodiesValue().isEmpty()) {
             for (String annotbodyValue : annotation.getBodiesValue()) {
-                query.appendTriplet(annotation.getUri(), TRIPLESTORE_RELATION_BODYVALUE, "\"" + annotbodyValue + "\"", null);
+                query.appendTriplet(annotation.getUri(), Oa.RELATION_BODY_VALUE.toString(), "\"" + annotbodyValue + "\"", null);
             }
         }
         /**
@@ -310,7 +298,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
          */
         if (annotation.getTargets() != null && !annotation.getTargets().isEmpty()) {
             for (String targetUri : annotation.getTargets()) {
-                query.appendTriplet(annotation.getUri(), TRIPLESTORE_RELATION_TARGET, targetUri, null);
+                query.appendTriplet(annotation.getUri(), Oa.RELATION_HAS_TARGET.toString(), targetUri, null);
             }
         }
         LOGGER.debug(getTraceabilityLogs() + " query : " + query.toString());
@@ -338,7 +326,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
             try {
                 //1.1 check motivation
                 if (!uriDao.existObject(annotation.getMotivatedBy())
-                        || !uriDao.isInstanceOf(annotation.getMotivatedBy(), TRIPLESTORE_CONCEPT_MOTIVATION)) {
+                        || !uriDao.isInstanceOf(annotation.getMotivatedBy(), Oa.CONCEPT_MOTIVATION.toString())) {
                     dataOk = false;
                     checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.WRONG_VALUE + " for the motivatedBy field"));
                 }

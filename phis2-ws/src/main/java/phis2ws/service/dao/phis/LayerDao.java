@@ -31,9 +31,10 @@ import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
-import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.sesame.AgronomicalObjectDAOSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
+import phis2ws.service.ontologies.Rdf;
+import phis2ws.service.ontologies.Vocabulary;
 import phis2ws.service.resources.dto.LayerDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
@@ -64,9 +65,7 @@ public class LayerDao {
     
     private static final String LAYER_FILE_SERVER_DIRECTORY = PropertiesFileManager.getConfigFileProperty("service", "layerFileServerDirectory");
     private static final String LAYER_FILE_SERVER_ADDRESS = PropertiesFileManager.getConfigFileProperty("service", "layerFileServerAddress");
-    
-    
-            
+     
     /**
      * @throws java.sql.SQLException
      * @action récupère la liste des enfants de objectURI et met à jour 
@@ -114,17 +113,16 @@ public class LayerDao {
      */
     private HashMap<String, String> getTypesByURIRelationOrConcept() {
         HashMap<String, String> typesByRelationOrConcept = new HashMap<>();
-        URINamespaces uriNamespaces = new URINamespaces();
-        typesByRelationOrConcept.put(uriNamespaces.getObjectsProperty("cVariety"), "variety");
-        typesByRelationOrConcept.put(uriNamespaces.getObjectsProperty("cGenotype"), "genotype");
-        typesByRelationOrConcept.put(uriNamespaces.getObjectsProperty("cSpecies"), "species");
-        typesByRelationOrConcept.put(uriNamespaces.getRelationsProperty("rFromGenotype"), "genotype");
-        typesByRelationOrConcept.put(uriNamespaces.getRelationsProperty("rFromVariety"), "variety");
-        typesByRelationOrConcept.put(uriNamespaces.getRelationsProperty("rFromSpecies"), "species");
-        typesByRelationOrConcept.put(uriNamespaces.getRelationsProperty("rExperimentModalities"), "experimentModalities");
-        typesByRelationOrConcept.put(uriNamespaces.getRelationsProperty("rHasRepetition"), "repetition");
-        typesByRelationOrConcept.put(uriNamespaces.getRelationsProperty("rHasAlias"), "alias");
-        typesByRelationOrConcept.put("http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "typeElement");
+        typesByRelationOrConcept.put(Vocabulary.CONCEPT_VARIETY.toString(), "variety");
+        typesByRelationOrConcept.put(Vocabulary.CONCEPT_GENOTYPE.toString(), "genotype");
+        typesByRelationOrConcept.put(Vocabulary.CONCEPT_SPECIES.toString(), "species");
+        typesByRelationOrConcept.put(Vocabulary.RELATION_FROM_GENOTYPE.toString(), "genotype");
+        typesByRelationOrConcept.put(Vocabulary.RELATION_FROM_VARIETY.toString(), "variety");
+        typesByRelationOrConcept.put(Vocabulary.RELATION_FROM_SPECIES.toString(), "species");
+        typesByRelationOrConcept.put(Vocabulary.RELATION_HAS_EXPERIMENT_MODALITIES.toString(), "experimentModalities");
+        typesByRelationOrConcept.put(Vocabulary.RELATION_HAS_REPETITION.toString(), "repetition");
+        typesByRelationOrConcept.put(Vocabulary.RELATION_HAS_ALIAS.toString(), "alias");
+        typesByRelationOrConcept.put(Rdf.RELATION_TYPE.toString(), "typeElement");
         
         return typesByRelationOrConcept;
     }

@@ -25,11 +25,14 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.dao.phis.UserDaoPhisBrapi;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.model.User;
+import phis2ws.service.ontologies.Contexts;
+import phis2ws.service.ontologies.Rdf;
+import phis2ws.service.ontologies.Rdfs;
+import phis2ws.service.ontologies.Vocabulary;
 import phis2ws.service.resources.dto.VectorDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.UriGenerator;
@@ -49,13 +52,10 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
     //The following attributes are used to search sensors in the triplestore
     //uri of the sensor
     public String uri;
-    private final String URI = "uri";
     //type uri of the sensor(s)
     public String rdfType;
-    private final String RDF_TYPE = "rdfType";
     //alias of the sensor(s)
     public String label;
-    private final String LABEL = "label";
     //brand of the sensor(s)
     public String brand;
     private final String BRAND = "brand";
@@ -71,22 +71,6 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
     //email of the person in charge of the sensor
     public String personInCharge;
     private final String PERSON_IN_CHARGE = "personInCharge";
-    
-    //Triplestore relations
-    private final static URINamespaces NAMESPACES = new URINamespaces();
-    final static String TRIPLESTORE_CONCEPT_VECTOR = NAMESPACES.getObjectsProperty("cVector");
-    final static String TRIPLESTORE_CONCEPT_UAV = NAMESPACES.getObjectsProperty("cUAV");
-    final static String TRIPLESTORE_CONTEXT_VECTORS = NAMESPACES.getContextsProperty("vectors");
-    
-    final static String TRIPLESTORE_RELATION_BRAND = NAMESPACES.getRelationsProperty("rHasBrand");
-    final static String TRIPLESTORE_RELATION_DATE_OF_PURCHASE = NAMESPACES.getRelationsProperty("rDateOfPurchase");
-    final static String TRIPLESTORE_RELATION_IN_SERVICE_DATE = NAMESPACES.getRelationsProperty("rInServiceDate");
-    final static String TRIPLESTORE_RELATION_LABEL = NAMESPACES.getRelationsProperty("label");
-    final static String TRIPLESTORE_RELATION_PERSON_IN_CHARGE = NAMESPACES.getRelationsProperty("rPersonInCharge");
-    final static String TRIPLESTORE_RELATION_SERIAL_NUMBER = NAMESPACES.getRelationsProperty("rSerialNumber");
-    final static String TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE = NAMESPACES.getRelationsProperty("subClassOf*");
-    final static String TRIPLESTORE_RELATION_TYPE = NAMESPACES.getRelationsProperty("type");
-    final static String TRIPLESTORE_RELATION_VARIABLE = NAMESPACES.getRelationsProperty("rMeasuredVariable");
         
     /**
      * generates the query to get the number of vectors in the triplestore for 
@@ -95,12 +79,11 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
      * @return query of number of vectors
      */
     private SPARQLQueryBuilder prepareGetVectorsNumber(String year) {
-        URINamespaces uriNamespaces = new URINamespaces();
         SPARQLQueryBuilder queryNumberVectors = new SPARQLQueryBuilder();
-        queryNumberVectors.appendSelect("(count(distinct ?vector) as ?count)");
-        queryNumberVectors.appendTriplet("?vector", TRIPLESTORE_RELATION_TYPE, "?rdfType", null);
-        queryNumberVectors.appendTriplet("?rdfType", TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE, TRIPLESTORE_CONCEPT_VECTOR, null);
-        queryNumberVectors.appendFilter("regex(str(?vector), \".*/" + year + "/.*\")");
+        queryNumberVectors.appendSelect("(COUNT(DISTINCT ?vector) AS ?count)");
+        queryNumberVectors.appendTriplet("?vector", "<" + Rdf.RELATION_TYPE.toString() + ">", "?rdfType", null);
+        queryNumberVectors.appendTriplet("?rdfType", "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", "<" + Vocabulary.CONCEPT_VECTOR.toString() + ">", null);
+        queryNumberVectors.appendFilter("REGEX(STR(?vector), \".*/" + year + "/.*\")");
         
         LOGGER.debug(SPARQL_SELECT_QUERY + queryNumberVectors.toString());
         return queryNumberVectors;
@@ -168,61 +151,61 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
         }
         
         if (rdfType != null) {
-            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_TYPE, rdfType, null);
+            query.appendTriplet(sensorUri, "<" + Rdf.RELATION_TYPE.toString() + ">", rdfType, null);
         } else {
             query.appendSelect("?" + RDF_TYPE);
-            query.appendTriplet(sensorUri, rdfType, "?" + RDF_TYPE, null);
-            query.appendTriplet("?" + RDF_TYPE, TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE, TRIPLESTORE_CONCEPT_VECTOR, null);
+            query.appendTriplet(sensorUri, "<" + rdfType + ">", "?" + RDF_TYPE, null);
+            query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", "<" + Vocabulary.CONCEPT_VECTOR.toString() + ">", null);
         }        
 
         if (label != null) {
-            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_LABEL, "\"" + label + "\"", null);
+            query.appendTriplet(sensorUri, "<" + Rdfs.RELATION_LABEL.toString() + ">", "\"" + label + "\"", null);
         } else {
             query.appendSelect(" ?" + LABEL);
             query.beginBodyOptional();
-            query.appendToBody(sensorUri + " " + TRIPLESTORE_RELATION_LABEL + " " + "?" + LABEL + " . ");
+            query.appendToBody(sensorUri + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + LABEL + " . ");
             query.endBodyOptional();
         }
 
         if (brand != null) {
-            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_BRAND, "\"" + brand + "\"", null);
+            query.appendTriplet(sensorUri, Vocabulary.RELATION_HAS_BRAND.toString(), "\"" + brand + "\"", null);
         } else {
             query.appendSelect(" ?" + BRAND);
-            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_BRAND, "?" + BRAND, null);
+            query.appendTriplet(sensorUri, Vocabulary.RELATION_HAS_BRAND.toString(), "?" + BRAND, null);
         }
         
         if (serialNumber != null) {
-            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_SERIAL_NUMBER, "\"" + serialNumber + "\"", null);
+            query.appendTriplet(sensorUri, Vocabulary.RELATION_SERIAL_NUMBER.toString(), "\"" + serialNumber + "\"", null);
         } else {
             query.appendSelect(" ?" + SERIAL_NUMBER);
             query.beginBodyOptional();
-            query.appendToBody(sensorUri + " <" + TRIPLESTORE_RELATION_SERIAL_NUMBER + "> " + "?" + SERIAL_NUMBER + " .");
+            query.appendToBody(sensorUri + " <" + Vocabulary.RELATION_SERIAL_NUMBER.toString() + "> " + "?" + SERIAL_NUMBER + " .");
             query.endBodyOptional();
         }
 
         if (inServiceDate != null) {
-            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_IN_SERVICE_DATE, "\"" + inServiceDate + "\"", null);
+            query.appendTriplet(sensorUri, Vocabulary.RELATION_IN_SERVICE_DATE.toString(), "\"" + inServiceDate + "\"", null);
         } else {
             query.appendSelect(" ?" + IN_SERVICE_DATE);
             query.beginBodyOptional();
-            query.appendToBody(sensorUri + " <" + TRIPLESTORE_RELATION_IN_SERVICE_DATE + "> " + "?" + IN_SERVICE_DATE + " . ");
+            query.appendToBody(sensorUri + " <" + Vocabulary.RELATION_IN_SERVICE_DATE.toString() + "> " + "?" + IN_SERVICE_DATE + " . ");
             query.endBodyOptional();
         }
 
         if (dateOfPurchase != null) {
-            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_DATE_OF_PURCHASE, "\"" + dateOfPurchase + "\"", null);
+            query.appendTriplet(sensorUri, Vocabulary.RELATION_DATE_OF_PURCHASE.toString(), "\"" + dateOfPurchase + "\"", null);
         } else {
             query.appendSelect("?" + DATE_OF_PURCHASE);
             query.beginBodyOptional();
-            query.appendToBody(sensorUri + " <" + TRIPLESTORE_RELATION_DATE_OF_PURCHASE + "> " + "?" + DATE_OF_PURCHASE + " . ");
+            query.appendToBody(sensorUri + " <" + Vocabulary.RELATION_DATE_OF_PURCHASE.toString() + "> " + "?" + DATE_OF_PURCHASE + " . ");
             query.endBodyOptional();
         }
         
         if (personInCharge != null) {
-            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_PERSON_IN_CHARGE, personInCharge, null);
+            query.appendTriplet(sensorUri, Vocabulary.RELATION_PERSON_IN_CHARGE.toString(), personInCharge, null);
         } else {
             query.appendSelect("?" + PERSON_IN_CHARGE);
-            query.appendTriplet(sensorUri, TRIPLESTORE_RELATION_PERSON_IN_CHARGE, "?" + PERSON_IN_CHARGE, null);
+            query.appendTriplet(sensorUri, Vocabulary.RELATION_PERSON_IN_CHARGE.toString(), "?" + PERSON_IN_CHARGE, null);
         }
         
         query.appendLimit(this.getPageSize());
@@ -262,7 +245,7 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
         query.clearLimit();
         query.clearOffset();
         query.clearGroupBy();
-        query.appendSelect("(count(distinct ?" + URI + ") as ?" + COUNT_ELEMENT_QUERY + ")");
+        query.appendSelect("(COUNT(DISTINCT ?" + URI + ") AS ?" + COUNT_ELEMENT_QUERY + ")");
         LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
         return query;
     }
@@ -305,7 +288,7 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
         query.clearOffset();
         query.clearGroupBy();
         query.clearOrderBy();
-        query.appendSelect("(count(distinct ?" + URI + ") as ?" + COUNT_ELEMENT_QUERY + ")");
+        query.appendSelect("(COUNT(DISTINCT ?" + URI + ") AS ?" + COUNT_ELEMENT_QUERY + ")");
         LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
         return query;
     }
@@ -350,8 +333,8 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         
         query.appendSelect("?" + URI);
-        query.appendTriplet("?" + URI, TRIPLESTORE_RELATION_TYPE, "?type", null);
-        query.appendTriplet("?type", TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE, TRIPLESTORE_CONCEPT_VECTOR, null);
+        query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?type", null);
+        query.appendTriplet("?type", "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_VECTOR.toString(), null);
         query.appendFilter("regex(str(?uri), \".*/" + year + "/.*\")");
         query.appendOrderBy("desc(?uri)");
         query.appendLimit(1);
@@ -495,7 +478,7 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
                 try {
                     //2.1 check type (subclass of Vector)
                     UriDaoSesame uriDaoSesame = new UriDaoSesame();
-                    if (!uriDaoSesame.isSubClassOf(vectorDTO.getRdfType(), TRIPLESTORE_CONCEPT_VECTOR)) {
+                    if (!uriDaoSesame.isSubClassOf(vectorDTO.getRdfType(), Vocabulary.CONCEPT_VECTOR.toString())) {
                         dataOk = false;
                         checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Bad vector type given"));
                     }
@@ -540,18 +523,18 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
     private SPARQLUpdateBuilder prepareInsertQuery(Vector vector) {
         SPARQLUpdateBuilder query = new SPARQLUpdateBuilder();
         
-        query.appendGraphURI(TRIPLESTORE_CONTEXT_VECTORS);
-        query.appendTriplet(vector.getUri(), TRIPLESTORE_RELATION_TYPE, vector.getRdfType(), null);
-        query.appendTriplet(vector.getUri(), TRIPLESTORE_RELATION_LABEL, "\"" + vector.getLabel() + "\"", null);
-        query.appendTriplet(vector.getUri(), TRIPLESTORE_RELATION_BRAND, "\"" + vector.getBrand() + "\"", null);
-        query.appendTriplet(vector.getUri(), TRIPLESTORE_RELATION_IN_SERVICE_DATE, "\"" + vector.getInServiceDate() + "\"", null);
-        query.appendTriplet(vector.getUri(), TRIPLESTORE_RELATION_PERSON_IN_CHARGE, "\"" + vector.getPersonInCharge() + "\"", null);
+        query.appendGraphURI(Contexts.VECTORS.toString());
+        query.appendTriplet(vector.getUri(), Rdf.RELATION_TYPE.toString(), vector.getRdfType(), null);
+        query.appendTriplet(vector.getUri(), Rdfs.RELATION_LABEL.toString(), "\"" + vector.getLabel() + "\"", null);
+        query.appendTriplet(vector.getUri(), Vocabulary.RELATION_HAS_BRAND.toString(), "\"" + vector.getBrand() + "\"", null);
+        query.appendTriplet(vector.getUri(), Vocabulary.RELATION_IN_SERVICE_DATE.toString(), "\"" + vector.getInServiceDate() + "\"", null);
+        query.appendTriplet(vector.getUri(), Vocabulary.RELATION_PERSON_IN_CHARGE.toString(), "\"" + vector.getPersonInCharge() + "\"", null);
         
         if (vector.getSerialNumber() != null) {
-            query.appendTriplet(vector.getUri(), TRIPLESTORE_RELATION_SERIAL_NUMBER, "\"" + vector.getSerialNumber() + "\"", null);
+            query.appendTriplet(vector.getUri(), Vocabulary.RELATION_SERIAL_NUMBER.toString(), "\"" + vector.getSerialNumber() + "\"", null);
         }
         if (vector.getDateOfPurchase() != null) {
-            query.appendTriplet(vector.getUri(), TRIPLESTORE_RELATION_DATE_OF_PURCHASE, "\"" + vector.getDateOfPurchase() + "\"", null);
+            query.appendTriplet(vector.getUri(), Vocabulary.RELATION_DATE_OF_PURCHASE.toString(), "\"" + vector.getDateOfPurchase() + "\"", null);
         }
         
         LOGGER.debug(getTraceabilityLogs() + " query : " + query.toString());
@@ -628,18 +611,18 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
     private String prepareDeleteQuery(Vector vector) {
         String deleteQuery;
         deleteQuery = "DELETE WHERE { "
-                + "<" + vector.getUri() + "> " + TRIPLESTORE_RELATION_TYPE + " <" + vector.getRdfType() + "> . "
-                + "<" + vector.getUri() + "> " + TRIPLESTORE_RELATION_LABEL + " \"" + vector.getLabel()+ "\" . "
-                + "<" + vector.getUri() + "> <" + TRIPLESTORE_RELATION_BRAND + "> \"" + vector.getBrand() + "\" . "
-                + "<" + vector.getUri() + "> <" + TRIPLESTORE_RELATION_IN_SERVICE_DATE + "> \"" + vector.getInServiceDate() + "\" . "
-                + "<" + vector.getUri() + "> <" + TRIPLESTORE_RELATION_PERSON_IN_CHARGE + "> \"" + vector.getPersonInCharge() + "\" . ";
+                + "<" + vector.getUri() + "> <" + Rdf.RELATION_TYPE.toString() + "> <" + vector.getRdfType() + "> . "
+                + "<" + vector.getUri() + "> <" + Rdfs.RELATION_LABEL.toString() + "> \"" + vector.getLabel()+ "\" . "
+                + "<" + vector.getUri() + "> <" + Vocabulary.RELATION_HAS_BRAND.toString() + "> \"" + vector.getBrand() + "\" . "
+                + "<" + vector.getUri() + "> <" + Vocabulary.RELATION_IN_SERVICE_DATE.toString() + "> \"" + vector.getInServiceDate() + "\" . "
+                + "<" + vector.getUri() + "> <" + Vocabulary.RELATION_PERSON_IN_CHARGE.toString() + "> \"" + vector.getPersonInCharge() + "\" . ";
         
         if (vector.getSerialNumber() != null) {
-            deleteQuery += "<" + vector.getUri() + "> <" + TRIPLESTORE_RELATION_SERIAL_NUMBER + "> \"" + vector.getSerialNumber() + "\" . ";
+            deleteQuery += "<" + vector.getUri() + "> <" + Vocabulary.RELATION_SERIAL_NUMBER.toString() + "> \"" + vector.getSerialNumber() + "\" . ";
         }
         
         if (vector.getDateOfPurchase() != null) {
-            deleteQuery += "<" + vector.getUri() + "> <" + TRIPLESTORE_RELATION_DATE_OF_PURCHASE + "> \"" + vector.getDateOfPurchase() + "\"";
+            deleteQuery += "<" + vector.getUri() + "> <" + Vocabulary.RELATION_DATE_OF_PURCHASE.toString() + "> \"" + vector.getDateOfPurchase() + "\"";
         }
         
         deleteQuery += "}";
@@ -766,9 +749,9 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         
         query.appendSelect("?" + URI + " ?" + RDF_TYPE + " ?" + LABEL );
-        query.appendTriplet("?" + RDF_TYPE, TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE, TRIPLESTORE_CONCEPT_UAV, null);
-        query.appendTriplet("?" + URI, TRIPLESTORE_RELATION_TYPE, "?" + RDF_TYPE, null);
-        query.appendTriplet("?" + URI, TRIPLESTORE_RELATION_LABEL, "?" + LABEL, null);
+        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_UAV.toString(), null);
+        query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
+        query.appendTriplet("?" + URI, Rdfs.RELATION_LABEL.toString(), "?" + LABEL, null);
         query.appendOrderBy("desc(?" + LABEL + ")");
         
         query.appendLimit(this.getPageSize());

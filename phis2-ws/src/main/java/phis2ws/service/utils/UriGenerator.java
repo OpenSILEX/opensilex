@@ -11,7 +11,6 @@ import java.util.UUID;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 import phis2ws.service.PropertiesFileManager;
-import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.mongo.ImageMetadataDaoMongo;
 import phis2ws.service.dao.sesame.AgronomicalObjectDAOSesame;
 import phis2ws.service.dao.sesame.AnnotationDAOSesame;
@@ -22,6 +21,8 @@ import phis2ws.service.dao.sesame.TraitDaoSesame;
 import phis2ws.service.dao.sesame.UnitDaoSesame;
 import phis2ws.service.dao.sesame.VariableDaoSesame;
 import phis2ws.service.dao.sesame.VectorDAOSesame;
+import phis2ws.service.ontologies.Foaf;
+import phis2ws.service.ontologies.Vocabulary;
 
 /**
  * generate differents kinds of uris (vector, sensor, ...)
@@ -41,7 +42,7 @@ public class UriGenerator {
 
     final static Logger LOGGER = LoggerFactory.getLogger(UriGenerator.class);
 
-    private static final String PROPERTIES_SERVICE_FILE_NAME = "service";
+    private static final String PROPERTIES_SERVICE_FILE_NAME = "sesame_rdf_config";
     private static final String PROPERTIES_SERVICE_BASE_URI = "baseURI";
 
     private static final String URI_CODE_AGRONOMICAL_OBJECT = "o";
@@ -347,31 +348,29 @@ public class UriGenerator {
             year = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
         }
 
-        URINamespaces uriNamespaces = new URINamespaces();
-
         UriDaoSesame uriDaoSesame = new UriDaoSesame();
 
-        if (uriDaoSesame.isSubClassOf(instanceType, uriNamespaces.getObjectsProperty("cVector"))) {
+        if (uriDaoSesame.isSubClassOf(instanceType, Vocabulary.CONCEPT_VECTOR.toString())) {
             return generateVectorUri(year);
-        } else if (uriDaoSesame.isSubClassOf(instanceType, uriNamespaces.getObjectsProperty("cSensingDevice"))) {
+        } else if (uriDaoSesame.isSubClassOf(instanceType, Vocabulary.CONCEPT_SENSING_DEVICE.toString())) {
             return generateSensorUri(year);
-        } else if (uriNamespaces.getObjectsProperty("cVariable").equals(instanceType)) {
+        } else if (Vocabulary.CONCEPT_VARIABLE.toString().equals(instanceType)) {
             return generateVariableUri();
-        } else if (uriNamespaces.getObjectsProperty("cTrait").equals(instanceType)) {
+        } else if (Vocabulary.CONCEPT_TRAIT.toString().equals(instanceType)) {
             return generateTraitUri();
-        } else if (uriNamespaces.getObjectsProperty("cMethod").equals(instanceType)) {
+        } else if (Vocabulary.CONCEPT_METHOD.toString().equals(instanceType)) {
             return generateMethodUri();
-        } else if (uriNamespaces.getObjectsProperty("cUnit").equals(instanceType)) {
+        } else if (Vocabulary.CONCEPT_UNIT.toString().equals(instanceType)) {
             return generateUnitUri();
-        } else if (uriDaoSesame.isSubClassOf(instanceType, uriNamespaces.getObjectsProperty("cAgronomicalObject"))) {
+        } else if (uriDaoSesame.isSubClassOf(instanceType, Vocabulary.CONCEPT_AGRONOMICAL_OBJECT.toString())) {
             return generateAgronomicalObjectUri(year);
-        } else if (uriNamespaces.getObjectsProperty("cVariety").equals(instanceType)) {
+        } else if (Vocabulary.CONCEPT_VARIETY.toString().equals(instanceType)) {
             return generateVarietyUri(additionalInformation);
-        } else if (uriDaoSesame.isSubClassOf(instanceType, uriNamespaces.getObjectsProperty("cImage"))) {
+        } else if (uriDaoSesame.isSubClassOf(instanceType, Vocabulary.CONCEPT_IMAGE.toString())) {
             return generateImageUri(year, additionalInformation);
-        } else if (instanceType.equals(uriNamespaces.getObjectsProperty("cAgent")) || uriDaoSesame.isSubClassOf(instanceType, uriNamespaces.getObjectsProperty("cAgent"))) {
+        } else if (instanceType.equals(Foaf.CONCEPT_AGENT.toString()) || uriDaoSesame.isSubClassOf(instanceType, Foaf.CONCEPT_AGENT.toString())) {
             return generateAgentUri(additionalInformation);
-        } else if (instanceType.equals(uriNamespaces.getObjectsProperty("cAnnotation"))) {
+        } else if (instanceType.equals(Vocabulary.CONCEPT_ANNOTATION.toString())) {
             return generateAnnotationUri();
         }
 

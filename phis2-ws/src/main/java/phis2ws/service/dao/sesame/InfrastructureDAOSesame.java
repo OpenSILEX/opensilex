@@ -18,8 +18,10 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOSesame;
+import phis2ws.service.ontologies.Rdf;
+import phis2ws.service.ontologies.Rdfs;
+import phis2ws.service.ontologies.Vocabulary;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.model.phis.Infrastructure;
 
@@ -34,24 +36,12 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
     //The following attributes are used to search infrastructures in the triplestore
     //uri of the infrastructure
     public String uri;
-    private final String URI = "uri";
     
     //type uri of the infrastructure(s)
     public String rdfType;
-    private final String RDF_TYPE = "rdfType";
     
     //alias of the infrastructure(s)
     public String label;
-    private final String LABEL = "label";
-
-    //Triplestore relations
-    private final static URINamespaces NAMESPACES = new URINamespaces();
-    
-    final public static String TRIPLESTORE_CONCEPT_INFRASTRUCTURE = NAMESPACES.getObjectsProperty("cInfrastructure");
-    
-    final static String TRIPLESTORE_RELATION_LABEL = NAMESPACES.getRelationsProperty("label");
-    final static String TRIPLESTORE_RELATION_TYPE = NAMESPACES.getRelationsProperty("type");
-    final static String TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE = NAMESPACES.getRelationsProperty("subClassOf*");
     
      /**
      * generates a paginated search query (search by uri, type, label)
@@ -78,16 +68,16 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
         }
         
         if (rdfType != null) {
-            query.appendTriplet(infrastructureUri, TRIPLESTORE_RELATION_TYPE, rdfType, null);
+            query.appendTriplet(infrastructureUri, Rdf.RELATION_TYPE.toString(), rdfType, null);
         } else {
             query.appendSelect("?" + RDF_TYPE);
-            query.appendTriplet(infrastructureUri, TRIPLESTORE_RELATION_TYPE, "?" + RDF_TYPE, null);
-            query.appendTriplet("?" + RDF_TYPE, TRIPLESTORE_RELATION_SUBCLASS_OF_MULTIPLE, TRIPLESTORE_CONCEPT_INFRASTRUCTURE, null);
+            query.appendTriplet(infrastructureUri, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
+            query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_INFRASTRUCTURE.toString(), null);
         }        
 
         query.appendSelect(" ?" + LABEL);
         query.beginBodyOptional();
-        query.appendToBody(infrastructureUri + " " + TRIPLESTORE_RELATION_LABEL + " " + "?" + LABEL + " . ");
+        query.appendToBody(infrastructureUri + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + LABEL + " . ");
         query.endBodyOptional();
             
         if (label != null) {
@@ -159,7 +149,6 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
         }
         return infrastructures;
     }
-
     
     /**
      * get an infrastructure from a given binding set.
@@ -187,5 +176,4 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
 
         return infrastructure;
     }
-    
 }

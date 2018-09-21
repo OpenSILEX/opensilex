@@ -124,7 +124,7 @@ public class TripletsResourceService {
                 }
                 tripletDAOSesame.user = userSession.getUser();
                 
-                String graphUri = PropertiesFileManager.getConfigFileProperty("service", "baseURI") + Long.toString(new Timestamp(System.currentTimeMillis()).getTime());
+                String graphUri = PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "baseURI") + Long.toString(new Timestamp(System.currentTimeMillis()).getTime());
                 
                 POSTResultsReturn insertResult = tripletDAOSesame.checkAndInsert(triplets, graphUri);
                 

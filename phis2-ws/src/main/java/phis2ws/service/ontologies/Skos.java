@@ -43,5 +43,11 @@ public enum Skos {
         public String toString() {
             return NAMESPACE.toString() + "narrower";
         }
+    },
+    RELATION_PREF_LABEL {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "prefLabel";
+        }
     }
 }

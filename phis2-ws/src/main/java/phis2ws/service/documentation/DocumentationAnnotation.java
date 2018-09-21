@@ -107,6 +107,7 @@ public final class DocumentationAnnotation {
 
     public static final String RAW_DATA_POST_DATA_DEFINITION = "JSON format of raw data";
 
+    public static final String INFRASTRUCTURE_URI_DEFINITION = "An infrastructure URI (Unique Resource Identifier)";
     
     public static final String CONCEPT_URI_DEFINITION = "A concept URI (Unique Resource Identifier)";
     public static final String DEEP ="true or false deppending if you want instances of concept progenity";
@@ -259,12 +260,14 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_ANNOTATION_CREATOR = "http://www.phenome-fppn.fr/diaphen/id/agent/marie_dupond";
   
     public static final String EXAMPLE_EXPERIMENT_CROP_SPECIES = "maize";
-    
+
     // API global parameter
     public static final String EXAMPLE_SORTING_ALLOWABLE_VALUES = "asc,desc";
 
     public static final String EXAMPLE_INFRASTRUCTURE_URI = "http://www.phenome-fppn.fr/diaphen";
     public static final String EXAMPLE_INFRASTRUCTURE_RDF_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#Infrastructure";
     public static final String EXAMPLE_INFRASTRUCTURE_LABEL = "EMPHASIS";
+    
+    public static final String EXAMPLE_LANGUAGE = "en";
 
 }

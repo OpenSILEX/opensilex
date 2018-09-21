@@ -20,6 +20,7 @@ import javax.validation.constraints.Min;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -30,12 +31,13 @@ import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.sesame.InfrastructureDAOSesame;
-import phis2ws.service.dao.sesame.PropertyDAOSesame;
+import phis2ws.service.dao.sesame.PropertyLabelDAOSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.ontologies.Vocabulary;
 import phis2ws.service.resources.dto.PropertiesDTO;
+import phis2ws.service.resources.dto.PropertyLabelsDTO;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
@@ -58,7 +60,7 @@ public class InfrastructureResourceService {
     Session userSession;
     
     /**
-     * search infrastructures by uri, rdfType. 
+     * Search infrastructures by uri, rdfType. 
      * 
      * @param pageSize
      * @param page
@@ -172,7 +174,7 @@ public class InfrastructureResourceService {
     }
     
     /**
-     * search infrastructure details for a given uri
+     * Search infrastructure details for a given uri
      * 
      * @param pageSize
      * @param page
@@ -221,7 +223,7 @@ public class InfrastructureResourceService {
     @ApiOperation(value = "Get all infrastructure's details corresponding to the search uri",
                   notes = "Retrieve all infrastructure's details authorized for the user corresponding to the searched uri")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve infrastructure's details", response = Infrastructure.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Retrieve infrastructure's details", response = PropertiesDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
@@ -234,25 +236,27 @@ public class InfrastructureResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getInfrastructureDetails(
-        @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_URI) @QueryParam("uri") @URL @Required String uri,
+        @ApiParam(value = DocumentationAnnotation.INFRASTRUCTURE_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_URI) @PathParam("uri") @URL @Required String uri,
+        @ApiParam(value = "Language", example = DocumentationAnnotation.EXAMPLE_LANGUAGE) @QueryParam("lang") String lang,
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
-    ) {
-        PropertyDAOSesame propertiesDAO = new PropertyDAOSesame();
+        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {            
+        PropertyLabelDAOSesame propertiesDAO = new PropertyLabelDAOSesame();
         
         propertiesDAO.uri = uri;
-        propertiesDAO.subClassOf = Vocabulary.CONCEPT_INFRASTRUCTURE.toString();
+        propertiesDAO.subClassOf = Vocabulary.CONCEPT_INFRASTRUCTURE;
+        if (lang != null) {
+            propertiesDAO.lang = lang;
+        }
                 
         propertiesDAO.user = userSession.getUser();
         propertiesDAO.setPage(page);
         propertiesDAO.setPageSize(pageSize);
         
-        ;
         ArrayList<Status> statusList = new ArrayList<>();
         ResponseFormProperties getResponse;
 
         // Retreive all annotations returned by the query
-        ArrayList<PropertiesDTO> infrastructureDetails = propertiesDAO.allPaginate();
+        ArrayList<PropertiesDTO<PropertyLabelsDTO>> infrastructureDetails = propertiesDAO.getAllProperties();
 
         if (infrastructureDetails == null) {
             getResponse = new ResponseFormProperties(0, 0, infrastructureDetails, true, 0);

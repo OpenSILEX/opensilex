@@ -1,12 +1,9 @@
 //******************************************************************************
 //                                       PropertyDAOSesame.java
-//
-// Author(s): Morgane Vidal <morgane.vidal@inra.fr>
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: 29 mai 2018
-// Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  29 mai 2018
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Creation date: 29 may 2018
+// Contact: morgane.vidal@inra.fr vincent.migot@inra.fr anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Subject: access and manipulation of the properties of the ontology in the triplestore
 //******************************************************************************
 package phis2ws.service.dao.sesame;
@@ -29,6 +26,7 @@ import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.ontologies.Owl;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
+import phis2ws.service.ontologies.Vocabulary;
 import phis2ws.service.resources.dto.PropertiesDTO;
 import phis2ws.service.resources.dto.PropertyDTO;
 import phis2ws.service.utils.POSTResultsReturn;
@@ -50,10 +48,10 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     
     // This attribute is used to search all properties of the given uri
     public String uri;
-    
-    // This attribute is used to restrict available uri to a specific set of subclass
-    public String subClassOf;
         
+    // This attribute is used to restrict available uri to a specific set of subclass
+    public Vocabulary subClassOf;
+
     //The following attributes are used to search properties in the triplestore
     //the property relation name. 
     //the relation term is used because it only represents the "vocabulary:property" 
@@ -70,12 +68,12 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     //a blank node, used to query the triplestore
     private final String BLANCK_NODE = "_:x";
     //a property, used to query the triplestore
-    private final String PROPERTY = "property";
+    protected final String PROPERTY = "property";
     //a count result, used to query the triplestore (count properties)
     private final String COUNT = "count";
     //the relation, used to query the triplestore (cardinalities)
-    private final String RELATION = "relation";
-
+    protected final String RELATION = "relation";
+    
     /**
      * prepare the sparql query to get the list of properties and their relations
      * to the given uri. If subClassOf is specified, the object corresponding to the uri must be
@@ -99,14 +97,14 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
         query.appendTriplet("<" + uri + ">", "<" + Rdf.RELATION_TYPE.toString() + ">", "?" + RDF_TYPE, null);
         
         if (subClassOf != null) {
-            query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", subClassOf, null);
+            query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", "<" + subClassOf + ">", null);
         }
         
         LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
         
         return query;
     }
-
+    
      /**
      * search all the properties corresponding to the given object uri
      * @return the list of the properties which match the given uri.
@@ -145,7 +143,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
-     * prepare the sparql query to get the domain of a relation
+     * Prepare the sparql query to get the domain of a relation
      * @return the builded query
      * e.g.
      * SELECT ?domain
@@ -166,7 +164,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
-     * get in the triplestore the domain of the property if it exist
+     * Get in the triplestore the domain of the property if it exist
      * @return the domain of the property (attributes relation)
      */
     public ArrayList<String> getPropertyDomain() {
@@ -210,7 +208,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
-     * query to get cardinalities of a relation for a given type
+     * Query to get cardinalities of a relation for a given type
      * @param rdfType
      * @return 
      */
@@ -235,7 +233,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
-     * query to get the cardinalities required for each property for a given concept
+     * Query to get the cardinalities required for each property for a given concept
      * @param concept
      * @return the query
      * e.g. 
@@ -273,7 +271,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
-     * get the cardinalities of a relation for each concerned concept
+     * Get the cardinalities of a relation for each concerned concept
      * @return the list of the cardinalities founded in the triplestore
      * e.g of content : 
      * "owl:cardinality" : 1
@@ -307,7 +305,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
-     * get the cardinalities of each relations for a concept
+     * Get the cardinalities of each relations for a concept
      * @param concept
      *  @return the list of the cardinalities founded in the triplestore
      * e.g of content : 
@@ -371,7 +369,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
-     * order the given properties by relation
+     * Order the given properties by relation
      * @param properties
      * @return the ordered list
      */
@@ -390,7 +388,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
-     * check the cardinalities for a list of properties, for a concept
+     * Check the cardinalities for a list of properties, for a concept
      * @param numberOfRelations
      * @param expectedCardinalities
      * @return 
@@ -444,7 +442,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
-     * check the cardinalities of properties for a given object uri
+     * Check the cardinalities of properties for a given object uri
      * @param properties
      * @param objectUri
      * @param objectRdfType

@@ -63,6 +63,7 @@ public class PropertyDTO extends AbstractVerifiedClass {
         this.relation = relation;
     }
     
+    @URL
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROPERTY_VALUE)
     public String getValue() {
@@ -72,4 +73,23 @@ public class PropertyDTO extends AbstractVerifiedClass {
     public void setValue(String value) {
         this.value = value;
     }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof PropertyDTO){
+            PropertyDTO prop = (PropertyDTO) obj;
+            
+            return prop.value.equals(value)
+                    && prop.relation.equals(relation)
+                    && prop.rdfType.equals(rdfType);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return (value + relation + rdfType).hashCode();
+    }
+    
+    
 }

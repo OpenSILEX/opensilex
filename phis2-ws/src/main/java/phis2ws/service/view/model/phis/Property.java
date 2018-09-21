@@ -13,6 +13,7 @@
 package phis2ws.service.view.model.phis;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 
 /**
  * Represents the view of the properties in the triplestore. 
@@ -22,12 +23,15 @@ public class Property {
     //type of the range (if needed)
     //(e.g. http://www.phenome-fppn.fr/vocabulary/2017#Variety)
     private String rdfType;
+    private LinkedList<String> rdfTypeLabel;
     //relation name 
     //(e.g. http://www.phenome-fppn.fr/vocabulary/2017#fromVariety)
     private String relation;
+    private LinkedList<String> relationLabel;
     //value
     //(e.g. plot alias, or the uri of the variety)
     private String value;
+    private LinkedList<String> valueLabel;
     //the domain of the property. For the first version, it is only a single string.
     //then, the union and others will be added
     //(e.g. http://www.phenome-fppn.fr/vocabulary/2017#MultispectralCamera)
@@ -81,5 +85,29 @@ public class Property {
     
     public void addLabel(String language, String label) {
         labels.put(language, label);
+    }
+    
+    public LinkedList<String> getRdfTypeLabel() {
+        return rdfTypeLabel;
+    }
+
+    public void setRdfTypeLabel(LinkedList<String> rdfTypeLabel) {
+        this.rdfTypeLabel = rdfTypeLabel;
+    }
+
+    public LinkedList<String> getRelationLabel() {
+        return relationLabel;
+    }
+
+    public void setRelationLabel(LinkedList<String> relationLabel) {
+        this.relationLabel = relationLabel;
+    }
+
+    public LinkedList<String> getValueLabel() {
+        return valueLabel;
+    }
+
+    public void setValueLabel(LinkedList<String> valueLabel) {
+        this.valueLabel = valueLabel;
     }
 }

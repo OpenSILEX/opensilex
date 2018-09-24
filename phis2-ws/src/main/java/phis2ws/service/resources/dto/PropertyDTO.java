@@ -1,13 +1,9 @@
 //******************************************************************************
 //                                       PropertyDTO.java
-//
-// Author(s): Vincent Migot <vincent.migot@inra.fr>
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: 10 septembre 2018
-// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  10 septembre 2018
-// Subject: Represents the submitted JSON for a property
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Creation date: 10 sept, 2018
+// Contact: morgane.vidal@inra.fr, vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package phis2ws.service.resources.dto;
 
@@ -20,6 +16,7 @@ import phis2ws.service.view.model.phis.Property;
 
 /**
  * Represents the submitted JSON for a property
+ *
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class PropertyDTO extends AbstractVerifiedClass {
@@ -38,10 +35,10 @@ public class PropertyDTO extends AbstractVerifiedClass {
         property.setRdfType(rdfType);
         property.setRelation(relation);
         property.setValue(value);
-        
+
         return property;
     }
-    
+
     @URL
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROPERTY_RDF_TYPE)
     public String getRdfType() {
@@ -51,7 +48,7 @@ public class PropertyDTO extends AbstractVerifiedClass {
     public void setRdfType(String rdfType) {
         this.rdfType = rdfType;
     }
-    
+
     @URL
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROPERTY_RELATION)
@@ -62,26 +59,27 @@ public class PropertyDTO extends AbstractVerifiedClass {
     public void setRelation(String relation) {
         this.relation = relation;
     }
-    
+
     @URL
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROPERTY_VALUE)
     public String getValue() {
         return value;
     }
-    
+
     public void setValue(String value) {
         this.value = value;
     }
-    
+
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof PropertyDTO){
+
+        if (obj != null && obj instanceof PropertyDTO) {
             PropertyDTO prop = (PropertyDTO) obj;
-            
-            return prop.value.equals(value)
-                    && prop.relation.equals(relation)
-                    && prop.rdfType.equals(rdfType);
+
+            return this.value.equals(prop.value)
+                   && this.rdfType.equals(prop.rdfType)
+                   && this.relation.equals(prop.relation);
         }
         return false;
     }
@@ -90,6 +88,5 @@ public class PropertyDTO extends AbstractVerifiedClass {
     public int hashCode() {
         return (value + relation + rdfType).hashCode();
     }
-    
-    
+
 }

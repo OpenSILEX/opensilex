@@ -109,7 +109,7 @@ public class PropertyLabelDAOSesame extends PropertyDAOSesame {
     }
     
      /**
-     * Search all the properties corresponding to the given object uri
+     * Search all the properties corresponding to the given object uri.
      * @return the list of the properties which match the given uri.
      */
     public ArrayList<PropertiesDTO<PropertyLabelsDTO>> getAllProperties() {        
@@ -129,6 +129,8 @@ public class PropertyLabelDAOSesame extends PropertyDAOSesame {
         
                 if (bindingSet.hasBinding(PROPERTY_TYPE)) {
                     property.setRdfType(bindingSet.getValue(PROPERTY_TYPE).stringValue());
+                } else {
+                    property.setRdfType("");
                 }
                 property.setRelation(bindingSet.getValue(RELATION).stringValue());
                 property.setValue(bindingSet.getValue(PROPERTY).stringValue());

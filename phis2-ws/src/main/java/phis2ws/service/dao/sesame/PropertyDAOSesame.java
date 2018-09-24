@@ -123,6 +123,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
                 BindingSet bindingSet = result.next();
                 PropertyDTO property = new PropertyDTO();
         
+                property.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
                 property.setRelation(bindingSet.getValue(RELATION).stringValue());
                 property.setValue(bindingSet.getValue(PROPERTY).stringValue());
         

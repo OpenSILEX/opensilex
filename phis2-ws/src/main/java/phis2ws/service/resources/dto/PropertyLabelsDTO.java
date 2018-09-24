@@ -13,7 +13,6 @@ package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedList;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.view.model.phis.Property;

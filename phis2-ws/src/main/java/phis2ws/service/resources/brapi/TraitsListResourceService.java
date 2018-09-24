@@ -20,6 +20,7 @@ import javax.validation.constraints.Min;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -31,8 +32,12 @@ import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.sesame.BrapiTraitDAO;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
+import phis2ws.service.resources.validation.interfaces.Required;
+import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
-import phis2ws.service.view.brapi.form.ResponseFormBrapiTraits;
+import phis2ws.service.view.brapi.form.BrapiMultiResponseForm;
+import phis2ws.service.view.brapi.form.BrapiSingleResponseForm;
+import phis2ws.service.view.manager.BrapiMultiResultForm;
 import phis2ws.service.view.model.phis.BrapiTrait;
 import phis2ws.service.view.model.phis.Call;
 
@@ -42,25 +47,46 @@ import phis2ws.service.view.model.phis.Call;
 /**
  * Traits service
  * @author Alice Boizet <alice.boizet@inra.fr>
+ * @update Alice Boizet 24 sept. 2018: add Get Trait Details 
  */
 public class TraitsListResourceService implements BrapiCall {
     final static Logger LOGGER = LoggerFactory.getLogger(TraitsListResourceService.class);
     
     /**
-    * Overriding BrapiCall method
-    * @date 28 Aug 2018
-    * @return traits call information
-    */
+     * Overriding BrapiCall method
+     * @date 28 Aug 2018
+     * @return traits call information
+     */
     @Override
-    public Call callInfo() {
+    public ArrayList<Call> callInfo() {
+        ArrayList<Call> calls = new ArrayList();
+        
+        //SILEX:info 
+        //Call GET Trait list
         ArrayList<String> calldatatypes = new ArrayList<>();
         calldatatypes.add("json");
         ArrayList<String> callMethods = new ArrayList<>();
         callMethods.add("GET");
         ArrayList<String> callVersions = new ArrayList<>();
         callVersions.add("1.2");
-        Call call = new Call("traits", calldatatypes, callMethods, callVersions);
-        return call;
+        Call call1 = new Call("traits", calldatatypes, callMethods, callVersions);
+        //\SILEX:info 
+        
+        //SILEX:info 
+        //Call GET Trait list
+        ArrayList<String> calldatatypes2 = new ArrayList<>();
+        calldatatypes2.add("json");
+        ArrayList<String> callMethods2 = new ArrayList<>();
+        callMethods2.add("GET");
+        ArrayList<String> callVersions2 = new ArrayList<>();
+        callVersions2.add("1.2");
+        Call call2 = new Call("traits/{traitDbId}", calldatatypes2, callMethods2, callVersions2);
+        //\SILEX:info 
+        
+        calls.add(call1);
+        calls.add(call2);
+        
+        return calls;
     }
     
     /**
@@ -135,12 +161,41 @@ public class TraitsListResourceService implements BrapiCall {
     }
     
     /**
+     * Retrieve the detail of one trait (the trait id is given by the user)
+     * @param traitDbId trait uri
+     * @return the trait information
+     */
+    @GET
+    @Path("{traitDbId}")
+    @ApiOperation(value = "Retrieve trait details by id",
+            notes = "Retrieve trait details by id")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Retrieve trait details", response = BrapiTrait.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})    
+    @ApiImplicitParams({
+       @ApiImplicitParam(name = "Authorization", required = true,
+                         dataType = "string", paramType = "header",
+                         value = DocumentationAnnotation.ACCES_TOKEN,
+                         example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Produces(MediaType.APPLICATION_JSON)
+    
+    public Response getTraitDetails ( 
+        @ApiParam(value = DocumentationAnnotation.TRAIT_URI_DEFINITION, required = true, example=DocumentationAnnotation.EXAMPLE_TRAIT_URI) @PathParam("traitDbId") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Required @URL String traitDbId
+    ) throws SQLException {        
+        BrapiTraitDAO traitDAO = new BrapiTraitDAO(traitDbId);           
+        return getTraitsData(traitDAO);
+    }    
+    
+    /**
      * Return a generic response when no result are found
      * @param getResponse
      * @param insertStatusList
      * @return the response "no result found" for the service
      */
-    private Response noResultFound(ResponseFormBrapiTraits getResponse, ArrayList<Status> insertStatusList) {
+    private Response noResultFound(BrapiMultiResultForm getResponse, ArrayList<Status> insertStatusList) {
         insertStatusList.add(new Status("No result", StatusCodeMsg.INFO, "No results"));
         getResponse.setStatus(insertStatusList);
         return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
@@ -153,21 +208,22 @@ public class TraitsListResourceService implements BrapiCall {
      */
     private Response getTraitsData(BrapiTraitDAO traitDAO) {
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormBrapiTraits getResponse;
         ArrayList<BrapiTrait> traits = traitDAO.allPaginate();
         if (traits == null) {
-            getResponse = new ResponseFormBrapiTraits(0, 0, traits, true);
+            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, traits, true);
             return noResultFound(getResponse, statusList);
         } else if (!traits.isEmpty()) {
-            getResponse = new ResponseFormBrapiTraits(traitDAO.getPageSize(), traitDAO.getPage(), traits, false);
-            if (getResponse.getResult().dataSize() == 0) {
-                return noResultFound(getResponse, statusList);
+            if (traits.size() == 1) {
+                BrapiTrait trait = traits.get(0);
+                BrapiSingleResponseForm getResponseSingle = new BrapiSingleResponseForm(trait);
+                return Response.status(Response.Status.OK).entity(getResponseSingle).build();
             } else {
+                BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(traitDAO.getPageSize(), traitDAO.getPage(), traits, false);
                 getResponse.setStatus(statusList);
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         } else {
-            getResponse = new ResponseFormBrapiTraits(0, 0, traits, true);
+            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, traits, true);
             return noResultFound(getResponse, statusList);
         }
     }

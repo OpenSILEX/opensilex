@@ -111,17 +111,18 @@ public class TokenResourceService implements BrapiCall{
      * @return Token call information
      */
     @Override
-    public Call callInfo(){
+    public ArrayList<Call> callInfo(){
+        ArrayList<Call> calls = new ArrayList();
         ArrayList<String> calldatatypes = new ArrayList<>();        
         calldatatypes.add("json");        
         ArrayList<String> callMethods = new ArrayList<>();  
         callMethods.add("POST");
         callMethods.add("DELETE");        
         ArrayList<String> callVersions = new ArrayList<>();  
-        callVersions.add("1.1");
-        callVersions.add("1.2");    
+        callVersions.add("1.1");    
         Call tokencall = new Call("token",calldatatypes,callMethods,callVersions);
-        return tokencall;
+        calls.add(tokencall);
+        return calls;
     }
     
     //\SILEX:conception

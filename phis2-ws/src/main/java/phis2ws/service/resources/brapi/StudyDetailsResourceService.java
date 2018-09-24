@@ -33,6 +33,7 @@ import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
+import phis2ws.service.view.brapi.form.BrapiSingleResponseForm;
 import phis2ws.service.view.brapi.form.ResponseFormStudyDetails;
 import phis2ws.service.view.model.phis.Call;
 import phis2ws.service.view.model.phis.StudyDetails;
@@ -54,15 +55,17 @@ public class StudyDetailsResourceService implements BrapiCall{
      * @return Calls call information
      */
     @Override
-    public Call callInfo() {
+    public ArrayList<Call> callInfo() {
+        ArrayList<Call> calls = new ArrayList();
         ArrayList<String> calldatatypes = new ArrayList<>();
         calldatatypes.add("json");
         ArrayList<String> callMethods = new ArrayList<>();
         callMethods.add("GET");
         ArrayList<String> callVersions = new ArrayList<>();
         callVersions.add("1.2");
-        Call callscall = new Call("studies/{studyDbId}", calldatatypes, callMethods, callVersions);
-        return callscall;
+        Call call = new Call("studies/{studyDbId}", calldatatypes, callMethods, callVersions);
+        calls.add(call);
+        return calls;
     }
     
     //User session
@@ -103,13 +106,13 @@ public class StudyDetailsResourceService implements BrapiCall{
         return getStudyData(studyDAO);
         }
      
-    private Response noResultFound(ResponseFormStudyDetails getResponse, ArrayList<Status> insertStatusList) {
+    private Response noResultFound(BrapiSingleResponseForm getResponse, ArrayList<Status> insertStatusList) {
         insertStatusList.add(new Status("No results", StatusCodeMsg.INFO, "This study doesn't exist"));
         getResponse.setStatus(insertStatusList);
         return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
     }
     
-    private Response sqlError(ResponseFormStudyDetails getResponse, ArrayList<Status> insertStatusList) {
+    private Response sqlError(BrapiSingleResponseForm getResponse, ArrayList<Status> insertStatusList) {
          insertStatusList.add(new Status("SQL error" ,StatusCodeMsg.ERR, "can't fetch result"));
          getResponse.setStatus(insertStatusList);
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(getResponse).build();
@@ -122,13 +125,13 @@ public class StudyDetailsResourceService implements BrapiCall{
      */
     private Response getStudyData(StudyDAO studyDAO) throws SQLException{
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormStudyDetails getResponse;    
+        BrapiSingleResponseForm getResponse;    
         StudyDetails study = studyDAO.getStudyInfo();
         if (study.getStudyDbId() == null) {
-            getResponse = new ResponseFormStudyDetails(0, 0, study, true);
+            getResponse = new BrapiSingleResponseForm(study);
             return noResultFound(getResponse, statusList);
         } else {
-            getResponse = new ResponseFormStudyDetails(0, 0, study, true);
+            getResponse = new BrapiSingleResponseForm(study);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }        
     }

@@ -48,16 +48,17 @@ public class CallsResourceService implements BrapiCall {
      * @return Calls call information
      */
     @Override
-    public Call callInfo() {
+    public ArrayList<Call> callInfo() {
+        ArrayList<Call> calls = new ArrayList();
         ArrayList<String> calldatatypes = new ArrayList<>();
         calldatatypes.add("json");
         ArrayList<String> callMethods = new ArrayList<>();
         callMethods.add("GET");
         ArrayList<String> callVersions = new ArrayList<>();
-        callVersions.add("1.1");
         callVersions.add("1.2");
-        Call callscall = new Call("calls", calldatatypes, callMethods, callVersions);
-        return callscall;
+        Call call = new Call("calls", calldatatypes, callMethods, callVersions);
+        calls.add(call);
+        return calls;
     }
 
     /* Dependency injection to get all BrapiCalls callInfo() outputs
@@ -91,10 +92,13 @@ public class CallsResourceService implements BrapiCall {
         ArrayList<Call> callsInfoList = new ArrayList();
 
         for (BrapiCall bc : brapiCallsList) {            
-            Call callinfo = bc.callInfo();
-            ArrayList<String> datatypesList = callinfo.getDatatypes();
+            ArrayList<Call> callinfo = bc.callInfo();
+            ArrayList<String> datatypesList = new ArrayList();
+            for (Call c : callinfo) {
+                datatypesList.addAll(c.getDatatypes());
+            }            
             if (datatype == null || datatypesList.contains(datatype) == true) {
-                callsInfoList.add(callinfo);
+                callsInfoList.addAll(callinfo); //addAll
             }
         }
 

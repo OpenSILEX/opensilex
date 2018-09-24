@@ -32,7 +32,14 @@ public class BrapiTraitDAO extends DAOSesame<BrapiTrait> {
     final static Logger LOGGER = LoggerFactory.getLogger(BrapiTraitDAO.class);
     
     public String traitDbId;
- 
+
+    public BrapiTraitDAO() {
+    }
+    
+    public BrapiTraitDAO(String traitDbId) {
+        this.traitDbId = traitDbId;
+    }
+         
     /**
      * Get the Variables associated to the traits
      * @author Alice Boizet <alice.boizet@inra.fr>

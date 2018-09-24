@@ -237,15 +237,15 @@ public class InfrastructureResourceService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getInfrastructureDetails(
         @ApiParam(value = DocumentationAnnotation.INFRASTRUCTURE_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_URI) @PathParam("uri") @URL @Required String uri,
-        @ApiParam(value = "Language", example = DocumentationAnnotation.EXAMPLE_LANGUAGE) @QueryParam("lang") String lang,
+        @ApiParam(value = "Language", example = DocumentationAnnotation.EXAMPLE_LANGUAGE) @QueryParam("language") String language,
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {            
         PropertyLabelDAOSesame propertiesDAO = new PropertyLabelDAOSesame();
         
         propertiesDAO.uri = uri;
         propertiesDAO.subClassOf = Vocabulary.CONCEPT_INFRASTRUCTURE;
-        if (lang != null) {
-            propertiesDAO.lang = lang;
+        if (language != null) {
+            propertiesDAO.language = language;
         }
                 
         propertiesDAO.user = userSession.getUser();

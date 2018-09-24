@@ -26,7 +26,7 @@ import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
  */
 public class PropertyLabelDAOSesame extends PropertyDAOSesame {
     
-    public String lang = "en";
+    public String language = "en";
     
     protected final String PROPERTY_TYPE = "propertyType";
     protected final String RELATION_LABEL = "relationLabel";    
@@ -69,7 +69,7 @@ public class PropertyLabelDAOSesame extends PropertyDAOSesame {
         String optional = "<" + uri + "> ?" + RELATION + " ?" + PROPERTY;
         optional +=" OPTIONAL {";
         optional += "?" + PROPERTY + " <" + Rdfs.RELATION_LABEL + "> ?" + PROPERTY_LABEL;
-        optional += " . FILTER(LANG(?" + PROPERTY_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + PROPERTY_LABEL + "), \"" + lang + "\"))";   
+        optional += " . FILTER(LANG(?" + PROPERTY_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + PROPERTY_LABEL + "), \"" + language + "\"))";   
         optional += " . OPTIONAL {";
         optional += " ?" + PROPERTY + " <" + Skos.RELATION_PREF_LABEL + "> ?" + PROPERTY_PREF_LABEL;
         optional += " . FILTER(LANG(?" + PROPERTY_PREF_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + PROPERTY_PREF_LABEL + "), \"en\"))";
@@ -79,7 +79,7 @@ public class PropertyLabelDAOSesame extends PropertyDAOSesame {
         optional += " OPTIONAL {";
         optional += "?" + PROPERTY + " <" + Rdf.RELATION_TYPE + "> ?" + PROPERTY_TYPE;
         optional += " . ?" + PROPERTY_TYPE + " <" + Rdfs.RELATION_LABEL + "> ?" + PROPERTY_TYPE_LABEL;
-        optional += " . FILTER(LANG(?" + PROPERTY_TYPE_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + PROPERTY_TYPE_LABEL + "), \"" + lang + "\"))";
+        optional += " . FILTER(LANG(?" + PROPERTY_TYPE_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + PROPERTY_TYPE_LABEL + "), \"" + language + "\"))";
         optional += " . OPTIONAL {";
         optional += " ?" + PROPERTY_TYPE + " <" + Skos.RELATION_PREF_LABEL + "> ?" + PROPERTY_TYPE_PREF_LABEL;
         optional += " . FILTER(LANG(?" + PROPERTY_TYPE_PREF_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + PROPERTY_TYPE_PREF_LABEL + "), \"en\"))";
@@ -88,7 +88,7 @@ public class PropertyLabelDAOSesame extends PropertyDAOSesame {
         
         optional += " OPTIONAL {";
         optional += "?" + RELATION + " <" + Rdfs.RELATION_LABEL + "> ?" + RELATION_LABEL;
-        optional += " . FILTER(LANG(?" + RELATION_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + RELATION_LABEL + "), \"" + lang + "\"))";
+        optional += " . FILTER(LANG(?" + RELATION_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + RELATION_LABEL + "), \"" + language + "\"))";
         optional += " . OPTIONAL {";
         optional += " ?" + RELATION + " <" + Skos.RELATION_PREF_LABEL + "> ?" + RELATION_PREF_LABEL;
         optional += " . FILTER(LANG(?" + RELATION_PREF_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + RELATION_PREF_LABEL + "), \"en\"))";        

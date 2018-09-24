@@ -108,8 +108,7 @@ public class SensorResourceService {
             getResponse = new ResponseFormSensor(0, 0, sensors, true);
             return noResultFound(getResponse, statusList);
         } else {
-            LOGGER.debug("TOTAL COUNT : " + totalCount + " sensors.list : " + sensors.size() + " page : " + sensorDAOSesame.getPage());
-            getResponse = new ResponseFormSensor(sensorDAOSesame.getPageSize(), sensorDAOSesame.getPage(), sensors, false, totalCount);
+            getResponse = new ResponseFormSensor(sensorDAOSesame.getPageSize(), sensorDAOSesame.getPage(), sensors, true, totalCount);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {

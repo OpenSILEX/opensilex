@@ -44,6 +44,7 @@ public class UriGenerator {
 
     private static final String PROPERTIES_SERVICE_FILE_NAME = "sesame_rdf_config";
     private static final String PROPERTIES_SERVICE_BASE_URI = "baseURI";
+    private static final String PROPERTIES_SERVICE_INFRASTRUCTURE = "infrastructure";
 
     private static final String URI_CODE_AGRONOMICAL_OBJECT = "o";
     private static final String URI_CODE_METHOD = "m";
@@ -54,7 +55,8 @@ public class UriGenerator {
     private static final String URI_CODE_VECTOR = "v";
     private static final String URI_CODE_IMAGE = "i";
 
-    private static final String PLATFORM_URI = PropertiesFileManager.getConfigFileProperty(PROPERTIES_SERVICE_FILE_NAME, PROPERTIES_SERVICE_BASE_URI);
+    private static final String PLATFORM_URI = PropertiesFileManager.getConfigFileProperty(PROPERTIES_SERVICE_FILE_NAME, PROPERTIES_SERVICE_BASE_URI) 
+            + PropertiesFileManager.getConfigFileProperty(PROPERTIES_SERVICE_FILE_NAME, PROPERTIES_SERVICE_INFRASTRUCTURE) + "/";
     private static final String PLATFORM_URI_ID = PLATFORM_URI + "id/";
     private static final String PLATFORM_URI_ID_METHOD = PLATFORM_URI_ID + "methods/";
     private static final String PLATFORM_URI_ID_TRAITS = PLATFORM_URI_ID + "traits/";

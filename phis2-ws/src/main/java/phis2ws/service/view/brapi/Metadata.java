@@ -74,7 +74,6 @@ public class Metadata {
      * particulières concernant le status
      */
     public Metadata(int pageSize, int currentPage, int sizeList) {
-        System.out.println("SIZELIST : " + sizeList);
         if (sizeList > 1) {
             pagination = new Pagination(pageSize, currentPage, sizeList);
         } else {

@@ -8,13 +8,13 @@
 package phis2ws.service.view.manager;
 
 import java.util.ArrayList;
-import phis2ws.service.view.brapi.Pagination;
+import phis2ws.service.view.brapi.BrapiPagination;
 
 /**
  * This class provides the format of Result when there is a list of several elements
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
-public class BrapiMultiResult<T> {
+public class BrapiMultiResult<T> implements BrapiResult {
     ArrayList<T> data;
 
     public BrapiMultiResult() {
@@ -27,7 +27,7 @@ public class BrapiMultiResult<T> {
      * @param paginate
      * @see copyList()
      */
-    public BrapiMultiResult(ArrayList<T> list, Pagination pagination, boolean paginate) {
+    public BrapiMultiResult(ArrayList<T> list, BrapiPagination pagination, boolean paginate) {
         if(paginate){
             this.data = list;
         }else{
@@ -38,16 +38,14 @@ public class BrapiMultiResult<T> {
     /**
      * Sort a list using the wanted page and the number of results per page
      * @param list unsorted elements
-     * @param pagination the informations of the paginations. This is used to sort the list.
+     * @param pagination the information of the pagination. This is used to sort the list.
      * @return the elements with the pagination
      */
-    final ArrayList<T> copyList(ArrayList<T> list, Pagination pagination) {
+    final ArrayList<T> copyList(ArrayList<T> list, BrapiPagination pagination) {
         ArrayList<T> finalList = new ArrayList();
         if (pagination.getCurrentPage() > pagination.getTotalPages()) {
             return finalList;
         }
-//        int i = (pagination.getCurrentPage() - 1) * pagination.getPageSize();
-// Update : BreedingAPI page 0 instead of page 1 in metadata
         int i = (pagination.getCurrentPage()) * pagination.getPageSize();
         int tmp = i;
         while (i < list.size() && (i - tmp) < pagination.getPageSize()) {
@@ -55,17 +53,9 @@ public class BrapiMultiResult<T> {
             i++;
         }
         return finalList;
-    };
-
-    public int dataSize() {
-        if (data != null) {
-            return data.size();
-        } else {
-            return 0;
-        }
     }
 
-    public ArrayList<T> getData() {
+     public ArrayList<T> getData() {
         return data;
     }
 

@@ -13,7 +13,7 @@ import phis2ws.service.view.brapi.Pagination;
  * This class provides the format of the result of each brapi service where there is only one element
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
-public class BrapiSingleResult<T> {
+public class BrapiSingleResult<T> implements BrapiResult {
     
     T data;
 

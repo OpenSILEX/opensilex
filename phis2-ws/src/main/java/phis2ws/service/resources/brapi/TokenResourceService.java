@@ -119,7 +119,7 @@ public class TokenResourceService implements BrapiCall{
         callMethods.add("POST");
         callMethods.add("DELETE");        
         ArrayList<String> callVersions = new ArrayList<>();  
-        callVersions.add("1.1");    
+        callVersions.add("1.2");    
         Call tokencall = new Call("token",calldatatypes,callMethods,callVersions);
         calls.add(tokencall);
         return calls;

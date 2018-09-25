@@ -246,7 +246,6 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
         if (uri != null) {
             query.appendANDWhereConditionIfNeeded(sqlFields.get("uri"), String.valueOf(uri), "=", null, tableAlias);
         }
-        
 
         Connection connection = null;
         ResultSet resultSet = null;

@@ -228,10 +228,25 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
         query.appendDistinct();
         query.appendSelect(tableAlias + ".email");
         query.appendFrom(table, tableAlias);
-
-        if (email != null) {
-            query.appendANDWhereConditionIfNeeded("email", email, "=", null, tableAlias);
+        
+        Map<String, String> sqlFields = relationFieldsJavaSQLObject();
+        query.appendANDWhereConditionIfNeeded(sqlFields.get("email"), email, "ILIKE", null, tableAlias);
+        query.appendANDWhereConditionIfNeeded(sqlFields.get("firstName"), firstName, "ILIKE", null, tableAlias);
+        query.appendANDWhereConditionIfNeeded(sqlFields.get("familyName"), familyName, "ILIKE", null, tableAlias);
+        query.appendANDWhereConditionIfNeeded(sqlFields.get("address"), address, "ILIKE", null, tableAlias);
+        query.appendANDWhereConditionIfNeeded(sqlFields.get("phone"), phone, "ILIKE", null, tableAlias);
+        query.appendANDWhereConditionIfNeeded(sqlFields.get("affiliation"), affiliation, "ILIKE", null, tableAlias);
+        query.appendANDWhereConditionIfNeeded(sqlFields.get("orcid"), orcid, "ILIKE", null, tableAlias);
+        if (admin != null) {
+            query.appendANDWhereConditionIfNeeded(sqlFields.get("admin"), String.valueOf(admin), "=", null, tableAlias);
         }
+        if (available != null) {
+            query.appendANDWhereConditionIfNeeded(sqlFields.get("available"), String.valueOf(available), "=", null, tableAlias);
+        }
+        if (uri != null) {
+            query.appendANDWhereConditionIfNeeded(sqlFields.get("uri"), String.valueOf(uri), "=", null, tableAlias);
+        }
+        
 
         Connection connection = null;
         ResultSet resultSet = null;
@@ -240,6 +255,7 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
         try {
             connection = dataSource.getConnection();
             statement = connection.createStatement();
+            LOGGER.trace(SQL_SELECT_QUERY + query.toString());
             resultSet = statement.executeQuery(query.toString());
 
             if (resultSet.next()) {

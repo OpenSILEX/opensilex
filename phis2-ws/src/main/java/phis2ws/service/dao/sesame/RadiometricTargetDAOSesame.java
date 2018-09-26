@@ -8,6 +8,7 @@
 package phis2ws.service.dao.sesame;
 
 import java.util.ArrayList;
+import java.util.List;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -18,10 +19,16 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.dao.manager.DAOSesame;
+import phis2ws.service.dao.phis.UserDaoPhisBrapi;
+import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Vocabulary;
+import phis2ws.service.resources.dto.PropertyDTO;
+import phis2ws.service.resources.dto.radiometricTargets.RadiometricTargetPostDTO;
+import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
+import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.RadiometricTarget;
 
 /**
@@ -133,5 +140,52 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
             }
         }
         return count;
+    }
+    
+    public POSTResultsReturn check(List<RadiometricTargetPostDTO> radiometricTargets) {
+        POSTResultsReturn checkResult = null;
+        //list of the returned status
+        List<Status> status = new ArrayList<>();
+        boolean validData = true;
+        
+        //1. check if the user is an administrator
+        UserDaoPhisBrapi userDAO = new UserDaoPhisBrapi();
+        if (userDAO.isAdmin(user)) {
+            UriDaoSesame uriDaoSesame = new UriDaoSesame();
+            PropertyDAOSesame propertyDAO = new PropertyDAOSesame();
+            for (RadiometricTargetPostDTO radiometricTarget : radiometricTargets) {
+                //2. check properties
+                for (PropertyDTO property : radiometricTarget.getProperties()) {
+                    //2.1 check the domain of the property
+                    if (!propertyDAO.isRelationDomainCompatibleWithRdfType(property.getRelation(), Vocabulary.CONCEPT_RADIOMETRIC_TARGET.toString())) {
+                        validData = false;
+                                status.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, 
+                                        "the type of the given uri is not in the domain of the relation " + property.getRelation()));
+                    }
+                    //2.2 check cardinality
+                    TODO
+                    //2.3 check range (just enums for the moment
+                    TODO
+                }
+            }
+        } else {
+            validData = false;
+            status.add(new Status(StatusCodeMsg.ACCESS_DENIED, StatusCodeMsg.ERR, StatusCodeMsg.ADMINISTRATOR_ONLY));
+        }
+    }
+    
+    /**
+     * check and insert the given radiometric targets in the triplestore
+     * @param radiometricTargets
+     * @return the insertion result. Message error if errors founded in data
+     *         the list of the generated uri of the radiometric targets if the insertion has been done
+     */
+    public POSTResultsReturn checkAndInsert(List<RadiometricTargetPostDTO> radiometricTargets) {
+        POSTResultsReturn checkResult = check(radiometricTargets);
+        if (checkResult.getDataState()) {
+            return insert(radiometricTargets);
+        } else { //errors founded in data
+            return checkResult;
+        }
     }
 }

@@ -199,7 +199,7 @@ public final class DocumentationAnnotation {
 
     public static final String EXAMPLE_SPECIES_RDF_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#Species";
     public static final String EXAMPLE_SPECIES_URI = "http://www.phenome-fppn.fr/id/species/maize";
-    public static final String EXAMPLE_SPECIES_FROM_SPECIES = " http://www.phenome-fppn.fr/vocabulary/2017#fromSpecies";
+    public static final String EXAMPLE_SPECIES_FROM_SPECIES = "http://www.phenome-fppn.fr/vocabulary/2017#fromSpecies";
 
     public static final String EXAMPLE_TRAIT_URI = "http://www.phenome-fppn.fr/phis_field/id/traits/t001";
     public static final String EXAMPLE_TRAIT_LABEL = "Height";

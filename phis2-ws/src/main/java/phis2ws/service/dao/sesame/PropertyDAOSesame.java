@@ -187,12 +187,11 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     /**
      * check if a given relation can be linked to a given rdfType. 
      * Check if there is a domain and if the rdfType corresponds to the domain.
-     * @param relation the relation uri. e.g. http://www.phenome-fppn.fr/vocabulary/2017#hasMaterial
      * @param rdfType the rdf type. e.g. http://www.phenome-fppn.fr/vocabulary/2017#RadiometricTarget
      * @return true if the given property can be linked to the given rdfType
      *         false if the given rdfType is not part of the domain of the property.
      */
-    public boolean isRelationDomainCompatibleWithRdfType(String relation, String rdfType) {
+    public boolean isRelationDomainCompatibleWithRdfType(String rdfType) {
         ArrayList<String> propertyDomains = getPropertyDomain();
         UriDaoSesame uriDao = new UriDaoSesame();
         boolean domainOk = false;

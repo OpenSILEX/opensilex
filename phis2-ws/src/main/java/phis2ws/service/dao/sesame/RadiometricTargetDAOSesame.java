@@ -167,7 +167,8 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
                 //2. check properties
                 for (PropertyDTO property : radiometricTarget.getProperties()) {
                     //2.1 check the domain of the property
-                    if (!propertyDAO.isRelationDomainCompatibleWithRdfType(property.getRelation(), Vocabulary.CONCEPT_RADIOMETRIC_TARGET.toString())) {
+                    propertyDAO.relation = property.getRelation();
+                    if (!propertyDAO.isRelationDomainCompatibleWithRdfType(Vocabulary.CONCEPT_RADIOMETRIC_TARGET.toString())) {
                         validData = false;
                                 status.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, 
                                         "the type of the given uri is not in the domain of the relation " + property.getRelation()));

@@ -12,7 +12,6 @@
 //***********************************************************************************************
 package phis2ws.service.view.model.phis;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -20,14 +19,6 @@ import java.util.HashMap;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class Property {
-    
-    /**
-     * @param rdfType property type if needed (e.g. http://www.phenome-fppn.fr/vocabulary/2017#Variety)
-     *                     null si c'est non typé (String))
-     * @param relation nom de la relation (ex. http://www.phenome-fppn.fr/vocabulary/2017#fromVariety)
-     * @param value valeur (ex. plot alias)
-     */
-    
     //type of the property (if needed)
     //(e.g. http://www.phenome-fppn.fr/vocabulary/2017#Variety)
     private String rdfType;

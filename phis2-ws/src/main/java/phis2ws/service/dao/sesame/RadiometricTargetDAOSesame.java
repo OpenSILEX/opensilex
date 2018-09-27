@@ -15,20 +15,25 @@ import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.dao.phis.UserDaoPhisBrapi;
 import phis2ws.service.documentation.StatusCodeMsg;
+import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Vocabulary;
 import phis2ws.service.resources.dto.PropertyDTO;
 import phis2ws.service.resources.dto.radiometricTargets.RadiometricTargetPostDTO;
 import phis2ws.service.utils.POSTResultsReturn;
+import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
+import phis2ws.service.utils.sparql.SPARQLUpdateBuilder;
 import phis2ws.service.view.brapi.Status;
+import phis2ws.service.view.model.phis.Property;
 import phis2ws.service.view.model.phis.RadiometricTarget;
 
 /**
@@ -142,6 +147,12 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
         return count;
     }
     
+    /**
+     * check the given list of radiometric targets (check properties domain, etc.)
+     * @param radiometricTargets
+     * @see PropertyDAOSesame
+     * @return the result with the list of the founded errors (empty if no error)
+     */
     public POSTResultsReturn check(List<RadiometricTargetPostDTO> radiometricTargets) {
         POSTResultsReturn checkResult = null;
         //list of the returned status
@@ -151,7 +162,6 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
         //1. check if the user is an administrator
         UserDaoPhisBrapi userDAO = new UserDaoPhisBrapi();
         if (userDAO.isAdmin(user)) {
-            UriDaoSesame uriDaoSesame = new UriDaoSesame();
             PropertyDAOSesame propertyDAO = new PropertyDAOSesame();
             for (RadiometricTargetPostDTO radiometricTarget : radiometricTargets) {
                 //2. check properties
@@ -162,16 +172,113 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
                                 status.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, 
                                         "the type of the given uri is not in the domain of the relation " + property.getRelation()));
                     }
-                    //2.2 check cardinality
-                    TODO
-                    //2.3 check range (just enums for the moment
-                    TODO
+                    //SILEX:todo
+                    //add the check range for enums and the cardinality check
+                    //\SILEX:todo
                 }
             }
         } else {
             validData = false;
             status.add(new Status(StatusCodeMsg.ACCESS_DENIED, StatusCodeMsg.ERR, StatusCodeMsg.ADMINISTRATOR_ONLY));
         }
+        
+        checkResult = new POSTResultsReturn(validData, null, validData);
+        checkResult.statusList = status;
+        return checkResult;   
+    }
+    
+    /**
+     * generates an insert query for the given radiometric target
+     * @param radiometricTarget
+     * @return the query
+     * @example
+     * INSERT DATA {
+     *      GRAPH <http://www.phenome-fppn.fr/diaphen/set/radiometricTargets> { 
+     *          <http://www.phenome-fppn.fr/id/radiometricTargets/rt002>  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  <http://www.phenome-fppn.fr/vocabulary/2017#RadiometricTarget> . 
+     *          <http://www.phenome-fppn.fr/id/radiometricTargets/rt002>  <http://www.w3.org/2000/01/rdf-schema#label>  "rt1"  . 
+     *          <http://www.phenome-fppn.fr/id/radiometricTargets/rt002>  < http://www.phenome-fppn.fr/vocabulary/2017#hasShape>  "3"  . 
+     *      }
+     * }
+     */
+    private SPARQLUpdateBuilder prepareInsertQuery(RadiometricTarget radiometricTarget) {
+        SPARQLUpdateBuilder query = new SPARQLUpdateBuilder();
+        
+        query.appendGraphURI(Contexts.RADIOMETRIC_TARGETS.toString());
+        query.appendTriplet(radiometricTarget.getUri(), Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_RADIOMETRIC_TARGET.toString(), null);
+        query.appendTriplet(radiometricTarget.getUri(), Rdfs.RELATION_LABEL.toString(), "\"" + radiometricTarget.getLabel() + "\"", null);
+        
+        for (Property property : radiometricTarget.getProperties()) {
+            if (property.getRdfType() != null) {
+                query.appendTriplet(radiometricTarget.getUri(), property.getRelation(), property.getValue(), null);
+                query.appendTriplet(property.getValue(), Rdf.RELATION_TYPE.toString(), property.getRdfType(), null);
+            } else {
+                query.appendTriplet(radiometricTarget.getUri(), property.getRelation(), "\"" + property.getValue() + "\"", null);
+            }
+        }
+        LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
+        return query;
+    }
+    
+    /**
+     * insert the given radiometric targets in the triplestore. 
+     * /!\ Prerequisite : data must have been checked before calling this method
+     * @see RadiometricTargetDAOSesame#check(java.util.List) 
+     * @param radiometricTargets
+     * @return the insertion result, with the errors list or the uri of the 
+     *         radiometric targets inserted
+     */
+    private POSTResultsReturn insert(List<RadiometricTargetPostDTO> radiometricTargets) {
+        List<Status> status = new ArrayList<>();
+        List<String> createdResourcesUris = new ArrayList<>();
+        
+        POSTResultsReturn results;
+        boolean resultState = false;
+        boolean insert = true;
+        
+        UriGenerator uriGenerator = new UriGenerator();
+        
+        getConnection().begin();
+        for (RadiometricTargetPostDTO radiometricTarget : radiometricTargets) {
+            RadiometricTarget radiometricTargetToInsert = radiometricTarget.createObjectFromDTO();
+            //Generate uri
+            radiometricTargetToInsert.setUri(uriGenerator.generateNewInstanceUri(Vocabulary.CONCEPT_RADIOMETRIC_TARGET.toString(), null, null));
+            //Insert radiometric target
+            SPARQLUpdateBuilder query = prepareInsertQuery(radiometricTargetToInsert);
+            
+            try {
+                Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
+                prepareUpdate.execute();
+
+                createdResourcesUris.add(radiometricTargetToInsert.getUri());
+            } catch (RepositoryException ex) {
+                    LOGGER.error("Error during commit or rolleback Triplestore statements: ", ex);
+            } catch (MalformedQueryException e) {
+                    LOGGER.error(e.getMessage(), e);
+                    insert = false;
+                    status.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.MALFORMED_CREATE_QUERY + " " + e.getMessage()));
+            }
+        }
+        
+        if (insert) {
+            resultState = true;
+            getConnection().commit();
+        } else {
+            getConnection().rollback();
+        }
+        
+        if (getConnection() != null) {
+            getConnection().close();
+        }
+        
+        results = new POSTResultsReturn(resultState, insert, true);
+        results.statusList = status;
+        results.setCreatedResources(createdResourcesUris);
+        if (resultState && !createdResourcesUris.isEmpty()) {
+            results.createdResources = createdResourcesUris;
+            results.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, createdResourcesUris.size() + " " + StatusCodeMsg.RESOURCES_CREATED));
+        }
+        
+        return results;
     }
     
     /**
@@ -186,6 +293,58 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
             return insert(radiometricTargets);
         } else { //errors founded in data
             return checkResult;
+        }
+    }
+    
+    /**
+     * Prepare a query to get the higher id of the radiometric targets.
+     * @example 
+     * SELECT ?uri WHERE {
+     *      ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.phenome-fppn.fr/vocabulary/2017#RadiometricTarget> . 
+     * }
+     * ORDER BY DESC(?uri) 
+     * @return the query
+     */
+    private SPARQLQueryBuilder prepareGetLastId() {
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        
+        query.appendSelect("?" + URI);
+        query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_RADIOMETRIC_TARGET.toString(), null);
+        query.appendOrderBy("DESC(?" + URI + ")");
+        query.appendLimit(1);
+        
+        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        
+        return query;
+    }
+    
+    /**
+     * get the higher id of the radiometric targets
+     * @return the id
+     */
+    public int getLastId() {
+        SPARQLQueryBuilder query = prepareGetLastId();
+        //get last unit uri inserted
+        TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQueryResult result = tupleQuery.evaluate();
+        
+        String uri = null;
+        
+        if (result.hasNext()) {
+            BindingSet bindingSet = result.next();
+            uri = bindingSet.getValue(URI).stringValue();
+        }
+        
+        if (uri == null) {
+            return 0;
+        } else {
+            String split = "radiometricTargets/rt";
+            String[] parts = uri.split(split);
+            if (parts.length > 1) {
+                return Integer.parseInt(parts[1]);
+            } else {
+                return 0;
+            }
         }
     }
 }

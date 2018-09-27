@@ -15,6 +15,7 @@ import phis2ws.service.dao.mongo.ImageMetadataDaoMongo;
 import phis2ws.service.dao.sesame.AgronomicalObjectDAOSesame;
 import phis2ws.service.dao.sesame.AnnotationDAOSesame;
 import phis2ws.service.dao.sesame.MethodDaoSesame;
+import phis2ws.service.dao.sesame.RadiometricTargetDAOSesame;
 import phis2ws.service.dao.sesame.SensorDAOSesame;
 import phis2ws.service.dao.sesame.UriDaoSesame;
 import phis2ws.service.dao.sesame.TraitDaoSesame;
@@ -46,23 +47,26 @@ public class UriGenerator {
     private static final String PROPERTIES_SERVICE_BASE_URI = "baseURI";
 
     private static final String URI_CODE_AGRONOMICAL_OBJECT = "o";
+    private static final String URI_CODE_IMAGE = "i";
     private static final String URI_CODE_METHOD = "m";
     private static final String URI_CODE_SENSOR = "s";
+    private static final String URI_CODE_RADIOMETRIC_TARGET = "rt";
     private static final String URI_CODE_TRAIT = "t";
     private static final String URI_CODE_UNIT = "u";
     private static final String URI_CODE_VARIABLE = "v";
     private static final String URI_CODE_VECTOR = "v";
-    private static final String URI_CODE_IMAGE = "i";
 
     private static final String PLATFORM_URI = PropertiesFileManager.getConfigFileProperty(PROPERTIES_SERVICE_FILE_NAME, PROPERTIES_SERVICE_BASE_URI);
     private static final String PLATFORM_URI_ID = PLATFORM_URI + "id/";
+    private static final String PLATFORM_URI_ID_AGENT = PLATFORM_URI_ID + "agent/";
+    private static final String PLATFORM_URI_ID_ANNOTATION = PLATFORM_URI_ID + "annotation/";
     private static final String PLATFORM_URI_ID_METHOD = PLATFORM_URI_ID + "methods/";
+    private static final String PLATFORM_URI_ID_RADIOMETRIC_TARGET = PLATFORM_URI_ID + "radiometricTargets/";
     private static final String PLATFORM_URI_ID_TRAITS = PLATFORM_URI_ID + "traits/";
     private static final String PLATFORM_URI_ID_UNITS = PLATFORM_URI_ID + "units/";
     private static final String PLATFORM_URI_ID_VARIABLES = PLATFORM_URI_ID + "variables/";
     private static final String PLATFORM_URI_ID_VARIETY = PLATFORM_URI + "v/";
-    private static final String PLATFORM_URI_ID_AGENT = PLATFORM_URI_ID + "agent/";
-    private static final String PLATFORM_URI_ID_ANNOTATION = PLATFORM_URI_ID + "annotation/";
+
 
     /**
      * generates a new vector uri. a vector uri has the following form :
@@ -228,7 +232,7 @@ public class UriGenerator {
     /**
      * generates a new unit uri. a unit uri follows the pattern :
      * <prefix>:id/units/<unic_code>
-     * <unic_code> = 1 letter type + auto incremented number with 3 digits e.g.
+     * <unic_code> = 1 letter type + auto incremented number with 3 digits
      * @example http://www.phenome-fppn.fr/diaphen/id/units/m001
      * @return the new unit uri
      */
@@ -247,6 +251,30 @@ public class UriGenerator {
         }
 
         return PLATFORM_URI_ID_UNITS + URI_CODE_UNIT + unitId;
+    }
+    
+    /**
+     * Generates a new radiometric target uri. A radiometric target uri follows the pattern : 
+     * <prefix>:id/radiometricTargets/<unic_code>
+     * <unic_code> = 2 letters type (rt) + auto incremented number with 3 digits
+     * @example http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt001
+     * @return The new radiometric target uri
+     */
+    private String generateRadiometricTargetUri() {
+        //1. get the higher radiometric target id (i.e. the last inserted
+        //radiometric target)
+        RadiometricTargetDAOSesame radiometricTargetDAO = new RadiometricTargetDAOSesame();
+        int lastID = radiometricTargetDAO.getLastId();
+        
+        //2. generates radiometric target uri
+        int newRadiometricTargetID = lastID + 1;
+        String radiometricTargetID = Integer.toString(newRadiometricTargetID);
+        
+        while (radiometricTargetID.length() < 3) {
+            radiometricTargetID = "0" + radiometricTargetID;
+        }
+        
+        return PLATFORM_URI_ID_RADIOMETRIC_TARGET + URI_CODE_RADIOMETRIC_TARGET + radiometricTargetID;
     }
 
     /**
@@ -372,6 +400,8 @@ public class UriGenerator {
             return generateAgentUri(additionalInformation);
         } else if (instanceType.equals(Vocabulary.CONCEPT_ANNOTATION.toString())) {
             return generateAnnotationUri();
+        } else if (instanceType.equals(Vocabulary.CONCEPT_RADIOMETRIC_TARGET.toString())) {
+            return generateRadiometricTargetUri();
         }
 
         return null;

@@ -13,19 +13,26 @@ package phis2ws.service.view.model.phis;
 
 import java.util.ArrayList;
 
+/**
+ * Represents the view of an instance in the triplestore. 
+ * With its properties and ontology references
+ * @see Property
+ * @see OntologyReference
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class InstanceDefinition {
-    
-    /**
-     * @attribute uri l'uri de l'instance (ex. http://www.phenome-fppn.fr/diaphen/id/variable/v001)
-     * @attribute label le label de la variable (ex. surface foliaire)
-     * @attribute comment un commentaire sur l'instance
-     * @attribute ontologiesReferences des références vers des ontologies externes (ex. une référence skos vers la crop onto)
-     */
+    // Instance uri. e.g. http://www.phenome-fppn.fr/diaphen/id/variable/v001
     protected String uri;
+    // The rdfs:label of the instance. e.g. sf1
     protected String label;
+    // Comment on the instance
     protected String comment;
     
-    ArrayList<OntologyReference> ontologiesReferences = new ArrayList<>();
+    // List of the ontologies references associated to the instance
+    protected ArrayList<OntologyReference> ontologiesReferences = new ArrayList<>();
+    
+    //List of the properties associated to the instance
+    protected ArrayList<Property> properties = new ArrayList<>();
     
     public InstanceDefinition() {
         
@@ -69,5 +76,17 @@ public class InstanceDefinition {
     
     public void addOntologyReference(OntologyReference ontologyReference) {
         ontologiesReferences.add(ontologyReference);
+    }
+
+    public ArrayList<Property> getProperties() {
+        return properties;
+    }
+
+    public void setProperties(ArrayList<Property> properties) {
+        this.properties = properties;
+    }
+    
+    public void addProperty(Property property) {
+        this.properties.add(property);
     }
 }

@@ -28,6 +28,13 @@ public enum Contexts {
             return PLATFORM.toString() + "set/annotation";
         }
     },
+    //The context which contains all the declared radiometric targets
+    RADIOMETRIC_TARGETS {
+        @Override
+        public String toString() {
+            return PLATFORM.toString() + "set/radiometricTargets";
+        }
+    },
     //The context which contains all the declared sensors
     SENSORS {
         @Override

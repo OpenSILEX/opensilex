@@ -51,6 +51,31 @@ public class RadiometricTargetResourceService {
     @SessionInject
     Session userSession;
     
+    /**
+     * Service to insert a given list of radiometric targets in the database.
+     * @example
+     * [
+     *  {
+     *      "label": "rt1",
+     *      "properties": [
+     *          {
+     *              "rdfType": null,
+     *              "relation": "http://www.phenome-fppn.fr/vocabulary/2017#hasvfcShape",
+     *              "value": "3"
+     *          },
+     *          {
+     *              "rdfType": null,
+     *              "relation": "http://www.w3.org/2000/01/rdf-schema#comment",
+     *              "value": "3"
+     *          }
+     *      ]
+     *  }
+     * ]
+     * @param profiles
+     * @param context
+     * @return The founded errors
+     *         The list of the uris of the created radiometric targets
+     */
     @POST
     @ApiOperation(value = "Post radiometric(s) target(s) ",
                   notes = "Register radiometric(s) target(s) in the database")

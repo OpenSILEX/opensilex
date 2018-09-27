@@ -27,23 +27,24 @@ import phis2ws.service.view.model.phis.Infrastructure;
 
 /**
  * Represents an infrastructure model
+ *
  * @author Vincent Migot <vincent.migot@inra.fr>
  */
 public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
-    
+
     final static Logger LOGGER = LoggerFactory.getLogger(InfrastructureDAOSesame.class);
 
     //The following attributes are used to search infrastructures in the triplestore
     //uri of the infrastructure
     public String uri;
-    
+
     //type uri of the infrastructure(s)
     public String rdfType;
-    
+
     //alias of the infrastructure(s)
     public String label;
 
-     /**
+    /**
      * generates a paginated search query (search by uri, type, label)
      * SELECT  ?uri ?rdfType  ?label 
      * WHERE {
@@ -52,13 +53,14 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
      *   OPTIONAL {
      *     ?uri rdfs:label ?label . 
      *   }
-     * } 
+     * }
      * @return the query to execute.
      */
     @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
 
+        query.appendDistinct(Boolean.TRUE);
         String infrastructureUri;
         if (uri != null) {
             infrastructureUri = "<" + uri + ">";
@@ -66,26 +68,26 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
             infrastructureUri = "?" + URI;
             query.appendSelect(infrastructureUri);
         }
-        
+
         if (rdfType != null) {
             query.appendTriplet(infrastructureUri, Rdf.RELATION_TYPE.toString(), rdfType, null);
         } else {
             query.appendSelect("?" + RDF_TYPE);
             query.appendTriplet(infrastructureUri, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
             query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_INFRASTRUCTURE.toString(), null);
-        }        
+        }
 
         query.appendSelect(" ?" + LABEL);
         query.beginBodyOptional();
         query.appendToBody(infrastructureUri + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + LABEL + " . ");
         query.endBodyOptional();
-            
+
         if (label != null) {
             query.appendFilter("REGEX ( ?" + LABEL + ",\".*" + label + ".*\",\"i\")");
-        } 
-        
+        }
+
         query.appendLimit(this.getPageSize());
-        query.appendOffset(this.getPage()* this.getPageSize());
+        query.appendOffset(this.getPage() * this.getPageSize());
         LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
         return query;
     }
@@ -96,7 +98,7 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
      */
     @Override
     public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
-              SPARQLQueryBuilder prepareCount = prepareCount();
+        SPARQLQueryBuilder prepareCount = prepareCount();
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
         Integer count = 0;
         try (TupleQueryResult result = tupleQuery.evaluate()) {
@@ -107,7 +109,7 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
         }
         return count;
     }
-    
+
     /**
      * Return prepared count query based on the current search query
      * SELECT (COUNT(DISTINCT ?uri) as ?count)
@@ -117,7 +119,7 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
      *   OPTIONAL {
      *     ?uri rdfs:label ?label . 
      *   }
-     * } 
+     * }
      * @return query
      */
     private SPARQLQueryBuilder prepareCount() {
@@ -150,7 +152,6 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
         return infrastructures;
     }
 
-    
     /**
      * Get an infrastructure from a given binding set.
      * Assume that the following attributes exist :

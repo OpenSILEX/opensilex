@@ -148,7 +148,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
     }
     
     /**
-     * check the given list of radiometric targets (check properties domain, etc.)
+     * Check the given list of radiometric targets (check properties domain, etc.)
      * @param radiometricTargets
      * @see PropertyDAOSesame
      * @return the result with the list of the founded errors (empty if no error)
@@ -189,7 +189,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
     }
     
     /**
-     * generates an insert query for the given radiometric target
+     * Generates an insert query for the given radiometric target
      * @param radiometricTarget
      * @return the query
      * @example
@@ -221,7 +221,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
     }
     
     /**
-     * insert the given radiometric targets in the triplestore. 
+     * Insert the given radiometric targets in the triplestore. 
      * /!\ Prerequisite : data must have been checked before calling this method
      * @see RadiometricTargetDAOSesame#check(java.util.List) 
      * @param radiometricTargets
@@ -283,7 +283,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
     }
     
     /**
-     * check and insert the given radiometric targets in the triplestore
+     * Check and insert the given radiometric targets in the triplestore
      * @param radiometricTargets
      * @return the insertion result. Message error if errors founded in data
      *         the list of the generated uri of the radiometric targets if the insertion has been done
@@ -320,7 +320,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
     }
     
     /**
-     * get the higher id of the radiometric targets
+     * Get the higher id of the radiometric targets
      * @return the id
      */
     public int getLastId() {

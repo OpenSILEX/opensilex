@@ -261,12 +261,12 @@ public class UriGenerator {
      * @return The new radiometric target uri
      */
     private String generateRadiometricTargetUri() {
-        //1. get the higher radiometric target id (i.e. the last inserted
+        //1. Get the higher radiometric target id (i.e. the last inserted
         //radiometric target)
         RadiometricTargetDAOSesame radiometricTargetDAO = new RadiometricTargetDAOSesame();
         int lastID = radiometricTargetDAO.getLastId();
         
-        //2. generates radiometric target uri
+        //2. Generates radiometric target uri
         int newRadiometricTargetID = lastID + 1;
         String radiometricTargetID = Integer.toString(newRadiometricTargetID);
         

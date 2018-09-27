@@ -71,7 +71,7 @@ public class RadiometricTargetResourceService {
      *      ]
      *  }
      * ]
-     * @param profiles
+     * @param radiometricTargets
      * @param context
      * @return The founded errors
      *         The list of the uris of the created radiometric targets
@@ -94,11 +94,11 @@ public class RadiometricTargetResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postProfiles(
-        @ApiParam(value = DocumentationAnnotation.SENSOR_PROFILE_POST_DEFINITION) @Valid ArrayList<RadiometricTargetPostDTO> profiles,
+        @ApiParam(value = DocumentationAnnotation.SENSOR_PROFILE_POST_DEFINITION) @Valid ArrayList<RadiometricTargetPostDTO> radiometricTargets,
         @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         
-        if (profiles != null && !profiles.isEmpty()) {
+        if (radiometricTargets != null && !radiometricTargets.isEmpty()) {
             RadiometricTargetDAOSesame radiometricTargetDAO = new RadiometricTargetDAOSesame();
             
              if (context.getRemoteAddr() != null) {
@@ -107,7 +107,7 @@ public class RadiometricTargetResourceService {
             
             radiometricTargetDAO.user = userSession.getUser();
             
-            POSTResultsReturn result = radiometricTargetDAO.checkAndInsert(profiles);
+            POSTResultsReturn result = radiometricTargetDAO.checkAndInsert(radiometricTargets);
             
             if (result.getHttpStatus().equals(Response.Status.CREATED)) {
                 postResponse = new ResponseFormPOST(result.statusList);

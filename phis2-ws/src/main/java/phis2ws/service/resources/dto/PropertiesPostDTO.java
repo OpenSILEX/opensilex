@@ -21,9 +21,9 @@ import phis2ws.service.resources.validation.interfaces.Required;
  */
 public class PropertiesPostDTO extends AbstractVerifiedClass {
     
-    //label of the object concerned by the properties. e.g. rt01
+    //Label of the object concerned by the properties. e.g. rt01
     protected String label;
-    //list of the properties of the object
+    //List of the properties of the object
     protected ArrayList<PropertyDTO> properties = new ArrayList<>();
 
     @Override

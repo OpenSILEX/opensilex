@@ -73,7 +73,9 @@ public final class DocumentationAnnotation {
 
     public static final String VARIABLE_POST_DATA_DEFINITION = "JSON format of variable data";
     public static final String VARIABLE_URI_DEFINITION = "A variable URI (Unique Resource Identifier)";
-
+    public static final String VARIABLE_CALL_MESSAGE = "Retrieve the list of all variables available in the system";
+    public static final String VARIABLE_DETAILS_CALL_MESSAGE = "Retrieve variable details by id";    
+    
     public static final String TRAIT_POST_DATA_DEFINITION = "JSON format of trait";
     public static final String TRAIT_URI_DEFINITION = "A trait URI (Unique Resource Identifier)";
     public static final String TRAIT_CALL_MESSAGE = "Retrieve the list of all traits available in the system";

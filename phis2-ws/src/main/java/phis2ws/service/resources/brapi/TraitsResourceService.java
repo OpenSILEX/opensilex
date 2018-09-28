@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                       TraitsListResourceService.java
+//                                       TraitsResourceService.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 28 Aug, 2018
@@ -48,8 +48,8 @@ import phis2ws.service.view.model.phis.Call;
  * @author Alice Boizet <alice.boizet@inra.fr>
  * @update Alice Boizet 24 sept. 2018: add Get Trait Details 
  */
-public class TraitsListResourceService implements BrapiCall {
-    final static Logger LOGGER = LoggerFactory.getLogger(TraitsListResourceService.class);
+public class TraitsResourceService implements BrapiCall {
+    final static Logger LOGGER = LoggerFactory.getLogger(TraitsResourceService.class);
     
     /**
      * Overriding BrapiCall method

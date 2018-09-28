@@ -231,6 +231,9 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
                 spqlInsert.appendTriplet(documentName, Vocabulary.RELATION_STATUS.toString(), "\"" + annotObject.getStatus() + "\"", null);
 
                 if (annotObject.getComment() != null) {
+                //SILEX:info
+                // Use of ''' to escape \r\n characters from comment string which break the generated request string
+                //\SILEX:info
                     spqlInsert.appendTriplet(documentName, Rdfs.RELATION_COMMENT.toString(), "'''" + annotObject.getComment() + "'''", null);
                 }
 
@@ -708,6 +711,10 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
             spqlInsert.appendTriplet(documentMetadata.getUri(), Vocabulary.RELATION_STATUS.toString(), "\"" + documentMetadata.getStatus() + "\"", null);
 
             if (documentMetadata.getComment() != null) {
+                
+                //SILEX:info
+                // Use of ''' to escape \r\n characters from comment string which break the generated request string
+                //\SILEX:info
                 spqlInsert.appendTriplet(documentMetadata.getUri(), Rdfs.RELATION_COMMENT.toString(), "'''" + documentMetadata.getComment() + "'''", null);
             }
 

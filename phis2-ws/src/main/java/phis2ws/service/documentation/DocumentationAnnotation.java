@@ -79,7 +79,8 @@ public final class DocumentationAnnotation {
     public static final String TRAIT_POST_DATA_DEFINITION = "JSON format of trait";
     public static final String TRAIT_URI_DEFINITION = "A trait URI (Unique Resource Identifier)";
     public static final String TRAIT_CALL_MESSAGE = "Retrieve the list of all traits available in the system";
-    
+    public static final String TRAIT_DETAILS_CALL_MESSAGE = "Retrieve trait details by id";
+   
     public static final String TRIPLET_POST_DATA_DEFINITION = "JSON format of a triplet";
 
     public static final String ANNOTATION_POST_DATA_DEFINITION = "JSON format of an annotation";

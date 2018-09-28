@@ -36,7 +36,6 @@ import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.BrapiResponseForm;
-import phis2ws.service.view.model.phis.BrapiTrait;
 import phis2ws.service.view.model.phis.BrapiVariable;
 import phis2ws.service.view.model.phis.Call;
 import phis2ws.service.view.model.phis.Variable;
@@ -52,7 +51,7 @@ import phis2ws.service.view.model.phis.BrapiScale;
 @Api("/brapi/v1/variables")
 @Path("/brapi/v1/variables")
 public class VariableResourceService implements BrapiCall {
-    final static Logger LOGGER = LoggerFactory.getLogger(TraitsListResourceService.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(BrapiVariable.class);
 
     /**
      * Overriding BrapiCall method
@@ -167,7 +166,7 @@ public class VariableResourceService implements BrapiCall {
     @ApiOperation(value = DocumentationAnnotation.VARIABLE_CALL_MESSAGE,
                        notes = DocumentationAnnotation.VARIABLE_CALL_MESSAGE)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = DocumentationAnnotation.VARIABLE_CALL_MESSAGE, response = BrapiTrait.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = DocumentationAnnotation.VARIABLE_CALL_MESSAGE, response = BrapiVariable.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})    
@@ -180,7 +179,7 @@ public class VariableResourceService implements BrapiCall {
     @Produces(MediaType.APPLICATION_JSON)    
     public Response getTraitsList ( 
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0)int page, 
+        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page, 
         @ApiParam(value = "traitClass") @QueryParam("traitClass") String traitClass 
         ) throws SQLException {        
         VariableDaoSesame varDAO = new VariableDaoSesame();
@@ -200,7 +199,7 @@ public class VariableResourceService implements BrapiCall {
     @ApiOperation(value = DocumentationAnnotation.VARIABLE_DETAILS_CALL_MESSAGE,
             notes = DocumentationAnnotation.VARIABLE_DETAILS_CALL_MESSAGE)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = DocumentationAnnotation.VARIABLE_DETAILS_CALL_MESSAGE, response = BrapiTrait.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = DocumentationAnnotation.VARIABLE_DETAILS_CALL_MESSAGE, response = BrapiVariable.class , responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})    

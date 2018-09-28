@@ -11,6 +11,7 @@ import java.util.ArrayList;
 
 /**
  * Represents a trait according to brapi specifications
+ * @See https://brapi.docs.apiary.io/#reference/traits
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class BrapiTrait {

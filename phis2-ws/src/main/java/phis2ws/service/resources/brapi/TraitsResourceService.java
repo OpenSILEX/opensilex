@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                       TraitsListResourceService.java
+//                                       TraitsResourceService.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 28 Aug, 2018
@@ -48,8 +48,8 @@ import phis2ws.service.view.model.phis.Call;
  * @author Alice Boizet <alice.boizet@inra.fr>
  * @update Alice Boizet 24 sept. 2018: add Get Trait Details 
  */
-public class TraitsListResourceService implements BrapiCall {
-    final static Logger LOGGER = LoggerFactory.getLogger(TraitsListResourceService.class);
+public class TraitsResourceService implements BrapiCall {
+    final static Logger LOGGER = LoggerFactory.getLogger(TraitsResourceService.class);
     
     /**
      * Overriding BrapiCall method
@@ -72,7 +72,7 @@ public class TraitsListResourceService implements BrapiCall {
         //\SILEX:info 
         
         //SILEX:info 
-        //Call GET Trait list
+        //Call GET Trait details
         ArrayList<String> calldatatypes2 = new ArrayList<>();
         calldatatypes2.add("json");
         ArrayList<String> callMethods2 = new ArrayList<>();
@@ -89,11 +89,9 @@ public class TraitsListResourceService implements BrapiCall {
     }
     
     /**
-     * retrieve the list of traits 
-     * 
+     * retrieve the list of traits
      * @param limit
-     * @param page
-     * 
+     * @param page 
      * @return list of the traits corresponding to the search params given
      * e.g
      * {
@@ -166,10 +164,10 @@ public class TraitsListResourceService implements BrapiCall {
      */
     @GET
     @Path("{traitDbId}")
-    @ApiOperation(value = "Retrieve trait details by id",
-            notes = "Retrieve trait details by id")
+    @ApiOperation(value = DocumentationAnnotation.TRAIT_DETAILS_CALL_MESSAGE,
+            notes = DocumentationAnnotation.TRAIT_DETAILS_CALL_MESSAGE)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve trait details", response = BrapiTrait.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = DocumentationAnnotation.TRAIT_DETAILS_CALL_MESSAGE, response = BrapiTrait.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})    
@@ -182,7 +180,7 @@ public class TraitsListResourceService implements BrapiCall {
     @Produces(MediaType.APPLICATION_JSON)
     
     public Response getTraitDetails ( 
-        @ApiParam(value = DocumentationAnnotation.TRAIT_URI_DEFINITION, required = true, example=DocumentationAnnotation.EXAMPLE_TRAIT_URI) @PathParam("traitDbId") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Required @URL String traitDbId
+        @ApiParam(value = DocumentationAnnotation.TRAIT_URI_DEFINITION, required = true, example=DocumentationAnnotation.EXAMPLE_TRAIT_URI) @PathParam("traitDbId") @Required @URL String traitDbId
     ) throws SQLException {        
         BrapiTraitDAO traitDAO = new BrapiTraitDAO(traitDbId);           
         return getTraitsData(traitDAO);

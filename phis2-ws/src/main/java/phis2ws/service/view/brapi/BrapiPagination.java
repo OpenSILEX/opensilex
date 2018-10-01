@@ -8,7 +8,7 @@
 package phis2ws.service.view.brapi;
 
 /**
- * Class which represents the pagination part in the result
+ * Class which represents the pagination part of the response
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class BrapiPagination {

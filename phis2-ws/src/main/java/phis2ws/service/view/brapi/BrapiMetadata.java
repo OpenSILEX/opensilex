@@ -12,7 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class which contains pagination and status information for each request 
+ * Class which contains the metadata part of the brapi WS response with pagination 
+ * and status information
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 @ApiModel

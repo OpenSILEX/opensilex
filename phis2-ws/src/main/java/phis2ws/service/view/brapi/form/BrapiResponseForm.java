@@ -14,7 +14,7 @@ import phis2ws.service.view.manager.BrapiResult;
 import phis2ws.service.view.manager.BrapiSingleResult;
 
 /**
- * Allows the formating of the result of the request about any object T it returns a list of several elements
+ * Allows the formating of the result of the request about any object T
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class BrapiResponseForm<T> {
@@ -26,7 +26,8 @@ public class BrapiResponseForm<T> {
      * @param pageSize the number of results per page
      * @param currentPage the requested page
      * @param data list of results
-     * @param paginate 
+     * @param paginate true : already paginate
+     *                 false : needs pagination
      */
     public BrapiResponseForm(int pageSize, int currentPage, ArrayList<T> data, boolean paginate) {
         metadata = new BrapiMetadata(pageSize, currentPage, data.size());

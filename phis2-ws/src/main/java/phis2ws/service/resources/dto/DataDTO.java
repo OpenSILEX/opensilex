@@ -12,6 +12,7 @@
 package phis2ws.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;
+import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
@@ -54,7 +55,7 @@ public class DataDTO extends AbstractVerifiedClass {
         this.agronomicalObject = agronomicalObject;
     }
 
-    @Date
+    @Date(DateFormat.YMD)
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_DATETIME)
     public String getDate() {

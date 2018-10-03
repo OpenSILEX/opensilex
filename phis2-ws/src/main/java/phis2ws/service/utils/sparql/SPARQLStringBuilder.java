@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                       SPARQLStringBuilder.java
+//                                       SPARQLStringBuilder.java 
 // SILEX-PHIS
 // Copyright © INRA 2016
 // Creation date: May, 2016
@@ -9,6 +9,7 @@ package phis2ws.service.utils.sparql;
 
 import java.util.Iterator;
 import java.util.List;
+import phis2ws.service.resources.validation.validators.URLValidator;
 
 /**
  * Abstract class which provides common methods and attributes 
@@ -16,6 +17,7 @@ import java.util.List;
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  * @update [No information] October, 2016 : no explanation
  * @update [Arnaud Charleroy] 10 September, 2018 : Add "And" and "Or" filter choices
+ * @update [Vincent Migot] 03 October, 2018 : Create isLink method to check URIs instead of only testing "http://" prefix
  */
 public abstract class SPARQLStringBuilder {
 
@@ -120,7 +122,7 @@ public abstract class SPARQLStringBuilder {
     public void appendFilter(String filter) {
         this.filter +=  "(" + filter + ")";
     }
-    
+
     /**
      * @example
      * FILTER ( (regex(STR(?creator), 'admin', 'i')) && (regex(STR(?title), 'liste', 'i')) ) 
@@ -164,7 +166,7 @@ public abstract class SPARQLStringBuilder {
             body += " ?" + blankNodeCounter + " ";
             blankNodeCounter++;
         } else if (sesameUriFormSubject == null) {
-            if (subject.contains(":") && (!subject.contains("http://") && !subject.contains("https://"))) {
+            if (subject.contains(":") && !isLink(subject)) {
                 body += " " + subject + " ";
             }
              else if (subject.contains("\"")) {
@@ -184,7 +186,7 @@ public abstract class SPARQLStringBuilder {
             body += " ?" + blankNodeCounter + " ";
             blankNodeCounter++;
         } else if (sesameUriFormPredicat == null) {
-            if (predicate.contains(":") && (!predicate.contains("http://") && !predicate.contains("https://"))) {
+            if (predicate.contains(":") && !isLink(predicate)) {
                 body += " " + predicate + " ";
             } else if (predicate.contains("\"")) {
                 body += " " + predicate + " ";
@@ -203,7 +205,7 @@ public abstract class SPARQLStringBuilder {
             body += " ?" + blankNodeCounter + " ";
             blankNodeCounter++;
         } else if (sesameUriFormObject == null) {
-            if (object.contains(":") && (!object.contains("http://") && !object.contains("http://"))) {
+            if (object.contains(":") && !isLink(object)) {
                 body += " " + object + " ";
             } else if (object.contains("'")){
                 body += " " + object + " ";
@@ -245,7 +247,7 @@ public abstract class SPARQLStringBuilder {
                 body += " ?" + blankNodeCounter + " ";
                 blankNodeCounter++;
             } else if (sesameUriFormSubject == null) {
-                if (subject.contains(":") && !subject.contains("http://")) {
+                if (subject.contains(":") && !isLink(subject)) {
                     body += " " + subject + " ";
                 } else if (subject.contains("\"")) {
                     body += " " + subject + " ";
@@ -264,7 +266,7 @@ public abstract class SPARQLStringBuilder {
                 body += " ?" + blankNodeCounter + " ";
                 blankNodeCounter++;
             } else if (sesameUriFormPredicat == null) {
-                if (predicate.contains(":") && !predicate.contains("http://")) {
+                if (predicate.contains(":") && !isLink(predicate)) {
                     body += " " + predicate + " ";
                 } else if (predicate.contains("\"")) {
                     body += " " + predicate + " ";
@@ -283,7 +285,7 @@ public abstract class SPARQLStringBuilder {
                 body += " ?" + blankNodeCounter + " ";
                 blankNodeCounter++;
             } else if (sesameUriFormObject == null) {
-                if (union.contains(":") && !union.contains("http://")) {
+                if (union.contains(":") && !isLink(union)) {
                     body += " " + union + " ";
                 } else if (union.contains("\"")) {
                     body += " " + union + " ";
@@ -321,5 +323,9 @@ public abstract class SPARQLStringBuilder {
         sesameUriFormObject = null;
         sesameUriFormPredicat = null;
         sesameUriFormSubject = null;
+    }
+    
+    private boolean isLink(String link) {
+        return URLValidator.validateURL(link);
     }
 }

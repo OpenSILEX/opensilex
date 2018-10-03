@@ -366,7 +366,6 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         if (language != null) {
             sparqlQuery.appendTriplet(select, DublinCore.RELATION_LANGUAGE.toString(), "\"" + language + "\"", null);
         } else {
-            sparqlQuery.appendGroupBy("?" + LANGUAGE);
             sparqlQuery.appendSelect(" ?" + LANGUAGE);
             sparqlQuery.appendGroupBy(" ?" + LANGUAGE);
             sparqlQuery.appendTriplet(select, DublinCore.RELATION_LANGUAGE.toString(), "?" + LANGUAGE, null);
@@ -711,7 +710,6 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
             spqlInsert.appendTriplet(documentMetadata.getUri(), Vocabulary.RELATION_STATUS.toString(), "\"" + documentMetadata.getStatus() + "\"", null);
 
             if (documentMetadata.getComment() != null) {
-                
                 //SILEX:info
                 // Use of ''' to escape \r\n characters from comment string which break the generated request string
                 //\SILEX:info

@@ -19,7 +19,7 @@ import java.util.HashMap;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class Property {
-    //type of the property (if needed)
+    //type of the range (if needed)
     //(e.g. http://www.phenome-fppn.fr/vocabulary/2017#Variety)
     private String rdfType;
     //relation name 

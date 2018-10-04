@@ -273,7 +273,7 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
                 //is sensor exist ?
                 if (data.getSensor() != null) {
                     SensorDAOSesame sensorDAO = new SensorDAOSesame();
-                    if (!sensorDAO.existObject(data.getSensor())) {
+                    if (!sensorDAO.existUri(data.getSensor())) {
                         dataState = false;
                         insertStatusList.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Unknown sensor : " + data.getSensor()));
                     }
@@ -282,7 +282,7 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
 
             //is variable exist ? 
             VariableDaoSesame variableDaoSesame = new VariableDaoSesame();
-            if (!variableDaoSesame.existObject(datasetDTO.getVariableUri())) {
+            if (!variableDaoSesame.existUri(datasetDTO.getVariableUri())) {
                 dataState = false;
                 insertStatusList.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Unknown Variable : " + datasetDTO.getVariableUri()));
             }

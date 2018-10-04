@@ -75,12 +75,12 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
             UriDaoSesame uriDaoSesame = new UriDaoSesame();
 
             //1. check if triplet.s is exist
-            if (!uriDaoSesame.existObject(tripletDTO.getS())) { //unknown uri
+            if (!uriDaoSesame.existUri(tripletDTO.getS())) { //unknown uri
                 dataOk = false;
                 checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, StatusCodeMsg.UNKNOWN_URI + " " + tripletDTO.getS()));
             }
             //2. check if triplet.p is an existing relation
-            if (!uriDaoSesame.existObject(tripletDTO.getP())
+            if (!uriDaoSesame.existUri(tripletDTO.getP())
                     && !tripletDTO.getP().equals(Rdf.RELATION_TYPE.toString())
                     && !tripletDTO.getP().equals(Rdfs.RELATION_LABEL.toString())) {
                 dataOk = false;
@@ -91,7 +91,7 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
             //   and check the value of triplet.o
             if (tripletDTO.getO_type().equals(OType.URI.toString())) { //if value is supposed to be an uri
                 //if the uri does not exist in the triplestore, error
-                if (!uriDaoSesame.existObject(tripletDTO.getO())) {
+                if (!uriDaoSesame.existUri(tripletDTO.getO())) {
                     dataOk = false;
                     checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, StatusCodeMsg.UNKNOWN_URI + " " + tripletDTO.getO()));
                 }

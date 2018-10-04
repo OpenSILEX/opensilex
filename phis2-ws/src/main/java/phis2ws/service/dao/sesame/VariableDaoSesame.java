@@ -207,9 +207,9 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
         
         for (VariableDTO variableDTO : variablesDTO) {
             //On vérifie que le trait, la méthode et l'unité sont bien dans la base de données
-            if (!existObject(variableDTO.getMethod()) 
-                   || !existObject(variableDTO.getTrait())
-                   || !existObject(variableDTO.getUnit())) {
+            if (!existUri(variableDTO.getMethod()) 
+                   || !existUri(variableDTO.getTrait())
+                   || !existUri(variableDTO.getUnit())) {
                 dataOk = false;
                 checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Unknown trait(" + variableDTO.getTrait() + ") or method (" + variableDTO.getMethod() + ") or unit (" + variableDTO.getUnit() + ")"));
             } else {

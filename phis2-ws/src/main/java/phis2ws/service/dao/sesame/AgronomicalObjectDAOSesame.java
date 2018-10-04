@@ -198,7 +198,7 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
 
              //check isPartOf
              if (agronomicalObject.getIsPartOf() != null) {
-                 if (existObject(agronomicalObject.getIsPartOf())) {
+                 if (existUri(agronomicalObject.getIsPartOf())) {
                      //1. get isPartOf object type
                      uriDao.uri = agronomicalObject.getIsPartOf();
                      ArrayList<Uri> typesResult = uriDao.getAskTypeAnswer();

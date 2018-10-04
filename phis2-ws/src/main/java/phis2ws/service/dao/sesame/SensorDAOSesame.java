@@ -429,7 +429,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
      *         false if it does not exist or if it is not a sensor
      */
     public boolean existAndIsSensor(String uri) {
-        if (existObject(uri)) {
+        if (existUri(uri)) {
             return isSensor(uri);
             
         } else {

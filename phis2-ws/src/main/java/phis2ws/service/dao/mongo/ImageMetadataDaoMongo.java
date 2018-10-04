@@ -219,14 +219,14 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
         for (ImageMetadataDTO imageMetadata : imagesMetadata) {
             //1. Check if the image type exist
             ImageMetadataDaoSesame imageMetadataDaoSesame = new ImageMetadataDaoSesame();
-            if (!imageMetadataDaoSesame.existObject(imageMetadata.getRdfType())) {
+            if (!imageMetadataDaoSesame.existUri(imageMetadata.getRdfType())) {
                 dataOk = false;
                 checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Wrong image type given : " + imageMetadata.getRdfType()));
             }
 
             //2. Check if the concerned items exist in the triplestore
             for (ConcernItemDTO concernedItem : imageMetadata.getConcern()) {
-                if (!imageMetadataDaoSesame.existObject(concernedItem.getUri())) {
+                if (!imageMetadataDaoSesame.existUri(concernedItem.getUri())) {
                     dataOk = false;
                     checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Unknown concerned item given : " + concernedItem.getUri()));
                 }

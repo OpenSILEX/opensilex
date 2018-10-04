@@ -94,7 +94,7 @@ public class RadiometricTargetResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postProfiles(
-        @ApiParam(value = DocumentationAnnotation.SENSOR_PROFILE_POST_DEFINITION) @Valid ArrayList<RadiometricTargetPostDTO> radiometricTargets,
+        @ApiParam(value = DocumentationAnnotation.RADIOMETRIC_TARGET_POST_DEFINITION) @Valid ArrayList<RadiometricTargetPostDTO> radiometricTargets,
         @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         

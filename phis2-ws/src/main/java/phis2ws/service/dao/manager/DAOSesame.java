@@ -13,6 +13,7 @@ package phis2ws.service.dao.manager;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
+import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
@@ -39,6 +40,7 @@ import phis2ws.service.view.brapi.form.ResponseFormPOST;
  * TripleStore Sesame
  *
  * @author Arnaud Charleroy
+ * @update [Morgane Vidal] 04 Oct, 2018 : Rename existObject to existUri and change the query of the method existUri.
  * @param <T>
  */
 public abstract class DAOSesame<T> {
@@ -198,29 +200,29 @@ public abstract class DAOSesame<T> {
 
     /**
      *
-     * @param objectURI l'uri de l'objet recherché
-     * @return true si l'objet est dans le triplestore
-     *         false sinon
+     * @param uri the uri to test
+     * @return true if the uri exist in the triplestore
+     *         false if it does not exist
      */
-    public boolean existObject(String objectURI) {
-        if (objectURI == null) {
+    public boolean existUri(String uri) {
+        if (uri == null) {
             return false;
         }
         try {
             SPARQLQueryBuilder query = new SPARQLQueryBuilder();
-            query.appendSelect("?p");
-            query.appendTriplet(objectURI, "?p", "?o", null);
-            query.appendParameters("LIMIT 1");
-            TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-            try (TupleQueryResult result = tupleQuery.evaluate()) {
-                if (result.hasNext()) {
-                    return true;
-                }
-            }
+            query.appendAsk("VALUES (?r) { (<" + uri + ">) }\n" +
+                        "    { ?r ?p ?o }\n" +
+                        "    UNION\n" +
+                        "    { ?s ?r ?o }\n" +
+                        "    UNION\n" +
+                        "    { ?s ?p ?r }\n");
+            
+            LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+            BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
+            return booleanQuery.evaluate();
         } catch (Exception e) {
             return false;
         }
-        return false;
     }
 
     /**

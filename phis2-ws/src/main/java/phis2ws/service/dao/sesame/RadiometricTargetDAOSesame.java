@@ -166,15 +166,26 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
             for (RadiometricTargetPostDTO radiometricTarget : radiometricTargets) {
                 //2. check properties
                 for (PropertyDTO property : radiometricTarget.getProperties()) {
-                    //2.1 check the domain of the property
-                    propertyDAO.relation = property.getRelation();
-                    if (!propertyDAO.isRelationDomainCompatibleWithRdfType(Vocabulary.CONCEPT_RADIOMETRIC_TARGET.toString())) {
+                    //2.1 check if the property exist
+                    if (existUri(property.getRelation())) {
+                        //2.2 check the domain of the property
+                        propertyDAO.relation = property.getRelation();
+                        if (!propertyDAO.isRelationDomainCompatibleWithRdfType(Vocabulary.CONCEPT_RADIOMETRIC_TARGET.toString())) {
+                            validData = false;
+                            status.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, 
+                                            "the type of the given uri is not in the domain of the relation " + property.getRelation()));
+                        }
+                    } else {
                         validData = false;
-                                status.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, 
-                                        "the type of the given uri is not in the domain of the relation " + property.getRelation()));
+                        status.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, 
+                                            StatusCodeMsg.UNKNOWN_URI + " " + property.getRelation()));
                     }
                     //SILEX:todo
-                    //add the check range for enums and the cardinality check
+                    //add the check range and the cardinality check
+                    //\SILEX:todo
+                    
+                    //SILEX:todo
+                    //add the check buisiness rules (e.g. the size property depends on the shape type)
                     //\SILEX:todo
                 }
             }

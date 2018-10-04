@@ -325,7 +325,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
         for (AnnotationDTO annotation : annotations) {
             try {
                 //1.1 check motivation
-                if (!uriDao.existObject(annotation.getMotivatedBy())
+                if (!uriDao.existUri(annotation.getMotivatedBy())
                         || !uriDao.isInstanceOf(annotation.getMotivatedBy(), Oa.CONCEPT_MOTIVATION.toString())) {
                     dataOk = false;
                     checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.WRONG_VALUE + " for the motivatedBy field"));
@@ -384,7 +384,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
             BindingSet bindingSet = result.next();
        
             if (this.uri != null) {
-                if(uriDao.existObject(this.uri)){
+                if(uriDao.existUri(this.uri)){
                     annotation.setUri(this.uri);
                 }
             } else {

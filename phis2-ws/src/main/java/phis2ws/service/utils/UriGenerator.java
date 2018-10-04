@@ -317,7 +317,7 @@ public class UriGenerator {
         //1. check if uri already exist
         AnnotationDAOSesame annotationDao = new AnnotationDAOSesame();
         String newAnnotationUri = PLATFORM_URI_ID_ANNOTATION + UUID.randomUUID();
-        while (annotationDao.existObject(newAnnotationUri)) {
+        while (annotationDao.existUri(newAnnotationUri)) {
             newAnnotationUri = PLATFORM_URI_ID_ANNOTATION + UUID.randomUUID();
         }
 

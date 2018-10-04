@@ -151,6 +151,10 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_PROJECT_PARENT_PROJECT = "parent project";
     public static final String EXAMPLE_PROJECT_WEBSITE = "http://example.com";
     public static final String EXAMPLE_PROJECT_TYPE = "project type";
+    
+    public static final String EXAMPLE_PROPERTY_RDF_TYPE = "http://xmlns.com/foaf/0.1/Agent";
+    public static final String EXAMPLE_PROPERTY_RELATION = "http://www.phenome-fppn.fr/vocabulary/2018#hasContact";
+    public static final String EXAMPLE_PROPERTY_VALUE = "http://www.phenome-fppn.fr/diaphen/id/agent/marie_dupond";
 
     public static final String EXAMPLE_PROVENANCE_URI = "http://www.phenome-fppn.fr/mtp/2018/pv181515071552";
     public static final String EXAMPLE_PROVENANCE_DATE = EXAMPLE_DATE;

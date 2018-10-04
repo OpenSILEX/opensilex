@@ -43,7 +43,7 @@ public class PropertyDTO extends AbstractVerifiedClass {
     }
     
     @URL
-    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SPECIES_RDF_TYPE)
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROPERTY_RDF_TYPE)
     public String getRdfType() {
         return rdfType;
     }
@@ -54,7 +54,7 @@ public class PropertyDTO extends AbstractVerifiedClass {
     
     @URL
     @Required
-    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SPECIES_FROM_SPECIES)
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROPERTY_RELATION)
     public String getRelation() {
         return relation;
     }
@@ -64,7 +64,7 @@ public class PropertyDTO extends AbstractVerifiedClass {
     }
     
     @Required
-    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SPECIES_URI)
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROPERTY_VALUE)
     public String getValue() {
         return value;
     }

@@ -186,7 +186,7 @@ public class MethodDaoSesame extends DAOSesame<Method> {
     private SPARQLUpdateBuilder prepareInsertQuery(MethodDTO methodDTO) {
         SPARQLUpdateBuilder spql = new SPARQLUpdateBuilder();
         
-        spql.appendGraphURI(Vocabulary.CONCEPT_VARIABLE.toString());
+        spql.appendGraphURI(Contexts.VARIABLES.toString());
         spql.appendTriplet(methodDTO.getUri(), Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_METHOD.toString(), null);
         spql.appendTriplet(methodDTO.getUri(), Rdfs.RELATION_LABEL.toString(), "\"" + methodDTO.getLabel() + "\"", null);
         if (methodDTO.getComment() != null) {

@@ -231,7 +231,10 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
                 spqlInsert.appendTriplet(documentName, Vocabulary.RELATION_STATUS.toString(), "\"" + annotObject.getStatus() + "\"", null);
 
                 if (annotObject.getComment() != null) {
-                    spqlInsert.appendTriplet(documentName, Rdfs.RELATION_COMMENT.toString(), "\"" + annotObject.getComment() + "\"", null);
+                    //SILEX:info
+                    // Use of ''' to escape \r\n characters from comment string which break the generated request string
+                    //\SILEX:info
+                    spqlInsert.appendTriplet(documentName, Rdfs.RELATION_COMMENT.toString(), "'''" + annotObject.getComment() + "'''", null);
                 }
 
                 if (!(annotObject.getConcern() == null) && !annotObject.getConcern().isEmpty()) {
@@ -338,7 +341,6 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
        String select;
        if (uri != null) {
            select = "<" + uri + ">";
-           sparqlQuery.appendSelect(select);
        } else {
             select = "?" + URI;
             sparqlQuery.appendSelect(select);
@@ -353,12 +355,11 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
             sparqlQuery.appendTriplet(select, Rdf.RELATION_TYPE.toString(), "?" + DOCUMENT_TYPE, null);
         }
         
+        sparqlQuery.appendGroupBy("?" + CREATOR);
+        sparqlQuery.appendSelect("?" + CREATOR);
+        sparqlQuery.appendTriplet(select, DublinCore.RELATION_CREATOR.toString(), "?" + CREATOR, null);
+        
         if (creator != null) {
-            sparqlQuery.appendTriplet(select, DublinCore.RELATION_CREATOR.toString(), "\"" + creator + "\"", null);
-        } else {
-            sparqlQuery.appendGroupBy("?" + CREATOR);
-            sparqlQuery.appendSelect("?" + CREATOR);
-            sparqlQuery.appendTriplet(select, DublinCore.RELATION_CREATOR.toString(), "?" + CREATOR, null);
             sparqlQuery.appendAndFilter("regex(STR(?" + CREATOR +"), '" + creator + "', 'i')");
         }
         
@@ -366,18 +367,16 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
             sparqlQuery.appendTriplet(select, DublinCore.RELATION_LANGUAGE.toString(), "\"" + language + "\"", null);
         } else {
             sparqlQuery.appendSelect(" ?" + LANGUAGE);
+            sparqlQuery.appendGroupBy(" ?" + LANGUAGE);
             sparqlQuery.appendTriplet(select, DublinCore.RELATION_LANGUAGE.toString(), "?" + LANGUAGE, null);
         }
         
+        sparqlQuery.appendGroupBy("?" + TITLE);
+        sparqlQuery.appendSelect("?" + TITLE);
+        sparqlQuery.appendTriplet(select, DublinCore.RELATION_TITLE.toString(), "?" + TITLE, null);
+        
         if (title != null) {
-            sparqlQuery.appendGroupBy("?" + TITLE);
-            sparqlQuery.appendSelect("?" + TITLE);
-            sparqlQuery.appendTriplet(select, DublinCore.RELATION_TITLE.toString(), "\"" + title + "\"", null);
             sparqlQuery.appendAndFilter("regex(STR(?" + TITLE +"), '" + title + "', 'i')");
-        } else {
-            sparqlQuery.appendGroupBy("?" + TITLE);
-            sparqlQuery.appendSelect(" ?" + TITLE);
-            sparqlQuery.appendTriplet(select, DublinCore.RELATION_TITLE.toString(), "?" + TITLE, null);
         }
         
         if (creationDate != null) {
@@ -419,6 +418,8 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         if (comment != null) {
             sparqlQuery.appendFilter("regex(STR(?" + COMMENT +"), '" + comment + "', 'i')");
         }
+        
+        LOGGER.debug(SPARQL_SELECT_QUERY + sparqlQuery.toString());
         
        return sparqlQuery;
     }
@@ -709,7 +710,10 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
             spqlInsert.appendTriplet(documentMetadata.getUri(), Vocabulary.RELATION_STATUS.toString(), "\"" + documentMetadata.getStatus() + "\"", null);
 
             if (documentMetadata.getComment() != null) {
-                spqlInsert.appendTriplet(documentMetadata.getUri(), Rdfs.RELATION_COMMENT.toString(), "\"" + documentMetadata.getComment() + "\"", null);
+                //SILEX:info
+                // Use of ''' to escape \r\n characters from comment string which break the generated request string
+                //\SILEX:info
+                spqlInsert.appendTriplet(documentMetadata.getUri(), Rdfs.RELATION_COMMENT.toString(), "'''" + documentMetadata.getComment() + "'''", null);
             }
 
             if (documentMetadata.getConcern() != null && !documentMetadata.getConcern().isEmpty() && documentMetadata.getConcern().size() > 0) {

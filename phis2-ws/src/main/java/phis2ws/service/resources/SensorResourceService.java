@@ -96,6 +96,9 @@ public class SensorResourceService {
         ArrayList<Status> statusList = new ArrayList<>();
         ResponseFormSensor getResponse;
         
+        //1. count
+        Integer totalCount = sensorDAOSesame.count();
+        //2. get sensors
         sensors = sensorDAOSesame.allPaginate();
         
         if (sensors == null) {
@@ -105,7 +108,7 @@ public class SensorResourceService {
             getResponse = new ResponseFormSensor(0, 0, sensors, true);
             return noResultFound(getResponse, statusList);
         } else {
-            getResponse = new ResponseFormSensor(sensorDAOSesame.getPageSize(), sensorDAOSesame.getPage(), sensors, false);
+            getResponse = new ResponseFormSensor(sensorDAOSesame.getPageSize(), sensorDAOSesame.getPage(), sensors, true, totalCount);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {

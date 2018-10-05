@@ -30,9 +30,9 @@ public class PropertyLabelsDTO extends PropertyDTO {
     public Property createObjectFromDTO() {
         Property property = super.createObjectFromDTO();
         
-        property.setRdfTypeLabel(rdfTypeLabels);
-        property.setRelationLabel(relationLabels);
-        property.setValueLabel(valueLabels);
+        property.setRdfTypeLabels(rdfTypeLabels);
+        property.setRelationLabels(relationLabels);
+        property.setValueLabels(valueLabels);
         
         return property;
     }

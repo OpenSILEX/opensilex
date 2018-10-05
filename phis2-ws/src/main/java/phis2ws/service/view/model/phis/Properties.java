@@ -1,22 +1,18 @@
 //******************************************************************************
-//                                       SensorProfile.java
-//
-// Author(s): Morgane Vidal <morgane.vidal@inra.fr>
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: 28 mai 2018
-// Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  28 mai 2018
-// Subject: Represents the view of the profiles of sensors.
+//                                       Properties.java
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Creation date: 25 sept. 2018
+// Contact: vincent.migot@inra.fr morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package phis2ws.service.view.model.phis;
 
 import java.util.ArrayList;
 
 /**
- * Represents the view of the profiles of sensors.
+ * Represents the view of the properties associated to an URI in the triplestore
  * @see Property
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Migot Vincent <vincent.migot@inra.fr>
  */
 public class Properties {
     //uri of the sensor

@@ -127,7 +127,9 @@ public class StudyDetailsResourceService implements BrapiCall{
         BrapiResponseForm getResponse;    
         StudyDetails study = studyDAO.getStudyInfo();
         if (study.getStudyDbId() == null) {
-            getResponse = new BrapiResponseForm(study);
+            //quick fix to manage the case where the studyDbId doesn't exist in the base
+            ArrayList<StudyDetails> nostudy= new ArrayList();
+            getResponse = new BrapiResponseForm(0, 0, nostudy, true);
             return noResultFound(getResponse, statusList);
         } else {
             getResponse = new BrapiResponseForm(study);

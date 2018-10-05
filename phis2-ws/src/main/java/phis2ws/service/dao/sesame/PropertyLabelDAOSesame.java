@@ -149,7 +149,7 @@ public class PropertyLabelDAOSesame extends PropertyDAOSesame {
      * Search all the properties corresponding to the given object uri.
      * @return the list of the properties which match the given uri.
      */
-    public ArrayList<PropertiesDTO<PropertyLabelsDTO>> getAllProperties() {        
+    public ArrayList<PropertiesDTO<PropertyLabelsDTO>> getAllProperties() {     
         SPARQLQueryBuilder query = prepareSearchQuery();
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         
@@ -157,69 +157,70 @@ public class PropertyLabelDAOSesame extends PropertyDAOSesame {
         properties.setUri(uri);
         
         ArrayList<PropertiesDTO<PropertyLabelsDTO>> propertiesContainer = new ArrayList<>();
-        
-        try (TupleQueryResult result = tupleQuery.evaluate()) {
-            while (result.hasNext()) {
-                BindingSet bindingSet = result.next();
-                
-                PropertyLabelsDTO property = new PropertyLabelsDTO();
-        
-                if (bindingSet.hasBinding(PROPERTY_TYPE)) {
-                    property.setRdfType(bindingSet.getValue(PROPERTY_TYPE).stringValue());
+        if (this.existUri(uri)) {
+            try (TupleQueryResult result = tupleQuery.evaluate()) {
+                while (result.hasNext()) {
+                    BindingSet bindingSet = result.next();
+
+                    PropertyLabelsDTO property = new PropertyLabelsDTO();
+
+                    if (bindingSet.hasBinding(PROPERTY_TYPE)) {
+                        property.setRdfType(bindingSet.getValue(PROPERTY_TYPE).stringValue());
+                    }
+                    property.setRelation(bindingSet.getValue(RELATION).stringValue());
+                    property.setValue(bindingSet.getValue(PROPERTY).stringValue());
+
+                    if (properties.hasProperty(property)) {
+                        if (bindingSet.hasBinding(PROPERTY_TYPE_LABEL)) {
+                            property.addLastRdfTypeLabel(bindingSet.getValue(PROPERTY_TYPE_LABEL).stringValue());
+                        }
+
+                        if (bindingSet.hasBinding(RELATION_LABEL)) {
+                            property.addLastRelationLabel(bindingSet.getValue(RELATION_LABEL).stringValue());
+                        }
+
+                        if (bindingSet.hasBinding(PROPERTY_LABEL)) {
+                            property.addLastValueLabel(bindingSet.getValue(PROPERTY_LABEL).stringValue());
+                        }
+
+                        PropertyLabelsDTO existingProperty = properties.getProperty(property);
+
+                        existingProperty.addRdfTypeLabels(property.getRdfTypeLabels());
+                        existingProperty.addRelationLabels(property.getRelationLabels());
+                        existingProperty.addValueLabels(property.getValueLabels());
+                    } else {
+                        if (bindingSet.hasBinding(PROPERTY_TYPE_PREF_LABEL)) {
+                            property.addFirstRdfTypeLabel(bindingSet.getValue(PROPERTY_TYPE_PREF_LABEL).stringValue());
+                        }
+
+                        if (bindingSet.hasBinding(RELATION_PREF_LABEL)) {
+                            property.addFirstRelationLabel(bindingSet.getValue(RELATION_PREF_LABEL).stringValue());
+                        }
+
+                        if (bindingSet.hasBinding(PROPERTY_PREF_LABEL)) {
+                            String v = bindingSet.getValue(PROPERTY_PREF_LABEL).stringValue();
+                            property.addFirstValueLabel(v);
+                        }
+
+                        if (bindingSet.hasBinding(PROPERTY_TYPE_LABEL)) {
+                            property.addLastRdfTypeLabel(bindingSet.getValue(PROPERTY_TYPE_LABEL).stringValue());
+                        }
+
+                        if (bindingSet.hasBinding(RELATION_LABEL)) {
+                            property.addLastRelationLabel(bindingSet.getValue(RELATION_LABEL).stringValue());
+                        }
+
+                        if (bindingSet.hasBinding(PROPERTY_LABEL)) {
+                            property.addLastValueLabel(bindingSet.getValue(PROPERTY_LABEL).stringValue());
+                        }
+
+                        properties.addProperty(property);                    
+                    }
                 }
-                property.setRelation(bindingSet.getValue(RELATION).stringValue());
-                property.setValue(bindingSet.getValue(PROPERTY).stringValue());
 
-                if (properties.hasProperty(property)) {
-                    if (bindingSet.hasBinding(PROPERTY_TYPE_LABEL)) {
-                        property.addLastRdfTypeLabel(bindingSet.getValue(PROPERTY_TYPE_LABEL).stringValue());
-                    }
-
-                    if (bindingSet.hasBinding(RELATION_LABEL)) {
-                        property.addLastRelationLabel(bindingSet.getValue(RELATION_LABEL).stringValue());
-                    }
-
-                    if (bindingSet.hasBinding(PROPERTY_LABEL)) {
-                        property.addLastValueLabel(bindingSet.getValue(PROPERTY_LABEL).stringValue());
-                    }
-                    
-                    PropertyLabelsDTO existingProperty = properties.getProperty(property);
-
-                    existingProperty.addRdfTypeLabels(property.getRdfTypeLabels());
-                    existingProperty.addRelationLabels(property.getRelationLabels());
-                    existingProperty.addValueLabels(property.getValueLabels());
-                } else {
-                    if (bindingSet.hasBinding(PROPERTY_TYPE_PREF_LABEL)) {
-                        property.addFirstRdfTypeLabel(bindingSet.getValue(PROPERTY_TYPE_PREF_LABEL).stringValue());
-                    }
-
-                    if (bindingSet.hasBinding(RELATION_PREF_LABEL)) {
-                        property.addFirstRelationLabel(bindingSet.getValue(RELATION_PREF_LABEL).stringValue());
-                    }
-
-                    if (bindingSet.hasBinding(PROPERTY_PREF_LABEL)) {
-                        String v = bindingSet.getValue(PROPERTY_PREF_LABEL).stringValue();
-                        property.addFirstValueLabel(v);
-                    }
-
-                    if (bindingSet.hasBinding(PROPERTY_TYPE_LABEL)) {
-                        property.addLastRdfTypeLabel(bindingSet.getValue(PROPERTY_TYPE_LABEL).stringValue());
-                    }
-
-                    if (bindingSet.hasBinding(RELATION_LABEL)) {
-                        property.addLastRelationLabel(bindingSet.getValue(RELATION_LABEL).stringValue());
-                    }
-
-                    if (bindingSet.hasBinding(PROPERTY_LABEL)) {
-                        property.addLastValueLabel(bindingSet.getValue(PROPERTY_LABEL).stringValue());
-                    }
-                
-                    properties.addProperty(property);                    
+                if (properties.getUri() != null) {
+                    propertiesContainer.add(properties);
                 }
-            }
-            
-            if (properties.getUri() != null) {
-                propertiesContainer.add(properties);
             }
         }
         

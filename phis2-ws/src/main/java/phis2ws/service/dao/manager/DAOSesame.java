@@ -199,8 +199,17 @@ public abstract class DAOSesame<T> {
     }
 
     /**
-     *
+     * 
      * @param uri the uri to test
+     * @example
+     * ASK {
+     *  VALUES (?r) { (<http://www.w3.org/2000/01/rdf-schema#Literal>) }
+     *  { ?r ?p ?o }
+     *  UNION
+     *  { ?s ?r ?o }
+     *  UNION
+     *  { ?s ?p ?r }
+     * }
      * @return true if the uri exist in the triplestore
      *         false if it does not exist
      */
@@ -209,6 +218,9 @@ public abstract class DAOSesame<T> {
             return false;
         }
         try {
+            //SILEX:warning
+            //Remember to add rdf, rdfs and owl ontologies in your triplestore
+            //\SILEX:warning
             SPARQLQueryBuilder query = new SPARQLQueryBuilder();
             query.appendAsk("VALUES (?r) { (<" + uri + ">) }\n" +
                         "    { ?r ?p ?o }\n" +

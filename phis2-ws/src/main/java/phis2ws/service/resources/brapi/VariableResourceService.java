@@ -96,8 +96,7 @@ public class VariableResourceService implements BrapiCall {
      * @param page
      * @param traitClass
      * @return the information of all the variable
-     * e.g
-     *      * e.g
+     * @example
      *  {
           "metadata": {
             "pagination": {
@@ -171,16 +170,19 @@ public class VariableResourceService implements BrapiCall {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})    
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                         dataType = "string", paramType = "header",
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                         dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
                          value = DocumentationAnnotation.ACCES_TOKEN,
                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_JSON)    
     public Response getTraitsList ( 
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page, 
-        @ApiParam(value = "traitClass") @QueryParam("traitClass") String traitClass 
+        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
+        //SILEX:todo
+        //to be discussed : do we keep as inputs the concepts we don't manage ?    
+        //@ApiParam(value = "traitClass") @QueryParam("traitClass") String traitClass
+        //\SILEX:todo    
         ) throws SQLException {        
         VariableDaoSesame varDAO = new VariableDaoSesame();
         varDAO.setPageSize(limit);
@@ -204,13 +206,12 @@ public class VariableResourceService implements BrapiCall {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})    
     @ApiImplicitParams({
-       @ApiImplicitParam(name = "Authorization", required = true,
-                         dataType = "string", paramType = "header",
+       @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                         dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
                          value = DocumentationAnnotation.ACCES_TOKEN,
                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
-    @Produces(MediaType.APPLICATION_JSON)
-    
+    @Produces(MediaType.APPLICATION_JSON)    
     public Response getTraitDetails ( 
         @ApiParam(value = DocumentationAnnotation.VARIABLE_URI_DEFINITION, required = true, example=DocumentationAnnotation.EXAMPLE_VARIABLE_URI) @PathParam("observationVariableDbId") @Required @URL String observationVariableDbId
     ) throws SQLException {        

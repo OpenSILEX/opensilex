@@ -13,7 +13,9 @@ package phis2ws.service.view.model.phis;
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class BrapiScale {
+    //The id of the unit in the triplestore e.g. http://www.phenome-fppn.fr/platform/id/units/u001
     private String scaleDbid;
+    //The name of the unit in the triplestore e.g. "m2.m2"
     private String name;
     private String datatype;
     private String decimalPlaces;

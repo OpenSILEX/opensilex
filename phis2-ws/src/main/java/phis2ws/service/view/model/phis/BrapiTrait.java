@@ -16,9 +16,12 @@ import java.util.ArrayList;
  */
 public class BrapiTrait {
     private String defaultValue;
+    //The comment of the trait in the triplestore e.g. "one-sided green leaf area per unit ground surface area"
     private String description;
+    //The label of the trait in the triplestore e.g. Leaf_Area_Index
     private String name;
     private ArrayList<String> observationVariables;
+    //The id of the trait in the triplestore e.g. http://www.phenome-fppn.fr/platform/id/traits/t001
     private String traitDbId;
     private String traitId; 
 

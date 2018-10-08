@@ -15,11 +15,14 @@ import com.google.gson.annotations.SerializedName;
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class BrapiMethod {
+    //The id of the method in the triplestore e.g. http://www.phenome-fppn.fr/platform/id/methods/m001
     private String methodDbId;
+    //The label of the method in the triplestore e.g. "LAI_Computation"
     private String name;
     @SerializedName("class")
     private String brapiClass;
     private String description;
+    //The comment of the method in the triplestore
     private String formula;
     private String reference;
 

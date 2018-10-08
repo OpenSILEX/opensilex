@@ -11,13 +11,17 @@ import com.google.gson.annotations.SerializedName;
 
 /**
  * Represents a variable trait according to brapi specification
+ * @See https://brapi.docs.apiary.io/#reference/observation-variables
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class BrapiVariableTrait {
+    //The id of the trait in the triplestore e.g. http://www.phenome-fppn.fr/platform/id/traits/t001
     private String traitDbId;
+    //The label of the trait in the triplestore e.g. Leaf_Area_Index
     private String name;
     @SerializedName("class")
     private String brapiclass;
+    //The comment of the trait in the triplestore e.g. "one-sided green leaf area per unit ground surface area"
     private String description;
     private String synonyms;
     private String mainAbbreviation;

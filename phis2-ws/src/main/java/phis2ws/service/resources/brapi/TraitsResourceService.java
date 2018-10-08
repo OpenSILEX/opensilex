@@ -46,7 +46,7 @@ import phis2ws.service.view.model.phis.Call;
  * Traits service
  * @See https://brapi.docs.apiary.io/#reference/traits
  * @author Alice Boizet <alice.boizet@inra.fr>
- * @update Alice Boizet 24 sept. 2018: add Get Trait Details 
+ * @update [Alice Boizet] 24 September, 2018: add Get Trait Details 
  */
 public class TraitsResourceService implements BrapiCall {
     final static Logger LOGGER = LoggerFactory.getLogger(TraitsResourceService.class);
@@ -93,7 +93,7 @@ public class TraitsResourceService implements BrapiCall {
      * @param limit
      * @param page 
      * @return list of the traits corresponding to the search params given
-     * e.g
+     * @example
      * {
         "metadata": {
           "pagination": {
@@ -141,8 +141,8 @@ public class TraitsResourceService implements BrapiCall {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})    
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                         dataType = "string", paramType = "header",
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                         dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
                          value = DocumentationAnnotation.ACCES_TOKEN,
                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
@@ -161,6 +161,29 @@ public class TraitsResourceService implements BrapiCall {
      * Retrieve the detail of one trait (the trait id is given by the user)
      * @param traitDbId trait uri
      * @return the trait information
+     * @example 
+     * {
+        "metadata": {
+          "pagination": {
+            "pageSize": 0,
+            "currentPage": 0,
+            "totalCount": 0,
+            "totalPages": 0
+          },
+          "status": [],
+          "datafiles": []
+        },
+        "result": {
+          "data": {
+            "defaultValue": null,
+            "description": null,
+            "name": "myTrait",
+            "observationVariables": null,
+            "traitDbId": "http://www.phenome-fppn.fr/platform/id/traits/t003",
+            "traitId": null
+          }
+        }
+      }
      */
     @GET
     @Path("{traitDbId}")
@@ -172,13 +195,12 @@ public class TraitsResourceService implements BrapiCall {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})    
     @ApiImplicitParams({
-       @ApiImplicitParam(name = "Authorization", required = true,
-                         dataType = "string", paramType = "header",
+       @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                         dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
                          value = DocumentationAnnotation.ACCES_TOKEN,
                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
-    @Produces(MediaType.APPLICATION_JSON)
-    
+    @Produces(MediaType.APPLICATION_JSON)    
     public Response getTraitDetails ( 
         @ApiParam(value = DocumentationAnnotation.TRAIT_URI_DEFINITION, required = true, example=DocumentationAnnotation.EXAMPLE_TRAIT_URI) @PathParam("traitDbId") @Required @URL String traitDbId
     ) throws SQLException {        

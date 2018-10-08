@@ -12,9 +12,20 @@ import phis2ws.service.view.brapi.Pagination;
 /**
  * This class provides the format of the result of each brapi service where there is only one element
  * @author Alice Boizet <alice.boizet@inra.fr>
+ * @example
+ * "result": {
+    "data": {
+      "defaultValue": null,
+      "description": null,
+      "name": "myTrait",
+      "observationVariables": null,
+      "traitDbId": "http://www.phenome-fppn.fr/platform/id/traits/t003",
+      "traitId": null
+    }
+  }
  */
 public class BrapiSingleResult<T> implements BrapiResult {
-    
+    //contains the returned object information
     T data;
 
     public BrapiSingleResult() {

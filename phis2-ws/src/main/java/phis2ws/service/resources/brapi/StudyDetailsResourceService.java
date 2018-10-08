@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
@@ -33,7 +33,7 @@ import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
-import phis2ws.service.view.brapi.form.ResponseFormStudyDetails;
+import phis2ws.service.view.brapi.form.BrapiResponseForm;
 import phis2ws.service.view.model.phis.Call;
 import phis2ws.service.view.model.phis.StudyDetails;
 
@@ -54,15 +54,17 @@ public class StudyDetailsResourceService implements BrapiCall{
      * @return Calls call information
      */
     @Override
-    public Call callInfo() {
+    public ArrayList<Call> callInfo() {
+        ArrayList<Call> calls = new ArrayList();
         ArrayList<String> calldatatypes = new ArrayList<>();
         calldatatypes.add("json");
         ArrayList<String> callMethods = new ArrayList<>();
         callMethods.add("GET");
         ArrayList<String> callVersions = new ArrayList<>();
         callVersions.add("1.2");
-        Call callscall = new Call("studies", calldatatypes, callMethods, callVersions);
-        return callscall;
+        Call call = new Call("studies/{studyDbId}", calldatatypes, callMethods, callVersions);
+        calls.add(call);
+        return calls;
     }
     
     //User session
@@ -88,7 +90,7 @@ public class StudyDetailsResourceService implements BrapiCall{
     @Produces(MediaType.APPLICATION_JSON)   
     
     public Response getStudyDetails (
-        @ApiParam(value = "Search by studyDbId", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI ) @QueryParam("studyDbId") @URL @Required String studyDbId
+        @ApiParam(value = "Search by studyDbId", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI ) @PathParam("studyDbId") @URL @Required String studyDbId
         ) throws SQLException {               
         
         StudyDAO studyDAO = new StudyDAO();
@@ -103,15 +105,15 @@ public class StudyDetailsResourceService implements BrapiCall{
         return getStudyData(studyDAO);
         }
      
-    private Response noResultFound(ResponseFormStudyDetails getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status("No results", StatusCodeMsg.INFO, "This study doesn't exist"));
-        getResponse.setStatus(insertStatusList);
+    private Response noResultFound(BrapiResponseForm getResponse, ArrayList<Status> insertStatusList) {
+        insertStatusList.add(new Status("No result", StatusCodeMsg.INFO, "This study doesn't exist"));
+        getResponse.getMetadata().setStatus(insertStatusList);
         return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
     }
     
-    private Response sqlError(ResponseFormStudyDetails getResponse, ArrayList<Status> insertStatusList) {
+    private Response sqlError(BrapiResponseForm getResponse, ArrayList<Status> insertStatusList) {
          insertStatusList.add(new Status("SQL error" ,StatusCodeMsg.ERR, "can't fetch result"));
-         getResponse.setStatus(insertStatusList);
+         getResponse.getMetadata().setStatus(insertStatusList);
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(getResponse).build();
     }
      
@@ -122,13 +124,15 @@ public class StudyDetailsResourceService implements BrapiCall{
      */
     private Response getStudyData(StudyDAO studyDAO) throws SQLException{
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormStudyDetails getResponse;    
+        BrapiResponseForm getResponse;    
         StudyDetails study = studyDAO.getStudyInfo();
         if (study.getStudyDbId() == null) {
-            getResponse = new ResponseFormStudyDetails(0, 0, study, true);
+            //quick fix to manage the case where the studyDbId doesn't exist in the base
+            ArrayList<StudyDetails> nostudy= new ArrayList();
+            getResponse = new BrapiResponseForm(0, 0, nostudy, true);
             return noResultFound(getResponse, statusList);
         } else {
-            getResponse = new ResponseFormStudyDetails(0, 0, study, true);
+            getResponse = new BrapiResponseForm(study);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }        
     }

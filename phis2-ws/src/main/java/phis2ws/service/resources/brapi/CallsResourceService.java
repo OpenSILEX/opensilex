@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.view.brapi.Status;
-import phis2ws.service.view.brapi.form.ResponseFormCall;
+import phis2ws.service.view.brapi.form.BrapiResponseForm;
 import phis2ws.service.view.model.phis.Call;
 
 @Api("/brapi/v1/calls")
@@ -36,6 +36,7 @@ import phis2ws.service.view.model.phis.Call;
 
 /**
  * Calls service
+ * @see https://brapi.docs.apiary.io/#reference/calls/call-search
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class CallsResourceService implements BrapiCall {
@@ -48,16 +49,17 @@ public class CallsResourceService implements BrapiCall {
      * @return Calls call information
      */
     @Override
-    public Call callInfo() {
+    public ArrayList<Call> callInfo() {
+        ArrayList<Call> calls = new ArrayList();
         ArrayList<String> calldatatypes = new ArrayList<>();
         calldatatypes.add("json");
         ArrayList<String> callMethods = new ArrayList<>();
         callMethods.add("GET");
         ArrayList<String> callVersions = new ArrayList<>();
-        callVersions.add("1.1");
         callVersions.add("1.2");
-        Call callscall = new Call("calls", calldatatypes, callMethods, callVersions);
-        return callscall;
+        Call call = new Call("calls", calldatatypes, callMethods, callVersions);
+        calls.add(call);
+        return calls;
     }
 
     /* Dependency injection to get all BrapiCalls callInfo() outputs
@@ -87,18 +89,22 @@ public class CallsResourceService implements BrapiCall {
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
             @ApiParam(value = DocumentationAnnotation.CALL_DATATYPE_DEFINITION, example = DocumentationAnnotation.EXAMPLE_CALL_DATATYPE) @QueryParam("datatype") @Pattern(regexp = "json") String datatype) {
 
-        ArrayList<Status> statuslist = new ArrayList();
+        ArrayList<Status> statusList = new ArrayList();
         ArrayList<Call> callsInfoList = new ArrayList();
 
-        for (BrapiCall bc : brapiCallsList) {
-            Call callinfo = bc.callInfo();
-            ArrayList<String> datatypesList = callinfo.getDatatypes();
+        for (BrapiCall bc : brapiCallsList) {            
+            ArrayList<Call> callinfo = bc.callInfo();
+            ArrayList<String> datatypesList = new ArrayList();
+            for (Call c : callinfo) {
+                datatypesList.addAll(c.getDatatypes());
+            }            
             if (datatype == null || datatypesList.contains(datatype) == true) {
-                callsInfoList.add(callinfo);
+                callsInfoList.addAll(callinfo);
             }
         }
 
-        ResponseFormCall getResponse = new ResponseFormCall(limit, page, callsInfoList, false, statuslist);
+        BrapiResponseForm getResponse = new BrapiResponseForm(limit, page, callsInfoList, false);
+        getResponse.getMetadata().setStatus(statusList);
         return Response.status(Response.Status.OK).entity(getResponse).build();
     }
 }

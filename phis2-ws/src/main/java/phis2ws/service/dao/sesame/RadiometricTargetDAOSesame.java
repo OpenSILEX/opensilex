@@ -28,6 +28,7 @@ import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Vocabulary;
 import phis2ws.service.resources.dto.PropertyDTO;
 import phis2ws.service.resources.dto.radiometricTargets.RadiometricTargetPostDTO;
+import phis2ws.service.resources.dto.radiometricTargets.RadiometricTargetPutDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
@@ -153,7 +154,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
      * @see PropertyDAOSesame
      * @return the result with the list of the founded errors (empty if no error)
      */
-    public POSTResultsReturn check(List<RadiometricTargetPostDTO> radiometricTargets) {
+    public POSTResultsReturn check(List<RadiometricTarget> radiometricTargets) {
         POSTResultsReturn checkResult = null;
         //list of the returned status
         List<Status> status = new ArrayList<>();
@@ -163,9 +164,9 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
         UserDaoPhisBrapi userDAO = new UserDaoPhisBrapi();
         if (userDAO.isAdmin(user)) {
             PropertyDAOSesame propertyDAO = new PropertyDAOSesame();
-            for (RadiometricTargetPostDTO radiometricTarget : radiometricTargets) {
+            for (RadiometricTarget radiometricTarget : radiometricTargets) {
                 //2. check properties
-                for (PropertyDTO property : radiometricTarget.getProperties()) {
+                for (Property property : radiometricTarget.getProperties()) {
                     //2.1 check if the property exist
                     if (existUri(property.getRelation())) {
                         //2.2 check the domain of the property
@@ -294,15 +295,102 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
     }
     
     /**
+     * Generates a RadiometricTarget list from a given list of RadiometricTargetPostDTO
+     * @param radiometricTargetsPostDTO
+     * @return the list of radiometric targets
+     */
+    private List<RadiometricTarget> radiometricTargetPostDTOsToRadiometricTargets(List<RadiometricTargetPostDTO> radiometricTargetsPostDTO) {
+        ArrayList<RadiometricTarget> radiometricTargets = new ArrayList<>();
+        
+        for (RadiometricTargetPostDTO radiometricTargetPostDTO : radiometricTargetsPostDTO) {
+            radiometricTargets.add(radiometricTargetPostDTO.createObjectFromDTO());
+        }
+        
+        return radiometricTargets;
+    }
+    
+    /**
      * Check and insert the given radiometric targets in the triplestore
      * @param radiometricTargets
      * @return the insertion result. Message error if errors founded in data
      *         the list of the generated uri of the radiometric targets if the insertion has been done
      */
     public POSTResultsReturn checkAndInsert(List<RadiometricTargetPostDTO> radiometricTargets) {
-        POSTResultsReturn checkResult = check(radiometricTargets);
+        POSTResultsReturn checkResult = check(radiometricTargetPostDTOsToRadiometricTargets(radiometricTargets));
         if (checkResult.getDataState()) {
             return insert(radiometricTargets);
+        } else { //errors founded in data
+            return checkResult;
+        }
+    }
+    
+    /**
+     * Generates a RadiometricTarget list from a given list of RadiometricTargetPutDTO
+     * @param radiometricTargetsPutDTO
+     * @return the list of radiometric targets
+     */
+    private List<RadiometricTarget> radiometricTargetPutDTOsToRadiometricTargets(List<RadiometricTargetPutDTO> radiometricTargetsPutDTO) {
+        ArrayList<RadiometricTarget> radiometricTargets = new ArrayList<>();
+        
+//        for (RadiometricTargetPutDTO radiometricTargetPostDTO : radiometricTargetsPutDTO) {
+//            radiometricTargets.add(radiometricTargetPostDTO.createObjectFromDTO());
+//        }
+//        
+        return radiometricTargets;
+    }
+    
+    private String prepareDeleteQuery(RadiometricTarget radiometricTarget) {
+        String query = "DELETE WHERE {"
+                + "<" + radiometricTarget.getUri() + "> <" + Rdfs.RELATION_LABEL.toString() + "> \"" + radiometricTarget.getLabel() + "\" . ";
+        
+        for (Property property : radiometricTarget.getProperties()) {
+            query += "<" + radiometricTarget.getUri() + ">";
+        }
+                
+        query += "}";
+        
+        return "";
+    }
+    
+    /**
+     * Update the given radiometric targets in the triplestore. 
+     * /!\ Prerequisite : data must have been checked before calling this method.
+     * @see RadiometricTargetDAOSesame#check(java.util.List)
+     * @param radiometricTargets
+     * @return the update result with the list of all the updated radiometric targets.
+     */
+    private POSTResultsReturn update(List<RadiometricTargetPutDTO> radiometricTargets) {
+        //SILEX:info
+        //If a property of a radiometric target has a null value, 
+        //it will be deleted from the triplestore
+        //\SILEX:info
+        List<Status> updateStatus = new ArrayList<>();
+        List<String> updatedResourcesUri = new ArrayList<>();
+        POSTResultsReturn results;
+        
+        boolean annotationUpdate = true;
+        boolean resultState = false;
+        
+        for (RadiometricTargetPutDTO radiometricTargetDTO : radiometricTargets) {
+            //1. delete already existing data
+            //1.1
+//            String deleteQuery = prepareDeleteQuery(radiometricTargetDTO.createObjectFromDTO());
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Update the given radiometric targets in the triplestore
+     * @param radiometricTargets
+     * @return the update result. Message error if errors founded in data
+     *         the list of the generated uri of the radiometric targets if the update has been done
+     */
+    public POSTResultsReturn checkAndUpdate(List<RadiometricTargetPutDTO> radiometricTargets) {
+        //todo : faire une classe mere ? ou faire le check qui se fait sur les modèles ? 
+        POSTResultsReturn checkResult = check(radiometricTargetPutDTOsToRadiometricTargets(radiometricTargets));
+        if (checkResult.getDataState()) {
+            return update(radiometricTargets);
         } else { //errors founded in data
             return checkResult;
         }

@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
@@ -33,6 +34,7 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.radiometricTargets.RadiometricTargetPostDTO;
+import phis2ws.service.resources.dto.radiometricTargets.RadiometricTargetPutDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
@@ -122,5 +124,48 @@ public class RadiometricTargetResourceService {
             postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty radiometric(s) target(s) to add"));
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
+    }
+    
+    @PUT
+    @ApiOperation(value = "Update radiometric targets")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Radiometric target(s) updated", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 404, message = "Radiometric target(s) not found"),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    public Response put(
+        @ApiParam(value = DocumentationAnnotation.RADIOMETRIC_TARGET_POST_DEFINITION) @Valid ArrayList<RadiometricTargetPutDTO> radiometricTargets,
+        @Context HttpServletRequest context) {
+        AbstractResultForm putResponse = null;
+        
+        ///!\ à tester si ok sans ce test
+        //if (radiometricTargets != null && !radiometricTargets.isEmpty()) {
+        RadiometricTargetDAOSesame radiometricTargetDAO = new RadiometricTargetDAOSesame();
+        if (context.getRemoteAddr() != null) {
+            radiometricTargetDAO.remoteUserAdress = context.getRemoteAddr();
+        }
+
+        radiometricTargetDAO.user = userSession.getUser();
+
+        POSTResultsReturn result = radiometricTargetDAO.checkAndUpdate(radiometricTargets);
+
+        if (result.getHttpStatus().equals(Response.Status.OK)
+                || result.getHttpStatus().equals(Response.Status.CREATED)) {
+            //Code 200, traits modifiés
+            putResponse = new ResponseFormPOST(result.statusList);
+            putResponse.getMetadata().setDatafiles(result.createdResources);
+        } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                || result.getHttpStatus().equals(Response.Status.OK)
+                || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+            putResponse = new ResponseFormPOST(result.statusList);
+        }
+        return Response.status(result.getHttpStatus()).entity(putResponse).build();
     }
 }

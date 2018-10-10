@@ -10,24 +10,19 @@ package phis2ws.service.resources.validation.validators;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
-import org.joda.time.DateTime;
-import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.resources.dto.ProvenanceDTO;
 import phis2ws.service.resources.validation.interfaces.ProvenanceDate;
-import phis2ws.service.utils.dates.Dates;
 
 /**
- * Class checks specific date field on provenance object.
+ * Check the following rule : the provenance date must not be null if the provenance uri is not set.
  * {@code null} elements are considered valid.
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
+ * @update [Morgane Vidal] 10 Oct, 2018 : remove the date validation (the @Date must already be used on the date field). 
  */
 public class ProvenanceDateValidator implements ConstraintValidator<ProvenanceDate, ProvenanceDTO> {
 
-    private DateFormat dateFormat;
-
     @Override
     public void initialize(ProvenanceDate constraintAnnotation) {
-        this.dateFormat = constraintAnnotation.value();
     }
 
     @Override
@@ -35,19 +30,13 @@ public class ProvenanceDateValidator implements ConstraintValidator<ProvenanceDa
         if (provenance == null) {
             return true;
         }
-        if(provenance.getUri() != null){
+        if (provenance.getUri() != null) { //if there is a provenance uri, return true
              return true;
+        } else {
+            //if the provenance uri is null : 
+            // - creationDate null : return false
+            // - creationDate not null : return true
+            return provenance.getUri() == null && provenance.getCreationDate() != null;
         }
-        // if uri is valid and date not return false
-        return  provenance.getUri() == null && validateDate(dateFormat, provenance.getCreationDate());
-    }
-
-    public static boolean validateDate(DateFormat pattern, String date) {
-        if(date == null){
-            return false;
-        }
-        
-        DateTime stringToDateTime = Dates.stringToDateTimeWithGivenPattern(date, pattern.toString());
-        return stringToDateTime != null;
     }
 }

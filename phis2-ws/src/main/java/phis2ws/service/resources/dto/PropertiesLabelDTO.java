@@ -7,11 +7,6 @@
 //******************************************************************************
 package phis2ws.service.resources.dto;
 
-import java.util.ArrayList;
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.resources.validation.interfaces.Required;
 
 /**

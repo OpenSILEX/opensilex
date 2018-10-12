@@ -16,16 +16,16 @@ import phis2ws.service.view.model.phis.RadiometricTarget;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class RadiometricTargetPutDTO extends PropertiesLabelDTO {
-//    @Override
-//    public RadiometricTarget createObjectFromDTO() {
-//        RadiometricTarget radiometricTarget = new RadiometricTarget();
-//        radiometricTarget.setUri(uri);
-//        radiometricTarget.setLabel(label);
-//        
-//        properties.forEach((property) -> {
-//            radiometricTarget.addProperty(property.createObjectFromDTO());
-//        });
-//        
-//        return radiometricTarget;
-//    }
+    @Override
+    public RadiometricTarget createObjectFromDTO() {
+        RadiometricTarget radiometricTarget = new RadiometricTarget();
+        radiometricTarget.setUri(uri);
+        radiometricTarget.setLabel(label);
+        
+        properties.forEach((property) -> {
+            radiometricTarget.addProperty(property.createObjectFromDTO());
+        });
+        
+        return radiometricTarget;
+    }
 }

@@ -165,6 +165,20 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
         if (userDAO.isAdmin(user)) {
             PropertyDAOSesame propertyDAO = new PropertyDAOSesame();
             for (RadiometricTarget radiometricTarget : radiometricTargets) {
+                //1. check the radiometric target if given (for example in case of an update)
+                if (radiometricTarget.getUri() != null) {
+                    //TODO : use the allPaginate developped by Vincent
+                    uri = radiometricTarget.getUri();
+                    ArrayList<RadiometricTarget> radiometricTargetCorresponding = allPaginate();
+                    
+                    //Unknown radiometric target uri
+                    if (radiometricTargetCorresponding.isEmpty()) {
+                        validData = false;
+                        status.add(new Status(StatusCodeMsg.UNKNOWN_URI, StatusCodeMsg.ERR, 
+                                            "Unknwon radiometric target uri " + radiometricTarget.getUri()));
+                    }
+                }
+                
                 //2. check properties
                 for (Property property : radiometricTarget.getProperties()) {
                     //2.1 check if the property exist
@@ -221,11 +235,13 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
         query.appendTriplet(radiometricTarget.getUri(), Rdfs.RELATION_LABEL.toString(), "\"" + radiometricTarget.getLabel() + "\"", null);
         
         for (Property property : radiometricTarget.getProperties()) {
-            if (property.getRdfType() != null) {
-                query.appendTriplet(radiometricTarget.getUri(), property.getRelation(), property.getValue(), null);
-                query.appendTriplet(property.getValue(), Rdf.RELATION_TYPE.toString(), property.getRdfType(), null);
-            } else {
-                query.appendTriplet(radiometricTarget.getUri(), property.getRelation(), "\"" + property.getValue() + "\"", null);
+            if (property.getValue() != null) {
+                if (property.getRdfType() != null) {
+                    query.appendTriplet(radiometricTarget.getUri(), property.getRelation(), property.getValue(), null);
+                    query.appendTriplet(property.getValue(), Rdf.RELATION_TYPE.toString(), property.getRdfType(), null);
+                } else {
+                    query.appendTriplet(radiometricTarget.getUri(), property.getRelation(), "\"" + property.getValue() + "\"", null);
+                }
             }
         }
         LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
@@ -332,13 +348,18 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
     private List<RadiometricTarget> radiometricTargetPutDTOsToRadiometricTargets(List<RadiometricTargetPutDTO> radiometricTargetsPutDTO) {
         ArrayList<RadiometricTarget> radiometricTargets = new ArrayList<>();
         
-//        for (RadiometricTargetPutDTO radiometricTargetPostDTO : radiometricTargetsPutDTO) {
-//            radiometricTargets.add(radiometricTargetPostDTO.createObjectFromDTO());
-//        }
-//        
+        for (RadiometricTargetPutDTO radiometricTargetPostDTO : radiometricTargetsPutDTO) {
+            radiometricTargets.add(radiometricTargetPostDTO.createObjectFromDTO());
+        }
+        
         return radiometricTargets;
     }
     
+    /**
+     * 
+     * @param radiometricTarget
+     * @return 
+     */
     private String prepareDeleteQuery(RadiometricTarget radiometricTarget) {
         String query = "DELETE WHERE {"
                 + "<" + radiometricTarget.getUri() + "> <" + Rdfs.RELATION_LABEL.toString() + "> \"" + radiometricTarget.getLabel() + "\" . ";
@@ -349,7 +370,9 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
                 
         query += "}";
         
-        return "";
+        LOGGER.debug(query);
+        
+        return query;
     }
     
     /**
@@ -372,9 +395,32 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
         boolean resultState = false;
         
         for (RadiometricTargetPutDTO radiometricTargetDTO : radiometricTargets) {
-            //1. delete already existing data
-            //1.1
-//            String deleteQuery = prepareDeleteQuery(radiometricTargetDTO.createObjectFromDTO());
+            RadiometricTarget radiometricTarget = radiometricTargetDTO.createObjectFromDTO();
+            //1. genereate query to delete already existing data
+            //SILEX:info
+            //We only delete the already existing data received by the client. 
+            //It means that we delete only the properties given by the client.
+            //\SILEX:info
+            String deleteQuery = prepareDeleteQuery(radiometricTarget);
+            
+            //2. generate query to insert new data
+            //SILEX:info
+            //(insert only the triplets with a not null value)
+            //\SILEX:info
+            SPARQLUpdateBuilder insertQuery = prepareInsertQuery(radiometricTarget);
+            
+            try {
+                this.getConnection().begin();
+                Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery);
+                Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, insertQuery.toString());
+                prepareDelete.execute();
+                prepareUpdate.execute();
+                updatedResourcesUri.add(radiometricTarget.getUri());
+            } catch (MalformedQueryException e) {
+                LOGGER.error(e.getMessage(), e);
+                annotationUpdate = false;
+                updateStatus.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, "Malformed update query: " + e.getMessage()));
+            }
         }
         
         return null;

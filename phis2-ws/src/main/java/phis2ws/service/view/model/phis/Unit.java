@@ -11,7 +11,7 @@
 //***********************************************************************************************
 package phis2ws.service.view.model.phis;
 
-public class Unit extends InstanceDefinition {
+public class Unit extends RdfResourceDefinition {
     public Unit() {
         
     }

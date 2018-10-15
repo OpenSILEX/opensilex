@@ -145,6 +145,30 @@ public enum Vocabulary {
         }
     },
     
+    RELATION_BRDF_P1 {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "brdfP1";
+        }
+    },
+    RELATION_BRDF_P2 {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "brdfP2";
+        }
+    },
+    RELATION_BRDF_P3 {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "brdfP3";
+        }
+    },
+    RELATION_BRDF_P4 {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "brdfP4";
+        }
+    },
     RELATION_CONCERN {
         @Override
         public String toString() {
@@ -223,10 +247,46 @@ public enum Vocabulary {
             return NAMESPACE.toString() + "hasPlot";
         }
     },
+    RELATION_HAS_RADIOMETRIC_TARGET_MATERIAL{
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasRadiometricTargetMaterial";
+        }
+    },
     RELATION_HAS_REPETITION {
         @Override
         public String toString() {
             return NAMESPACE.toString() + "hasRepetition";
+        }
+    },
+    RELATION_HAS_SHAPE {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasShape";
+        }
+    },
+    RELATION_HAS_SHAPE_DIAMETER {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasShapeDiameter";
+        }
+    },
+    RELATION_HAS_SHAPE_LENGTH {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasShapeLength";
+        }
+    },
+    RELATION_HAS_SHAPE_WIDTH {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasShapeWidth";
+        }
+    },
+    RELATION_HAS_TECHNICAL_CONTACT {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasTechnicalContact";
         }
     },
     RELATION_HAS_TRAIT {
@@ -270,5 +330,5 @@ public enum Vocabulary {
         public String toString() {
             return NAMESPACE.toString() + "status";
         }
-    },
+    }
 }

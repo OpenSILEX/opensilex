@@ -11,6 +11,7 @@
 //******************************************************************************
 package phis2ws.service.resources.dto;
 
+import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyDTO;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import javax.validation.Valid;

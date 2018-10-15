@@ -30,7 +30,7 @@ import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Vocabulary;
-import phis2ws.service.resources.dto.PropertyDTO;
+import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyDTO;
 import phis2ws.service.resources.dto.SensorProfileDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;

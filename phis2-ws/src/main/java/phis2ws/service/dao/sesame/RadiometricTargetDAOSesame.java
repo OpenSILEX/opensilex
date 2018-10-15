@@ -19,20 +19,20 @@ import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.dao.phis.UserDaoPhisBrapi;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Vocabulary;
-import phis2ws.service.resources.dto.PropertyDTO;
+import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyDTO;
 import phis2ws.service.resources.dto.radiometricTargets.RadiometricTargetPostDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.utils.sparql.SPARQLUpdateBuilder;
 import phis2ws.service.view.brapi.Status;
+import phis2ws.service.view.model.phis.RdfResourceDefinition;
 import phis2ws.service.view.model.phis.Property;
 import phis2ws.service.view.model.phis.RadiometricTarget;
 
@@ -40,11 +40,12 @@ import phis2ws.service.view.model.phis.RadiometricTarget;
  * Allows CRUD methods of radiometric target in the triplestore.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
+public class RadiometricTargetDAOSesame extends PropertyDAOSesame {
     final static Logger LOGGER = LoggerFactory.getLogger(RadiometricTargetDAOSesame.class);
     
     //The following params are used to search in the triplestore
     public String rdfType;
+    public String label;
     
     /**
      * Generates the query to get the uri and the label of the radiometric targets
@@ -60,9 +61,20 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
         
-        query.appendSelect("?" + URI + " ?" + LABEL);
-        query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_RADIOMETRIC_TARGET.toString(), null);
-        query.appendTriplet("?" + URI, Rdfs.RELATION_LABEL.toString(), "?" + LABEL, null);
+        String select;
+        if (uri != null) {
+            select = "<" + uri + ">";
+        } else {
+            select = "?" + URI;
+            query.appendSelect(select);
+        }
+        
+        query.appendSelect("?" + LABEL);
+        query.appendTriplet(select, Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_RADIOMETRIC_TARGET.toString(), null);
+        query.appendTriplet(select, Rdfs.RELATION_LABEL.toString(), "?" + LABEL, null);
+        if (label != null) {
+            query.appendFilter("REGEX ( ?" + LABEL + ",\".*" + label + ".*\",\"i\")");
+        }
         
         query.appendLimit(this.getPageSize());
         query.appendOffset(this.getPage() * this.getPageSize());
@@ -80,7 +92,12 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
     private RadiometricTarget getFromBindingSet(BindingSet bindingSet) {
         RadiometricTarget radiometricTarget = new RadiometricTarget();
         
-        radiometricTarget.setUri(bindingSet.getValue(URI).stringValue());
+        if (uri != null) {
+            radiometricTarget.setUri(uri);
+        } else {
+            radiometricTarget.setUri(bindingSet.getValue(URI).stringValue());
+        }
+        
         radiometricTarget.setLabel(bindingSet.getValue(LABEL).stringValue());
         
         return radiometricTarget;
@@ -93,9 +110,11 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
     public ArrayList<RadiometricTarget> getRadiometricTargets() {
         SPARQLQueryBuilder query = prepareSearchQuery();
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-        ArrayList<RadiometricTarget> radiometricTargets = new ArrayList<>();
+        ArrayList<RadiometricTarget> radiometricTargets;
 
         try (TupleQueryResult result = tupleQuery.evaluate()) {
+            radiometricTargets = new ArrayList<>();
+            
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 RadiometricTarget radiometricTarget = getFromBindingSet(bindingSet);

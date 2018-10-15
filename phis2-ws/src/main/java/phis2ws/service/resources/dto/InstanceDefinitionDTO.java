@@ -20,7 +20,7 @@ import javax.validation.Valid;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.resources.validation.interfaces.URL;
-import phis2ws.service.view.model.phis.InstanceDefinition;
+import phis2ws.service.view.model.phis.RdfResourceDefinition;
 import phis2ws.service.view.model.phis.OntologyReference;
 
 public class InstanceDefinitionDTO extends AbstractVerifiedClass {
@@ -35,8 +35,8 @@ public class InstanceDefinitionDTO extends AbstractVerifiedClass {
     protected ArrayList<OntologyReference> ontologiesReferences = new ArrayList<>();
 
     @Override
-    public InstanceDefinition createObjectFromDTO() {
-        InstanceDefinition instanceDefinition = new InstanceDefinition();
+    public RdfResourceDefinition createObjectFromDTO() {
+        RdfResourceDefinition instanceDefinition = new RdfResourceDefinition();
         instanceDefinition.setUri(uri);
         instanceDefinition.setLabel(label);
         instanceDefinition.setComment(comment);

@@ -5,7 +5,7 @@
 // Creation date: 10 sept, 2018
 // Contact: morgane.vidal@inra.fr, vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package phis2ws.service.resources.dto;
+package phis2ws.service.resources.dto.rdfResourceDefinition;
 
 import io.swagger.annotations.ApiModelProperty;
 import phis2ws.service.documentation.DocumentationAnnotation;
@@ -28,6 +28,17 @@ public class PropertyDTO extends AbstractVerifiedClass {
     private String relation;
     //the value (e.g. http://www.phenome-fppn.fr/id/species/maize)
     private String value;
+
+    public PropertyDTO() {
+    }
+        
+    public PropertyDTO(Property property) {
+        this();
+        
+        this.rdfType = property.getRdfType();
+        this.relation = property.getRelation();
+        this.value = property.getValue();
+    }
 
     @Override
     public Property createObjectFromDTO() {
@@ -76,9 +87,27 @@ public class PropertyDTO extends AbstractVerifiedClass {
         if (obj != null && obj instanceof PropertyDTO) {
             PropertyDTO prop = (PropertyDTO) obj;
 
-            return this.value.equals(prop.value)
-                   && this.rdfType.equals(prop.rdfType)
-                   && this.relation.equals(prop.relation);
+            boolean isEqual = true;
+            
+            if (this.value == null) {
+                isEqual = isEqual && (prop.value == null);
+            } else {
+                 isEqual = isEqual && this.value.equals(prop.value);
+            }
+            
+            if (this.rdfType == null) {
+                isEqual = isEqual && (prop.rdfType == null);
+            } else {
+                 isEqual = isEqual && this.rdfType.equals(prop.rdfType);
+            }
+            
+            if (this.value == null) {
+                isEqual = isEqual && (prop.relation == null);
+            } else {
+                 isEqual = isEqual && this.relation.equals(prop.relation);
+            }
+            
+            return isEqual;
         }
         return false;
     }
@@ -87,5 +116,4 @@ public class PropertyDTO extends AbstractVerifiedClass {
     public int hashCode() {
         return (value + relation + rdfType).hashCode();
     }
-
 }

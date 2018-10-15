@@ -11,7 +11,7 @@
 //***********************************************************************************************
 package phis2ws.service.view.model.phis;
 
-public class Trait extends InstanceDefinition {
+public class Trait extends RdfResourceDefinition {
     public Trait() {
         
     }

@@ -11,6 +11,6 @@ package phis2ws.service.view.model.phis;
  * Represents a radiometric target view
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class RadiometricTarget extends InstanceDefinition {
+public class RadiometricTarget extends RdfResourceDefinition {
     
 }

@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                       ResultProperties.java
+//                                       ResultRdfResourceDefinition.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 7 sept. 2018
@@ -9,8 +9,7 @@
 package phis2ws.service.view.brapi.results;
 
 import java.util.ArrayList;
-import phis2ws.service.resources.dto.PropertiesDTO;
-import phis2ws.service.resources.dto.PropertyLabelsDTO;
+import phis2ws.service.resources.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
 import phis2ws.service.view.brapi.Pagination;
 import phis2ws.service.view.manager.Result;
 
@@ -18,13 +17,13 @@ import phis2ws.service.view.manager.Result;
  * A class which represents the result part in the response form, adapted to a generic property list
  * @author Vincent Migot <vincent.migot@inra.fr>
  */
-public class ResultProperties extends Result<PropertiesDTO<PropertyLabelsDTO>> {
+public class ResultRdfResourceDefinition extends Result<RdfResourceDefinitionDTO> {
     /**
      * Constructor which calls the mother-class constructor in the case of a
      * list with only 1 element
      * @param properties 
      */
-    public ResultProperties(ArrayList<PropertiesDTO<PropertyLabelsDTO>> properties) {
+    public ResultRdfResourceDefinition(ArrayList<RdfResourceDefinitionDTO> properties) {
         super(properties);
     }
     
@@ -35,7 +34,7 @@ public class ResultProperties extends Result<PropertiesDTO<PropertyLabelsDTO>> {
      * @param pagination
      * @param paginate 
      */
-    public ResultProperties(ArrayList<PropertiesDTO<PropertyLabelsDTO>> properties, Pagination pagination, boolean paginate) {
+    public ResultRdfResourceDefinition(ArrayList<RdfResourceDefinitionDTO> properties, Pagination pagination, boolean paginate) {
         super(properties, pagination, paginate);
     }
 }

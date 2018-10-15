@@ -30,13 +30,9 @@ import phis2ws.service.view.model.phis.Infrastructure;
  *
  * @author Vincent Migot <vincent.migot@inra.fr>
  */
-public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
+public class InfrastructureDAOSesame extends PropertyDAOSesame {
 
     final static Logger LOGGER = LoggerFactory.getLogger(InfrastructureDAOSesame.class);
-
-    //The following attributes are used to search infrastructures in the triplestore
-    //uri of the infrastructure
-    public String uri;
 
     //type uri of the infrastructure(s)
     public String rdfType;
@@ -137,18 +133,22 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
      * Search all the infrastructures corresponding to the search params given by the user
      * @return list of infrastructures which match given search params.
      */
-    public ArrayList<Infrastructure> allPaginate() {
+    public ArrayList<Infrastructure> getInfrastructures() {
         SPARQLQueryBuilder query = prepareSearchQuery();
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-        ArrayList<Infrastructure> infrastructures = new ArrayList<>();
 
+        ArrayList<Infrastructure> infrastructures;
+        
         try (TupleQueryResult result = tupleQuery.evaluate()) {
+            infrastructures = new ArrayList<>();
+            
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 Infrastructure infrastructure = getInfrastructureFromBindingSet(bindingSet);
                 infrastructures.add(infrastructure);
             }
         }
+        
         return infrastructures;
     }
 

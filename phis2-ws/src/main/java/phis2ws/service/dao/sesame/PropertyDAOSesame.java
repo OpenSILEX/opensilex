@@ -26,13 +26,16 @@ import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.ontologies.Owl;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
+import phis2ws.service.ontologies.Skos;
 import phis2ws.service.ontologies.Vocabulary;
-import phis2ws.service.resources.dto.PropertiesDTO;
-import phis2ws.service.resources.dto.PropertyDTO;
+import phis2ws.service.resources.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
+import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyDTO;
+import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyLabelsDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.Cardinality;
+import phis2ws.service.view.model.phis.RdfResourceDefinition;
 import phis2ws.service.view.model.phis.Property;
 
 //SILEX:todo
@@ -44,7 +47,7 @@ import phis2ws.service.view.model.phis.Property;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class PropertyDAOSesame extends DAOSesame<Property> {
-    final static Logger LOGGER = LoggerFactory.getLogger(SensorDAOSesame.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(PropertyDAOSesame.class);
     
     // This attribute is used to search all properties of the given uri
     public String uri;
@@ -73,6 +76,14 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     private final String COUNT = "count";
     //the relation, used to query the triplestore (cardinalities)
     protected final String RELATION = "relation";
+    
+    protected final String PROPERTY_TYPE = "propertyType";
+    protected final String RELATION_LABEL = "relationLabel";    
+    protected final String PROPERTY_LABEL = "propertyLabel";    
+    protected final String PROPERTY_TYPE_LABEL = "propertyTypeLabel";   
+    protected final String RELATION_PREF_LABEL = "relationPrefLabel";    
+    protected final String PROPERTY_PREF_LABEL = "propertyPrefLabel";    
+    protected final String PROPERTY_TYPE_PREF_LABEL = "propertyTypePrefLabel";   
     
     /**
      * prepare the sparql query to get the list of properties and their relations
@@ -109,13 +120,13 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      * search all the properties corresponding to the given object uri
      * @return the list of the properties which match the given uri.
      */
-    public ArrayList<PropertiesDTO> allPaginate() {        
+    public ArrayList<RdfResourceDefinitionDTO> allPaginate() {        
         SPARQLQueryBuilder query = prepareSearchQuery();
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-        ArrayList<PropertiesDTO> propertiesContainer = new ArrayList<>();
+        ArrayList<RdfResourceDefinitionDTO> propertiesContainer = new ArrayList<>();
         
         try (TupleQueryResult result = tupleQuery.evaluate()) {
-            PropertiesDTO properties = new PropertiesDTO();
+            RdfResourceDefinitionDTO properties = new RdfResourceDefinitionDTO();
             while (result.hasNext()) {
                 if (properties.getUri() == null) {
                     properties.setUri(uri);
@@ -207,7 +218,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
         
         return domainOk;
     }
-    
+   
     /**
      * Query to get cardinalities of a relation for a given type
      * @param rdfType
@@ -491,5 +502,205 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
         check.statusList = checkStatus;
         
         return check;
+    }
+    
+    /**
+     * Prepare the sparql query to get the list of properties and their relations
+     * to the given uri. If subClassOf is specified, the object corresponding to the uri must be
+     * a subclass of the given type.
+     * 
+     * @param language specify in which language labels should be returned
+     * @return the builded query
+     * @example
+     * SELECT DISTINCT  
+     *     ?relation ?relationPrefLabel ?relationLabel 
+     *     ?property ?propertyPrefLabel ?propertyLabel 
+     *     ?propertyType ?propertyTypePrefLabel ?propertyTypeLabel 
+     * WHERE {
+     *     <http://www.phenome-fppn.fr>  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
+     *     ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.phenome-fppn.fr/vocabulary/2017#Infrastructure>  . 
+     *     OPTIONAL {
+     *         <http://www.phenome-fppn.fr> ?relation ?property 
+     *         OPTIONAL {
+     *             ?property <http://www.w3.org/2000/01/rdf-schema#label> ?propertyLabel . 
+     *             FILTER(LANG(?propertyLabel) = "" || LANGMATCHES(LANG(?propertyLabel), "en"))
+     *         } OPTIONAL { 
+     *             ?property <http://www.w3.org/2008/05/skos#prefLabel> ?propertyPrefLabel . 
+     *             FILTER(LANG(?propertyPrefLabel) = "" || LANGMATCHES(LANG(?propertyPrefLabel), "en"))
+     *         } OPTIONAL {
+     *             ?relation <http://www.w3.org/2000/01/rdf-schema#label> ?relationLabel . 
+     *             FILTER(LANG(?relationLabel) = "" || LANGMATCHES(LANG(?relationLabel), "en"))
+     *         } OPTIONAL { 
+     *             ?relation <http://www.w3.org/2008/05/skos#prefLabel> ?relationPrefLabel . 
+     *             FILTER(LANG(?relationPrefLabel) = "" || LANGMATCHES(LANG(?relationPrefLabel), "en"))
+     *         } OPTIONAL {
+     *             ?property <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?propertyType . 
+     *             OPTIONAL {
+     *                 ?propertyType <http://www.w3.org/2000/01/rdf-schema#label> ?propertyTypeLabel . 
+     *                 FILTER(LANG(?propertyTypeLabel) = "" || LANGMATCHES(LANG(?propertyTypeLabel), "en"))
+     *             }
+     *             OPTIONAL { 
+     *                 ?propertyType <http://www.w3.org/2008/05/skos#prefLabel> ?propertyTypePrefLabel . 
+     *                 FILTER(LANG(?propertyTypePrefLabel) = "" || LANGMATCHES(LANG(?propertyTypePrefLabel), "en"))
+     *             }
+     *         } 
+     *     } 
+     * }
+     */
+    protected SPARQLQueryBuilder prepareSearchPropertiesQuery(String language) {
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        query.appendDistinct(Boolean.TRUE);
+
+        query.appendSelect("?" + RELATION);
+        query.appendSelect("?" + RELATION_PREF_LABEL);
+        query.appendSelect("?" + RELATION_LABEL);
+        query.appendSelect("?" + PROPERTY);
+        query.appendSelect("?" + PROPERTY_PREF_LABEL);
+        query.appendSelect("?" + PROPERTY_LABEL);
+        query.appendSelect("?" + PROPERTY_TYPE);
+        query.appendSelect("?" + PROPERTY_TYPE_PREF_LABEL);
+        query.appendSelect("?" + PROPERTY_TYPE_LABEL);
+        
+        // 1. Select every relation and property linked to the given uri
+        String optional = "<" + uri + "> ?" + RELATION + " ?" + PROPERTY;
+        // 2. Select property label in the requested language if exists
+        optional +=" OPTIONAL {";
+        optional += "?" + PROPERTY + " <" + Rdfs.RELATION_LABEL + "> ?" + PROPERTY_LABEL;
+        if (language != null) {
+            optional += " . FILTER(LANG(?" + PROPERTY_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + PROPERTY_LABEL + "), \"" + language + "\"))";   
+        }
+        optional += "}";
+        // 3. Select property prefered label in the requested language if exists
+        optional += " OPTIONAL {";
+        optional += " ?" + PROPERTY + " <" + Skos.RELATION_PREF_LABEL + "> ?" + PROPERTY_PREF_LABEL;
+        if (language != null) {
+            optional += " . FILTER(LANG(?" + PROPERTY_PREF_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + PROPERTY_PREF_LABEL + "), \"" + language + "\"))";
+        }
+        optional += "}";
+        // 4. Select relation label in the requested language if exists
+        optional += " OPTIONAL {";
+        optional += "?" + RELATION + " <" + Rdfs.RELATION_LABEL + "> ?" + RELATION_LABEL;
+        if (language != null) {
+            optional += " . FILTER(LANG(?" + RELATION_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + RELATION_LABEL + "), \"" + language + "\"))";
+        }
+        optional += "}"; 
+        // 5. Select relation prefered label in the requested language if exists
+        optional += " OPTIONAL {";
+        optional += " ?" + RELATION + " <" + Skos.RELATION_PREF_LABEL + "> ?" + RELATION_PREF_LABEL;
+        if (language != null) {
+            optional += " . FILTER(LANG(?" + RELATION_PREF_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + RELATION_PREF_LABEL + "), \"" + language + "\"))";        
+        }
+        optional += "}";
+        // 6. Select property type (rdf type of the property) if exists
+        optional += " OPTIONAL {";
+        optional += "?" + PROPERTY + " <" + Rdf.RELATION_TYPE + "> ?" + PROPERTY_TYPE;
+        // 6. Select property type label in the requested language if exists
+        optional += " . OPTIONAL {";
+        optional += "?" + PROPERTY_TYPE + " <" + Rdfs.RELATION_LABEL + "> ?" + PROPERTY_TYPE_LABEL;
+        if (language != null) {
+            optional += " . FILTER(LANG(?" + PROPERTY_TYPE_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + PROPERTY_TYPE_LABEL + "), \"" + language + "\"))";
+        }
+        optional += "}";        
+        // 7. Select property type prefered label in the requested language if exists
+        optional += " . OPTIONAL {";
+        optional += " ?" + PROPERTY_TYPE + " <" + Skos.RELATION_PREF_LABEL + "> ?" + PROPERTY_TYPE_PREF_LABEL;
+        if (language != null) {
+            optional += " . FILTER(LANG(?" + PROPERTY_TYPE_PREF_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + PROPERTY_TYPE_PREF_LABEL + "), \"" + language + "\"))";
+        }
+        optional += "}";
+        optional += "}";
+        
+        query.appendOptional(optional);
+
+        // 8. If subClassOf is specified, add filter on uri rdf:type
+        if (subClassOf != null) {
+            query.appendTriplet("<" + uri + ">", Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
+            query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", "<" + subClassOf + ">", null);
+        }
+        
+        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        
+        return query;
+    }
+    
+     /**
+     * Search all the properties corresponding to the given object uri.
+     * 
+     * @param definition
+     * @param language specify in which language labels should be returned
+     * @return the list of the properties which match the given uri.
+     */
+    public boolean getAllPropertiesWithLabels(RdfResourceDefinition definition, String language) {     
+        SPARQLQueryBuilder query = prepareSearchPropertiesQuery(language);
+        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        
+        definition.setUri(uri);
+        
+        if (this.existUri(uri)) {
+            try (TupleQueryResult result = tupleQuery.evaluate()) {
+                while (result.hasNext()) {
+                    BindingSet bindingSet = result.next();
+
+                    Property property = new Property();
+
+                    if (bindingSet.hasBinding(PROPERTY_TYPE)) {
+                        property.setRdfType(bindingSet.getValue(PROPERTY_TYPE).stringValue());
+                    }
+                    property.setRelation(bindingSet.getValue(RELATION).stringValue());
+                    property.setValue(bindingSet.getValue(PROPERTY).stringValue());
+
+                    if (definition.hasProperty(property)) {
+                        if (bindingSet.hasBinding(PROPERTY_TYPE_LABEL)) {
+                            property.addLastRdfTypeLabel(bindingSet.getValue(PROPERTY_TYPE_LABEL).stringValue());
+                        }
+
+                        if (bindingSet.hasBinding(RELATION_LABEL)) {
+                            property.addLastRelationLabel(bindingSet.getValue(RELATION_LABEL).stringValue());
+                        }
+
+                        if (bindingSet.hasBinding(PROPERTY_LABEL)) {
+                            property.addLastValueLabel(bindingSet.getValue(PROPERTY_LABEL).stringValue());
+                        }
+
+                        Property existingProperty = definition.getProperty(property);
+
+                        existingProperty.addRdfTypeLabels(property.getRdfTypeLabels());
+                        existingProperty.addRelationLabels(property.getRelationLabels());
+                        existingProperty.addValueLabels(property.getValueLabels());
+                    } else {
+                        if (bindingSet.hasBinding(PROPERTY_TYPE_PREF_LABEL)) {
+                            property.addFirstRdfTypeLabel(bindingSet.getValue(PROPERTY_TYPE_PREF_LABEL).stringValue());
+                        }
+
+                        if (bindingSet.hasBinding(RELATION_PREF_LABEL)) {
+                            property.addFirstRelationLabel(bindingSet.getValue(RELATION_PREF_LABEL).stringValue());
+                        }
+
+                        if (bindingSet.hasBinding(PROPERTY_PREF_LABEL)) {
+                            String v = bindingSet.getValue(PROPERTY_PREF_LABEL).stringValue();
+                            property.addFirstValueLabel(v);
+                        }
+
+                        if (bindingSet.hasBinding(PROPERTY_TYPE_LABEL)) {
+                            property.addLastRdfTypeLabel(bindingSet.getValue(PROPERTY_TYPE_LABEL).stringValue());
+                        }
+
+                        if (bindingSet.hasBinding(RELATION_LABEL)) {
+                            property.addLastRelationLabel(bindingSet.getValue(RELATION_LABEL).stringValue());
+                        }
+
+                        if (bindingSet.hasBinding(PROPERTY_LABEL)) {
+                            property.addLastValueLabel(bindingSet.getValue(PROPERTY_LABEL).stringValue());
+                        }
+
+                        definition.addProperty(property);                    
+                    }
+                }
+            }
+            
+            return true;
+        } else {
+            return false;
+        }
     }
 }

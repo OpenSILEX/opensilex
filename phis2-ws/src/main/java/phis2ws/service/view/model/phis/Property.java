@@ -7,6 +7,7 @@
 //******************************************************************************
 package phis2ws.service.view.model.phis;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -18,15 +19,15 @@ public class Property {
     //type of the range (if needed)
     //(e.g. http://www.phenome-fppn.fr/vocabulary/2017#Variety)
     private String rdfType;
-    private LinkedList<String> rdfTypeLabels;
+    private LinkedList<String> rdfTypeLabels = new LinkedList<>();
     //relation name 
     //(e.g. http://www.phenome-fppn.fr/vocabulary/2017#fromVariety)
     private String relation;
-    private LinkedList<String> relationLabels;
+    private LinkedList<String> relationLabels = new LinkedList<>();
     //value
     //(e.g. plot alias, or the uri of the variety)
     private String value;
-    private LinkedList<String> valueLabels;
+    private LinkedList<String> valueLabels = new LinkedList<>();
     //the domain of the property. For the first version, it is only a single string.
     //then, the union and others will be added
     //(e.g. http://www.phenome-fppn.fr/vocabulary/2017#MultispectralCamera)
@@ -90,6 +91,18 @@ public class Property {
         this.rdfTypeLabels = rdfTypeLabels;
     }
 
+    public void addFirstRdfTypeLabel(String label) {
+        rdfTypeLabels.addFirst(label);
+    }
+            
+    public void addLastRdfTypeLabel(String label) {
+        rdfTypeLabels.addLast(label);
+    }
+            
+    public void addRdfTypeLabels(Collection<String> labels) {
+        rdfTypeLabels.addAll(labels);
+    }
+    
     public LinkedList<String> getRelationLabels() {
         return relationLabels;
     }
@@ -98,11 +111,71 @@ public class Property {
         this.relationLabels = relationLabels;
     }
 
+    public void addFirstRelationLabel(String label) {
+        relationLabels.addFirst(label);
+    }
+    
+    public void addLastRelationLabel(String label) {
+        relationLabels.addLast(label);
+    }
+        
+    public void addRelationLabels(Collection<String> labels) {
+        relationLabels.addAll(labels);
+    }
+    
     public LinkedList<String> getValueLabels() {
         return valueLabels;
     }
 
     public void setValueLabels(LinkedList<String> valueLabels) {
         this.valueLabels = valueLabels;
+    }
+    
+    public void addFirstValueLabel(String label) {
+        valueLabels.addFirst(label);
+    }
+    
+    public void addLastValueLabel(String label) {
+        valueLabels.addLast(label);
+    }
+    
+    public void addValueLabels(Collection<String> labels) {
+        valueLabels.addAll(labels);
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+
+        if (obj != null && obj instanceof Property) {
+            Property prop = (Property) obj;
+
+            boolean isEqual = true;
+            
+            if (this.value == null) {
+                isEqual = isEqual && (prop.value == null);
+            } else {
+                 isEqual = isEqual && this.value.equals(prop.value);
+            }
+            
+            if (this.rdfType == null) {
+                isEqual = isEqual && (prop.rdfType == null);
+            } else {
+                 isEqual = isEqual && this.rdfType.equals(prop.rdfType);
+            }
+            
+            if (this.value == null) {
+                isEqual = isEqual && (prop.relation == null);
+            } else {
+                 isEqual = isEqual && this.relation.equals(prop.relation);
+            }
+            
+            return isEqual;
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return (value + relation + rdfType).hashCode();
     }
 }

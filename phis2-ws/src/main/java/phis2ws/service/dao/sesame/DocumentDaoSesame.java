@@ -414,7 +414,9 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         // the query return a list with comma separated value in one column
         //\SILEX:info
         sparqlQuery.appendSelectConcat("?" + COMMENT, SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR, "?" + COMMENTS);
+        sparqlQuery.beginBodyOptional();
         sparqlQuery.appendTriplet(select, Rdfs.RELATION_COMMENT.toString(), "?" + COMMENT, null);
+        sparqlQuery.endBodyOptional();
         if (comment != null) {
             sparqlQuery.appendFilter("regex(STR(?" + COMMENT +"), '" + comment + "', 'i')");
         }

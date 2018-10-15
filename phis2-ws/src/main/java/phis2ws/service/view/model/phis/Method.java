@@ -11,7 +11,7 @@
 //***********************************************************************************************
 package phis2ws.service.view.model.phis;
 
-public class Method extends InstanceDefinition {
+public class Method extends RdfResourceDefinition {
     public Method() {
         
     }

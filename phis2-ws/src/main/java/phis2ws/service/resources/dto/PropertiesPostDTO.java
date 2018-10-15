@@ -7,6 +7,7 @@
 //******************************************************************************
 package phis2ws.service.resources.dto;
 
+import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyDTO;
 import java.util.ArrayList;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;

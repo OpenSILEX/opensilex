@@ -229,8 +229,8 @@ public class DatasetResourceService {
         @ApiParam(value = "Search by experiment", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI) @QueryParam("experiment") @URL String experiment,
         @ApiParam(value = "Search by variable", example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI) @QueryParam("variable") @URL String variable,
         @ApiParam(value = "Search by agronomical(s) object(s), separated by coma", example = DocumentationAnnotation.EXAMPLE_AGRONOMICAL_OBJECT_URI + "," + DocumentationAnnotation.EXAMPLE_AGRONOMICAL_OBJECT_URI) @QueryParam("agronomicalObjects") String agronomicalObjects,
-        @ApiParam(value = "Search by interval - Start date", example = DocumentationAnnotation.EXAMPLE_DATETIME) @QueryParam("startDate") @Date(DateFormat.YMDHMSZ) String startDate,
-        @ApiParam(value = "Search by interval - End date", example = DocumentationAnnotation.EXAMPLE_DATETIME) @QueryParam("endDate") @Date(DateFormat.YMDHMSZ) String endDate,
+        @ApiParam(value = "Search by interval - Start date", example = DocumentationAnnotation.EXAMPLE_DATETIME) @QueryParam("startDate") @Date(DateFormat.YMD) String startDate,
+        @ApiParam(value = "Search by interval - End date", example = DocumentationAnnotation.EXAMPLE_DATETIME) @QueryParam("endDate") @Date(DateFormat.YMD) String endDate,
         @ApiParam(value = "Search by sensor", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("sensor")  @URL String sensor,
         @ApiParam(value = "Search by incertitude", example = DocumentationAnnotation.EXAMPLE_DATA_INCERTITUDE) @QueryParam("incertitude") String incertitude) {
         

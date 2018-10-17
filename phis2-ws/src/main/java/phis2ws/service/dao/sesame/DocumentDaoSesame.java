@@ -84,7 +84,6 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
     public static final String FORMAT = "format";
     
     public String comment;
-    public static final String COMMENT = "comment";
     public static final String COMMENTS = "comments";
 
     /**
@@ -681,10 +680,10 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
                 //Such as the existing querybuilder for the insert, create a
                 //delete query builder and use it
                 deleteQuery =  "DELETE WHERE { "
-                                   + "<" + documentsCorresponding.get(0).getUri() + "> " + DublinCore.RELATION_CREATOR.toString() + " \"" + documentsCorresponding.get(0).getCreator() + "\" . "
-                                   + "<" + documentsCorresponding.get(0).getUri() + "> " + DublinCore.RELATION_LANGUAGE.toString() + " \"" + documentsCorresponding.get(0).getLanguage() + "\" . "
-                                   + "<" + documentsCorresponding.get(0).getUri() + "> " + DublinCore.RELATION_TITLE.toString() + " \"" + documentsCorresponding.get(0).getTitle() + "\" . "
-                                   + "<" + documentsCorresponding.get(0).getUri() + "> " + DublinCore.RELATION_DATE.toString() + " \"" + documentsCorresponding.get(0).getCreationDate() + "\" . "
+                                   + "<" + documentsCorresponding.get(0).getUri() + "> <" + DublinCore.RELATION_CREATOR.toString() + "> \"" + documentsCorresponding.get(0).getCreator() + "\" . "
+                                   + "<" + documentsCorresponding.get(0).getUri() + "> <" + DublinCore.RELATION_LANGUAGE.toString() + "> \"" + documentsCorresponding.get(0).getLanguage() + "\" . "
+                                   + "<" + documentsCorresponding.get(0).getUri() + "> <" + DublinCore.RELATION_TITLE.toString() + "> \"" + documentsCorresponding.get(0).getTitle() + "\" . "
+                                   + "<" + documentsCorresponding.get(0).getUri() + "> <" + DublinCore.RELATION_DATE.toString() + "> \"" + documentsCorresponding.get(0).getCreationDate() + "\" . "
                                    + "<" + documentsCorresponding.get(0).getUri() + "> <" + Rdf.RELATION_TYPE.toString() + "> <" + documentsCorresponding.get(0).getDocumentType() +"> . "
                                    + "<" + documentsCorresponding.get(0).getUri() + "> <" + Vocabulary.RELATION_STATUS.toString() + "> \"" + documentsCorresponding.get(0).getStatus() + "\" . ";
 

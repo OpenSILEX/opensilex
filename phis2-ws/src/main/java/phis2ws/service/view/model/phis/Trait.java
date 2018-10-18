@@ -11,11 +11,26 @@
 //***********************************************************************************************
 package phis2ws.service.view.model.phis;
 
+import java.util.ArrayList;
+
 public class Trait extends InstanceDefinition {
+    
+    //the variables linked to the trait (required in brapi)
+    private ArrayList<String> variables;
+    
     public Trait() {
-        
+      
     }
+    
     public Trait(String uri) {
         super(uri);
+    }
+
+    public ArrayList<String> getVariables() {
+        return variables;
+    }
+
+    public void setVariables(ArrayList<String> variables) {
+        this.variables = variables;
     }
 } 

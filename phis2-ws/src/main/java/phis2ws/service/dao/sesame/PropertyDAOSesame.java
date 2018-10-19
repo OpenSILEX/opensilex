@@ -707,8 +707,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
                     } else {
                         // If property prefered label exists add it at the begining of labels array
                         if (bindingSet.hasBinding(PROPERTY_PREF_LABEL)) {
-                            String v = bindingSet.getValue(PROPERTY_PREF_LABEL).stringValue();
-                            property.addFirstValueLabel(v);
+                            property.addFirstValueLabel(bindingSet.getValue(PROPERTY_PREF_LABEL).stringValue());
                         }
 
                         // If relation prefered label exists add it at the begining of labels array

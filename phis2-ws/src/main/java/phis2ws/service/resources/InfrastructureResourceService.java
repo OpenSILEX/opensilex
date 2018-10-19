@@ -27,6 +27,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
@@ -53,6 +54,8 @@ import phis2ws.service.view.model.phis.Infrastructure;
 @Path("/infrastructures")
 public class InfrastructureResourceService {
     final static Logger LOGGER = LoggerFactory.getLogger(InfrastructureResourceService.class);
+    
+    private static final String PROPERTY_FILE_NAME = "service";
     
     //user session
     @SessionInject
@@ -250,7 +253,7 @@ public class InfrastructureResourceService {
         propertyDAO.subClassOf = Vocabulary.CONCEPT_INFRASTRUCTURE;
         
         if (language == null) {
-            language = "en";
+            language = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILE_NAME, "defaultLanguage");;
         }
                 
         propertyDAO.user = userSession.getUser();

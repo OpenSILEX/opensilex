@@ -98,10 +98,8 @@ public class RdfResourceDefinition {
         int index = properties.indexOf(property);
 
         if (index >= 0) {
-
             return properties.get(index);
         } else {
-
             return null;
         }
     }

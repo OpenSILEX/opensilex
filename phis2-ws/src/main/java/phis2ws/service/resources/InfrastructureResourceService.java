@@ -114,6 +114,7 @@ public class InfrastructureResourceService {
         @ApiParam(value = "Search by type uri", example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_RDF_TYPE) @QueryParam("rdfType") @URL String rdfType,
         @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_LABEL) @QueryParam("label") String label
     ) {
+        // 1. Initialize infrastructureDAO with parameters
         InfrastructureDAOSesame infrastructureDAO = new InfrastructureDAOSesame();
         
         if (uri != null) {
@@ -130,26 +131,32 @@ public class InfrastructureResourceService {
         infrastructureDAO.setPage(page);
         infrastructureDAO.setPageSize(pageSize);
         
-        ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormRdfResourceDefinition getResponse;
-
+        // 2. Get infrastructures count
         Integer totalCount = infrastructureDAO.count();
         
-        ArrayList<Infrastructure> infrastructures = infrastructureDAO.getInfrastructures();
+        // 3. Get infrastructure page list
+        ArrayList<Infrastructure> infrastructures = infrastructureDAO.allPaginate();
         
+        // 4. Initialize return variables
+        ArrayList<Status> statusList = new ArrayList<>();
         ArrayList<RdfResourceDefinitionDTO> list = new ArrayList<>();
-
+        ResponseFormRdfResourceDefinition getResponse;
+        
         if (infrastructures == null) {
+            // Request failure
             getResponse = new ResponseFormRdfResourceDefinition(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         } else if (infrastructures.isEmpty()) {
+            // No results
             getResponse = new ResponseFormRdfResourceDefinition(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         } else {
+            // Convert all Infrastructure object to DTO's
             infrastructures.forEach((infrastructure) -> {
                 list.add(new InfrastructureDTO(infrastructure));
             });
             
+            // Return list of DTO
             getResponse = new ResponseFormRdfResourceDefinition(infrastructureDAO.getPageSize(), infrastructureDAO.getPage(), list, true, totalCount);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
@@ -236,6 +243,7 @@ public class InfrastructureResourceService {
         @ApiParam(value = "Language", example = DocumentationAnnotation.EXAMPLE_LANGUAGE) @QueryParam("language") String language,
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {            
+        // 1. Initialize propertyDAO with parameters
         PropertyDAOSesame propertyDAO = new PropertyDAOSesame();
         
         propertyDAO.uri = uri;
@@ -249,19 +257,23 @@ public class InfrastructureResourceService {
         propertyDAO.setPage(page);
         propertyDAO.setPageSize(pageSize);
         
+        // 2. Initialize result variable
         ArrayList<Status> statusList = new ArrayList<>();
         ResponseFormRdfResourceDefinition getResponse;
-
         ArrayList<RdfResourceDefinitionDTO> list = new ArrayList<>();
         
+        // Get all properties in the given language and fill them in infrastructure object
         Infrastructure infrastructure = new Infrastructure();
         if (propertyDAO.getAllPropertiesWithLabels(infrastructure, language)) {
+            // Convert the infrastructure to an InfrastructureDTO
             list.add(new InfrastructureDTO(infrastructure));
             
+            // Return it
             getResponse = new ResponseFormRdfResourceDefinition(propertyDAO.getPageSize(), propertyDAO.getPage(), list, true, list.size());
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         } else {
+            // No result found
             getResponse = new ResponseFormRdfResourceDefinition(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         }

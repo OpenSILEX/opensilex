@@ -10,6 +10,7 @@ package phis2ws.service.view.model.phis;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
+import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyDTO;
 
 /**
  * Represents the view of the properties in the triplestore. 
@@ -145,25 +146,28 @@ public class Property {
     
     @Override
     public boolean equals(Object obj) {
-
+        // this is equal to obj if value, rdfType and relation are equals
         if (obj != null && obj instanceof Property) {
             Property prop = (Property) obj;
 
             boolean isEqual = true;
             
+            // Check if this.value == obj.value with null protection
             if (this.value == null) {
                 isEqual = isEqual && (prop.value == null);
             } else {
                  isEqual = isEqual && this.value.equals(prop.value);
             }
             
+            // Check if this.rdfType == obj.rdfType with null protection
             if (this.rdfType == null) {
                 isEqual = isEqual && (prop.rdfType == null);
             } else {
                  isEqual = isEqual && this.rdfType.equals(prop.rdfType);
             }
             
-            if (this.value == null) {
+            // Check if this.relation == obj.relation with null protection
+            if (this.relation == null) {
                 isEqual = isEqual && (prop.relation == null);
             } else {
                  isEqual = isEqual && this.relation.equals(prop.relation);
@@ -176,6 +180,9 @@ public class Property {
 
     @Override
     public int hashCode() {
+        // Unique hascode for property is based on string concatenation of
+        // value, relation and rdfType on which the String.hascode method is applied
+        // @see String.hashCode
         return (value + relation + rdfType).hashCode();
     }
 }

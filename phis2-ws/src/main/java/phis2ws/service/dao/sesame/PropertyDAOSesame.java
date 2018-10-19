@@ -504,9 +504,25 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
-     * Prepare the sparql query to get the list of properties and their relations
-     * to the given uri. If subClassOf is specified, the object corresponding to the uri must be
-     * a subclass of the given type.
+     * Prepare the sparql query to get the list of properties and their 
+     * relations to the given uri with labels (skos:prefered and rdfs:label). 
+     * If "subClassOf" property is defined, the request will also check
+     * if the current uri correspond to this ontology type
+     * 
+     * By example this request will return this kind of results for Phenorch infrastructure:
+     * ╔═════════════════════╦════════════╦═══════════════╦════════════════════════════╦═══════════════════════╦═════════════════╦════════════════════════════════╦════════════════╦═════════════════════════╗
+     * ║ relation            ║ rPrefLabel ║ relationLabel ║ property                   ║ propertyPrefLabel     ║ propertyLabel   ║ propertyType                   ║ pTypePrefLabel ║ propertyTypeLabel       ║
+     * ╠═════════════════════╬════════════╬═══════════════╬════════════════════════════╬═══════════════════════╬═════════════════╬════════════════════════════════╬════════════════╬═════════════════════════╣
+     * ║ rdf:type            ║            ║               ║ vocabulary:Installation    ║                       ║ installation@en ║ owl:Class                      ║                ║                         ║
+     * ╠═════════════════════╬════════════╬═══════════════╬════════════════════════════╬═══════════════════════╬═════════════════╬════════════════════════════════╬════════════════╬═════════════════════════╣
+     * ║ rdfs:label          ║            ║               ║ PHENOARCH                  ║                       ║                 ║                                ║                ║                         ║
+     * ╠═════════════════════╬════════════╬═══════════════╬════════════════════════════╬═══════════════════════╬═════════════════╬════════════════════════════════╬════════════════╬═════════════════════════╣
+     * ║ vocabulary:hasPart  ║            ║ has part@en   ║ http://.../m3p/eo/es2/roof ║ PhenoArch: roof       ║ aria            ║ vocabulary:Greenhouse          ║                ║ greenhouse@en           ║
+     * ╠═════════════════════╬════════════╬═══════════════╬════════════════════════════╬═══════════════════════╬═════════════════╬════════════════════════════════╬════════════════╬═════════════════════════╣
+     * ║ vocabulary:hasPart  ║            ║ has part@en   ║ http://.../m3p/es2         ║ PhenoArch: greenhouse ║ es2             ║ vocabulary:Greenhouse          ║                ║ greenhouse@en           ║
+     * ╠═════════════════════╬════════════╬═══════════════╬════════════════════════════╬═══════════════════════╬═════════════════╬════════════════════════════════╬════════════════╬═════════════════════════╣
+     * ║ vocabulary:isPartOf ║            ║ is part of@en ║ http://.../m3p             ║                       ║ M3P             ║ vocabulary:LocalInfrastructure ║                ║ local infrastructure@en ║
+     * ╚═════════════════════╩════════════╩═══════════════╩════════════════════════════╩═══════════════════════╩═════════════════╩════════════════════════════════╩════════════════╩═════════════════════════╝
      * 
      * @param language specify in which language labels should be returned
      * @return the builded query
@@ -633,8 +649,8 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      */
     public boolean getAllPropertiesWithLabels(RdfResourceDefinition definition, String language) {     
         if (this.existUri(uri)) {
-            // 1. Prepare and execute the query to retrieve all relation, 
-            //    properties and properties type with theur labels for the given uri
+            // Prepare and execute the query to retrieve all relation, 
+            //  properties and properties type with theur labels for the given uri and language
             SPARQLQueryBuilder query = prepareSearchPropertiesQuery(language);
             TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         
@@ -672,37 +688,41 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
                         property.addLastRdfTypeLabel(bindingSet.getValue(PROPERTY_TYPE_LABEL).stringValue());
                     }
 
-                    // 7. If property is already defined for the RdfResourceDefintion object
+                    // 7. If definition already own the property, add current property labels to the existing property
+                    //    otherwise define prefered labels and add property to definition
                     if (definition.hasProperty(property)) {
                         // Retrieve the existing property
                         Property existingProperty = definition.getProperty(property);
 
+                        // Prefered label are ignored in this case because they
+                        // already are defined in the existing property
+                        
                         // Merge new labels with previous existing
                         existingProperty.addRdfTypeLabels(property.getRdfTypeLabels());
                         existingProperty.addRelationLabels(property.getRelationLabels());
                         existingProperty.addValueLabels(property.getValueLabels());
                         
+                        
                         // Set the property variable with the existing property to add prefered labels if exists
-                        property = existingProperty;
                     } else {
-                        // Otherwise add the property to the RdfResourceDefintion object
-                        definition.addProperty(property);                    
-                    }
-                    
-                    // 8. If property prefered label exists add it at the begining of labels array
-                    if (bindingSet.hasBinding(PROPERTY_PREF_LABEL)) {
-                        String v = bindingSet.getValue(PROPERTY_PREF_LABEL).stringValue();
-                        property.addFirstValueLabel(v);
-                    }
-                    
-                    // 9. If relation prefered label exists add it at the begining of labels array
-                    if (bindingSet.hasBinding(RELATION_PREF_LABEL)) {
-                        property.addFirstRelationLabel(bindingSet.getValue(RELATION_PREF_LABEL).stringValue());
-                    }
+                        // If property prefered label exists add it at the begining of labels array
+                        if (bindingSet.hasBinding(PROPERTY_PREF_LABEL)) {
+                            String v = bindingSet.getValue(PROPERTY_PREF_LABEL).stringValue();
+                            property.addFirstValueLabel(v);
+                        }
 
-                    // 10. If property type prefered label exists add it at the begining of labels array
-                    if (bindingSet.hasBinding(PROPERTY_TYPE_PREF_LABEL)) {
-                        property.addFirstRdfTypeLabel(bindingSet.getValue(PROPERTY_TYPE_PREF_LABEL).stringValue());
+                        // If relation prefered label exists add it at the begining of labels array
+                        if (bindingSet.hasBinding(RELATION_PREF_LABEL)) {
+                            property.addFirstRelationLabel(bindingSet.getValue(RELATION_PREF_LABEL).stringValue());
+                        }
+
+                        // If property type prefered label exists add it at the begining of labels array
+                        if (bindingSet.hasBinding(PROPERTY_TYPE_PREF_LABEL)) {
+                            property.addFirstRdfTypeLabel(bindingSet.getValue(PROPERTY_TYPE_PREF_LABEL).stringValue());
+                        }
+                        
+                        // Add property to definition
+                        definition.addProperty(property);                    
                     }
                 }
             }

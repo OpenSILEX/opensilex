@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
+import phis2ws.service.dao.sesame.PropertyDAOSesame;
 import phis2ws.service.dao.sesame.RadiometricTargetDAOSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
@@ -106,7 +107,7 @@ public class RadiometricTargetResourceService {
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response postProfiles(
+    public Response postRadiometricTargets(
         @ApiParam(value = DocumentationAnnotation.RADIOMETRIC_TARGET_POST_DEFINITION) @Valid ArrayList<RadiometricTargetPostDTO> radiometricTargets,
         @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
@@ -190,35 +191,42 @@ public class RadiometricTargetResourceService {
         @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_URI) @QueryParam("uri") @URL String uri,
         @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_LABEL) @QueryParam("label") String label
     ) {
-        RadiometricTargetDAOSesame rtDAO = new RadiometricTargetDAOSesame();
+        // 1. Initialize radiometricTargetDAO with parameters
+        RadiometricTargetDAOSesame radiometricTargetDAO = new RadiometricTargetDAOSesame();
         
-        rtDAO.uri = uri;
-        rtDAO.label = label;
-        rtDAO.user = userSession.getUser();
-        rtDAO.setPage(page);
-        rtDAO.setPageSize(pageSize);
+        radiometricTargetDAO.uri = uri;
+        radiometricTargetDAO.label = label;
+        radiometricTargetDAO.user = userSession.getUser();
+        radiometricTargetDAO.setPage(page);
+        radiometricTargetDAO.setPageSize(pageSize);
+
+        // 2. Get radiometric target count
+        Integer totalCount = radiometricTargetDAO.count();
         
+        // 3. Get radiometric target page list
+        ArrayList<RadiometricTarget> radiometricTargets = radiometricTargetDAO.allPaginate();
+        
+        // 4. Initialize return variables
+        ArrayList<RdfResourceDefinitionDTO> list = new ArrayList<>();
         ArrayList<Status> statusList = new ArrayList<>();
         ResponseFormRdfResourceDefinition getResponse;
-
-        Integer totalCount = rtDAO.count();
         
-        ArrayList<RadiometricTarget> radiometricTargets = rtDAO.getRadiometricTargets();
-        
-        ArrayList<RdfResourceDefinitionDTO> list = new ArrayList<>();
-
         if (radiometricTargets == null) {
+            // Request failure
             getResponse = new ResponseFormRdfResourceDefinition(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         } else if (radiometricTargets.isEmpty()) {
+            // No results
             getResponse = new ResponseFormRdfResourceDefinition(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         } else {
+            // Convert all RadiometricTarget object to DTO's
             radiometricTargets.forEach((radiometricTarget) -> {
                 list.add(new RadiometricTargetDTO(radiometricTarget));
             });
             
-            getResponse = new ResponseFormRdfResourceDefinition(rtDAO.getPageSize(), rtDAO.getPage(), list, true, totalCount);
+            // Return list of DTO
+            getResponse = new ResponseFormRdfResourceDefinition(radiometricTargetDAO.getPageSize(), radiometricTargetDAO.getPage(), list, true, totalCount);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }
@@ -286,25 +294,29 @@ public class RadiometricTargetResourceService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getRadiometricTargetsDetails(
         @ApiParam(value = DocumentationAnnotation.INFRASTRUCTURE_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_URI) @PathParam("uri") @URL @Required String uri) {            
+        // 1. Initialize propertyDAO with parameters
+        PropertyDAOSesame propertyDAO = new PropertyDAOSesame();
         
-        RadiometricTargetDAOSesame rtDAO = new RadiometricTargetDAOSesame();
+        propertyDAO.user = userSession.getUser();
+        propertyDAO.uri = uri;
         
-        rtDAO.user = userSession.getUser();
-        rtDAO.uri = uri;
-        
+        // 2. Initialize result variable
         ArrayList<Status> statusList = new ArrayList<>();
         ResponseFormRdfResourceDefinition getResponse;
-
         ArrayList<RdfResourceDefinitionDTO> list = new ArrayList<>();
         
+        // Get all properties in the given language and fill them in RadiometricTarget object
         RadiometricTarget radiometricTarget = new RadiometricTarget();
-        if (rtDAO.getAllPropertiesWithLabels(radiometricTarget, null)) {
+        if (propertyDAO.getAllPropertiesWithLabels(radiometricTarget, null)) {
+            // Convert the radiometricTarget to a RadiometricTargetDTO
             list.add(new RadiometricTargetDTO(radiometricTarget));
             
-            getResponse = new ResponseFormRdfResourceDefinition(rtDAO.getPageSize(), rtDAO.getPage(), list, true, list.size());
+            // Return it
+            getResponse = new ResponseFormRdfResourceDefinition(propertyDAO.getPageSize(), propertyDAO.getPage(), list, true, list.size());
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         } else {
+            // No result found
             getResponse = new ResponseFormRdfResourceDefinition(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         }

@@ -34,7 +34,7 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(InfrastructureDAOSesame.class);
     
-// This attribute is used to search all properties of the given uri
+    // This attribute is used to search all properties of the given uri
     public String uri;
     
     //type uri of the infrastructure(s)
@@ -136,7 +136,7 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
      * Search all the infrastructures corresponding to the search params given by the user
      * @return list of infrastructures which match given search params.
      */
-    public ArrayList<Infrastructure> getInfrastructures() {
+    public ArrayList<Infrastructure> allPaginate() {
         SPARQLQueryBuilder query = prepareSearchQuery();
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 

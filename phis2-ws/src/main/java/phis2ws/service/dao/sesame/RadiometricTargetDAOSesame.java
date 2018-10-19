@@ -19,6 +19,7 @@ import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.dao.phis.UserDaoPhisBrapi;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.ontologies.Contexts;
@@ -32,7 +33,6 @@ import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.utils.sparql.SPARQLUpdateBuilder;
 import phis2ws.service.view.brapi.Status;
-import phis2ws.service.view.model.phis.RdfResourceDefinition;
 import phis2ws.service.view.model.phis.Property;
 import phis2ws.service.view.model.phis.RadiometricTarget;
 
@@ -40,8 +40,11 @@ import phis2ws.service.view.model.phis.RadiometricTarget;
  * Allows CRUD methods of radiometric target in the triplestore.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class RadiometricTargetDAOSesame extends PropertyDAOSesame {
+public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
     final static Logger LOGGER = LoggerFactory.getLogger(RadiometricTargetDAOSesame.class);
+    
+    // This attribute is used to search all properties of the given uri
+    public String uri;
     
     //The following params are used to search in the triplestore
     public String rdfType;
@@ -107,7 +110,7 @@ public class RadiometricTargetDAOSesame extends PropertyDAOSesame {
      * Get the radiometric targets (uri, label) of the triplestore.
      * @return the list of the radiometric target founded
      */
-    public ArrayList<RadiometricTarget> getRadiometricTargets() {
+    public ArrayList<RadiometricTarget> allPaginate() {
         SPARQLQueryBuilder query = prepareSearchQuery();
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         ArrayList<RadiometricTarget> radiometricTargets;

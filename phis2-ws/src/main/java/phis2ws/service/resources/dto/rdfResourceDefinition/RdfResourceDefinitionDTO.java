@@ -27,11 +27,11 @@ import phis2ws.service.view.model.phis.Property;
  */
 public class RdfResourceDefinitionDTO extends AbstractVerifiedClass {
 
-    //uri of the object concerned by the properties
+    //uri of the rdf resource
     private String uri;
-    //label of the object concerned by the properties
+    //label of the rdf resource
     private String label;
-    //list of the properties of the object
+    //list of the properties of the rdf resource
     private ArrayList<PropertyDTO> properties = new ArrayList<>();
 
     /**
@@ -50,6 +50,7 @@ public class RdfResourceDefinitionDTO extends AbstractVerifiedClass {
        this.uri = definition.getUri();
        this.label = definition.getLabel();
        
+       // Convert every property to DTO by using the overridable method getDTOInstance
        definition.getProperties().forEach((property) -> {
            PropertyDTO propertyDTO = this.getDTOInstance(property);
            this.properties.add(propertyDTO);
@@ -109,21 +110,4 @@ public class RdfResourceDefinitionDTO extends AbstractVerifiedClass {
     public void addProperty(PropertyDTO property) {
         properties.add(property);
     }
-
-    public boolean hasProperty(PropertyDTO property) {
-        return properties.contains(property);
-    }
-
-    public PropertyDTO getProperty(PropertyDTO property) {
-        int index = properties.indexOf(property);
-
-        if (index >= 0) {
-
-            return properties.get(index);
-        } else {
-
-            return null;
-        }
-    }
-
 }

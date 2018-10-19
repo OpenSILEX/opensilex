@@ -80,40 +80,4 @@ public class PropertyDTO extends AbstractVerifiedClass {
     public void setValue(String value) {
         this.value = value;
     }
-
-    @Override
-    public boolean equals(Object obj) {
-
-        if (obj != null && obj instanceof PropertyDTO) {
-            PropertyDTO prop = (PropertyDTO) obj;
-
-            boolean isEqual = true;
-            
-            if (this.value == null) {
-                isEqual = isEqual && (prop.value == null);
-            } else {
-                 isEqual = isEqual && this.value.equals(prop.value);
-            }
-            
-            if (this.rdfType == null) {
-                isEqual = isEqual && (prop.rdfType == null);
-            } else {
-                 isEqual = isEqual && this.rdfType.equals(prop.rdfType);
-            }
-            
-            if (this.value == null) {
-                isEqual = isEqual && (prop.relation == null);
-            } else {
-                 isEqual = isEqual && this.relation.equals(prop.relation);
-            }
-            
-            return isEqual;
-        }
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return (value + relation + rdfType).hashCode();
-    }
 }

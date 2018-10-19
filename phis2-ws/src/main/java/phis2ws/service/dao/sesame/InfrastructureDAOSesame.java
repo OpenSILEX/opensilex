@@ -30,10 +30,13 @@ import phis2ws.service.view.model.phis.Infrastructure;
  *
  * @author Vincent Migot <vincent.migot@inra.fr>
  */
-public class InfrastructureDAOSesame extends PropertyDAOSesame {
+public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(InfrastructureDAOSesame.class);
-
+    
+// This attribute is used to search all properties of the given uri
+    public String uri;
+    
     //type uri of the infrastructure(s)
     public String rdfType;
 

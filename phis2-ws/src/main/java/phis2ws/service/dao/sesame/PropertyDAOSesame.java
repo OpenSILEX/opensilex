@@ -30,7 +30,6 @@ import phis2ws.service.ontologies.Skos;
 import phis2ws.service.ontologies.Vocabulary;
 import phis2ws.service.resources.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
 import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyDTO;
-import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyLabelsDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.brapi.Status;
@@ -624,76 +623,86 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
      /**
-     * Search all the properties corresponding to the given object uri.
+     * Search all the properties corresponding to the given object uri
+     * and fill the RDF Resource defintion object with the values and labels
      * 
-     * @param definition
+     * @param definition The definition object which will be filled
      * @param language specify in which language labels should be returned
-     * @return the list of the properties which match the given uri.
+     * @return true    if the definition object is correctly filled
+     *          false   if the uri doesn't exists
      */
     public boolean getAllPropertiesWithLabels(RdfResourceDefinition definition, String language) {     
-        SPARQLQueryBuilder query = prepareSearchPropertiesQuery(language);
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-        
-        definition.setUri(uri);
-        
         if (this.existUri(uri)) {
+            // 1. Prepare and execute the query to retrieve all relation, 
+            //    properties and properties type with theur labels for the given uri
+            SPARQLQueryBuilder query = prepareSearchPropertiesQuery(language);
+            TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        
+            definition.setUri(uri);
+        
             try (TupleQueryResult result = tupleQuery.evaluate()) {
                 while (result.hasNext()) {
                     BindingSet bindingSet = result.next();
 
                     Property property = new Property();
 
+                    // 1. Affect the property
+                    property.setValue(bindingSet.getValue(PROPERTY).stringValue());
+
+                    // 2. Affect the relation
+                    property.setRelation(bindingSet.getValue(RELATION).stringValue());
+                    
+                    // 3. affect the RDF type of the property if exists
                     if (bindingSet.hasBinding(PROPERTY_TYPE)) {
                         property.setRdfType(bindingSet.getValue(PROPERTY_TYPE).stringValue());
                     }
-                    property.setRelation(bindingSet.getValue(RELATION).stringValue());
-                    property.setValue(bindingSet.getValue(PROPERTY).stringValue());
 
+                    // 4. Add property label if exists
+                    if (bindingSet.hasBinding(PROPERTY_LABEL)) {
+                        property.addLastValueLabel(bindingSet.getValue(PROPERTY_LABEL).stringValue());
+                    }
+                    
+                    // 5. Add relation label if exists
+                    if (bindingSet.hasBinding(RELATION_LABEL)) {
+                        property.addLastRelationLabel(bindingSet.getValue(RELATION_LABEL).stringValue());
+                    }
+                    
+                    // 6. Add property rdf type label if exists
+                    if (bindingSet.hasBinding(PROPERTY_TYPE_LABEL)) {
+                        property.addLastRdfTypeLabel(bindingSet.getValue(PROPERTY_TYPE_LABEL).stringValue());
+                    }
+
+                    // 7. If property is already defined for the RdfResourceDefintion object
                     if (definition.hasProperty(property)) {
-                        if (bindingSet.hasBinding(PROPERTY_TYPE_LABEL)) {
-                            property.addLastRdfTypeLabel(bindingSet.getValue(PROPERTY_TYPE_LABEL).stringValue());
-                        }
-
-                        if (bindingSet.hasBinding(RELATION_LABEL)) {
-                            property.addLastRelationLabel(bindingSet.getValue(RELATION_LABEL).stringValue());
-                        }
-
-                        if (bindingSet.hasBinding(PROPERTY_LABEL)) {
-                            property.addLastValueLabel(bindingSet.getValue(PROPERTY_LABEL).stringValue());
-                        }
-
+                        // Retrieve the existing property
                         Property existingProperty = definition.getProperty(property);
 
+                        // Merge new labels with previous existing
                         existingProperty.addRdfTypeLabels(property.getRdfTypeLabels());
                         existingProperty.addRelationLabels(property.getRelationLabels());
                         existingProperty.addValueLabels(property.getValueLabels());
+                        
+                        // Set the property variable with the existing property to add prefered labels if exists
+                        property = existingProperty;
                     } else {
-                        if (bindingSet.hasBinding(PROPERTY_TYPE_PREF_LABEL)) {
-                            property.addFirstRdfTypeLabel(bindingSet.getValue(PROPERTY_TYPE_PREF_LABEL).stringValue());
-                        }
-
-                        if (bindingSet.hasBinding(RELATION_PREF_LABEL)) {
-                            property.addFirstRelationLabel(bindingSet.getValue(RELATION_PREF_LABEL).stringValue());
-                        }
-
-                        if (bindingSet.hasBinding(PROPERTY_PREF_LABEL)) {
-                            String v = bindingSet.getValue(PROPERTY_PREF_LABEL).stringValue();
-                            property.addFirstValueLabel(v);
-                        }
-
-                        if (bindingSet.hasBinding(PROPERTY_TYPE_LABEL)) {
-                            property.addLastRdfTypeLabel(bindingSet.getValue(PROPERTY_TYPE_LABEL).stringValue());
-                        }
-
-                        if (bindingSet.hasBinding(RELATION_LABEL)) {
-                            property.addLastRelationLabel(bindingSet.getValue(RELATION_LABEL).stringValue());
-                        }
-
-                        if (bindingSet.hasBinding(PROPERTY_LABEL)) {
-                            property.addLastValueLabel(bindingSet.getValue(PROPERTY_LABEL).stringValue());
-                        }
-
+                        // Otherwise add the property to the RdfResourceDefintion object
                         definition.addProperty(property);                    
+                    }
+                    
+                    // 8. If property prefered label exists add it at the begining of labels array
+                    if (bindingSet.hasBinding(PROPERTY_PREF_LABEL)) {
+                        String v = bindingSet.getValue(PROPERTY_PREF_LABEL).stringValue();
+                        property.addFirstValueLabel(v);
+                    }
+                    
+                    // 9. If relation prefered label exists add it at the begining of labels array
+                    if (bindingSet.hasBinding(RELATION_PREF_LABEL)) {
+                        property.addFirstRelationLabel(bindingSet.getValue(RELATION_PREF_LABEL).stringValue());
+                    }
+
+                    // 10. If property type prefered label exists add it at the begining of labels array
+                    if (bindingSet.hasBinding(PROPERTY_TYPE_PREF_LABEL)) {
+                        property.addFirstRdfTypeLabel(bindingSet.getValue(PROPERTY_TYPE_PREF_LABEL).stringValue());
                     }
                 }
             }

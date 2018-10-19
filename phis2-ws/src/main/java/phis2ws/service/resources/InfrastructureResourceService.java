@@ -31,6 +31,7 @@ import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.sesame.InfrastructureDAOSesame;
+import phis2ws.service.dao.sesame.PropertyDAOSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
@@ -235,18 +236,18 @@ public class InfrastructureResourceService {
         @ApiParam(value = "Language", example = DocumentationAnnotation.EXAMPLE_LANGUAGE) @QueryParam("language") String language,
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {            
-        InfrastructureDAOSesame infrastructureDAO = new InfrastructureDAOSesame();
+        PropertyDAOSesame propertyDAO = new PropertyDAOSesame();
         
-        infrastructureDAO.uri = uri;
-        infrastructureDAO.subClassOf = Vocabulary.CONCEPT_INFRASTRUCTURE;
+        propertyDAO.uri = uri;
+        propertyDAO.subClassOf = Vocabulary.CONCEPT_INFRASTRUCTURE;
         
         if (language == null) {
             language = "en";
         }
                 
-        infrastructureDAO.user = userSession.getUser();
-        infrastructureDAO.setPage(page);
-        infrastructureDAO.setPageSize(pageSize);
+        propertyDAO.user = userSession.getUser();
+        propertyDAO.setPage(page);
+        propertyDAO.setPageSize(pageSize);
         
         ArrayList<Status> statusList = new ArrayList<>();
         ResponseFormRdfResourceDefinition getResponse;
@@ -254,10 +255,10 @@ public class InfrastructureResourceService {
         ArrayList<RdfResourceDefinitionDTO> list = new ArrayList<>();
         
         Infrastructure infrastructure = new Infrastructure();
-        if (infrastructureDAO.getAllPropertiesWithLabels(infrastructure, language)) {
+        if (propertyDAO.getAllPropertiesWithLabels(infrastructure, language)) {
             list.add(new InfrastructureDTO(infrastructure));
             
-            getResponse = new ResponseFormRdfResourceDefinition(infrastructureDAO.getPageSize(), infrastructureDAO.getPage(), list, true, list.size());
+            getResponse = new ResponseFormRdfResourceDefinition(propertyDAO.getPageSize(), propertyDAO.getPage(), list, true, list.size());
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         } else {

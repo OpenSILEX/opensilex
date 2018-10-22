@@ -17,6 +17,12 @@ public class Infrastructure extends RdfResourceDefinition {
     //infrastructure type eg. http://www.phenome-fppn.fr/vocabulary/2017#LocalInfrastructure
     private String rdfType;
 
+    //infrastructure type label eg. European Infrastructure
+    private String rdfTypeLabel;
+    
+    //uri of the parent infrastructure if exists eg. https://emphasis.plant-phenotyping.eu 
+    private String parent;
+    
     public String getRdfType() {
         return rdfType;
     }
@@ -24,4 +30,21 @@ public class Infrastructure extends RdfResourceDefinition {
     public void setRdfType(String rdfType) {
         this.rdfType = rdfType;
     }
+
+    public String getRdfTypeLabel() {
+        return rdfTypeLabel;
+    }
+
+    public void setRdfTypeLabel(String rdfTypeLabel) {
+        this.rdfTypeLabel = rdfTypeLabel;
+    }
+
+    public String getParent() {
+        return parent;
+    }
+
+    public void setParent(String parent) {
+        this.parent = parent;
+    }
+    
 }

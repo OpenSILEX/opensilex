@@ -43,6 +43,12 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
     //alias of the infrastructure(s)
     public String label;
 
+    //language in which labels will be retrieve
+    public String language;
+    
+    protected static final String RDF_TYPE_LABEL = "rdfTypeLabel";
+    protected static final String IS_PART_OF = "isPartOf";
+    
     /**
      * generates a paginated search query (search by uri, type, label)
      * SELECT  ?uri ?rdfType  ?label 
@@ -75,14 +81,27 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
             query.appendTriplet(infrastructureUri, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
             query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_INFRASTRUCTURE.toString(), null);
         }
-
+        
+        query.beginBodyOptional();
+        query.appendSelect("?" + RDF_TYPE_LABEL);
+        query.appendTriplet("?" + RDF_TYPE, Rdfs.RELATION_LABEL.toString(), "?" + RDF_TYPE_LABEL, null);
+        if (language != null) {
+            query.appendFilter("LANG(?" + RDF_TYPE_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + RDF_TYPE_LABEL + "), \"" + language + "\")");
+        }
+        query.endBodyOptional();
+        
+        query.beginBodyOptional();
+        query.appendSelect("?" + IS_PART_OF);
+        query.appendTriplet(infrastructureUri, Vocabulary.RELATION_IS_PART_OF.toString(), "?" + IS_PART_OF, null);
+        query.endBodyOptional();
+                
         query.appendSelect(" ?" + LABEL);
         query.beginBodyOptional();
         query.appendToBody(infrastructureUri + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + LABEL + " . ");
         query.endBodyOptional();
 
         if (label != null) {
-            query.appendFilter("REGEX ( ?" + LABEL + ",\".*" + label + ".*\",\"i\")");
+            query.appendAndFilter("REGEX ( ?" + LABEL + ",\".*" + label + ".*\",\"i\")");
         }
 
         query.appendLimit(this.getPageSize());
@@ -176,8 +195,14 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
         } else {
             infrastructure.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
         }
-
+        
+        infrastructure.setRdfTypeLabel(bindingSet.getValue(RDF_TYPE_LABEL).stringValue());
+        
         infrastructure.setLabel(bindingSet.getValue(LABEL).stringValue());
+        
+        if (bindingSet.hasBinding(IS_PART_OF)) {
+            infrastructure.setParent(bindingSet.getValue(IS_PART_OF).stringValue());
+        }
 
         return infrastructure;
     }

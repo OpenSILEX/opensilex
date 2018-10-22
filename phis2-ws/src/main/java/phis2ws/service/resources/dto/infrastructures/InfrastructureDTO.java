@@ -21,7 +21,9 @@ import phis2ws.service.view.model.phis.Property;
 public class InfrastructureDTO extends RdfResourceDefinitionDTO {
     
     String rdfType;
-    
+    String rdfTypeLabel;
+    String parent;
+        
     /**
      * Constructor to create DTO from a Infrastructure Model
      * @param infrastructure 
@@ -29,6 +31,8 @@ public class InfrastructureDTO extends RdfResourceDefinitionDTO {
     public InfrastructureDTO(Infrastructure infrastructure) {
         super(infrastructure);
         this.setRdfType(infrastructure.getRdfType());
+        this.setRdfTypeLabel(infrastructure.getRdfTypeLabel());
+        this.setParent(infrastructure.getParent());
     }
     
     @Override
@@ -42,5 +46,21 @@ public class InfrastructureDTO extends RdfResourceDefinitionDTO {
 
     public void setRdfType(String rdfType) {
         this.rdfType = rdfType;
+    }
+
+    public String getRdfTypeLabel() {
+        return rdfTypeLabel;
+    }
+
+    public void setRdfTypeLabel(String rdfTypeLabel) {
+        this.rdfTypeLabel = rdfTypeLabel;
+    }
+
+    public String getParent() {
+        return parent;
+    }
+
+    public void setParent(String parent) {
+        this.parent = parent;
     }
 }

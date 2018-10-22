@@ -35,6 +35,13 @@ public enum Contexts {
             return PLATFORM.toString() + "set/radiometricTargets";
         }
     },
+    //The context which contains all the declared infrastructures
+    INFRASTRUCTURES {
+        @Override
+        public String toString() {
+            return PLATFORM.toString() + "set/infrastructure";
+        }
+    },
     //The context which contains all the declared sensors
     SENSORS {
         @Override

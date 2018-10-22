@@ -11,7 +11,7 @@
 //***********************************************************************************************
 package phis2ws.service.view.model.phis;
 
-public class Variable extends InstanceDefinition {
+public class Variable extends RdfResourceDefinition {
     
     /**
      * @attribute trait le trait 

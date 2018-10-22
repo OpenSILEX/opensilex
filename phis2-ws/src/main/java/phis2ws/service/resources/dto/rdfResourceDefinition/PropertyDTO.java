@@ -5,7 +5,7 @@
 // Creation date: 10 sept, 2018
 // Contact: morgane.vidal@inra.fr, vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package phis2ws.service.resources.dto;
+package phis2ws.service.resources.dto.rdfResourceDefinition;
 
 import io.swagger.annotations.ApiModelProperty;
 import phis2ws.service.documentation.DocumentationAnnotation;
@@ -28,6 +28,17 @@ public class PropertyDTO extends AbstractVerifiedClass {
     private String relation;
     //the value (e.g. http://www.phenome-fppn.fr/id/species/maize)
     private String value;
+
+    public PropertyDTO() {
+    }
+        
+    public PropertyDTO(Property property) {
+        this();
+        
+        this.rdfType = property.getRdfType();
+        this.relation = property.getRelation();
+        this.value = property.getValue();
+    }
 
     @Override
     public Property createObjectFromDTO() {
@@ -60,7 +71,6 @@ public class PropertyDTO extends AbstractVerifiedClass {
         this.relation = relation;
     }
 
-    @URL
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROPERTY_VALUE)
     public String getValue() {
@@ -70,23 +80,4 @@ public class PropertyDTO extends AbstractVerifiedClass {
     public void setValue(String value) {
         this.value = value;
     }
-
-    @Override
-    public boolean equals(Object obj) {
-
-        if (obj != null && obj instanceof PropertyDTO) {
-            PropertyDTO prop = (PropertyDTO) obj;
-
-            return this.value.equals(prop.value)
-                   && this.rdfType.equals(prop.rdfType)
-                   && this.relation.equals(prop.relation);
-        }
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return (value + relation + rdfType).hashCode();
-    }
-
 }

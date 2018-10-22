@@ -13,14 +13,45 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <logback-version>1.2.3</logback-version>
     </properties>
-    
+
     <repositories>
-        <!--REPO CRYPTAGE--> 
+        <!--REPO CRYPTAGE-->
         <repository>
             <id>spring-milestones</id>
             <url>http://repo.spring.io/libs-milestone/</url>
         </repository>
     </repositories>
+
+    <profiles>
+        <!-- The configuration of the development profile -->
+        <profile>
+            <id>dev</id>
+            <!-- The development profile is active by default -->
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <build.profile.id>dev</build.profile.id>
+                <target.war.name>${project.artifactId}</target.war.name>
+            </properties>
+        </profile>
+        <!-- The configuration of the production profile -->
+        <profile>
+            <id>prod</id>
+            <properties>
+                <build.profile.id>prod</build.profile.id>
+                <target.war.name>${project.artifactId}-${project.version}</target.war.name>
+            </properties>
+        </profile>
+        <!-- The configuration of the testing profile -->
+        <profile>
+            <id>test</id>
+            <properties>
+                <build.profile.id>test</build.profile.id>
+                <target.war.name>${project.artifactId}</target.war.name>
+            </properties>
+        </profile>
+    </profiles>
     
     <dependencies>
         <dependency>
@@ -122,13 +153,13 @@
             <artifactId>logback-core</artifactId>
             <version>${logback-version}</version>
         </dependency>
-        <!--http://mvnrepository.com/artifact/org.slf4j/slf4j-api--> 
+        <!--http://mvnrepository.com/artifact/org.slf4j/slf4j-api-->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.21</version>
-        </dependency>  
-        <!--https://mvnrepository.com/artifact/org.codehaus.janino/janino--> 
+        </dependency>
+        <!--https://mvnrepository.com/artifact/org.codehaus.janino/janino-->
         <dependency>
             <groupId>org.codehaus.janino</groupId>
             <artifactId>janino</artifactId>
@@ -138,6 +169,13 @@
             <groupId>org.postgis</groupId>
             <artifactId>postgis-jdbc</artifactId>
             <version>1.3.3</version>
+            <scope>compile</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.postgis</groupId>
+                    <artifactId>postgis-stubs</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
         <dependency>
@@ -150,7 +188,7 @@
             <artifactId>commons-logging</artifactId>
             <version>1.1.1</version>
         </dependency>
-        <!--To correct this error : 
+        <!--To correct this error :
         java.lang.NoClassDefFoundError: com/fasterxml/jackson/annotation/JsonInclude$Value-->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -169,8 +207,8 @@
         </dependency>
         <!--Manage js file from maven
         @see http://www.webjars.org/documentation#servlet3
-        The ressource namespace META-INF.resources.webjars.jquery.2.1.4 contains 
-        jquery.js the path is the same as the url namespace 
+        The ressource namespace META-INF.resources.webjars.jquery.2.1.4 contains
+        jquery.js the path is the same as the url namespace
         Ex : http://localhost:8080/phis2ws/webjars/jquery/2.1.4/jquery.js -->
         <dependency>
             <groupId>org.webjars.npm</groupId>
@@ -188,7 +226,7 @@
             <version>2.1.4</version>
         </dependency>
         <!--validator Bean Validation 2.0 (JSR 380)
-         @see https://beanvalidation.org/2.0/ -->
+        @see https://beanvalidation.org/2.0/ -->
         <dependency>
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
@@ -206,8 +244,25 @@
             <version>2.25</version>
         </dependency>
     </dependencies>
-    
+
     <build>
+        <finalName>${target.war.name}</finalName>
+        <filters>
+            <filter>src/main/profiles/${build.profile.id}/config.properties</filter>
+        </filters>
+        <resources>
+            <resource>
+                <filtering>true</filtering>
+                <directory>src/main/resources</directory>
+            </resource>              
+            <resource>
+                <filtering>true</filtering>
+                <directory>src/main/profiles</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                </includes>
+            </resource>       
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -227,7 +282,18 @@
                 <version>2.3</version>
                 <configuration>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
-                </configuration>
+                    <webResources>
+                        <resource>
+                            <filtering>true</filtering>
+                            <targetPath>js</targetPath>
+                            <directory>src/main/resources/js</directory>
+                            <includes>
+                                <include>**/*.js</include>
+                            </includes>
+                        </resource> 
+                        
+                    </webResources>  
+                </configuration> 
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

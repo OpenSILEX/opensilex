@@ -17,7 +17,7 @@ public enum DublinCore {
     NAMESPACE {
         @Override
         public String toString() {
-            return "http://purl.org/dc/terms/";
+            return "http://purl.org/dc/terms#";
         }
     },
     

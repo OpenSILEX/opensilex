@@ -16,11 +16,11 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Target;
 import javax.validation.Constraint;
 import javax.validation.Payload;
-import phis2ws.service.configuration.DateFormat;
 
 /**
- * Validate date within a provenance class instance.
+ * Check the following rule : the provenance date must not be null if the provenance uri is not set.
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
+ * @update [Morgane Vidal] 10 Oct, 2018 : remove the date validation (the @Date must already be used on the date field). 
  */
 @Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE})
 @Retention(RUNTIME)
@@ -28,11 +28,9 @@ import phis2ws.service.configuration.DateFormat;
 @Documented
 public @interface ProvenanceDate {
 
-    String message() default "The provenance date must be filled if the uri is not set. This string is not a valid date. Excepted format : {value}";
+    String message() default "The provenance date must be filled if the uri is not set.";
 
     Class<?>[] groups() default {};
 
     Class<? extends Payload>[] payload() default {};
-
-    DateFormat value() default DateFormat.YMDHMSZ;
 }

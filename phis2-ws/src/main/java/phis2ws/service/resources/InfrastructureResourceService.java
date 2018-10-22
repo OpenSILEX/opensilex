@@ -27,22 +27,22 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.sesame.InfrastructureDAOSesame;
-import phis2ws.service.dao.sesame.PropertyLabelDAOSesame;
+import phis2ws.service.dao.sesame.PropertyDAOSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.ontologies.Vocabulary;
-import phis2ws.service.resources.dto.PropertiesDTO;
-import phis2ws.service.resources.dto.PropertyLabelsDTO;
+import phis2ws.service.resources.dto.infrastructures.InfrastructureDTO;
+import phis2ws.service.resources.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
-import phis2ws.service.view.brapi.form.ResponseFormInfrastructure;
-import phis2ws.service.view.brapi.form.ResponseFormProperties;
+import phis2ws.service.view.brapi.form.ResponseFormRdfResourceDefinition;
 import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Infrastructure;
 
@@ -54,6 +54,8 @@ import phis2ws.service.view.model.phis.Infrastructure;
 @Path("/infrastructures")
 public class InfrastructureResourceService {
     final static Logger LOGGER = LoggerFactory.getLogger(InfrastructureResourceService.class);
+    
+    private static final String PROPERTY_FILE_NAME = "service";
     
     //user session
     @SessionInject
@@ -85,7 +87,8 @@ public class InfrastructureResourceService {
      *              {
      *                  "uri": "http://www.phenome-fppn.fr",
      *                  "rdfType": "http://www.phenome-fppn.fr/vocabulary/2018/oepo#NationalInfrastructure",
-     *                  "label": "alias"
+     *                  "label": "alias",
+     *                  "properties": []
      *              },
      *          ]
      *      }
@@ -114,6 +117,7 @@ public class InfrastructureResourceService {
         @ApiParam(value = "Search by type uri", example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_RDF_TYPE) @QueryParam("rdfType") @URL String rdfType,
         @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_LABEL) @QueryParam("label") String label
     ) {
+        // 1. Initialize infrastructureDAO with parameters
         InfrastructureDAOSesame infrastructureDAO = new InfrastructureDAOSesame();
         
         if (uri != null) {
@@ -130,37 +134,38 @@ public class InfrastructureResourceService {
         infrastructureDAO.setPage(page);
         infrastructureDAO.setPageSize(pageSize);
         
-        return getInfrastructuresData(infrastructureDAO);
-    }
-
-    /**
-     * Search infrastructures corresponding to search params given by a user
-     * @param InfrastructureDAOSesame
-     * @return the infrastructures corresponding to the search
-     */
-    private Response getInfrastructuresData(InfrastructureDAOSesame infrastructureDAO) {
-        ArrayList<Infrastructure> infrastructures;
-        ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormInfrastructure getResponse;
-
-        // Count all annotations for this specific request
+        // 2. Get infrastructures count
         Integer totalCount = infrastructureDAO.count();
-        // Retreive all annotations returned by the query
-        infrastructures = infrastructureDAO.allPaginate();
-
+        
+        // 3. Get infrastructure page list
+        ArrayList<Infrastructure> infrastructures = infrastructureDAO.allPaginate();
+        
+        // 4. Initialize return variables
+        ArrayList<Status> statusList = new ArrayList<>();
+        ArrayList<RdfResourceDefinitionDTO> list = new ArrayList<>();
+        ResponseFormRdfResourceDefinition getResponse;
+        
         if (infrastructures == null) {
-            getResponse = new ResponseFormInfrastructure(0, 0, infrastructures, true, 0);
+            // Request failure
+            getResponse = new ResponseFormRdfResourceDefinition(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         } else if (infrastructures.isEmpty()) {
-            getResponse = new ResponseFormInfrastructure(0, 0, infrastructures, true, 0);
+            // No results
+            getResponse = new ResponseFormRdfResourceDefinition(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         } else {
-            getResponse = new ResponseFormInfrastructure(infrastructureDAO.getPageSize(), infrastructureDAO.getPage(), infrastructures, true, totalCount);
+            // Convert all Infrastructure object to DTO's
+            infrastructures.forEach((infrastructure) -> {
+                list.add(new InfrastructureDTO(infrastructure));
+            });
+            
+            // Return list of DTO
+            getResponse = new ResponseFormRdfResourceDefinition(infrastructureDAO.getPageSize(), infrastructureDAO.getPage(), list, true, totalCount);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }
     }
-    
+
     /**
      * Return a generic response when no result are found
      * @param getResponse
@@ -176,6 +181,7 @@ public class InfrastructureResourceService {
     /**
      * Search infrastructure details for a given uri
      * 
+     * @param language
      * @param pageSize
      * @param page
      * @param uri
@@ -223,7 +229,7 @@ public class InfrastructureResourceService {
     @ApiOperation(value = "Get all infrastructure's details corresponding to the search uri",
                   notes = "Retrieve all infrastructure's details authorized for the user corresponding to the searched uri")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve infrastructure's details", response = PropertiesDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Retrieve infrastructure's details", response = RdfResourceDefinitionDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
@@ -240,34 +246,39 @@ public class InfrastructureResourceService {
         @ApiParam(value = "Language", example = DocumentationAnnotation.EXAMPLE_LANGUAGE) @QueryParam("language") String language,
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {            
-        PropertyLabelDAOSesame propertiesDAO = new PropertyLabelDAOSesame();
+        // 1. Initialize propertyDAO with parameters
+        PropertyDAOSesame propertyDAO = new PropertyDAOSesame();
         
-        propertiesDAO.uri = uri;
-        propertiesDAO.subClassOf = Vocabulary.CONCEPT_INFRASTRUCTURE;
-        if (language != null) {
-            propertiesDAO.language = language;
+        propertyDAO.uri = uri;
+        propertyDAO.subClassOf = Vocabulary.CONCEPT_INFRASTRUCTURE;
+        
+        if (language == null) {
+            language = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILE_NAME, "defaultLanguage");;
         }
                 
-        propertiesDAO.user = userSession.getUser();
-        propertiesDAO.setPage(page);
-        propertiesDAO.setPageSize(pageSize);
+        propertyDAO.user = userSession.getUser();
+        propertyDAO.setPage(page);
+        propertyDAO.setPageSize(pageSize);
         
+        // 2. Initialize result variable
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormProperties getResponse;
-
-        // Retreive all annotations returned by the query
-        ArrayList<PropertiesDTO<PropertyLabelsDTO>> infrastructureDetails = propertiesDAO.getAllProperties();
-
-        if (infrastructureDetails == null) {
-            getResponse = new ResponseFormProperties(0, 0, infrastructureDetails, true, 0);
-            return noResultFound(getResponse, statusList);
-        } else if (infrastructureDetails.isEmpty()) {
-            getResponse = new ResponseFormProperties(0, 0, infrastructureDetails, true, 0);
-            return noResultFound(getResponse, statusList);
-        } else {
-            getResponse = new ResponseFormProperties(propertiesDAO.getPageSize(), propertiesDAO.getPage(), infrastructureDetails, true, infrastructureDetails.size());
+        ResponseFormRdfResourceDefinition getResponse;
+        ArrayList<RdfResourceDefinitionDTO> list = new ArrayList<>();
+        
+        // Get all properties in the given language and fill them in infrastructure object
+        Infrastructure infrastructure = new Infrastructure();
+        if (propertyDAO.getAllPropertiesWithLabels(infrastructure, language)) {
+            // Convert the infrastructure to an InfrastructureDTO
+            list.add(new InfrastructureDTO(infrastructure));
+            
+            // Return it
+            getResponse = new ResponseFormRdfResourceDefinition(propertyDAO.getPageSize(), propertyDAO.getPage(), list, true, list.size());
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
+        } else {
+            // No result found
+            getResponse = new ResponseFormRdfResourceDefinition(0, 0, list, true, 0);
+            return noResultFound(getResponse, statusList);
         }
     }
 }

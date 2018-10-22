@@ -1,5 +1,5 @@
 //**********************************************************************************************
-//                                       InstanceDefinition.java 
+//                                       RdfResourceDefinition.java 
 //
 // Author(s): Morgane Vidal
 // PHIS-SILEX version 1.0
@@ -20,7 +20,7 @@ import java.util.ArrayList;
  * @see OntologyReference
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class InstanceDefinition {
+public class RdfResourceDefinition {
     // Instance uri. e.g. http://www.phenome-fppn.fr/diaphen/id/variable/v001
     protected String uri;
     // The rdfs:label of the instance. e.g. sf1
@@ -34,11 +34,11 @@ public class InstanceDefinition {
     //List of the properties associated to the instance
     protected ArrayList<Property> properties = new ArrayList<>();
     
-    public InstanceDefinition() {
+    public RdfResourceDefinition() {
         
     }
     
-    public InstanceDefinition(String uri) {
+    public RdfResourceDefinition(String uri) {
         this.uri = uri;
     }
 
@@ -88,5 +88,19 @@ public class InstanceDefinition {
     
     public void addProperty(Property property) {
         this.properties.add(property);
+    }
+    
+    public boolean hasProperty(Property property) {
+        return properties.contains(property);
+    }
+
+    public Property getProperty(Property property) {
+        int index = properties.indexOf(property);
+
+        if (index >= 0) {
+            return properties.get(index);
+        } else {
+            return null;
+        }
     }
 }

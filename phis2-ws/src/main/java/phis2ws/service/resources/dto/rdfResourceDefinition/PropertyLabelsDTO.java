@@ -5,7 +5,7 @@
 // Creation date: 20 September, 2018
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package phis2ws.service.resources.dto;
+package phis2ws.service.resources.dto.rdfResourceDefinition;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.util.Collection;
@@ -25,6 +25,14 @@ public class PropertyLabelsDTO extends PropertyDTO {
     private LinkedList<String> relationLabels = new LinkedList<>();
     // Labels list for the value "value" of the property
     private LinkedList<String> valueLabels = new LinkedList<>();
+
+    public PropertyLabelsDTO(Property property) {
+        super(property);
+        
+        this.setRdfTypeLabels(property.getRdfTypeLabels());
+        this.setRelationLabels(property.getRelationLabels());
+        this.setValueLabels(property.getValueLabels());
+    }
 
     @Override
     public Property createObjectFromDTO() {
@@ -84,7 +92,7 @@ public class PropertyLabelsDTO extends PropertyDTO {
         return valueLabels;
     }
     
-    public void setValueLabel(LinkedList<String> valueLabels) {
+    public void setValueLabels(LinkedList<String> valueLabels) {
         this.valueLabels = valueLabels;
     }
     

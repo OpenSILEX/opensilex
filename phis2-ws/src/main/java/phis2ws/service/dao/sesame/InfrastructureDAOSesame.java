@@ -66,6 +66,8 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
 
         query.appendDistinct(Boolean.TRUE);
+        
+        // Select URI
         String infrastructureUri;
         if (uri != null) {
             infrastructureUri = "<" + uri + ">";
@@ -74,6 +76,7 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
             query.appendSelect(infrastructureUri);
         }
 
+        // Select RDF Type
         if (rdfType != null) {
             query.appendTriplet(infrastructureUri, Rdf.RELATION_TYPE.toString(), rdfType, null);
         } else {
@@ -82,6 +85,7 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
             query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_INFRASTRUCTURE.toString(), null);
         }
         
+        // Select RDF Type label in specified language
         query.beginBodyOptional();
         query.appendSelect("?" + RDF_TYPE_LABEL);
         query.appendTriplet("?" + RDF_TYPE, Rdfs.RELATION_LABEL.toString(), "?" + RDF_TYPE_LABEL, null);
@@ -90,11 +94,13 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
         }
         query.endBodyOptional();
         
+        // Select parent infrastructure URI (is part of) if exists
         query.beginBodyOptional();
         query.appendSelect("?" + IS_PART_OF);
         query.appendTriplet(infrastructureUri, Vocabulary.RELATION_IS_PART_OF.toString(), "?" + IS_PART_OF, null);
         query.endBodyOptional();
                 
+        // Select infrastructure name
         query.appendSelect(" ?" + LABEL);
         query.beginBodyOptional();
         query.appendToBody(infrastructureUri + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + LABEL + " . ");

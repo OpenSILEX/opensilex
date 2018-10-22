@@ -20,9 +20,14 @@ import phis2ws.service.view.model.phis.Property;
  */
 public class InfrastructureDTO extends RdfResourceDefinitionDTO {
     
-    String rdfType;
-    String rdfTypeLabel;
-    String parent;
+    //infrastructure type eg. http://www.phenome-fppn.fr/vocabulary/2017#LocalInfrastructure
+    private String rdfType;
+
+    //infrastructure type label eg. European Infrastructure
+    private String rdfTypeLabel;
+    
+    //uri of the parent infrastructure if exists eg. https://emphasis.plant-phenotyping.eu 
+    private String parent;
         
     /**
      * Constructor to create DTO from a Infrastructure Model

@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -43,7 +44,6 @@ import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.radiometricTargets.RadiometricTargetDTO;
 import phis2ws.service.resources.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
 import phis2ws.service.resources.dto.radiometricTargets.RadiometricTargetPostDTO;
-import phis2ws.service.resources.dto.radiometricTargets.RadiometricTargetPutDTO;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.utils.POSTResultsReturn;
@@ -66,6 +66,36 @@ public class RadiometricTargetResourceService {
     //user session
     @SessionInject
     Session userSession;
+    
+    /**
+     * Generates a RadiometricTarget list from a given list of RadiometricTargetPostDTO
+     * @param radiometricTargetsPostDTO
+     * @return the list of radiometric targets
+     */
+    private List<RadiometricTarget> radiometricTargetPostDTOsToRadiometricTargets(List<RadiometricTargetPostDTO> radiometricTargetsPostDTO) {
+        ArrayList<RadiometricTarget> radiometricTargets = new ArrayList<>();
+        
+        for (RadiometricTargetPostDTO radiometricTargetPostDTO : radiometricTargetsPostDTO) {
+            radiometricTargets.add(radiometricTargetPostDTO.createObjectFromDTO());
+        }
+        
+        return radiometricTargets;
+    }
+    
+    /**
+     * Generates a RadiometricTarget list from a given list of RadiometricTargetDTO
+     * @param radiometricTargetsDTO
+     * @return the list of radiometric targets
+     */
+    private List<RadiometricTarget> radiometricTargetDTOsToRadiometricTargets(List<RadiometricTargetDTO> radiometricTargetsDTO) {
+        ArrayList<RadiometricTarget> radiometricTargets = new ArrayList<>();
+        
+        for (RadiometricTargetDTO radiometricTargetPostDTO : radiometricTargetsDTO) {
+            radiometricTargets.add(radiometricTargetPostDTO.createRadiometricTargetFromDTO());
+        }
+        
+        return radiometricTargets;
+    }
     
     /**
      * Service to insert a given list of radiometric targets in the database.
@@ -123,7 +153,7 @@ public class RadiometricTargetResourceService {
             
             radiometricTargetDAO.user = userSession.getUser();
             
-            POSTResultsReturn result = radiometricTargetDAO.checkAndInsert(radiometricTargets);
+            POSTResultsReturn result = radiometricTargetDAO.checkAndInsert(radiometricTargetPostDTOsToRadiometricTargets(radiometricTargets));
             
             if (result.getHttpStatus().equals(Response.Status.CREATED)) {
                 postResponse = new ResponseFormPOST(result.statusList);
@@ -139,6 +169,8 @@ public class RadiometricTargetResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }
+    
+    
     
     @PUT
     @ApiOperation(value = "Update radiometric targets")
@@ -156,7 +188,7 @@ public class RadiometricTargetResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response put(
-        @ApiParam(value = DocumentationAnnotation.RADIOMETRIC_TARGET_POST_DEFINITION) @Valid ArrayList<RadiometricTargetPutDTO> radiometricTargets,
+        @ApiParam(value = DocumentationAnnotation.RADIOMETRIC_TARGET_POST_DEFINITION) @Valid ArrayList<RadiometricTargetDTO> radiometricTargets,
         @Context HttpServletRequest context) {
         AbstractResultForm putResponse = null;
         
@@ -169,7 +201,7 @@ public class RadiometricTargetResourceService {
 
         radiometricTargetDAO.user = userSession.getUser();
 
-        POSTResultsReturn result = radiometricTargetDAO.checkAndUpdate(radiometricTargets);
+        POSTResultsReturn result = radiometricTargetDAO.checkAndUpdate(radiometricTargetDTOsToRadiometricTargets(radiometricTargets));
 
         if (result.getHttpStatus().equals(Response.Status.OK)
                 || result.getHttpStatus().equals(Response.Status.CREATED)) {

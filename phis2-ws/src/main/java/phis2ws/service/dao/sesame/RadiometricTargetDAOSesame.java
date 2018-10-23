@@ -26,9 +26,6 @@ import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Vocabulary;
-import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyDTO;
-import phis2ws.service.resources.dto.radiometricTargets.RadiometricTargetPostDTO;
-import phis2ws.service.resources.dto.radiometricTargets.RadiometricTargetPutDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
@@ -278,7 +275,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
      * @return the insertion result, with the errors list or the uri of the 
      *         radiometric targets inserted
      */
-    private POSTResultsReturn insert(List<RadiometricTargetPostDTO> radiometricTargets) {
+    private POSTResultsReturn insert(List<RadiometricTarget> radiometricTargets) {
         List<Status> status = new ArrayList<>();
         List<String> createdResourcesUris = new ArrayList<>();
         
@@ -289,18 +286,17 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
         UriGenerator uriGenerator = new UriGenerator();
         
         getConnection().begin();
-        for (RadiometricTargetPostDTO radiometricTarget : radiometricTargets) {
-            RadiometricTarget radiometricTargetToInsert = radiometricTarget.createObjectFromDTO();
+        for (RadiometricTarget radiometricTarget : radiometricTargets) {
             //Generate uri
-            radiometricTargetToInsert.setUri(uriGenerator.generateNewInstanceUri(Vocabulary.CONCEPT_RADIOMETRIC_TARGET.toString(), null, null));
+            radiometricTarget.setUri(uriGenerator.generateNewInstanceUri(Vocabulary.CONCEPT_RADIOMETRIC_TARGET.toString(), null, null));
             //Insert radiometric target
-            SPARQLUpdateBuilder query = prepareInsertQuery(radiometricTargetToInsert);
+            SPARQLUpdateBuilder query = prepareInsertQuery(radiometricTarget);
             
             try {
                 Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
                 prepareUpdate.execute();
 
-                createdResourcesUris.add(radiometricTargetToInsert.getUri());
+                createdResourcesUris.add(radiometricTarget.getUri());
             } catch (RepositoryException ex) {
                     LOGGER.error("Error during commit or rolleback Triplestore statements: ", ex);
             } catch (MalformedQueryException e) {
@@ -333,48 +329,18 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
     }
     
     /**
-     * Generates a RadiometricTarget list from a given list of RadiometricTargetPostDTO
-     * @param radiometricTargetsPostDTO
-     * @return the list of radiometric targets
-     */
-    private List<RadiometricTarget> radiometricTargetPostDTOsToRadiometricTargets(List<RadiometricTargetPostDTO> radiometricTargetsPostDTO) {
-        ArrayList<RadiometricTarget> radiometricTargets = new ArrayList<>();
-        
-        for (RadiometricTargetPostDTO radiometricTargetPostDTO : radiometricTargetsPostDTO) {
-            radiometricTargets.add(radiometricTargetPostDTO.createObjectFromDTO());
-        }
-        
-        return radiometricTargets;
-    }
-    
-    /**
      * Check and insert the given radiometric targets in the triplestore
      * @param radiometricTargets
      * @return the insertion result. Message error if errors founded in data
      *         the list of the generated uri of the radiometric targets if the insertion has been done
      */
-    public POSTResultsReturn checkAndInsert(List<RadiometricTargetPostDTO> radiometricTargets) {
-        POSTResultsReturn checkResult = check(radiometricTargetPostDTOsToRadiometricTargets(radiometricTargets));
+    public POSTResultsReturn checkAndInsert(List<RadiometricTarget> radiometricTargets) {
+        POSTResultsReturn checkResult = check(radiometricTargets);
         if (checkResult.getDataState()) {
             return insert(radiometricTargets);
         } else { //errors founded in data
             return checkResult;
         }
-    }
-    
-    /**
-     * Generates a RadiometricTarget list from a given list of RadiometricTargetPutDTO
-     * @param radiometricTargetsPutDTO
-     * @return the list of radiometric targets
-     */
-    private List<RadiometricTarget> radiometricTargetPutDTOsToRadiometricTargets(List<RadiometricTargetPutDTO> radiometricTargetsPutDTO) {
-        ArrayList<RadiometricTarget> radiometricTargets = new ArrayList<>();
-        
-        for (RadiometricTargetPutDTO radiometricTargetPostDTO : radiometricTargetsPutDTO) {
-            radiometricTargets.add(radiometricTargetPostDTO.createObjectFromDTO());
-        }
-        
-        return radiometricTargets;
     }
     
     /**
@@ -404,7 +370,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
      * @param radiometricTargets
      * @return the update result with the list of all the updated radiometric targets.
      */
-    private POSTResultsReturn update(List<RadiometricTargetPutDTO> radiometricTargets) {
+    private POSTResultsReturn update(List<RadiometricTarget> radiometricTargets) {
         //SILEX:info
         //If a property of a radiometric target has a null value, 
         //it will be deleted from the triplestore
@@ -416,8 +382,8 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
         boolean annotationUpdate = true;
         boolean resultState = false;
         
-        for (RadiometricTargetPutDTO radiometricTargetDTO : radiometricTargets) {
-            RadiometricTarget radiometricTarget = radiometricTargetDTO.createObjectFromDTO();
+        this.getConnection().begin();
+        for (RadiometricTarget radiometricTarget : radiometricTargets) {
             //1. genereate query to delete already existing data
             //SILEX:info
             //We only delete the already existing data received by the client. 
@@ -429,10 +395,8 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
             //SILEX:info
             //(insert only the triplets with a not null value)
             //\SILEX:info
-            SPARQLUpdateBuilder insertQuery = prepareInsertQuery(radiometricTarget);
-            
+            SPARQLUpdateBuilder insertQuery = prepareInsertQuery(radiometricTarget);            
             try {
-                this.getConnection().begin();
                 Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery);
                 Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, insertQuery.toString());
                 prepareDelete.execute();
@@ -445,7 +409,33 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
             }
         }
         
-        return null;
+        if (annotationUpdate) {
+            resultState = true;
+            try {
+                this.getConnection().commit();
+            } catch (RepositoryException ex) {
+                LOGGER.error("Error during commit Triplestore statements: ", ex);
+            }
+        } else {
+            try {
+                this.getConnection().rollback();
+            } catch (RepositoryException ex) {
+                LOGGER.error("Error during rollback Triplestore statements : ", ex);
+            }
+        }
+        
+        if (this.getConnection() != null) {
+            this.getConnection().close();
+        }
+        
+        results = new POSTResultsReturn(resultState, annotationUpdate, true);
+        results.statusList = updateStatus;
+        if (resultState && !updatedResourcesUri.isEmpty()) {
+            results.createdResources = updatedResourcesUri;
+            results.statusList.add(new Status(StatusCodeMsg.RESOURCES_UPDATED, StatusCodeMsg.INFO, updatedResourcesUri.size() + " resources updated"));
+        }
+        
+        return results;
     }
     
     /**
@@ -454,9 +444,9 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
      * @return the update result. Message error if errors founded in data
      *         the list of the generated uri of the radiometric targets if the update has been done
      */
-    public POSTResultsReturn checkAndUpdate(List<RadiometricTargetPutDTO> radiometricTargets) {
-        //todo : faire une classe mere ? ou faire le check qui se fait sur les modèles ? 
-        POSTResultsReturn checkResult = check(radiometricTargetPutDTOsToRadiometricTargets(radiometricTargets));
+    public POSTResultsReturn checkAndUpdate(List<RadiometricTarget> radiometricTargets) {
+        //TODO : passer en RadiometricTarget - le check doit se faire sur le modèle
+        POSTResultsReturn checkResult = check(radiometricTargets);
         if (checkResult.getDataState()) {
             return update(radiometricTargets);
         } else { //errors founded in data

@@ -8,6 +8,7 @@
 package phis2ws.service.dao.sesame;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import org.eclipse.rdf4j.query.BindingSet;
@@ -399,6 +400,8 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 Sensor sensor = getSensorFromBindingSet(bindingSet);
+                HashMap<String, String>  variables = getVariables(sensor);
+                sensor.setVariables(variables);
                 sensors.add(sensor);
             }
         }
@@ -764,5 +767,57 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
             }
         }
         return cameras;
+    }
+    
+    /**
+     * Prepare the SPARQL query to return all variables observed by a sensor.
+     * 
+     * @param sensor The sensor which observes veriables
+     * @return The prepared query
+     * @example 
+     * SELECT DISTINCT  ?uri ?label WHERE {
+     *      ?rdfType  rdfs:subClassOf*  <http://www.phenome-fppn.fr/vocabulary/2017#Variable> . 
+     *      ?uri rdf:type ?rdfType .
+     *      ?uri  rdfs:label ?label .
+     *      <http://www.phenome-fppn.fr/2018/s18001> <http://www.phenome-fppn.fr/vocabulary/2017#observes> ?uri
+     * }
+     */
+    private SPARQLQueryBuilder prepareSearchVariablesQuery(Sensor sensor) {
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        
+        query.appendSelect("?" + URI + " ?" + LABEL );
+        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_VARIABLE.toString(), null);
+        query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
+        query.appendTriplet("?" + URI, Rdfs.RELATION_LABEL.toString(), "?" + LABEL, null);
+        query.appendTriplet(sensor.getUri(), Vocabulary.RELATION_OBSERVES.toString(), "?" + URI, null);
+        
+        LOGGER.debug(query.toString());
+        
+        return query;
+    }
+    
+    /**
+     * Return a HashMap of uri => label of the variables observed by the given sensor.
+     * 
+     * @param sensor The sensor which observes veriables
+     * @return HashMap of uri => label
+     */
+    private HashMap<String, String> getVariables(Sensor sensor) {
+        SPARQLQueryBuilder query = prepareSearchVariablesQuery(sensor);
+        
+        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        HashMap<String, String> variables = new HashMap<>();
+
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
+            while (result.hasNext()) {
+                BindingSet bindingSet = result.next();   
+                
+                variables.put(
+                    bindingSet.getValue(URI).stringValue(), 
+                    bindingSet.getValue(LABEL).stringValue()
+                );
+            }
+        }
+        return variables;
     }
 }

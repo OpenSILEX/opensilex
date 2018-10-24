@@ -313,10 +313,10 @@ public enum Vocabulary {
             return NAMESPACE.toString() + "isPartOf";
         }
     },
-    RELATION_OBSERVES {
+    RELATION_MEASURES {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "observes";
+            return NAMESPACE.toString() + "measures";
         }
     },
     RELATION_PERSON_IN_CHARGE {

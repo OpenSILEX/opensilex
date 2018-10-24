@@ -170,8 +170,6 @@ public class RadiometricTargetResourceService {
         }
     }
     
-    
-    
     @PUT
     @ApiOperation(value = "Update radiometric targets")
     @ApiResponses(value = {
@@ -400,7 +398,6 @@ public class RadiometricTargetResourceService {
         }
     }
     
-        
     /**
      * Return a generic response when no result are found
      * @param getResponse

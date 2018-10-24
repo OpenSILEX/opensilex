@@ -8,6 +8,7 @@
 package phis2ws.service.dao.sesame;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
@@ -344,19 +345,29 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
     }
     
     /**
-     * 
+     * Delete the data about the given radiometric target. 
+     * Delete all the occurrences of each relation of the properties of the radiometric target.
      * @param radiometricTarget
-     * @return 
+     * @example
+     * DELETE WHERE { 
+     *      <http://www.phenome-fppn.fr/id/radiometricTargets/rt007> <http://www.w3.org/2000/01/rdf-schema#label> ?label . 
+     *      <http://www.phenome-fppn.fr/id/radiometricTargets/rt007> <http://www.phenome-fppn.fr/vocabulary/2017#hasBrand> ?v0 . 
+     *      <http://www.phenome-fppn.fr/id/radiometricTargets/rt007> <http://www.phenome-fppn.fr/vocabulary/2017#inServiceDate> ?v1 . 
+     *      <http://www.phenome-fppn.fr/id/radiometricTargets/rt007> <http://www.phenome-fppn.fr/vocabulary/2017#hasTechnicalContact> ?v2 . 
+     *      <http://www.phenome-fppn.fr/id/radiometricTargets/rt007> <http://www.phenome-fppn.fr/vocabulary/2017#hasRadiometricTargetMaterial> ?v3 . 
+     *      <http://www.phenome-fppn.fr/id/radiometricTargets/rt007> <http://www.phenome-fppn.fr/vocabulary/2017#hasShape> ?v4 .  
+     * }
+     * @return the query
      */
     private String prepareDeleteQuery(RadiometricTarget radiometricTarget) {
-        String query = "DELETE WHERE {"
-                + "<" + radiometricTarget.getUri() + "> <" + Rdfs.RELATION_LABEL.toString() + "> \"" + radiometricTarget.getLabel() + "\" . ";
+        String query = "DELETE WHERE { "
+                + "<" + radiometricTarget.getUri() + "> <" + Rdfs.RELATION_LABEL.toString() + "> ?label . ";
         
         for (Property property : radiometricTarget.getProperties()) {
-            query += "<" + radiometricTarget.getUri() + ">";
+            query += "<" + radiometricTarget.getUri() + "> <" + property.getRelation() + "> ?v" + radiometricTarget.getProperties().indexOf(property) + " . ";
         }
                 
-        query += "}";
+        query += " }";
         
         LOGGER.debug(query);
         
@@ -364,10 +375,74 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
     }
     
     /**
+     * Get the radiometricTarget information using it's uri.
+     * /!\ Prerequisite : the uri must have been checked and it must exist 
+     *                    before calling this method.
+     * @param radiometricTargetUri
+     * @return the Radiometric Target informations
+     */
+    public RadiometricTarget getRadiometricTarget(String radiometricTargetUri) {
+        PropertyDAOSesame propertyDAOSesame = new PropertyDAOSesame();
+        RadiometricTarget radiometricTarget = new RadiometricTarget();
+        propertyDAOSesame.uri = radiometricTargetUri;
+        propertyDAOSesame.getAllPropertiesWithLabels(radiometricTarget, null);
+        return radiometricTarget;
+    }
+    
+    /**
+     * Compare the new radiometric target given and the old.
+     * Check if some properties are missing in the new radiometric target.
+     * Used for a radiometric target update update.
+     * @see RadiometricTargetDAOSesame#update(java.util.List)
+     * @param newRadiometricTargetData the new radiometric target data
+     * @param oldRadiometricTargetData the old radiometric target data
+     * @return the list of the status with the errors if some has been founded.
+     *         null if no error founded
+     */
+    private List<Status> compareNewAndOldRadiometricTarget(RadiometricTarget newRadiometricTargetData, RadiometricTarget oldRadiometricTargetData) {
+        //Check each new radiometric target property to see if it has the same number or more occurences than the oldRadiometric.
+        ArrayList<Status> status = new ArrayList<>();
+        
+        //1. Count the number of occurences of each property in each radiometric target
+        HashMap<String, Integer> newOccurrences = new HashMap<>();
+        HashMap<String, Integer> oldOccurrences = new HashMap<>();
+        
+        for (Property property : newRadiometricTargetData.getProperties()) {
+            if (newOccurrences.containsKey(property.getRelation())) {
+                Integer nbOccurrences = newOccurrences.get(property.getRelation()) + 1;
+                newOccurrences.put(property.getRelation(), nbOccurrences);
+            } else {
+                newOccurrences.put(property.getRelation(), 1);
+            }
+        }
+        
+        for (Property property : oldRadiometricTargetData.getProperties()) {
+            if (oldOccurrences.containsKey(property.getRelation())) {
+                Integer nbOccurrences = oldOccurrences.get(property.getRelation()) + 1;
+                oldOccurrences.put(property.getRelation(), nbOccurrences);
+            } else {
+                oldOccurrences.put(property.getRelation(), 1);
+            }
+        }
+        
+        //2. Compare numbers
+        newOccurrences.forEach((relation, nbOccurrences) -> {
+            //If the oldOccurrences contains the relation and has more occurrences 
+            //of its relation than the newOccurrences, something is wrong
+            if (oldOccurrences.containsKey(relation) && oldOccurrences.get(relation) > nbOccurrences) {
+                status.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Anbiguity on the values for the property : " + relation 
+                        + ". There are less occcurrences of the property in the updated data than before (" + nbOccurrences + " instead of " + oldOccurrences.get(relation) + ")"));
+            }
+        });
+        
+        return status;
+    }
+    
+    /**
      * Update the given radiometric targets in the triplestore. 
      * /!\ Prerequisite : data must have been checked before calling this method.
      * @see RadiometricTargetDAOSesame#check(java.util.List)
-     * @param radiometricTargets
+     * @param radiometricTargets the list of the radiometric targets to update
      * @return the update result with the list of all the updated radiometric targets.
      */
     private POSTResultsReturn update(List<RadiometricTarget> radiometricTargets) {
@@ -382,30 +457,45 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
         boolean annotationUpdate = true;
         boolean resultState = false;
         
-        this.getConnection().begin();
+        getConnection().begin();
         for (RadiometricTarget radiometricTarget : radiometricTargets) {
-            //1. genereate query to delete already existing data
+            //1. get the old radiometric target data
+            RadiometricTarget oldRadiometricTarget = getRadiometricTarget(radiometricTarget.getUri());
+            //2. check the new given data
             //SILEX:info
-            //We only delete the already existing data received by the client. 
-            //It means that we delete only the properties given by the client.
+            //The client must send the same number of each property than before the update. 
+            //If the number of properties isn't equal to the number of properties 
+            //in the triplestore, an error will be returned.
+            //If a property has a null value, the relation will be deleted. 
             //\SILEX:info
-            String deleteQuery = prepareDeleteQuery(radiometricTarget);
-            
-            //2. generate query to insert new data
-            //SILEX:info
-            //(insert only the triplets with a not null value)
-            //\SILEX:info
-            SPARQLUpdateBuilder insertQuery = prepareInsertQuery(radiometricTarget);            
-            try {
-                Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery);
-                Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, insertQuery.toString());
-                prepareDelete.execute();
-                prepareUpdate.execute();
-                updatedResourcesUri.add(radiometricTarget.getUri());
-            } catch (MalformedQueryException e) {
-                LOGGER.error(e.getMessage(), e);
+            List<Status> compareNewToOldRadiometricTarget = compareNewAndOldRadiometricTarget(radiometricTarget, oldRadiometricTarget);
+            if (compareNewToOldRadiometricTarget.isEmpty()) { //No error has been founded
+                //1. genereate query to delete already existing data
+                //SILEX:info
+                //We only delete the already existing data received by the client. 
+                //It means that we delete only the properties given by the client.
+                //\SILEX:info
+                String deleteQuery = prepareDeleteQuery(radiometricTarget);
+
+                //2. generate query to insert new data
+                //SILEX:info
+                //Insert only the triplets with a not null value. 
+                //\SILEX:info
+                SPARQLUpdateBuilder insertQuery = prepareInsertQuery(radiometricTarget);            
+                try {
+                    Update prepareDelete = getConnection().prepareUpdate(deleteQuery);
+                    Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, insertQuery.toString());
+                    prepareDelete.execute();
+                    prepareUpdate.execute();
+                    updatedResourcesUri.add(radiometricTarget.getUri());
+                } catch (MalformedQueryException e) {
+                    LOGGER.error(e.getMessage(), e);
+                    annotationUpdate = false;
+                    updateStatus.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, "Malformed update query: " + e.getMessage()));
+                }
+            } else { //errors has been founded
+                updateStatus.addAll(compareNewToOldRadiometricTarget);
                 annotationUpdate = false;
-                updateStatus.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, "Malformed update query: " + e.getMessage()));
             }
         }
         

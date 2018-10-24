@@ -28,8 +28,8 @@ import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Skos;
 import phis2ws.service.ontologies.Vocabulary;
+import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyPostDTO;
 import phis2ws.service.resources.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
-import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.brapi.Status;
@@ -131,7 +131,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
                     properties.setUri(uri);
                 }
                 BindingSet bindingSet = result.next();
-                PropertyDTO property = new PropertyDTO();
+                PropertyPostDTO property = new PropertyPostDTO();
         
                 property.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
                 property.setRelation(bindingSet.getValue(RELATION).stringValue());
@@ -384,10 +384,10 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      * @param properties
      * @return the ordered list
      */
-    private HashMap<String, ArrayList<PropertyDTO>> orderPropertiesByRelation(ArrayList<PropertyDTO> properties) {
-        HashMap<String, ArrayList<PropertyDTO>> propertiesByRelation = new HashMap<>();
-        for (PropertyDTO propertyDTO : properties) {
-            ArrayList<PropertyDTO> propertiesOfRelation = new ArrayList<>();
+    private HashMap<String, ArrayList<PropertyPostDTO>> orderPropertiesByRelation(ArrayList<PropertyPostDTO> properties) {
+        HashMap<String, ArrayList<PropertyPostDTO>> propertiesByRelation = new HashMap<>();
+        for (PropertyPostDTO propertyDTO : properties) {
+            ArrayList<PropertyPostDTO> propertiesOfRelation = new ArrayList<>();
             if (propertiesByRelation.containsKey(propertyDTO.getRelation())) {
                 propertiesOfRelation = propertiesByRelation.get(propertyDTO.getRelation());
             }
@@ -459,17 +459,17 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      * @param objectRdfType
      * @return 
      */
-    public POSTResultsReturn checkCardinalities(ArrayList<PropertyDTO> properties, String objectUri, String objectRdfType) {        
+    public POSTResultsReturn checkCardinalities(ArrayList<PropertyPostDTO> properties, String objectUri, String objectRdfType) {        
         POSTResultsReturn check = null;
         //list of the returned results
         List<Status> checkStatus = new ArrayList<>();
         boolean dataOk = true;
-        HashMap<String, ArrayList<PropertyDTO>> propertiesByRelation = orderPropertiesByRelation(properties);
+        HashMap<String, ArrayList<PropertyPostDTO>> propertiesByRelation = orderPropertiesByRelation(properties);
         
         HashMap<String, ArrayList<Cardinality>> cardinalities = getCardinalitiesForConcept(objectRdfType);
         HashMap<String, Integer> numberOfRelations = new HashMap<>();
         
-        for (Map.Entry<String, ArrayList<PropertyDTO>> pair : propertiesByRelation.entrySet()) {
+        for (Map.Entry<String, ArrayList<PropertyPostDTO>> pair : propertiesByRelation.entrySet()) {
             //1. get the number of values already existing for the property
             //SILEX:refactor
             //some database calls must be avoided 
@@ -643,11 +643,11 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      * and fill the RDF Resource defintion object with the values and labels
      * 
      * @param definition The definition object which will be filled
-     * @param language specify in which language labels should be returned
+     * @param language specify in which language labels should be returned. The language can be null
      * @return true    if the definition object is correctly filled
      *          false   if the uri doesn't exists
      */
-    public boolean getAllPropertiesWithLabels(RdfResourceDefinition definition, String language) {     
+    public boolean getAllPropertiesWithLabels(RdfResourceDefinition definition, String language) {
         if (this.existUri(uri)) {
             // Prepare and execute the query to retrieve all relation, 
             //  properties and properties type with theur labels for the given uri and language

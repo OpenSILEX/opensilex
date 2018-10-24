@@ -13,7 +13,6 @@
 
 package phis2ws.service.resources.dto;
 
-import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyDTO;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import javax.validation.Valid;
@@ -21,6 +20,7 @@ import javax.validation.constraints.Pattern;
 import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyPostDTO;
 import phis2ws.service.view.model.phis.AgronomicalObject;
 import phis2ws.service.resources.validation.interfaces.URL;
 
@@ -45,7 +45,7 @@ public class AgronomicalObjectDTO extends AbstractVerifiedClass {
     //(e.g. 2017)
     private String year;
     //the properties of the agronomical object
-    private ArrayList<PropertyDTO> properties;
+    private ArrayList<PropertyPostDTO> properties;
 
     @Override
     public AgronomicalObject createObjectFromDTO() {
@@ -119,11 +119,11 @@ public class AgronomicalObjectDTO extends AbstractVerifiedClass {
     }
     
     @Valid
-    public ArrayList<PropertyDTO> getProperties() {
+    public ArrayList<PropertyPostDTO> getProperties() {
         return properties;
     }
 
-    public void setProperties(ArrayList<PropertyDTO> properties) {
+    public void setProperties(ArrayList<PropertyPostDTO> properties) {
         this.properties = properties;
     }
 }

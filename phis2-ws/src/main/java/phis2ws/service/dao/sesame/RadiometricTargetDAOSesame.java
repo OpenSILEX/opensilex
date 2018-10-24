@@ -187,7 +187,6 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
             for (RadiometricTarget radiometricTarget : radiometricTargets) {
                 //1. check the radiometric target if given (for example in case of an update)
                 if (radiometricTarget.getUri() != null) {
-                    //TODO : use the allPaginate developped by Vincent
                     uri = radiometricTarget.getUri();
                     ArrayList<RadiometricTarget> radiometricTargetCorresponding = allPaginate();
                     
@@ -535,7 +534,6 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
      *         the list of the generated uri of the radiometric targets if the update has been done
      */
     public POSTResultsReturn checkAndUpdate(List<RadiometricTarget> radiometricTargets) {
-        //TODO : passer en RadiometricTarget - le check doit se faire sur le modèle
         POSTResultsReturn checkResult = check(radiometricTargets);
         if (checkResult.getDataState()) {
             return update(radiometricTargets);

@@ -159,7 +159,7 @@ public class AcquisitionSessionDAOSesame extends DAOSesame<Object> {
                 RadiometricTargetDAOSesame radiometricTargetDAO = new RadiometricTargetDAOSesame();
                 radiometricTargetDAO.setPage(page);
                 radiometricTargetDAO.setPageSize(pageSize);
-                radiometricTargets = radiometricTargetDAO.getRadiometricTargets();
+                radiometricTargets = radiometricTargetDAO.allPaginate();
                 sizes.add(radiometricTargets.size());
             }
         }

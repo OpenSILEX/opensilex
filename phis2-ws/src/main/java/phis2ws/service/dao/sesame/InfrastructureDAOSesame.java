@@ -33,17 +33,22 @@ import phis2ws.service.view.model.phis.Infrastructure;
 public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(InfrastructureDAOSesame.class);
-
-    //The following attributes are used to search infrastructures in the triplestore
-    //uri of the infrastructure
+    
+    // This attribute is used to search all properties of the given uri
     public String uri;
-
+    
     //type uri of the infrastructure(s)
     public String rdfType;
 
     //alias of the infrastructure(s)
     public String label;
 
+    //language in which labels will be retrieve
+    public String language;
+    
+    protected static final String RDF_TYPE_LABEL = "rdfTypeLabel";
+    protected static final String IS_PART_OF = "isPartOf";
+    
     /**
      * generates a paginated search query (search by uri, type, label)
      * SELECT  ?uri ?rdfType  ?label 
@@ -61,6 +66,8 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
 
         query.appendDistinct(Boolean.TRUE);
+        
+        // Select URI
         String infrastructureUri;
         if (uri != null) {
             infrastructureUri = "<" + uri + ">";
@@ -69,6 +76,7 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
             query.appendSelect(infrastructureUri);
         }
 
+        // Select RDF Type
         if (rdfType != null) {
             query.appendTriplet(infrastructureUri, Rdf.RELATION_TYPE.toString(), rdfType, null);
         } else {
@@ -76,14 +84,30 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
             query.appendTriplet(infrastructureUri, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
             query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_INFRASTRUCTURE.toString(), null);
         }
-
+        
+        // Select RDF Type label in specified language
+        query.beginBodyOptional();
+        query.appendSelect("?" + RDF_TYPE_LABEL);
+        query.appendTriplet("?" + RDF_TYPE, Rdfs.RELATION_LABEL.toString(), "?" + RDF_TYPE_LABEL, null);
+        if (language != null) {
+            query.appendFilter("LANG(?" + RDF_TYPE_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + RDF_TYPE_LABEL + "), \"" + language + "\")");
+        }
+        query.endBodyOptional();
+        
+        // Select parent infrastructure URI (is part of) if exists
+        query.beginBodyOptional();
+        query.appendSelect("?" + IS_PART_OF);
+        query.appendTriplet(infrastructureUri, Vocabulary.RELATION_IS_PART_OF.toString(), "?" + IS_PART_OF, null);
+        query.endBodyOptional();
+                
+        // Select infrastructure name
         query.appendSelect(" ?" + LABEL);
         query.beginBodyOptional();
         query.appendToBody(infrastructureUri + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + LABEL + " . ");
         query.endBodyOptional();
 
         if (label != null) {
-            query.appendFilter("REGEX ( ?" + LABEL + ",\".*" + label + ".*\",\"i\")");
+            query.appendAndFilter("REGEX ( ?" + LABEL + ",\".*" + label + ".*\",\"i\")");
         }
 
         query.appendLimit(this.getPageSize());
@@ -140,15 +164,19 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
     public ArrayList<Infrastructure> allPaginate() {
         SPARQLQueryBuilder query = prepareSearchQuery();
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-        ArrayList<Infrastructure> infrastructures = new ArrayList<>();
 
+        ArrayList<Infrastructure> infrastructures;
+        
         try (TupleQueryResult result = tupleQuery.evaluate()) {
+            infrastructures = new ArrayList<>();
+            
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 Infrastructure infrastructure = getInfrastructureFromBindingSet(bindingSet);
                 infrastructures.add(infrastructure);
             }
         }
+        
         return infrastructures;
     }
 
@@ -173,8 +201,14 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
         } else {
             infrastructure.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
         }
-
+        
+        infrastructure.setRdfTypeLabel(bindingSet.getValue(RDF_TYPE_LABEL).stringValue());
+        
         infrastructure.setLabel(bindingSet.getValue(LABEL).stringValue());
+        
+        if (bindingSet.hasBinding(IS_PART_OF)) {
+            infrastructure.setParent(bindingSet.getValue(IS_PART_OF).stringValue());
+        }
 
         return infrastructure;
     }

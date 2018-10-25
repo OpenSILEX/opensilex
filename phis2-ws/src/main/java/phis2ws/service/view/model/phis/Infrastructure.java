@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                       Structure.java
+//                                       Infrastructure.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 5 sept. 2018
@@ -12,36 +12,39 @@ package phis2ws.service.view.model.phis;
  * Represents an infrastructure model
  * @author Vincent Migot <vincent.migot@inra.fr>
  */
-public class Infrastructure {
+public class Infrastructure extends RdfResourceDefinition {
     
-    //infrastructure uri eg. http://www.phenome-fppn.fr/m3p
-    private String uri;
     //infrastructure type eg. http://www.phenome-fppn.fr/vocabulary/2017#LocalInfrastructure
     private String rdfType;
-    //infrastructure alias string eg. M3P
-    private String label;
 
-    public String getUri() {
-        return uri;
-    }
-
+    //infrastructure type label eg. European Infrastructure
+    private String rdfTypeLabel;
+    
+    //uri of the parent infrastructure if exists eg. https://emphasis.plant-phenotyping.eu 
+    private String parent;
+    
     public String getRdfType() {
         return rdfType;
-    }
-
-    public String getLabel() {
-        return label;
-    }
-
-    public void setUri(String uri) {
-        this.uri = uri;
     }
 
     public void setRdfType(String rdfType) {
         this.rdfType = rdfType;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public String getRdfTypeLabel() {
+        return rdfTypeLabel;
     }
+
+    public void setRdfTypeLabel(String rdfTypeLabel) {
+        this.rdfTypeLabel = rdfTypeLabel;
+    }
+
+    public String getParent() {
+        return parent;
+    }
+
+    public void setParent(String parent) {
+        this.parent = parent;
+    }
+    
 }

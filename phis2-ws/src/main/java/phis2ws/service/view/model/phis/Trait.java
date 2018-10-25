@@ -13,8 +13,8 @@ package phis2ws.service.view.model.phis;
 
 import java.util.ArrayList;
 
-public class Trait extends InstanceDefinition {
-    
+public class Trait extends RdfResourceDefinition {
+        
     //the variables linked to the trait (required in brapi)
     private ArrayList<String> variables;
     

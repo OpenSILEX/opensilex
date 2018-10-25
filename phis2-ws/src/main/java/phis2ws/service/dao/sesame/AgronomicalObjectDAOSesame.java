@@ -42,7 +42,7 @@ import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Vocabulary;
 import phis2ws.service.resources.dto.AgronomicalObjectDTO;
 import phis2ws.service.resources.dto.LayerDTO;
-import phis2ws.service.resources.dto.PropertyDTO;
+import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.ResourcesUtils;
 import phis2ws.service.utils.UriGenerator;

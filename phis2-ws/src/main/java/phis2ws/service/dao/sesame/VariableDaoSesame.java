@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
@@ -552,6 +553,54 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
             return update(variablesDTO);
         } else { //Les données ne sont pas bonnes
             return checkResult;
+        }
+    }
+    
+    /**
+     * Generates a query to know if a given object uri is a variable.
+     * @param uri
+     * @example 
+     * ASK { 
+     *   <http://www.phenome-fppn.fr/id/variables/v001>  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
+     *   ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.phenome-fppn.fr/vocabulary/2017#Variable> . 
+     * }
+     * @return the query
+     */
+    private SPARQLQueryBuilder prepareIsVariableQuery(String uri) {
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        query.appendTriplet("<" + uri + ">", Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
+        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_VARIABLE.toString(), null);
+        
+        query.appendAsk("");
+        LOGGER.debug(query.toString());
+        return query;
+    }
+    
+    /**
+     * Check if a given uri is a variable.
+     * @param uri
+     * @return true if it is a variable
+     *         false if not
+     */
+    private boolean isVariable(String uri) {
+        SPARQLQueryBuilder query = prepareIsVariableQuery(uri);
+        BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
+        
+        return booleanQuery.evaluate();
+    }
+     
+    /**
+     * Check if a given uri is a variable
+     * @param uri
+     * @return true if the uri corresponds to a variable
+     *         false if it does not exist or if it is not a variable
+     */
+    public boolean existAndIsVariable(String uri) {
+        if (existUri(uri)) {
+            return isVariable(uri);
+            
+        } else {
+            return false;
         }
     }
 }

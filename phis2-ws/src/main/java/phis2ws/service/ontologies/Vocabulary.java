@@ -141,7 +141,7 @@ public enum Vocabulary {
         @Override
         public String toString() {
             return PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "baseURI") 
-                    + PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "platform");
+                    + PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "infrastructure");
         }
     },
     

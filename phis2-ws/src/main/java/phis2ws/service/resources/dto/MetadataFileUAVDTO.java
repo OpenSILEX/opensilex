@@ -15,6 +15,31 @@ import com.google.gson.annotations.SerializedName;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class MetadataFileUAVDTO extends MetadataFileDTO {
+    //il faudrait override les attributs..
+//    // The current installation uri. 
+//    // e.g. http://www.phenome-fppn.fr/diaphen
+//    @SerializedName("Installation")
+//    protected String installation;
+//    // The group plot type, associated to groupPlotAlias, groupPlotUri, groupPlotSpecies
+//    // e.g. http://www.phenome-fppn.fr/vocabulary/2017#Experiment
+//    @SerializedName("GroupPlot_type")
+//    protected String groupPlotType;
+//    // The alias of the group plot, associated to groupPlotType, groupPlotUri, groupPlotSpecies 
+//    // e.g. BBlee_2018
+//    @SerializedName("GroupPlot_alias")
+//    protected String groupPlotAlias;
+//    // The group plot uri, associated to groupPlotType, grouPlotAlias, groupPlotSpecies
+//    // e.g. http://www.phenome-fppn.fr/diaphen/DIA2017-2
+//    @SerializedName("GroupPlot_uri")
+//    protected String groupPlotUri;
+//    // The species of the group plot, associated to groupPlotType, groupPlotUri, groupPlotAlias
+//    // e.g. Maize
+//    @SerializedName("GroupPlot_species")
+//    protected String groupPlotSpecies;
+//    // A pilot email
+//    // e.g. john.doe@email.fr
+//    @SerializedName("Pilot")
+//    protected String pilot;
     //The camera type, associated to cameraAlias and cameraUri.
     //e.g. http://www.phenome-fppn.fr/vocabulary/2017#RGBCamera
     @SerializedName("Camera_type")
@@ -48,6 +73,10 @@ public class MetadataFileUAVDTO extends MetadataFileDTO {
     //e.g. RD001
     @SerializedName("RadiometricTarget_alias")
     protected String radiometricTargetAlias;
+    
+    public MetadataFileUAVDTO() {
+        super();
+    }
 
     public String getCameraType() {
         return cameraType;

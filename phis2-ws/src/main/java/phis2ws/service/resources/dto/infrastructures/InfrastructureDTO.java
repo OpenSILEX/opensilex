@@ -20,15 +20,24 @@ import phis2ws.service.view.model.phis.Property;
  */
 public class InfrastructureDTO extends RdfResourceDefinitionDTO {
     
-    String rdfType;
+    //infrastructure type eg. http://www.phenome-fppn.fr/vocabulary/2017#LocalInfrastructure
+    private String rdfType;
+
+    //infrastructure type label eg. European Infrastructure
+    private String rdfTypeLabel;
     
+    //uri of the parent infrastructure if exists eg. https://emphasis.plant-phenotyping.eu 
+    private String parent;
+        
     /**
-     * Constructor to create DTO from a Infrastructure Model
+     * Constructor to create DTO from an Infrastructure Model
      * @param infrastructure 
      */
     public InfrastructureDTO(Infrastructure infrastructure) {
         super(infrastructure);
         this.setRdfType(infrastructure.getRdfType());
+        this.setRdfTypeLabel(infrastructure.getRdfTypeLabel());
+        this.setParent(infrastructure.getParent());
     }
     
     @Override
@@ -42,5 +51,21 @@ public class InfrastructureDTO extends RdfResourceDefinitionDTO {
 
     public void setRdfType(String rdfType) {
         this.rdfType = rdfType;
+    }
+
+    public String getRdfTypeLabel() {
+        return rdfTypeLabel;
+    }
+
+    public void setRdfTypeLabel(String rdfTypeLabel) {
+        this.rdfTypeLabel = rdfTypeLabel;
+    }
+
+    public String getParent() {
+        return parent;
+    }
+
+    public void setParent(String parent) {
+        this.parent = parent;
     }
 }

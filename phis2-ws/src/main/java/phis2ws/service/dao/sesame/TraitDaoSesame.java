@@ -48,6 +48,8 @@ public class TraitDaoSesame extends DAOSesame<Trait> {
     public String comment;
     public ArrayList<OntologyReference> ontologiesReferences = new ArrayList<>();
     
+    private static final String VAR_URI = "varUri";
+    
     public TraitDaoSesame() {
     }
 
@@ -85,9 +87,7 @@ public class TraitDaoSesame extends DAOSesame<Trait> {
             query.appendSelect(" ?" + COMMENT);
             query.beginBodyOptional();
             query.appendToBody(traitURI + " <" + Rdfs.RELATION_COMMENT.toString() + "> " + "?" + COMMENT + " . ");
-            query.endBodyOptional();
-            
-            
+            query.endBodyOptional();           
         }
         
         LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
@@ -340,7 +340,7 @@ public class TraitDaoSesame extends DAOSesame<Trait> {
                 }
                 
                 //retrieve associated variables list
-                trait = getAndSetVariables(trait);
+                trait = addVariablesToTrait(trait);
                 
                 traits.add(trait);
             }
@@ -467,13 +467,13 @@ public class TraitDaoSesame extends DAOSesame<Trait> {
         * e.g. 
         * SELECT DISTINCT ?varUri
         * WHERE {
-        * ?varUri <http://www.phenome-fppn.fr/vocabulary/2017#hasTrait> bt.getTraitDbId() .}
+        * ?varUri <http://www.phenome-fppn.fr/vocabulary/2017#hasTrait> http://www.phenome-fppn.fr/platform/id/traits/t001 .}
         *
         * @return query generated with the searched parameter above
         */
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
-        query.appendSelect("?varUri");
-        query.appendTriplet("?varUri", Vocabulary.RELATION_HAS_TRAIT.toString(),trait.getUri(), null);   
+        query.appendSelect("?" + VAR_URI);
+        query.appendTriplet("?" + VAR_URI, Vocabulary.RELATION_HAS_TRAIT.toString(),trait.getUri(), null);   
         return(query);
     }    
     
@@ -482,20 +482,17 @@ public class TraitDaoSesame extends DAOSesame<Trait> {
      * @author Alice Boizet <alice.boizet@inra.fr>
      * @return traits list of traits
      */    
-    private Trait getAndSetVariables(Trait trait) {                
+    private Trait addVariablesToTrait(Trait trait) {                
         SPARQLQueryBuilder query = prepareSearchQueryVariables(trait);
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         ArrayList<String> varList = new ArrayList();
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
-                varList.add(bindingSet.getValue("varUri").stringValue());
+                varList.add(bindingSet.getValue(VAR_URI).stringValue());
             }                    
         }
-        if (!varList.isEmpty()) {
-            trait.setVariables(varList);
-        }
+        trait.setVariables(varList);        
         return trait; 
-    } 
-    
+    }     
 }

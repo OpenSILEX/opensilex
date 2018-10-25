@@ -228,8 +228,7 @@ public class TraitsResourceService implements BrapiCall {
      */
     private Response getTraitsData(TraitDaoSesame traitDAO) {
         ArrayList<Status> statusList = new ArrayList<>();
-        ArrayList<Trait> traits = traitDAO.allPaginate();        
-        
+        ArrayList<Trait> traits = traitDAO.allPaginate();                
         BrapiResponseForm getResponse;
         if (traits == null) {
             getResponse = new BrapiResponseForm(0, 0, traits, true);

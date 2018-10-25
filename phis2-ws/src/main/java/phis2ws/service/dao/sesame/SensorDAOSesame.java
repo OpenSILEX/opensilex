@@ -770,7 +770,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
     }
     
     /**
-     * Prepare the SPARQL query to return all variables observed by a sensor.
+     * Prepare the SPARQL query to return all variables measured by a sensor.
      * 
      * @param sensor The sensor which measures veriables
      * @return The prepared query
@@ -797,7 +797,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
     }
     
     /**
-     * Return a HashMap of uri => label of the variables observed by the given sensor.
+     * Return a HashMap of uri => label of the variables measured by the given sensor.
      * 
      * @param sensor The sensor which measures veriables
      * @return HashMap of uri => label

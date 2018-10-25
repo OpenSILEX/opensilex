@@ -429,7 +429,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
             //If the oldOccurrences contains the relation and has more occurrences 
             //of its relation than the newOccurrences, something is wrong
             if (oldOccurrences.containsKey(relation) && oldOccurrences.get(relation) > nbOccurrences) {
-                status.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Anbiguity on the values for the property : " + relation 
+                status.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Ambiguity on the values for the property : " + relation 
                         + ". There are less occcurrences of the property in the updated data than before (" + nbOccurrences + " instead of " + oldOccurrences.get(relation) + ")"));
             }
         });

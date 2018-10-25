@@ -400,7 +400,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 Sensor sensor = getSensorFromBindingSet(bindingSet);
-                HashMap<String, String>  variables = getVariables(sensor);
+                HashMap<String, String>  variables = getVariables(sensor.getUri());
                 sensor.setVariables(variables);
                 sensors.add(sensor);
             }
@@ -772,7 +772,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
     /**
      * Prepare the SPARQL query to return all variables measured by a sensor.
      * 
-     * @param sensor The sensor which measures veriables
+     * @param sensor The sensor uri which measures veriables
      * @return The prepared query
      * @example 
      * SELECT DISTINCT  ?uri ?label WHERE {
@@ -782,14 +782,14 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
      *      <http://www.phenome-fppn.fr/2018/s18001> <http://www.phenome-fppn.fr/vocabulary/2017#measures> ?uri
      * }
      */
-    private SPARQLQueryBuilder prepareSearchVariablesQuery(Sensor sensor) {
+    private SPARQLQueryBuilder prepareSearchVariablesQuery(String sensorUri) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         
         query.appendSelect("?" + URI + " ?" + LABEL );
         query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_VARIABLE.toString(), null);
         query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
         query.appendTriplet("?" + URI, Rdfs.RELATION_LABEL.toString(), "?" + LABEL, null);
-        query.appendTriplet(sensor.getUri(), Vocabulary.RELATION_MEASURES.toString(), "?" + URI, null);
+        query.appendTriplet(sensorUri, Vocabulary.RELATION_MEASURES.toString(), "?" + URI, null);
         
         LOGGER.debug(query.toString());
         
@@ -799,11 +799,11 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
     /**
      * Return a HashMap of uri => label of the variables measured by the given sensor.
      * 
-     * @param sensor The sensor which measures veriables
+     * @param sensor The sensor uri which measures veriables
      * @return HashMap of uri => label
      */
-    private HashMap<String, String> getVariables(Sensor sensor) {
-        SPARQLQueryBuilder query = prepareSearchVariablesQuery(sensor);
+    private HashMap<String, String> getVariables(String sensorUri) {
+        SPARQLQueryBuilder query = prepareSearchVariablesQuery(sensorUri);
         
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         HashMap<String, String> variables = new HashMap<>();

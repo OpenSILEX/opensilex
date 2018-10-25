@@ -30,7 +30,7 @@ public class InfrastructureDTO extends RdfResourceDefinitionDTO {
     private String parent;
         
     /**
-     * Constructor to create DTO from a Infrastructure Model
+     * Constructor to create DTO from an Infrastructure Model
      * @param infrastructure 
      */
     public InfrastructureDTO(Infrastructure infrastructure) {

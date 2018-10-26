@@ -844,8 +844,15 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         
         boolean update = true;
         
+        
         //1. Delete old object properties
-        if (deleteObjectProperties(sensorUri, Vocabulary.RELATION_MEASURES.toString(), variables)) {
+        HashMap<String, String> actualMeasuredVariables = getVariables(sensorUri);
+        List<String> oldMeasuredVariables = new ArrayList<>();
+        actualMeasuredVariables.entrySet().forEach((oldVariable) -> {
+            oldMeasuredVariables.add(oldVariable.getKey());
+        });
+        
+        if (deleteObjectProperties(sensorUri, Vocabulary.RELATION_MEASURES.toString(), oldMeasuredVariables)) {
             //2. Add new object properties
             if (addObjectProperties(sensorUri, Vocabulary.RELATION_MEASURES.toString(), variables, Contexts.SENSORS.toString())) {
                 updateStatus.add(new Status(StatusCodeMsg.RESOURCES_UPDATED, StatusCodeMsg.INFO, "The sensor " + sensorUri + " has now " + variables.size() + " linked variables"));

@@ -11,6 +11,8 @@
 //******************************************************************************
 package phis2ws.service.view.model.phis;
 
+import java.util.HashMap;
+
 /**
  * Represents a sensor view
  * @author Morgane Vidal <morgane.vidal@inra.fr>
@@ -35,7 +37,9 @@ public class Sensor {
     private String dateOfLastCalibration;
     //email of the person in charge of the sensor
     private String personInCharge;
-
+    //variables mesured by the sensor
+    private HashMap<String, String>  variables;
+    
     public String getUri() {
         return uri;
     }
@@ -106,5 +110,13 @@ public class Sensor {
 
     public void setPersonInCharge(String personInCharge) {
         this.personInCharge = personInCharge;
+    }
+
+    public HashMap<String, String>  getVariables() {
+        return variables;
+    }
+
+    public void setVariables(HashMap<String, String>  variables) {
+        this.variables = variables;
     }
 }

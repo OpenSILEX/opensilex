@@ -404,6 +404,8 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 Sensor sensor = getSensorFromBindingSet(bindingSet);
+                HashMap<String, String>  variables = getVariables(sensor.getUri());
+                sensor.setVariables(variables);
                 sensors.add(sensor);
             }
         }
@@ -886,8 +888,6 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         }
     }
     
-    
-/////////////////////////////////////////////////// A SUPPRIMER AVANT MON PR ET AVANT MERGE /////////////////////////////////////////////////////////////////////////////////   
     /**
      * Prepare the SPARQL query to return all variables measured by a sensor.
      * 
@@ -926,7 +926,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         HashMap<String, String> variables = new HashMap<>();
-         try (TupleQueryResult result = tupleQuery.evaluate()) {
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();   
                 

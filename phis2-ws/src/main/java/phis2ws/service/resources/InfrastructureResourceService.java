@@ -115,7 +115,8 @@ public class InfrastructureResourceService {
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
         @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_URI) @QueryParam("uri") @URL String uri,
         @ApiParam(value = "Search by type uri", example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_RDF_TYPE) @QueryParam("rdfType") @URL String rdfType,
-        @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_LABEL) @QueryParam("label") String label
+        @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_LABEL) @QueryParam("label") String label,
+        @ApiParam(value = "Language", example = DocumentationAnnotation.EXAMPLE_LANGUAGE) @QueryParam("language") String language
     ) {
         // 1. Initialize infrastructureDAO with parameters
         InfrastructureDAOSesame infrastructureDAO = new InfrastructureDAOSesame();
@@ -129,6 +130,10 @@ public class InfrastructureResourceService {
         if (label != null) {
             infrastructureDAO.label = label;
         }
+        if (language == null) {
+            language = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILE_NAME, "defaultLanguage");;
+        }
+        infrastructureDAO.language = language;
         
         infrastructureDAO.user = userSession.getUser();
         infrastructureDAO.setPage(page);

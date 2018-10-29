@@ -189,9 +189,7 @@ public class RadiometricTargetResourceService {
         @ApiParam(value = DocumentationAnnotation.RADIOMETRIC_TARGET_POST_DEFINITION) @Valid ArrayList<RadiometricTargetDTO> radiometricTargets,
         @Context HttpServletRequest context) {
         AbstractResultForm putResponse = null;
-        
-        ///!\ à tester si ok sans ce test
-        //if (radiometricTargets != null && !radiometricTargets.isEmpty()) {
+
         RadiometricTargetDAOSesame radiometricTargetDAO = new RadiometricTargetDAOSesame();
         if (context.getRemoteAddr() != null) {
             radiometricTargetDAO.remoteUserAdress = context.getRemoteAddr();
@@ -203,7 +201,6 @@ public class RadiometricTargetResourceService {
 
         if (result.getHttpStatus().equals(Response.Status.OK)
                 || result.getHttpStatus().equals(Response.Status.CREATED)) {
-            //Code 200, traits modifiés
             putResponse = new ResponseFormPOST(result.statusList);
             putResponse.getMetadata().setDatafiles(result.createdResources);
         } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)

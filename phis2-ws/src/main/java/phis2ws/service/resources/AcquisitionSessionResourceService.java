@@ -33,7 +33,7 @@ import phis2ws.service.dao.sesame.AcquisitionSessionDAOSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
-import phis2ws.service.resources.dto.MetadataFileDTO;
+import phis2ws.service.resources.dto.acquisitionSession.MetadataFileDTO;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;

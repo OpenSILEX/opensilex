@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -22,6 +23,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -64,6 +66,36 @@ public class RadiometricTargetResourceService {
     //user session
     @SessionInject
     Session userSession;
+    
+    /**
+     * Generates a RadiometricTarget list from a given list of RadiometricTargetPostDTO
+     * @param radiometricTargetsPostDTO
+     * @return the list of radiometric targets
+     */
+    private List<RadiometricTarget> radiometricTargetPostDTOsToRadiometricTargets(List<RadiometricTargetPostDTO> radiometricTargetsPostDTO) {
+        ArrayList<RadiometricTarget> radiometricTargets = new ArrayList<>();
+        
+        for (RadiometricTargetPostDTO radiometricTargetPostDTO : radiometricTargetsPostDTO) {
+            radiometricTargets.add(radiometricTargetPostDTO.createObjectFromDTO());
+        }
+        
+        return radiometricTargets;
+    }
+    
+    /**
+     * Generates a RadiometricTarget list from a given list of RadiometricTargetDTO
+     * @param radiometricTargetsDTO
+     * @return the list of radiometric targets
+     */
+    private List<RadiometricTarget> radiometricTargetDTOsToRadiometricTargets(List<RadiometricTargetDTO> radiometricTargetsDTO) {
+        ArrayList<RadiometricTarget> radiometricTargets = new ArrayList<>();
+        
+        for (RadiometricTargetDTO radiometricTargetPostDTO : radiometricTargetsDTO) {
+            radiometricTargets.add(radiometricTargetPostDTO.createRadiometricTargetFromDTO());
+        }
+        
+        return radiometricTargets;
+    }
     
     /**
      * Service to insert a given list of radiometric targets in the database.
@@ -121,7 +153,7 @@ public class RadiometricTargetResourceService {
             
             radiometricTargetDAO.user = userSession.getUser();
             
-            POSTResultsReturn result = radiometricTargetDAO.checkAndInsert(radiometricTargets);
+            POSTResultsReturn result = radiometricTargetDAO.checkAndInsert(radiometricTargetPostDTOsToRadiometricTargets(radiometricTargets));
             
             if (result.getHttpStatus().equals(Response.Status.CREATED)) {
                 postResponse = new ResponseFormPOST(result.statusList);
@@ -136,6 +168,47 @@ public class RadiometricTargetResourceService {
             postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty radiometric(s) target(s) to add"));
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
+    }
+    
+    @PUT
+    @ApiOperation(value = "Update radiometric targets")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Radiometric target(s) updated", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 404, message = "Radiometric target(s) not found"),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response put(
+        @ApiParam(value = DocumentationAnnotation.RADIOMETRIC_TARGET_POST_DEFINITION) @Valid ArrayList<RadiometricTargetDTO> radiometricTargets,
+        @Context HttpServletRequest context) {
+        AbstractResultForm putResponse = null;
+
+        RadiometricTargetDAOSesame radiometricTargetDAO = new RadiometricTargetDAOSesame();
+        if (context.getRemoteAddr() != null) {
+            radiometricTargetDAO.remoteUserAdress = context.getRemoteAddr();
+        }
+
+        radiometricTargetDAO.user = userSession.getUser();
+
+        POSTResultsReturn result = radiometricTargetDAO.checkAndUpdate(radiometricTargetDTOsToRadiometricTargets(radiometricTargets));
+
+        if (result.getHttpStatus().equals(Response.Status.OK)
+                || result.getHttpStatus().equals(Response.Status.CREATED)) {
+            putResponse = new ResponseFormPOST(result.statusList);
+            putResponse.getMetadata().setDatafiles(result.createdResources);
+        } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                || result.getHttpStatus().equals(Response.Status.OK)
+                || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+            putResponse = new ResponseFormPOST(result.statusList);
+        }
+        return Response.status(result.getHttpStatus()).entity(putResponse).build();
     }
     
     /**
@@ -322,7 +395,6 @@ public class RadiometricTargetResourceService {
         }
     }
     
-        
     /**
      * Return a generic response when no result are found
      * @param getResponse
@@ -334,5 +406,4 @@ public class RadiometricTargetResourceService {
         getResponse.setStatus(insertStatusList);
         return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
     }
-    
 }

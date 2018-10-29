@@ -1,23 +1,21 @@
 //******************************************************************************
-//                                       FileMetadataDTO.java
+//                                       FileMetadataPhenomobileDTO.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 30 August, 2018
+// Creation date: 30 août 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package phis2ws.service.resources.dto;
+package phis2ws.service.resources.dto.acquisitionSession;
 
 import com.google.gson.annotations.SerializedName;
-import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 
 /**
  * Represents the JSON return by the web service used to generate the acquisition 
- * session excel file for the 4P platform. There is an excel format for each vector type. 
- * The FileMetadataDTO class has the basic informations contained for the acquisition sessions of all types of vectors.
+ * session excel file for the 4P platform, specific to the phenomobile.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-    public class MetadataFileDTO extends AbstractVerifiedClass {
-    // The current installation uri. 
+public class MetadataFilePhenomobileDTO extends MetadataFileDTO {
+       // The current installation uri. 
     // e.g. http://www.phenome-fppn.fr/diaphen
     @SerializedName("Installation")
     protected String installation;

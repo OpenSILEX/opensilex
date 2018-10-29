@@ -32,6 +32,7 @@ import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Vocabulary;
 import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyDTO;
 import phis2ws.service.resources.dto.SensorProfileDTO;
+import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyPostDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.utils.sparql.SPARQLUpdateBuilder;
@@ -105,7 +106,7 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
                     }
                     
                     //3. check the given properties 
-                    for (PropertyDTO propertyDTO : sensorProfile.getProperties()) {
+                    for (PropertyPostDTO propertyDTO : sensorProfile.getProperties()) {
                         //3.1 check if the property exist
                         uriDaoSesame.uri = propertyDTO.getRelation();
                         ArrayList<Ask> uriExistance = uriDaoSesame.askUriExistance();
@@ -258,8 +259,8 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
      * @param bindingSetProperty a binding set from a sensor profile search query
      * @return a sensor property
      */
-    private PropertyDTO getPropertyFromBingingSet(BindingSet bindingSetProperty) {
-        PropertyDTO property = new PropertyDTO();
+    private PropertyPostDTO getPropertyFromBingingSet(BindingSet bindingSetProperty) {
+        PropertyPostDTO property = new PropertyPostDTO();
         
         property.setRelation(bindingSetProperty.getValue(RELATION).stringValue());
         property.setValue(bindingSetProperty.getValue(PROPERTY).stringValue());

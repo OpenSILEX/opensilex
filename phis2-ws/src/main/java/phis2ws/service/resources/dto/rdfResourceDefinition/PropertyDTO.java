@@ -23,11 +23,11 @@ public class PropertyDTO extends AbstractVerifiedClass {
 
     //property type (e.g. http://www.phenome-fppn.fr/vocabulary/2017#Variety)
     //null if it is a string (so not an uri)
-    private String rdfType;
+    protected String rdfType;
     //relation name (e.g. http://www.phenome-fppn.fr/vocabulary/2017#fromVariety)
-    private String relation;
+    protected String relation;
     //the value (e.g. http://www.phenome-fppn.fr/id/species/maize)
-    private String value;
+    protected String value;
 
     public PropertyDTO() {
     }
@@ -71,7 +71,6 @@ public class PropertyDTO extends AbstractVerifiedClass {
         this.relation = relation;
     }
 
-    @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROPERTY_VALUE)
     public String getValue() {
         return value;

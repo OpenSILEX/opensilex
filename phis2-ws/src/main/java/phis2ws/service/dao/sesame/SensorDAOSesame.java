@@ -739,6 +739,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
      */
     private SPARQLQueryBuilder prepareSearchCamerasQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        query.appendDistinct(Boolean.TRUE);
         
         query.appendSelect("?" + URI + " ?" + RDF_TYPE + " ?" + LABEL );
         query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_CAMERA.toString(), null);

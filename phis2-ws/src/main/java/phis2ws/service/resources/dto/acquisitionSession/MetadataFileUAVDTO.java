@@ -64,14 +64,14 @@ public class MetadataFileUAVDTO extends MetadataFileDTO {
     //e.g. http://www.phenome-fppn.fr/diaphen/v01
     @SerializedName("Vector_uri")
     protected String vectorUri;
-    //The radiometric target uri, associated to radiometricTargetAlias.
-    //e.g. http://www.phenome-fppn.fr/diaphen/rt0003
-    @SerializedName("RadiometricTarget_uri")
-    protected String radiometricTargetUri;
     //The radiometric target alias, associated to radiometricTargetUri.
     //e.g. RD001
     @SerializedName("RadiometricTarget_alias")
     protected String radiometricTargetAlias;
+    //The radiometric target uri, associated to radiometricTargetAlias.
+    //e.g. http://www.phenome-fppn.fr/diaphen/rt0003
+    @SerializedName("RadiometricTarget_uri")
+    protected String radiometricTargetUri;
     
     public MetadataFileUAVDTO() {
         super();

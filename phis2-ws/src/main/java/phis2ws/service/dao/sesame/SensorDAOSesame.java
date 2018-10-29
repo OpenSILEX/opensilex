@@ -811,8 +811,6 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
                         datasetDAO.variable = varibale.getKey();
                         ArrayList<Dataset> dataAboutVariableAndSensor = datasetDAO.allPaginate();
                         
-                        LOGGER.debug("datasets : " + dataAboutVariableAndSensor.get(0).getData().size());
-                        
                         if (dataAboutVariableAndSensor.get(0).getData().size() > 0) {//data founded, the association of the sensor and the variable can not be removed
                             dataOk = false;
                             checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 

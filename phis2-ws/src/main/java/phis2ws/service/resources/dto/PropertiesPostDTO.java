@@ -7,12 +7,12 @@
 //******************************************************************************
 package phis2ws.service.resources.dto;
 
-import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyDTO;
 import java.util.ArrayList;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyPostDTO;
 import phis2ws.service.resources.validation.interfaces.Required;
 
 /**
@@ -25,7 +25,7 @@ public class PropertiesPostDTO extends AbstractVerifiedClass {
     //Label of the object concerned by the properties. e.g. rt01
     protected String label;
     //List of the properties of the object
-    protected ArrayList<PropertyDTO> properties = new ArrayList<>();
+    protected ArrayList<PropertyPostDTO> properties = new ArrayList<>();
 
     @Override
     public Object createObjectFromDTO() {
@@ -44,11 +44,11 @@ public class PropertiesPostDTO extends AbstractVerifiedClass {
     @NotEmpty
     @NotNull
     @Valid
-    public ArrayList<PropertyDTO> getProperties() {
+    public ArrayList<PropertyPostDTO> getProperties() {
         return properties;
     }
 
-    public void setProperties(ArrayList<PropertyDTO> properties) {
+    public void setProperties(ArrayList<PropertyPostDTO> properties) {
         this.properties = properties;
     }
 }

@@ -20,6 +20,7 @@ import javax.validation.constraints.NotNull;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyPostDTO;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.SensorProfile;
 
@@ -34,7 +35,7 @@ public class SensorProfileDTO extends AbstractVerifiedClass {
     //uri of the sensor concerned by the properties
     private String uri;
     //list of the properties of the sensor
-    private ArrayList<PropertyDTO> properties = new ArrayList<>();
+    private ArrayList<PropertyPostDTO> properties = new ArrayList<>();
 
     @Override
     public SensorProfile createObjectFromDTO() {
@@ -62,15 +63,15 @@ public class SensorProfileDTO extends AbstractVerifiedClass {
     @NotEmpty
     @NotNull
     @Valid
-    public ArrayList<PropertyDTO> getProperties() {
+    public ArrayList<PropertyPostDTO> getProperties() {
         return properties;
     }
 
-    public void setProperties(ArrayList<PropertyDTO> properties) {
+    public void setProperties(ArrayList<PropertyPostDTO> properties) {
         this.properties = properties;
     }
     
-    public void addProperty(PropertyDTO property) {
+    public void addProperty(PropertyPostDTO property) {
         properties.add(property);
     }
 }

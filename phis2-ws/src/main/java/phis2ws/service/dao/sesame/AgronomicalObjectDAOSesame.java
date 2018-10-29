@@ -42,7 +42,7 @@ import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Vocabulary;
 import phis2ws.service.resources.dto.AgronomicalObjectDTO;
 import phis2ws.service.resources.dto.LayerDTO;
-import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyDTO;
+import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyPostDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.ResourcesUtils;
 import phis2ws.service.utils.UriGenerator;
@@ -214,7 +214,7 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
 
              //check properties
              boolean missingAlias = true;
-             for (PropertyDTO property : agronomicalObject.getProperties()) {
+             for (PropertyPostDTO property : agronomicalObject.getProperties()) {
                  //check alias
                  if (property.getRelation().equals(Vocabulary.RELATION_HAS_ALIAS.toString())) {
                      missingAlias = false;

@@ -28,11 +28,11 @@ import phis2ws.service.view.model.phis.Property;
 public class RdfResourceDefinitionDTO extends AbstractVerifiedClass {
 
     //uri of the rdf resource
-    private String uri;
+    protected String uri;
     //label of the rdf resource
-    private String label;
+    protected String label;
     //list of the properties of the rdf resource
-    private ArrayList<PropertyDTO> properties = new ArrayList<>();
+    protected ArrayList<PropertyDTO> properties = new ArrayList<>();
 
     /**
      * Default empty constructor

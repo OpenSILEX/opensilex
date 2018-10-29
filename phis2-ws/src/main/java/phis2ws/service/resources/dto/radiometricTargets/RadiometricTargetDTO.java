@@ -25,4 +25,19 @@ public class RadiometricTargetDTO extends RdfResourceDefinitionDTO {
         super(radiometricTarget);
     }
     
+    /**
+     * Generates a RadiometricTarget model with the information of this
+     * @return the model RadiometricTarget
+     */
+    public RadiometricTarget createRadiometricTargetFromDTO() {
+        RadiometricTarget radiometricTarget = new RadiometricTarget();
+        radiometricTarget.setLabel(getLabel());
+        radiometricTarget.setUri(getUri());
+        
+        getProperties().forEach((property) -> {
+            radiometricTarget.addProperty(property.createObjectFromDTO());
+        });
+        
+        return radiometricTarget;
+    }
 }

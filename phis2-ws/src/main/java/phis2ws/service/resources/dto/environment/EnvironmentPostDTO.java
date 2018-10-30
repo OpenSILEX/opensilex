@@ -29,6 +29,8 @@ public class EnvironmentPostDTO extends AbstractVerifiedClass {
     //The date corresponding to the given value. The format should be yyyy-MM-ddTHH:mm:ssZ
     //e.g. 2018-06-25T15:13:59+0200
     protected String date;
+    //The measured value.
+    protected float value;
     
     @Override
     public Object createObjectFromDTO() {

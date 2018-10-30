@@ -1,25 +1,17 @@
 //******************************************************************************
-//                                       EnvironmentPostDTO.java
+//                                       Environment.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 29 oct. 2018
+// Creation date: 30 oct. 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package phis2ws.service.resources.dto.environment;
-
-import io.swagger.annotations.ApiModelProperty;
-import phis2ws.service.configuration.DateFormat;
-import phis2ws.service.documentation.DocumentationAnnotation;
-import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
-import phis2ws.service.resources.validation.interfaces.Date;
-import phis2ws.service.resources.validation.interfaces.Required;
-import phis2ws.service.resources.validation.interfaces.URL;
+package phis2ws.service.view.model.phis;
 
 /**
- * Represents the exchange format used to insert environment in the environment post service.
+ *
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class EnvironmentPostDTO extends AbstractVerifiedClass {
+public class Environment {
     //The uri of the sensor which has provide the measured value.
     //e.g. http://www.phenome-fppn.fr/mtp/2018/s18003
     protected String sensorUri;
@@ -32,15 +24,7 @@ public class EnvironmentPostDTO extends AbstractVerifiedClass {
     //The measured value.
     //e.g. 1.2
     protected float value;
-    
-    @Override
-    public Object createObjectFromDTO() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 
-    @URL
-    @Required
-    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SENSOR_URI)
     public String getSensorUri() {
         return sensorUri;
     }
@@ -49,9 +33,6 @@ public class EnvironmentPostDTO extends AbstractVerifiedClass {
         this.sensorUri = sensorUri;
     }
 
-    @URL
-    @Required
-    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI)
     public String getVariableUri() {
         return variableUri;
     }
@@ -60,9 +41,6 @@ public class EnvironmentPostDTO extends AbstractVerifiedClass {
         this.variableUri = variableUri;
     }
 
-    @Date(DateFormat.YMDTHMSZ)
-    @Required
-    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_XSDDATETIME)
     public String getDate() {
         return date;
     }
@@ -70,9 +48,7 @@ public class EnvironmentPostDTO extends AbstractVerifiedClass {
     public void setDate(String date) {
         this.date = date;
     }
-
-    @Required
-    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_ENVIRONMENT_VALUE)
+    
     public float getValue() {
         return value;
     }

@@ -31,6 +31,7 @@ import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.environment.EnvironmentPostDTO;
+import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
 
@@ -47,6 +48,12 @@ public class EnvironmentResourceService {
     @SessionInject
     Session userSession;
     
+    /**
+     * 
+     * @param environments
+     * @param context
+     * @return 
+     */
     @POST
     @ApiOperation(value = "Post environment(s)",
                   notes = "Register environment(s) in the database")
@@ -69,5 +76,9 @@ public class EnvironmentResourceService {
         @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         
+        if (environments != null && !environments.isEmpty()) {
+            EnvironmentDAOMongo environmentDAO = new EnvironmentDAOMongo();
+        }
+                
     }
 }

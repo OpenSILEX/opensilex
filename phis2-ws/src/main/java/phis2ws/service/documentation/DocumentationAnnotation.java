@@ -135,6 +135,8 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_EXPERIMENT_ALIAS = "alias";
     public static final String EXAMPLE_EXPERIMENT_KEYWORDS = "keywords";
     public static final String EXAMPLE_EXPERIMENT_CAMPAIGN = "2012";
+    
+    public static final String EXAMPLE_ENVIRONMENT_VALUE = "1.3";
 
     public static final String EXAMPLE_FILE_INFORMATION_CHECKSUM = "106fa487baa1728083747de1c6df73e9";
     public static final String EXAMPLE_FILE_INFORMATION_EXTENSION = "jpg";

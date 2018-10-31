@@ -158,7 +158,7 @@ public class EnvironmentDAOMongo extends DAOMongo<EnvironmentMeasure> {
         
         HashMap<String, List<Document>> environmentsToInsertByVariable = new HashMap<>();
         
-        //1. Prepare all the documents to insert (we will do one insert by variable
+        //1. Prepare all the documents to insert (we will do one insert by variable)
         for (EnvironmentMeasure environmentMeasure : environmentMeasures) {
             try {
                 Document createEnvironmentMeasure = prepareInsertEnvironmentDocument(environmentMeasure);
@@ -190,6 +190,7 @@ public class EnvironmentDAOMongo extends DAOMongo<EnvironmentMeasure> {
             });
         }
         
+        //3. Prepare result to return
         result = new POSTResultsReturn(insert);
         result.statusList = status;
         if (insert) {

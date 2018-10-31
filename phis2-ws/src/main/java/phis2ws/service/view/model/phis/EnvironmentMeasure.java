@@ -8,10 +8,10 @@
 package phis2ws.service.view.model.phis;
 
 /**
- *
+ * This is the model for the environment measures
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class Environment {
+public class EnvironmentMeasure {
     //The uri of the sensor which has provide the measured value.
     //e.g. http://www.phenome-fppn.fr/mtp/2018/s18003
     protected String sensorUri;

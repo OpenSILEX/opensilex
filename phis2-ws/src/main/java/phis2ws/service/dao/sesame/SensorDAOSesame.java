@@ -775,6 +775,20 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
     }
     
     /**
+     * Check if a given sensor measured a given variable (is the sensor linked to the variable ?).
+     * @see SensorDAOSesame#getVariables(java.lang.String)
+     * @param sensorUri
+     * @param variableUri
+     * @return true if the sensor measured the variable (i.e. sensor linked to variable with the measures object property)
+     *         false if not
+     */
+    public boolean isSensorMeasuringVariable(String sensorUri, String variableUri) {
+        HashMap<String, String> measuredVariables = getVariables(sensorUri);
+        
+        return measuredVariables.containsKey(variableUri);
+    }
+    
+    /**
      * Check the given data to update the list of the measured variables linked to the sensor.
      * @param sensorUri
      * @param variables

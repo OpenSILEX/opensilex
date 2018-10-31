@@ -8,18 +8,21 @@
 package phis2ws.service.resources.dto.environment;
 
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.resources.validation.interfaces.Date;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
+import phis2ws.service.view.model.phis.EnvironmentMeasure;
 
 /**
  * Represents the exchange format used to insert environment in the environment post service.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class EnvironmentPostDTO extends AbstractVerifiedClass {
+public class EnvironmentMeasurePostDTO extends AbstractVerifiedClass {
     //The uri of the sensor which has provide the measured value.
     //e.g. http://www.phenome-fppn.fr/mtp/2018/s18003
     protected String sensorUri;
@@ -34,8 +37,14 @@ public class EnvironmentPostDTO extends AbstractVerifiedClass {
     protected float value;
     
     @Override
-    public Object createObjectFromDTO() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public EnvironmentMeasure createObjectFromDTO() {
+        EnvironmentMeasure environment = new EnvironmentMeasure();
+        environment.setSensorUri(sensorUri);
+        environment.setVariableUri(variableUri);
+        environment.setDate(date);
+        environment.setValue(value);
+        
+        return environment;
     }
 
     @URL
@@ -71,7 +80,7 @@ public class EnvironmentPostDTO extends AbstractVerifiedClass {
         this.date = date;
     }
 
-    @Required
+    @NotNull
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_ENVIRONMENT_VALUE)
     public float getValue() {
         return value;

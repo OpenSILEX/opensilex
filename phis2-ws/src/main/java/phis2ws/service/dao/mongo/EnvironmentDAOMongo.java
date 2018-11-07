@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
 import javax.ws.rs.core.Response;
 import org.bson.Document;
 import org.slf4j.Logger;
@@ -82,7 +81,7 @@ public class EnvironmentDAOMongo extends DAOMongo<EnvironmentMeasure> {
         BasicDBObject query = new BasicDBObject();
         
         try {
-            SimpleDateFormat df = new SimpleDateFormat(DateFormats.YMDHMSZ_FORMAT);
+            SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
 
             // Define date filter depending if start date and/or end date are defined
             if (startDate != null) {

@@ -18,26 +18,38 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.authentication.Session;
+import phis2ws.service.configuration.DateFormat;
+import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.mongo.EnvironmentDAOMongo;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
+import phis2ws.service.resources.dto.environment.EnvironmentMeasureDTO;
 import phis2ws.service.resources.dto.environment.EnvironmentMeasurePostDTO;
+import phis2ws.service.resources.validation.interfaces.Date;
+import phis2ws.service.resources.validation.interfaces.Required;
+import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
+import phis2ws.service.view.brapi.form.ResponseFormEnvironmentMeasure;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
+import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.EnvironmentMeasure;
 
 /**
@@ -125,5 +137,126 @@ public class EnvironmentResourceService {
             postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty environment measure(s) to add"));
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }       
+    }
+    
+    /**
+     * Service to get environment measures
+     * @param pageSize
+     * @param page
+     * @param variable
+     * @param startDate
+     * @param endDate
+     * @param sensor
+     * @return list of the environment measures corresponding to the search params given
+     * e.g
+     * {
+     *      "metadata": {
+     *          "pagination": {
+     *              "pageSize": 20,
+     *              "currentPage": 0,
+     *              "totalCount": 3,
+     *              "totalPages": 1
+     *          },
+     *          "status": [],
+     *          "datafiles": []
+     *      },
+     *      "result": {
+     *          "data": [
+     *              {
+     *                "sensorUri": "http://www.phenome-fppn.fr/mauguio/diaphen/2013/sb140227",
+     *                "date": "2017-06-07 13:14:32+0200",
+     *                "value": 36.78
+     *              },
+     *              {
+     *                "sensorUri": "http://www.phenome-fppn.fr/mauguio/diaphen/2013/sb140227",
+     *                "date": "2017-06-07 13:14:40+0200",
+     *                "value": 36.78
+     *              },
+     *              {
+     *                "sensorUri": "http://www.phenome-fppn.fr/mauguio/diaphen/2013/sb140227",
+     *                "date": "2017-06-07 13:14:55+0200",
+     *                "value": 36.78
+     *              }
+     *          ]
+     *      }
+     * }
+     */
+    @GET
+    @ApiOperation(value = "Get all environment measures corresponding to the search params given",
+                  notes = "Retrieve all environment measures authorized for the user corresponding to the searched params given")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Retrieve all radiometric targets", response = EnvironmentMeasureDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getEnvironmentMeasures(
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
+        @ApiParam(value = "Search by variable uri", example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI) @QueryParam("variable") @URL @Required String variable,
+        @ApiParam(value = "Search by minimal date", example = DocumentationAnnotation.EXAMPLE_DATETIME) @QueryParam("startDate") @Date(DateFormat.YMDHMSZ) String startDate,
+        @ApiParam(value = "Search by maximal date", example = DocumentationAnnotation.EXAMPLE_DATETIME) @QueryParam("endDate") @Date(DateFormat.YMDHMSZ) String endDate,
+        @ApiParam(value = "Search by sensor uri", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("sensor")  @URL String sensor
+    ) {
+        // 1. Initialize environmentDAO with parameters
+        EnvironmentDAOMongo environmentDAO = new EnvironmentDAOMongo();
+        
+        environmentDAO.variableUri = variable;
+        environmentDAO.startDate = startDate;
+        environmentDAO.endDate = endDate;
+        environmentDAO.sensorUri = sensor;
+        environmentDAO.user = userSession.getUser();
+        environmentDAO.setPage(page);
+        environmentDAO.setPageSize(pageSize);
+        
+        // 2. Get environment measures count
+        int totalCount = environmentDAO.count();
+        
+        // 3. Get environment measures page list
+        ArrayList<EnvironmentMeasure> measures = environmentDAO.allPaginate();
+        
+        // 4. Initialize return variables
+        ArrayList<EnvironmentMeasureDTO> list = new ArrayList<>();
+        ArrayList<Status> statusList = new ArrayList<>();
+        ResponseFormEnvironmentMeasure getResponse;
+        
+        if (measures == null) {
+            // Request failure
+            getResponse = new ResponseFormEnvironmentMeasure(0, 0, list, true, 0);
+            return noResultFound(getResponse, statusList);
+        } else if (measures.isEmpty()) {
+            // No results
+            getResponse = new ResponseFormEnvironmentMeasure(0, 0, list, true, 0);
+            return noResultFound(getResponse, statusList);
+        } else {
+            // Convert all measures object to DTO's
+            measures.forEach((measure) -> {
+                list.add(new EnvironmentMeasureDTO(measure));
+            });
+            
+            // Return list of DTO
+            getResponse = new ResponseFormEnvironmentMeasure(environmentDAO.getPageSize(), environmentDAO.getPage(), list, true, totalCount);
+            getResponse.setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
+        }
+    }
+    
+        /**
+     * Return a generic response when no result are found
+     * @param getResponse
+     * @param insertStatusList
+     * @return the response "no result found" for the service
+     */
+    private Response noResultFound(ResultForm getResponse, ArrayList<Status> insertStatusList) {
+        insertStatusList.add(new Status(StatusCodeMsg.NO_RESULTS, StatusCodeMsg.INFO, "No environment measures found"));
+        getResponse.setStatus(insertStatusList);
+        return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
     }
 }

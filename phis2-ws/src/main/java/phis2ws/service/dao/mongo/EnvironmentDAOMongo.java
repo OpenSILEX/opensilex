@@ -8,7 +8,11 @@
 package phis2ws.service.dao.mongo;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.BasicDBObjectBuilder;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
+import com.mongodb.client.model.Sorts;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -21,6 +25,7 @@ import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.DateFormat;
+import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.dao.manager.DAOMongo;
 import phis2ws.service.dao.sesame.SensorDAOSesame;
 import phis2ws.service.dao.sesame.VariableDaoSesame;
@@ -42,15 +47,109 @@ public class EnvironmentDAOMongo extends DAOMongo<EnvironmentMeasure> {
     private final static String DB_FIELD_VARIABLE = "variable";
     private final static String DB_FIELD_DATE = "date";
     private final static String DB_FIELD_VALUE = "value";
+    
+    // Variable URI when querying for environment measures (required)
+    // e.g. http://www.phenome-fppn.fr/diaphen/id/variable/ev000070
+    public String variableUri;
+    // End date filter when querying for environment measures (optional)
+    // e.g. 2017-06-07 13:14:32+0200
+    public String endDate;
+    // Start date filter when querying for environment measures (optional)
+    // e.g. 2017-06-07 13:14:32+0200
+    public String startDate;
+    // Sensor URI filter when querying for environment measures (optional)
+    // e.g. http://www.phenome-fppn.fr/mauguio/diaphen/2013/sb140227
+    public String sensorUri;
+
+    /**
+     * Get document count according to the prepareSearchQuery
+     * @return the document count
+     */
+    public int count() {
+        // Get the collection corresponding to variable uri
+        String variableCollection = this.getEnvironmentCollectionFromVariable(variableUri);
+        MongoCollection<Document> environmentMeasureVariableCollection = database.getCollection(variableCollection);
+
+        // Get the filter query
+        BasicDBObject query = prepareSearchQuery();
+        
+        // Return the document count
+        return (int)environmentMeasureVariableCollection.count(query);
+    }
 
     @Override
     protected BasicDBObject prepareSearchQuery() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        BasicDBObject query = new BasicDBObject();
+        
+        try {
+            SimpleDateFormat df = new SimpleDateFormat(DateFormats.YMDHMSZ_FORMAT);
+
+            // Define date filter depending if start date and/or end date are defined
+            if (startDate != null) {
+                Date start = df.parse(startDate);
+
+                if (endDate != null) {
+                    // In case of start date AND end date defined
+                    Date end = df.parse(endDate);
+                    query.append(DB_FIELD_DATE, BasicDBObjectBuilder.start("$gte", start).add("$lte", end).get());
+                } else {
+                    // In case of start date ONLY is defined
+                    query.append(DB_FIELD_DATE, BasicDBObjectBuilder.start("$gte", start).get());
+                }
+            } else if (endDate != null) {
+                // In case of end date ONLY is defined
+                Date end = df.parse(endDate);
+                query.append(DB_FIELD_DATE, BasicDBObjectBuilder.start("$lte", end).get());
+            }
+        } catch (ParseException ex) {
+            LOGGER.error("Invalid date format", ex);
+        }
+        
+        // Add filter if a sensor uri is defined
+        if (sensorUri != null) {
+            query.append(DB_FIELD_SENSOR, sensorUri);
+        }
+        
+        LOGGER.trace(getTraceabilityLogs() + " query : " + query.toString());
+        
+        return query;
     }
 
     @Override
     public ArrayList<EnvironmentMeasure> allPaginate() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        // Get the collection corresponding to variable uri
+        String variableCollection = this.getEnvironmentCollectionFromVariable(variableUri);
+        MongoCollection<Document> environmentMeasureVariableCollection = database.getCollection(variableCollection);
+
+        // Get the filter query
+        BasicDBObject query = prepareSearchQuery();
+        
+        // Get paginated documents
+        FindIterable<Document> measuresMongo = environmentMeasureVariableCollection
+                .find(query)
+                .sort(Sorts.ascending(DB_FIELD_DATE))
+                .skip(page * pageSize)
+                .limit(pageSize);
+
+        ArrayList<EnvironmentMeasure> measures = new ArrayList<>();
+        SimpleDateFormat df = new SimpleDateFormat(DateFormats.YMDHMSZ_FORMAT);
+        
+        // For each document, create a EnvironmentMeasure Instance
+        try (MongoCursor<Document> measuresCursor = measuresMongo.iterator()) {
+            while (measuresCursor.hasNext()) {
+                Document measureDocument = measuresCursor.next();
+                
+                // Create and define the EnvironmentMeasure
+                EnvironmentMeasure measure = new EnvironmentMeasure();
+                measure.setVariableUri(variableUri);
+                measure.setDate(df.format(measureDocument.getDate(DB_FIELD_DATE)));
+                measure.setValue(Float.parseFloat(measureDocument.get(DB_FIELD_VALUE).toString()));
+                measure.setSensorUri(measureDocument.getString(DB_FIELD_SENSOR));
+                measures.add(measure);
+            }
+        }
+        
+        return measures;
     }
     
     /**

@@ -7,6 +7,8 @@
 //******************************************************************************
 package phis2ws.service.view.model.phis;
 
+import java.util.Date;
+
 /**
  * This is the model for the environment measures
  * @author Morgane Vidal <morgane.vidal@inra.fr>
@@ -20,7 +22,7 @@ public class EnvironmentMeasure {
     protected String variableUri;
     //The date corresponding to the given value. The format should be yyyy-MM-ddTHH:mm:ssZ
     //e.g. 2018-06-25T15:13:59+0200
-    protected String date;
+    protected Date date;
     //The measured value.
     //e.g. 1.2
     protected float value;
@@ -41,11 +43,11 @@ public class EnvironmentMeasure {
         this.variableUri = variableUri;
     }
 
-    public String getDate() {
+    public Date getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public void setDate(Date date) {
         this.date = date;
     }
     

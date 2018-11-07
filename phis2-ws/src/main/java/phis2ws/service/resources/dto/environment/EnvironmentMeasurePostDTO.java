@@ -8,7 +8,10 @@
 package phis2ws.service.resources.dto.environment;
 
 import io.swagger.annotations.ApiModelProperty;
-import javax.validation.constraints.NotEmpty;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.validation.constraints.NotNull;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.documentation.DocumentationAnnotation;
@@ -41,8 +44,14 @@ public class EnvironmentMeasurePostDTO extends AbstractVerifiedClass {
         EnvironmentMeasure environment = new EnvironmentMeasure();
         environment.setSensorUri(sensorUri);
         environment.setVariableUri(variableUri);
-        environment.setDate(date);
         environment.setValue(value);
+        
+        try {
+            SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
+            environment.setDate(df.parse(date.trim()));
+        } catch (ParseException ex) {
+            Logger.getLogger(EnvironmentMeasurePostDTO.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
         return environment;
     }

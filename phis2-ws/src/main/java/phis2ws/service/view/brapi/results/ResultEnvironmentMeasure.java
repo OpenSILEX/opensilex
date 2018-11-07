@@ -13,27 +13,27 @@ import phis2ws.service.view.brapi.Pagination;
 import phis2ws.service.view.manager.Result;
 
 /**
- * A class which represents the result part in the response form, adapted to the sensors
+ * A class which represents the result part in the response form, adapted to the environment measures
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ResultEnvironmentMeasure extends Result<EnvironmentMeasureDTO> {
     /**
      * Constructor which calls the mother-class constructor in the case of a
      * list with only 1 element
-     * @param sensors 
+     * @param measures 
      */
-    public ResultEnvironmentMeasure(ArrayList<EnvironmentMeasureDTO> sensors) {
-        super(sensors);
+    public ResultEnvironmentMeasure(ArrayList<EnvironmentMeasureDTO> measures) {
+        super(measures);
     }
     
     /**
      * Contructor which calls the mother-class constructor in the case of a
      * list with several elements
-     * @param sensors
+     * @param measures
      * @param pagination
      * @param paginate 
      */
-    public ResultEnvironmentMeasure(ArrayList<EnvironmentMeasureDTO> sensors, Pagination pagination, boolean paginate) {
-        super(sensors, pagination, paginate);
+    public ResultEnvironmentMeasure(ArrayList<EnvironmentMeasureDTO> measures, Pagination pagination, boolean paginate) {
+        super(measures, pagination, paginate);
     }
 }

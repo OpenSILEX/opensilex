@@ -7,6 +7,8 @@
 //******************************************************************************
 package phis2ws.service.resources.dto.environment;
 
+import java.text.SimpleDateFormat;
+import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.view.model.phis.EnvironmentMeasure;
 
 /**
@@ -26,7 +28,11 @@ public class EnvironmentMeasureDTO {
     protected float value;
     
     public EnvironmentMeasureDTO(EnvironmentMeasure measure) {
-        setDate(measure.getDate());
+        if (measure.getDate() != null) {
+            SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
+            setDate(df.format(measure.getDate()));
+        }
+        
         setSensorUri(measure.getSensorUri());
         setValue(measure.getValue());
     }

@@ -209,9 +209,11 @@ public class EnvironmentResourceService {
         EnvironmentDAOMongo environmentDAO = new EnvironmentDAOMongo();
         
         environmentDAO.variableUri = variable;
+
         environmentDAO.startDate = startDate;
         environmentDAO.endDate = endDate;
         environmentDAO.sensorUri = sensor;
+        
         environmentDAO.user = userSession.getUser();
         environmentDAO.setPage(page);
         environmentDAO.setPageSize(pageSize);

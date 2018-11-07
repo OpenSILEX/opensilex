@@ -142,7 +142,7 @@ public class EnvironmentDAOMongo extends DAOMongo<EnvironmentMeasure> {
                 // Create and define the EnvironmentMeasure
                 EnvironmentMeasure measure = new EnvironmentMeasure();
                 measure.setVariableUri(variableUri);
-                measure.setDate(df.format(measureDocument.getDate(DB_FIELD_DATE)));
+                measure.setDate(measureDocument.getDate(DB_FIELD_DATE));
                 measure.setValue(Float.parseFloat(measureDocument.get(DB_FIELD_VALUE).toString()));
                 measure.setSensorUri(measureDocument.getString(DB_FIELD_SENSOR));
                 measures.add(measure);
@@ -207,16 +207,13 @@ public class EnvironmentDAOMongo extends DAOMongo<EnvironmentMeasure> {
      * @return the document to insert, representing the given environment measure
      * @throws ParseException 
      */
-    private Document prepareInsertEnvironmentDocument(EnvironmentMeasure environmentMeasure) throws ParseException {
+    private Document prepareInsertEnvironmentDocument(EnvironmentMeasure environmentMeasure) {
         Document environmentDocument = new Document();
-        
-        SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
-        Date measureDate = df.parse(environmentMeasure.getDate());
         
         environmentDocument.append(DB_FIELD_SENSOR, environmentMeasure.getSensorUri());
         environmentDocument.append(DB_FIELD_VARIABLE, environmentMeasure.getVariableUri());
         environmentDocument.append(DB_FIELD_VALUE, environmentMeasure.getValue());
-        environmentDocument.append(DB_FIELD_DATE, measureDate);
+        environmentDocument.append(DB_FIELD_DATE, environmentMeasure.getDate());
         
         LOGGER.debug(environmentDocument.toJson());
         
@@ -259,23 +256,17 @@ public class EnvironmentDAOMongo extends DAOMongo<EnvironmentMeasure> {
         
         //1. Prepare all the documents to insert (we will do one insert by variable)
         for (EnvironmentMeasure environmentMeasure : environmentMeasures) {
-            try {
-                Document createEnvironmentMeasure = prepareInsertEnvironmentDocument(environmentMeasure);
-                
-                List<Document> environmentsByVariable;
-                if (environmentsToInsertByVariable.containsKey(environmentMeasure.getVariableUri())) {
-                    environmentsByVariable = environmentsToInsertByVariable.get(environmentMeasure.getVariableUri());
-                } else {
-                    environmentsByVariable = new ArrayList<>();
-                }
-                
-                environmentsByVariable.add(createEnvironmentMeasure);
-                environmentsToInsertByVariable.put(environmentMeasure.getVariableUri(), environmentsByVariable);
-            } catch (ParseException ex) {
-                java.util.logging.Logger.getLogger(EnvironmentDAOMongo.class.getName()).log(Level.SEVERE, null, ex);
-                status.add(new Status(StatusCodeMsg.ERR, StatusCodeMsg.ERR, ex.toString()));
-                insert = false;
+            Document createEnvironmentMeasure = prepareInsertEnvironmentDocument(environmentMeasure);
+
+            List<Document> environmentsByVariable;
+            if (environmentsToInsertByVariable.containsKey(environmentMeasure.getVariableUri())) {
+                environmentsByVariable = environmentsToInsertByVariable.get(environmentMeasure.getVariableUri());
+            } else {
+                environmentsByVariable = new ArrayList<>();
             }
+
+            environmentsByVariable.add(createEnvironmentMeasure);
+            environmentsToInsertByVariable.put(environmentMeasure.getVariableUri(), environmentsByVariable);
         }
 
         //2. Insert all the environment measures

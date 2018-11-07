@@ -48,7 +48,7 @@ public class EnvironmentMeasurePostDTO extends AbstractVerifiedClass {
         
         try {
             SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
-            environment.setDate(df.parse(date.trim()));
+            environment.setDate(df.parse(date));
         } catch (ParseException ex) {
             Logger.getLogger(EnvironmentMeasurePostDTO.class.getName()).log(Level.SEVERE, null, ex);
         }

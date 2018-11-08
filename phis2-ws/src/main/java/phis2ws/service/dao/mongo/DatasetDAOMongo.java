@@ -19,6 +19,7 @@ import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
+import com.mongodb.client.model.Sorts;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -203,7 +204,9 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
         BasicDBObject query = prepareSearchQuery();
         
         LOGGER.trace(getTraceabilityLogs() + " query : " + query.toString());
-        FindIterable<Document> datasetMongo = dataCollection.find(query);
+        FindIterable<Document> datasetMongo = dataCollection
+                .find(query)
+                .sort(Sorts.ascending(DB_FIELD_DATE));
 
         ArrayList<Dataset> phenotypes = new ArrayList<>();
         Dataset phenotype = new Dataset();

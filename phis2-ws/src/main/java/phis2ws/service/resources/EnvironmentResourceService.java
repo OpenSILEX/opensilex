@@ -147,6 +147,7 @@ public class EnvironmentResourceService {
      * @param startDate
      * @param endDate
      * @param sensor
+     * @param dateSortAsc
      * @return list of the environment measures corresponding to the search params given
      * e.g
      * {
@@ -203,7 +204,8 @@ public class EnvironmentResourceService {
         @ApiParam(value = "Search by variable uri", example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI) @QueryParam("variable") @URL @Required String variable,
         @ApiParam(value = "Search by minimal date", example = DocumentationAnnotation.EXAMPLE_DATETIME) @QueryParam("startDate") @Date(DateFormat.YMDTHMSZ) String startDate,
         @ApiParam(value = "Search by maximal date", example = DocumentationAnnotation.EXAMPLE_DATETIME) @QueryParam("endDate") @Date(DateFormat.YMDTHMSZ) String endDate,
-        @ApiParam(value = "Search by sensor uri", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("sensor")  @URL String sensor
+        @ApiParam(value = "Search by sensor uri", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("sensor")  @URL String sensor,
+        @ApiParam(value = "Date search result order ('true' for ascending and 'false' for descending)", example = "true") @QueryParam("dateSortAsc") boolean dateSortAsc
     ) {
         // 1. Initialize environmentDAO with parameters
         EnvironmentDAOMongo environmentDAO = new EnvironmentDAOMongo();
@@ -213,6 +215,7 @@ public class EnvironmentResourceService {
         environmentDAO.startDate = startDate;
         environmentDAO.endDate = endDate;
         environmentDAO.sensorUri = sensor;
+        environmentDAO.dateSortAsc = dateSortAsc;
         
         environmentDAO.user = userSession.getUser();
         environmentDAO.setPage(page);

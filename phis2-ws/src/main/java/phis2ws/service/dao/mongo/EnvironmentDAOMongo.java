@@ -59,7 +59,9 @@ public class EnvironmentDAOMongo extends DAOMongo<EnvironmentMeasure> {
     // Sensor URI filter when querying for environment measures (optional)
     // e.g. http://www.phenome-fppn.fr/mauguio/diaphen/2013/sb140227
     public String sensorUri;
-
+    // Determine the sort order by date of the results (optional, true by default)
+    public boolean dateSortAsc = true;
+    
     /**
      * Get document count according to the prepareSearchQuery
      * @return the document count
@@ -124,11 +126,15 @@ public class EnvironmentDAOMongo extends DAOMongo<EnvironmentMeasure> {
         BasicDBObject query = prepareSearchQuery();
         
         // Get paginated documents
-        FindIterable<Document> measuresMongo = environmentMeasureVariableCollection
-                .find(query)
-                .sort(Sorts.ascending(DB_FIELD_DATE))
-                .skip(page * pageSize)
-                .limit(pageSize);
+        FindIterable<Document> measuresMongo = environmentMeasureVariableCollection.find(query);
+        
+        if (dateSortAsc) {
+            measuresMongo = measuresMongo.sort(Sorts.ascending(DB_FIELD_DATE));
+        } else {
+            measuresMongo = measuresMongo.sort(Sorts.descending(DB_FIELD_DATE));
+        }
+        
+        measuresMongo = measuresMongo.skip(page * pageSize).limit(pageSize);
 
         ArrayList<EnvironmentMeasure> measures = new ArrayList<>();
         SimpleDateFormat df = new SimpleDateFormat(DateFormats.YMDHMSZ_FORMAT);

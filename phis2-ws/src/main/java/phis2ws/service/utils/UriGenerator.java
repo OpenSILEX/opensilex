@@ -8,6 +8,7 @@ package phis2ws.service.utils;
 
 import java.util.Calendar;
 import java.util.UUID;
+import javax.ws.rs.core.Context;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 import phis2ws.service.PropertiesFileManager;
@@ -22,6 +23,7 @@ import phis2ws.service.dao.sesame.TraitDaoSesame;
 import phis2ws.service.dao.sesame.UnitDaoSesame;
 import phis2ws.service.dao.sesame.VariableDaoSesame;
 import phis2ws.service.dao.sesame.VectorDAOSesame;
+import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Foaf;
 import phis2ws.service.ontologies.Vocabulary;
 
@@ -56,7 +58,7 @@ public class UriGenerator {
     private static final String URI_CODE_VARIABLE = "v";
     private static final String URI_CODE_VECTOR = "v";
 
-    private static final String PLATFORM_URI = PropertiesFileManager.getConfigFileProperty(PROPERTIES_SERVICE_FILE_NAME, PROPERTIES_SERVICE_BASE_URI);
+    private static final String PLATFORM_URI = Contexts.PLATFORM.toString();
     private static final String PLATFORM_URI_ID = PLATFORM_URI + "id/";
     private static final String PLATFORM_URI_ID_AGENT = PLATFORM_URI_ID + "agent/";
     private static final String PLATFORM_URI_ID_ANNOTATION = PLATFORM_URI_ID + "annotation/";

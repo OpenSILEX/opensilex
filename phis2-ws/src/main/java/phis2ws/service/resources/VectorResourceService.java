@@ -92,22 +92,22 @@ public class VectorResourceService {
         ArrayList<Status> statusList = new ArrayList<>();
         ResponseFormVector getResponse;
         
+        //1. Get number of vectors corresponding to the search params
+        Integer totalCount = vectorDAOSesame.count();
+        //2. Get vectors to return
         vectors = vectorDAOSesame.allPaginate();
         
-        if (vectors == null) {
-            getResponse = new ResponseFormVector(0, 0, vectors, true);
+        //3. Return the result
+        if (vectors == null) { //Request error
+            getResponse = new ResponseFormVector(0, 0, vectors, true, 0);
             return noResultFound(getResponse, statusList);
-        } else if (vectors.isEmpty()) {
-            getResponse = new ResponseFormVector(0, 0, vectors, true);
+        } else if (vectors.isEmpty()) { //No result
+            getResponse = new ResponseFormVector(0, 0, vectors, true, 0);
             return noResultFound(getResponse, statusList);
-        } else {
-            getResponse = new ResponseFormVector(vectorDAOSesame.getPageSize(), vectorDAOSesame.getPage(), vectors, false);
-            if (getResponse.getResult().dataSize() == 0) {
-                return noResultFound(getResponse, statusList);
-            } else {
-                getResponse.setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(getResponse).build();
-            }
+        } else { //Results founded. Return the results
+            getResponse = new ResponseFormVector(vectorDAOSesame.getPageSize(), vectorDAOSesame.getPage(), vectors, true, totalCount);
+            getResponse.setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
         }
     }  
     

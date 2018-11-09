@@ -183,28 +183,29 @@ public class VariableResourceService {
         ArrayList<Status> statusList = new ArrayList<>();
         ResponseFormVariable getResponse;
         
+        // 1. Get number of variables corresponding to the search params
+        Integer totalCount = variableDaoSesame.count();
+        
+        //2. Get the variables to return
         variables = variableDaoSesame.allPaginate();
         
-        if (variables == null) {
-            getResponse = new ResponseFormVariable(0, 0, variables, true);
+        //3. Return the result
+        if (variables == null) { //Request error
+            getResponse = new ResponseFormVariable(0, 0, variables, true, 0);
             return noResultFound(getResponse, statusList);
-        } else if (!variables.isEmpty()) {
-            getResponse = new ResponseFormVariable(variableDaoSesame.getPageSize(), variableDaoSesame.getPage(), variables, false);
-            if (getResponse.getResult().dataSize() == 0) {
-                return noResultFound(getResponse, statusList);
-            } else {
-                getResponse.setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(getResponse).build();
-            }
-        } else {
-            getResponse = new ResponseFormVariable(0, 0, variables, true);
+        } else if (variables.isEmpty()) { //No result
+            getResponse = new ResponseFormVariable(0, 0, variables, true, 0);
             return noResultFound(getResponse, statusList);
+        } else { //Results founded. Return the results
+            getResponse = new ResponseFormVariable(variableDaoSesame.getPageSize(), variableDaoSesame.getPage(), variables, true, totalCount);
+            getResponse.setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
         }
     }
     
     /**
      *
-     * @param limit
+     * @param pageSize
      * @param page
      * @param uri
      * @param label
@@ -230,7 +231,7 @@ public class VariableResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getVariablesBySearch(
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
         @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI) @QueryParam("uri") @URL String uri,
         @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_VARIABLE_LABEL) @QueryParam("label") String label,
@@ -258,7 +259,7 @@ public class VariableResourceService {
         
         variableDaoSesame.user = userSession.getUser();
         variableDaoSesame.setPage(page);
-        variableDaoSesame.setPageSize(limit);
+        variableDaoSesame.setPageSize(pageSize);
         
         return getVariablesData(variableDaoSesame);
     }

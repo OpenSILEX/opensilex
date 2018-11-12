@@ -8,6 +8,7 @@
 package phis2ws.service.resources.dto.environment;
 
 import io.swagger.annotations.ApiModelProperty;
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.logging.Level;
@@ -37,7 +38,7 @@ public class EnvironmentMeasurePostDTO extends AbstractVerifiedClass {
     protected String date;
     //The measured value.
     //e.g. 1.2
-    protected float value;
+    protected BigDecimal value;
     
     @Override
     public EnvironmentMeasure createObjectFromDTO() {
@@ -91,11 +92,11 @@ public class EnvironmentMeasurePostDTO extends AbstractVerifiedClass {
 
     @NotNull
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_ENVIRONMENT_VALUE)
-    public float getValue() {
+    public BigDecimal getValue() {
         return value;
     }
 
-    public void setValue(float value) {
+    public void setValue(BigDecimal value) {
         this.value = value;
     }
 }

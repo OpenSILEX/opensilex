@@ -7,6 +7,7 @@
 //******************************************************************************
 package phis2ws.service.resources.dto.environment;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.view.model.phis.EnvironmentMeasure;
@@ -25,7 +26,7 @@ public class EnvironmentMeasureDTO {
     protected String date;
     //The measured value.
     //e.g. 1.2
-    protected float value;
+    protected BigDecimal value;
     
     public EnvironmentMeasureDTO(EnvironmentMeasure measure) {
         if (measure.getDate() != null) {
@@ -53,11 +54,11 @@ public class EnvironmentMeasureDTO {
         this.date = date;
     }
 
-    public float getValue() {
+    public BigDecimal getValue() {
         return value;
     }
 
-    public void setValue(float value) {
+    public void setValue(BigDecimal value) {
         this.value = value;
     }
   

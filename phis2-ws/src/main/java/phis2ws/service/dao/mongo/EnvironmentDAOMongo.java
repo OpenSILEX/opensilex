@@ -13,6 +13,7 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Sorts;
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -111,6 +112,8 @@ public class EnvironmentDAOMongo extends DAOMongo<EnvironmentMeasure> {
             query.append(DB_FIELD_SENSOR, sensorUri);
         }
         
+        query.append(DB_FIELD_VARIABLE, variableUri);
+        
         LOGGER.trace(getTraceabilityLogs() + " query : " + query.toString());
         
         return query;
@@ -148,7 +151,7 @@ public class EnvironmentDAOMongo extends DAOMongo<EnvironmentMeasure> {
                 EnvironmentMeasure measure = new EnvironmentMeasure();
                 measure.setVariableUri(variableUri);
                 measure.setDate(measureDocument.getDate(DB_FIELD_DATE));
-                measure.setValue(Float.parseFloat(measureDocument.get(DB_FIELD_VALUE).toString()));
+                measure.setValue(new BigDecimal(measureDocument.get(DB_FIELD_VALUE).toString()));
                 measure.setSensorUri(measureDocument.getString(DB_FIELD_SENSOR));
                 measures.add(measure);
             }

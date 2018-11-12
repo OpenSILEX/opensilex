@@ -7,6 +7,7 @@
 //******************************************************************************
 package phis2ws.service.view.model.phis;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -25,7 +26,7 @@ public class EnvironmentMeasure {
     protected Date date;
     //The measured value.
     //e.g. 1.2
-    protected float value;
+    protected BigDecimal value;
 
     public String getSensorUri() {
         return sensorUri;
@@ -51,11 +52,11 @@ public class EnvironmentMeasure {
         this.date = date;
     }
     
-    public float getValue() {
+    public BigDecimal getValue() {
         return value;
     }
 
-    public void setValue(float value) {
+    public void setValue(BigDecimal value) {
         this.value = value;
     }
 }

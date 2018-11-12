@@ -136,6 +136,12 @@ public enum Vocabulary {
             return NAMESPACE.toString() + "Vector";
         }
     },
+    CONCEPT_EVENT {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "Event";
+        }
+    },
     
     PLATFORM_URI {
         @Override

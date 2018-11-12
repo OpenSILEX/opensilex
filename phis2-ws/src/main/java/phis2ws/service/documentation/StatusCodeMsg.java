@@ -31,6 +31,7 @@ public final class StatusCodeMsg {
     public static final String COMMIT_TRIPLESTORE_ERROR = "Error during commit or rolleback Triplestore statements.";
     public static final String DATA_ERROR = "Data error";
     public static final String DATA_INSERTED = "Data inserted";
+    public static final String DATA_REJECTED = "Data rejected";
     public static final String ERR = "Error";
     public static final String EXPECTED_DATE_FORMAT_YMD = "Expected date format : YYYY-MM-DD";
     public static final String FILE_ERROR = "File error";
@@ -53,4 +54,5 @@ public final class StatusCodeMsg {
     public static final String UNKNOWN_URI = "Unknown uri";
     public static final String WRONG_VALUE = "Wrong value";
     public static final String INVALID_INPUT_PARAMETERS = "Wrong format parameter(s)";
+    public static final String DUPLICATED_DATA_IN_COLLECTION = "Value duplicated in mongo collection";
 }

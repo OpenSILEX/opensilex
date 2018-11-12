@@ -9,9 +9,12 @@ package phis2ws.service.dao.mongo;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
+import com.mongodb.MongoException;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
+import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.Indexes;
 import com.mongodb.client.model.Sorts;
 import java.math.BigDecimal;
 import java.text.ParseException;
@@ -22,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import javax.ws.rs.core.Response;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.DateFormat;
@@ -277,18 +281,43 @@ public class EnvironmentDAOMongo extends DAOMongo<EnvironmentMeasure> {
             environmentsToInsertByVariable.put(environmentMeasure.getVariableUri(), environmentsByVariable);
         }
 
-        //2. Insert all the environment measures
+        //2. Create unique index on sensor/variable/date for each variable collection
+        //   Mongo won't create index if it already exists
+        Bson indexFields = Indexes.ascending(
+            DB_FIELD_DATE,
+            DB_FIELD_SENSOR,
+            DB_FIELD_VARIABLE
+        );
+        IndexOptions indexOptions = new IndexOptions().unique(true);
+        environmentsToInsertByVariable.keySet().forEach((variableUri) -> {
+            database.getCollection(getEnvironmentCollectionFromVariable(variableUri))
+                    .createIndex(indexFields, indexOptions);
+        });
+        
+        
+        //3. Insert all the environment measures
         if (insert) {
             environmentsToInsertByVariable.entrySet().forEach((environmentToInsert) -> {
                 MongoCollection<Document> environmentMeasureVariableCollection = database.getCollection(getEnvironmentCollectionFromVariable(environmentToInsert.getKey()));
-                environmentMeasureVariableCollection.insertMany(environmentToInsert.getValue());
-
-                status.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, StatusCodeMsg.DATA_INSERTED + " for the variable " + environmentToInsert.getKey()));
-                createdResources.add(environmentToInsert.getKey());
+                try {
+                    environmentMeasureVariableCollection.insertMany(environmentToInsert.getValue());
+                    status.add(new Status(
+                        StatusCodeMsg.RESOURCES_CREATED, 
+                        StatusCodeMsg.INFO, 
+                        StatusCodeMsg.DATA_INSERTED + " for the variable " + environmentToInsert.getKey()
+                    ));
+                    createdResources.add(environmentToInsert.getKey());
+                } catch (MongoException ex) {
+                    status.add(new Status(
+                        StatusCodeMsg.DUPLICATED_DATA_IN_COLLECTION, 
+                        StatusCodeMsg.ERR, 
+                        StatusCodeMsg.DATA_REJECTED + " for the measure variable: " + environmentToInsert.getKey()
+                    ));
+                }
             });
         }
         
-        //3. Prepare result to return
+        //4. Prepare result to return
         result = new POSTResultsReturn(insert);
         result.statusList = status;
         if (insert) {

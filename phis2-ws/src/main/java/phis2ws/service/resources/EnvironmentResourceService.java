@@ -97,7 +97,11 @@ public class EnvironmentResourceService {
      */
     @POST
     @ApiOperation(value = "Post environment(s) measures",
-                  notes = "Register environment(s) measures in the database")
+                  notes = "Register environment(s) measures in the database"
+                            + "<br/> The 'value' parameter could be a string representing any java BigDecimal"
+                            + "<br/> By example it could be: -2, 3.14, 1.23E+3, -1.23e-12, etc..."
+                            + "<br/> @see https://docs.oracle.com/javase/7/docs/api/java/math/BigDecimal.html#BigDecimal(java.lang.String)"
+                          )
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "environment(s) saved", response = ResponseFormPOST.class),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),

@@ -83,6 +83,19 @@ public class EnvironmentDAOMongo extends DAOMongo<EnvironmentMeasure> {
         return (int)environmentMeasureVariableCollection.count(query);
     }
 
+    /**
+     * Prepare and return the environment search query with the given parameters
+     * @return The environment measure search query
+     * @example
+     *  {
+     *      "date": {
+     *          $gte: ISODate("2010-06-15T10:51:00+0200"),
+     *          $lt: ISODate("2018-06-15T10:51:00+0200")
+     *      },
+     *      "variable": "http://www.phenome-fppn.fr/diaphen/id/variable/v0000001",
+     *      "sensor": "http://www.phenome-fppn.fr/diaphen/2018/s18001"
+     *  }
+     */
     @Override
     protected BasicDBObject prepareSearchQuery() {
         BasicDBObject query = new BasicDBObject();
@@ -118,11 +131,21 @@ public class EnvironmentDAOMongo extends DAOMongo<EnvironmentMeasure> {
         
         query.append(DB_FIELD_VARIABLE, variableUri);
         
-        LOGGER.trace(getTraceabilityLogs() + " query : " + query.toString());
+        LOGGER.debug(getTraceabilityLogs() + " query : " + query.toString());
         
         return query;
     }
 
+    /**
+     * Return the paginated list of environment measures corresponding to given parameters
+     * which are (see corresponding variable members on this class) :
+     * - variableUri
+     * - endDate
+     * - startDate
+     * - sensorUri
+     * - dateSortAsc
+     * @return List of measures
+     */
     @Override
     public ArrayList<EnvironmentMeasure> allPaginate() {
         // Get the collection corresponding to variable uri

@@ -153,7 +153,7 @@ public class EnvironmentResourceService {
      * @param sensor
      * @param dateSortAsc
      * @return list of the environment measures corresponding to the search params given
-     * e.g
+     * @example
      * {
      *      "metadata": {
      *          "pagination": {

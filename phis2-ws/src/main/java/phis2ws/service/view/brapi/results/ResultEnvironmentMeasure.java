@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                       ResultSensor.java
+//                          ResultEnvironmentMeasure.java
 // SILEX-PHIS
 // Copyright © INRA 2017
 // Creation date: 14 mars 2018

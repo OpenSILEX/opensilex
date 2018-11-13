@@ -18,7 +18,7 @@ package phis2ws.service.view.model.phis;
  */
 public abstract class Displacement extends Event{
 
-    public Displacement(String uri, String date) {
-        super(uri, date);
+    public Displacement(String uri, String date, String label) {
+        super(uri, date, label);
     }
 }

@@ -7,34 +7,34 @@
 //******************************************************************************
 package phis2ws.service.view.model.phis;
 
+import org.joda.time.DateTime;
+import phis2ws.service.resources.validation.interfaces.Date;
+
 /**
  * This is the model for the events
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
-public abstract class Event {
-
-    protected String uri;
+public class Event extends RdfResourceDefinition {
+    /*
+    TODO:has to be set abstract when subclasses like Displacement are 
+    implemented
+    */
     
-    protected String date;
+    protected DateTime dateTime;
 
-    public Event(String uri, String date) {
+    public Event(String uri, String label, DateTime dateTime) {
         this.uri = uri;
-        this.date = date;
+        this.label = label;
+        this.dateTime = dateTime;
     }
 
-    public String getEventUri() {
-        return uri;
+    public DateTime getDateTime() {
+        return dateTime;
     }
 
-    public void setEventUri(String uri) {
-        this.uri = uri;
+    public void setDateTime(DateTime dateTime) {
+        this.dateTime = dateTime;
     }
-
-    public String getDate() {
-        return date;
-    }
-
-    public void setDate(String date) {
-        this.date = date;
-    }
+    
+    
 }

@@ -62,7 +62,10 @@ public abstract class DAOSesame<T> {
     
     protected static final String COUNT_ELEMENT_QUERY = "count";
     
-    //The following constants are the constants used for each subclass to query the triplestore.
+    /*
+    The following constants are the ones used for each subclass to query 
+    the triplestore.
+    */
     protected static final String URI = "uri";
     protected static final String RDF_TYPE = "rdfType";
     protected static final String LABEL = "label";

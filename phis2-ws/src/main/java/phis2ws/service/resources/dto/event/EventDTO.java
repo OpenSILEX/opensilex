@@ -9,7 +9,6 @@ package phis2ws.service.resources.dto.event;
 
 import phis2ws.service.resources.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
 import phis2ws.service.view.model.phis.Event;
-import phis2ws.service.view.model.phis.RadiometricTarget;
 
 /**
  * DTO for an event
@@ -31,7 +30,7 @@ public class EventDTO extends RdfResourceDefinitionDTO {
      * @return the model RadiometricTarget
      */
     public Event createEventFromDTO() {
-        Event event = new Event(getLabel(), getUri(), "");
+        Event event = new Event(getLabel(), getUri(), null);
         
         getProperties().forEach((property) -> {
             event.addProperty(property.createObjectFromDTO());

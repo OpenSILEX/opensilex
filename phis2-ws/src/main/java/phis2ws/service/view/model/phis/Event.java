@@ -8,7 +8,6 @@
 package phis2ws.service.view.model.phis;
 
 import org.joda.time.DateTime;
-import phis2ws.service.resources.validation.interfaces.Date;
 
 /**
  * This is the model for the events

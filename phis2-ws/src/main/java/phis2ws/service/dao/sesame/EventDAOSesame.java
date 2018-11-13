@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                       RadiometricTargetDAOSesame.java
+//                          EventDAOSesame.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 12  nov. 2018

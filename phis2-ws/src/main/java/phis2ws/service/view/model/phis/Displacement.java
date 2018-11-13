@@ -7,6 +7,8 @@
 //******************************************************************************
 package phis2ws.service.view.model.phis;
 
+import org.joda.time.DateTime;
+
 /**
  * This is the model for the displacements in time and space 
  * of the different objects participating in experiments. 
@@ -18,7 +20,7 @@ package phis2ws.service.view.model.phis;
  */
 public abstract class Displacement extends Event{
 
-    public Displacement(String uri, String date, String label) {
-        super(uri, date, label);
+    public Displacement(String uri, String label, DateTime dateTime) {
+        super(uri, label, dateTime);
     }
 }

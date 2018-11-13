@@ -1,9 +1,9 @@
 //******************************************************************************
-//                                       RadiometricTargetResourceService.java
+//                         EventResourceService.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 26 sept. 2018
-// Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Creation date: 13 nov. 2018
+// Contact: andreas.garcia@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package phis2ws.service.resources;
 
@@ -37,16 +37,18 @@ import phis2ws.service.resources.dto.event.EventDTO;
 import phis2ws.service.resources.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
+import phis2ws.service.view.brapi.form.ResponseFormEvent;
 import phis2ws.service.view.brapi.form.ResponseFormRdfResourceDefinition;
+import phis2ws.service.view.brapi.form.ResponseFormSensor;
 import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Event;
 
 /**
- * Radiometric target service.
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * Event resource service.
+ * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
-@Api("/radiometricTargets")
-@Path("/radiometricTargets")
+@Api("/events")
+@Path("/events")
 public class EventResourceService {
     final static Logger LOGGER = 
             LoggerFactory.getLogger(EventResourceService.class);
@@ -58,13 +60,13 @@ public class EventResourceService {
     /**
      * Generates an Event list from a given list of EventDTO
      * @param event
-     * @return the list of radiometric targets
+     * @return the list of events
      */
     private List<Event> eventDTOsToEvents(List<EventDTO> eventDTOs) {
         ArrayList<Event> events = new ArrayList<>();
         
         eventDTOs.forEach(eventDTO -> {
-            events.add(eventDTO.createEventFromDTO());
+            events.add(eventDTO.createObjectFromDTO());
         });
         
         return events;
@@ -104,10 +106,11 @@ public class EventResourceService {
                     + "given",
                   notes = 
             "Retrieve all events authorized for the user corresponding to the "
-                    + "searched parameters given")
+                    + "search parameters given")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve all events"
-                , response = RdfResourceDefinitionDTO.class
+        @ApiResponse(code = 200
+                , message = "Retrieve all events"
+                , response = Event.class
                 , responseContainer = "List"),
         @ApiResponse(code = 400
                 , message = DocumentationAnnotation.BAD_USER_INFORMATION),
@@ -127,10 +130,22 @@ public class EventResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getEventsBySearch(
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
-        @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_URI) @QueryParam("uri") @URL String uri,
-        @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_LABEL) @QueryParam("label") String label
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) 
+        @QueryParam(GlobalWebserviceValues.PAGE_SIZE) 
+        @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) 
+        @Min(0) int pageSize
+        , @ApiParam(value = DocumentationAnnotation.PAGE) 
+        @QueryParam(GlobalWebserviceValues.PAGE) 
+        @DefaultValue(DefaultBrapiPaginationValues.PAGE) 
+        @Min(0) int page
+        , @ApiParam(value = "Search by uri"
+        , example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_URI) 
+        @QueryParam("uri") 
+        @URL String uri
+        , @ApiParam(
+                value = "Search by label", 
+                example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_LABEL) 
+        @QueryParam("label") String label
     ) {
 
         EventDAOSesame eventDAO = new EventDAOSesame();
@@ -145,30 +160,25 @@ public class EventResourceService {
         
         ArrayList<Event> events = eventDAO.allPaginate();
         
-        ArrayList<RdfResourceDefinitionDTO> list = new ArrayList<>();
+        ArrayList<Event> list = new ArrayList<>();
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormRdfResourceDefinition getResponse;
+        ResponseFormEvent getResponse;
         
         if (events == null) { // Request failure
-            getResponse = new ResponseFormRdfResourceDefinition(0, 0, list, true, 0);
+            getResponse = new ResponseFormEvent(0, 0, events, true, 0);
             return noResultFound(getResponse, statusList);
         } else if (events.isEmpty()) { // No results
-            getResponse = new ResponseFormRdfResourceDefinition(0, 0, list, true, 0);
+            getResponse = new ResponseFormEvent(0, 0, events, true, 0);
             return noResultFound(getResponse, statusList);
         } else { // Results
-            events.forEach((event) -> {
-                list.add(new EventDTO(event));
-            });
-            
-            getResponse = new ResponseFormRdfResourceDefinition(
-                    eventDAO.getPageSize()
-                    , eventDAO.getPage()
-                    , list
-                    , true
-                    , totalCount);
-            getResponse.setStatus(statusList);
-            return Response
-                    .status(Response.Status.OK).entity(getResponse).build();
+            getResponse = new ResponseFormEvent(eventDAO.getPageSize()
+                    , eventDAO.getPage(), events, true, totalCount);
+            if (getResponse.getResult().dataSize() == 0) {
+                return noResultFound(getResponse, statusList);
+            } else {
+                getResponse.setStatus(statusList);
+                return Response.status(Response.Status.OK).entity(getResponse).build();
+            }
         }
     }
         

@@ -7,35 +7,37 @@
 //******************************************************************************
 package phis2ws.service.resources.dto.event;
 
-import phis2ws.service.resources.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
+import org.joda.time.DateTime;
+import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.view.model.phis.Event;
 
 /**
- * DTO for an event
+ * DTO representing an event
  * 
  * @author Andréas Garcia<andreas.garcia@inra.fr>
  */
-public class EventDTO extends RdfResourceDefinitionDTO {
+public class EventDTO extends AbstractVerifiedClass {
+    
+    protected String uri;
+    protected String label;
+    protected DateTime dateTime;
     
     /**
      * Constructor to create DTO from an Event model
      * @param event 
      */
     public EventDTO(Event event) {
-        super(event);
+        this.uri = event.getUri();
+        this.label = event.getLabel();
+        this.dateTime = event.getDateTime();
     }
-    
+
     /**
-     * Generates a RadiometricTarget model with the information of this
-     * @return the model RadiometricTarget
+     * Generates an event model from de DTO
+     * @return the Event model
      */
-    public Event createEventFromDTO() {
-        Event event = new Event(getLabel(), getUri(), null);
-        
-        getProperties().forEach((property) -> {
-            event.addProperty(property.createObjectFromDTO());
-        });
-        
-        return event;
+    @Override
+    public Event createObjectFromDTO() {
+        return new Event(this.uri, this.label, this.dateTime);
     }
 }

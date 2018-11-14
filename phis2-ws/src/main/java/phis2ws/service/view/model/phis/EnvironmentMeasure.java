@@ -26,6 +26,10 @@ public class EnvironmentMeasure {
     protected Date date;
     //The measured value.
     //e.g. 1.2
+    //SILEX:info
+    //We use BigDecimal here because this value represent scientific data, so we need to keep the exact precision
+    //float or double type are subject to rounded errors: @see https://floating-point-gui.de/basic/
+    //\SILEX:info
     protected BigDecimal value;
 
     public String getSensorUri() {

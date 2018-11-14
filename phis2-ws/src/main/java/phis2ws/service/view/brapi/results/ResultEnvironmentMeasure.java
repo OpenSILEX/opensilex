@@ -1,9 +1,9 @@
 //******************************************************************************
 //                          ResultEnvironmentMeasure.java
 // SILEX-PHIS
-// Copyright © INRA 2017
-// Creation date: 14 mars 2018
-// Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Copyright © INRA 2018
+// Creation date: 7 nov. 2018
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package phis2ws.service.view.brapi.results;
 
@@ -14,7 +14,7 @@ import phis2ws.service.view.manager.Result;
 
 /**
  * A class which represents the result part in the response form, adapted to the environment measures
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Vincent Migot <vincent.migot@inra.fr>
  */
 public class ResultEnvironmentMeasure extends Result<EnvironmentMeasureDTO> {
     /**

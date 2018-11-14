@@ -160,18 +160,24 @@ public class EnvironmentDAOMongo extends DAOMongo<EnvironmentMeasure> {
         // Get paginated documents
         FindIterable<Document> measuresMongo = environmentMeasureVariableCollection.find(query);
         
+        //SILEX:info
+        //Measures are always sort by date, either ascending or descending depending on dateSortAsc parameter
+        //If dateSortAsc=true, sort by date ascending
+        //If dateSortAsc=false, sort by date descending
+        //\SILEX:info
         if (dateSortAsc) {
             measuresMongo = measuresMongo.sort(Sorts.ascending(DB_FIELD_DATE));
         } else {
             measuresMongo = measuresMongo.sort(Sorts.descending(DB_FIELD_DATE));
         }
         
+        // Define pagination for the request
         measuresMongo = measuresMongo.skip(page * pageSize).limit(pageSize);
 
         ArrayList<EnvironmentMeasure> measures = new ArrayList<>();
         SimpleDateFormat df = new SimpleDateFormat(DateFormats.YMDHMSZ_FORMAT);
         
-        // For each document, create a EnvironmentMeasure Instance
+        // For each document, create a EnvironmentMeasure Instance and add it to the result list
         try (MongoCursor<Document> measuresCursor = measuresMongo.iterator()) {
             while (measuresCursor.hasNext()) {
                 Document measureDocument = measuresCursor.next();
@@ -182,6 +188,8 @@ public class EnvironmentDAOMongo extends DAOMongo<EnvironmentMeasure> {
                 measure.setDate(measureDocument.getDate(DB_FIELD_DATE));
                 measure.setValue(new BigDecimal(measureDocument.get(DB_FIELD_VALUE).toString()));
                 measure.setSensorUri(measureDocument.getString(DB_FIELD_SENSOR));
+                
+                // Add the measure to the list
                 measures.add(measure);
             }
         }

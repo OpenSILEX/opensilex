@@ -25,6 +25,7 @@ public final class StatusCodeMsg {
     public static final String ACCESS_DENIED = "Access denied";
     public static final String ACCESS_ERROR = "Access error";
     public static final String ADMINISTRATOR_ONLY = "Request only for administrators";
+    public static final String UNEXPECTED_ERROR = "Unexpected error";
     public static final String ALREADY_EXISTING_DATA = "Already existing data";
     public static final String BAD_CARDINALITY = "Bad cardinality";
     public static final String BAD_DATA_FORMAT = "Bad data format";
@@ -54,5 +55,4 @@ public final class StatusCodeMsg {
     public static final String UNKNOWN_URI = "Unknown uri";
     public static final String WRONG_VALUE = "Wrong value";
     public static final String INVALID_INPUT_PARAMETERS = "Wrong format parameter(s)";
-    public static final String DUPLICATED_DATA_IN_COLLECTION = "Value duplicated in mongo collection";
 }

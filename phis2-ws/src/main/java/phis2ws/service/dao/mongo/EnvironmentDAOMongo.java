@@ -9,7 +9,9 @@ package phis2ws.service.dao.mongo;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
+import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoException;
+import com.mongodb.bulk.BulkWriteError;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
@@ -331,11 +333,30 @@ public class EnvironmentDAOMongo extends DAOMongo<EnvironmentMeasure> {
                     ));
                     createdResources.add(environmentToInsert.getKey());
                 } catch (MongoException ex) {
-                    status.add(new Status(
-                        StatusCodeMsg.DUPLICATED_DATA_IN_COLLECTION, 
-                        StatusCodeMsg.ERR, 
-                        StatusCodeMsg.DATA_REJECTED + " for the measure variable: " + environmentToInsert.getKey()
-                    ));
+                    // Error check if it's because of a duplicated data error
+                    boolean isDulipcationError = false;
+                    if (ex instanceof MongoBulkWriteException) {
+                        List<BulkWriteError> writeErrors = ((MongoBulkWriteException) ex).getWriteErrors();
+                        if (writeErrors.size() > 0) {
+                            isDulipcationError = (writeErrors.get(0).getCode() != DAOMongo.DUPLICATE_KEY_ERROR_CODE);
+                        }
+                    }
+                    
+                    // Add status according to the error type (duplication or unexpected)
+                    if (isDulipcationError) {
+                        status.add(new Status(
+                            StatusCodeMsg.ALREADY_EXISTING_DATA, 
+                            StatusCodeMsg.ERR, 
+                            StatusCodeMsg.DATA_REJECTED + " for the measure variable: " + environmentToInsert.getKey()
+                        ));
+                    } else {
+                        // Add the original exception message for debugging
+                        status.add(new Status(
+                            StatusCodeMsg.UNEXPECTED_ERROR, 
+                            StatusCodeMsg.ERR, 
+                            StatusCodeMsg.DATA_REJECTED + " for the measure variable: " + environmentToInsert.getKey() + " - " + ex.getMessage()
+                        ));
+                    }
                 }
             });
         }

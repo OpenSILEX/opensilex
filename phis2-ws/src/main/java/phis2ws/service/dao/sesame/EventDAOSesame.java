@@ -19,7 +19,9 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.dao.manager.DAOSesame;
+import phis2ws.service.ontologies.Oeev;
 import phis2ws.service.ontologies.Rdf;
+import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Vocabulary;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.model.phis.Event;
@@ -51,17 +53,25 @@ public class EventDAOSesame extends DAOSesame<Event> {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
         
-        String select;
+        String eventUri;
         if (uri != null) {
-            select = "<" + uri + ">";
+            eventUri = "<" + uri + ">";
         } else {
-            select = "?" + URI;
-            query.appendSelect(select);
+            eventUri = "?" + URI;
+            query.appendSelect(eventUri);
         }
         
         query.appendSelect("?" + LABEL);
-        query.appendTriplet(select, Rdf.RELATION_TYPE.toString(), 
-                Vocabulary.CONCEPT_EVENT.toString(), null);
+        query.appendTriplet(
+                eventUri
+                , "<" + Rdf.RELATION_TYPE.toString()+ ">"
+                , "?" + RDF_TYPE
+                , null);
+        query.appendTriplet(
+                "?" + RDF_TYPE 
+                , "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*"
+                , "<" + Oeev.CONCEPT_EVENT.toString() + ">"
+                , null);
         
         query.appendLimit(this.getPageSize());
         query.appendOffset(this.getPage() * this.getPageSize());
@@ -98,15 +108,19 @@ public class EventDAOSesame extends DAOSesame<Event> {
      */
     public ArrayList<Event> allPaginate() {
         SPARQLQueryBuilder query = prepareSearchQuery();
-        TupleQuery tupleQuery = getConnection()
-                .prepareTupleQuery(QueryLanguage.SPARQL, "PREFIX oa: <http://www.w3.org/ns/oa#>\n" +
-"PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
+        /*TupleQuery tupleQuery = getConnection()
+                .prepareTupleQuery(QueryLanguage.SPARQL, "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
 "PREFIX oeev: <http://www.phenome-fppn.fr/vocabulary/2018/oeev#>\n" +
+"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" +
 "\n" +
-"SELECT (?x as ?uri)" +
-"WHERE { ?x rdf:type oa:Annotation }");
-        //TupleQuery tupleQuery = getConnection()
-        //        .prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+"SELECT ?uri\n" +
+"WHERE { \n" +
+"  ?uri rdf:type ?type .\n" +
+"  ?type rdfs:subClassOf* oeev:Event \n" +
+"}");
+        */
+        TupleQuery tupleQuery = getConnection()
+                .prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         ArrayList<Event> events;
 
         try (TupleQueryResult result = tupleQuery.evaluate()) {

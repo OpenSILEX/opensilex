@@ -59,7 +59,8 @@ public abstract class DAOMongo<T> {
     public final static String MONGO_ELEM_MATCH = "$elemMatch";
     //the $and mongo key
     public final static String MONGO_AND = "$and";
-
+    //error code send by mongo in case of duplicated data with unique indexes
+    public final static int DUPLICATE_KEY_ERROR_CODE = 11000;
     /**
      * @see service.properties file
      */

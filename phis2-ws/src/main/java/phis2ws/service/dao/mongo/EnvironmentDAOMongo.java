@@ -8,19 +8,30 @@
 package phis2ws.service.dao.mongo;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.BasicDBObjectBuilder;
+import com.mongodb.MongoBulkWriteException;
+import com.mongodb.MongoException;
+import com.mongodb.bulk.BulkWriteError;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
+import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.Indexes;
+import com.mongodb.client.model.Sorts;
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
 import javax.ws.rs.core.Response;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.DateFormat;
+import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.dao.manager.DAOMongo;
 import phis2ws.service.dao.sesame.SensorDAOSesame;
 import phis2ws.service.dao.sesame.VariableDaoSesame;
@@ -42,15 +53,148 @@ public class EnvironmentDAOMongo extends DAOMongo<EnvironmentMeasure> {
     private final static String DB_FIELD_VARIABLE = "variable";
     private final static String DB_FIELD_DATE = "date";
     private final static String DB_FIELD_VALUE = "value";
+    
+    // Variable URI when querying for environment measures (required)
+    // e.g. http://www.phenome-fppn.fr/diaphen/id/variable/ev000070
+    public String variableUri;
+    // End date filter when querying for environment measures (optional)
+    // e.g. 2017-06-07 13:14:32+0200
+    public String endDate;
+    // Start date filter when querying for environment measures (optional)
+    // e.g. 2017-06-07 13:14:32+0200
+    public String startDate;
+    // Sensor URI filter when querying for environment measures (optional)
+    // e.g. http://www.phenome-fppn.fr/mauguio/diaphen/2013/sb140227
+    public String sensorUri;
+    // Determine the sort order by date of the results (optional, true by default)
+    public boolean dateSortAsc = true;
+    
+    /**
+     * Get document count according to the prepareSearchQuery
+     * @return the document count
+     */
+    public int count() {
+        // Get the collection corresponding to variable uri
+        String variableCollection = this.getEnvironmentCollectionFromVariable(variableUri);
+        MongoCollection<Document> environmentMeasureVariableCollection = database.getCollection(variableCollection);
 
-    @Override
-    protected BasicDBObject prepareSearchQuery() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        // Get the filter query
+        BasicDBObject query = prepareSearchQuery();
+        
+        // Return the document count
+        return (int)environmentMeasureVariableCollection.count(query);
     }
 
+    /**
+     * Prepare and return the environment search query with the given parameters
+     * @return The environment measure search query
+     * @example
+     *  {
+     *      "date": {
+     *          $gte: ISODate("2010-06-15T10:51:00+0200"),
+     *          $lt: ISODate("2018-06-15T10:51:00+0200")
+     *      },
+     *      "variable": "http://www.phenome-fppn.fr/diaphen/id/variable/v0000001",
+     *      "sensor": "http://www.phenome-fppn.fr/diaphen/2018/s18001"
+     *  }
+     */
+    @Override
+    protected BasicDBObject prepareSearchQuery() {
+        BasicDBObject query = new BasicDBObject();
+        
+        try {
+            SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
+
+            // Define date filter depending if start date and/or end date are defined
+            if (startDate != null) {
+                Date start = df.parse(startDate);
+
+                if (endDate != null) {
+                    // In case of start date AND end date defined
+                    Date end = df.parse(endDate);
+                    query.append(DB_FIELD_DATE, BasicDBObjectBuilder.start("$gte", start).add("$lte", end).get());
+                } else {
+                    // In case of start date ONLY is defined
+                    query.append(DB_FIELD_DATE, BasicDBObjectBuilder.start("$gte", start).get());
+                }
+            } else if (endDate != null) {
+                // In case of end date ONLY is defined
+                Date end = df.parse(endDate);
+                query.append(DB_FIELD_DATE, BasicDBObjectBuilder.start("$lte", end).get());
+            }
+        } catch (ParseException ex) {
+            LOGGER.error("Invalid date format", ex);
+        }
+        
+        // Add filter if a sensor uri is defined
+        if (sensorUri != null) {
+            query.append(DB_FIELD_SENSOR, sensorUri);
+        }
+        
+        query.append(DB_FIELD_VARIABLE, variableUri);
+        
+        LOGGER.debug(getTraceabilityLogs() + " query : " + query.toString());
+        
+        return query;
+    }
+
+    /**
+     * Return the paginated list of environment measures corresponding to given parameters
+     * which are (see corresponding variable members on this class) :
+     * - variableUri
+     * - endDate
+     * - startDate
+     * - sensorUri
+     * - dateSortAsc
+     * @return List of measures
+     */
     @Override
     public ArrayList<EnvironmentMeasure> allPaginate() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        // Get the collection corresponding to variable uri
+        String variableCollection = this.getEnvironmentCollectionFromVariable(variableUri);
+        MongoCollection<Document> environmentMeasureVariableCollection = database.getCollection(variableCollection);
+
+        // Get the filter query
+        BasicDBObject query = prepareSearchQuery();
+        
+        // Get paginated documents
+        FindIterable<Document> measuresMongo = environmentMeasureVariableCollection.find(query);
+        
+        //SILEX:info
+        //Measures are always sort by date, either ascending or descending depending on dateSortAsc parameter
+        //If dateSortAsc=true, sort by date ascending
+        //If dateSortAsc=false, sort by date descending
+        //\SILEX:info
+        if (dateSortAsc) {
+            measuresMongo = measuresMongo.sort(Sorts.ascending(DB_FIELD_DATE));
+        } else {
+            measuresMongo = measuresMongo.sort(Sorts.descending(DB_FIELD_DATE));
+        }
+        
+        // Define pagination for the request
+        measuresMongo = measuresMongo.skip(page * pageSize).limit(pageSize);
+
+        ArrayList<EnvironmentMeasure> measures = new ArrayList<>();
+        SimpleDateFormat df = new SimpleDateFormat(DateFormats.YMDHMSZ_FORMAT);
+        
+        // For each document, create a EnvironmentMeasure Instance and add it to the result list
+        try (MongoCursor<Document> measuresCursor = measuresMongo.iterator()) {
+            while (measuresCursor.hasNext()) {
+                Document measureDocument = measuresCursor.next();
+                
+                // Create and define the EnvironmentMeasure
+                EnvironmentMeasure measure = new EnvironmentMeasure();
+                measure.setVariableUri(variableUri);
+                measure.setDate(measureDocument.getDate(DB_FIELD_DATE));
+                measure.setValue(new BigDecimal(measureDocument.get(DB_FIELD_VALUE).toString()));
+                measure.setSensorUri(measureDocument.getString(DB_FIELD_SENSOR));
+                
+                // Add the measure to the list
+                measures.add(measure);
+            }
+        }
+        
+        return measures;
     }
     
     /**
@@ -108,16 +252,13 @@ public class EnvironmentDAOMongo extends DAOMongo<EnvironmentMeasure> {
      * @return the document to insert, representing the given environment measure
      * @throws ParseException 
      */
-    private Document prepareInsertEnvironmentDocument(EnvironmentMeasure environmentMeasure) throws ParseException {
+    private Document prepareInsertEnvironmentDocument(EnvironmentMeasure environmentMeasure) {
         Document environmentDocument = new Document();
-        
-        SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
-        Date measureDate = df.parse(environmentMeasure.getDate());
         
         environmentDocument.append(DB_FIELD_SENSOR, environmentMeasure.getSensorUri());
         environmentDocument.append(DB_FIELD_VARIABLE, environmentMeasure.getVariableUri());
         environmentDocument.append(DB_FIELD_VALUE, environmentMeasure.getValue());
-        environmentDocument.append(DB_FIELD_DATE, measureDate);
+        environmentDocument.append(DB_FIELD_DATE, environmentMeasure.getDate());
         
         LOGGER.debug(environmentDocument.toJson());
         
@@ -160,37 +301,75 @@ public class EnvironmentDAOMongo extends DAOMongo<EnvironmentMeasure> {
         
         //1. Prepare all the documents to insert (we will do one insert by variable)
         for (EnvironmentMeasure environmentMeasure : environmentMeasures) {
-            try {
-                Document createEnvironmentMeasure = prepareInsertEnvironmentDocument(environmentMeasure);
-                
-                List<Document> environmentsByVariable;
-                if (environmentsToInsertByVariable.containsKey(environmentMeasure.getVariableUri())) {
-                    environmentsByVariable = environmentsToInsertByVariable.get(environmentMeasure.getVariableUri());
-                } else {
-                    environmentsByVariable = new ArrayList<>();
-                }
-                
-                environmentsByVariable.add(createEnvironmentMeasure);
-                environmentsToInsertByVariable.put(environmentMeasure.getVariableUri(), environmentsByVariable);
-            } catch (ParseException ex) {
-                java.util.logging.Logger.getLogger(EnvironmentDAOMongo.class.getName()).log(Level.SEVERE, null, ex);
-                status.add(new Status(StatusCodeMsg.ERR, StatusCodeMsg.ERR, ex.toString()));
-                insert = false;
+            Document createEnvironmentMeasure = prepareInsertEnvironmentDocument(environmentMeasure);
+
+            List<Document> environmentsByVariable;
+            if (environmentsToInsertByVariable.containsKey(environmentMeasure.getVariableUri())) {
+                environmentsByVariable = environmentsToInsertByVariable.get(environmentMeasure.getVariableUri());
+            } else {
+                environmentsByVariable = new ArrayList<>();
             }
+
+            environmentsByVariable.add(createEnvironmentMeasure);
+            environmentsToInsertByVariable.put(environmentMeasure.getVariableUri(), environmentsByVariable);
         }
 
-        //2. Insert all the environment measures
+        //2. Create unique index on sensor/variable/date for each variable collection
+        //   Mongo won't create index if it already exists
+        Bson indexFields = Indexes.ascending(
+            DB_FIELD_DATE,
+            DB_FIELD_SENSOR,
+            DB_FIELD_VARIABLE
+        );
+        IndexOptions indexOptions = new IndexOptions().unique(true);
+        environmentsToInsertByVariable.keySet().forEach((variableUri) -> {
+            database.getCollection(getEnvironmentCollectionFromVariable(variableUri))
+                    .createIndex(indexFields, indexOptions);
+        });
+        
+        
+        //3. Insert all the environment measures
         if (insert) {
             environmentsToInsertByVariable.entrySet().forEach((environmentToInsert) -> {
                 MongoCollection<Document> environmentMeasureVariableCollection = database.getCollection(getEnvironmentCollectionFromVariable(environmentToInsert.getKey()));
-                environmentMeasureVariableCollection.insertMany(environmentToInsert.getValue());
-
-                status.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, StatusCodeMsg.DATA_INSERTED + " for the variable " + environmentToInsert.getKey()));
-                createdResources.add(environmentToInsert.getKey());
+                try {
+                    environmentMeasureVariableCollection.insertMany(environmentToInsert.getValue());
+                    status.add(new Status(
+                        StatusCodeMsg.RESOURCES_CREATED, 
+                        StatusCodeMsg.INFO, 
+                        StatusCodeMsg.DATA_INSERTED + " for the variable " + environmentToInsert.getKey()
+                    ));
+                    createdResources.add(environmentToInsert.getKey());
+                } catch (MongoException ex) {
+                    // Error check if it's because of a duplicated data error
+                    boolean isDulipcationError = false;
+                    if (ex instanceof MongoBulkWriteException) {
+                        List<BulkWriteError> writeErrors = ((MongoBulkWriteException) ex).getWriteErrors();
+                        if (writeErrors.size() > 0) {
+                            isDulipcationError = (writeErrors.get(0).getCode() == DAOMongo.DUPLICATE_KEY_ERROR_CODE);
+                        }
+                    }
+                    
+                    // Add status according to the error type (duplication or unexpected)
+                    if (isDulipcationError) {
+                        status.add(new Status(
+                            StatusCodeMsg.ALREADY_EXISTING_DATA, 
+                            StatusCodeMsg.ERR, 
+                            ex.getMessage()
+                        ));
+                    } else {
+                        // Add the original exception message for debugging
+                        status.add(new Status(
+                            StatusCodeMsg.UNEXPECTED_ERROR, 
+                            StatusCodeMsg.ERR, 
+                            StatusCodeMsg.DATA_REJECTED + " for the measure variable: " + environmentToInsert.getKey() + " - " + ex.getMessage()
+                        ));
+                    }
+                }
             });
         }
         
-        //3. Prepare result to return
+        //4. Prepare result to return
         result = new POSTResultsReturn(insert);
         result.statusList = status;
         if (insert) {

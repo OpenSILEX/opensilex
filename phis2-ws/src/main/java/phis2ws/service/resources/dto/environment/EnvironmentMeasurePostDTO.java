@@ -8,7 +8,11 @@
 package phis2ws.service.resources.dto.environment;
 
 import io.swagger.annotations.ApiModelProperty;
-import javax.validation.constraints.NotEmpty;
+import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.validation.constraints.NotNull;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.documentation.DocumentationAnnotation;
@@ -34,15 +38,21 @@ public class EnvironmentMeasurePostDTO extends AbstractVerifiedClass {
     protected String date;
     //The measured value.
     //e.g. 1.2
-    protected float value;
+    protected BigDecimal value;
     
     @Override
     public EnvironmentMeasure createObjectFromDTO() {
         EnvironmentMeasure environment = new EnvironmentMeasure();
         environment.setSensorUri(sensorUri);
         environment.setVariableUri(variableUri);
-        environment.setDate(date);
         environment.setValue(value);
+        
+        try {
+            SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
+            environment.setDate(df.parse(date));
+        } catch (ParseException ex) {
+            Logger.getLogger(EnvironmentMeasurePostDTO.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
         return environment;
     }
@@ -82,11 +92,11 @@ public class EnvironmentMeasurePostDTO extends AbstractVerifiedClass {
 
     @NotNull
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_ENVIRONMENT_VALUE)
-    public float getValue() {
+    public BigDecimal getValue() {
         return value;
     }
 
-    public void setValue(float value) {
+    public void setValue(BigDecimal value) {
         this.value = value;
     }
 }

@@ -346,7 +346,7 @@ public class EnvironmentDAOMongo extends DAOMongo<EnvironmentMeasure> {
                     if (ex instanceof MongoBulkWriteException) {
                         List<BulkWriteError> writeErrors = ((MongoBulkWriteException) ex).getWriteErrors();
                         if (writeErrors.size() > 0) {
-                            isDulipcationError = (writeErrors.get(0).getCode() != DAOMongo.DUPLICATE_KEY_ERROR_CODE);
+                            isDulipcationError = (writeErrors.get(0).getCode() == DAOMongo.DUPLICATE_KEY_ERROR_CODE);
                         }
                     }
                     

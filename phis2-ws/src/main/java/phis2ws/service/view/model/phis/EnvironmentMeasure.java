@@ -7,6 +7,9 @@
 //******************************************************************************
 package phis2ws.service.view.model.phis;
 
+import java.math.BigDecimal;
+import java.util.Date;
+
 /**
  * This is the model for the environment measures
  * @author Morgane Vidal <morgane.vidal@inra.fr>
@@ -20,10 +23,14 @@ public class EnvironmentMeasure {
     protected String variableUri;
     //The date corresponding to the given value. The format should be yyyy-MM-ddTHH:mm:ssZ
     //e.g. 2018-06-25T15:13:59+0200
-    protected String date;
+    protected Date date;
     //The measured value.
     //e.g. 1.2
-    protected float value;
+    //SILEX:info
+    //We use BigDecimal here because this value represent scientific data, so we need to keep the exact precision
+    //float or double type are subject to rounded errors: @see https://floating-point-gui.de/basic/
+    //\SILEX:info
+    protected BigDecimal value;
 
     public String getSensorUri() {
         return sensorUri;
@@ -41,19 +48,19 @@ public class EnvironmentMeasure {
         this.variableUri = variableUri;
     }
 
-    public String getDate() {
+    public Date getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public void setDate(Date date) {
         this.date = date;
     }
     
-    public float getValue() {
+    public BigDecimal getValue() {
         return value;
     }
 
-    public void setValue(float value) {
+    public void setValue(BigDecimal value) {
         this.value = value;
     }
 }

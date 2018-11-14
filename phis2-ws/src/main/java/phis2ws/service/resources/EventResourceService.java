@@ -34,12 +34,9 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.event.EventDTO;
-import phis2ws.service.resources.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.ResponseFormEvent;
-import phis2ws.service.view.brapi.form.ResponseFormRdfResourceDefinition;
-import phis2ws.service.view.brapi.form.ResponseFormSensor;
 import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Event;
 
@@ -93,8 +90,10 @@ public class EventResourceService {
      *      "result": {
      *          "data": [
      *              {
-     *                  "uri": "http://www.phenome-fppn.fr/vocabulary/2018/oeev/id/events/ev001",
-     *                  "label": "event name"
+     *                  "uri": 
+     * "http://www.phenome-fppn.fr/vocabulary/2018/oeev/id/events/ev001",
+     *                  "label": "event name",
+     *                  "dateTime" : "2018-11-14T07:58:26.891Z"
      *              },
      *          ]
      *      }
@@ -139,12 +138,12 @@ public class EventResourceService {
         @DefaultValue(DefaultBrapiPaginationValues.PAGE) 
         @Min(0) int page
         , @ApiParam(value = "Search by uri"
-        , example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_URI) 
+        , example = DocumentationAnnotation.EXAMPLE_EVENT_URI) 
         @QueryParam("uri") 
         @URL String uri
         , @ApiParam(
                 value = "Search by label", 
-                example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_LABEL) 
+                example = DocumentationAnnotation.EXAMPLE_EVENT_LABEL) 
         @QueryParam("label") String label
     ) {
 
@@ -160,7 +159,6 @@ public class EventResourceService {
         
         ArrayList<Event> events = eventDAO.allPaginate();
         
-        ArrayList<Event> list = new ArrayList<>();
         ArrayList<Status> statusList = new ArrayList<>();
         ResponseFormEvent getResponse;
         

@@ -236,6 +236,9 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_VARIABLE_URI = "http://www.phenome-fppn.fr/diaphen/id/variable/v0000001";
     public static final String EXAMPLE_VARIABLE_LABEL = "LAI";
 
+    public static final String EXAMPLE_EVENT_URI = "";
+    public static final String EXAMPLE_EVENT_LABEL = "";
+
     public static final String EXAMPLE_VECTOR_URI = "http://www.phenome-fppn.fr/diaphen/2018/v1801";
     public static final String EXAMPLE_VECTOR_RDF_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#UAV";
     public static final String EXAMPLE_VECTOR_LABEL = "par03_p";

@@ -355,7 +355,7 @@ public class EnvironmentDAOMongo extends DAOMongo<EnvironmentMeasure> {
                         status.add(new Status(
                             StatusCodeMsg.ALREADY_EXISTING_DATA, 
                             StatusCodeMsg.ERR, 
-                            StatusCodeMsg.DATA_REJECTED + " for the measure variable: " + environmentToInsert.getKey()
+                            ex.getMessage()
                         ));
                     } else {
                         // Add the original exception message for debugging

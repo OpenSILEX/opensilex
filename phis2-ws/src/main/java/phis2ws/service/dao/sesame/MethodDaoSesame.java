@@ -14,6 +14,16 @@ package phis2ws.service.dao.sesame;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.update.UpdateRequest;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -35,7 +45,6 @@ import phis2ws.service.resources.dto.MethodDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
-import phis2ws.service.utils.sparql.SPARQLUpdateBuilder;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.Method;
 import phis2ws.service.view.model.phis.OntologyReference;
@@ -183,22 +192,30 @@ public class MethodDaoSesame extends DAOSesame<Method> {
         }
     }
     
-    private SPARQLUpdateBuilder prepareInsertQuery(MethodDTO methodDTO) {
-        SPARQLUpdateBuilder spql = new SPARQLUpdateBuilder();
+    private UpdateRequest prepareInsertQuery(MethodDTO methodDTO) {
+        UpdateBuilder spql = new UpdateBuilder();
         
-        spql.appendGraphURI(Contexts.VARIABLES.toString());
-        spql.appendTriplet(methodDTO.getUri(), Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_METHOD.toString(), null);
-        spql.appendTriplet(methodDTO.getUri(), Rdfs.RELATION_LABEL.toString(), "\"" + methodDTO.getLabel() + "\"", null);
+        Node graph = NodeFactory.createURI(Contexts.VARIABLES.toString());
+        
+        Node methodConcept = NodeFactory.createURI(Vocabulary.CONCEPT_METHOD.toString());
+        Resource methodUri = ResourceFactory.createResource(methodDTO.getUri());
+
+        spql.addInsert(graph, methodUri, RDF.type, methodConcept);
+        spql.addInsert(graph, methodUri, RDFS.label, methodDTO.getLabel());
+        
         if (methodDTO.getComment() != null) {
-            spql.appendTriplet(methodDTO.getUri(), Rdfs.RELATION_COMMENT.toString(), "\"" + methodDTO.getComment() + "\"", null);
+            spql.addInsert(graph, methodUri, RDFS.comment, methodDTO.getComment());
         }
         
         for (OntologyReference ontologyReference : methodDTO.getOntologiesReferences()) {
-            spql.appendTriplet(methodDTO.getUri(), ontologyReference.getProperty(), ontologyReference.getObject(), null);
-            spql.appendTriplet(ontologyReference.getObject(), Rdfs.RELATION_SEE_ALSO.toString(), "\"" + ontologyReference.getSeeAlso() + "\"", null);
+            Property ontologyProperty = ResourceFactory.createProperty(ontologyReference.getProperty());
+            Node ontologyObject = NodeFactory.createURI(ontologyReference.getObject());
+            spql.addInsert(graph, methodUri, ontologyProperty, ontologyObject);
+            Literal seeAlso = ResourceFactory.createStringLiteral(ontologyReference.getSeeAlso());
+            spql.addInsert(graph, ontologyObject, RDFS.seeAlso, seeAlso);
         }
         
-        return spql;
+        return spql.buildRequest();
     }
     
     /**
@@ -224,7 +241,7 @@ public class MethodDaoSesame extends DAOSesame<Method> {
             methodDTO.setUri(uriGenerator.generateNewInstanceUri(Vocabulary.CONCEPT_METHOD.toString(), null, null));
             
             //Enregistrement dans le triplestore
-            SPARQLUpdateBuilder spqlInsert = prepareInsertQuery(methodDTO);
+            UpdateRequest spqlInsert = prepareInsertQuery(methodDTO);
             
             try {
                 //SILEX:test
@@ -401,7 +418,7 @@ public class MethodDaoSesame extends DAOSesame<Method> {
                 String deleteQuery = prepareDeleteQuery(methodsCorresponding.get(0));
 
                 //2. Insertion des nouvelles données
-                SPARQLUpdateBuilder queryInsert = prepareInsertQuery(methodDTO);
+                UpdateRequest queryInsert = prepareInsertQuery(methodDTO);
                  try {
                         // début de la transaction : vérification de la requête
                         this.getConnection().begin();

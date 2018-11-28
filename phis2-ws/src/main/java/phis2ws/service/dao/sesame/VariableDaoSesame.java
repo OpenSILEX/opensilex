@@ -10,6 +10,16 @@ package phis2ws.service.dao.sesame;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.update.UpdateRequest;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.MalformedQueryException;
@@ -34,7 +44,6 @@ import phis2ws.service.resources.dto.VariableDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
-import phis2ws.service.utils.sparql.SPARQLUpdateBuilder;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.Method;
 import phis2ws.service.view.model.phis.OntologyReference;
@@ -305,23 +314,42 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
         return variablesCheck;
     }
     
-    private SPARQLUpdateBuilder prepareInsertQuery(VariableDTO variable) {
-        SPARQLUpdateBuilder spql = new SPARQLUpdateBuilder();
+    private UpdateRequest prepareInsertQuery(VariableDTO variable) {
+        UpdateBuilder spql = new UpdateBuilder();
         
-        spql.appendGraphURI(Contexts.VARIABLES.toString());
-        spql.appendTriplet(variable.getUri(), Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_VARIABLE.toString(), null);
-        spql.appendTriplet(variable.getUri(), Rdfs.RELATION_LABEL.toString(), "\"" + variable.getLabel() + "\"", null);
-        spql.appendTriplet(variable.getUri(), Rdfs.RELATION_COMMENT.toString(), "\"" + variable.getComment() + "\"", null);
-        spql.appendTriplet(variable.getUri(), Vocabulary.RELATION_HAS_TRAIT.toString(), variable.getTrait(), null);
-        spql.appendTriplet(variable.getUri(), Vocabulary.RELATION_HAS_METHOD.toString(), variable.getMethod(), null);
-        spql.appendTriplet(variable.getUri(), Vocabulary.RELATION_HAS_UNIT.toString(), variable.getUnit(), null);
+        Node graph = NodeFactory.createURI(Contexts.VARIABLES.toString());
+
+        Node variableConcept = NodeFactory.createURI(Vocabulary.CONCEPT_VARIABLE.toString());
+        Resource variableUri = ResourceFactory.createResource(variable.getUri());
+
+        spql.addInsert(graph, variableUri, RDF.type, variableConcept);
+        spql.addInsert(graph, variableUri, RDFS.label, variable.getLabel());
+        
+        if (variable.getComment() != null) {
+            spql.addInsert(graph, variableUri, RDFS.comment, variable.getComment());
+        }
+
+        Property relationTrait = ResourceFactory.createProperty(Vocabulary.RELATION_HAS_TRAIT.toString());
+        Property relationMethod = ResourceFactory.createProperty(Vocabulary.RELATION_HAS_METHOD.toString());
+        Property relationUnit = ResourceFactory.createProperty(Vocabulary.RELATION_HAS_UNIT.toString());
+        
+        Node trait = NodeFactory.createURI(variable.getTrait());
+        Node method = NodeFactory.createURI(variable.getMethod());
+        Node unit = NodeFactory.createURI(variable.getUnit());
+        
+        spql.addInsert(graph, variableUri, relationTrait, trait);
+        spql.addInsert(graph, variableUri, relationMethod, method);
+        spql.addInsert(graph, variableUri, relationUnit, unit);
         
         for (OntologyReference ontologyReference : variable.getOntologiesReferences()) {
-            spql.appendTriplet(variable.getUri(), ontologyReference.getProperty(), ontologyReference.getObject(), null);
-            spql.appendTriplet(ontologyReference.getObject(), Rdfs.RELATION_SEE_ALSO.toString(), "\"" + ontologyReference.getSeeAlso() + "\"", null);
+            Property ontologyProperty = ResourceFactory.createProperty(ontologyReference.getProperty());
+            Node ontologyObject = NodeFactory.createURI(ontologyReference.getObject());
+            spql.addInsert(graph, variableUri, ontologyProperty, ontologyObject);
+            Literal seeAlso = ResourceFactory.createStringLiteral(ontologyReference.getSeeAlso());
+            spql.addInsert(graph, ontologyObject, RDFS.seeAlso, seeAlso);
         }
         
-        return spql;
+        return spql.buildRequest();
     }
     
     /**
@@ -348,7 +376,7 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
             variableDTO.setUri(uriGenerator.generateNewInstanceUri(Vocabulary.CONCEPT_VARIABLE.toString(), null, null));
 
             //Enregistrement dans le triplestore
-            SPARQLUpdateBuilder spqlInsert = prepareInsertQuery(variableDTO);
+            UpdateRequest spqlInsert = prepareInsertQuery(variableDTO);
             try {
                 //SILEX:test
                 //Toute la notion de connexion au triplestore sera à revoir.
@@ -561,7 +589,7 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
                 String deleteQuery = prepareDeleteQuery(variablesCorresponding.get(0));
 
                 //2. Insertion des nouvelles données
-                SPARQLUpdateBuilder queryInsert = prepareInsertQuery(variableDTO);
+                UpdateRequest queryInsert = prepareInsertQuery(variableDTO);
                  try {
                         // début de la transaction : vérification de la requête
                         this.getConnection().begin();

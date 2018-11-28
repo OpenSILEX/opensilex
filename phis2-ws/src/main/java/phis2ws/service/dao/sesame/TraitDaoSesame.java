@@ -14,6 +14,16 @@ package phis2ws.service.dao.sesame;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.update.UpdateRequest;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -35,7 +45,6 @@ import phis2ws.service.resources.dto.TraitDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
-import phis2ws.service.utils.sparql.SPARQLUpdateBuilder;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.OntologyReference;
 import phis2ws.service.view.model.phis.Trait;
@@ -181,20 +190,30 @@ public class TraitDaoSesame extends DAOSesame<Trait> {
         return traitsCheck;
     }
     
-    private SPARQLUpdateBuilder prepareInsertQuery(TraitDTO traitDTO) {
-        SPARQLUpdateBuilder spql = new SPARQLUpdateBuilder();
+    private UpdateRequest prepareInsertQuery(TraitDTO traitDTO) {
+        UpdateBuilder spql = new UpdateBuilder();
         
-        spql.appendGraphURI(Contexts.VARIABLES.toString());
-        spql.appendTriplet(traitDTO.getUri(), Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_TRAIT.toString(), null);
-        spql.appendTriplet(traitDTO.getUri(), Rdfs.RELATION_LABEL.toString(), "\"" + traitDTO.getLabel() + "\"", null);
-        spql.appendTriplet(traitDTO.getUri(), Rdfs.RELATION_COMMENT.toString(), "\"" + traitDTO.getComment() + "\"", null);
+        Node graph = NodeFactory.createURI(Contexts.VARIABLES.toString());
         
-        for (OntologyReference ontologyReference : traitDTO.getOntologiesReferences()) {
-            spql.appendTriplet(traitDTO.getUri(), ontologyReference.getProperty(), ontologyReference.getObject(), null);
-            spql.appendTriplet(ontologyReference.getObject(), Rdfs.RELATION_SEE_ALSO.toString(), "\"" + ontologyReference.getSeeAlso() + "\"", null);
+        Node traitConcept = NodeFactory.createURI(Vocabulary.CONCEPT_TRAIT.toString());
+        Resource traitUri = ResourceFactory.createResource(traitDTO.getUri());
+
+        spql.addInsert(graph, traitUri, RDF.type, traitConcept);
+        spql.addInsert(graph, traitUri, RDFS.label, traitDTO.getLabel());
+        
+        if (traitDTO.getComment() != null) {
+            spql.addInsert(graph, traitUri, RDFS.comment, traitDTO.getComment());
         }
         
-        return spql;
+        for (OntologyReference ontologyReference : traitDTO.getOntologiesReferences()) {
+            Property ontologyProperty = ResourceFactory.createProperty(ontologyReference.getProperty());
+            Node ontologyObject = NodeFactory.createURI(ontologyReference.getObject());
+            spql.addInsert(graph, traitUri, ontologyProperty, ontologyObject);
+            Literal seeAlso = ResourceFactory.createStringLiteral(ontologyReference.getSeeAlso());
+            spql.addInsert(graph, ontologyObject, RDFS.seeAlso, seeAlso);
+        }
+        
+        return spql.buildRequest();
     }
     
     /**
@@ -218,7 +237,7 @@ public class TraitDaoSesame extends DAOSesame<Trait> {
             TraitDTO traitDTO = iteratorTraitDTO.next();
             traitDTO.setUri(uriGenerator.generateNewInstanceUri(Vocabulary.CONCEPT_TRAIT.toString(), null, null));
             //Enregistrement dans le triplestore
-            SPARQLUpdateBuilder spqlInsert = prepareInsertQuery(traitDTO);
+            UpdateRequest spqlInsert = prepareInsertQuery(traitDTO);
             
             try {
                 //SILEX:test
@@ -380,7 +399,7 @@ public class TraitDaoSesame extends DAOSesame<Trait> {
                 String deleteQuery = prepareDeleteQuery(traitsCorresponding.get(0));
 
                 //2. Insertion des nouvelles données
-                SPARQLUpdateBuilder queryInsert = prepareInsertQuery(traitDTO);
+                UpdateRequest queryInsert = prepareInsertQuery(traitDTO);
                  try {
                         // début de la transaction : vérification de la requête
                         this.getConnection().begin();

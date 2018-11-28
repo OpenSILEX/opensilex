@@ -14,6 +14,16 @@ package phis2ws.service.dao.sesame;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.update.UpdateRequest;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -35,7 +45,6 @@ import phis2ws.service.resources.dto.UnitDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
-import phis2ws.service.utils.sparql.SPARQLUpdateBuilder;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.OntologyReference;
 import phis2ws.service.view.model.phis.Unit;
@@ -176,22 +185,31 @@ public class UnitDaoSesame extends DAOSesame<Unit> {
         }
     }
     
-    private SPARQLUpdateBuilder prepareInsertQuery(UnitDTO unitDTO) {
-        SPARQLUpdateBuilder spql = new SPARQLUpdateBuilder();
+    private UpdateRequest prepareInsertQuery(UnitDTO unitDTO) {
+        UpdateBuilder spql = new UpdateBuilder();
         
-        spql.appendGraphURI(Contexts.VARIABLES.toString());
-        spql.appendTriplet(unitDTO.getUri(), Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_UNIT.toString(), null);
-        spql.appendTriplet(unitDTO.getUri(), Rdfs.RELATION_LABEL.toString(), "\"" + unitDTO.getLabel() + "\"", null);
+        Node graph = NodeFactory.createURI(Contexts.VARIABLES.toString());
+        
+        Node unitConcept = NodeFactory.createURI(Vocabulary.CONCEPT_UNIT.toString());
+        Resource unitUri = ResourceFactory.createResource(unitDTO.getUri());
+
+        spql.addInsert(graph, unitUri, RDF.type, unitConcept);
+        spql.addInsert(graph, unitUri, RDFS.label, unitDTO.getLabel());
+        
         if (unitDTO.getComment() != null) {
-            spql.appendTriplet(unitDTO.getUri(), Rdfs.RELATION_COMMENT.toString(), "\"" + unitDTO.getComment() + "\"", null);
+            spql.addInsert(graph, unitUri, RDFS.comment, unitDTO.getComment());
         }
         
         for (OntologyReference ontologyReference : unitDTO.getOntologiesReferences()) {
-            spql.appendTriplet(unitDTO.getUri(), ontologyReference.getProperty(), ontologyReference.getObject(), null);
-            spql.appendTriplet(ontologyReference.getObject(), Rdfs.RELATION_SEE_ALSO.toString(), "\"" + ontologyReference.getSeeAlso() + "\"", null);
+            Property ontologyProperty = ResourceFactory.createProperty(ontologyReference.getProperty());
+            Node ontologyObject = NodeFactory.createURI(ontologyReference.getObject());
+            spql.addInsert(graph, unitUri, ontologyProperty, ontologyObject);
+            Literal seeAlso = ResourceFactory.createStringLiteral(ontologyReference.getSeeAlso());
+            spql.addInsert(graph, ontologyObject, RDFS.seeAlso, seeAlso);
+
         }
         
-        return spql;
+        return spql.buildRequest();
     }
     
     /**
@@ -216,7 +234,7 @@ public class UnitDaoSesame extends DAOSesame<Unit> {
             unitDTO.setUri(uriGenerator.generateNewInstanceUri(Vocabulary.CONCEPT_UNIT.toString(), null, null));
             
             //Enregistrement dans le triplestore
-            SPARQLUpdateBuilder spqlInsert = prepareInsertQuery(unitDTO);
+            UpdateRequest spqlInsert = prepareInsertQuery(unitDTO);
             
             try {
                 //SILEX:test
@@ -393,7 +411,7 @@ public class UnitDaoSesame extends DAOSesame<Unit> {
                 String deleteQuery = prepareDeleteQuery(unitsCorresponding.get(0));
 
                 //2. Insertion des nouvelles données
-                SPARQLUpdateBuilder queryInsert = prepareInsertQuery(unitDTO);
+                UpdateRequest queryInsert = prepareInsertQuery(unitDTO);
                  try {
                         // début de la transaction : vérification de la requête
                         this.getConnection().begin();

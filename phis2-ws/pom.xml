@@ -243,7 +243,7 @@
             <artifactId>jersey-bean-validation</artifactId>
             <version>2.25</version>
         </dependency>
-        <!-- Java 11 compatibility (@see @see https://blog.codefx.org/java/java-11-migration-guide/) -->
+        <!-- Java 11 compatibility (@see https://blog.codefx.org/java/java-11-migration-guide/) -->
         <dependency>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>

@@ -14,6 +14,15 @@ package phis2ws.service.dao.sesame;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
+import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.update.UpdateRequest;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -37,7 +46,6 @@ import phis2ws.service.resources.dto.VectorDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
-import phis2ws.service.utils.sparql.SPARQLUpdateBuilder;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.Vector;
 
@@ -520,25 +528,38 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
      * @param vector
      * @return the query
      */
-    private SPARQLUpdateBuilder prepareInsertQuery(Vector vector) {
-        SPARQLUpdateBuilder query = new SPARQLUpdateBuilder();
+    private UpdateRequest prepareInsertQuery(Vector vector) {
+        UpdateBuilder query = new UpdateBuilder();
         
-        query.appendGraphURI(Contexts.VECTORS.toString());
-        query.appendTriplet(vector.getUri(), Rdf.RELATION_TYPE.toString(), vector.getRdfType(), null);
-        query.appendTriplet(vector.getUri(), Rdfs.RELATION_LABEL.toString(), "\"" + vector.getLabel() + "\"", null);
-        query.appendTriplet(vector.getUri(), Vocabulary.RELATION_HAS_BRAND.toString(), "\"" + vector.getBrand() + "\"", null);
-        query.appendTriplet(vector.getUri(), Vocabulary.RELATION_IN_SERVICE_DATE.toString(), "\"" + vector.getInServiceDate() + "\"", null);
-        query.appendTriplet(vector.getUri(), Vocabulary.RELATION_PERSON_IN_CHARGE.toString(), "\"" + vector.getPersonInCharge() + "\"", null);
+        Node graph = NodeFactory.createURI(Contexts.VECTORS.toString());
+        Resource vectorUri = ResourceFactory.createResource(vector.getUri());
+
+        Node vectorType = NodeFactory.createURI(vector.getRdfType());
+        query.addInsert(graph, vectorUri, RDF.type, vectorType);
+                
+        query.addInsert(graph, vectorUri, RDFS.label, vector.getLabel());
+
+        Property relationHasBrand = ResourceFactory.createProperty(Vocabulary.RELATION_HAS_BRAND.toString());
+        Property relationInServiceDate = ResourceFactory.createProperty(Vocabulary.RELATION_IN_SERVICE_DATE.toString());
+        Property relationPersonInCharge = ResourceFactory.createProperty(Vocabulary.RELATION_PERSON_IN_CHARGE.toString());
+        
+        query.addInsert(graph, vectorUri, relationHasBrand, vector.getBrand());
+        query.addInsert(graph, vectorUri, relationInServiceDate, vector.getInServiceDate());
+        query.addInsert(graph, vectorUri, relationPersonInCharge, vector.getPersonInCharge());
         
         if (vector.getSerialNumber() != null) {
-            query.appendTriplet(vector.getUri(), Vocabulary.RELATION_SERIAL_NUMBER.toString(), "\"" + vector.getSerialNumber() + "\"", null);
+            Property relationSerialNumber = ResourceFactory.createProperty(Vocabulary.RELATION_SERIAL_NUMBER.toString());
+            query.addInsert(graph, vectorUri, relationSerialNumber, vector.getSerialNumber());
         }
         if (vector.getDateOfPurchase() != null) {
-            query.appendTriplet(vector.getUri(), Vocabulary.RELATION_DATE_OF_PURCHASE.toString(), "\"" + vector.getDateOfPurchase() + "\"", null);
+            Property relationDateOfPurchase = ResourceFactory.createProperty(Vocabulary.RELATION_DATE_OF_PURCHASE.toString());
+            query.addInsert(graph, vectorUri, relationDateOfPurchase, vector.getDateOfPurchase());
         }
         
-        LOGGER.debug(getTraceabilityLogs() + " query : " + query.toString());
-        return query;
+        UpdateRequest request = query.buildRequest();
+        LOGGER.debug(getTraceabilityLogs() + " query : " + request.toString());
+        
+        return request;
     }
     
     /**
@@ -564,7 +585,7 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
             vector.setUri(uriGenerator.generateNewInstanceUri(vector.getRdfType(), null, null));
             return vector;            
         }).forEachOrdered((vector) -> {
-            SPARQLUpdateBuilder query = prepareInsertQuery(vector);
+            UpdateRequest query = prepareInsertQuery(vector);
             Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
             prepareUpdate.execute();
             
@@ -653,7 +674,7 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
                 String deleteQuery = prepareDeleteQuery(vectorsCorresponding.get(0));
                 
                 //2. insert new data
-                SPARQLUpdateBuilder insertQuery = prepareInsertQuery(vectorDTO.createObjectFromDTO());
+                UpdateRequest insertQuery = prepareInsertQuery(vectorDTO.createObjectFromDTO());
                 
                 try {
                     this.getConnection().begin();

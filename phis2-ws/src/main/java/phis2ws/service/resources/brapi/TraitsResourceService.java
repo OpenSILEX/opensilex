@@ -229,21 +229,23 @@ public class TraitsResourceService implements BrapiCall {
     private Response getTraitsData(TraitDaoSesame traitDAO) {
         ArrayList<Status> statusList = new ArrayList<>();
         ArrayList<Trait> traits = traitDAO.allPaginate();                
-        BrapiResponseForm getResponse;
+        BrapiResponseForm getResponse;           
+                
         if (traits == null) {
             getResponse = new BrapiResponseForm(0, 0, traits, true);
             return noResultFound(getResponse, statusList);
         } else if (!traits.isEmpty()) {
+            ArrayList<BrapiTraitDTO> brapiTraits= new ArrayList();
+            for (Trait trait:traits) {
+                BrapiTraitDTO brapiTrait = new BrapiTraitDTO(trait);
+                brapiTrait.setObservationVariables(traitDAO.getVariableFromTrait(trait));
+                brapiTraits.add(brapiTrait);
+            }
             if (traits.size() == 1) {
-                BrapiTraitDTO brapiTrait = new BrapiTraitDTO(traits.get(0));
-                getResponse = new BrapiResponseForm(brapiTrait);
+                getResponse = new BrapiResponseForm(brapiTraits.get(0));
                 getResponse.getMetadata().setStatus(statusList);
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             } else {
-                ArrayList<BrapiTraitDTO> brapiTraits= new ArrayList();
-                for (Trait trait:traits) {
-                    brapiTraits.add(new BrapiTraitDTO(trait));
-                }
                 getResponse = new BrapiResponseForm(traitDAO.getPageSize(), traitDAO.getPage(), brapiTraits, false);
                 getResponse.getMetadata().setStatus(statusList);
                 return Response.status(Response.Status.OK).entity(getResponse).build();

@@ -33,7 +33,6 @@ public class BrapiTraitDTO {
         this.traitDbId = trait.getUri();
         this.name = trait.getLabel();
         this.description = trait.getComment();
-        this.observationVariables = trait.getVariables();
     }    
 
     public String getDefaultValue() {

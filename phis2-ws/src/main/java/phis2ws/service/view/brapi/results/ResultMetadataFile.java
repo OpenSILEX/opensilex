@@ -8,7 +8,7 @@
 package phis2ws.service.view.brapi.results;
 
 import java.util.ArrayList;
-import phis2ws.service.resources.dto.MetadataFileDTO;
+import phis2ws.service.resources.dto.acquisitionSession.MetadataFileDTO;
 import phis2ws.service.view.brapi.Pagination;
 import phis2ws.service.view.manager.Result;
 

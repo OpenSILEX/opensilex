@@ -8,8 +8,11 @@
 package phis2ws.service.dao.sesame;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
+import javax.ws.rs.core.Response;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.MalformedQueryException;
@@ -22,6 +25,7 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.dao.manager.DAOSesame;
+import phis2ws.service.dao.mongo.DatasetDAOMongo;
 import phis2ws.service.dao.phis.UserDaoPhisBrapi;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.model.User;
@@ -35,6 +39,7 @@ import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.utils.sparql.SPARQLUpdateBuilder;
 import phis2ws.service.view.brapi.Status;
+import phis2ws.service.view.model.phis.Dataset;
 import phis2ws.service.view.model.phis.Sensor;
 
 /**
@@ -399,6 +404,8 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 Sensor sensor = getSensorFromBindingSet(bindingSet);
+                HashMap<String, String>  variables = getVariables(sensor.getUri());
+                sensor.setVariables(variables);
                 sensors.add(sensor);
             }
         }
@@ -732,6 +739,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
      */
     private SPARQLQueryBuilder prepareSearchCamerasQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        query.appendDistinct(Boolean.TRUE);
         
         query.appendSelect("?" + URI + " ?" + RDF_TYPE + " ?" + LABEL );
         query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_CAMERA.toString(), null);
@@ -764,5 +772,183 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
             }
         }
         return cameras;
+    }
+    
+    /**
+     * Check if a given sensor measured a given variable (is the sensor linked to the variable ?).
+     * @see SensorDAOSesame#getVariables(java.lang.String)
+     * @param sensorUri
+     * @param variableUri
+     * @return true if the sensor measured the variable (i.e. sensor linked to variable with the measures object property)
+     *         false if not
+     */
+    public boolean isSensorMeasuringVariable(String sensorUri, String variableUri) {
+        HashMap<String, String> measuredVariables = getVariables(sensorUri);
+        
+        return measuredVariables.containsKey(variableUri);
+    }
+    
+    /**
+     * Check the given data to update the list of the measured variables linked to the sensor.
+     * @param sensorUri
+     * @param variables
+     * @return the check result.
+     */
+    private POSTResultsReturn checkMeasuredVariables(String sensorUri, List<String> variables) {
+        POSTResultsReturn checkResult = new POSTResultsReturn();
+        List<Status> checkStatus = new ArrayList<>();
+        
+        boolean dataOk = true;
+        
+        //1. Check if the sensorUri is a sensor in the triplestore
+        if (existAndIsSensor(sensorUri)) {
+            VariableDaoSesame variableDaoSesame = new VariableDaoSesame();
+            
+            for (String variableUri : variables) {
+                //2. Check for each variable uri given if it exist and if it is really a variable
+                if (!variableDaoSesame.existAndIsVariable(variableUri)) {
+                    dataOk = false;
+                    checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
+                        "Unknwon variable : " + variableUri));
+                }
+            }
+            
+            //3. Check if some variables links are removed. We do not check this if some problems has been founded before.
+            if (dataOk) {
+                //Get all the actual variables for the sensor
+                HashMap<String, String> actualMeasuredVariables = getVariables(sensorUri);
+                DatasetDAOMongo datasetDAO = new DatasetDAOMongo();
+                
+                for(Map.Entry<String, String> varibale : actualMeasuredVariables.entrySet()) {
+                    // Check if link to the variable can be removed.
+                    if (!variables.contains(varibale.getKey())) {
+                        datasetDAO.sensor = sensorUri;
+                        datasetDAO.variable = varibale.getKey();
+                        ArrayList<Dataset> dataAboutVariableAndSensor = datasetDAO.allPaginate();
+                        
+                        if (dataAboutVariableAndSensor.get(0).getData().size() > 0) {//data founded, the association of the sensor and the variable can not be removed
+                            dataOk = false;
+                            checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
+                                "Existing data for the given sensor (" + sensorUri + ") and the variable " + varibale.getKey() + ". You cannot remove the link between them."));
+                        }
+                    }
+                }
+            }             
+        } else {
+            dataOk = false;
+            checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
+                    "Unknwon sensor : " + sensorUri));
+        }
+        
+        checkResult = new POSTResultsReturn(dataOk, null, dataOk);
+        checkResult.statusList = checkStatus;
+        return checkResult;
+    }
+    
+    /**
+     * Update the list of the variables linked to the sensor.
+     * /!\ Prerequisite : the data must have been checked before
+     * @see SensorDAOSesame#checkMeasuredVariables(java.lang.String, java.util.List) 
+     * @param sensorUri
+     * @param variables
+     * @return the update result
+     */
+    private POSTResultsReturn updateMeasuredVariables(String sensorUri, List<String> variables) {
+        POSTResultsReturn result;
+        List<Status> updateStatus = new ArrayList<>();
+        
+        boolean update = true;
+        
+        
+        //1. Delete old object properties
+        HashMap<String, String> actualMeasuredVariables = getVariables(sensorUri);
+        List<String> oldMeasuredVariables = new ArrayList<>();
+        actualMeasuredVariables.entrySet().forEach((oldVariable) -> {
+            oldMeasuredVariables.add(oldVariable.getKey());
+        });
+        
+        if (deleteObjectProperties(sensorUri, Vocabulary.RELATION_MEASURES.toString(), oldMeasuredVariables)) {
+            //2. Add new object properties
+            if (addObjectProperties(sensorUri, Vocabulary.RELATION_MEASURES.toString(), variables, Contexts.SENSORS.toString())) {
+                updateStatus.add(new Status(StatusCodeMsg.RESOURCES_UPDATED, StatusCodeMsg.INFO, "The sensor " + sensorUri + " has now " + variables.size() + " linked variables"));
+            } else {
+                update = false;
+                updateStatus.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, "An error occurred during the update."));
+            }
+        } else {
+            update = false;
+            updateStatus.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, "An error occurred during the update."));
+        }
+        
+        result = new POSTResultsReturn(update, update, update);
+        result.statusList = updateStatus;
+        result.createdResources.add(sensorUri); 
+        return result;
+    }
+    
+    /**
+     * Check and update the variables measured by the given sensors
+     * @param sensorUri
+     * @param variables
+     * @return the update result
+     */
+    public POSTResultsReturn checkAndUpdateMeasuredVariables(String sensorUri, List<String> variables) {
+        POSTResultsReturn checkResult = checkMeasuredVariables(sensorUri, variables);
+        if (checkResult.getDataState()) {
+             return updateMeasuredVariables(sensorUri, variables);
+        } else { //Error in the data
+            return checkResult;
+        }
+    }
+    
+    /**
+     * Prepare the SPARQL query to return all variables measured by a sensor.
+     * 
+     * @param sensor The sensor uri which measures veriables
+     * @return The prepared query
+     * @example 
+     * SELECT DISTINCT  ?uri ?label WHERE {
+     *      ?rdfType  rdfs:subClassOf*  <http://www.phenome-fppn.fr/vocabulary/2017#Variable> . 
+     *      ?uri rdf:type ?rdfType .
+     *      ?uri  rdfs:label ?label .
+     *      <http://www.phenome-fppn.fr/2018/s18001> <http://www.phenome-fppn.fr/vocabulary/2017#measures> ?uri
+     * }
+     */
+    private SPARQLQueryBuilder prepareSearchVariablesQuery(String sensorUri) {
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        
+        query.appendSelect("?" + URI + " ?" + LABEL );
+        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_VARIABLE.toString(), null);
+        query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
+        query.appendTriplet("?" + URI, Rdfs.RELATION_LABEL.toString(), "?" + LABEL, null);
+        query.appendTriplet(sensorUri, Vocabulary.RELATION_MEASURES.toString(), "?" + URI, null);
+        
+        LOGGER.debug(query.toString());
+        
+        return query;
+    }
+    
+    /**
+     * Return a HashMap of uri => label of the variables measured by the given sensor.
+     * 
+     * @param sensor The sensor uri which measures veriables
+     * @return HashMap of uri => label
+     */
+    private HashMap<String, String> getVariables(String sensorUri) {
+        SPARQLQueryBuilder query = prepareSearchVariablesQuery(sensorUri);
+        
+        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        HashMap<String, String> variables = new HashMap<>();
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
+            while (result.hasNext()) {
+                BindingSet bindingSet = result.next();   
+                
+                variables.put(
+                    bindingSet.getValue(URI).stringValue(), 
+                    bindingSet.getValue(LABEL).stringValue()
+                );
+            }
+        }
+        return variables;
     }
 }

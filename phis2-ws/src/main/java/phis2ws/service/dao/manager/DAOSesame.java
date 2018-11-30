@@ -11,6 +11,7 @@
 //***********************************************************************************************
 package phis2ws.service.dao.manager;
 
+import java.util.List;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import org.eclipse.rdf4j.query.BooleanQuery;
@@ -19,6 +20,8 @@ import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.Update;
+import org.eclipse.rdf4j.query.UpdateExecutionException;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
@@ -32,6 +35,7 @@ import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.model.User;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
+import phis2ws.service.utils.sparql.SPARQLUpdateBuilder;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
 
@@ -308,5 +312,77 @@ public abstract class DAOSesame<T> {
         } else {
             this.user = TokenManager.Instance().getSession(id).getUser();
         }
+    }
+    
+    /**
+     * Add object properties to a given object.
+     * @param subjectUri the subject uri which will have the object properties uris
+     * @param predicateUri the uri of the predicates
+     * @param objectPropertiesUris the list of the object properties to link to the subject
+     * @param graphUri
+     * @example
+     * INSERT DATA {
+     *      GRAPH <http://www.phenome-fppn.fr/diaphen/sensors> { 
+     *          <http://www.phenome-fppn.fr/diaphen/2018/s18533>  <http://www.phenome-fppn.fr/vocabulary/2017#measures>  <http://www.phenome-fppn.fr/id/variables/v001> . 
+     * }}
+     * @return true if the insertion has been done
+     *         false if an error occurred (see the error logs to get more details)
+     */
+    protected boolean addObjectProperties(String subjectUri, String predicateUri, List<String> objectPropertiesUris, String graphUri) {
+        //Generates insert query
+        SPARQLUpdateBuilder query = new SPARQLUpdateBuilder();
+        query.appendGraphURI(graphUri);
+        objectPropertiesUris.forEach((objectProperty) -> {
+            query.appendTriplet(subjectUri, predicateUri, objectProperty, null);
+        });
+        
+        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        
+        //Insert the properties in the triplestore
+        Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
+        try {
+            prepareUpdate.execute();
+        } catch (UpdateExecutionException ex) {
+            LOGGER.error("Add object properties error : " + ex.getMessage());
+            return false;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Delete the given object properties.
+     * @param subjectUri
+     * @param predicateUri
+     * @param objectPropertiesUris
+     * @example
+     * DELETE WHERE { 
+     *  <http://www.phenome-fppn.fr/diaphen/2018/s18533> <http://www.phenome-fppn.fr/vocabulary/2017#measures> <http://www.phenome-fppn.fr/id/variables/v001> .  
+     * }
+     * @return true if the object properties have been deleted
+     *         false if the delete has not been done.
+     */
+    protected boolean deleteObjectProperties(String subjectUri, String predicateUri, List<String> objectPropertiesUris) {
+        //1. Generates delete query
+        String deleteQuery = "DELETE WHERE { ";
+        
+        for (String objectProperty : objectPropertiesUris) {
+            deleteQuery += "<" + subjectUri + "> <" + predicateUri + "> <" + objectProperty + "> . ";
+        }
+        
+        deleteQuery += " }";
+        
+        LOGGER.debug(deleteQuery);
+        
+        //2. Delete data in the triplestore
+        Update prepareDelete = getConnection().prepareUpdate(QueryLanguage.SPARQL, deleteQuery);
+        try {
+            prepareDelete.execute();
+        } catch (UpdateExecutionException ex) {
+            LOGGER.error("Delete object properties error : " + ex.getMessage());
+            return false;
+        }
+        
+        return true;
     }
 }

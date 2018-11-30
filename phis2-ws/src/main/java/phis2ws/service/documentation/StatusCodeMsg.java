@@ -25,12 +25,14 @@ public final class StatusCodeMsg {
     public static final String ACCESS_DENIED = "Access denied";
     public static final String ACCESS_ERROR = "Access error";
     public static final String ADMINISTRATOR_ONLY = "Request only for administrators";
+    public static final String UNEXPECTED_ERROR = "Unexpected error";
     public static final String ALREADY_EXISTING_DATA = "Already existing data";
     public static final String BAD_CARDINALITY = "Bad cardinality";
     public static final String BAD_DATA_FORMAT = "Bad data format";
     public static final String COMMIT_TRIPLESTORE_ERROR = "Error during commit or rolleback Triplestore statements.";
     public static final String DATA_ERROR = "Data error";
     public static final String DATA_INSERTED = "Data inserted";
+    public static final String DATA_REJECTED = "Data rejected";
     public static final String ERR = "Error";
     public static final String EXPECTED_DATE_FORMAT_YMD = "Expected date format : YYYY-MM-DD";
     public static final String FILE_ERROR = "File error";

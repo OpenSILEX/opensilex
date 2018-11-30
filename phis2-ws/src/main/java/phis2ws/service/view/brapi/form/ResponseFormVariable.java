@@ -24,9 +24,10 @@ public class ResponseFormVariable extends ResultForm<Variable> {
      * @param currentPage page demandée
      * @param list liste des résultats
      * @param paginate 
+     * @param totalCount 
      */
-    public ResponseFormVariable(int pageSize, int currentPage, ArrayList<Variable> list, boolean paginate) {
-        metadata = new Metadata(pageSize, currentPage, list.size());
+    public ResponseFormVariable(int pageSize, int currentPage, ArrayList<Variable> list, boolean paginate, int totalCount) {
+        metadata = new Metadata(pageSize, currentPage, totalCount);
         if (list.size() > 1) {
             result = new ResultVariable(list, metadata.getPagination(), paginate);
         } else {

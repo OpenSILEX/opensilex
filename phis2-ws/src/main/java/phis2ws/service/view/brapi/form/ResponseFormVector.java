@@ -18,7 +18,7 @@ import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Vector;
 
 /**
- *Allows the formating of the result of the request about Vector
+ * Allows the formating of the result of the request about Vector
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ResponseFormVector extends ResultForm<Vector> {
@@ -28,9 +28,10 @@ public class ResponseFormVector extends ResultForm<Vector> {
      * @param currentPage current page
      * @param list results list
      * @param paginate 
+     * @param totalCount 
      */
-    public ResponseFormVector(int pageSize, int currentPage, ArrayList<Vector> list, boolean paginate) {
-        metadata = new Metadata(pageSize, currentPage, list.size());
+    public ResponseFormVector(int pageSize, int currentPage, ArrayList<Vector> list, boolean paginate, int totalCount) {
+        metadata = new Metadata(pageSize, currentPage, totalCount);
         if (list.size() > 1) {
             result = new ResultVector(list, metadata.getPagination(), paginate);
         } else {

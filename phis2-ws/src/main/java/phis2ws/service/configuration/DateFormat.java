@@ -25,7 +25,7 @@ public enum DateFormat {
     YMDTHMSZ {
         @Override
         public String toString(){
-            return "yyyy-MM-ddTHH:mm:ssZ";
+            return "yyyy-MM-dd'T'HH:mm:ssZ";
         }
     },
     YMD {
@@ -33,5 +33,5 @@ public enum DateFormat {
         public String toString(){
             return "yyyy-MM-dd";
         }
-    }
+    };
 }

@@ -44,6 +44,7 @@ import phis2ws.service.view.model.phis.Group;
  * getProjectUserType, getUserGroup, getUserRole, getUserExperiment
  * @update [Arnaud Charleroy] July, 2018 : Add uri generation from e-mail
  * @update [Arnaud Charleroy] September, 2018 : Pagination fixed
+ * @update [Morgane Vidal] 8 November, 2018 : fix users update (orcid) 
  */
 public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
 
@@ -738,7 +739,7 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
 
             final String updateGabUser = "UPDATE \"users\" SET \"first_name\" = ?, \"family_name\" = ?, \"address\" = ?,"
                     + " \"available\" = cast(? as boolean), \"phone\" = ?, "
-                    + "\"affiliation\" = ?, \"isadmin\" = cast(? as boolean)"
+                    + "\"affiliation\" = ?, \"isadmin\" = cast(? as boolean), \"orcid\" = ? "
                     + " WHERE \"email\" = ?";
             final String deleteGabUserGroup = "DELETE FROM \"at_group_users\" WHERE \"users_email\" = ?";
             final String insertGabUserGroup = "INSERT INTO \"at_group_users\" (\"group_uri\", \"users_email\")"
@@ -776,19 +777,20 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
                     } else {
                         updatePreparedStatementUser.setString(7, "f");
                     }
-                    updatePreparedStatementUser.setString(8, u.getEmail());
+                    updatePreparedStatementUser.setString(8, u.getOrcid());
+                    updatePreparedStatementUser.setString(9, u.getEmail());
                     updatePreparedStatementUser.execute();
-                    LOGGER.trace(log + " query : " + updatePreparedStatementUser.toString());
+                    LOGGER.debug(log + " query : " + updatePreparedStatementUser.toString());
                     //Delete des liens user / group
                     deletePreparedStatementUserGroup.setString(1, u.getEmail());
                     deletePreparedStatementUserGroup.execute();
-                    LOGGER.trace(log + " query : " + deletePreparedStatementUserGroup.toString());
+                    LOGGER.debug(log + " query : " + deletePreparedStatementUserGroup.toString());
 
                     if (u.getPassword() != null && !u.getPassword().equals("")) {
                         updatePreparedStatementUserPassword.setString(1, u.getPassword());
                         updatePreparedStatementUserPassword.setString(2, u.getEmail());
                         updatePreparedStatementUserPassword.execute();
-                        LOGGER.trace(log + " query : " + updatePreparedStatementUserPassword.toString());
+                        LOGGER.debug(log + " query : " + updatePreparedStatementUserPassword.toString());
                     }
 
                     //Insert des nouveaux liens users / email

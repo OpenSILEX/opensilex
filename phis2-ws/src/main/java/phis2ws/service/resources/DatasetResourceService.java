@@ -243,11 +243,8 @@ public class DatasetResourceService {
             datasetDAOMongo.variable = variable;
         }
         if (startDate != null && endDate != null) {
-            //SILEX:todo
-            //Check date format etc.
             datasetDAOMongo.startDate = startDate;
             datasetDAOMongo.endDate = endDate;
-            //\SILEX:todo
         }
         if (agronomicalObjects != null) {
             //the agronomical object's uri must be separated by ","

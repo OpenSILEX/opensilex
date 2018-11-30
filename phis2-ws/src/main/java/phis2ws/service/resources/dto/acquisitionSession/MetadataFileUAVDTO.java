@@ -5,7 +5,7 @@
 // Creation date: 4 sept. 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package phis2ws.service.resources.dto;
+package phis2ws.service.resources.dto.acquisitionSession;
 
 import com.google.gson.annotations.SerializedName;
 
@@ -15,6 +15,30 @@ import com.google.gson.annotations.SerializedName;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class MetadataFileUAVDTO extends MetadataFileDTO {
+    // The current installation uri. 
+    // e.g. http://www.phenome-fppn.fr/diaphen
+    @SerializedName("Installation")
+    protected String installation;
+    // The group plot type, associated to groupPlotAlias, groupPlotUri, groupPlotSpecies
+    // e.g. http://www.phenome-fppn.fr/vocabulary/2017#Experiment
+    @SerializedName("GroupPlot_type")
+    protected String groupPlotType;
+    // The alias of the group plot, associated to groupPlotType, groupPlotUri, groupPlotSpecies 
+    // e.g. BBlee_2018
+    @SerializedName("GroupPlot_alias")
+    protected String groupPlotAlias;
+    // The group plot uri, associated to groupPlotType, grouPlotAlias, groupPlotSpecies
+    // e.g. http://www.phenome-fppn.fr/diaphen/DIA2017-2
+    @SerializedName("GroupPlot_uri")
+    protected String groupPlotUri;
+    // The species of the group plot, associated to groupPlotType, groupPlotUri, groupPlotAlias
+    // e.g. Maize
+    @SerializedName("GroupPlot_species")
+    protected String groupPlotSpecies;
+    // A pilot email
+    // e.g. john.doe@email.fr
+    @SerializedName("Pilot")
+    protected String pilot;
     //The camera type, associated to cameraAlias and cameraUri.
     //e.g. http://www.phenome-fppn.fr/vocabulary/2017#RGBCamera
     @SerializedName("Camera_type")
@@ -40,14 +64,66 @@ public class MetadataFileUAVDTO extends MetadataFileDTO {
     //e.g. http://www.phenome-fppn.fr/diaphen/v01
     @SerializedName("Vector_uri")
     protected String vectorUri;
-    //The radiometric target uri, associated to radiometricTargetAlias.
-    //e.g. http://www.phenome-fppn.fr/diaphen/rt0003
-    @SerializedName("RadiometricTarget_uri")
-    protected String radiometricTargetUri;
     //The radiometric target alias, associated to radiometricTargetUri.
     //e.g. RD001
     @SerializedName("RadiometricTarget_alias")
     protected String radiometricTargetAlias;
+    //The radiometric target uri, associated to radiometricTargetAlias.
+    //e.g. http://www.phenome-fppn.fr/diaphen/rt0003
+    @SerializedName("RadiometricTarget_uri")
+    protected String radiometricTargetUri;
+    
+    public MetadataFileUAVDTO() {
+        super();
+    }
+    
+    public String getInstallation() {
+        return installation;
+    }
+
+    public void setInstallation(String installation) {
+        this.installation = installation;
+    }
+
+    public String getGroupPlotType() {
+        return groupPlotType;
+    }
+
+    public void setGroupPlotType(String groupPlotType) {
+        this.groupPlotType = groupPlotType;
+    }
+
+    public String getGroupPlotUri() {
+        return groupPlotUri;
+    }
+
+    public void setGroupPlotUri(String groupPlotUri) {
+        this.groupPlotUri = groupPlotUri;
+    }
+
+    public String getGroupPlotAlias() {
+        return groupPlotAlias;
+    }
+
+    public void setGroupPlotAlias(String groupPlotAlias) {
+        this.groupPlotAlias = groupPlotAlias;
+    }
+
+    public String getGroupPlotSpecies() {
+        return groupPlotSpecies;
+    }
+
+    public void setGroupPlotSpecies(String groupPlotSpecies) {
+        this.groupPlotSpecies = groupPlotSpecies;
+    }
+
+    public String getPilot() {
+        return pilot;
+    }
+
+    public void setPilot(String pilot) {
+        this.pilot = pilot;
+    }
 
     public String getCameraType() {
         return cameraType;

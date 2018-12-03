@@ -12,7 +12,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import javax.ws.rs.core.Response;
+import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.update.UpdateRequest;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.MalformedQueryException;
@@ -37,7 +45,6 @@ import phis2ws.service.resources.dto.SensorDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
-import phis2ws.service.utils.sparql.SPARQLUpdateBuilder;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.Dataset;
 import phis2ws.service.view.model.phis.Sensor;
@@ -506,27 +513,42 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
      * @param sensor
      * @return the query
      */
-    private SPARQLUpdateBuilder prepareInsertQuery(Sensor sensor) {
-        SPARQLUpdateBuilder query = new SPARQLUpdateBuilder();
+    private UpdateRequest prepareInsertQuery(Sensor sensor) {
+        UpdateBuilder spql = new UpdateBuilder();
         
-        query.appendGraphURI(Contexts.SENSORS.toString());
-        query.appendTriplet(sensor.getUri(), Rdf.RELATION_TYPE.toString(), sensor.getRdfType(), null);
-        query.appendTriplet(sensor.getUri(), Rdfs.RELATION_LABEL.toString(), "\"" + sensor.getLabel() + "\"", null);
-        query.appendTriplet(sensor.getUri(), Vocabulary.RELATION_HAS_BRAND.toString(), "\"" + sensor.getBrand() + "\"", null);
-        query.appendTriplet(sensor.getUri(), Vocabulary.RELATION_IN_SERVICE_DATE.toString(), "\"" + sensor.getInServiceDate() + "\"", null);
-        query.appendTriplet(sensor.getUri(), Vocabulary.RELATION_PERSON_IN_CHARGE.toString(), "\"" + sensor.getPersonInCharge() + "\"", null);
+        Node graph = NodeFactory.createURI(Contexts.SENSORS.toString());
+        
+        Resource sensorUri = ResourceFactory.createResource(sensor.getUri());
+        
+        Node sensorType = NodeFactory.createURI(sensor.getRdfType());
+        
+        spql.addInsert(graph, sensorUri, RDF.type, sensorType);
+        spql.addInsert(graph, sensorUri, RDFS.label, sensor.getLabel());
+        
+        Property relationHasBrand = ResourceFactory.createProperty(Vocabulary.RELATION_HAS_BRAND.toString());
+        Property relationInServiceDate = ResourceFactory.createProperty(Vocabulary.RELATION_IN_SERVICE_DATE.toString());
+        Property relationPersonInCharge = ResourceFactory.createProperty(Vocabulary.RELATION_PERSON_IN_CHARGE.toString());
+        
+        spql.addInsert(graph, sensorUri, relationHasBrand, sensor.getBrand() );
+        spql.addInsert(graph, sensorUri, relationInServiceDate, sensor.getInServiceDate());
+        spql.addInsert(graph, sensorUri, relationPersonInCharge, sensor.getPersonInCharge() );
         
         if (sensor.getSerialNumber() != null) {
-            query.appendTriplet(sensor.getUri(), Vocabulary.RELATION_SERIAL_NUMBER.toString(), "\"" + sensor.getSerialNumber() + "\"", null);
+            Property relationSerialNumber = ResourceFactory.createProperty(Vocabulary.RELATION_SERIAL_NUMBER.toString());
+            spql.addInsert(graph, sensorUri, relationSerialNumber, sensor.getSerialNumber() );
         }
         
         if (sensor.getDateOfPurchase() != null) {
-            query.appendTriplet(sensor.getUri(), Vocabulary.RELATION_DATE_OF_PURCHASE.toString(), "\"" + sensor.getDateOfPurchase() + "\"", null);
+            Property relationDateOfPurchase = ResourceFactory.createProperty(Vocabulary.RELATION_DATE_OF_PURCHASE.toString());
+            spql.addInsert(graph, sensorUri, relationDateOfPurchase, sensor.getDateOfPurchase() );
         }
         
         if (sensor.getDateOfLastCalibration() != null) {
-            query.appendTriplet(sensor.getUri(), Vocabulary.RELATION_DATE_OF_LAST_CALIBRATION.toString(), "\"" + sensor.getDateOfLastCalibration() + "\"", null);
+            Property relationDateOfCalibration = ResourceFactory.createProperty(Vocabulary.RELATION_DATE_OF_LAST_CALIBRATION.toString());
+            spql.addInsert(graph, sensorUri, relationDateOfCalibration, sensor.getDateOfLastCalibration() );
         }
+        
+        UpdateRequest query = spql.buildRequest();
         
         LOGGER.debug(getTraceabilityLogs() + " query : " + query.toString());
         return query;
@@ -557,7 +579,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
             Sensor sensor = sensorDTO.createObjectFromDTO();
             sensor.setUri(uriGenerator.generateNewInstanceUri(sensorDTO.getRdfType(), null, null));
             
-            SPARQLUpdateBuilder query = prepareInsertQuery(sensor);
+            UpdateRequest query = prepareInsertQuery(sensor);
             Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
             prepareUpdate.execute();
             
@@ -664,7 +686,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
                 String deleteQuery = prepareDeleteQuery(sensorsCorresponding.get(0));
                 
                 //2. insert new data
-                SPARQLUpdateBuilder insertQuery = prepareInsertQuery(sensorDTO.createObjectFromDTO());
+                UpdateRequest insertQuery = prepareInsertQuery(sensorDTO.createObjectFromDTO());
                 try {
                     this.getConnection().begin();
                     Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery);

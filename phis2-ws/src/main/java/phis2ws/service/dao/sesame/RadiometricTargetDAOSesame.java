@@ -580,7 +580,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
             BindingSet bindingSet = result.next();
             uri = bindingSet.getValue(URI).stringValue();
         }
-        
+         
         if (uri == null) {
             return 0;
         } else {

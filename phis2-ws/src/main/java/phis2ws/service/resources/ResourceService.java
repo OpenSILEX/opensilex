@@ -24,9 +24,6 @@ public class ResourceService {
     @SessionInject
     protected Session userSession;
     
-    //The max value of the pageSize coming from the service property pageSizeMax.
-    final static int MAX_PAGE_SIZE = 150000;
-    
     /**
      * Generic reponse for no result found
      * @param getResponse
@@ -37,5 +34,17 @@ public class ResourceService {
         insertStatusList.add(new Status(StatusCodeMsg.NO_RESULTS, StatusCodeMsg.INFO, "No result found."));
         getResponse.setStatus(insertStatusList);
         return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
+    }
+
+    /**
+     * Generic method for sql error message
+     * @param getResponse
+     * @param insertStatusList
+     * @return the Response with the error message
+     */
+    protected Response sqlError(ResultForm getResponse, ArrayList<Status> insertStatusList) {
+        insertStatusList.add(new Status("SQL error", StatusCodeMsg.ERR, "can't fetch result"));
+        getResponse.setStatus(insertStatusList);
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(getResponse).build();
     }
 }

@@ -34,15 +34,11 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.sesame.TraitDaoSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.TraitDTO;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
@@ -56,13 +52,7 @@ import phis2ws.service.view.model.phis.Trait;
 
 @Api("/traits")
 @Path("traits")
-public class TraitResourceService {
-    final static Logger LOGGER = LoggerFactory.getLogger(TraitResourceService.class);
-    
-    //Session utilisateur
-    @SessionInject
-    Session userSession;
-    
+public class TraitResourceService extends ResourceService {
     @POST
     @ApiOperation(value = "Post trait(s)",
                   notes = "Register new trait(s) in the data base")
@@ -152,12 +142,6 @@ public class TraitResourceService {
             postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty traits(s) to update"));
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
-    }
-    
-    private Response noResultFound(ResponseFormTrait getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status(StatusCodeMsg.NO_RESULTS, StatusCodeMsg.INFO, "No results for the traits"));
-        getResponse.setStatus(insertStatusList);
-        return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
     }
     
     /**

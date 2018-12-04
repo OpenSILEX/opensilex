@@ -34,16 +34,12 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.mongo.DatasetDAOMongo;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.DatasetDTO;
 import phis2ws.service.resources.validation.interfaces.Date;
 import phis2ws.service.resources.validation.interfaces.URL;
@@ -60,14 +56,7 @@ import phis2ws.service.view.model.phis.Dataset;
  */
 @Api("/datasets")
 @Path("/datasets") 
-public class DatasetResourceService {
-    
-    final static Logger LOGGER = LoggerFactory.getLogger(DatasetResourceService.class);
-   
-    //user session
-    @SessionInject
-    Session userSession;
-    
+public class DatasetResourceService extends ResourceService {
     /**
      * 
      * @param datasets dataset to save. If in the provance there is only the uri
@@ -159,18 +148,6 @@ public class DatasetResourceService {
             getResponse = new ResponseFormDataset(0, 0, datasets, true);
             return noResultFound(getResponse, statusList);
         }
-    }
-    
-    /**
-     * 
-     * @param getResponse
-     * @param insertStatusList
-     * @return the response "no result found" for the service
-     */
-    private Response noResultFound(ResponseFormDataset getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status(StatusCodeMsg.NO_RESULTS, StatusCodeMsg.INFO, "No results for the datasets"));
-        getResponse.setStatus(insertStatusList);
-        return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
     }
     
     /**

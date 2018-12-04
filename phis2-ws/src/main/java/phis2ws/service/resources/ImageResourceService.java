@@ -54,14 +54,12 @@ import javax.ws.rs.core.UriInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
-import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.mongo.ImageMetadataDaoMongo;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.injection.SessionInject;
 import phis2ws.service.ontologies.Vocabulary;
 import phis2ws.service.resources.dto.ImageMetadataDTO;
 import phis2ws.service.resources.validation.interfaces.Required;
@@ -82,14 +80,11 @@ import phis2ws.service.view.model.phis.ImageMetadata;
  */
 @Api("/images")
 @Path("/images")
-public class ImageResourceService {
+public class ImageResourceService extends ResourceService {
     final static Logger LOGGER = LoggerFactory.getLogger(ImageResourceService.class);
     
     @Context
     UriInfo uri;
-    
-    @SessionInject
-    Session userSession;
     
     // For the waiting annotations
     public final static ExecutorService THREAD_POOL = Executors.newCachedThreadPool();
@@ -341,18 +336,6 @@ public class ImageResourceService {
             }
         }
         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(new ResponseFormPOST()).build();
-    }
-    
-    /**
-     * 
-     * @param getResponse
-     * @param insertStatusList
-     * @return the response "no result found" for the service
-     */
-    private Response noResultFound(ResponseFormImageMetadata getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status(StatusCodeMsg.NO_RESULTS, StatusCodeMsg.INFO, "No results for the images metadata"));
-        getResponse.setStatus(insertStatusList);
-        return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
     }
     
     /**

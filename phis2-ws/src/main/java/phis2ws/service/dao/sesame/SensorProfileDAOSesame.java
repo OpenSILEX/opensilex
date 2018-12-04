@@ -13,6 +13,14 @@ package phis2ws.service.dao.sesame;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.update.UpdateRequest;
+import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -30,12 +38,10 @@ import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Vocabulary;
-import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyDTO;
 import phis2ws.service.resources.dto.SensorProfileDTO;
 import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyPostDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
-import phis2ws.service.utils.sparql.SPARQLUpdateBuilder;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.Ask;
 import phis2ws.service.view.model.phis.Property;
@@ -172,19 +178,29 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
      *  }
      * }
      */
-    private SPARQLUpdateBuilder prepareInsertQuery(SensorProfile sensorProfile) {
-        SPARQLUpdateBuilder query = new SPARQLUpdateBuilder();
+    private UpdateRequest prepareInsertQuery(SensorProfile sensorProfile) {
+        UpdateBuilder spql = new UpdateBuilder();
         
-        query.appendGraphURI(Contexts.SENSORS.toString());
+        Node graph = NodeFactory.createURI(Contexts.SENSORS.toString());
+        
+        Resource sensorProfileUri = ResourceFactory.createResource(sensorProfile.getUri());
         
         for (Property property : sensorProfile.getProperties()) {
+            org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
+            
             if (property.getRdfType() != null) {
-                query.appendTriplet(sensorProfile.getUri(), property.getRelation(), property.getValue(), null);
-                query.appendTriplet(property.getValue(), Rdf.RELATION_TYPE.toString(), property.getRdfType(), null);
+                Node propertyValue = NodeFactory.createURI(property.getValue());
+                
+                spql.addInsert(graph, sensorProfileUri, propertyRelation, propertyValue);
+                spql.addInsert(graph,propertyValue, RDF.type, property.getRdfType());
             } else {
-                query.appendTriplet(sensorProfile.getUri(), property.getRelation(), "\"" + property.getValue() + "\"", null);
+                Literal propertyValue = ResourceFactory.createStringLiteral(property.getValue());
+                spql.addInsert(graph, sensorProfileUri, propertyRelation, propertyValue);
             }
         }
+        
+        UpdateRequest query = spql.buildRequest();
+        
         LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
         return query;
     }
@@ -207,7 +223,7 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
         
         this.getConnection().begin();
         for (SensorProfileDTO sensorProfileDTO : sensorsProfiles) {
-            SPARQLUpdateBuilder query = prepareInsertQuery(sensorProfileDTO.createObjectFromDTO());
+            UpdateRequest query = prepareInsertQuery(sensorProfileDTO.createObjectFromDTO());
             Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
             prepareUpdate.execute();
             

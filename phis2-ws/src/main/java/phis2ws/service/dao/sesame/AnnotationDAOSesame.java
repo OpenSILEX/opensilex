@@ -10,6 +10,17 @@ package phis2ws.service.dao.sesame;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.update.UpdateRequest;
+import org.apache.jena.vocabulary.DCTerms;
+import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -30,7 +41,6 @@ import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.DublinCore;
 import phis2ws.service.ontologies.Oa;
-import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Vocabulary;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.resources.dto.AnnotationDTO;
@@ -38,7 +48,6 @@ import phis2ws.service.utils.JsonConverter;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.dates.Dates;
-import phis2ws.service.utils.sparql.SPARQLUpdateBuilder;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.Annotation;
 
@@ -236,7 +245,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
             Annotation annotation = annotationDTO.createObjectFromDTO();
             annotation.setUri(uriGenerator.generateNewInstanceUri(Vocabulary.CONCEPT_ANNOTATION.toString(), null, null));
 
-            SPARQLUpdateBuilder query = prepareInsertQuery(annotation);
+            UpdateRequest query = prepareInsertQuery(annotation);
             Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
             prepareUpdate.execute();
 
@@ -274,33 +283,52 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
      * @param annotation
      * @return the query
      */
-    private SPARQLUpdateBuilder prepareInsertQuery(Annotation annotation) {
-        SPARQLUpdateBuilder query = new SPARQLUpdateBuilder();
-
-        query.appendGraphURI(Contexts.ANNOTATIONS.toString());
-        query.appendTriplet(annotation.getUri(), Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_ANNOTATION.toString(), null);
+    private UpdateRequest prepareInsertQuery(Annotation annotation) {
+        UpdateBuilder spql = new UpdateBuilder();
+        
+        Node graph = NodeFactory.createURI(Contexts.ANNOTATIONS.toString());
+        
+        Resource annotationUri = ResourceFactory.createResource(annotation.getUri());
+        
+        Node annotationConcept = NodeFactory.createURI(Vocabulary.CONCEPT_ANNOTATION.toString());
+        
+        spql.addInsert(graph, annotationUri, RDF.type, annotationConcept);
+        
         DateTimeFormatter formatter = DateTimeFormat.forPattern(DateFormats.YMDTHMSZ_FORMAT);
-        query.appendTriplet(annotation.getUri(), DublinCore.RELATION_CREATED.toString(), "\"" + annotation.getCreated().toString(formatter) + "\"^^xsd:dateTime", null);
-        query.appendTriplet(annotation.getUri(), DublinCore.RELATION_CREATOR.toString(), annotation.getCreator(), null);
+        Literal creationDate = ResourceFactory.createTypedLiteral(annotation.getCreated().toString(formatter), XSDDatatype.XSDdateTime);
+        Property dcRelationCreated = ResourceFactory.createProperty(DublinCore.RELATION_CREATED.toString());
+        spql.addInsert(graph, annotationUri, dcRelationCreated, creationDate);
+        
+        Property dcRelationCreator = ResourceFactory.createProperty(DublinCore.RELATION_CREATOR.toString());
+        Node creator =  NodeFactory.createURI(annotation.getCreator());
+        spql.addInsert(graph, annotationUri, dcRelationCreator, creator);
 
-        query.appendTriplet(annotation.getUri(), Oa.RELATION_MOTIVATED_BY.toString(), annotation.getMotivatedBy(), null);
+        Property relationMotivatedBy = ResourceFactory.createProperty(Oa.RELATION_MOTIVATED_BY.toString());
+        Node motivatedByReason =  NodeFactory.createURI(annotation.getMotivatedBy());
+        spql.addInsert(graph, annotationUri, relationMotivatedBy, motivatedByReason);
 
         /**
          * @link https://www.w3.org/TR/annotation-model/#bodies-and-targets
          */
         if (annotation.getBodiesValue() != null && !annotation.getBodiesValue().isEmpty()) {
+            Property relationBodyValue = ResourceFactory.createProperty(Oa.RELATION_BODY_VALUE.toString());
             for (String annotbodyValue : annotation.getBodiesValue()) {
-                query.appendTriplet(annotation.getUri(), Oa.RELATION_BODY_VALUE.toString(), "\"" + annotbodyValue + "\"", null);
+                 spql.addInsert(graph, annotationUri, relationBodyValue, annotbodyValue);
             }
         }
         /**
          * @link https://www.w3.org/TR/annotation-model/#bodies-and-targets
          */
         if (annotation.getTargets() != null && !annotation.getTargets().isEmpty()) {
+            Property relationHasTarget = ResourceFactory.createProperty(Oa.RELATION_HAS_TARGET.toString());
             for (String targetUri : annotation.getTargets()) {
-                query.appendTriplet(annotation.getUri(), Oa.RELATION_HAS_TARGET.toString(), targetUri, null);
+                Resource targetResourceUri = ResourceFactory.createResource(targetUri);
+                spql.addInsert(graph, annotationUri, relationHasTarget, targetResourceUri);
             }
         }
+        
+        UpdateRequest query = spql.buildRequest();
+                
         LOGGER.debug(getTraceabilityLogs() + " query : " + query.toString());
         return query;
     }

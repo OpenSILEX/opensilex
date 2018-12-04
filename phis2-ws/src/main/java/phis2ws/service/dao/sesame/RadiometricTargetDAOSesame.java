@@ -10,6 +10,15 @@ package phis2ws.service.dao.sesame;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.update.UpdateRequest;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -30,7 +39,6 @@ import phis2ws.service.ontologies.Vocabulary;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
-import phis2ws.service.utils.sparql.SPARQLUpdateBuilder;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.Property;
 import phis2ws.service.view.model.phis.RadiometricTarget;
@@ -246,23 +254,35 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
      *      }
      * }
      */
-    private SPARQLUpdateBuilder prepareInsertQuery(RadiometricTarget radiometricTarget) {
-        SPARQLUpdateBuilder query = new SPARQLUpdateBuilder();
+    private UpdateRequest prepareInsertQuery(RadiometricTarget radiometricTarget) {
+        UpdateBuilder spql = new UpdateBuilder();
         
-        query.appendGraphURI(Contexts.RADIOMETRIC_TARGETS.toString());
-        query.appendTriplet(radiometricTarget.getUri(), Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_RADIOMETRIC_TARGET.toString(), null);
-        query.appendTriplet(radiometricTarget.getUri(), Rdfs.RELATION_LABEL.toString(), "\"" + radiometricTarget.getLabel() + "\"", null);
+        Node graph = NodeFactory.createURI(Contexts.RADIOMETRIC_TARGETS.toString());
+        
+        Resource radiometricTargetUri = ResourceFactory.createResource(radiometricTarget.getUri());
+        Node radiometricTargetConcept = NodeFactory.createURI(Vocabulary.CONCEPT_RADIOMETRIC_TARGET.toString());
+        
+        spql.addInsert(graph, radiometricTargetUri, RDF.type, radiometricTargetConcept);
+        spql.addInsert(graph, radiometricTargetUri, RDFS.label, radiometricTarget.getLabel());
         
         for (Property property : radiometricTarget.getProperties()) {
             if (property.getValue() != null) {
+                org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
+                
                 if (property.getRdfType() != null) {
-                    query.appendTriplet(radiometricTarget.getUri(), property.getRelation(), property.getValue(), null);
-                    query.appendTriplet(property.getValue(), Rdf.RELATION_TYPE.toString(), property.getRdfType(), null);
+                    Node propertyValue = NodeFactory.createURI(property.getValue());
+                    
+                    spql.addInsert(graph, radiometricTargetUri, propertyRelation, propertyValue);
+                    spql.addInsert(graph, propertyValue, RDF.type, property.getRdfType());
                 } else {
-                    query.appendTriplet(radiometricTarget.getUri(), property.getRelation(), "\"" + property.getValue() + "\"", null);
+                    Literal propertyValue = ResourceFactory.createStringLiteral(property.getValue());
+                    spql.addInsert(graph, radiometricTargetUri, propertyRelation, propertyValue);
                 }
             }
         }
+        
+        UpdateRequest query = spql.buildRequest();
+        
         LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
         return query;
     }
@@ -290,7 +310,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
             //Generate uri
             radiometricTarget.setUri(uriGenerator.generateNewInstanceUri(Vocabulary.CONCEPT_RADIOMETRIC_TARGET.toString(), null, null));
             //Insert radiometric target
-            SPARQLUpdateBuilder query = prepareInsertQuery(radiometricTarget);
+            UpdateRequest query = prepareInsertQuery(radiometricTarget);
             
             try {
                 Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
@@ -480,7 +500,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
                 //SILEX:info
                 //Insert only the triplets with a not null value. 
                 //\SILEX:info
-                SPARQLUpdateBuilder insertQuery = prepareInsertQuery(radiometricTarget);            
+                UpdateRequest insertQuery = prepareInsertQuery(radiometricTarget);            
                 try {
                     Update prepareDelete = getConnection().prepareUpdate(deleteQuery);
                     Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, insertQuery.toString());

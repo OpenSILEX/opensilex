@@ -39,7 +39,7 @@ public class PageSizeMaxRequestFilter implements ContainerRequestFilter {
                     requestContext.abortWith(Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(pageSizeError)).type(MediaType.APPLICATION_JSON).build());
                 }
             } catch (java.lang.NumberFormatException ex) {
-                final Status pageSizeError = new Status( "You are trying to retrieve to much result at one time.",StatusCodeMsg.ERR, "The current pageSize limit is : " + PAGE_SIZE_DEFAULT_LIMIT + " items");
+                final Status pageSizeError = new Status("Wrong page size format.",StatusCodeMsg.ERR, "It might be because you gave a page size higher than the current page size limit (" + PAGE_SIZE_DEFAULT_LIMIT + ")");
                 requestContext.abortWith(Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(pageSizeError)).type(MediaType.APPLICATION_JSON).build());
             }
         }

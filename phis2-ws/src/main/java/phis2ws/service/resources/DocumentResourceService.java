@@ -56,7 +56,6 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
-import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
@@ -65,7 +64,6 @@ import phis2ws.service.dao.mongo.DocumentDaoMongo;
 import phis2ws.service.dao.sesame.DocumentDaoSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.injection.SessionInject;
 import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.resources.dto.DocumentMetadataDTO;
 import phis2ws.service.resources.validation.interfaces.Date;
@@ -93,12 +91,9 @@ import phis2ws.service.resources.validation.interfaces.SortingValue;
  */
 @Api("/documents")
 @Path("/documents")
-public class DocumentResourceService {
+public class DocumentResourceService extends ResourceService {
     @Context
     UriInfo uri;
-    
-    @SessionInject
-    Session userSession;
     
     final static Logger LOGGER = LoggerFactory.getLogger(DocumentResourceService.class);
     
@@ -528,12 +523,6 @@ public class DocumentResourceService {
             postResponse = new ResponseFormPOST(new Status("Request error", StatusCodeMsg.ERR, "Empty document(s) to update"));
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
-    }
-    
-    private Response noResultFound(ResponseFormDocumentMetadata getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status("No results", StatusCodeMsg.INFO, "No results for the documents"));
-        getResponse.setStatus(insertStatusList);
-        return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
     }
     
     /**

@@ -34,15 +34,11 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.phis.GroupDao;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.GroupDTO;
 import phis2ws.service.resources.validation.interfaces.GroupLevel;
 import phis2ws.service.resources.validation.interfaces.Required;
@@ -57,13 +53,7 @@ import phis2ws.service.view.model.phis.Group;
 
 @Api("/group")
 @Path("groups")
-public class GroupResourceService {
-    final static Logger LOGGER = LoggerFactory.getLogger(GroupResourceService.class);
-    
-    //Session de l'utilisateur
-    @SessionInject
-    Session userSession;
-    
+public class GroupResourceService extends ResourceService {
     /**
      * 
      * @param limit
@@ -263,19 +253,7 @@ public class GroupResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }
-    
-    private Response noResultFound(ResponseFormGroup getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status("No results", StatusCodeMsg.INFO, "No results for the projects"));
-        getResponse.setStatus(insertStatusList);
-        return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
-    }
-    
-    private Response sqlError(ResponseFormGroup getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status("SQL error ", StatusCodeMsg.ERR, "can't fetch result"));
-        getResponse.setStatus(insertStatusList);
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(getResponse).build();
-    }
-    
+
     /**
      * Collecte les données issues d'une requête de l'utilisateur (recherche de groupes)
      * @param groupDao GroupDao

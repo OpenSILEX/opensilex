@@ -29,16 +29,12 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.mongo.EnvironmentDAOMongo;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.environment.EnvironmentMeasureDTO;
 import phis2ws.service.resources.dto.environment.EnvironmentMeasurePostDTO;
 import phis2ws.service.resources.validation.interfaces.Date;
@@ -49,7 +45,6 @@ import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
 import phis2ws.service.view.brapi.form.ResponseFormEnvironmentMeasure;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
-import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.EnvironmentMeasure;
 
 /**
@@ -58,13 +53,7 @@ import phis2ws.service.view.model.phis.EnvironmentMeasure;
  */
 @Api("/environments")
 @Path("/environments")
-public class EnvironmentResourceService {
-    final static Logger LOGGER = LoggerFactory.getLogger(EnvironmentResourceService.class);
-    
-    //user session
-    @SessionInject
-    Session userSession;
-    
+public class EnvironmentResourceService extends ResourceService {
     /**
      * Generayes an Environment list from a given list of EnvironmentPostDTO.
      * @param environmentDTOs
@@ -255,17 +244,5 @@ public class EnvironmentResourceService {
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }
-    }
-    
-        /**
-     * Return a generic response when no result are found
-     * @param getResponse
-     * @param insertStatusList
-     * @return the response "no result found" for the service
-     */
-    private Response noResultFound(ResultForm getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status(StatusCodeMsg.NO_RESULTS, StatusCodeMsg.INFO, "No environment measures found"));
-        getResponse.setStatus(insertStatusList);
-        return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
     }
 }

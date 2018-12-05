@@ -28,15 +28,11 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.sesame.AnnotationDAOSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.injection.SessionInject;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
@@ -55,17 +51,10 @@ import phis2ws.service.view.model.phis.Annotation;
  */
 @Api("/annotations")
 @Path("/annotations")
-public class AnnotationResourceService {
-
-    final static Logger LOGGER = LoggerFactory.getLogger(AnnotationResourceService.class);
-
-    //User session
-    @SessionInject
-    Session userSession;
-
+public class AnnotationResourceService extends ResourceService {
     /**
      * insert given annotations in the triplestore
-     * e.g.
+     * @example
      * [
      *   {
      *     "motivatedBy": "http://www.w3.org/ns/oa#describing",
@@ -294,20 +283,5 @@ public class AnnotationResourceService {
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }
-    }
-
-    /**
-     * Generic reponse for not found annotations.
-     * SILEX:todo
-     * Need to create an abstract resource class to make this method more generic
-     * \SILEX:todo
-     * @param getResponse
-     * @param insertStatusList
-     * @return 
-     */
-    private Response noResultFound(ResponseFormAnnotation getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status(StatusCodeMsg.NO_RESULTS, StatusCodeMsg.INFO, "No results for the annotations"));
-        getResponse.setStatus(insertStatusList);
-        return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
     }
 }

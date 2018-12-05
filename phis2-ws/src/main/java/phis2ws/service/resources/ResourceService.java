@@ -16,7 +16,7 @@ import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.manager.ResultForm;
 
 /**
- * 
+ * Class extended by all the resource services, which contains the common methods and attributes.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ResourceService {

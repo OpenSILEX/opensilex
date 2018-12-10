@@ -420,6 +420,12 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
             sparqlQuery.appendFilter("regex(STR(?" + COMMENT +"), '" + comment + "', 'i')");
         }
         
+        if (sortByDate != null && sortByDate.equals("asc")) {
+            sparqlQuery.appendOrderBy("ASC(?" + CREATION_DATE + ")");
+        } else if (sortByDate != null && sortByDate.equals("desc")) {
+            sparqlQuery.appendOrderBy("DESC(?" + CREATION_DATE + ")");
+        }
+        
         LOGGER.debug(SPARQL_SELECT_QUERY + sparqlQuery.toString());
         
        return sparqlQuery;

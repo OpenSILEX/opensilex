@@ -25,7 +25,7 @@ import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.model.phis.Species;
 
 /**
- *
+ * Species access in the triplestore rdf4j
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class SpeciesDAOSesame extends DAOSesame<Species> {
@@ -33,7 +33,6 @@ public class SpeciesDAOSesame extends DAOSesame<Species> {
     private static final Logger LOGGER = LoggerFactory.getLogger(SpeciesDAOSesame.class);
 
     public SpeciesDAOSesame() {
-        
     }
     
     @Override

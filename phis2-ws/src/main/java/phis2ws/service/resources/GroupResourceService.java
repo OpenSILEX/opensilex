@@ -267,25 +267,21 @@ public class GroupResourceService extends ResourceService {
         Integer groupsCount = groupDao.count();
         
         if (groupsCount != null && groupsCount == 0) {
-            getResponse = new ResponseFormGroup(groupDao.getPageSize(), groupDao.getPage(), groups, true);
+            getResponse = new ResponseFormGroup(groupDao.getPageSize(), groupDao.getPage(), groups, true, groupsCount);
             return noResultFound(getResponse, statusList);
         } else {
             groups = groupDao.allPaginate();
-            if (groups == null) {
-                groups = new ArrayList<>();
-                getResponse = new ResponseFormGroup(0, 0, groups, true);
+            
+            if (groups == null || groupsCount == null) { //sql error
+                getResponse = new ResponseFormGroup(0, 0, groups, true, groupsCount);
                 return sqlError(getResponse, statusList);
-            } else if (!groups.isEmpty() && groupsCount != null) {
-                getResponse = new ResponseFormGroup(groupDao.getPageSize(), groupDao.getPage(), groups, false);
-                if (getResponse.getResult().dataSize() == 0) {
-                    return noResultFound(getResponse, statusList);
-                } else {
-                    getResponse.setStatus(statusList);
-                    return Response.status(Response.Status.OK).entity(getResponse).build();
-                }
-            } else {
-                getResponse = new ResponseFormGroup(0, 0, groups, true);
+            } else if (groups.isEmpty()) { // no result found
+                getResponse = new ResponseFormGroup(groupDao.getPageSize(), groupDao.getPage(), groups, false, groupsCount);
                 return noResultFound(getResponse, statusList);
+            } else { //results founded
+                getResponse = new ResponseFormGroup(groupDao.getPageSize(), groupDao.getPage(), groups, true, groupsCount);
+                getResponse.setStatus(statusList);
+                return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         }
     }

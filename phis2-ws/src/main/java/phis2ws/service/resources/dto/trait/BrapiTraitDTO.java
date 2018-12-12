@@ -1,20 +1,21 @@
 //******************************************************************************
-//                                       BrapiTrait.java
+//                                       BrapiTraitDTO.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 28 august 2018
 // Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package phis2ws.service.view.model.phis;
+package phis2ws.service.resources.dto.trait;
 
 import java.util.ArrayList;
+import phis2ws.service.view.model.phis.Trait;
 
 /**
  * Represents a trait according to brapi specifications
  * @See https://brapi.docs.apiary.io/#reference/traits
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
-public class BrapiTrait {
+public class BrapiTraitDTO {
     private String defaultValue;
     //The comment of the trait in the triplestore e.g. "one-sided green leaf area per unit ground surface area"
     private String description;
@@ -25,8 +26,14 @@ public class BrapiTrait {
     private String traitDbId;
     private String traitId; 
 
-    public BrapiTrait() {
+    public BrapiTraitDTO() {
     }
+    
+    public BrapiTraitDTO(Trait trait) {
+        this.traitDbId = trait.getUri();
+        this.name = trait.getLabel();
+        this.description = trait.getComment();
+    }    
 
     public String getDefaultValue() {
         return defaultValue;

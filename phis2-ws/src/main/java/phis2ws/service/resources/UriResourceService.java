@@ -52,38 +52,7 @@ import phis2ws.service.view.model.phis.Uri;
  *
  * @author Eloan LAGIER
  */
-public class UriResourceService {
-
-    final static Logger LOGGER = LoggerFactory.getLogger(UriResourceService.class);
-
-    //user Session 
-    @SessionInject
-    Session userSession;
-
-    /**
-     * 
-     * @param response
-     * @param statusList
-     * @return the response "no result found" for the exist (ask) services
-     */
-    private Response noResultFound(ResponseFormAsk response, ArrayList<Status> statusList) {
-        statusList.add(new Status(StatusCodeMsg.NO_RESULTS, StatusCodeMsg.INFO, "No results for the exist query"));
-        response.setStatus(statusList);
-        return Response.status(Response.Status.NOT_FOUND).entity(response).build();
-    }
-
-    /**
-     * 
-     * @param response
-     * @param statusList
-     * @return the response "no result found" for the uri services
-     */
-    private Response noResultFound(ResponseFormUri response, ArrayList<Status> statusList) {
-         statusList.add(new Status(StatusCodeMsg.NO_RESULTS, StatusCodeMsg.INFO, "No results for the given uri"));
-        response.setStatus(statusList);
-        return Response.status(Response.Status.NOT_FOUND).entity(response).build();
-    }
-
+public class UriResourceService extends ResourceService {
     /**
      * search if an uri is in the triplestore or not
      *

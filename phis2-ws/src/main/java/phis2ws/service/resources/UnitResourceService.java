@@ -56,13 +56,7 @@ import phis2ws.service.view.model.phis.Unit;
 
 @Api("/units")
 @Path("units")
-public class UnitResourceService {
-    final static Logger LOGGER = LoggerFactory.getLogger(UnitResourceService.class);
-    
-    //Session utilisateur
-    @SessionInject
-    Session userSession;
-    
+public class UnitResourceService extends ResourceService {
     @POST
     @ApiOperation(value = "Post unit(s)",
                   notes = "Register new unit(s) in the data base")
@@ -153,13 +147,7 @@ public class UnitResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }
-    
-    private Response noResultFound(ResponseFormUnit getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status("No results", StatusCodeMsg.INFO, "No results for the units"));
-        getResponse.setStatus(insertStatusList);
-        return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
-    }
-    
+
     /**
      * Collecte les données issues d'une requête de l'utilisateur (recherche d'unités)
      * @param unitDaoSesame

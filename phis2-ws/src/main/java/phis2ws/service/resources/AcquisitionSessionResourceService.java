@@ -24,21 +24,15 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.sesame.AcquisitionSessionDAOSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
-import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.acquisitionSession.MetadataFileDTO;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.ResponseFormMetadataFile;
-import phis2ws.service.view.manager.ResultForm;
 
 /**
  * Acquisition session service.
@@ -46,28 +40,7 @@ import phis2ws.service.view.manager.ResultForm;
  */
 @Api("/acquisitionSessions")
 @Path("/acquisitionSessions")
-public class AcquisitionSessionResourceService {
-    final static Logger LOGGER = LoggerFactory.getLogger(AcquisitionSessionResourceService.class);
-    
-    //user session
-    @SessionInject
-    Session userSession;
-    
-    /**
-     * Generic reponse for not found acquisition session.
-     * SILEX:todo
-     * Need to create an abstract resource class to make this method more generic
-     * \SILEX:todo
-     * @param getResponse
-     * @param insertStatusList
-     * @return 
-     */
-    private Response noResultFound(ResultForm getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status(StatusCodeMsg.NO_RESULTS, StatusCodeMsg.INFO, "No results for the acquisition session"));
-        getResponse.setStatus(insertStatusList);
-        return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
-    }
-
+public class AcquisitionSessionResourceService extends ResourceService {
     /**
      * Search acquisition session metadata file metadata corresponding to the given type of file wanted.
      * @param acquisitionSessionDAOSesame

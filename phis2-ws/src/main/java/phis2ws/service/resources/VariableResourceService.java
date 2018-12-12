@@ -34,15 +34,11 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.sesame.VariableDaoSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.VariableDTO;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
@@ -56,13 +52,7 @@ import phis2ws.service.view.model.phis.Variable;
 
 @Api("/variables")
 @Path("variables")
-public class VariableResourceService {
-    final static Logger LOGGER = LoggerFactory.getLogger(VariableResourceService.class);
-    
-    //Session de l'utilisateur
-    @SessionInject
-    Session userSession;
-    
+public class VariableResourceService extends ResourceService {
     /**
      * 
      * @param variables la liste des variables à enregistrer
@@ -161,12 +151,6 @@ public class VariableResourceService {
             postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty variable(s) to update"));
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
-    }
-    
-    private Response noResultFound(ResponseFormVariable getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status(StatusCodeMsg.NO_RESULTS, StatusCodeMsg.INFO, "No results for the variables"));
-        getResponse.setStatus(insertStatusList);
-        return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
     }
     
     /**

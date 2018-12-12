@@ -60,13 +60,7 @@ import phis2ws.service.view.model.phis.RadiometricTarget;
  */
 @Api("/radiometricTargets")
 @Path("/radiometricTargets")
-public class RadiometricTargetResourceService {
-    final static Logger LOGGER = LoggerFactory.getLogger(RadiometricTargetResourceService.class);
-    
-    //user session
-    @SessionInject
-    Session userSession;
-    
+public class RadiometricTargetResourceService extends ResourceService {
     /**
      * Generates a RadiometricTarget list from a given list of RadiometricTargetPostDTO
      * @param radiometricTargetsPostDTO
@@ -393,17 +387,5 @@ public class RadiometricTargetResourceService {
             getResponse = new ResponseFormRdfResourceDefinition(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         }
-    }
-    
-    /**
-     * Return a generic response when no result are found
-     * @param getResponse
-     * @param insertStatusList
-     * @return the response "no result found" for the service
-     */
-    private Response noResultFound(ResultForm getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status(StatusCodeMsg.NO_RESULTS, StatusCodeMsg.INFO, "No results for the radiometric target"));
-        getResponse.setStatus(insertStatusList);
-        return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
     }
 }

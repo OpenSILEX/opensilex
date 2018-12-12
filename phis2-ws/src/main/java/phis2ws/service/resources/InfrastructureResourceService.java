@@ -25,17 +25,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
-import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.sesame.InfrastructureDAOSesame;
 import phis2ws.service.dao.sesame.PropertyDAOSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
-import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.injection.SessionInject;
 import phis2ws.service.ontologies.Vocabulary;
 import phis2ws.service.resources.dto.infrastructures.InfrastructureDTO;
 import phis2ws.service.resources.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
@@ -43,7 +38,6 @@ import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.ResponseFormRdfResourceDefinition;
-import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Infrastructure;
 
 /**
@@ -52,14 +46,8 @@ import phis2ws.service.view.model.phis.Infrastructure;
  */
 @Api("/infrastructures")
 @Path("/infrastructures")
-public class InfrastructureResourceService {
-    final static Logger LOGGER = LoggerFactory.getLogger(InfrastructureResourceService.class);
-    
+public class InfrastructureResourceService extends ResourceService {
     private static final String PROPERTY_FILE_NAME = "service";
-    
-    //user session
-    @SessionInject
-    Session userSession;
     
     /**
      * Search infrastructures by uri, rdfType. 
@@ -69,8 +57,9 @@ public class InfrastructureResourceService {
      * @param uri
      * @param rdfType
      * @param label
+     * @param language
      * @return list of the infrastructures corresponding to the search params given
-     * e.g
+     * @example
      * {
      *      "metadata": {
      *          "pagination": {
@@ -169,18 +158,6 @@ public class InfrastructureResourceService {
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }
-    }
-
-    /**
-     * Return a generic response when no result are found
-     * @param getResponse
-     * @param insertStatusList
-     * @return the response "no result found" for the service
-     */
-    private Response noResultFound(ResultForm getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status(StatusCodeMsg.NO_RESULTS, StatusCodeMsg.INFO, "No results for the infrastructures"));
-        getResponse.setStatus(insertStatusList);
-        return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
     }
     
     /**

@@ -25,9 +25,10 @@ public class ResponseFormProject extends ResultForm<Project> {
      * @param currentPage page demandée
      * @param projects liste des résultats
      * @param paginate 
+     * @param totalCount 
      */
-    public ResponseFormProject(int pageSize, int currentPage, ArrayList<Project> projects, boolean paginate) {
-        metadata = new Metadata(pageSize, currentPage, projects.size());
+    public ResponseFormProject(int pageSize, int currentPage, ArrayList<Project> projects, boolean paginate, int totalCount) {
+        metadata = new Metadata(pageSize, currentPage, totalCount);
         if (projects.size() > 1) {
             result = new ResultProject(projects, metadata.getPagination(), paginate);
         } else {

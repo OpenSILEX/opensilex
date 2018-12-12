@@ -304,25 +304,21 @@ public class ProjectResourceService extends ResourceService {
         Integer projectsCount = projectDao.count();
         
         if (projectsCount != null && projectsCount == 0) {
-            getResponse = new ResponseFormProject(projectDao.getPageSize(), projectDao.getPage(), projects, true);
+            getResponse = new ResponseFormProject(projectDao.getPageSize(), projectDao.getPage(), projects, true, projectsCount);
             return noResultFound(getResponse, statusList);
         } else {
             projects = projectDao.allPaginate();
-            if (projects == null) {
-                projects = new ArrayList<>();
-                getResponse = new ResponseFormProject(0, 0, projects, true);
+            
+            if (projects == null || projectsCount == null) { //sql error
+                getResponse = new ResponseFormProject(0, 0, projects, true, projectsCount);
                 return sqlError(getResponse, statusList);
-            } else if (!projects.isEmpty() && projectsCount != null) {
-                getResponse = new ResponseFormProject(projectDao.getPageSize(), projectDao.getPage(), projects, false);
-                if (getResponse.getResult().dataSize() == 0) {
-                    return noResultFound(getResponse, statusList);
-                } else {
-                    getResponse.setStatus(statusList);
-                    return Response.status(Response.Status.OK).entity(getResponse).build();
-                }
-            } else {
-                getResponse = new ResponseFormProject(0, 0, projects, true);
+            } else if (projects.isEmpty()) { // no result found
+                getResponse = new ResponseFormProject(projectDao.getPageSize(), projectDao.getPage(), projects, false, projectsCount);
                 return noResultFound(getResponse, statusList);
+            } else { //results founded
+                getResponse = new ResponseFormProject(projectDao.getPageSize(), projectDao.getPage(), projects, true, projectsCount);
+                getResponse.setStatus(statusList);
+                return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         }
     }

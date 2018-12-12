@@ -25,9 +25,10 @@ public class ResponseFormGroup extends ResultForm<Group> {
      * @param currentPage page demandée
      * @param groups liste des resultats
      * @param paginate 
+     * @param totalCount 
      */
-    public ResponseFormGroup(int pageSize, int currentPage, ArrayList<Group> groups, boolean paginate) {
-        metadata = new Metadata(pageSize, currentPage, groups.size());
+    public ResponseFormGroup(int pageSize, int currentPage, ArrayList<Group> groups, boolean paginate, int totalCount) {
+        metadata = new Metadata(pageSize, currentPage, totalCount);
         if (groups.size() > 1) {
             result = new ResultGroup(groups, metadata.getPagination(), paginate);
         } else {

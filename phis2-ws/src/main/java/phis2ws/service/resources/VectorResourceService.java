@@ -63,25 +63,7 @@ import phis2ws.service.view.model.phis.Vector;
  */
 @Api("/vectors")
 @Path("/vectors")
-public class VectorResourceService {
-    final static Logger LOGGER = LoggerFactory.getLogger(VectorResourceService.class);
-    
-    //user session
-    @SessionInject
-    Session userSession;
-    
-    /**
-     * 
-     * @param getResponse
-     * @param insertStatusList
-     * @return the response "no result found" for the service
-     */
-    private Response noResultFound(ResponseFormVector getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status(StatusCodeMsg.NO_RESULTS, StatusCodeMsg.INFO, "No results for the vectors"));
-        getResponse.setStatus(insertStatusList);
-        return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
-    }
-    
+public class VectorResourceService extends ResourceService {
     /**
      * Search vectors corresponding to search params given by a user
      * @param vectorDAOSesame

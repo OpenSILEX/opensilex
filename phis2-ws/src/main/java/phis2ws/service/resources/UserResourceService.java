@@ -32,15 +32,11 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.phis.UserDaoPhisBrapi;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.injection.SessionInject;
 import phis2ws.service.model.User;
 import phis2ws.service.resources.dto.UserDTO;
 import phis2ws.service.resources.validation.interfaces.Required;
@@ -55,19 +51,13 @@ import phis2ws.service.view.brapi.form.ResponseFormUser;
 
 /**
  * Represents the user data service.
- * @author Morgane Vidal <morgane.vidal@inra.fr>, Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
  * @update [Morgane Vidal] April, 2017 : no explanation
  * @update [Arnaud Charleroy] 13 September, 2018 : add total count to response object
  */
 @Api("/user")
 @Path("users")
-public class UserResourceService {
-    final static Logger LOGGER = LoggerFactory.getLogger(UserResourceService.class);
-    
-    //Session de l'utilisateur
-    @SessionInject
-    Session userSession;
-    
+public class UserResourceService extends ResourceService {
     /**
      * 
      * @param limit
@@ -201,7 +191,6 @@ public class UserResourceService {
         return getUsersData(userDao);
     }
     
-    
     @POST
     @ApiOperation(value = "Post a user",
                   notes = "Register a new user in the database")
@@ -295,18 +284,6 @@ public class UserResourceService {
             postResponse = new ResponseFormPOST(new Status("Request error", StatusCodeMsg.ERR, "Empty user(s) to update"));
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
-    }
-    
-    private Response noResultFound(ResponseFormUser getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status("No results", StatusCodeMsg.INFO, "No results for the users"));
-        getResponse.setStatus(insertStatusList);
-        return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
-    }
-    
-    private Response sqlError(ResponseFormUser getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status("SQL error ", StatusCodeMsg.ERR, "can't fetch result"));
-        getResponse.setStatus(insertStatusList);
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(getResponse).build();
     }
     
     /**

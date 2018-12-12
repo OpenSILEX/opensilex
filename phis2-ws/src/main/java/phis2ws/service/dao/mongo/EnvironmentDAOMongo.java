@@ -9,9 +9,9 @@ package phis2ws.service.dao.mongo;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
-import com.mongodb.MongoBulkWriteException;
+import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
-import com.mongodb.bulk.BulkWriteError;
+import com.mongodb.client.ClientSession;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.ws.rs.core.Response;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -288,14 +289,14 @@ public class EnvironmentDAOMongo extends DAOMongo<EnvironmentMeasure> {
         //We create a collection for each variable. The environment measures are sorted by variable
         //\SILEX:information
         
-        //SILEX:todo
-        //Transactions
-        //\SILEX:todo
+        // Initialize transaction
+        MongoClient client = DAOMongo.getMongoClient();
+        ClientSession session = client.startSession();
+        session.startTransaction();
+        
         POSTResultsReturn result = null;
         List<Status> status = new ArrayList<>();
         List<String> createdResources = new ArrayList<>(); 
-        
-        boolean insert = true;
         
         HashMap<String, List<Document>> environmentsToInsertByVariable = new HashMap<>();
         
@@ -327,58 +328,62 @@ public class EnvironmentDAOMongo extends DAOMongo<EnvironmentMeasure> {
                     .createIndex(indexFields, indexOptions);
         });
         
-        
         //3. Insert all the environment measures
-        if (insert) {
-            environmentsToInsertByVariable.entrySet().forEach((environmentToInsert) -> {
-                MongoCollection<Document> environmentMeasureVariableCollection = database.getCollection(getEnvironmentCollectionFromVariable(environmentToInsert.getKey()));
-                try {
-                    environmentMeasureVariableCollection.insertMany(environmentToInsert.getValue());
+        // Use of AtomicBoolean to use it inside the lambda loop (impossible with a standart boolean)
+        // @see: https://stackoverflow.com/questions/46713854/which-is-the-best-way-to-set-drop-boolean-flag-inside-lambda-function
+        AtomicBoolean hasError = new AtomicBoolean(false);
+        environmentsToInsertByVariable.entrySet().forEach((environmentToInsert) -> {
+            MongoCollection<Document> environmentMeasureVariableCollection = database.getCollection(getEnvironmentCollectionFromVariable(environmentToInsert.getKey()));
+
+            try {
+                environmentMeasureVariableCollection.insertMany(session, environmentToInsert.getValue());
+                status.add(new Status(
+                    StatusCodeMsg.RESOURCES_CREATED, 
+                    StatusCodeMsg.INFO, 
+                    StatusCodeMsg.DATA_INSERTED + " for the variable " + environmentToInsert.getKey()
+                ));
+                createdResources.add(environmentToInsert.getKey());
+
+            } catch (MongoException ex) {
+                // Define that an error occurs
+                hasError.set(true);
+                
+                // Error check if it's because of a duplicated data error
+                // Add status according to the error type (duplication or unexpected)
+                if (ex.getCode() == DAOMongo.DUPLICATE_KEY_ERROR_CODE) {
                     status.add(new Status(
-                        StatusCodeMsg.RESOURCES_CREATED, 
-                        StatusCodeMsg.INFO, 
-                        StatusCodeMsg.DATA_INSERTED + " for the variable " + environmentToInsert.getKey()
+                        StatusCodeMsg.ALREADY_EXISTING_DATA, 
+                        StatusCodeMsg.ERR, 
+                        ex.getMessage()
                     ));
-                    createdResources.add(environmentToInsert.getKey());
-                } catch (MongoException ex) {
-                    // Error check if it's because of a duplicated data error
-                    boolean isDulipcationError = false;
-                    if (ex instanceof MongoBulkWriteException) {
-                        List<BulkWriteError> writeErrors = ((MongoBulkWriteException) ex).getWriteErrors();
-                        if (writeErrors.size() > 0) {
-                            isDulipcationError = (writeErrors.get(0).getCode() == DAOMongo.DUPLICATE_KEY_ERROR_CODE);
-                        }
-                    }
-                    
-                    // Add status according to the error type (duplication or unexpected)
-                    if (isDulipcationError) {
-                        status.add(new Status(
-                            StatusCodeMsg.ALREADY_EXISTING_DATA, 
-                            StatusCodeMsg.ERR, 
-                            ex.getMessage()
-                        ));
-                    } else {
-                        // Add the original exception message for debugging
-                        status.add(new Status(
-                            StatusCodeMsg.UNEXPECTED_ERROR, 
-                            StatusCodeMsg.ERR, 
-                            StatusCodeMsg.DATA_REJECTED + " for the measure variable: " + environmentToInsert.getKey() + " - " + ex.getMessage()
-                        ));
-                    }
+                } else {
+                    // Add the original exception message for debugging
+                    status.add(new Status(
+                        StatusCodeMsg.UNEXPECTED_ERROR, 
+                        StatusCodeMsg.ERR, 
+                        StatusCodeMsg.DATA_REJECTED + " for the measure variable: " + environmentToInsert.getKey() + " - " + ex.getMessage()
+                    ));
                 }
-            });
-        }
+            }
+        });
         
         //4. Prepare result to return
-        result = new POSTResultsReturn(insert);
+        result = new POSTResultsReturn(hasError.get());
         result.statusList = status;
-        if (insert) {
+        
+        if (!hasError.get()) {
+            // If no errors commit transaction
+            session.commitTransaction();
             result.setHttpStatus(Response.Status.CREATED);
             result.createdResources = createdResources;
         } else {
-            result.setHttpStatus(Response.Status.INTERNAL_SERVER_ERROR);
+            // If errors abort transaction
+            session.abortTransaction();
+            result.setHttpStatus(Response.Status.BAD_REQUEST);
         }
         
+        // Close transaction session
+        session.close();
         return result;
     }
     

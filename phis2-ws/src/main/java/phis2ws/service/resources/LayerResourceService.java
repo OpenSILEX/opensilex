@@ -31,14 +31,10 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.phis.LayerDao;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.LayerDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.ResourcesUtils;
@@ -48,14 +44,7 @@ import phis2ws.service.view.brapi.form.ResponseFormPOST;
 
 @Api("/layers")
 @Path("layers")
-public class LayerResourceService {
-    final static Logger LOGGER = LoggerFactory.getLogger(LayerResourceService.class);
-    
-    //Session de l'utilisateur
-    @SessionInject
-    Session userSession;
-    
-    
+public class LayerResourceService extends ResourceService {
     /**
      * 
      * @param layers

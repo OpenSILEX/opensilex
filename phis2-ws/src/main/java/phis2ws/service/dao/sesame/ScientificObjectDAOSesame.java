@@ -276,7 +276,6 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
             scientificObject.setUri(uriGenerator.generateNewInstanceUri(scientificObject.getRdfType(), scientificObjectDTO.getYear(), null));
             
             //2. Register in triplestore
-//            SPARQLUpdateBuilder spqlInsert = new SPARQLUpdateBuilder();
             UpdateBuilder spql = new UpdateBuilder();
             
             Node graph = null;

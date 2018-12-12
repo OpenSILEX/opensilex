@@ -34,15 +34,11 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.sesame.MethodDaoSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.MethodDTO;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
@@ -56,13 +52,7 @@ import phis2ws.service.view.model.phis.Method;
 
 @Api("/methods")
 @Path("methods")
-public class MethodResourceService {
-    final static Logger LOGGER = LoggerFactory.getLogger(MethodResourceService.class);
-    
-    //Session utilisateur
-    @SessionInject
-    Session userSession;
-    
+public class MethodResourceService extends ResourceService {
     @POST
     @ApiOperation(value = "Post method(s)",
                   notes = "Register new method(s) in the data base")
@@ -153,13 +143,7 @@ public class MethodResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }
-    
-    private Response noResultFound(ResponseFormMethod getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status("No results", StatusCodeMsg.INFO, "No results for the methods"));
-        getResponse.setStatus(insertStatusList);
-        return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
-    }
-    
+
     /**
      * Collecte les données issues d'une requête de l'utilisateur (recherche de methodes)
      * @param methodDaoSesame

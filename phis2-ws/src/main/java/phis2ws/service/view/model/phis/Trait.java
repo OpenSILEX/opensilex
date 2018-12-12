@@ -12,10 +12,13 @@
 package phis2ws.service.view.model.phis;
 
 public class Trait extends RdfResourceDefinition {
+
     public Trait() {
-        
+      
     }
+    
     public Trait(String uri) {
         super(uri);
     }
+    
 } 

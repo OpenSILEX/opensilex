@@ -323,6 +323,7 @@ public class GroupDao extends DAOPhisBrapi<Group, GroupDTO> {
             query.appendANDWhereConditionIfNeeded(sqlFields.get("level"), level, "ILIKE", null, tableAlias);
             query.appendANDWhereConditionIfNeeded(sqlFields.get("description"), description, "ILIKE", null, tableAlias);
             query.appendLimit(String.valueOf(pageSize));
+            query.appendOffset(Integer.toString(this.getPage() * this.getPageSize()));
             
             queryResult = statement.executeQuery(query.toString());
             

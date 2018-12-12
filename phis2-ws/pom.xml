@@ -63,7 +63,7 @@
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver</artifactId>
-            <version>3.5.0</version>
+            <version>3.9.0</version>
             <type>jar</type>
         </dependency>
         <dependency>
@@ -248,6 +248,12 @@
             <artifactId>jena-querybuilder</artifactId>
             <version>3.9.0</version>
         </dependency>
+        <!-- Java 11 compatibility (@see https://blog.codefx.org/java/java-11-migration-guide/) -->
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.1</version>
+        </dependency>        
     </dependencies>
 
     <build>

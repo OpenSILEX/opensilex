@@ -228,9 +228,13 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
             query.appendANDWhereConditionIfNeeded(sqlFields.get("place"), place, "ILIKE", null, tableAlias);
             query.appendANDWhereConditionIfNeeded(sqlFields.get("alias"), alias, "ILIKE", null, tableAlias);
             query.appendANDWhereConditionIfNeeded(sqlFields.get("keyword"), keyword, "ILIKE", null, tableAlias);
+
             query.appendLimit(String.valueOf(pageSize));
+            query.appendOffset(Integer.toString(this.getPage() * this.getPageSize()));
             
             queryResult = statement.executeQuery(query.toString());
+            
+            LOGGER.debug (query.toString());
             
             UserDaoPhisBrapi userDao = new UserDaoPhisBrapi();
             userDao.isAdmin(user);
@@ -310,6 +314,8 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
             query.appendFrom("at_trial_users", "tu");
             query.appendANDWhereConditionIfNeeded("trial_uri", experiment.getUri(), "=", null, "tu");
             query.appendJoin(JoinAttributes.INNERJOIN, "users", "u", "u.email = tu.users_email");
+            
+            LOGGER.debug(query.toString());
             
             ResultSet queryResult = statement.executeQuery(query.toString());
             while (queryResult.next()) {
@@ -466,7 +472,7 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
                         for (Project project : experiment.getProjects()) {
                             insertPreparedStatementAtExperimentProject.setString(1, project.getUri());
                             insertPreparedStatementAtExperimentProject.setString(2, experiment.getUri());
-                            LOGGER.trace(log + " quert : " + insertPreparedStatementAtExperimentProject.toString());
+                            LOGGER.debug(log + " quert : " + insertPreparedStatementAtExperimentProject.toString());
                             insertPreparedStatementAtExperimentProject.execute();
                         }
                         
@@ -474,7 +480,7 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
                         for (Group group : experiment.getGroups()) {
                             insertPreparedStatementAtGroupExperiment.setString(1, group.getUri());
                             insertPreparedStatementAtGroupExperiment.setString(2, experiment.getUri());
-                            LOGGER.trace(log + " quert : " + insertPreparedStatementAtExperimentProject.toString());
+                            LOGGER.debug(log + " quert : " + insertPreparedStatementAtExperimentProject.toString());
                             insertPreparedStatementAtGroupExperiment.execute();
                         }
                         
@@ -484,7 +490,7 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
                             insertPreparedStatementAtExperimentUsers.setString(2, contact.getEmail());
                             insertPreparedStatementAtExperimentUsers.setString(3, contact.getType());
                             insertPreparedStatementAtExperimentUsers.execute();
-                            LOGGER.trace(log + " quert : " + insertPreparedStatementAtExperimentUsers.toString());
+                            LOGGER.debug(log + " quert : " + insertPreparedStatementAtExperimentUsers.toString());
                         }
                         
                         inserted++;
@@ -787,14 +793,14 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
                     updatePreparedStatementExperiment.setString(8, experiment.getObjective());
                     updatePreparedStatementExperiment.setString(9, experiment.getCropSpecies());
                     updatePreparedStatementExperiment.setString(10, experiment.getUri());
-                    LOGGER.trace(log + " quert : " + updatePreparedStatementExperiment.toString());
+                    LOGGER.debug(log + " quert : " + updatePreparedStatementExperiment.toString());
                     updatePreparedStatementExperiment.execute();
                     
                     
                     //Delete des Projets
                     deletePreparedStatementProject.setString(1, experiment.getUri());
                     deletePreparedStatementProject.execute();
-                    LOGGER.trace(log + " quert : " + deletePreparedStatementProject.toString());
+                    LOGGER.debug(log + " quert : " + deletePreparedStatementProject.toString());
                     
                     //Insert des projets
                     if (experiment.getProjects() != null && !experiment.getProjects().isEmpty()) {
@@ -802,14 +808,14 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
                             insertPreparedStatementProject.setString(1, experiment.getUri());
                             insertPreparedStatementProject.setString(2, project.getUri());
                             insertPreparedStatementProject.execute();
-                            LOGGER.trace(log + " quert : " + insertPreparedStatementProject);
+                            LOGGER.debug(log + " quert : " + insertPreparedStatementProject);
                         }
                     }
                     
                     //Delete des groups 
                     deletePreparedStatementGroup.setString(1, experiment.getUri());
                     deletePreparedStatementGroup.execute();
-                    LOGGER.trace(log + " quert : " + deletePreparedStatementGroup.toString());
+                    LOGGER.debug(log + " quert : " + deletePreparedStatementGroup.toString());
                     
                     //Insert des groupes
                     if (experiment.getGroups() != null && !experiment.getGroups().isEmpty()) {
@@ -817,14 +823,14 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
                             insertPreparedStatementGroup.setString(1, experiment.getUri());
                             insertPreparedStatementGroup.setString(2, group.getUri());
                             insertPreparedStatementGroup.execute();
-                            LOGGER.trace(log + " quert : " + insertPreparedStatementGroup.toString());
+                            LOGGER.debug(log + " quert : " + insertPreparedStatementGroup.toString());
                         }
                     }
                     
                     //Delete des contacts
                     deletePreparedStatementContact.setString(1, experiment.getUri());
                     deletePreparedStatementContact.execute();
-                    LOGGER.trace(log + " quert : " + deletePreparedStatementContact.toString());
+                    LOGGER.debug(log + " quert : " + deletePreparedStatementContact.toString());
                     
                     //Insert des contacts
                     if (experiment.getContacts() != null && !experiment.getContacts().isEmpty()) {
@@ -833,7 +839,7 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
                             insertPreparedStatementContact.setString(2, contact.getEmail());
                             insertPreparedStatementContact.setString(3, contact.getType());
                             insertPreparedStatementContact.execute();
-                            LOGGER.trace(log + " quert : " + insertPreparedStatementContact.toString());
+                            LOGGER.debug(log + " quert : " + insertPreparedStatementContact.toString());
                         }
                     }
                     

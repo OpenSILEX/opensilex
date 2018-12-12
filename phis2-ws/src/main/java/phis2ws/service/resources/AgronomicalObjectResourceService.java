@@ -34,13 +34,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.sesame.AgronomicalObjectDAOSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.AgronomicalObjectDTO;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.utils.POSTResultsReturn;
@@ -56,13 +54,8 @@ import phis2ws.service.view.model.phis.AgronomicalObject;
  */
 @Api("/agronomicalObjects")
 @Path("agronomicalObjects")
-public class AgronomicalObjectResourceService {
-
+public class AgronomicalObjectResourceService extends ResourceService {
     final static Logger LOGGER = LoggerFactory.getLogger(AgronomicalObjectResourceService.class);
-    
-    //Session de l'utilisateur
-    @SessionInject
-    Session userSession;
   
     /**
      * Enregistre un ensemble d'objets agronomiques dans le triplestore et les associe à un essai s'il est renseigné
@@ -123,12 +116,6 @@ public class AgronomicalObjectResourceService {
             postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty agronomical objects list"));
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
-    }
-    
-    private Response noResultFound(ResponseFormAgronomicalObject getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status(StatusCodeMsg.NO_RESULTS, StatusCodeMsg.INFO, "No results for the agronomical objects"));
-        getResponse.setStatus(insertStatusList);
-        return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
     }
     
     /**

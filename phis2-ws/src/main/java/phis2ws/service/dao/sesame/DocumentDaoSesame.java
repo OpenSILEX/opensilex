@@ -12,6 +12,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.update.UpdateRequest;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -183,6 +191,57 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
     }
 
     /**
+     * Prepare insert query for document metadata
+     * 
+     * @param documentMetadata
+     * @return update request
+     */
+    private UpdateRequest prepareInsertQuery(DocumentMetadataDTO documentMetadata) {
+        UpdateBuilder spql = new UpdateBuilder();
+        Node graph = NodeFactory.createURI(Contexts.DOCUMENTS.toString());
+
+        Node documentUri = NodeFactory.createURI(documentMetadata.getUri());
+
+        Node documentType = NodeFactory.createURI(documentMetadata.getDocumentType());
+        spql.addInsert(graph, documentUri, RDF.type, documentType);
+
+        Property relationCreator = ResourceFactory.createProperty(DublinCore.RELATION_CREATOR.toString());
+        spql.addInsert(graph, documentUri, relationCreator, documentMetadata.getCreator());
+
+        Property relationLanguage = ResourceFactory.createProperty(DublinCore.RELATION_LANGUAGE.toString());
+        spql.addInsert(graph, documentUri, relationLanguage, documentMetadata.getLanguage());
+
+        Property relationTitle = ResourceFactory.createProperty(DublinCore.RELATION_TITLE.toString());
+        spql.addInsert(graph, documentUri, relationTitle, documentMetadata.getTitle());
+
+        Property relationDate = ResourceFactory.createProperty(DublinCore.RELATION_DATE.toString());
+        spql.addInsert(graph, documentUri, relationDate, documentMetadata.getCreationDate());
+
+        Property relationFormat = ResourceFactory.createProperty(DublinCore.RELATION_FORMAT.toString());
+        spql.addInsert(graph, documentUri, relationFormat, documentMetadata.getExtension());
+
+        Property relationStatus = ResourceFactory.createProperty(Vocabulary.RELATION_STATUS.toString());
+        spql.addInsert(graph, documentUri, relationStatus, documentMetadata.getStatus());
+
+        if (documentMetadata.getComment() != null) {
+            spql.addInsert(graph, documentUri, RDFS.comment, documentMetadata.getComment());
+        }
+
+        if (!(documentMetadata.getConcern() == null) && !documentMetadata.getConcern().isEmpty()) {
+            for (ConcernItemDTO concernedItem : documentMetadata.getConcern()) {
+                Node concernedItemUri = NodeFactory.createURI(concernedItem.getUri());
+                Node concernedItemType = NodeFactory.createURI(concernedItem.getTypeURI());
+                Property relationConcern = ResourceFactory.createProperty(Vocabulary.RELATION_CONCERN.toString());
+
+                spql.addInsert(graph, documentUri, relationConcern, concernedItemUri);
+                spql.addInsert(graph, concernedItemUri, RDF.type, concernedItemType);
+            }
+        }
+
+        return spql.buildRequest();
+    } 
+    
+    /**
      * Insert document's metadata in the triplestore and the file in mongo
      * @param documentsMetadata
      * @return the insert result, with each error or information
@@ -206,6 +265,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
             //1. Save document in mongodb
             final String documentName = generateDocumentsURI(); 
             
+            annotObject.setUri(documentName);
             POSTResultsReturn saveFileResult = saveFileInMongoDB(annotObject.getServerFilePath(), documentName);
             insertStatus.addAll(saveFileResult.statusList);
             
@@ -218,35 +278,12 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
                 //\SILEX:conception
                 //Document's metadata are correct and can be savec in triplestore                  
                 //3. Save metadata in triplestore
-                SPARQLUpdateBuilder spqlInsert = new SPARQLUpdateBuilder();
-
-                spqlInsert.appendGraphURI(Contexts.DOCUMENTS.toString()); //Documents named graph
-                spqlInsert.appendTriplet(documentName, Rdf.RELATION_TYPE.toString(), annotObject.getDocumentType(), null);
-                spqlInsert.appendTriplet(documentName, DublinCore.RELATION_CREATOR.toString(), "\"" + annotObject.getCreator() + "\"", null);
-                spqlInsert.appendTriplet(documentName, DublinCore.RELATION_LANGUAGE.toString(), "\"" + annotObject.getLanguage() + "\"", null);
-                spqlInsert.appendTriplet(documentName, DublinCore.RELATION_TITLE.toString(), "\"" + annotObject.getTitle() + "\"", null);
-                spqlInsert.appendTriplet(documentName, DublinCore.RELATION_DATE.toString(), "\"" + annotObject.getCreationDate() + "\"", null);
-                spqlInsert.appendTriplet(documentName, DublinCore.RELATION_FORMAT.toString(), "\"" + annotObject.getExtension() + "\"", null);
-                spqlInsert.appendTriplet(documentName, Vocabulary.RELATION_STATUS.toString(), "\"" + annotObject.getStatus() + "\"", null);
-
-                if (annotObject.getComment() != null) {
-                    //SILEX:info
-                    // Use of ''' to escape \r\n characters from comment string which break the generated request string
-                    //\SILEX:info
-                    spqlInsert.appendTriplet(documentName, Rdfs.RELATION_COMMENT.toString(), "'''" + annotObject.getComment() + "'''", null);
-                }
-
-                if (!(annotObject.getConcern() == null) && !annotObject.getConcern().isEmpty()) {
-                    for (ConcernItemDTO concernedItem : annotObject.getConcern()) {
-                        spqlInsert.appendTriplet(documentName, Vocabulary.RELATION_CONCERN.toString(), concernedItem.getUri(), null);
-                        spqlInsert.appendTriplet(concernedItem.getUri(), Rdf.RELATION_TYPE.toString(), concernedItem.getTypeURI(), null);
-                    }
-                }
+                UpdateRequest query = prepareInsertQuery(annotObject);
 
                 try {
                     // transaction begining
                     this.getConnection().begin();
-                    Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spqlInsert.toString());
+                    Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
                     LOGGER.trace(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                     prepareUpdate.execute();
 
@@ -701,34 +738,13 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
             }
 
             //2. Insert updated metadata
-            SPARQLUpdateBuilder spqlInsert = new SPARQLUpdateBuilder();
-            spqlInsert.appendGraphURI(Contexts.DOCUMENTS.toString()); 
-            spqlInsert.appendTriplet(documentMetadata.getUri(), Rdf.RELATION_TYPE.toString(), documentMetadata.getDocumentType(), null);
-            spqlInsert.appendTriplet(documentMetadata.getUri(), DublinCore.RELATION_CREATOR.toString(), "\"" + documentMetadata.getCreator() + "\"", null);
-            spqlInsert.appendTriplet(documentMetadata.getUri(), DublinCore.RELATION_LANGUAGE.toString(), "\"" + documentMetadata.getLanguage() + "\"", null);
-            spqlInsert.appendTriplet(documentMetadata.getUri(), DublinCore.RELATION_TITLE.toString(), "\"" + documentMetadata.getTitle() + "\"", null);
-            spqlInsert.appendTriplet(documentMetadata.getUri(), DublinCore.RELATION_DATE.toString(), "\"" + documentMetadata.getCreationDate() + "\"", null);
-            spqlInsert.appendTriplet(documentMetadata.getUri(), Vocabulary.RELATION_STATUS.toString(), "\"" + documentMetadata.getStatus() + "\"", null);
-
-            if (documentMetadata.getComment() != null) {
-                //SILEX:info
-                // Use of ''' to escape \r\n characters from comment string which break the generated request string
-                //\SILEX:info
-                spqlInsert.appendTriplet(documentMetadata.getUri(), Rdfs.RELATION_COMMENT.toString(), "'''" + documentMetadata.getComment() + "'''", null);
-            }
-
-            if (documentMetadata.getConcern() != null && !documentMetadata.getConcern().isEmpty() && documentMetadata.getConcern().size() > 0) {
-                for (ConcernItemDTO concernedItem : documentMetadata.getConcern()) {
-                    spqlInsert.appendTriplet(documentMetadata.getUri(), Vocabulary.RELATION_CONCERN.toString(), concernedItem.getUri(), null);
-                    spqlInsert.appendTriplet(concernedItem.getUri(), Rdf.RELATION_TYPE.toString(), concernedItem.getTypeURI(), null);
-                }
-            }
-
+            UpdateRequest query = prepareInsertQuery(documentMetadata);
+            
             try {
                 // début de la transaction : vérification de la requête
                 this.getConnection().begin();
                 Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery);
-                Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spqlInsert.toString());
+                Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
                 LOGGER.debug(getTraceabilityLogs() + " query : " + prepareDelete.toString());
                 LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                 prepareDelete.execute();

@@ -20,6 +20,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
+import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.MalformedQueryException;
@@ -47,7 +53,6 @@ import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.ResourcesUtils;
 import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
-import phis2ws.service.utils.sparql.SPARQLUpdateBuilder;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.AgronomicalObject;
 import phis2ws.service.view.model.phis.Property;
@@ -269,12 +274,20 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
             agronomicalObject.setUri(uriGenerator.generateNewInstanceUri(agronomicalObject.getRdfType(), agronomicalObjectDTO.getYear(), null));
             
             //2. Register in triplestore
-            SPARQLUpdateBuilder spqlInsert = new SPARQLUpdateBuilder();
+//            SPARQLUpdateBuilder spqlInsert = new SPARQLUpdateBuilder();
+            UpdateBuilder spql = new UpdateBuilder();
             
-            String graphURI = agronomicalObject.getUriExperiment() != null ? agronomicalObject.getUriExperiment() 
-                                                                      : Contexts.AGONOMICAL_OBJECTS.toString();
-            spqlInsert.appendGraphURI(graphURI);
-            spqlInsert.appendTriplet(agronomicalObject.getUri(), Rdf.RELATION_TYPE.toString(), agronomicalObject.getRdfType(), null);
+            Node graph = null;
+            if (agronomicalObject.getUriExperiment() != null) {
+                graph = NodeFactory.createURI(agronomicalObject.getUriExperiment() );
+            } else {
+                graph = NodeFactory.createURI(Contexts.AGONOMICAL_OBJECTS.toString());
+            }
+            
+            Resource agronomicalObjectUri = ResourceFactory.createResource(agronomicalObject.getUri());
+            Node agronomicalObjectType = NodeFactory.createURI(agronomicalObject.getRdfType());
+            
+            spql.addInsert(graph, agronomicalObjectUri, RDF.type, agronomicalObjectType);
             
             //Propriétés associées à l'AO
             for (Property property : agronomicalObject.getProperties()) {
@@ -285,29 +298,46 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
                         //move the uri generation in the UriGenerator (#45)
                         //\SILEX:TODO
                         String propertyURI = uriGenerator.generateNewInstanceUri(Vocabulary.CONCEPT_VARIETY.toString(), null, property.getValue());
-                        spqlInsert.appendTriplet(propertyURI, Rdf.RELATION_TYPE.toString(), property.getRdfType(), null);
-                        spqlInsert.appendTriplet(agronomicalObject.getUri(), property.getRelation(), propertyURI, null);
+                        Node propertyNode = NodeFactory.createURI(propertyURI);
+                        Node propertyType = NodeFactory.createURI(property.getRdfType());
+                        org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
+                        
+                        spql.addInsert(graph, propertyNode, RDF.type, propertyType);
+                        spql.addInsert(graph, agronomicalObjectUri, propertyRelation, propertyNode);
                     } else {
-                        spqlInsert.appendTriplet(property.getValue(), Rdf.RELATION_TYPE.toString(), property.getRdfType(), null);
-                        spqlInsert.appendTriplet(agronomicalObject.getUri(), property.getRelation(), property.getValue(), null);
+                        Node propertyNode = NodeFactory.createURI(property.getValue());
+                        Node propertyType = NodeFactory.createURI(property.getRdfType());
+                        org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
+                        
+                        spql.addInsert(graph, propertyNode, RDF.type, propertyType);
+                        spql.addInsert(graph, agronomicalObjectUri, propertyRelation, propertyNode);
                     }
                 } else {
-                    spqlInsert.appendTriplet(agronomicalObject.getUri(), property.getRelation(), "\"" + property.getValue() + "\"", null);
+                    Node propertyNode = NodeFactory.createURI(property.getValue());
+                    org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
+
+                    spql.addInsert(graph, agronomicalObjectUri, propertyRelation, propertyNode);                    
                 }
             }
             
             if (agronomicalObject.getUriExperiment() != null) {
-                spqlInsert.appendTriplet(agronomicalObject.getUriExperiment(), Vocabulary.RELATION_HAS_PLOT.toString(), agronomicalObject.getUri(), null);
+                Node experimentUri = NodeFactory.createURI(agronomicalObject.getUriExperiment());
+                org.apache.jena.rdf.model.Property relationHasPlot = ResourceFactory.createProperty(Vocabulary.RELATION_HAS_PLOT.toString());
+                
+                spql.addInsert(graph, experimentUri, relationHasPlot, agronomicalObjectUri);  
             }
             
             //isPartOf : the object which has part the element must not be a plot    
             if (agronomicalObject.getIsPartOf()!= null) {
-                spqlInsert.appendTriplet(agronomicalObject.getUri(), Vocabulary.RELATION_IS_PART_OF.toString(), agronomicalObject.getIsPartOf(), null);
+                Node agronomicalObjectPartOf = NodeFactory.createURI(agronomicalObject.getIsPartOf());
+                org.apache.jena.rdf.model.Property relationIsPartOf = ResourceFactory.createProperty(Vocabulary.RELATION_HAS_PLOT.toString());
+                
+                spql.addInsert(graph, agronomicalObjectUri, relationIsPartOf, agronomicalObjectPartOf);  
             }
             
             try {
 //                this.getConnection().begin();
-                Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spqlInsert.toString());
+                Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spql.build().toString());
                 LOGGER.debug(getTraceabilityLogs() + SPARQL_SELECT_QUERY + prepareUpdate.toString());
                 prepareUpdate.execute();
                 createdResourcesURIList.add(agronomicalObject.getUri());

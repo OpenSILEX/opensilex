@@ -18,6 +18,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.update.UpdateRequest;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
@@ -34,7 +41,6 @@ import phis2ws.service.resources.dto.TripletDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
-import phis2ws.service.utils.sparql.SPARQLUpdateBuilder;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.Triplet;
 
@@ -148,23 +154,30 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
      *      }
      * }
      */
-    public SPARQLUpdateBuilder prepareInsertQuery(ArrayList<TripletDTO> triplets, String graphUri) {
-        SPARQLUpdateBuilder insertQuery = new SPARQLUpdateBuilder();
+    public UpdateRequest prepareInsertQuery(ArrayList<TripletDTO> triplets, String graphUri) {
+        UpdateBuilder spql = new UpdateBuilder();
         
-        insertQuery.appendGraphURI(graphUri);
+        Node graph = NodeFactory.createURI(graphUri);
         
         triplets.forEach((triplet) -> {
-            String object;
+            RDFNode tripletValue = null;
             if (triplet.getO_type().equals(LITERAL)) {
-                object = triplet.getO_lang() != null ? "\"" + triplet.getO() + "\"@" + triplet.getO_lang() : "\"" + triplet.getO() + "\"";
+                if (triplet.getO_lang() != null) {
+                    tripletValue = ResourceFactory.createLangLiteral(triplet.getO(), triplet.getO_lang());
+                } else {
+                    tripletValue = ResourceFactory.createStringLiteral(triplet.getO());
+                }
             } else {
-                object = triplet.getO();
+                tripletValue = ResourceFactory.createProperty(triplet.getO());
             }
             
-            insertQuery.appendTriplet(triplet.getS(), triplet.getP(), object, null);
+            Node tripletUri = NodeFactory.createURI(triplet.getS());
+            Property tripletRelation = ResourceFactory.createProperty(triplet.getP());
+            
+            spql.addInsert(graph, tripletUri, tripletRelation, tripletValue);
         });
         
-        return insertQuery;
+        return spql.buildRequest();
     }
     
     /**
@@ -229,7 +242,7 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
 
         //2. save each group of triplets
         for (Map.Entry<String,ArrayList<TripletDTO>> triplets : tripletsByGraph.entrySet()) {
-            SPARQLUpdateBuilder insertInGivenGraph = prepareInsertQuery(triplets.getValue(), triplets.getKey());
+            UpdateRequest insertInGivenGraph = prepareInsertQuery(triplets.getValue(), triplets.getKey());
             LOGGER.debug(SPARQL_SELECT_QUERY + insertInGivenGraph.toString());
             Update prepareInsertInGivenGraph = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, insertInGivenGraph.toString());
             prepareInsertInGivenGraph.execute();
@@ -285,7 +298,7 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
             this.getConnection().begin();
 
             //Register triplet in the triplestore, in the graph created at the request reception
-            SPARQLUpdateBuilder insertQuery = prepareInsertQuery(tripletsGroup, graphUri);
+            UpdateRequest insertQuery = prepareInsertQuery(tripletsGroup, graphUri);
             LOGGER.debug(SPARQL_SELECT_QUERY + insertQuery.toString());
             Update prepareInsert = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, insertQuery.toString());
             prepareInsert.execute();

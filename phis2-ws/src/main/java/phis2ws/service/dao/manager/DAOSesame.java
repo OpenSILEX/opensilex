@@ -347,7 +347,7 @@ public abstract class DAOSesame<T> {
         LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
         
         //Insert the properties in the triplestore
-        Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, spql.build().toString());
+        Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, spql.buildRequest().toString());
         try {
             prepareUpdate.execute();
         } catch (UpdateExecutionException ex) {

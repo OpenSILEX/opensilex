@@ -304,24 +304,21 @@ public class ExperimentResourceService extends ResourceService {
         Integer experimentsCount = experimentDao.count();
 
         if (experimentsCount != null && experimentsCount == 0) {
-            getResponse = new ResponseFormExperiment(experimentDao.getPageSize(), experimentDao.getPage(), experiments, true);
+            getResponse = new ResponseFormExperiment(experimentDao.getPageSize(), experimentDao.getPage(), experiments, true, experimentsCount);
             return noResultFound(getResponse, statusList);
         } else {
             experiments = experimentDao.allPaginate();
-            if (experiments == null) {
-                getResponse = new ResponseFormExperiment(0, 0, experiments, true);
+            
+            if (experiments == null || experimentsCount == null) { //sql error
+                getResponse = new ResponseFormExperiment(0, 0, experiments, true, experimentsCount);
                 return sqlError(getResponse, statusList);
-            } else if (!experiments.isEmpty() && experimentsCount != null) {
-                getResponse = new ResponseFormExperiment(experimentDao.getPageSize(), experimentDao.getPage(), experiments, false);
-                if (getResponse.getResult().dataSize() == 0) {
-                    return noResultFound(getResponse, statusList);
-                } else {
-                    getResponse.setStatus(statusList);
-                    return Response.status(Response.Status.OK).entity(getResponse).build();
-                }
-            } else {
-                getResponse = new ResponseFormExperiment(0, 0, experiments, true);
+            } else if (experiments.isEmpty()) { // no result found
+                getResponse = new ResponseFormExperiment(experimentDao.getPageSize(), experimentDao.getPage(), experiments, false, experimentsCount);
                 return noResultFound(getResponse, statusList);
+            } else { //results founded
+                getResponse = new ResponseFormExperiment(experimentDao.getPageSize(), experimentDao.getPage(), experiments, true, experimentsCount);
+                getResponse.setStatus(statusList);
+                return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         }
     }

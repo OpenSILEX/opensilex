@@ -28,8 +28,8 @@ public class ResponseFormExperiment extends ResultForm<Experiment>{
      * @param list liste des résultats
      * @param paginate 
      */
-    public ResponseFormExperiment(int pageSize, int currentPage, ArrayList<Experiment> list, boolean paginate) {
-        metadata = new Metadata(pageSize, currentPage, list.size());
+    public ResponseFormExperiment(int pageSize, int currentPage, ArrayList<Experiment> list, boolean paginate, int totalCount) {
+        metadata = new Metadata(pageSize, currentPage, totalCount);
         if (list.size() > 1) {
             result = new ResultExperiment(list, metadata.getPagination(), paginate); 
         } else {

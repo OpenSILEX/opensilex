@@ -37,7 +37,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
@@ -45,7 +44,6 @@ import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.phis.ExperimentDao;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.ExperimentDTO;
 import phis2ws.service.resources.validation.interfaces.Date;
 import phis2ws.service.resources.validation.interfaces.Required;
@@ -60,13 +58,8 @@ import phis2ws.service.view.model.phis.Experiment;
 
 @Api("/experiments")
 @Path("experiments")
-public class ExperimentResourceService {
-
+public class ExperimentResourceService extends ResourceService {
     final static Logger LOGGER = LoggerFactory.getLogger(ExperimentResourceService.class);
-
-    //Session de l'utilisateur
-    @SessionInject
-    Session userSession;
 
     /**
      * @param uri
@@ -296,18 +289,6 @@ public class ExperimentResourceService {
         }
     }
 
-    private Response noResultFound(ResponseFormExperiment getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status("No results", StatusCodeMsg.INFO, "No results for the experiments"));
-        getResponse.setStatus(insertStatusList);
-        return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
-    }
-
-    private Response sqlError(ResponseFormExperiment getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status("SQL error", StatusCodeMsg.ERR, "can't fetch result"));
-        getResponse.setStatus(insertStatusList);
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(getResponse).build();
-    }
-
     /**
      * Collecte les données issues d'une requête de l'utilisateur (recherche
      * d'expérimentations)
@@ -323,24 +304,21 @@ public class ExperimentResourceService {
         Integer experimentsCount = experimentDao.count();
 
         if (experimentsCount != null && experimentsCount == 0) {
-            getResponse = new ResponseFormExperiment(experimentDao.getPageSize(), experimentDao.getPage(), experiments, true);
+            getResponse = new ResponseFormExperiment(experimentDao.getPageSize(), experimentDao.getPage(), experiments, true, experimentsCount);
             return noResultFound(getResponse, statusList);
         } else {
             experiments = experimentDao.allPaginate();
-            if (experiments == null) {
-                getResponse = new ResponseFormExperiment(0, 0, experiments, true);
+            
+            if (experiments == null || experimentsCount == null) { //sql error
+                getResponse = new ResponseFormExperiment(0, 0, experiments, true, experimentsCount);
                 return sqlError(getResponse, statusList);
-            } else if (!experiments.isEmpty() && experimentsCount != null) {
-                getResponse = new ResponseFormExperiment(experimentDao.getPageSize(), experimentDao.getPage(), experiments, false);
-                if (getResponse.getResult().dataSize() == 0) {
-                    return noResultFound(getResponse, statusList);
-                } else {
-                    getResponse.setStatus(statusList);
-                    return Response.status(Response.Status.OK).entity(getResponse).build();
-                }
-            } else {
-                getResponse = new ResponseFormExperiment(0, 0, experiments, true);
+            } else if (experiments.isEmpty()) { // no result found
+                getResponse = new ResponseFormExperiment(experimentDao.getPageSize(), experimentDao.getPage(), experiments, false, experimentsCount);
                 return noResultFound(getResponse, statusList);
+            } else { //results founded
+                getResponse = new ResponseFormExperiment(experimentDao.getPageSize(), experimentDao.getPage(), experiments, true, experimentsCount);
+                getResponse.setStatus(statusList);
+                return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         }
     }

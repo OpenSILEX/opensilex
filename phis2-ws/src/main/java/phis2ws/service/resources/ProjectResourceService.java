@@ -34,16 +34,12 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.phis.ProjectDao;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.ProjectDTO;
 import phis2ws.service.resources.validation.interfaces.Date;
 import phis2ws.service.resources.validation.interfaces.Required;
@@ -58,13 +54,7 @@ import phis2ws.service.view.model.phis.Project;
 
 @Api("/projects")
 @Path("projects")
-public class ProjectResourceService {
-    final static Logger LOGGER = LoggerFactory.getLogger(ProjectResourceService.class);
-    
-    //Session de l'utilisateur
-    @SessionInject
-    Session userSession;
-    
+public class ProjectResourceService extends ResourceService {
     /**
      * 
      * @param limit
@@ -300,18 +290,6 @@ public class ProjectResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }
-    
-    private Response noResultFound(ResponseFormProject getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status("No results", StatusCodeMsg.INFO, "No results for the projects"));
-        getResponse.setStatus(insertStatusList);
-        return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
-    }
-    
-    private Response sqlError(ResponseFormProject getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status("SQL error ", StatusCodeMsg.ERR, "can't fetch result"));
-        getResponse.setStatus(insertStatusList);
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(getResponse).build();
-    }
         
     /**
      * Collecte les données issues d'une requête de l'utilisateur (recherche de projets)
@@ -326,25 +304,21 @@ public class ProjectResourceService {
         Integer projectsCount = projectDao.count();
         
         if (projectsCount != null && projectsCount == 0) {
-            getResponse = new ResponseFormProject(projectDao.getPageSize(), projectDao.getPage(), projects, true);
+            getResponse = new ResponseFormProject(projectDao.getPageSize(), projectDao.getPage(), projects, true, projectsCount);
             return noResultFound(getResponse, statusList);
         } else {
             projects = projectDao.allPaginate();
-            if (projects == null) {
-                projects = new ArrayList<>();
-                getResponse = new ResponseFormProject(0, 0, projects, true);
+            
+            if (projects == null || projectsCount == null) { //sql error
+                getResponse = new ResponseFormProject(0, 0, projects, true, projectsCount);
                 return sqlError(getResponse, statusList);
-            } else if (!projects.isEmpty() && projectsCount != null) {
-                getResponse = new ResponseFormProject(projectDao.getPageSize(), projectDao.getPage(), projects, false);
-                if (getResponse.getResult().dataSize() == 0) {
-                    return noResultFound(getResponse, statusList);
-                } else {
-                    getResponse.setStatus(statusList);
-                    return Response.status(Response.Status.OK).entity(getResponse).build();
-                }
-            } else {
-                getResponse = new ResponseFormProject(0, 0, projects, true);
+            } else if (projects.isEmpty()) { // no result found
+                getResponse = new ResponseFormProject(projectDao.getPageSize(), projectDao.getPage(), projects, false, projectsCount);
                 return noResultFound(getResponse, statusList);
+            } else { //results founded
+                getResponse = new ResponseFormProject(projectDao.getPageSize(), projectDao.getPage(), projects, true, projectsCount);
+                getResponse.setStatus(statusList);
+                return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         }
     }

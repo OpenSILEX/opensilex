@@ -29,15 +29,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.sesame.BrapiTraitDAO;
+import phis2ws.service.dao.sesame.TraitDaoSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.BrapiResponseForm;
-import phis2ws.service.view.model.phis.BrapiTrait;
+import phis2ws.service.resources.dto.trait.BrapiTraitDTO;
 import phis2ws.service.view.model.phis.Call;
+import phis2ws.service.view.model.phis.Trait;
 
 @Api("/brapi/v1/traits")
 @Path("/brapi/v1/traits")
@@ -136,7 +137,7 @@ public class TraitsResourceService implements BrapiCall {
     @ApiOperation(value = DocumentationAnnotation.TRAIT_CALL_MESSAGE,
                        notes = DocumentationAnnotation.TRAIT_CALL_MESSAGE)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = DocumentationAnnotation.TRAIT_CALL_MESSAGE, response = BrapiTrait.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = DocumentationAnnotation.TRAIT_CALL_MESSAGE, response = BrapiTraitDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})    
@@ -151,7 +152,7 @@ public class TraitsResourceService implements BrapiCall {
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0)int page 
         ) throws SQLException {        
-        BrapiTraitDAO traitDAO = new BrapiTraitDAO();
+        TraitDaoSesame traitDAO = new TraitDaoSesame();
         traitDAO.setPageSize(limit);
         traitDAO.setPage(page);           
         return getTraitsData(traitDAO);
@@ -190,7 +191,7 @@ public class TraitsResourceService implements BrapiCall {
     @ApiOperation(value = DocumentationAnnotation.TRAIT_DETAILS_CALL_MESSAGE,
             notes = DocumentationAnnotation.TRAIT_DETAILS_CALL_MESSAGE)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = DocumentationAnnotation.TRAIT_DETAILS_CALL_MESSAGE, response = BrapiTrait.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = DocumentationAnnotation.TRAIT_DETAILS_CALL_MESSAGE, response = BrapiTraitDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})    
@@ -204,7 +205,7 @@ public class TraitsResourceService implements BrapiCall {
     public Response getTraitDetails ( 
         @ApiParam(value = DocumentationAnnotation.TRAIT_URI_DEFINITION, required = true, example=DocumentationAnnotation.EXAMPLE_TRAIT_URI) @PathParam("traitDbId") @Required @URL String traitDbId
     ) throws SQLException {        
-        BrapiTraitDAO traitDAO = new BrapiTraitDAO(traitDbId);           
+        TraitDaoSesame traitDAO = new TraitDaoSesame(traitDbId);           
         return getTraitsData(traitDAO);
     }    
     
@@ -225,21 +226,27 @@ public class TraitsResourceService implements BrapiCall {
      * @param BrapiTraitDAO
      * @return the traits available in the system
      */
-    private Response getTraitsData(BrapiTraitDAO traitDAO) {
+    private Response getTraitsData(TraitDaoSesame traitDAO) {
         ArrayList<Status> statusList = new ArrayList<>();
-        ArrayList<BrapiTrait> traits = traitDAO.allPaginate();
-        BrapiResponseForm getResponse;
+        ArrayList<Trait> traits = traitDAO.allPaginate();                
+        BrapiResponseForm getResponse;           
+                
         if (traits == null) {
             getResponse = new BrapiResponseForm(0, 0, traits, true);
             return noResultFound(getResponse, statusList);
         } else if (!traits.isEmpty()) {
+            ArrayList<BrapiTraitDTO> brapiTraits= new ArrayList();
+            for (Trait trait:traits) {
+                BrapiTraitDTO brapiTrait = new BrapiTraitDTO(trait);
+                brapiTrait.setObservationVariables(traitDAO.getVariableFromTrait(trait));
+                brapiTraits.add(brapiTrait);
+            }
             if (traits.size() == 1) {
-                BrapiTrait trait = traits.get(0);
-                getResponse = new BrapiResponseForm(trait);
+                getResponse = new BrapiResponseForm(brapiTraits.get(0));
                 getResponse.getMetadata().setStatus(statusList);
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             } else {
-                getResponse = new BrapiResponseForm(traitDAO.getPageSize(), traitDAO.getPage(), traits, false);
+                getResponse = new BrapiResponseForm(traitDAO.getPageSize(), traitDAO.getPage(), brapiTraits, false);
                 getResponse.getMetadata().setStatus(statusList);
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }

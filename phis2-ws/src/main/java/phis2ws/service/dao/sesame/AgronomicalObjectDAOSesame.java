@@ -274,7 +274,6 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
             agronomicalObject.setUri(uriGenerator.generateNewInstanceUri(agronomicalObject.getRdfType(), agronomicalObjectDTO.getYear(), null));
             
             //2. Register in triplestore
-//            SPARQLUpdateBuilder spqlInsert = new SPARQLUpdateBuilder();
             UpdateBuilder spql = new UpdateBuilder();
             
             Node graph = null;

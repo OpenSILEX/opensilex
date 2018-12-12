@@ -48,7 +48,6 @@ import phis2ws.service.resources.dto.DocumentMetadataDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.ResourcesUtils;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
-import phis2ws.service.utils.sparql.SPARQLUpdateBuilder;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.Document;
 import phis2ws.service.view.model.phis.Experiment;

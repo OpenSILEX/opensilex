@@ -27,22 +27,16 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.sesame.VocabularyDAOSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
-import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.PropertyVocabularyDTO;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.ResponseFormVocabularyNamespace;
 import phis2ws.service.view.brapi.form.ResponseFormVocabularyProperty;
-import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Namespace;
 import phis2ws.service.view.model.phis.Property;
 
@@ -54,26 +48,7 @@ import phis2ws.service.view.model.phis.Property;
  */
 @Api("/vocabularies")
 @Path("/vocabularies")
-public class VocabularyResourceService {
-
-    final static Logger LOGGER = LoggerFactory.getLogger(VocabularyResourceService.class);
-
-    //user session
-    @SessionInject
-    Session userSession;
-
-    /**
-     *
-     * @param getResponse
-     * @param insertStatusList
-     * @return the response "no result found" for the service
-     */
-    private Response noResultFound(ResultForm getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status(StatusCodeMsg.NO_RESULTS, StatusCodeMsg.INFO, "No results for the vocabulary"));
-        getResponse.setStatus(insertStatusList);
-        return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
-    }
-
+public class VocabularyResourceService extends ResourceService {
     /**
      * get the list of rdfs properties that can be used, for the clients
      * interfaces

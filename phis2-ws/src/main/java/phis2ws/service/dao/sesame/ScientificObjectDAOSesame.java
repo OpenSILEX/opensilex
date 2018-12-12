@@ -336,7 +336,7 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
             
             try {
 //                this.getConnection().begin();
-                Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spql.build().toString());
+                Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spql.buildRequest().toString());
                 LOGGER.debug(getTraceabilityLogs() + SPARQL_SELECT_QUERY + prepareUpdate.toString());
                 prepareUpdate.execute();
                 createdResourcesURIList.add(scientificObject.getUri());

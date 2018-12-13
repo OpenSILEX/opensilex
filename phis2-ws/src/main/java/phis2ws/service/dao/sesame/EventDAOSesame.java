@@ -8,6 +8,8 @@
 package phis2ws.service.dao.sesame;
 
 import java.util.ArrayList;
+import java.util.Date;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -18,11 +20,13 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.ontologies.Oeev;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
-import phis2ws.service.ontologies.Vocabulary;
+import phis2ws.service.ontologies.Time;
+import phis2ws.service.utils.dates.Dates;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.model.phis.Event;
 
@@ -33,19 +37,18 @@ import phis2ws.service.view.model.phis.Event;
 public class EventDAOSesame extends DAOSesame<Event> {
     final static Logger LOGGER = LoggerFactory.getLogger(EventDAOSesame.class);
     
-    // Used to search in the triplestore
-    public String uri;
-    public String rdfType;
-    public String label;
+    private String searchUri;
+    private String searchType;
+    private String searchConcerns;
+    private String searchDateTimeRangeStartString;
+    private String searchDateTimeRangeEndString;
+        
+    public static final String SELECT_CONCERNS = "concerns";
+    public static final String SELECT_TIME = "time";
+    public static final String SELECT_DATE_TIME = "dateTime";
     
     /**
-     * Generates the query to get the uri and the label of all the events
-     * @example
-     * SELECT DISTINCT  ?uri ?label WHERE {
-     *      ?uri  rdf:type  
-     * <http://www.phenome-fppn.fr/vocabulary/2018/oeev#Event> . 
-     *      ?uri  rdfs:label  ?label  .
-     * }
+     * Generates the search query
      * @return the query
      */
     @Override
@@ -54,24 +57,51 @@ public class EventDAOSesame extends DAOSesame<Event> {
         query.appendDistinct(Boolean.TRUE);
         
         String eventUri;
-        if (uri != null) {
-            eventUri = "<" + uri + ">";
+        if (searchUri != null) {
+            eventUri = "<" + searchUri + ">";
         } else {
             eventUri = "?" + URI;
             query.appendSelect(eventUri);
         }
         
-        query.appendSelect("?" + LABEL);
-        query.appendTriplet(
-                eventUri
-                , "<" + Rdf.RELATION_TYPE.toString()+ ">"
-                , "?" + RDF_TYPE
+        if (searchType != null) {
+            query.appendTriplet(eventUri, Rdf.RELATION_TYPE.toString()
+                    , searchType, null);
+        } else {
+            query.appendSelect("?" + RDF_TYPE);
+            query.appendTriplet(eventUri
+                    , Rdf.RELATION_TYPE.toString()
+                    , "?" + RDF_TYPE
+                    , null);
+            query.appendTriplet("?" + RDF_TYPE
+                    , "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*"
+                    , Oeev.CONCEPT_EVENT.toString()
+                    , null);
+        }       
+
+        if (searchConcerns != null) {
+            query.appendTriplet(eventUri
+                    , Oeev.RELATION_CONCERNS.toString()
+                    , searchConcerns
+                    , null);
+        } else {
+            query.appendSelect(" ?" + SELECT_CONCERNS);
+            query.appendTriplet(eventUri
+                    , Oeev.RELATION_CONCERNS.toString()
+                    , "?" + SELECT_CONCERNS
+                    , null);
+        }  
+        
+        query.appendSelect("?" + SELECT_DATE_TIME);
+        query.appendTriplet(eventUri
+                , Time.RELATION_HAS_TIME.toString()
+                , "?" + SELECT_TIME
                 , null);
-        query.appendTriplet(
-                "?" + RDF_TYPE 
-                , "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*"
-                , "<" + Oeev.CONCEPT_EVENT.toString() + ">"
+        query.appendTriplet("?" + SELECT_TIME
+                , Time.RELATION_IN_XSD_DATE_TIMESTAMP.toString()
+                , "?" + SELECT_DATE_TIME
                 , null);
+        //TODO search by date
         
         query.appendLimit(this.getPageSize());
         query.appendOffset(this.getPage() * this.getPageSize());
@@ -88,22 +118,39 @@ public class EventDAOSesame extends DAOSesame<Event> {
     private Event getEventFromBindingSet(BindingSet bindingSet) {
         
         String eventUri = null;
-        String eventLabel = null;
-        DateTime eventDateTime = null;//bindingSet.getValue(DATE).stringValue()
+        String eventType = null;
+        String eventConcerns = null;
+        DateTime eventDateTime = null;
         
-        if (bindingSet.getValue(URI) != null) {
-            eventUri = bindingSet.getValue(URI).stringValue();
+        
+        Value bindingSetValueEventUri = bindingSet.getValue(URI);
+        if (bindingSetValueEventUri != null) {
+            eventUri = bindingSetValueEventUri.stringValue();
         } 
         
-        if (bindingSet.getValue(LABEL) != null) {
-            eventUri = bindingSet.getValue(LABEL).stringValue();
+        Value bindingSetValueEventType = bindingSet.getValue(RDF_TYPE);
+        if (bindingSetValueEventType != null) {
+            eventType = bindingSetValueEventType.stringValue();
         } 
         
-        return new Event(eventUri, eventLabel, eventDateTime);
+        Value bindingSetValueEventConcerns = 
+                bindingSet.getValue(SELECT_CONCERNS);
+        if (bindingSetValueEventConcerns != null) {
+            eventConcerns = bindingSetValueEventConcerns.stringValue();
+        }         
+        
+        Value bindingSetValueEventDateTime = bindingSet.getValue(SELECT_TIME);
+        if (bindingSetValueEventDateTime != null) {
+            eventDateTime = Dates.stringToDateTimeWithGivenPattern(
+                    bindingSetValueEventDateTime.toString()
+                    , DateFormats.DATETIME_SPARQL_XSD_FORMAT);
+        }
+        
+        return new Event(eventUri, eventType, eventConcerns, eventDateTime);
     }
     
     /**
-     * Get the events (uri, label) of the triplestore.
+     * Get the events found in the triplestore.
      * @return the list of the events found
      */
     public ArrayList<Event> allPaginate() {
@@ -179,5 +226,45 @@ public class EventDAOSesame extends DAOSesame<Event> {
             }
         }
         return count;
+    }
+
+    public String getSearchUri() {
+        return searchUri;
+    }
+
+    public void setSearchUri(String searchUri) {
+        this.searchUri = searchUri;
+    }
+
+    public String getSearchType() {
+        return searchType;
+    }
+
+    public void setSearchType(String searchType) {
+        this.searchType = searchType;
+    }
+
+    public String getSearchConcerns() {
+        return searchConcerns;
+    }
+
+    public void setSearchConcerns(String searchConcerns) {
+        this.searchConcerns = searchConcerns;
+    }
+
+    public String getSearchDateTime() {
+        return searchDateTimeRangeStartString;
+    }
+
+    public void setSearchDateTimeRangeStartString(String searchDateTimeString) {
+        this.searchDateTimeRangeStartString = searchDateTimeString;
+    }
+    
+    public String getSearchDateTimeRangeEndString() {
+        return searchDateTimeRangeEndString;
+    }
+
+    public void setSearchDateTimeRangeEndString(String searchDateTimeRangeEndString) {
+        this.searchDateTimeRangeEndString = searchDateTimeRangeEndString;
     }
 }

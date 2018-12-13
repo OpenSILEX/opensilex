@@ -74,6 +74,11 @@ public class EventResourceService {
      * 
      * @param pageSize
      * @param page
+     * @param uri
+     * @param type
+     * @param concerns
+     * @param date
+     * @param annotation
      * @return  list of all events
      * e.g
      * {
@@ -92,8 +97,20 @@ public class EventResourceService {
      *              {
      *                  "uri": 
      * "http://www.phenome-fppn.fr/vocabulary/2018/oeev/id/events/ev001",
-     *                  "label": "event name",
+     *                  "type : "oeev:MoveFrom",
+     *                  "concern": "event description",
      *                  "dateTime" : "2018-11-14T07:58:26.891Z"
+     *                  properties: [{
+     *                      "rdfType": "vocabulary:Infrastructure",
+     *                      "relation": "oeev:from",
+     *                      "value": "vocabulary:Infrastructure"
+     *                  }],
+     *                  annotations: [{ 
+     *                      "motivatedBy": "oa#commenting",
+     *                      "created": "2018-01-01T12:00:00+2000",
+     *                      "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/marie_dupond",
+     *                      "bodyValue": "string"
+     *                  }]
      *              },
      *          ]
      *      }
@@ -101,11 +118,10 @@ public class EventResourceService {
      */
     @GET
     @ApiOperation(value = 
-            "Get all events targets corresponding to the search parameters "
-                    + "given",
-                  notes = 
-            "Retrieve all events authorized for the user corresponding to the "
-                    + "search parameters given")
+        "Get all events targets corresponding to the search parameters given",
+        notes = 
+        "Retrieve all events authorized for the user corresponding to the "
+        + "search parameters given")
     @ApiResponses(value = {
         @ApiResponse(code = 200
                 , message = "Retrieve all events"
@@ -120,37 +136,69 @@ public class EventResourceService {
     })
     @ApiImplicitParams({
         @ApiImplicitParam(
-                name = GlobalWebserviceValues.AUTHORIZATION
-                , required = true
-                , dataType = GlobalWebserviceValues.DATA_TYPE_STRING
-                , paramType = GlobalWebserviceValues.HEADER
-                , value = DocumentationAnnotation.ACCES_TOKEN
-                , example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+            name = GlobalWebserviceValues.AUTHORIZATION
+            , required = true
+            , dataType = GlobalWebserviceValues.DATA_TYPE_STRING
+            , paramType = GlobalWebserviceValues.HEADER
+            , value = DocumentationAnnotation.ACCES_TOKEN
+            , example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getEventsBySearch(
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) 
-        @QueryParam(GlobalWebserviceValues.PAGE_SIZE) 
-        @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) 
-        @Min(0) int pageSize
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) 
+            @QueryParam(GlobalWebserviceValues.PAGE_SIZE) 
+            @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) 
+            @Min(0) int pageSize
         , @ApiParam(value = DocumentationAnnotation.PAGE) 
-        @QueryParam(GlobalWebserviceValues.PAGE) 
-        @DefaultValue(DefaultBrapiPaginationValues.PAGE) 
-        @Min(0) int page
-        , @ApiParam(value = "Search by uri"
-        , example = DocumentationAnnotation.EXAMPLE_EVENT_URI) 
-        @QueryParam("uri") 
-        @URL String uri
-        , @ApiParam(
-                value = "Search by label", 
-                example = DocumentationAnnotation.EXAMPLE_EVENT_LABEL) 
-        @QueryParam("label") String label
+            @QueryParam(GlobalWebserviceValues.PAGE) 
+            @DefaultValue(DefaultBrapiPaginationValues.PAGE) 
+            @Min(0) int page
+        , @ApiParam
+            (
+                value = "Search by uri"
+                , example = DocumentationAnnotation.EXAMPLE_EVENT_URI
+            ) 
+            @QueryParam("uri") 
+            @URL String uri
+        , @ApiParam
+            (
+                value = "Search by type", 
+                example = DocumentationAnnotation.EXAMPLE_EVENT_TYPE
+            ) 
+            @QueryParam("type") String type
+        , @ApiParam
+            (
+                value = "Search by concern", 
+                example = DocumentationAnnotation.EXAMPLE_EVENT_CONCERN
+            ) 
+            @QueryParam("concerns") String concerns
+        , @ApiParam
+            (
+                value = "Search by date range - start", 
+                example = DocumentationAnnotation.EXAMPLE_EVENT_DATE_RANGE_START
+            ) 
+            @QueryParam("date range start") String dateRangeStart
+        , @ApiParam
+            (
+                value = "Search by date range - end", 
+                example = DocumentationAnnotation.EXAMPLE_EVENT_DATE_RANGE_END
+            ) 
+            @QueryParam("date range end") String dateRangeEnd
+        , @ApiParam
+            (
+                value = "Search by annotation", 
+                example = DocumentationAnnotation.EXAMPLE_EVENT_ANNOTATION
+            ) 
+            @QueryParam("annotation") String annotation
     ) {
 
         EventDAOSesame eventDAO = new EventDAOSesame();
         
-        eventDAO.uri = uri;
-        eventDAO.label = label;
+        eventDAO.setSearchUri(uri);
+        eventDAO.setSearchType(type);
+        eventDAO.setSearchConcerns(concerns);
+        eventDAO.setSearchDateTimeRangeStartString(dateRangeStart);
+        eventDAO.setSearchDateTimeRangeEndString(dateRangeEnd);
         eventDAO.user = userSession.getUser();
         eventDAO.setPage(page);
         eventDAO.setPageSize(pageSize);

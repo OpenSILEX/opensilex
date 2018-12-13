@@ -237,7 +237,11 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_VARIABLE_LABEL = "LAI";
 
     public static final String EXAMPLE_EVENT_URI = "";
-    public static final String EXAMPLE_EVENT_LABEL = "";
+    public static final String EXAMPLE_EVENT_TYPE = "";
+    public static final String EXAMPLE_EVENT_CONCERN = "";
+    public static final String EXAMPLE_EVENT_DATE_RANGE_START = "";
+    public static final String EXAMPLE_EVENT_DATE_RANGE_END = "";
+    public static final String EXAMPLE_EVENT_ANNOTATION = "";
 
     public static final String EXAMPLE_VECTOR_URI = "http://www.phenome-fppn.fr/diaphen/2018/v1801";
     public static final String EXAMPLE_VECTOR_RDF_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#UAV";

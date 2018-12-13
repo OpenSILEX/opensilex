@@ -8,6 +8,7 @@
 package phis2ws.service.resources.dto.event;
 
 import org.joda.time.DateTime;
+import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.view.model.phis.Event;
 
@@ -18,9 +19,10 @@ import phis2ws.service.view.model.phis.Event;
  */
 public class EventDTO extends AbstractVerifiedClass {
     
-    protected String uri;
-    protected String label;
-    protected DateTime dateTime;
+    private final String uri;
+    private final String type;
+    private final String concerns;
+    private final DateTime dateTime;
     
     /**
      * Constructor to create DTO from an Event model
@@ -28,7 +30,8 @@ public class EventDTO extends AbstractVerifiedClass {
      */
     public EventDTO(Event event) {
         this.uri = event.getUri();
-        this.label = event.getLabel();
+        this.type = event.getType();
+        this.concerns = event.getConcerns();
         this.dateTime = event.getDateTime();
     }
 
@@ -38,6 +41,6 @@ public class EventDTO extends AbstractVerifiedClass {
      */
     @Override
     public Event createObjectFromDTO() {
-        return new Event(this.uri, this.label, this.dateTime);
+        return new Event(this.uri, this.type, this.concerns, this.dateTime);
     }
 }

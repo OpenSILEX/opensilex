@@ -8,7 +8,7 @@
 package phis2ws.service.ontologies;
 
 /**
- * The elements of the oeev ontology used in the ws
+ * Elements of the Oeev ontology used in the ws
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
 public enum Oeev {
@@ -23,6 +23,13 @@ public enum Oeev {
         @Override
         public String toString() {
             return NAMESPACE.toString() + "Event";
+        }
+    }
+    
+    , RELATION_CONCERNS {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "concern";
         }
     }
 }

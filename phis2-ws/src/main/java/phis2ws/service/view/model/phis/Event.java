@@ -10,22 +10,20 @@ package phis2ws.service.view.model.phis;
 import org.joda.time.DateTime;
 
 /**
- * This is the model for an event
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
 public class Event {
-    /*
-    TODO:has to be set abstract when subclasses like Displacement are 
-    implemented
-    */
     
-    protected String uri;
-    protected String label;
-    protected DateTime dateTime;
+    private String uri;
+    private String type;
+    private String concerns;
+    private DateTime dateTime;
 
-    public Event(String uri, String label, DateTime dateTime) {
+    public Event(String uri, String type, String concerns
+            , DateTime dateTime) {
         this.uri = uri;
-        this.label = label;
+        this.type = type;
+        this.concerns = concerns;
         this.dateTime = dateTime;
     }
 
@@ -37,12 +35,20 @@ public class Event {
         this.uri = uri;
     }
 
-    public String getLabel() {
-        return label;
+    public String getType() {
+        return type;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getConcerns() {
+        return concerns;
+    }
+
+    public void setConcerns(String concerns) {
+        this.concerns = concerns;
     }
 
     public DateTime getDateTime() {

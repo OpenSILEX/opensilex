@@ -77,6 +77,8 @@ public class EventResourceService {
      * @param uri
      * @param type
      * @param concerns
+     * @param dateRangeStart
+     * @param dateRangeEnd
      * @param annotationValue
      * @return  list of all events
      * e.g
@@ -205,23 +207,22 @@ public class EventResourceService {
         Integer totalCount = eventDAO.count();
         
         ArrayList<Event> events = eventDAO.allPaginate();
+        ArrayList<EventDTO> eventDTOs = new ArrayList();
         
         ArrayList<Status> statusList = new ArrayList<>();
         ResponseFormEvent responseForm;
         
         if (events == null) { // Request failure
-            responseForm = new ResponseFormEvent(0, 0, null, true, 0);
+            responseForm = new ResponseFormEvent(0, 0, eventDTOs, true, 0);
             return noResultFound(responseForm, statusList);
         } else if (events.isEmpty()) { // No result
-            responseForm = new ResponseFormEvent(0, 0, null, true, 0);
+            responseForm = new ResponseFormEvent(0, 0, eventDTOs, true, 0);
             return noResultFound(responseForm, statusList);
         } else { // Results
             
-            ArrayList<EventDTO> eventDTOs = new ArrayList();
-            for (Event event:events) {
-                EventDTO eventDTO = new EventDTO(event);
-                eventDTOs.add(eventDTO);
-            }
+            events.forEach((event) -> {
+                eventDTOs.add(new EventDTO(event));
+            });
             
             responseForm = new ResponseFormEvent(eventDAO.getPageSize()
                     , eventDAO.getPage(), eventDTOs, true, totalCount);

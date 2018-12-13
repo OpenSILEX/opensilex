@@ -8,7 +8,7 @@
 package phis2ws.service.dao.sesame;
 
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.HashMap;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
@@ -18,8 +18,6 @@ import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.DateFormats;
@@ -48,6 +46,8 @@ public class EventDAOSesame extends DAOSesame<Event> {
     public static final String SELECT_CONCERNS = "concerns";
     public static final String SELECT_TIME = "time";
     public static final String SELECT_DATE_TIME = "dateTime";
+    public static final String SELECT_FROM = "from";
+    public static final String SELECT_TO = "to";
     
     /**
      * Generates the search query
@@ -105,6 +105,22 @@ public class EventDAOSesame extends DAOSesame<Event> {
                 , null);
         //TODO search by date
         
+        query.appendSelect(" ?" + SELECT_FROM);
+        query.beginBodyOptional();
+        query.appendTriplet(eventUri
+                , Oeev.RELATION_FROM.toString()
+                , "?" + SELECT_FROM
+                , null);
+        query.endBodyOptional(); 
+        
+        query.appendSelect(" ?" + SELECT_TO);
+        query.beginBodyOptional();
+        query.appendTriplet(eventUri
+                , Oeev.RELATION_TO.toString()
+                , "?" + SELECT_TO
+                , null);
+        query.endBodyOptional(); 
+        
         query.appendLimit(this.getPageSize());
         query.appendOffset(this.getPage() * this.getPageSize());
         
@@ -123,6 +139,9 @@ public class EventDAOSesame extends DAOSesame<Event> {
         String eventType = null;
         String eventConcerns = null;
         DateTime eventDateTime = null;
+        String eventFrom = null;
+        String eventTo = null;
+        HashMap<String, String> eventSubclassSpecificProperties = new HashMap<>();
         
         
         Value bindingSetValueEventUri = bindingSet.getValue(URI);
@@ -135,8 +154,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
             eventType = bindingSetValueEventType.stringValue();
         } 
         
-        Value bindingSetValueEventConcerns = 
-                bindingSet.getValue(SELECT_CONCERNS);
+        Value bindingSetValueEventConcerns = bindingSet.getValue(SELECT_CONCERNS);
         if (bindingSetValueEventConcerns != null) {
             eventConcerns = bindingSetValueEventConcerns.stringValue();
         }         
@@ -148,7 +166,20 @@ public class EventDAOSesame extends DAOSesame<Event> {
                     , DateFormats.DATETIME_SPARQL_FORMAT);
         }
         
-        return new Event(eventUri, eventType, eventConcerns, eventDateTime);
+        Value bindingSetValueEventFrom = bindingSet.getValue(SELECT_FROM);
+        if (bindingSetValueEventFrom != null) {
+            eventFrom = bindingSetValueEventFrom.stringValue();
+            eventSubclassSpecificProperties.put(SELECT_FROM, eventFrom);
+        }   
+        
+        Value bindingSetValueEventTo = bindingSet.getValue(SELECT_TO);
+        if (bindingSetValueEventTo != null) {
+            eventTo = bindingSetValueEventTo.stringValue();
+            eventSubclassSpecificProperties.put(SELECT_TO, eventTo);
+        }
+        
+        return new Event(eventUri, eventType, eventConcerns, eventDateTime
+                , eventSubclassSpecificProperties);
     }
     
     /**
@@ -157,21 +188,11 @@ public class EventDAOSesame extends DAOSesame<Event> {
      */
     public ArrayList<Event> allPaginate() {
         SPARQLQueryBuilder query = prepareSearchQuery();
-        /*TupleQuery tupleQuery = getConnection()
-                .prepareTupleQuery(QueryLanguage.SPARQL, "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
-"PREFIX oeev: <http://www.phenome-fppn.fr/vocabulary/2018/oeev#>\n" +
-"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" +
-"\n" +
-"SELECT ?uri\n" +
-"WHERE { \n" +
-"  ?uri rdf:type ?type .\n" +
-"  ?type rdfs:subClassOf* oeev:Event \n" +
-"}");
-        */
+
         TupleQuery tupleQuery = getConnection()
                 .prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        
         ArrayList<Event> events;
-
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             events = new ArrayList<>();
             

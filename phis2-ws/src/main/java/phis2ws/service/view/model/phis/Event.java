@@ -7,6 +7,7 @@
 //******************************************************************************
 package phis2ws.service.view.model.phis;
 
+import java.util.HashMap;
 import org.joda.time.DateTime;
 
 /**
@@ -18,13 +19,15 @@ public class Event {
     private String type;
     private String concerns;
     private DateTime dateTime;
+    private HashMap<String, String> subclassSpecificProperties;
 
     public Event(String uri, String type, String concerns
-            , DateTime dateTime) {
+            , DateTime dateTime, HashMap subclassSpecificProperties) {
         this.uri = uri;
         this.type = type;
         this.concerns = concerns;
         this.dateTime = dateTime;
+        this.subclassSpecificProperties = subclassSpecificProperties;
     }
 
     public String getUri() {
@@ -57,5 +60,14 @@ public class Event {
 
     public void setDateTime(DateTime dateTime) {
         this.dateTime = dateTime;
+    }
+
+    public HashMap getSubclassSpecificProperties() {
+        return subclassSpecificProperties;
+    }
+
+    public void setSubclassSpecificProperties(
+            HashMap subclassSpecificProperties) {
+        this.subclassSpecificProperties = subclassSpecificProperties;
     }
 }

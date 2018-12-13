@@ -32,4 +32,18 @@ public enum Oeev {
             return NAMESPACE.toString() + "concern";
         }
     }
+    
+    , RELATION_FROM {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "from";
+        }
+    }
+    
+    , RELATION_TO {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "to";
+        }
+    }
 }

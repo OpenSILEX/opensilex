@@ -7,10 +7,9 @@
 //******************************************************************************
 package phis2ws.service.resources.dto.event;
 
-import org.joda.time.DateTime;
+import java.util.HashMap;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.utils.dates.Dates;
@@ -27,6 +26,7 @@ public class EventDTO extends AbstractVerifiedClass {
     private final String type;
     private final String concerns;
     private final String dateTimeString;
+    private final HashMap<String, String> subclassSpecificProperties;
     
     /**
      * Constructor to create DTO from an Event model
@@ -40,6 +40,7 @@ public class EventDTO extends AbstractVerifiedClass {
         DateTimeFormatter dateTimeJsonFormatter = DateTimeFormat.forPattern(
                 DateFormats.DATETIME_JSON_SERIALISATION_FORMAT);
         this.dateTimeString = dateTimeJsonFormatter.print(event.getDateTime());
+        this.subclassSpecificProperties = event.getSubclassSpecificProperties();
     }
 
     /**
@@ -48,8 +49,13 @@ public class EventDTO extends AbstractVerifiedClass {
      */
     @Override
     public Event createObjectFromDTO() {
-        return new Event(this.uri, this.type, this.concerns
+        return new Event(
+                this.uri
+                , this.type
+                , this.concerns
                 , Dates.stringToDateTimeWithGivenPattern(
-                    this.dateTimeString, DateFormats.DATETIME_JSON_SERIALISATION_FORMAT));
+                    this.dateTimeString
+                    , DateFormats.DATETIME_JSON_SERIALISATION_FORMAT)
+                , this.subclassSpecificProperties);
     }
 }

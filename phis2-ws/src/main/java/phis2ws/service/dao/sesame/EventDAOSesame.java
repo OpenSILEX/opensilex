@@ -26,6 +26,7 @@ import phis2ws.service.ontologies.Oeev;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Time;
+import phis2ws.service.ontologies.Vocabulary;
 import phis2ws.service.utils.dates.Dates;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.model.phis.Event;
@@ -43,6 +44,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     private String searchDateTimeRangeStartString;
     private String searchDateTimeRangeEndString;
         
+    public static final String SELECT_URI = "uri";
     public static final String SELECT_CONCERNS = "concerns";
     public static final String SELECT_TIME = "time";
     public static final String SELECT_DATE_TIME = "dateTime";
@@ -58,66 +60,66 @@ public class EventDAOSesame extends DAOSesame<Event> {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
         
-        String eventUri;
+        String sparkleVariableUri = "?" + SELECT_URI;
+        query.appendSelect(sparkleVariableUri);
         if (searchUri != null) {
-            eventUri = "<" + searchUri + ">";
-        } else {
-            eventUri = "?" + URI;
-            query.appendSelect(eventUri);
+            query.appendToBody("values " + sparkleVariableUri 
+                    +  "{<" + searchUri + ">}");
         }
         
+        String sparkleVariableType = "?" + RDF_TYPE;
+        query.appendSelect(sparkleVariableType);
+        query.appendTriplet(sparkleVariableUri
+            , Rdf.RELATION_TYPE.toString(), sparkleVariableType, null);
         if (searchType != null) {
-            query.appendTriplet(eventUri, Rdf.RELATION_TYPE.toString()
-                    , searchType, null);
+            query.appendTriplet(sparkleVariableType
+                , "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*"
+                , searchType
+                , null);
         } else {
-            query.appendSelect("?" + RDF_TYPE);
-            query.appendTriplet(eventUri
-                    , Rdf.RELATION_TYPE.toString()
-                    , "?" + RDF_TYPE
-                    , null);
-            query.appendTriplet("?" + RDF_TYPE
-                    , "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*"
-                    , Oeev.CONCEPT_EVENT.toString()
-                    , null);
+            query.appendTriplet(sparkleVariableType
+                , "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*"
+                , Oeev.CONCEPT_EVENT.toString()
+                , null);
         }       
 
+        String sparkleVariableConcerns = "?" + SELECT_CONCERNS;
+        query.appendSelect(sparkleVariableConcerns);
+        query.appendTriplet(sparkleVariableUri
+            , Oeev.RELATION_CONCERNS.toString(), sparkleVariableConcerns, null);
         if (searchConcerns != null) {
-            query.appendTriplet(eventUri
-                    , Oeev.RELATION_CONCERNS.toString()
-                    , searchConcerns
-                    , null);
-        } else {
-            query.appendSelect(" ?" + SELECT_CONCERNS);
-            query.appendTriplet(eventUri
-                    , Oeev.RELATION_CONCERNS.toString()
-                    , "?" + SELECT_CONCERNS
-                    , null);
-        }  
+            query.appendToBody("values " + sparkleVariableConcerns 
+                    +  "{<" + searchConcerns + ">}");
+        } 
         
-        query.appendSelect("?" + SELECT_DATE_TIME);
-        query.appendTriplet(eventUri
+        String sparkleVariableDateTime = "?" + SELECT_DATE_TIME;
+        String sparkleVariableTime = "?" + SELECT_TIME;
+        query.appendSelect(sparkleVariableDateTime);
+        query.appendTriplet(sparkleVariableUri
                 , Time.RELATION_HAS_TIME.toString()
-                , "?" + SELECT_TIME
+                , sparkleVariableTime
                 , null);
-        query.appendTriplet("?" + SELECT_TIME
+        query.appendTriplet(sparkleVariableTime
                 , Time.RELATION_IN_XSD_DATE_TIMESTAMP.toString()
-                , "?" + SELECT_DATE_TIME
+                , sparkleVariableDateTime
                 , null);
         //TODO search by date
         
-        query.appendSelect(" ?" + SELECT_FROM);
+        String sparkleVariableFrom = "?" + SELECT_FROM;
+        query.appendSelect(sparkleVariableFrom);
         query.beginBodyOptional();
-        query.appendTriplet(eventUri
+        query.appendTriplet(sparkleVariableUri
                 , Oeev.RELATION_FROM.toString()
-                , "?" + SELECT_FROM
+                , sparkleVariableFrom
                 , null);
         query.endBodyOptional(); 
         
-        query.appendSelect(" ?" + SELECT_TO);
+        String sparkleVariableTo = "?" + SELECT_FROM;
+        query.appendSelect(sparkleVariableTo);
         query.beginBodyOptional();
-        query.appendTriplet(eventUri
+        query.appendTriplet(sparkleVariableUri
                 , Oeev.RELATION_TO.toString()
-                , "?" + SELECT_TO
+                , sparkleVariableTo
                 , null);
         query.endBodyOptional(); 
         
@@ -144,7 +146,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
         HashMap<String, String> eventSubclassSpecificProperties = new HashMap<>();
         
         
-        Value bindingSetValueEventUri = bindingSet.getValue(URI);
+        Value bindingSetValueEventUri = bindingSet.getValue(SELECT_URI);
         if (bindingSetValueEventUri != null) {
             eventUri = bindingSetValueEventUri.stringValue();
         } 

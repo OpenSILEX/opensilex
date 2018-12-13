@@ -32,8 +32,6 @@ public final class DateFormats {
             = "yyyy-MM-dd HH:mm:ssZZ";
     public final static String DATETIME_SPARQL_FORMAT 
             = "yyyy-MM-dd'T'HH:mm:ssZZ";
-    public final static String DATETIME_SPARQL_XSD_FORMAT 
-            = "\"yyyy-MM-dd'T'HH:mm:ssZZ\"^^xsd:dateTimeStamp";
     public final static List<String> DATETIME_MONGO_FORMAT 
             = Arrays.asList("yyyy-MM-dd HH:mm:ss.SSSZZ"
                     , "yyyy-MM-dd HH:mm:ss.SSSSSS"

@@ -77,8 +77,7 @@ public class EventResourceService {
      * @param uri
      * @param type
      * @param concerns
-     * @param date
-     * @param annotation
+     * @param annotationValue
      * @return  list of all events
      * e.g
      * {
@@ -174,22 +173,22 @@ public class EventResourceService {
             @QueryParam("concerns") String concerns
         , @ApiParam
             (
-                value = "Search by date range - start", 
+                value = "Search by date  - start of the range", 
                 example = DocumentationAnnotation.EXAMPLE_EVENT_DATE_RANGE_START
             ) 
             @QueryParam("date range start") String dateRangeStart
         , @ApiParam
             (
-                value = "Search by date range - end", 
+                value = "Search by date - end of the range", 
                 example = DocumentationAnnotation.EXAMPLE_EVENT_DATE_RANGE_END
             ) 
             @QueryParam("date range end") String dateRangeEnd
         , @ApiParam
             (
-                value = "Search by annotation", 
-                example = DocumentationAnnotation.EXAMPLE_EVENT_ANNOTATION
+                value = "Search by annotation value", 
+                example = DocumentationAnnotation.EXAMPLE_EVENT_ANNOTATION_VALUE
             ) 
-            @QueryParam("annotation") String annotation
+            @QueryParam("annotation") String annotationValue
     ) {
 
         EventDAOSesame eventDAO = new EventDAOSesame();
@@ -208,22 +207,29 @@ public class EventResourceService {
         ArrayList<Event> events = eventDAO.allPaginate();
         
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormEvent getResponse;
+        ResponseFormEvent responseForm;
         
         if (events == null) { // Request failure
-            getResponse = new ResponseFormEvent(0, 0, events, true, 0);
-            return noResultFound(getResponse, statusList);
-        } else if (events.isEmpty()) { // No results
-            getResponse = new ResponseFormEvent(0, 0, events, true, 0);
-            return noResultFound(getResponse, statusList);
+            responseForm = new ResponseFormEvent(0, 0, null, true, 0);
+            return noResultFound(responseForm, statusList);
+        } else if (events.isEmpty()) { // No result
+            responseForm = new ResponseFormEvent(0, 0, null, true, 0);
+            return noResultFound(responseForm, statusList);
         } else { // Results
-            getResponse = new ResponseFormEvent(eventDAO.getPageSize()
-                    , eventDAO.getPage(), events, true, totalCount);
-            if (getResponse.getResult().dataSize() == 0) {
-                return noResultFound(getResponse, statusList);
+            
+            ArrayList<EventDTO> eventDTOs = new ArrayList();
+            for (Event event:events) {
+                EventDTO eventDTO = new EventDTO(event);
+                eventDTOs.add(eventDTO);
+            }
+            
+            responseForm = new ResponseFormEvent(eventDAO.getPageSize()
+                    , eventDAO.getPage(), eventDTOs, true, totalCount);
+            if (responseForm.getResult().dataSize() == 0) {
+                return noResultFound(responseForm, statusList);
             } else {
-                getResponse.setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(getResponse).build();
+                responseForm.setStatus(statusList);
+                return Response.status(Response.Status.OK).entity(responseForm).build();
             }
         }
     }

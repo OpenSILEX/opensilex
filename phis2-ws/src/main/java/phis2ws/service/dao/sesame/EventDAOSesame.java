@@ -18,6 +18,8 @@ import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.DateFormats;
@@ -139,11 +141,11 @@ public class EventDAOSesame extends DAOSesame<Event> {
             eventConcerns = bindingSetValueEventConcerns.stringValue();
         }         
         
-        Value bindingSetValueEventDateTime = bindingSet.getValue(SELECT_TIME);
+        Value bindingSetValueEventDateTime = bindingSet.getValue(SELECT_DATE_TIME);
         if (bindingSetValueEventDateTime != null) {
             eventDateTime = Dates.stringToDateTimeWithGivenPattern(
-                    bindingSetValueEventDateTime.toString()
-                    , DateFormats.DATETIME_SPARQL_XSD_FORMAT);
+                    bindingSetValueEventDateTime.stringValue()
+                    , DateFormats.DATETIME_SPARQL_FORMAT);
         }
         
         return new Event(eventUri, eventType, eventConcerns, eventDateTime);
@@ -222,7 +224,8 @@ public class EventDAOSesame extends DAOSesame<Event> {
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             if (result.hasNext()) {
                 BindingSet bindingSet = result.next();
-                count = Integer.parseInt(bindingSet.getValue(COUNT_ELEMENT_QUERY).stringValue());
+                count = Integer.parseInt(
+                        bindingSet.getValue(COUNT_ELEMENT_QUERY).stringValue());
             }
         }
         return count;
@@ -256,7 +259,8 @@ public class EventDAOSesame extends DAOSesame<Event> {
         return searchDateTimeRangeStartString;
     }
 
-    public void setSearchDateTimeRangeStartString(String searchDateTimeString) {
+    public void setSearchDateTimeRangeStartString(
+            String searchDateTimeString) {
         this.searchDateTimeRangeStartString = searchDateTimeString;
     }
     
@@ -264,7 +268,8 @@ public class EventDAOSesame extends DAOSesame<Event> {
         return searchDateTimeRangeEndString;
     }
 
-    public void setSearchDateTimeRangeEndString(String searchDateTimeRangeEndString) {
+    public void setSearchDateTimeRangeEndString(
+            String searchDateTimeRangeEndString) {
         this.searchDateTimeRangeEndString = searchDateTimeRangeEndString;
     }
 }

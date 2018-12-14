@@ -7,6 +7,7 @@
 //******************************************************************************
 package phis2ws.service.resources.dto.event;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -24,7 +25,7 @@ public class EventDTO extends AbstractVerifiedClass {
     
     private final String uri;
     private final String type;
-    private final String concerns;
+    private final ArrayList<String> concernsLabels;
     private final String dateTimeString;
     private final HashMap<String, String> subclassSpecificProperties;
     
@@ -35,7 +36,7 @@ public class EventDTO extends AbstractVerifiedClass {
     public EventDTO(Event event) {
         this.uri = event.getUri();
         this.type = event.getType();
-        this.concerns = event.getConcerns();
+        this.concernsLabels = event.getConcernsUris();
         
         DateTimeFormatter dateTimeJsonFormatter = DateTimeFormat.forPattern(
                 DateFormats.DATETIME_JSON_SERIALISATION_FORMAT);
@@ -52,7 +53,7 @@ public class EventDTO extends AbstractVerifiedClass {
         return new Event(
                 this.uri
                 , this.type
-                , this.concerns
+                , this.concernsLabels
                 , Dates.stringToDateTimeWithGivenPattern(
                     this.dateTimeString
                     , DateFormats.DATETIME_JSON_SERIALISATION_FORMAT)

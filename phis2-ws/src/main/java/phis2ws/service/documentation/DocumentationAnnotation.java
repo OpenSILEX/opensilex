@@ -238,7 +238,7 @@ public final class DocumentationAnnotation {
 
     public static final String EXAMPLE_EVENT_URI = "";
     public static final String EXAMPLE_EVENT_TYPE = "";
-    public static final String EXAMPLE_EVENT_CONCERN = "";
+    public static final String EXAMPLE_EVENT_CONCERNS_URI = "";
     public static final String EXAMPLE_EVENT_DATE_RANGE_START = "";
     public static final String EXAMPLE_EVENT_DATE_RANGE_END = "";
     public static final String EXAMPLE_EVENT_ANNOTATION_VALUE = "";

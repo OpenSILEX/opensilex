@@ -76,7 +76,7 @@ public class EventResourceService {
      * @param page
      * @param uri
      * @param type
-     * @param concerns
+     * @param concernsUris
      * @param dateRangeStart
      * @param dateRangeEnd
      * @param annotationValue
@@ -169,13 +169,13 @@ public class EventResourceService {
             @QueryParam("type") String type
         , @ApiParam
             (
-                value = "Search by concern", 
-                example = DocumentationAnnotation.EXAMPLE_EVENT_CONCERN
+                value = "Search by object concerned uri", 
+                example = DocumentationAnnotation.EXAMPLE_EVENT_CONCERNS_URI
             ) 
-            @QueryParam("concerns") String concerns
+            @QueryParam("concernsUri") String concernsUris
         , @ApiParam
             (
-                value = "Search by date  - start of the range", 
+                value = "Search by date - start of the range", 
                 example = DocumentationAnnotation.EXAMPLE_EVENT_DATE_RANGE_START
             ) 
             @QueryParam("date range start") String dateRangeStart
@@ -197,7 +197,7 @@ public class EventResourceService {
         
         eventDAO.setSearchUri(uri);
         eventDAO.setSearchType(type);
-        eventDAO.setSearchConcerns(concerns);
+        eventDAO.setSearchConcernsUris(concernsUris);
         eventDAO.setSearchDateTimeRangeStartString(dateRangeStart);
         eventDAO.setSearchDateTimeRangeEndString(dateRangeEnd);
         eventDAO.user = userSession.getUser();

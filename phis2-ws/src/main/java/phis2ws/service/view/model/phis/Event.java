@@ -7,6 +7,7 @@
 //******************************************************************************
 package phis2ws.service.view.model.phis;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import org.joda.time.DateTime;
 
@@ -17,15 +18,15 @@ public class Event {
     
     private String uri;
     private String type;
-    private String concerns;
+    private ArrayList<String> concernsUris;
     private DateTime dateTime;
     private HashMap<String, String> subclassSpecificProperties;
 
-    public Event(String uri, String type, String concerns
+    public Event(String uri, String type, ArrayList<String> concernsUris
             , DateTime dateTime, HashMap subclassSpecificProperties) {
         this.uri = uri;
         this.type = type;
-        this.concerns = concerns;
+        this.concernsUris = concernsUris;
         this.dateTime = dateTime;
         this.subclassSpecificProperties = subclassSpecificProperties;
     }
@@ -46,12 +47,12 @@ public class Event {
         this.type = type;
     }
 
-    public String getConcerns() {
-        return concerns;
+    public ArrayList<String> getConcernsUris() {
+        return concernsUris;
     }
 
-    public void setConcerns(String concerns) {
-        this.concerns = concerns;
+    public void setConcernsUris(ArrayList<String> concernsUris) {
+        this.concernsUris = concernsUris;
     }
 
     public DateTime getDateTime() {

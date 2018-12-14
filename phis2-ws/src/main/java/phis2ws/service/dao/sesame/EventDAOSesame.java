@@ -8,6 +8,7 @@
 package phis2ws.service.dao.sesame;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.BindingSet;
@@ -40,12 +41,15 @@ public class EventDAOSesame extends DAOSesame<Event> {
     
     private String searchUri;
     private String searchType;
-    private String searchConcerns;
+    private String searchConcernsLabel;
     private String searchDateTimeRangeStartString;
     private String searchDateTimeRangeEndString;
         
     public static final String SELECT_URI = "uri";
-    public static final String SELECT_CONCERNS = "concerns";
+    public static final String SELECT_TYPE = "type";
+    public static final String SELECT_CONCERNS_URI = "concernsUri";
+    public static final String SELECT_CONCERNS_URIS = "concernsUris";
+    //public static final String SELECT_CONCERNS_LABEL = "concernsLabel";
     public static final String SELECT_TIME = "time";
     public static final String SELECT_DATE_TIME = "dateTime";
     public static final String SELECT_FROM = "from";
@@ -62,13 +66,15 @@ public class EventDAOSesame extends DAOSesame<Event> {
         
         String sparkleVariableUri = "?" + SELECT_URI;
         query.appendSelect(sparkleVariableUri);
+        query.appendGroupBy(sparkleVariableUri);
         if (searchUri != null) {
             query.appendToBody("values " + sparkleVariableUri 
                     +  "{<" + searchUri + ">}");
         }
         
-        String sparkleVariableType = "?" + RDF_TYPE;
+        String sparkleVariableType = "?" + SELECT_TYPE;
         query.appendSelect(sparkleVariableType);
+        query.appendGroupBy(sparkleVariableType);
         query.appendTriplet(sparkleVariableUri
             , Rdf.RELATION_TYPE.toString(), sparkleVariableType, null);
         if (searchType != null) {
@@ -83,44 +89,57 @@ public class EventDAOSesame extends DAOSesame<Event> {
                 , null);
         }       
 
-        String sparkleVariableConcerns = "?" + SELECT_CONCERNS;
-        query.appendSelect(sparkleVariableConcerns);
-        query.appendTriplet(sparkleVariableUri
-            , Oeev.RELATION_CONCERNS.toString(), sparkleVariableConcerns, null);
-        if (searchConcerns != null) {
-            query.appendToBody("values " + sparkleVariableConcerns 
-                    +  "{<" + searchConcerns + ">}");
-        } 
+        String sparkleVariableConcernsUris = "?" + SELECT_CONCERNS_URIS;
+        String sparkleVariableConcernsUri = "?" + SELECT_CONCERNS_URI;
+        query.appendSelect(sparkleVariableConcernsUris);
+        query.appendSelectConcat(sparkleVariableConcernsUri
+                , SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR
+                , sparkleVariableConcernsUris);
+        query.appendTriplet(
+            sparkleVariableUri
+            , Oeev.RELATION_CONCERNS.toString()
+            , sparkleVariableConcernsUri, null);
+        /*query.appendTriplet(
+            sparkleVariableConcernsUris
+            , Rdfs.RELATION_LABEL.toString()
+            , sparkleVariableConcernsLabel, null);
+        if (searchConcernsLabel != null) {
+            query.appendToBody("values " + sparkleVariableConcernsLabel 
+                    +  "{<" + searchConcernsLabel + ">}");
+        } */
         
         String sparkleVariableDateTime = "?" + SELECT_DATE_TIME;
         String sparkleVariableTime = "?" + SELECT_TIME;
         query.appendSelect(sparkleVariableDateTime);
-        query.appendTriplet(sparkleVariableUri
+        query.appendGroupBy(sparkleVariableDateTime);
+        query.appendTriplet(
+                sparkleVariableUri
                 , Time.RELATION_HAS_TIME.toString()
-                , sparkleVariableTime
-                , null);
-        query.appendTriplet(sparkleVariableTime
+                , sparkleVariableTime, null);
+        query.appendTriplet(
+                sparkleVariableTime
                 , Time.RELATION_IN_XSD_DATE_TIMESTAMP.toString()
-                , sparkleVariableDateTime
-                , null);
+                , sparkleVariableDateTime, null);
         //TODO search by date
         
         String sparkleVariableFrom = "?" + SELECT_FROM;
         query.appendSelect(sparkleVariableFrom);
+        query.appendGroupBy(sparkleVariableFrom);
         query.beginBodyOptional();
-        query.appendTriplet(sparkleVariableUri
+        query.appendTriplet(
+                sparkleVariableUri
                 , Oeev.RELATION_FROM.toString()
-                , sparkleVariableFrom
-                , null);
+                , sparkleVariableFrom, null);
         query.endBodyOptional(); 
         
-        String sparkleVariableTo = "?" + SELECT_FROM;
+        String sparkleVariableTo = "?" + SELECT_TO;
         query.appendSelect(sparkleVariableTo);
+        query.appendGroupBy(sparkleVariableTo);
         query.beginBodyOptional();
-        query.appendTriplet(sparkleVariableUri
+        query.appendTriplet(
+                sparkleVariableUri
                 , Oeev.RELATION_TO.toString()
-                , sparkleVariableTo
-                , null);
+                , sparkleVariableTo, null);
         query.endBodyOptional(); 
         
         query.appendLimit(this.getPageSize());
@@ -136,51 +155,42 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * @return an event target with data extracted from the given binding set
      */
     private Event getEventFromBindingSet(BindingSet bindingSet) {
+          
+        String eventUri = getValueOfSelectFieldFromBindingSet(
+                SELECT_URI, bindingSet);
+                
+        String eventType = getValueOfSelectFieldFromBindingSet(
+                SELECT_TYPE, bindingSet);
         
-        String eventUri = null;
-        String eventType = null;
-        String eventConcerns = null;
+        String eventConcernsUrisConcatenated = 
+                getValueOfSelectFieldFromBindingSet(SELECT_CONCERNS_URIS
+                    , bindingSet);
+        ArrayList<String> eventConcernsUris = 
+                new ArrayList<>(Arrays.asList(eventConcernsUrisConcatenated
+                        .split(SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR)));
+        String eventDateTimeString = getValueOfSelectFieldFromBindingSet(
+                SELECT_DATE_TIME, bindingSet);    
+       
         DateTime eventDateTime = null;
-        String eventFrom = null;
-        String eventTo = null;
-        HashMap<String, String> eventSubclassSpecificProperties = new HashMap<>();
-        
-        
-        Value bindingSetValueEventUri = bindingSet.getValue(SELECT_URI);
-        if (bindingSetValueEventUri != null) {
-            eventUri = bindingSetValueEventUri.stringValue();
-        } 
-        
-        Value bindingSetValueEventType = bindingSet.getValue(RDF_TYPE);
-        if (bindingSetValueEventType != null) {
-            eventType = bindingSetValueEventType.stringValue();
-        } 
-        
-        Value bindingSetValueEventConcerns = bindingSet.getValue(SELECT_CONCERNS);
-        if (bindingSetValueEventConcerns != null) {
-            eventConcerns = bindingSetValueEventConcerns.stringValue();
-        }         
-        
-        Value bindingSetValueEventDateTime = bindingSet.getValue(SELECT_DATE_TIME);
-        if (bindingSetValueEventDateTime != null) {
+        if (eventDateTimeString != null) {
             eventDateTime = Dates.stringToDateTimeWithGivenPattern(
-                    bindingSetValueEventDateTime.stringValue()
+                    eventDateTimeString
                     , DateFormats.DATETIME_SPARQL_FORMAT);
         }
         
-        Value bindingSetValueEventFrom = bindingSet.getValue(SELECT_FROM);
-        if (bindingSetValueEventFrom != null) {
-            eventFrom = bindingSetValueEventFrom.stringValue();
-            eventSubclassSpecificProperties.put(SELECT_FROM, eventFrom);
-        }   
-        
-        Value bindingSetValueEventTo = bindingSet.getValue(SELECT_TO);
-        if (bindingSetValueEventTo != null) {
-            eventTo = bindingSetValueEventTo.stringValue();
-            eventSubclassSpecificProperties.put(SELECT_TO, eventTo);
+        String eventFrom;
+        String eventTo;
+        HashMap<String, String> eventSubclassSpecificProperties = new HashMap<>();
+        eventFrom = getValueOfSelectFieldFromBindingSet(SELECT_FROM, bindingSet);
+        if(eventFrom != null){
+            eventSubclassSpecificProperties.put(SELECT_FROM, eventFrom); 
+        }
+        eventTo = getValueOfSelectFieldFromBindingSet(SELECT_TO, bindingSet); 
+        if(eventTo != null){
+            eventSubclassSpecificProperties.put(SELECT_TO, eventTo); 
         }
         
-        return new Event(eventUri, eventType, eventConcerns, eventDateTime
+        return new Event(eventUri, eventType, eventConcernsUris, eventDateTime
                 , eventSubclassSpecificProperties);
     }
     
@@ -199,12 +209,20 @@ public class EventDAOSesame extends DAOSesame<Event> {
             events = new ArrayList<>();
             
             while (result.hasNext()) {
-                BindingSet bindingSet = result.next();
-                Event event = getEventFromBindingSet(bindingSet);
-                events.add(event);
+                events.add(getEventFromBindingSet(result.next()));
             }
         }
         return events;
+    }
+    
+    String getValueOfSelectFieldFromBindingSet(String selectField
+        , BindingSet bindingSet){ 
+        Value selectedFieldValue = bindingSet.getValue(selectField);
+        if (selectedFieldValue != null) {
+            return selectedFieldValue.stringValue();
+        }
+        
+        return null;
     }
 
     /**
@@ -271,11 +289,11 @@ public class EventDAOSesame extends DAOSesame<Event> {
     }
 
     public String getSearchConcerns() {
-        return searchConcerns;
+        return searchConcernsLabel;
     }
 
-    public void setSearchConcerns(String searchConcerns) {
-        this.searchConcerns = searchConcerns;
+    public void setSearchConcernsUris(String searchConcerns) {
+        this.searchConcernsLabel = searchConcerns;
     }
 
     public String getSearchDateTime() {

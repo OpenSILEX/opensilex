@@ -18,7 +18,7 @@ public class Event {
     
     private String uri;
     private String type;
-    private ArrayList<String> concernsUris;
+    private ArrayList<String> concernsList;
     private DateTime dateTime;
     private HashMap<String, String> subclassSpecificProperties;
 
@@ -26,7 +26,7 @@ public class Event {
             , DateTime dateTime, HashMap subclassSpecificProperties) {
         this.uri = uri;
         this.type = type;
-        this.concernsUris = concernsUris;
+        this.concernsList = concernsUris;
         this.dateTime = dateTime;
         this.subclassSpecificProperties = subclassSpecificProperties;
     }
@@ -47,12 +47,12 @@ public class Event {
         this.type = type;
     }
 
-    public ArrayList<String> getConcernsUris() {
-        return concernsUris;
+    public ArrayList<String> getConcernsList() {
+        return concernsList;
     }
 
-    public void setConcernsUris(ArrayList<String> concernsUris) {
-        this.concernsUris = concernsUris;
+    public void setConcernsList(ArrayList<String> concernsList) {
+        this.concernsList = concernsList;
     }
 
     public DateTime getDateTime() {

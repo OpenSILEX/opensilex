@@ -41,7 +41,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     
     private String searchUri;
     private String searchType;
-    private String searchConcernsLabel;
+    private String searchConcernsUri;
     private String searchDateTimeRangeStartString;
     private String searchDateTimeRangeEndString;
         
@@ -99,14 +99,11 @@ public class EventDAOSesame extends DAOSesame<Event> {
             sparkleVariableUri
             , Oeev.RELATION_CONCERNS.toString()
             , sparkleVariableConcernsUri, null);
-        /*query.appendTriplet(
-            sparkleVariableConcernsUris
-            , Rdfs.RELATION_LABEL.toString()
-            , sparkleVariableConcernsLabel, null);
-        if (searchConcernsLabel != null) {
-            query.appendToBody("values " + sparkleVariableConcernsLabel 
-                    +  "{<" + searchConcernsLabel + ">}");
-        } */
+
+        if (searchConcernsUri != null) {
+            query.appendToBody("values " + sparkleVariableConcernsUri 
+                    +  "{<" + searchConcernsUri + ">}");
+        }
         
         String sparkleVariableDateTime = "?" + SELECT_DATE_TIME;
         String sparkleVariableTime = "?" + SELECT_TIME;
@@ -168,9 +165,9 @@ public class EventDAOSesame extends DAOSesame<Event> {
         ArrayList<String> eventConcernsUris = 
                 new ArrayList<>(Arrays.asList(eventConcernsUrisConcatenated
                         .split(SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR)));
+        
         String eventDateTimeString = getValueOfSelectFieldFromBindingSet(
                 SELECT_DATE_TIME, bindingSet);    
-       
         DateTime eventDateTime = null;
         if (eventDateTimeString != null) {
             eventDateTime = Dates.stringToDateTimeWithGivenPattern(
@@ -289,11 +286,11 @@ public class EventDAOSesame extends DAOSesame<Event> {
     }
 
     public String getSearchConcerns() {
-        return searchConcernsLabel;
+        return searchConcernsUri;
     }
 
-    public void setSearchConcernsUris(String searchConcerns) {
-        this.searchConcernsLabel = searchConcerns;
+    public void setSearchConcerns(String searchConcerns) {
+        this.searchConcernsUri = searchConcerns;
     }
 
     public String getSearchDateTime() {

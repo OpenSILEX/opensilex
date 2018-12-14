@@ -91,8 +91,8 @@ public class EventDAOSesame extends DAOSesame<Event> {
 
         String sparkleVariableConcernsUris = "?" + SELECT_CONCERNS_URIS;
         String sparkleVariableConcernsUri = "?" + SELECT_CONCERNS_URI;
-        query.appendSelect(sparkleVariableConcernsUris);
-        query.appendSelectConcat(sparkleVariableConcernsUri
+        query.appendSelectConcat(
+                sparkleVariableConcernsUri
                 , SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR
                 , sparkleVariableConcernsUris);
         query.appendTriplet(

@@ -41,7 +41,6 @@ import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Event;
 
 /**
- * Event resource service.
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
 @Api("/events")
@@ -79,7 +78,6 @@ public class EventResourceService {
      * @param concerns
      * @param dateRangeStart
      * @param dateRangeEnd
-     * @param annotationValue
      * @return  list of all events
      * e.g
      * {
@@ -119,7 +117,10 @@ public class EventResourceService {
      */
     @GET
     @ApiOperation(value = 
-        "Get all events targets corresponding to the search parameters given",
+        "Get all events corresponding to the search parameters given. "
+                + "The object listed in the result represents an event "
+                + "concerning one objet. Thus an event representing multiple "
+                + "objects will be represented on multiple lines.",
         notes = 
         "Retrieve all events authorized for the user corresponding to the "
         + "search parameters given")
@@ -235,11 +236,11 @@ public class EventResourceService {
      * @param insertStatusList
      * @return the response "no result found" for the service
      */
-    private Response noResultFound(
-            ResultForm getResponse, ArrayList<Status> insertStatusList) {
+    private Response noResultFound(ResultForm getResponse
+            , ArrayList<Status> insertStatusList) {
         insertStatusList.add(new Status(StatusCodeMsg.NO_RESULTS
-                , StatusCodeMsg.INFO
-                , "No event found"));
+                                , StatusCodeMsg.INFO
+                                , "No event found"));
         getResponse.setStatus(insertStatusList);
         return Response.status(Response.Status.NOT_FOUND)
                 .entity(getResponse).build();

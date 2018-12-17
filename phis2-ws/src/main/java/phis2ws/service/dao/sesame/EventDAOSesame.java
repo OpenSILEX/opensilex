@@ -19,6 +19,7 @@ import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.DateFormats;
@@ -27,7 +28,6 @@ import phis2ws.service.ontologies.Oeev;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Time;
-import phis2ws.service.ontologies.Vocabulary;
 import phis2ws.service.utils.dates.Dates;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.model.phis.Event;
@@ -51,7 +51,12 @@ public class EventDAOSesame extends DAOSesame<Event> {
     public static final String SELECT_CONCERNS_URIS = "concernsUris";
     //public static final String SELECT_CONCERNS_LABEL = "concernsLabel";
     public static final String SELECT_TIME = "time";
+    public static final String SELECT_DATE_TIME_STAMP = "dateTimeStamp";
     public static final String SELECT_DATE_TIME = "dateTime";
+    public static final String SELECT_DATE_RANGE_START_DATE_TIME 
+            = "dateRangeStartDateTime";
+    public static final String SELECT_DATE_RANGE_END_DATE_TIME 
+            = "dateRangeEndDateTime";
     public static final String SELECT_FROM = "from";
     public static final String SELECT_TO = "to";
     
@@ -68,7 +73,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
         query.appendSelect(sparkleVariableUri);
         query.appendGroupBy(sparkleVariableUri);
         if (searchUri != null) {
-            query.appendToBody("values " + sparkleVariableUri 
+            query.appendToBody("\nVALUES " + sparkleVariableUri 
                     +  "{<" + searchUri + ">}");
         }
         
@@ -101,14 +106,20 @@ public class EventDAOSesame extends DAOSesame<Event> {
             , sparkleVariableConcernsUri, null);
 
         if (searchConcernsUri != null) {
-            query.appendToBody("values " + sparkleVariableConcernsUri 
+            query.appendToBody("\nVALUES " + sparkleVariableConcernsUri 
                     +  "{<" + searchConcernsUri + ">}");
         }
         
+        String sparkleVariableDateTimeStamp = "?" + SELECT_DATE_TIME_STAMP;
         String sparkleVariableDateTime = "?" + SELECT_DATE_TIME;
+        String sparkleVariableDateRangeStartDateTime = 
+                "?" + SELECT_DATE_RANGE_START_DATE_TIME;
+        String sparkleVariableDateRangeEndDateTime =
+                "?" + SELECT_DATE_RANGE_END_DATE_TIME;
         String sparkleVariableTime = "?" + SELECT_TIME;
-        query.appendSelect(sparkleVariableDateTime);
-        query.appendGroupBy(sparkleVariableDateTime);
+        
+        query.appendSelect(sparkleVariableDateTimeStamp);
+        query.appendGroupBy(sparkleVariableDateTimeStamp);
         query.appendTriplet(
                 sparkleVariableUri
                 , Time.RELATION_HAS_TIME.toString()
@@ -116,8 +127,50 @@ public class EventDAOSesame extends DAOSesame<Event> {
         query.appendTriplet(
                 sparkleVariableTime
                 , Time.RELATION_IN_XSD_DATE_TIMESTAMP.toString()
-                , sparkleVariableDateTime, null);
-        //TODO search by date
+                , sparkleVariableDateTimeStamp, null);
+        if (searchDateTimeRangeStartString != null 
+                || searchDateTimeRangeEndString != null) {
+            query.appendToBody("\nBIND(xsd:dateTime(str(" 
+                    + sparkleVariableDateTimeStamp 
+                    + ")) as " + sparkleVariableDateTime
+                        + ") .");
+            if (searchDateTimeRangeStartString != null){
+                DateTime dateRangeStartDateTime = 
+                    Dates.stringToDateTimeWithGivenPattern(
+                        searchDateTimeRangeStartString
+                        , DateFormats.DATETIME_JSON_SERIALISATION_FORMAT);
+                String dateRangeStartDateTimeString = DateTimeFormat
+                            .forPattern(DateFormats.DATETIME_SPARQL_FORMAT)
+                            .print(dateRangeStartDateTime);
+        
+                query.appendToBody("\nBIND(xsd:dateTime(str(\""
+                        + dateRangeStartDateTimeString 
+                        + "\")) as " + sparkleVariableDateRangeStartDateTime
+                        + ") .");
+                query.appendToBody("\nFILTER ("
+                        + sparkleVariableDateTime + " >= "
+                        + sparkleVariableDateRangeStartDateTime
+                        + ") .");
+            }
+            if (searchDateTimeRangeEndString != null){
+                DateTime dateRangeEndDateTime = 
+                    Dates.stringToDateTimeWithGivenPattern(
+                        searchDateTimeRangeEndString
+                        , DateFormats.DATETIME_JSON_SERIALISATION_FORMAT);
+                String dateRangeEndDateTimeString = DateTimeFormat
+                            .forPattern(DateFormats.DATETIME_SPARQL_FORMAT)
+                            .print(dateRangeEndDateTime);
+                
+                query.appendToBody("\nBIND(xsd:dateTime(str(\""
+                        + dateRangeEndDateTimeString 
+                        + "\")) as " + sparkleVariableDateRangeEndDateTime
+                        + ") .");
+                query.appendToBody("\nFILTER ("
+                        + sparkleVariableDateTime + " <= "
+                        + sparkleVariableDateRangeEndDateTime
+                        + ") .");
+            }
+        }
         
         String sparkleVariableFrom = "?" + SELECT_FROM;
         query.appendSelect(sparkleVariableFrom);
@@ -166,8 +219,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
                 new ArrayList<>(Arrays.asList(eventConcernsUrisConcatenated
                         .split(SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR)));
         
-        String eventDateTimeString = getValueOfSelectFieldFromBindingSet(
-                SELECT_DATE_TIME, bindingSet);    
+        String eventDateTimeString = getValueOfSelectFieldFromBindingSet(SELECT_DATE_TIME_STAMP, bindingSet);    
         DateTime eventDateTime = null;
         if (eventDateTimeString != null) {
             eventDateTime = Dates.stringToDateTimeWithGivenPattern(

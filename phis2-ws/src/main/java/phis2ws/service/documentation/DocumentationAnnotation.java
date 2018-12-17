@@ -236,12 +236,11 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_VARIABLE_URI = "http://www.phenome-fppn.fr/diaphen/id/variable/v0000001";
     public static final String EXAMPLE_VARIABLE_LABEL = "LAI";
 
-    public static final String EXAMPLE_EVENT_URI = "";
-    public static final String EXAMPLE_EVENT_TYPE = "";
-    public static final String EXAMPLE_EVENT_CONCERNS_URI = "";
-    public static final String EXAMPLE_EVENT_DATE_RANGE_START = "";
-    public static final String EXAMPLE_EVENT_DATE_RANGE_END = "";
-    public static final String EXAMPLE_EVENT_ANNOTATION_VALUE = "";
+    public static final String EXAMPLE_EVENT_URI = "http://www.phenome-fppn.fr/id/event/5a1b3c0d-58af-4cfb-811e-e141b11453b1";
+    public static final String EXAMPLE_EVENT_TYPE = "http://www.phenome-fppn.fr/vocabulary/2018/oeev#MoveFrom";
+    public static final String EXAMPLE_EVENT_CONCERNS_URI = "http://www.phenome-fppn.fr/m3p/arch/2017/c17000241";
+    public static final String EXAMPLE_EVENT_DATE_RANGE_START = "2017-09-10 12:00:00+01:00";
+    public static final String EXAMPLE_EVENT_DATE_RANGE_END = "2017-09-12 12:00:00+01:00";
 
     public static final String EXAMPLE_VECTOR_URI = "http://www.phenome-fppn.fr/diaphen/2018/v1801";
     public static final String EXAMPLE_VECTOR_RDF_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#UAV";

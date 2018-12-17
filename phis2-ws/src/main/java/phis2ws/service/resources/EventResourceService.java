@@ -98,7 +98,7 @@ public class EventResourceService {
      * "http://www.phenome-fppn.fr/vocabulary/2018/oeev/id/events/ev001",
      *                  "type : "oeev:MoveFrom",
      *                  "concern": "event description",
-     *                  "dateTime" : "2018-11-14T07:58:26.891Z"
+     *                  "dateTime" : "2018-11-14 07:58:26.891+01:00"
      *                  properties: [{
      *                      "rdfType": "vocabulary:Infrastructure",
      *                      "relation": "oeev:from",

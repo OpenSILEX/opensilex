@@ -96,19 +96,13 @@ public class EventResourceService {
      *              {
      *                  "uri": 
      * "http://www.phenome-fppn.fr/vocabulary/2018/oeev/id/events/ev001",
-     *                  "type : "oeev:MoveFrom",
-     *                  "concern": "event description",
+     *                  "type : "http://www.phenome-fppn.fr/vocabulary/2018/oeev#MoveFrom",
+     *                  "concerns": "http://www.phenome-fppn.fr/m3p/arch/2017/c17000241",
      *                  "dateTime" : "2018-11-14 07:58:26.891+01:00"
      *                  properties: [{
      *                      "rdfType": "vocabulary:Infrastructure",
      *                      "relation": "oeev:from",
      *                      "value": "vocabulary:Infrastructure"
-     *                  }],
-     *                  annotations: [{ 
-     *                      "motivatedBy": "oa#commenting",
-     *                      "created": "2018-01-01T12:00:00+2000",
-     *                      "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/marie_dupond",
-     *                      "bodyValue": "string"
      *                  }]
      *              },
      *          ]

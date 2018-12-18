@@ -15,6 +15,7 @@ import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.utils.dates.Dates;
 import phis2ws.service.view.model.phis.Event;
+import phis2ws.service.view.model.phis.Property;
 
 /**
  * DTO representing an event
@@ -25,9 +26,9 @@ public class EventDTO extends AbstractVerifiedClass {
     
     private final String uri;
     private final String type;
-    private final ArrayList<String> concernsList;
+    private final ArrayList<HashMap<String, ArrayList<String>>> concernsList;
     private final String dateTimeString;
-    private final HashMap<String, String> subclassSpecificProperties;
+    private final ArrayList<Property> subclassSpecificProperties;
     
     /**
      * Constructor to create DTO from an Event model
@@ -47,7 +48,7 @@ public class EventDTO extends AbstractVerifiedClass {
         else{
             this.dateTimeString = null;
         }
-        this.subclassSpecificProperties = event.getSubclassSpecificProperties();
+        this.subclassSpecificProperties = event.getProperties();
     }
 
     /**

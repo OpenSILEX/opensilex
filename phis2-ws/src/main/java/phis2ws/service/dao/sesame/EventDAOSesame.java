@@ -31,6 +31,7 @@ import phis2ws.service.ontologies.Time;
 import phis2ws.service.utils.dates.Dates;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.model.phis.Event;
+import phis2ws.service.view.model.phis.Property;
 
 /**
  * Dao for Events
@@ -48,8 +49,9 @@ public class EventDAOSesame extends DAOSesame<Event> {
     public static final String SELECT_URI = "uri";
     public static final String SELECT_TYPE = "type";
     public static final String SELECT_CONCERNS_URI = "concernsUri";
-    public static final String SELECT_CONCERNS_URIS = "concernsUris";
-    //public static final String SELECT_CONCERNS_LABEL = "concernsLabel";
+    public static final String SELECT_CONCERNS_Type = "concernsUri";
+    public static final String SELECT_CONCERNS_LABEL = "concernsLabel";
+    public static final String SELECT_CONCERNS_LABELS = "concernsLabels";
     public static final String SELECT_TIME = "time";
     public static final String SELECT_DATE_TIME_STAMP = "dateTimeStamp";
     public static final String SELECT_DATE_TIME = "dateTime";
@@ -57,18 +59,14 @@ public class EventDAOSesame extends DAOSesame<Event> {
             = "dateRangeStartDateTime";
     public static final String SELECT_DATE_RANGE_END_DATE_TIME 
             = "dateRangeEndDateTime";
-    public static final String SELECT_FROM = "from";
-    public static final String SELECT_TO = "to";
+    public static final String SELECT_FROM_URI = "fromUri";
+    public static final String SELECT_FROM_TYPE = "fromType";
+    public static final String SELECT_FROM_RELATION = "fromRelation";
+    public static final String SELECT_TO_URI = "toUri";
+    public static final String SELECT_TO_TYPE = "toType";
+    public static final String SELECT_TO_RELATION = "toRelation";
     
-    /**
-     * Generates the search query
-     * @return the query
-     */
-    @Override
-    protected SPARQLQueryBuilder prepareSearchQuery() {
-        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
-        query.appendDistinct(Boolean.TRUE);
-        
+    private String prepareSearchQueryUri(SPARQLQueryBuilder query){
         String sparkleVariableUri = "?" + SELECT_URI;
         query.appendSelect(sparkleVariableUri);
         query.appendGroupBy(sparkleVariableUri);
@@ -76,7 +74,11 @@ public class EventDAOSesame extends DAOSesame<Event> {
             query.appendToBody("\nVALUES " + sparkleVariableUri 
                     +  "{<" + searchUri + ">}");
         }
-        
+        return sparkleVariableUri;
+    }
+    
+    private void prepareSearchQueryType(SPARQLQueryBuilder query
+        , String sparkleVariableUri){
         String sparkleVariableType = "?" + SELECT_TYPE;
         query.appendSelect(sparkleVariableType);
         query.appendGroupBy(sparkleVariableType);
@@ -92,14 +94,15 @@ public class EventDAOSesame extends DAOSesame<Event> {
                 , "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*"
                 , Oeev.CONCEPT_EVENT.toString()
                 , null);
-        }       
+        }    
+    }
+    
+    private void prepareSearchQueryConcerns(SPARQLQueryBuilder query
+        , String sparkleVariableUri){
 
-        String sparkleVariableConcernsUris = "?" + SELECT_CONCERNS_URIS;
         String sparkleVariableConcernsUri = "?" + SELECT_CONCERNS_URI;
-        query.appendSelectConcat(
-                sparkleVariableConcernsUri
-                , SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR
-                , sparkleVariableConcernsUris);
+        String sparkleVariableConcernsLabel = "?" + SELECT_CONCERNS_LABEL;
+        String sparkleVariableConcernsLabels = "?" + SELECT_CONCERNS_LABELS;
         query.appendTriplet(
             sparkleVariableUri
             , Oeev.RELATION_CONCERNS.toString()
@@ -109,6 +112,15 @@ public class EventDAOSesame extends DAOSesame<Event> {
             query.appendToBody("\nVALUES " + sparkleVariableConcernsUri 
                     +  "{<" + searchConcernsUri + ">}");
         }
+        
+        query.appendSelectConcat(
+                sparkleVariableConcernsLabel
+                , SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR
+                , sparkleVariableConcernsLabels);
+    }
+    
+    private void prepareSearchQueryTime(SPARQLQueryBuilder query
+        , String sparkleVariableUri){  
         
         String sparkleVariableDateTimeStamp = "?" + SELECT_DATE_TIME_STAMP;
         String sparkleVariableDateTime = "?" + SELECT_DATE_TIME;
@@ -171,18 +183,35 @@ public class EventDAOSesame extends DAOSesame<Event> {
                         + ") .");
             }
         }
+    }
+    
+    private void prepareSearchQuerySubclassSpecificProperties(
+            SPARQLQueryBuilder query, String sparkleVariableUri){   
         
-        String sparkleVariableFrom = "?" + SELECT_FROM;
-        query.appendSelect(sparkleVariableFrom);
-        query.appendGroupBy(sparkleVariableFrom);
+        String sparkleVariableFromUri = "?" + SELECT_FROM_URI;
+        query.appendSelect(sparkleVariableFromUri);
+        query.appendGroupBy(sparkleVariableFromUri);
+        
+        String sparkleVariableFromType = "?" + SELECT_FROM_TYPE;
+        query.appendSelect(sparkleVariableFromType);
+        query.appendGroupBy(sparkleVariableFromType);
+        
+        String sparkleVariableFromRelation = "?" + SELECT_FROM_RELATION;
+        query.appendSelect("(\"" + Oeev.RELATION_FROM.toString() 
+                + "\" as "+ sparkleVariableFromRelation + ")");
+        
         query.beginBodyOptional();
         query.appendTriplet(
                 sparkleVariableUri
                 , Oeev.RELATION_FROM.toString()
-                , sparkleVariableFrom, null);
+                , sparkleVariableFromUri, null);
+        query.appendTriplet(
+                sparkleVariableFromUri
+                , Rdf.RELATION_TYPE.toString()
+                , sparkleVariableFromType, null);
         query.endBodyOptional(); 
         
-        String sparkleVariableTo = "?" + SELECT_TO;
+        String sparkleVariableTo = "?" + SELECT_TO_URI;
         query.appendSelect(sparkleVariableTo);
         query.appendGroupBy(sparkleVariableTo);
         query.beginBodyOptional();
@@ -191,6 +220,22 @@ public class EventDAOSesame extends DAOSesame<Event> {
                 , Oeev.RELATION_TO.toString()
                 , sparkleVariableTo, null);
         query.endBodyOptional(); 
+    }
+    
+    /**
+     * Generates the search query
+     * @return the query
+     */
+    @Override
+    protected SPARQLQueryBuilder prepareSearchQuery() {
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        query.appendDistinct(Boolean.TRUE);
+        
+        String sparkleVariableUri = prepareSearchQueryUri(query);
+        prepareSearchQueryType(query, sparkleVariableUri);  
+        prepareSearchQueryConcerns(query, sparkleVariableUri); 
+        prepareSearchQueryTime(query, sparkleVariableUri); 
+        prepareSearchQuerySubclassSpecificProperties(query, sparkleVariableUri);
         
         query.appendLimit(this.getPageSize());
         query.appendOffset(this.getPage() * this.getPageSize());
@@ -212,11 +257,13 @@ public class EventDAOSesame extends DAOSesame<Event> {
         String eventType = getValueOfSelectFieldFromBindingSet(
                 SELECT_TYPE, bindingSet);
         
-        String eventConcernsUrisConcatenated = 
-                getValueOfSelectFieldFromBindingSet(SELECT_CONCERNS_URIS
+        String eventConcernsLabelsConcatenated = 
+                getValueOfSelectFieldFromBindingSet(SELECT_CONCERNS_LABELS
                     , bindingSet);
-        ArrayList<String> eventConcernsUris = 
-                new ArrayList<>(Arrays.asList(eventConcernsUrisConcatenated
+        ArrayList<HashMap<String, ArrayList<String>>> concernsList 
+                = new ArrayList();
+        ArrayList<String> eventConcernsLabels = 
+                new ArrayList<>(Arrays.asList(eventConcernsLabelsConcatenated
                         .split(SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR)));
         
         String eventDateTimeString = getValueOfSelectFieldFromBindingSet(SELECT_DATE_TIME_STAMP, bindingSet);    
@@ -227,19 +274,25 @@ public class EventDAOSesame extends DAOSesame<Event> {
                     , DateFormats.DATETIME_SPARQL_FORMAT);
         }
         
-        String eventFrom;
-        String eventTo;
-        HashMap<String, String> eventSubclassSpecificProperties = new HashMap<>();
-        eventFrom = getValueOfSelectFieldFromBindingSet(SELECT_FROM, bindingSet);
-        if(eventFrom != null){
-            eventSubclassSpecificProperties.put(SELECT_FROM, eventFrom); 
-        }
-        eventTo = getValueOfSelectFieldFromBindingSet(SELECT_TO, bindingSet); 
-        if(eventTo != null){
-            eventSubclassSpecificProperties.put(SELECT_TO, eventTo); 
+        ArrayList<Property> eventSubclassSpecificProperties = new ArrayList<>();
+        
+        String eventFromUri = getValueOfSelectFieldFromBindingSet(
+                SELECT_FROM_URI, bindingSet);
+        String eventFromType = getValueOfSelectFieldFromBindingSet(
+                SELECT_FROM_TYPE, bindingSet);
+        String eventFromRelation = getValueOfSelectFieldFromBindingSet(
+                SELECT_FROM_RELATION, bindingSet);
+        if(eventFromUri != null){
+            Property fromProperty = new Property(eventFromType, null
+                    , eventFromRelation, null, eventFromUri, null, null, null);
+            eventSubclassSpecificProperties.add(fromProperty);
         }
         
-        return new Event(eventUri, eventType, eventConcernsUris, eventDateTime
+        String eventTo;
+        eventTo = getValueOfSelectFieldFromBindingSet(SELECT_TO_URI, bindingSet); 
+
+        
+        return new Event(eventUri, eventType, concernsList, eventDateTime
                 , eventSubclassSpecificProperties);
     }
     

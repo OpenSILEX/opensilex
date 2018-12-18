@@ -14,29 +14,21 @@ import org.joda.time.DateTime;
 /**
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
-public class Event {
+public class Event extends RdfResourceDefinition {
     
-    private String uri;
     private String type;
-    private ArrayList<String> concernsList;
+    private ArrayList<HashMap<String, ArrayList<String>>> concernsList;
     private DateTime dateTime;
-    private HashMap<String, String> subclassSpecificProperties;
 
-    public Event(String uri, String type, ArrayList<String> concernsUris
-            , DateTime dateTime, HashMap subclassSpecificProperties) {
+    public Event(String uri, String type, 
+            ArrayList<HashMap<String, ArrayList<String>>> concernsList
+            , DateTime dateTime
+            , ArrayList<Property> subclassSpecificProperties) {
         this.uri = uri;
         this.type = type;
-        this.concernsList = concernsUris;
+        this.concernsList = concernsList;
         this.dateTime = dateTime;
-        this.subclassSpecificProperties = subclassSpecificProperties;
-    }
-
-    public String getUri() {
-        return uri;
-    }
-
-    public void setUri(String uri) {
-        this.uri = uri;
+        this.properties = subclassSpecificProperties;
     }
 
     public String getType() {
@@ -47,11 +39,12 @@ public class Event {
         this.type = type;
     }
 
-    public ArrayList<String> getConcernsList() {
+    public ArrayList<HashMap<String, ArrayList<String>>> getConcernsList() {
         return concernsList;
     }
 
-    public void setConcernsList(ArrayList<String> concernsList) {
+    public void setConcernsList(
+            ArrayList<HashMap<String, ArrayList<String>>> concernsList) {
         this.concernsList = concernsList;
     }
 
@@ -61,14 +54,5 @@ public class Event {
 
     public void setDateTime(DateTime dateTime) {
         this.dateTime = dateTime;
-    }
-
-    public HashMap getSubclassSpecificProperties() {
-        return subclassSpecificProperties;
-    }
-
-    public void setSubclassSpecificProperties(
-            HashMap subclassSpecificProperties) {
-        this.subclassSpecificProperties = subclassSpecificProperties;
     }
 }

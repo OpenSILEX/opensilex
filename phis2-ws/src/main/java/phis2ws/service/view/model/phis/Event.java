@@ -30,6 +30,10 @@ public class Event extends RdfResourceDefinition {
         this.dateTime = dateTime;
         this.properties = properties;
     }
+    
+    public void addConcerns(HashMap<String, ArrayList<String>> concerns){
+        this.concernsList.add(concerns);
+    }
 
     public String getType() {
         return type;

@@ -13,6 +13,7 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyDTO;
 import phis2ws.service.utils.dates.Dates;
 import phis2ws.service.view.model.phis.Event;
 import phis2ws.service.view.model.phis.Property;
@@ -28,10 +29,10 @@ public class EventDTO extends AbstractVerifiedClass {
     private final String type;
     private final ArrayList<HashMap<String, ArrayList<String>>> concernsList;
     private final String dateTimeString;
-    private final ArrayList<Property> properties;
+    protected ArrayList<PropertyDTO> properties = new ArrayList<>();
     
     /**
-     * Constructor to create DTO from an Event model
+     * Constructor to create a DTO from an Event model
      * @param event 
      */
     public EventDTO(Event event) {
@@ -48,7 +49,9 @@ public class EventDTO extends AbstractVerifiedClass {
         else{
             this.dateTimeString = null;
         }
-        this.properties = event.getProperties();
+        event.getProperties().forEach((property) -> {
+            properties.add(new PropertyDTO(property));
+        });
     }
 
     /**
@@ -57,6 +60,12 @@ public class EventDTO extends AbstractVerifiedClass {
      */
     @Override
     public Event createObjectFromDTO() {
+        
+        ArrayList<Property> eventProperties = new ArrayList<>();
+        this.properties.forEach((property) -> {
+            eventProperties.add(property.createObjectFromDTO());
+        });
+        
         return new Event(
                 this.uri
                 , this.type
@@ -64,6 +73,6 @@ public class EventDTO extends AbstractVerifiedClass {
                 , Dates.stringToDateTimeWithGivenPattern(
                     this.dateTimeString
                     , DateFormats.DATETIME_JSON_SERIALISATION_FORMAT)
-                , this.properties);
+                , eventProperties);
     }
 }

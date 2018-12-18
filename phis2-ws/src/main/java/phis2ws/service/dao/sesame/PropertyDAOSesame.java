@@ -83,6 +83,15 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     protected final String RELATION_PREF_LABEL = "relationPrefLabel";    
     protected final String PROPERTY_PREF_LABEL = "propertyPrefLabel";    
     protected final String PROPERTY_TYPE_PREF_LABEL = "propertyTypePrefLabel";   
+
+    public PropertyDAOSesame() {
+        super();
+    }
+    
+    public PropertyDAOSesame(String uri) {
+        super();
+        this.uri = uri;
+    }
     
     /**
      * prepare the sparql query to get the list of properties and their relations
@@ -682,7 +691,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      */
     public boolean getAllProperties(
             RdfResourceDefinition definition, String language) {
-        return getAllPropertiesExceptTheOnesSpecified(definition, language
+        return getAllPropertiesExceptThoseSpecified(definition, language
                 , null);
     }       
     
@@ -696,7 +705,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      * @return true    if the definition object is correctly filled
      *          false   if the uri doesn't exists
      */
-    public boolean getAllPropertiesExceptTheOnesSpecified(
+    public boolean getAllPropertiesExceptThoseSpecified(
             RdfResourceDefinition definition, String language
             , ArrayList<String> propertiesRelationsToIgnore) {
         if (this.existUri(uri)) {

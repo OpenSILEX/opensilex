@@ -382,9 +382,9 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
      * @return the Radiometric Target informations
      */
     public RadiometricTarget getRadiometricTarget(String radiometricTargetUri) {
-        PropertyDAOSesame propertyDAOSesame = new PropertyDAOSesame();
+        PropertyDAOSesame propertyDAOSesame = 
+                new PropertyDAOSesame(radiometricTargetUri);
         RadiometricTarget radiometricTarget = new RadiometricTarget();
-        propertyDAOSesame.uri = radiometricTargetUri;
         propertyDAOSesame.getAllProperties(radiometricTarget, null);
         return radiometricTarget;
     }

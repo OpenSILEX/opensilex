@@ -27,6 +27,7 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.authentication.Session;
+import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.sesame.EventDAOSesame;
@@ -34,6 +35,7 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.event.EventDTO;
+import phis2ws.service.resources.validation.interfaces.Date;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.ResponseFormEvent;
@@ -141,42 +143,38 @@ public class EventResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) 
             @QueryParam(GlobalWebserviceValues.PAGE_SIZE) 
             @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) 
-            @Min(0) int pageSize
+            @Min(0) 
+            int pageSize
         , @ApiParam(value = DocumentationAnnotation.PAGE) 
             @QueryParam(GlobalWebserviceValues.PAGE) 
             @DefaultValue(DefaultBrapiPaginationValues.PAGE) 
-            @Min(0) int page
-        , @ApiParam
-            (
+            @Min(0) 
+            int page
+        , @ApiParam (
                 value = "Search by uri"
                 , example = DocumentationAnnotation.EXAMPLE_EVENT_URI
-            ) 
-            @QueryParam("uri") 
-            @URL String uri
-        , @ApiParam
-            (
+            ) @QueryParam("uri") @URL 
+            String uri
+        , @ApiParam (
                 value = "Search by type", 
                 example = DocumentationAnnotation.EXAMPLE_EVENT_TYPE
-            ) 
-            @QueryParam("type") String type
-        , @ApiParam
-            (
+            ) @QueryParam("type") @URL 
+            String type
+        , @ApiParam (
                 value = "Search by object concerned uri", 
                 example = DocumentationAnnotation.EXAMPLE_EVENT_CONCERNS_URI
-            ) 
-            @QueryParam("concerns") String concerns
-        , @ApiParam
-            (
+            ) @QueryParam("concerns") 
+            String concerns
+        , @ApiParam (
                 value = "Search by date - start of the range", 
                 example = DocumentationAnnotation.EXAMPLE_EVENT_DATE_RANGE_START
-            ) 
-            @QueryParam("dateRangeStart") String dateRangeStart
-        , @ApiParam
-            (
+            ) @QueryParam("dateRangeStart") @Date(DateFormat.YMDHMSZ) 
+            String dateRangeStart
+        , @ApiParam (
                 value = "Search by date - end of the range", 
                 example = DocumentationAnnotation.EXAMPLE_EVENT_DATE_RANGE_END
-            ) 
-            @QueryParam("dateRangeEnd") String dateRangeEnd
+            ) @QueryParam("dateRangeEnd") @Date(DateFormat.YMDHMSZ) 
+            String dateRangeEnd
     ) {
 
         EventDAOSesame eventDAO = new EventDAOSesame();

@@ -23,12 +23,12 @@ public class Event extends RdfResourceDefinition {
     public Event(String uri, String type, 
             ArrayList<HashMap<String, ArrayList<String>>> concernsList
             , DateTime dateTime
-            , ArrayList<Property> subclassSpecificProperties) {
+            , ArrayList<Property> properties) {
         this.uri = uri;
         this.type = type;
         this.concernsList = concernsList;
         this.dateTime = dateTime;
-        this.properties = subclassSpecificProperties;
+        this.properties = properties;
     }
 
     public String getType() {

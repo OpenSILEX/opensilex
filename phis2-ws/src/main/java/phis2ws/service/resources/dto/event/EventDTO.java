@@ -28,7 +28,7 @@ public class EventDTO extends AbstractVerifiedClass {
     private final String type;
     private final ArrayList<HashMap<String, ArrayList<String>>> concernsList;
     private final String dateTimeString;
-    private final ArrayList<Property> subclassSpecificProperties;
+    private final ArrayList<Property> properties;
     
     /**
      * Constructor to create DTO from an Event model
@@ -48,7 +48,7 @@ public class EventDTO extends AbstractVerifiedClass {
         else{
             this.dateTimeString = null;
         }
-        this.subclassSpecificProperties = event.getProperties();
+        this.properties = event.getProperties();
     }
 
     /**
@@ -64,6 +64,6 @@ public class EventDTO extends AbstractVerifiedClass {
                 , Dates.stringToDateTimeWithGivenPattern(
                     this.dateTimeString
                     , DateFormats.DATETIME_JSON_SERIALISATION_FORMAT)
-                , this.subclassSpecificProperties);
+                , this.properties);
     }
 }

@@ -56,6 +56,10 @@ import phis2ws.service.view.brapi.form.ResponseFormPOST;
 import phis2ws.service.view.brapi.form.ResponseFormExperiment;
 import phis2ws.service.view.model.phis.Experiment;
 
+/**
+ * Experiment services.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 @Api("/experiments")
 @Path("experiments")
 public class ExperimentResourceService extends ResourceService {
@@ -287,6 +291,81 @@ public class ExperimentResourceService extends ResourceService {
             postResponse = new ResponseFormPOST(new Status("Request error", StatusCodeMsg.ERR, "Empty experiment(s) to update"));
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
+    }
+    
+    /**
+     * Update the variables linked to an experiment.
+     * @example
+     * [
+     *   "http://www.phenome-fppn.fr/diaphen/id/variables/v001",
+     *   "http://www.phenome-fppn.fr/diaphen/id/variables/v003"
+     * ]
+     * @param variables
+     * @param uri
+     * @param context
+     * @return the result
+     * @example 
+     * {
+     *      "metadata": {
+     *          "pagination": null,
+     *          "status": [
+     *              {
+     *                  "message": "Resources updated",
+     *                  "exception": {
+     *                      "type": "Info",
+     *                      "href": null,
+     *                      "details": "The experiment http://www.phenome-fppn.fr/mauguio/diaphen/DIA2015-1 has now 2 linked variables"
+     *                  }
+     *              }
+     *          ],
+     *          "datafiles": [
+     *              "http://www.phenome-fppn.fr/mauguio/diaphen/DIA2015-1"
+     *          ]
+     *      }
+     * }
+     */
+    @PUT
+    @Path("{uri}/variables")
+    @ApiOperation(value = "Update the observed variables of an experiment")
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "Measured observed variables of the experiment updated", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response putVariables(
+            @ApiParam(value = DocumentationAnnotation.LINK_VARIABLES_DEFINITION) @URL ArrayList<String> variables,
+            @ApiParam(value = DocumentationAnnotation.EXPERIMENT_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI, required = true) @PathParam("uri") @Required @URL String uri,
+            @Context HttpServletRequest context) {
+        AbstractResultForm postResponse = null;
+        
+        ExperimentDao experimentDAO = new ExperimentDao();
+        if (context.getRemoteAddr() != null) {
+            experimentDAO.remoteUserAdress = context.getRemoteAddr();
+        }
+        
+        experimentDAO.user = userSession.getUser();
+        
+        POSTResultsReturn result = experimentDAO.checkAndUpdateObservedVariables(uri, variables);
+        
+        if (result.getHttpStatus().equals(Response.Status.CREATED)) {
+            postResponse = new ResponseFormPOST(result.statusList);
+            postResponse.getMetadata().setDatafiles(result.getCreatedResources());
+        } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                || result.getHttpStatus().equals(Response.Status.OK)
+                || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+            postResponse = new ResponseFormPOST(result.statusList);
+        }
+        
+        return Response.status(result.getHttpStatus()).entity(postResponse).build();
     }
 
     /**

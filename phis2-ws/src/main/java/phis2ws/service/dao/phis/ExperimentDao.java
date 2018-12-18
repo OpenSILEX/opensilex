@@ -48,6 +48,8 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
     //The uri of an experiment.
     //e.g. http://www.phenome-fppn.fr/diaphen/DIA2017-1
     public String uri;
+    //The project uri related to an experiment.
+    public String projectUri;
     //The start date of an experiment
     //e.g. 2018-01-15
     public String startDate;
@@ -111,7 +113,7 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
         createSQLFields.put("objective", "objective");
         createSQLFields.put("groups", "groups");
         createSQLFields.put("cropSpecies", "crop_species");
-        
+
         return createSQLFields;
     }
 
@@ -229,6 +231,11 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
             query.appendANDWhereConditionIfNeeded(sqlFields.get("alias"), alias, "ILIKE", null, tableAlias);
             query.appendANDWhereConditionIfNeeded(sqlFields.get("keyword"), keyword, "ILIKE", null, tableAlias);
 
+            if (projectUri != null) {
+                query.appendJoin("LEFT JOIN", "at_trial_project", "attp", tableAlias + ".uri = attp.trial_uri");
+                query.appendANDWhereConditions("project_uri", projectUri, "ILIKE", null, "attp");
+            }
+            
             query.appendLimit(String.valueOf(pageSize));
             query.appendOffset(Integer.toString(this.getPage() * this.getPageSize()));
             
@@ -341,6 +348,11 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
 
         if (uri != null) {
             query.appendWhereConditions("uri", uri, "=", null, tableAlias);
+        }
+        
+        if (projectUri != null) {
+            query.appendJoin("LEFT JOIN", "at_trial_project", "attp", tableAlias + ".uri = attp.trial_uri");
+            query.appendANDWhereConditionIfNeeded("project_uri", projectUri, "ILIKE", null, "attp");
         }
 
         Connection connection = null;

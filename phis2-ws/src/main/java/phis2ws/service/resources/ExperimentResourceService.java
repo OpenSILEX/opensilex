@@ -99,6 +99,7 @@ public class ExperimentResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
             @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI) @QueryParam("uri") @URL String uri,
+            @ApiParam(value = "Search by project uri", example = DocumentationAnnotation.EXAMPLE_PROJECT_URI) @QueryParam("projectUri") @URL String projectUri,
             @ApiParam(value = "Search by start date", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_START_DATE) @QueryParam("startDate") @Date(DateFormat.YMDHMSZ) String startDate,
             @ApiParam(value = "Search by end date", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_END_DATE) @QueryParam("endDate") @Date(DateFormat.YMDHMSZ) String endDate,
             @ApiParam(value = "Search by field", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_FIELD) @QueryParam("field") String field,
@@ -111,6 +112,9 @@ public class ExperimentResourceService extends ResourceService {
 
         if (uri != null) {
             experimentDao.uri = uri;
+        }
+        if (projectUri != null) {
+            experimentDao.projectUri = projectUri;
         }
         if (startDate != null) {
             experimentDao.startDate = startDate;

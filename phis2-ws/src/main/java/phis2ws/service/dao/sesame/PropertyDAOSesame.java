@@ -680,7 +680,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      * @return true    if the definition object is correctly filled
      *          false   if the uri doesn't exists
      */
-    public boolean getAllPropertiesWithLabels(
+    public boolean getAllProperties(
             RdfResourceDefinition definition, String language) {
         return getAllPropertiesExceptTheOnesSpecified(definition, language
                 , null);

@@ -111,10 +111,7 @@ public class EventResourceService {
      */
     @GET
     @ApiOperation(value = 
-        "Get all events corresponding to the search parameters given. "
-                + "The object listed in the result represents an event "
-                + "concerning one objet. Thus an event representing multiple "
-                + "objects will be represented on multiple lines.",
+        "Get all events corresponding to the search parameters given.",
         notes = 
         "Retrieve all events authorized for the user corresponding to the "
         + "search parameters given")

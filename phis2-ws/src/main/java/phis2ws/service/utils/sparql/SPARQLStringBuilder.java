@@ -9,12 +9,7 @@ package phis2ws.service.utils.sparql;
 
 import java.util.Iterator;
 import java.util.List;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import phis2ws.service.configuration.DateFormat;
-import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.resources.validation.validators.URLValidator;
-import phis2ws.service.utils.dates.Dates;
 
 /**
  * Abstract class which provides common methods and attributes 
@@ -32,12 +27,6 @@ public abstract class SPARQLStringBuilder {
     protected String body; // corps de la requête
     protected String parameters; // textes additionnels
     protected int blankNodeCounter = 0;
-    
-    private static final String SELECT_DATE_TIME = "dateTime";
-    private static final String SELECT_DATE_RANGE_START_DATE_TIME 
-            = "dateRangeStartDateTime";
-    private static final String SELECT_DATE_RANGE_END_DATE_TIME 
-            = "dateRangeEndDateTime";
 
     protected String filter = "";
     Boolean sesameUriFormSubject = null;
@@ -317,67 +306,6 @@ public abstract class SPARQLStringBuilder {
                 }
             }else if(unions.size() == 1){
                 body += " . ";
-            }
-        }
-    }
-    
-    /*
-     * 
-     */
-    public void appendDateTimeStampRangeFilter(
-            String searchDateTimeRangeStringFormat
-            , String searchDateTimeRangeStartString
-            , String searchDateTimeRangeEndString
-            , String sparqlVariableDateTimeStamp){
-        
-        String sparqlVariableDateTime = "?" + SELECT_DATE_TIME;
-        String sparqlVariableDateRangeStartDateTime = 
-                "?" + SELECT_DATE_RANGE_START_DATE_TIME;
-        String sparqlVariableDateRangeEndDateTime =
-                "?" + SELECT_DATE_RANGE_END_DATE_TIME;
-        String sparqlDateTimeStampFormat = DateFormat.YMDTHMSZZ.toString();
-        
-        if (searchDateTimeRangeStartString != null 
-                || searchDateTimeRangeEndString != null) {
-            this.appendToBody("\nBIND(xsd:dateTime(str(" 
-                    + sparqlVariableDateTimeStamp 
-                    + ")) as " + sparqlVariableDateTime
-                        + ") .");
-            if (searchDateTimeRangeStartString != null){
-                DateTime dateRangeStartDateTime = 
-                    Dates.stringToDateTimeWithGivenPattern(
-                        searchDateTimeRangeStartString
-                        , searchDateTimeRangeStringFormat);
-                String dateRangeStartDateTimeString = DateTimeFormat
-                            .forPattern(sparqlDateTimeStampFormat)
-                            .print(dateRangeStartDateTime);
-        
-                this.appendToBody("\nBIND(xsd:dateTime(str(\""
-                        + dateRangeStartDateTimeString 
-                        + "\")) as " + sparqlVariableDateRangeStartDateTime
-                        + ") .");
-                this.appendToBody("\nFILTER ("
-                        + sparqlVariableDateTime + " >= "
-                        + sparqlVariableDateRangeStartDateTime
-                        + ") .");
-            }
-            if (searchDateTimeRangeEndString != null){
-                DateTime dateRangeEndDateTime = 
-                    Dates.stringToDateTimeWithGivenPattern(
-                        searchDateTimeRangeEndString
-                        , searchDateTimeRangeStringFormat);
-                String dateRangeEndDateTimeString = DateTimeFormat
-                            .forPattern(sparqlDateTimeStampFormat)
-                            .print(dateRangeEndDateTime);
-                
-                this.appendToBody("\nBIND(xsd:dateTime(str(\""
-                        + dateRangeEndDateTimeString 
-                        + "\")) as " + sparqlVariableDateRangeEndDateTime
-                        + ") .");
-                this.appendToBody("\nFILTER ("
-                        + sparqlVariableDateTime + " <= "
-                        + sparqlVariableDateRangeEndDateTime
-                        + ") .");
             }
         }
     }

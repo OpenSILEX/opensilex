@@ -12,7 +12,6 @@ import java.util.HashMap;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import phis2ws.service.configuration.DateFormat;
-import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyDTO;
 import phis2ws.service.utils.dates.Dates;

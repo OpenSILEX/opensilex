@@ -19,11 +19,9 @@ import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.DateFormat;
-import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.ontologies.Oeev;
 import phis2ws.service.ontologies.Rdf;
@@ -46,13 +44,13 @@ public class EventDAOSesame extends DAOSesame<Event> {
     private String searchDateTimeRangeStartString;
     private String searchDateTimeRangeEndString;
         
-    private static final String SELECT_URI = "uri";
-    private static final String SELECT_TYPE = "type";
-    private static final String SELECT_CONCERNS_URI = "concernsUri";
-    private static final String SELECT_CONCERNS_LABEL = "concernsLabel";
-    private static final String SELECT_CONCERNS_LABELS = "concernsLabels";
-    private static final String SELECT_TIME = "time";
-    private static final String SELECT_DATE_TIME_STAMP = "dateTimeStamp";
+    private static final String VARIABLE_URI = "uri";
+    private static final String VARIABLE_TYPE = "type";
+    private static final String VARIABLE_CONCERNS_URI = "concernsUri";
+    private static final String VARIABLE_CONCERNS_LABEL = "concernsLabel";
+    private static final String VARIABLE_CONCERNS_LABELS = "concernsLabels";
+    private static final String VARIABLE_TIME = "time";
+    private static final String VARIABLE_DATE_TIME_STAMP = "dateTimeStamp";
     
     /**
      * Set a search query to select an URI and to filter according to it 
@@ -60,7 +58,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * @return the URI SPARQL variable
      */
     private String prepareSearchQueryUri(SPARQLQueryBuilder query){
-        String sparqlVariableUri = "?" + SELECT_URI;
+        String sparqlVariableUri = "?" + VARIABLE_URI;
         query.appendSelect(sparqlVariableUri);
         query.appendGroupBy(sparqlVariableUri);
         if (searchUri != null) {
@@ -76,7 +74,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
      */
     private void prepareSearchQueryType(SPARQLQueryBuilder query
             , String sparqlVariableUri){
-        String sparqlVariableType = "?" + SELECT_TYPE;
+        String sparqlVariableType = "?" + VARIABLE_TYPE;
         query.appendSelect(sparqlVariableType);
         query.appendGroupBy(sparqlVariableType);
         query.appendTriplet(sparqlVariableUri
@@ -103,7 +101,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
         , String sparqlVariableUri){
 
         if (searchConcernsLabel != null) {
-            String sparqlVariableConcernsUri = "?" + SELECT_CONCERNS_URI;
+            String sparqlVariableConcernsUri = "?" + VARIABLE_CONCERNS_URI;
             query.appendTriplet(
                 sparqlVariableUri
                 , Oeev.RELATION_CONCERNS.toString()
@@ -122,8 +120,8 @@ public class EventDAOSesame extends DAOSesame<Event> {
     private void prepareSearchQueryDateTime(SPARQLQueryBuilder query
         , String sparqlVariableUri){  
         
-        String sparqlVariableDateTimeStamp = "?" + SELECT_DATE_TIME_STAMP;
-        String sparqlVariableTime = "?" + SELECT_TIME;
+        String sparqlVariableDateTimeStamp = "?" + VARIABLE_DATE_TIME_STAMP;
+        String sparqlVariableTime = "?" + VARIABLE_TIME;
         
         query.appendSelect(sparqlVariableDateTimeStamp);
         query.appendGroupBy(sparqlVariableDateTimeStamp);
@@ -135,12 +133,17 @@ public class EventDAOSesame extends DAOSesame<Event> {
                 sparqlVariableTime
                 , Time.RELATION_IN_XSD_DATE_TIMESTAMP.toString()
                 , sparqlVariableDateTimeStamp, null);
-        query.appendDateTimeStampRangeFilter(
-            DateFormat.YMDTHMSZZ.toString()
-            , searchDateTimeRangeStartString 
-            , searchDateTimeRangeEndString
-            , sparqlVariableDateTimeStamp
-        );
+        
+        if (searchDateTimeRangeStartString != null 
+                || searchDateTimeRangeEndString != null) {
+            filterSearchQueryWithDateRangeComparisonWithDateTimeStamp(
+                    query
+                    , DateFormat.YMDTHMSZZ.toString()
+                    , searchDateTimeRangeStartString 
+                    , searchDateTimeRangeEndString
+                    , sparqlVariableDateTimeStamp
+            );
+        }
     }
     
     /**
@@ -169,9 +172,9 @@ public class EventDAOSesame extends DAOSesame<Event> {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
         
-        String sparqlVariableConcernsUri = "?" + SELECT_CONCERNS_URI;
-        String sparqlVariableConcernsLabel = "?" + SELECT_CONCERNS_LABEL;
-        String sparqlVariableConcernsLabels = "?" + SELECT_CONCERNS_LABELS;
+        String sparqlVariableConcernsUri = "?" + VARIABLE_CONCERNS_URI;
+        String sparqlVariableConcernsLabel = "?" + VARIABLE_CONCERNS_LABEL;
+        String sparqlVariableConcernsLabels = "?" + VARIABLE_CONCERNS_LABELS;
         String sparqlVariableUri = "<" + eventUri + ">";
         
         query.appendSelect(sparqlVariableConcernsUri);
@@ -200,13 +203,13 @@ public class EventDAOSesame extends DAOSesame<Event> {
     private Event getEventFromBindingSet(BindingSet bindingSet) {
           
         String eventUri = getValueOfSelectFieldFromBindingSet(
-                SELECT_URI, bindingSet);
+                VARIABLE_URI, bindingSet);
                 
         String eventType = getValueOfSelectFieldFromBindingSet(
-                SELECT_TYPE, bindingSet);
+                VARIABLE_TYPE, bindingSet);
         
         String eventDateTimeString = getValueOfSelectFieldFromBindingSet(
-                SELECT_DATE_TIME_STAMP, bindingSet);    
+                VARIABLE_DATE_TIME_STAMP, bindingSet);    
         DateTime eventDateTime = null;
         if (eventDateTimeString != null) {
             eventDateTime = Dates.stringToDateTimeWithGivenPattern(
@@ -227,10 +230,10 @@ public class EventDAOSesame extends DAOSesame<Event> {
             BindingSet bindingSet) {
                 
         String concernsUri = getValueOfSelectFieldFromBindingSet(
-                SELECT_CONCERNS_URI, bindingSet);
+                VARIABLE_CONCERNS_URI, bindingSet);
         
         String eventConcernsLabelsConcatenated = 
-                getValueOfSelectFieldFromBindingSet(SELECT_CONCERNS_LABELS
+                getValueOfSelectFieldFromBindingSet(VARIABLE_CONCERNS_LABELS
                     , bindingSet);
         ArrayList<String> eventConcernsLabels = 
                 new ArrayList<>(Arrays.asList(eventConcernsLabelsConcatenated

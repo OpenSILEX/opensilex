@@ -38,19 +38,33 @@ import phis2ws.service.view.model.phis.Event;
 public class EventDAOSesame extends DAOSesame<Event> {
     final static Logger LOGGER = LoggerFactory.getLogger(EventDAOSesame.class);
     
+    private static final String URI_VARIABLE = "uri";
+    private static final String URI_VARIABLE_SPARQLE = "?" + URI_VARIABLE;
+    private static final String TYPE_VARIABLE = "type";
+    private static final String TYPE_VARIABLE_SPARQL = "?" + TYPE_VARIABLE;
+        
+    private static final String CONCERNS_URI_VARIABLE = "concernsUri";
+    private static final String CONCERNS_URI_VARIABLE_SPARQL = 
+            "?" + CONCERNS_URI_VARIABLE;
+    private static final String CONCERNS_LABEL_VARIABLE = "concernsLabel";
+    private static final String CONCERNS_LABEL_VARIABLE_SPARQL = 
+            "?" + CONCERNS_LABEL_VARIABLE;
+    private static final String CONCERNS_LABELS_VARIABLE = "concernsLabels";
+    private static final String CONCERNS_LABELS_VARIABLE_SPARQL = 
+            "?" + CONCERNS_LABELS_VARIABLE;
+    
+    private static final String TIME_VARIABLE = "time";
+    private static final String TIME_VARIABLE_SPARQL = "?" + TIME_VARIABLE;
+    
+    private static final String DATETIMESTAMP_VARIABLE = "dateTimeStamp";
+    private static final String DATETIMESTAMP_VARIABLE_SPARQL = 
+            "?" + DATETIMESTAMP_VARIABLE;
+    
     private String searchUri;
     private String searchType;
     private String searchConcernsLabel;
     private String searchDateTimeRangeStartString;
     private String searchDateTimeRangeEndString;
-        
-    private static final String VARIABLE_URI = "uri";
-    private static final String VARIABLE_TYPE = "type";
-    private static final String VARIABLE_CONCERNS_URI = "concernsUri";
-    private static final String VARIABLE_CONCERNS_LABEL = "concernsLabel";
-    private static final String VARIABLE_CONCERNS_LABELS = "concernsLabels";
-    private static final String VARIABLE_TIME = "time";
-    private static final String VARIABLE_DATE_TIME_STAMP = "dateTimeStamp";
     
     /**
      * Set a search query to select an URI and to filter according to it 
@@ -58,14 +72,13 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * @return the URI SPARQL variable
      */
     private String prepareSearchQueryUri(SPARQLQueryBuilder query){
-        String sparqlVariableUri = "?" + VARIABLE_URI;
-        query.appendSelect(sparqlVariableUri);
-        query.appendGroupBy(sparqlVariableUri);
+        query.appendSelect(URI_VARIABLE_SPARQLE);
+        query.appendGroupBy(URI_VARIABLE_SPARQLE);
         if (searchUri != null) {
-            query.appendToBody("\nVALUES " + sparqlVariableUri 
+            query.appendToBody("\nVALUES " + URI_VARIABLE_SPARQLE 
                     +  "{<" + searchUri + ">}");
         }
-        return sparqlVariableUri;
+        return URI_VARIABLE_SPARQLE;
     }
     
     /**
@@ -74,18 +87,17 @@ public class EventDAOSesame extends DAOSesame<Event> {
      */
     private void prepareSearchQueryType(SPARQLQueryBuilder query
             , String sparqlVariableUri){
-        String sparqlVariableType = "?" + VARIABLE_TYPE;
-        query.appendSelect(sparqlVariableType);
-        query.appendGroupBy(sparqlVariableType);
+        query.appendSelect(TYPE_VARIABLE_SPARQL);
+        query.appendGroupBy(TYPE_VARIABLE_SPARQL);
         query.appendTriplet(sparqlVariableUri
-            , Rdf.RELATION_TYPE.toString(), sparqlVariableType, null);
+            , Rdf.RELATION_TYPE.toString(), TYPE_VARIABLE_SPARQL, null);
         if (searchType != null) {
-            query.appendTriplet(sparqlVariableType
+            query.appendTriplet(TYPE_VARIABLE_SPARQL
                 , "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*"
                 , searchType
                 , null);
         } else {
-            query.appendTriplet(sparqlVariableType
+            query.appendTriplet(TYPE_VARIABLE_SPARQL
                 , "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*"
                 , Oeev.CONCEPT_EVENT.toString()
                 , null);
@@ -101,13 +113,12 @@ public class EventDAOSesame extends DAOSesame<Event> {
         , String sparqlVariableUri){
 
         if (searchConcernsLabel != null) {
-            String sparqlVariableConcernsUri = "?" + VARIABLE_CONCERNS_URI;
             query.appendTriplet(
                 sparqlVariableUri
                 , Oeev.RELATION_CONCERNS.toString()
-                , sparqlVariableConcernsUri, null);
+                , CONCERNS_URI_VARIABLE_SPARQL, null);
             query.appendTriplet(
-                sparqlVariableConcernsUri
+                CONCERNS_URI_VARIABLE_SPARQL
                 , Rdfs.RELATION_LABEL.toString()
                 , "\"" + searchConcernsLabel + "\"", null);
         }
@@ -120,19 +131,16 @@ public class EventDAOSesame extends DAOSesame<Event> {
     private void prepareSearchQueryDateTime(SPARQLQueryBuilder query
         , String sparqlVariableUri){  
         
-        String sparqlVariableDateTimeStamp = "?" + VARIABLE_DATE_TIME_STAMP;
-        String sparqlVariableTime = "?" + VARIABLE_TIME;
-        
-        query.appendSelect(sparqlVariableDateTimeStamp);
-        query.appendGroupBy(sparqlVariableDateTimeStamp);
+        query.appendSelect(DATETIMESTAMP_VARIABLE_SPARQL);
+        query.appendGroupBy(DATETIMESTAMP_VARIABLE_SPARQL);
         query.appendTriplet(
                 sparqlVariableUri
                 , Time.RELATION_HAS_TIME.toString()
-                , sparqlVariableTime, null);
+                , TIME_VARIABLE_SPARQL, null);
         query.appendTriplet(
-                sparqlVariableTime
+                TIME_VARIABLE_SPARQL
                 , Time.RELATION_IN_XSD_DATE_TIMESTAMP.toString()
-                , sparqlVariableDateTimeStamp, null);
+                , DATETIMESTAMP_VARIABLE_SPARQL, null);
         
         if (searchDateTimeRangeStartString != null 
                 || searchDateTimeRangeEndString != null) {
@@ -141,7 +149,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
                     , DateFormat.YMDTHMSZZ.toString()
                     , searchDateTimeRangeStartString 
                     , searchDateTimeRangeEndString
-                    , sparqlVariableDateTimeStamp
+                    , DATETIMESTAMP_VARIABLE_SPARQL
             );
         }
     }
@@ -171,25 +179,21 @@ public class EventDAOSesame extends DAOSesame<Event> {
             String eventUri) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
-        
-        String sparqlVariableConcernsUri = "?" + VARIABLE_CONCERNS_URI;
-        String sparqlVariableConcernsLabel = "?" + VARIABLE_CONCERNS_LABEL;
-        String sparqlVariableConcernsLabels = "?" + VARIABLE_CONCERNS_LABELS;
         String sparqlVariableUri = "<" + eventUri + ">";
         
-        query.appendSelect(sparqlVariableConcernsUri);
-        query.appendGroupBy(sparqlVariableConcernsUri);
+        query.appendSelect(CONCERNS_URI_VARIABLE_SPARQL);
+        query.appendGroupBy(CONCERNS_URI_VARIABLE_SPARQL);
         query.appendTriplet(sparqlVariableUri, 
                 Oeev.RELATION_CONCERNS.toString()
-                , sparqlVariableConcernsUri, null);
+                , CONCERNS_URI_VARIABLE_SPARQL, null);
          
-        query.appendTriplet(sparqlVariableConcernsUri, 
+        query.appendTriplet(CONCERNS_URI_VARIABLE_SPARQL, 
                 Rdfs.RELATION_LABEL.toString()
-                , sparqlVariableConcernsLabel, null);
+                , CONCERNS_LABEL_VARIABLE_SPARQL, null);
         
-        query.appendSelectConcat(sparqlVariableConcernsLabel
+        query.appendSelectConcat(CONCERNS_LABEL_VARIABLE_SPARQL
                , SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR
-               , sparqlVariableConcernsLabels);
+               , CONCERNS_LABELS_VARIABLE_SPARQL);
         
         LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
         return query;
@@ -203,13 +207,13 @@ public class EventDAOSesame extends DAOSesame<Event> {
     private Event getEventFromBindingSet(BindingSet bindingSet) {
           
         String eventUri = getValueOfSelectFieldFromBindingSet(
-                VARIABLE_URI, bindingSet);
+                URI_VARIABLE, bindingSet);
                 
         String eventType = getValueOfSelectFieldFromBindingSet(
-                VARIABLE_TYPE, bindingSet);
+                TYPE_VARIABLE, bindingSet);
         
         String eventDateTimeString = getValueOfSelectFieldFromBindingSet(
-                VARIABLE_DATE_TIME_STAMP, bindingSet);    
+                DATETIMESTAMP_VARIABLE, bindingSet);    
         DateTime eventDateTime = null;
         if (eventDateTimeString != null) {
             eventDateTime = Dates.stringToDateTimeWithGivenPattern(
@@ -230,10 +234,10 @@ public class EventDAOSesame extends DAOSesame<Event> {
             BindingSet bindingSet) {
                 
         String concernsUri = getValueOfSelectFieldFromBindingSet(
-                VARIABLE_CONCERNS_URI, bindingSet);
+                CONCERNS_URI_VARIABLE, bindingSet);
         
         String eventConcernsLabelsConcatenated = 
-                getValueOfSelectFieldFromBindingSet(VARIABLE_CONCERNS_LABELS
+                getValueOfSelectFieldFromBindingSet(CONCERNS_LABELS_VARIABLE
                     , bindingSet);
         ArrayList<String> eventConcernsLabels = 
                 new ArrayList<>(Arrays.asList(eventConcernsLabelsConcatenated
@@ -332,7 +336,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
         query.clearLimit();
         query.clearOffset();
         query.clearGroupBy();
-        query.appendSelect("(COUNT(DISTINCT ?" + URI + ") AS ?" 
+        query.appendSelect("(COUNT(DISTINCT " + URI_VARIABLE_SPARQLE + ") AS ?" 
                 + COUNT_ELEMENT_QUERY + ")");
         LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
         return query;

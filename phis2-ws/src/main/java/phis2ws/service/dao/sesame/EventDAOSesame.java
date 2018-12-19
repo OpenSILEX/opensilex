@@ -22,6 +22,7 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.ontologies.Oeev;
@@ -135,7 +136,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
                 , Time.RELATION_IN_XSD_DATE_TIMESTAMP.toString()
                 , sparqlVariableDateTimeStamp, null);
         query.appendDateTimeStampRangeFilter(
-            DateFormats.DATETIME_JSON_SERIALISATION_FORMAT
+            DateFormat.YMDTHMSZZ.toString()
             , searchDateTimeRangeStartString 
             , searchDateTimeRangeEndString
             , sparqlVariableDateTimeStamp
@@ -183,7 +184,6 @@ public class EventDAOSesame extends DAOSesame<Event> {
                 Rdfs.RELATION_LABEL.toString()
                 , sparqlVariableConcernsLabel, null);
         
-        query.appendSelect(sparqlVariableConcernsLabels);
         query.appendSelectConcat(sparqlVariableConcernsLabel
                , SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR
                , sparqlVariableConcernsLabels);
@@ -211,7 +211,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
         if (eventDateTimeString != null) {
             eventDateTime = Dates.stringToDateTimeWithGivenPattern(
                     eventDateTimeString
-                    , DateFormats.DATETIME_SPARQL_FORMAT);
+                    , DateFormat.YMDTHMSZZ.toString());
         }
         
         return new Event(eventUri, eventType, new ArrayList<>(), eventDateTime
@@ -280,10 +280,15 @@ public class EventDAOSesame extends DAOSesame<Event> {
                 try (TupleQueryResult concernsListTupleQueryResult = 
                         concernsListTupleQuery.evaluate()) {
                     
+                    HashMap<String, ArrayList<String>> concerns;
                     while(concernsListTupleQueryResult.hasNext()){
-                        event.addConcerns(
-                                getConcernsObjectFromBindingSet(
-                                        concernsListTupleQueryResult.next()));
+                        concerns = getConcernsObjectFromBindingSet(
+                                    concernsListTupleQueryResult.next());
+                        if(concerns != null){
+                            event.addConcerns(concerns);
+                        }
+                        
+                                
                     }
                 }
 

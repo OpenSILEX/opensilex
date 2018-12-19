@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
+import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.resources.validation.validators.URLValidator;
 import phis2ws.service.utils.dates.Dates;
@@ -334,6 +335,7 @@ public abstract class SPARQLStringBuilder {
                 "?" + SELECT_DATE_RANGE_START_DATE_TIME;
         String sparqlVariableDateRangeEndDateTime =
                 "?" + SELECT_DATE_RANGE_END_DATE_TIME;
+        String sparqlDateTimeStampFormat = DateFormat.YMDTHMSZZ.toString();
         
         if (searchDateTimeRangeStartString != null 
                 || searchDateTimeRangeEndString != null) {
@@ -347,7 +349,7 @@ public abstract class SPARQLStringBuilder {
                         searchDateTimeRangeStartString
                         , searchDateTimeRangeStringFormat);
                 String dateRangeStartDateTimeString = DateTimeFormat
-                            .forPattern(DateFormats.DATETIME_SPARQL_FORMAT)
+                            .forPattern(sparqlDateTimeStampFormat)
                             .print(dateRangeStartDateTime);
         
                 this.appendToBody("\nBIND(xsd:dateTime(str(\""
@@ -363,9 +365,9 @@ public abstract class SPARQLStringBuilder {
                 DateTime dateRangeEndDateTime = 
                     Dates.stringToDateTimeWithGivenPattern(
                         searchDateTimeRangeEndString
-                        , DateFormats.DATETIME_JSON_SERIALISATION_FORMAT);
+                        , searchDateTimeRangeStringFormat);
                 String dateRangeEndDateTimeString = DateTimeFormat
-                            .forPattern(DateFormats.DATETIME_SPARQL_FORMAT)
+                            .forPattern(sparqlDateTimeStampFormat)
                             .print(dateRangeEndDateTime);
                 
                 this.appendToBody("\nBIND(xsd:dateTime(str(\""

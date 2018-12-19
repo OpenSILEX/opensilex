@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
+import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyDTO;
@@ -43,7 +44,7 @@ public class EventDTO extends AbstractVerifiedClass {
         DateTime eventDateTime = event.getDateTime();
         if(eventDateTime != null){
             this.dateTimeString = DateTimeFormat
-                    .forPattern(DateFormats.DATETIME_JSON_SERIALISATION_FORMAT)
+                    .forPattern(DateFormat.YMDTHMSZZ.toString())
                     .print(eventDateTime);
         }
         else{
@@ -72,7 +73,7 @@ public class EventDTO extends AbstractVerifiedClass {
                 , this.concernsList
                 , Dates.stringToDateTimeWithGivenPattern(
                     this.dateTimeString
-                    , DateFormats.DATETIME_JSON_SERIALISATION_FORMAT)
+                    , DateFormat.YMDTHMSZ.toString())
                 , eventProperties);
     }
 }

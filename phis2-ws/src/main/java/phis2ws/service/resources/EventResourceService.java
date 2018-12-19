@@ -168,12 +168,12 @@ public class EventResourceService {
         , @ApiParam (
                 value = "Search by date - start of the range", 
                 example = DocumentationAnnotation.EXAMPLE_EVENT_DATE_RANGE_START
-            ) @QueryParam("dateRangeStart") @Date(DateFormat.YMDHMSZ) 
+            ) @QueryParam("dateRangeStart") @Date(DateFormat.YMDTHMSZZ) 
             String dateRangeStart
         , @ApiParam (
                 value = "Search by date - end of the range", 
                 example = DocumentationAnnotation.EXAMPLE_EVENT_DATE_RANGE_END
-            ) @QueryParam("dateRangeEnd") @Date(DateFormat.YMDHMSZ) 
+            ) @QueryParam("dateRangeEnd") @Date(DateFormat.YMDTHMSZZ) 
             String dateRangeEnd
     ) {
 

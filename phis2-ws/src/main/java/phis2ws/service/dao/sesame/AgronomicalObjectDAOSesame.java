@@ -317,7 +317,6 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
             }
             
             if (agronomicalObject.getUriExperiment() != null) {
-                //spqlInsert.appendTriplet(agronomicalObject.getUriExperiment(), Vocabulary.RELATION_HAS_PLOT.toString(), agronomicalObject.getUri(), null);
                 spqlInsert.appendTriplet(agronomicalObject.getUri(), Vocabulary.RELATION_PARTICIPATES_IN.toString(), agronomicalObject.getUriExperiment(), null);
             }
             
@@ -392,7 +391,7 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
         sparqlQuery.appendGraph(experimentURI);
         sparqlQuery.appendSelect("?" + CHILD +" ?" + RDF_TYPE + " ?" + PROPERTY + " ?" + PROPERTY_RELATION + " ?" + PROPERTY_TYPE);
         
-        sparqlQuery.appendTriplet(experimentURI, Vocabulary.RELATION_HAS_PLOT.toString(), "?" + CHILD, null);
+        sparqlQuery.appendTriplet("?" + CHILD, Vocabulary.RELATION_PARTICIPATES_IN.toString(),experimentURI, null);
         sparqlQuery.appendTriplet("?" + CHILD, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
         sparqlQuery.appendTriplet("?" + CHILD, "?" + PROPERTY_RELATION, "?" + PROPERTY, null);
         

@@ -9,10 +9,7 @@ package phis2ws.service.dao.sesame;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Map;
-import org.apache.commons.collections.map.SingletonMap;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
@@ -48,44 +45,48 @@ public class EventDAOSesame extends DAOSesame<Event> {
     private String searchDateTimeRangeStartString;
     private String searchDateTimeRangeEndString;
         
-    public static final String SELECT_URI = "uri";
-    public static final String SELECT_TYPE = "type";
-    public static final String SELECT_CONCERNS_URI = "concernsUri";
-    public static final String SELECT_CONCERNS_LABEL = "concernsLabel";
-    public static final String SELECT_CONCERNS_LABELS = "concernsLabels";
-    public static final String SELECT_TIME = "time";
-    public static final String SELECT_DATE_TIME_STAMP = "dateTimeStamp";
-    public static final String SELECT_DATE_TIME = "dateTime";
-    public static final String SELECT_DATE_RANGE_START_DATE_TIME 
-            = "dateRangeStartDateTime";
-    public static final String SELECT_DATE_RANGE_END_DATE_TIME 
-            = "dateRangeEndDateTime";
+    private static final String SELECT_URI = "uri";
+    private static final String SELECT_TYPE = "type";
+    private static final String SELECT_CONCERNS_URI = "concernsUri";
+    private static final String SELECT_CONCERNS_LABEL = "concernsLabel";
+    private static final String SELECT_CONCERNS_LABELS = "concernsLabels";
+    private static final String SELECT_TIME = "time";
+    private static final String SELECT_DATE_TIME_STAMP = "dateTimeStamp";
     
+    /**
+     * Set a search query to select an URI and to filter according to it 
+     * if necessary
+     * @return the URI SPARQL variable
+     */
     private String prepareSearchQueryUri(SPARQLQueryBuilder query){
-        String sparkleVariableUri = "?" + SELECT_URI;
-        query.appendSelect(sparkleVariableUri);
-        query.appendGroupBy(sparkleVariableUri);
+        String sparqlVariableUri = "?" + SELECT_URI;
+        query.appendSelect(sparqlVariableUri);
+        query.appendGroupBy(sparqlVariableUri);
         if (searchUri != null) {
-            query.appendToBody("\nVALUES " + sparkleVariableUri 
+            query.appendToBody("\nVALUES " + sparqlVariableUri 
                     +  "{<" + searchUri + ">}");
         }
-        return sparkleVariableUri;
+        return sparqlVariableUri;
     }
     
+    /**
+     * Set a search query to select a type and to filter according to it 
+     * if necessary
+     */
     private void prepareSearchQueryType(SPARQLQueryBuilder query
-            , String sparkleVariableUri){
-        String sparkleVariableType = "?" + SELECT_TYPE;
-        query.appendSelect(sparkleVariableType);
-        query.appendGroupBy(sparkleVariableType);
-        query.appendTriplet(sparkleVariableUri
-            , Rdf.RELATION_TYPE.toString(), sparkleVariableType, null);
+            , String sparqlVariableUri){
+        String sparqlVariableType = "?" + SELECT_TYPE;
+        query.appendSelect(sparqlVariableType);
+        query.appendGroupBy(sparqlVariableType);
+        query.appendTriplet(sparqlVariableUri
+            , Rdf.RELATION_TYPE.toString(), sparqlVariableType, null);
         if (searchType != null) {
-            query.appendTriplet(sparkleVariableType
+            query.appendTriplet(sparqlVariableType
                 , "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*"
                 , searchType
                 , null);
         } else {
-            query.appendTriplet(sparkleVariableType
+            query.appendTriplet(sparqlVariableType
                 , "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*"
                 , Oeev.CONCEPT_EVENT.toString()
                 , null);
@@ -93,90 +94,52 @@ public class EventDAOSesame extends DAOSesame<Event> {
     }
     
     /**
-     * Part of the query that applies the concerns label filter. 
+     * Set a search query to applies the "concerns" label filter. 
      * This function DOES NOT ensure that the query returns the events'concerns 
-     * informations. This is done by another query in a second step.
+     * informations. This is done by another query further in the process.
      */
     private void prepareSearchQueryConcernsFilter(SPARQLQueryBuilder query
-        , String sparkleVariableUri){
+        , String sparqlVariableUri){
 
         if (searchConcernsLabel != null) {
-            String sparkleVariableConcernsUri = "?" + SELECT_CONCERNS_URI;
+            String sparqlVariableConcernsUri = "?" + SELECT_CONCERNS_URI;
             query.appendTriplet(
-                sparkleVariableUri
+                sparqlVariableUri
                 , Oeev.RELATION_CONCERNS.toString()
-                , sparkleVariableConcernsUri, null);
+                , sparqlVariableConcernsUri, null);
             query.appendTriplet(
-                sparkleVariableConcernsUri
+                sparqlVariableConcernsUri
                 , Rdfs.RELATION_LABEL.toString()
                 , "\"" + searchConcernsLabel + "\"", null);
         }
     }
     
-    private void prepareSearchQueryTime(SPARQLQueryBuilder query
-        , String sparkleVariableUri){  
+    /**
+     * Set a search query to select a datetime from an instant and to filter 
+     * according to it if necessary
+     */
+    private void prepareSearchQueryDateTime(SPARQLQueryBuilder query
+        , String sparqlVariableUri){  
         
-        String sparkleVariableDateTimeStamp = "?" + SELECT_DATE_TIME_STAMP;
-        String sparkleVariableDateTime = "?" + SELECT_DATE_TIME;
-        String sparkleVariableDateRangeStartDateTime = 
-                "?" + SELECT_DATE_RANGE_START_DATE_TIME;
-        String sparkleVariableDateRangeEndDateTime =
-                "?" + SELECT_DATE_RANGE_END_DATE_TIME;
-        String sparkleVariableTime = "?" + SELECT_TIME;
+        String sparqlVariableDateTimeStamp = "?" + SELECT_DATE_TIME_STAMP;
+        String sparqlVariableTime = "?" + SELECT_TIME;
         
-        query.appendSelect(sparkleVariableDateTimeStamp);
-        query.appendGroupBy(sparkleVariableDateTimeStamp);
+        query.appendSelect(sparqlVariableDateTimeStamp);
+        query.appendGroupBy(sparqlVariableDateTimeStamp);
         query.appendTriplet(
-                sparkleVariableUri
+                sparqlVariableUri
                 , Time.RELATION_HAS_TIME.toString()
-                , sparkleVariableTime, null);
+                , sparqlVariableTime, null);
         query.appendTriplet(
-                sparkleVariableTime
+                sparqlVariableTime
                 , Time.RELATION_IN_XSD_DATE_TIMESTAMP.toString()
-                , sparkleVariableDateTimeStamp, null);
-        if (searchDateTimeRangeStartString != null 
-                || searchDateTimeRangeEndString != null) {
-            query.appendToBody("\nBIND(xsd:dateTime(str(" 
-                    + sparkleVariableDateTimeStamp 
-                    + ")) as " + sparkleVariableDateTime
-                        + ") .");
-            if (searchDateTimeRangeStartString != null){
-                DateTime dateRangeStartDateTime = 
-                    Dates.stringToDateTimeWithGivenPattern(
-                        searchDateTimeRangeStartString
-                        , DateFormats.DATETIME_JSON_SERIALISATION_FORMAT);
-                String dateRangeStartDateTimeString = DateTimeFormat
-                            .forPattern(DateFormats.DATETIME_SPARQL_FORMAT)
-                            .print(dateRangeStartDateTime);
-        
-                query.appendToBody("\nBIND(xsd:dateTime(str(\""
-                        + dateRangeStartDateTimeString 
-                        + "\")) as " + sparkleVariableDateRangeStartDateTime
-                        + ") .");
-                query.appendToBody("\nFILTER ("
-                        + sparkleVariableDateTime + " >= "
-                        + sparkleVariableDateRangeStartDateTime
-                        + ") .");
-            }
-            if (searchDateTimeRangeEndString != null){
-                DateTime dateRangeEndDateTime = 
-                    Dates.stringToDateTimeWithGivenPattern(
-                        searchDateTimeRangeEndString
-                        , DateFormats.DATETIME_JSON_SERIALISATION_FORMAT);
-                String dateRangeEndDateTimeString = DateTimeFormat
-                            .forPattern(DateFormats.DATETIME_SPARQL_FORMAT)
-                            .print(dateRangeEndDateTime);
-                
-                query.appendToBody("\nBIND(xsd:dateTime(str(\""
-                        + dateRangeEndDateTimeString 
-                        + "\")) as " + sparkleVariableDateRangeEndDateTime
-                        + ") .");
-                query.appendToBody("\nFILTER ("
-                        + sparkleVariableDateTime + " <= "
-                        + sparkleVariableDateRangeEndDateTime
-                        + ") .");
-            }
-        }
+                , sparqlVariableDateTimeStamp, null);
+        query.appendDateTimeStampRangeFilter(
+            DateFormats.DATETIME_JSON_SERIALISATION_FORMAT
+            , searchDateTimeRangeStartString 
+            , searchDateTimeRangeEndString
+            , sparqlVariableDateTimeStamp
+        );
     }
     
     /**
@@ -188,10 +151,10 @@ public class EventDAOSesame extends DAOSesame<Event> {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
         
-        String sparkleVariableUri = prepareSearchQueryUri(query);
-        prepareSearchQueryType(query, sparkleVariableUri);  
-        prepareSearchQueryConcernsFilter(query, sparkleVariableUri); 
-        prepareSearchQueryTime(query, sparkleVariableUri); 
+        String sparqlVariableUri = prepareSearchQueryUri(query);
+        prepareSearchQueryType(query, sparqlVariableUri);  
+        prepareSearchQueryConcernsFilter(query, sparqlVariableUri); 
+        prepareSearchQueryDateTime(query, sparqlVariableUri); 
         
         query.appendLimit(this.getPageSize());
         query.appendOffset(this.getPage() * this.getPageSize());
@@ -205,25 +168,25 @@ public class EventDAOSesame extends DAOSesame<Event> {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
         
-        String sparkleVariableConcernsUri = "?" + SELECT_CONCERNS_URI;
-        String sparkleVariableConcernsLabel = "?" + SELECT_CONCERNS_LABEL;
-        String sparkleVariableConcernsLabels = "?" + SELECT_CONCERNS_LABELS;
-        String sparkleVariableUri = "<" + eventUri + ">";
+        String sparqlVariableConcernsUri = "?" + SELECT_CONCERNS_URI;
+        String sparqlVariableConcernsLabel = "?" + SELECT_CONCERNS_LABEL;
+        String sparqlVariableConcernsLabels = "?" + SELECT_CONCERNS_LABELS;
+        String sparqlVariableUri = "<" + eventUri + ">";
         
-        query.appendSelect(sparkleVariableConcernsUri);
-        query.appendGroupBy(sparkleVariableConcernsUri);
-        query.appendTriplet(sparkleVariableUri, 
+        query.appendSelect(sparqlVariableConcernsUri);
+        query.appendGroupBy(sparqlVariableConcernsUri);
+        query.appendTriplet(sparqlVariableUri, 
                 Oeev.RELATION_CONCERNS.toString()
-                , sparkleVariableConcernsUri, null);
+                , sparqlVariableConcernsUri, null);
          
-        query.appendTriplet(sparkleVariableConcernsUri, 
+        query.appendTriplet(sparqlVariableConcernsUri, 
                 Rdfs.RELATION_LABEL.toString()
-                , sparkleVariableConcernsLabel, null);
+                , sparqlVariableConcernsLabel, null);
         
-        query.appendSelect(sparkleVariableConcernsLabels);
-        query.appendSelectConcat(sparkleVariableConcernsLabel
+        query.appendSelect(sparqlVariableConcernsLabels);
+        query.appendSelectConcat(sparqlVariableConcernsLabel
                , SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR
-               , sparkleVariableConcernsLabels);
+               , sparqlVariableConcernsLabels);
         
         LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
         return query;

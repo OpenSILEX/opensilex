@@ -26,12 +26,8 @@ public final class DateFormats {
     
     public final static String DATETIME_MONGO_MEASURE_FORMAT 
             = "yyyy-MM-dd HH:mm:ss.SSSZZ";
-    public final static String DATETIME_JSON_SERIALISATION_FORMAT 
-            = "yyyy-MM-dd HH:mm:ssZZ";
     public final static String DATETIME_METEO_DB_FORMAT 
             = "yyyy-MM-dd HH:mm:ssZZ";
-    public final static String DATETIME_SPARQL_FORMAT 
-            = "yyyy-MM-dd'T'HH:mm:ssZZ";
     public final static List<String> DATETIME_MONGO_FORMAT 
             = Arrays.asList("yyyy-MM-dd HH:mm:ss.SSSZZ"
                     , "yyyy-MM-dd HH:mm:ss.SSSSSS"

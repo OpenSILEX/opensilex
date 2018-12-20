@@ -23,6 +23,11 @@ public class ConcernItem {
     public ConcernItem() {
     }
 
+    public ConcernItem(String uri, String rdfType) {
+        this.uri = uri;
+        this.rdfType = rdfType;
+    }
+
     public String getUri() {
         return uri;
     }

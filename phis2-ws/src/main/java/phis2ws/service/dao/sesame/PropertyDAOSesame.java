@@ -692,7 +692,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      */
     public boolean getRdfObjectPropertiesAndAddThemToIt(
             RdfResourceDefinition definition, String language) {
-        return getObjectPropertiesExceptThoseSpecifiedAndAddThemToIt(definition
+        return getRdfObjectPropertiesExceptThoseSpecifiedAndAddThemToIt(definition
                 , language, null);
     }       
     
@@ -706,7 +706,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      * @return true    if the definition object is correctly filled
      *          false   if the uri doesn't exists
      */
-    public boolean getObjectPropertiesExceptThoseSpecifiedAndAddThemToIt(
+    public boolean getRdfObjectPropertiesExceptThoseSpecifiedAndAddThemToIt(
             RdfResourceDefinition definition, String language
             , ArrayList<String> propertiesRelationsToIgnore) {
         if (this.existUri(uri)) {

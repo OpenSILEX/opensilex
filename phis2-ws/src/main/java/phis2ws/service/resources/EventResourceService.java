@@ -190,7 +190,7 @@ public class EventResourceService {
 
         Integer totalCount = eventDAO.count();
         
-        ArrayList<Event> events = eventDAO.searchEvents();
+        ArrayList<Event> events = eventDAO.searchEventsInTripleStore();
         ArrayList<EventDTO> eventDTOs = new ArrayList();
         
         ArrayList<Status> statusList = new ArrayList<>();

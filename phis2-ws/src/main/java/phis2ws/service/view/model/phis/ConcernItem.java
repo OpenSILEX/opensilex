@@ -47,4 +47,12 @@ public class ConcernItem {
     public void setRdfType(String rdfType) {
         this.rdfType = rdfType;
     }
+
+    public ArrayList<String> getLabels() {
+        return labels;
+    }
+
+    public void setLabels(ArrayList<String> labels) {
+        this.labels = labels;
+    }
 }

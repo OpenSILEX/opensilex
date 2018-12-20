@@ -38,6 +38,7 @@ import phis2ws.service.view.model.phis.Event;
 public class EventDAOSesame extends DAOSesame<Event> {
     final static Logger LOGGER = LoggerFactory.getLogger(EventDAOSesame.class);
     
+    // constants used for SPARQL variables
     private static final String URI_VARIABLE = "uri";
     private static final String URI_VARIABLE_SPARQLE = "?" + URI_VARIABLE;
     private static final String TYPE_VARIABLE = "type";
@@ -60,6 +61,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     private static final String DATETIMESTAMP_VARIABLE_SPARQL = 
             "?" + DATETIMESTAMP_VARIABLE;
     
+    // search parameters
     private String searchUri;
     private String searchType;
     private String searchConcernsLabel;
@@ -154,10 +156,6 @@ public class EventDAOSesame extends DAOSesame<Event> {
         }
     }
     
-    /**
-     * Generates the search query
-     * @return the query
-     */
     @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
@@ -177,8 +175,10 @@ public class EventDAOSesame extends DAOSesame<Event> {
     
     protected SPARQLQueryBuilder prepareConcernsListSearchQuery(
             String eventUri) {
+        
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
+        
         String sparqlVariableUri = "<" + eventUri + ">";
         
         query.appendSelect(CONCERNS_URI_VARIABLE_SPARQL);
@@ -206,13 +206,13 @@ public class EventDAOSesame extends DAOSesame<Event> {
      */
     private Event getEventFromBindingSet(BindingSet bindingSet) {
           
-        String eventUri = getValueOfSelectFieldFromBindingSet(
+        String eventUri = getValueOfVariableFromBindingSet(
                 URI_VARIABLE, bindingSet);
                 
-        String eventType = getValueOfSelectFieldFromBindingSet(
+        String eventType = getValueOfVariableFromBindingSet(
                 TYPE_VARIABLE, bindingSet);
         
-        String eventDateTimeString = getValueOfSelectFieldFromBindingSet(
+        String eventDateTimeString = getValueOfVariableFromBindingSet(
                 DATETIMESTAMP_VARIABLE, bindingSet);    
         DateTime eventDateTime = null;
         if (eventDateTimeString != null) {
@@ -233,11 +233,11 @@ public class EventDAOSesame extends DAOSesame<Event> {
     private HashMap<String, ArrayList<String>> getConcernsObjectFromBindingSet(
             BindingSet bindingSet) {
                 
-        String concernsUri = getValueOfSelectFieldFromBindingSet(
+        String concernsUri = getValueOfVariableFromBindingSet(
                 CONCERNS_URI_VARIABLE, bindingSet);
         
         String eventConcernsLabelsConcatenated = 
-                getValueOfSelectFieldFromBindingSet(CONCERNS_LABELS_VARIABLE
+                getValueOfVariableFromBindingSet(CONCERNS_LABELS_VARIABLE
                     , bindingSet);
         ArrayList<String> eventConcernsLabels = 
                 new ArrayList<>(Arrays.asList(eventConcernsLabelsConcatenated
@@ -254,60 +254,61 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * Get the events found in the triplestore.
      * @return the list of the events found
      */
-    public ArrayList<Event> allPaginate() {
+    public ArrayList<Event> searchEvents() {
+        
         SPARQLQueryBuilder eventsQuery = prepareSearchQuery();
-
         TupleQuery eventsTupleQuery = getConnection()
                 .prepareTupleQuery(QueryLanguage.SPARQL, eventsQuery.toString());
         
         ArrayList<Event> events;
         try (TupleQueryResult eventsResult = eventsTupleQuery.evaluate()) {
-            events = new ArrayList<>();
             
+            events = new ArrayList<>();
             while (eventsResult.hasNext()) {
                 Event event = getEventFromBindingSet(eventsResult.next());
-                
-                PropertyDAOSesame propertyDAO = 
-                        new PropertyDAOSesame(event.getUri());
-                propertyDAO.getAllPropertiesExceptThoseSpecified(event, null
-                        , new ArrayList(){
-                            {
-                                add(Rdf.RELATION_TYPE.toString());
-                                add(Time.RELATION_HAS_TIME.toString());
-                                add(Oeev.RELATION_CONCERNS.toString());
-                            }});
-                
-                SPARQLQueryBuilder concernsListQuery = 
-                        prepareConcernsListSearchQuery(event.getUri());
-                
-                TupleQuery concernsListTupleQuery = getConnection()
-                        .prepareTupleQuery(QueryLanguage.SPARQL
-                                , concernsListQuery.toString());
-                
-                try (TupleQueryResult concernsListTupleQueryResult = 
-                        concernsListTupleQuery.evaluate()) {
-                    
-                    HashMap<String, ArrayList<String>> concerns;
-                    while(concernsListTupleQueryResult.hasNext()){
-                        concerns = getConcernsObjectFromBindingSet(
-                                    concernsListTupleQueryResult.next());
-                        if(concerns != null){
-                            event.addConcerns(concerns);
-                        }
-                        
-                                
-                    }
-                }
-
+                searchPropertyListAndSetItToEvent(event);
+                searchConcernsListAndSetItToEvent(event);
                 events.add(event);
             }
         }
         return events;
     }
     
-    String getValueOfSelectFieldFromBindingSet(String selectField
+    private void searchPropertyListAndSetItToEvent(Event event){
+
+        PropertyDAOSesame propertyDAO = new PropertyDAOSesame(event.getUri());
+        propertyDAO.getAllPropertiesExceptThoseSpecified(event, null
+                , new ArrayList(){
+                    {
+                        add(Rdf.RELATION_TYPE.toString());
+                        add(Time.RELATION_HAS_TIME.toString());
+                        add(Oeev.RELATION_CONCERNS.toString());
+                    }});
+    }
+    
+    private void searchConcernsListAndSetItToEvent(Event event){
+                
+        SPARQLQueryBuilder concernsListQuery = 
+                prepareConcernsListSearchQuery(event.getUri());
+        TupleQuery concernsListTupleQuery = getConnection()
+                .prepareTupleQuery(QueryLanguage.SPARQL
+                        , concernsListQuery.toString());
+
+        try (TupleQueryResult concernsListTupleQueryResult = 
+                concernsListTupleQuery.evaluate()) {
+
+            HashMap<String, ArrayList<String>> concerns;
+            while(concernsListTupleQueryResult.hasNext()){
+                concerns = getConcernsObjectFromBindingSet(
+                            concernsListTupleQueryResult.next());
+                event.addConcerns(concerns);
+            }
+        }
+    }
+    
+    private String getValueOfVariableFromBindingSet(String variableName
         , BindingSet bindingSet){ 
-        Value selectedFieldValue = bindingSet.getValue(selectField);
+        Value selectedFieldValue = bindingSet.getValue(variableName);
         if (selectedFieldValue != null) {
             return selectedFieldValue.stringValue();
         }

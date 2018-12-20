@@ -372,12 +372,12 @@ public class EventDAOSesame extends DAOSesame<Event> {
         this.searchType = searchType;
     }
 
-    public String getSearchConcernsItem() {
+    public String getSearchConcernsItemLabel() {
         return searchConcernsItemLabel;
     }
 
-    public void setSearchConcernsItemLabel(String searchConcerns) {
-        this.searchConcernsItemLabel = searchConcerns;
+    public void setSearchConcernsItemLabel(String searchConcernsItemLabel) {
+        this.searchConcernsItemLabel = searchConcernsItemLabel;
     }
 
     public String getSearchDateTimeRangeStartString() {

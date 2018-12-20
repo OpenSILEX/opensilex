@@ -111,9 +111,9 @@ public class EventDAOSesame extends DAOSesame<Event> {
     }
     
     /**
-     * Set a search query to applies the "concerns" label filter. 
-     * This function DOES NOT ensure that the query returns the events'concerns 
-     * informations. This is done by another query further in the process.
+     * Set a search query to applies the concerns items label filter. 
+     * This function DOES NOT ensure that the query returns the events concerns 
+     * items informations. This is done by another query further in the process.
      */
     private void prepareSearchQueryConcernsItemFilter(
             SPARQLQueryBuilder query, String sparqlVariableUri){
@@ -235,11 +235,6 @@ public class EventDAOSesame extends DAOSesame<Event> {
                 , new ArrayList<>());
     }
     
-    /**
-     * Get an list of object "concerns" items from a given binding set.
-     * @param bindingSet a binding set, result from a search query
-     * @return an list of object "concerns"
-     */
     private ConcernItem getConcernsItemFromBindingSet(BindingSet bindingSet){
                 
         String concernsItemUri = getValueOfVariableFromBindingSet(
@@ -258,7 +253,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
                 , eventConcernsItemLabels);
     }
     
-    public ArrayList<Event> searchEventsInTripleStore() {
+    public ArrayList<Event> searchEvents() {
         
         SPARQLQueryBuilder eventsQuery = prepareSearchQuery();
         TupleQuery eventsTupleQuery = getConnection()
@@ -294,12 +289,12 @@ public class EventDAOSesame extends DAOSesame<Event> {
                 
         SPARQLQueryBuilder concernsItemsQuery = 
                 prepareConcernsItemsSearchQuery(event.getUri());
-        TupleQuery concernsListTupleQuery = getConnection()
+        TupleQuery concernsItemsTupleQuery = getConnection()
                 .prepareTupleQuery(QueryLanguage.SPARQL
                         , concernsItemsQuery.toString());
 
         try (TupleQueryResult concernsItemsTupleQueryResult = 
-                concernsListTupleQuery.evaluate()) {
+                concernsItemsTupleQuery.evaluate()) {
 
             ConcernItem concernsItem;
             while(concernsItemsTupleQueryResult.hasNext()){

@@ -685,14 +685,15 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      * and fill the RDF Resource defintion object with the values and labels
      * 
      * @param definition The definition object which will be filled
-     * @param language specify in which language labels should be returned. The language can be null
+     * @param language specify in which language labels should be returned. The 
+     * language can be null
      * @return true    if the definition object is correctly filled
      *          false   if the uri doesn't exists
      */
-    public boolean getAllProperties(
+    public boolean getRdfObjectPropertiesAndAddThemToIt(
             RdfResourceDefinition definition, String language) {
-        return getAllPropertiesExceptThoseSpecified(definition, language
-                , null);
+        return getObjectPropertiesExceptThoseSpecifiedAndAddThemToIt(definition
+                , language, null);
     }       
     
      /**
@@ -700,17 +701,18 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      * and fill the RDF Resource defintion object with the values and labels
      * 
      * @param definition The definition object which will be filled
-     * @param language specify in which language labels should be returned. The language can be null
+     * @param language specify in which language labels should be returned.
      * @param propertiesRelationsToIgnore
      * @return true    if the definition object is correctly filled
      *          false   if the uri doesn't exists
      */
-    public boolean getAllPropertiesExceptThoseSpecified(
+    public boolean getObjectPropertiesExceptThoseSpecifiedAndAddThemToIt(
             RdfResourceDefinition definition, String language
             , ArrayList<String> propertiesRelationsToIgnore) {
         if (this.existUri(uri)) {
-            // Prepare and execute the query to retrieve all the relations, 
-            // properties and properties type with theur labels for the given uri and language
+            /* Prepare and execute the query to retrieve all the relations, 
+             properties and properties type with their labels for the given 
+            uri and language*/
             SPARQLQueryBuilder query = prepareSearchPropertiesQuery(language
                     , propertiesRelationsToIgnore);
             TupleQuery tupleQuery = getConnection()

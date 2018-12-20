@@ -692,8 +692,8 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      */
     public boolean getRdfObjectPropertiesAndAddThemToIt(
             RdfResourceDefinition definition, String language) {
-        return getRdfObjectPropertiesExceptThoseSpecifiedAndAddThemToIt(definition
-                , language, null);
+        return getRdfObjectPropertiesExceptThoseSpecifiedAndAddThemToIt(
+                definition, language, null);
     }       
     
      /**

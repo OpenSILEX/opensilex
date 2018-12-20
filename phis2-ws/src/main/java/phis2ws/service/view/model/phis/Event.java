@@ -8,7 +8,6 @@
 package phis2ws.service.view.model.phis;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import org.joda.time.DateTime;
 
 /**
@@ -17,22 +16,22 @@ import org.joda.time.DateTime;
 public class Event extends RdfResourceDefinition {
     
     private String type;
-    private ArrayList<HashMap<String, ArrayList<String>>> concernsList;
+    private ArrayList<ConcernItem> concernsItems;
     private DateTime dateTime;
 
-    public Event(String uri, String type, 
-            ArrayList<HashMap<String, ArrayList<String>>> concernsList
+    public Event(String uri, String type
+            , ArrayList<ConcernItem> concernsItems
             , DateTime dateTime
             , ArrayList<Property> properties) {
         this.uri = uri;
         this.type = type;
-        this.concernsList = concernsList;
+        this.concernsItems = concernsItems;
         this.dateTime = dateTime;
         this.properties = properties;
     }
     
-    public void addConcerns(HashMap<String, ArrayList<String>> concerns){
-        this.concernsList.add(concerns);
+    public void addConcernsItem(ConcernItem concerns){
+        this.concernsItems.add(concerns);
     }
 
     public String getType() {
@@ -43,13 +42,12 @@ public class Event extends RdfResourceDefinition {
         this.type = type;
     }
 
-    public ArrayList<HashMap<String, ArrayList<String>>> getConcernsList() {
-        return concernsList;
+    public ArrayList<ConcernItem> getConcernsItems() {
+        return concernsItems;
     }
 
-    public void setConcernsList(
-            ArrayList<HashMap<String, ArrayList<String>>> concernsList) {
-        this.concernsList = concernsList;
+    public void setConcernsItems(ArrayList<ConcernItem> concernsItems) {
+        this.concernsItems = concernsItems;
     }
 
     public DateTime getDateTime() {

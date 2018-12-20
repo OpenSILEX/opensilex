@@ -8,13 +8,14 @@
 package phis2ws.service.resources.dto.event;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import phis2ws.service.configuration.DateFormat;
+import phis2ws.service.resources.dto.ConcernsItemWithLabelsDTO;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyDTO;
 import phis2ws.service.utils.dates.Dates;
+import phis2ws.service.view.model.phis.ConcernItem;
 import phis2ws.service.view.model.phis.Event;
 import phis2ws.service.view.model.phis.Property;
 
@@ -27,7 +28,8 @@ public class EventDTO extends AbstractVerifiedClass {
     
     private final String uri;
     private final String type;
-    private final ArrayList<HashMap<String, ArrayList<String>>> concernsList;
+    private final ArrayList<ConcernsItemWithLabelsDTO> concernsItems 
+            = new ArrayList<>();;
     private final String dateTimeString;
     protected ArrayList<PropertyDTO> properties = new ArrayList<>();
     
@@ -38,7 +40,9 @@ public class EventDTO extends AbstractVerifiedClass {
     public EventDTO(Event event) {
         this.uri = event.getUri();
         this.type = event.getType();
-        this.concernsList = event.getConcernsList();
+        event.getConcernsItems().forEach((concernsItem) -> {
+            this.concernsItems.add(new ConcernsItemWithLabelsDTO(concernsItem));
+        });
         
         DateTime eventDateTime = event.getDateTime();
         if(eventDateTime != null){
@@ -61,18 +65,21 @@ public class EventDTO extends AbstractVerifiedClass {
     @Override
     public Event createObjectFromDTO() {
         
-        ArrayList<Property> eventProperties = new ArrayList<>();
+        ArrayList<Property> properties = new ArrayList<>();
         this.properties.forEach((property) -> {
-            eventProperties.add(property.createObjectFromDTO());
+            properties.add(property.createObjectFromDTO());
         });
         
-        return new Event(
-                this.uri
-                , this.type
-                , this.concernsList
-                , Dates.stringToDateTimeWithGivenPattern(
+        ArrayList<ConcernItem> concernsItems = new ArrayList<>();
+        this.concernsItems.forEach((concernsItem) -> {
+            concernsItems.add(concernsItem.createObjectFromDTO());
+        });
+        
+        DateTime dateTime = Dates.stringToDateTimeWithGivenPattern(
                     this.dateTimeString
-                    , DateFormat.YMDTHMSZ.toString())
-                , eventProperties);
+                    , DateFormat.YMDTHMSZZ.toString());
+        
+        return new Event(this.uri, this.type, concernsItems, dateTime
+                , properties);
     }
 }

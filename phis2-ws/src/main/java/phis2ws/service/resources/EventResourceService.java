@@ -181,7 +181,7 @@ public class EventResourceService {
         
         eventDAO.setSearchUri(uri);
         eventDAO.setSearchType(type);
-        eventDAO.setSearchConcernsLabel(concernsLabel);
+        eventDAO.setSearchConcernsItemLabel(concernsLabel);
         eventDAO.setSearchDateTimeRangeStartString(dateRangeStart);
         eventDAO.setSearchDateTimeRangeEndString(dateRangeEnd);
         eventDAO.user = userSession.getUser();

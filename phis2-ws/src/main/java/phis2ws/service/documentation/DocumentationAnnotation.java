@@ -97,6 +97,7 @@ public final class DocumentationAnnotation {
     public static final String SENSOR_POST_DEFINITION = "JSON format of sensor data";
     public static final String SENSOR_PROFILE_POST_DEFINITION = "JSON format of sensor profile data";
     public static final String LINK_VARIABLES_DEFINITION = "List of variables uris";
+    public static final String LINK_SENSORS_DEFINITION = "List of sensors uris.";
 
     public static final String VARIABLES_DEFINITION = "A variable or comma-separated variables list";
 

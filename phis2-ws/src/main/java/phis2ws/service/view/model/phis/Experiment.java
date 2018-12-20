@@ -32,6 +32,7 @@ public class Experiment {
     private ArrayList<Group> groups = new ArrayList<>();
     private ArrayList<Contact> contacts = new ArrayList<>();
     private HashMap<String, String> variables = new HashMap<>();
+    private HashMap<String, String> sensors = new HashMap<>();
     
     public Experiment() {
         
@@ -163,6 +164,14 @@ public class Experiment {
 
     public void setVariables(HashMap<String, String> variables) {
         this.variables = variables;
+    }
+
+    public HashMap<String, String> getSensors() {
+        return sensors;
+    }
+
+    public void setSensors(HashMap<String, String> sensors) {
+        this.sensors = sensors;
     }
     
     /**

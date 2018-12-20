@@ -236,7 +236,7 @@ public class TokenResourceService implements BrapiCall{
                         if (sessionStartDateTime != null) {
                             Seconds secondsBetween = Seconds.secondsBetween(sessionStartDateTime, new DateTime());
                             int expiration = Integer.valueOf(PropertiesFileManager.getConfigFileProperty("service", "sessionTime")) - secondsBetween.getSeconds();
-                            if (expiration < 0) {
+                            if (expiration <= 0) {
                                 TokenManager.Instance().removeSession(userSessionId);
                                 TokenManager.Instance().createToken(session);
                                 sessionStartDateTime = Dates.convertStringToDateTime(session.getDateStart(), DateFormats.YMDHMS_FORMAT);

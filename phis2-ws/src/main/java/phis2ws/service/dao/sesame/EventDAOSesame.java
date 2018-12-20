@@ -240,23 +240,22 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * @param bindingSet a binding set, result from a search query
      * @return an list of object "concerns"
      */
-    private ConcernItem getConcernsItemFromBindingSet(
-            BindingSet bindingSet) {
+    private ConcernItem getConcernsItemFromBindingSet(BindingSet bindingSet){
                 
-        String concernsUri = getValueOfVariableFromBindingSet(
+        String concernsItemUri = getValueOfVariableFromBindingSet(
                 CONCERNS_ITEM_URI_VARIABLE, bindingSet);
-        String concernsType = getValueOfVariableFromBindingSet(
+        String concernsItemType = getValueOfVariableFromBindingSet(
                 CONCERNS_ITEM_TYPE_VARIABLE, bindingSet);
         
-        String eventConcernsLabelsConcatenated = 
+        String eventConcernsItemLabelsConcatenated = 
                 getValueOfVariableFromBindingSet(CONCERNS_ITEM_LABELS_VARIABLE
                     , bindingSet);
-        ArrayList<String> eventConcernsLabels = 
-                new ArrayList<>(Arrays.asList(eventConcernsLabelsConcatenated
+        ArrayList<String> eventConcernsItemLabels = 
+                new ArrayList<>(Arrays.asList(eventConcernsItemLabelsConcatenated
                         .split(SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR)));
 
-        return new ConcernItem(concernsUri, concernsType
-                , eventConcernsLabels);
+        return new ConcernItem(concernsItemUri, concernsItemType
+                , eventConcernsItemLabels);
     }
     
     public ArrayList<Event> searchEventsInTripleStore() {
@@ -279,8 +278,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
         return events;
     }
     
-    private void searchEventPropertiesAndSetThemToIt(
-            Event event){
+    private void searchEventPropertiesAndSetThemToIt(Event event){
 
         PropertyDAOSesame propertyDAO = new PropertyDAOSesame(event.getUri());
         propertyDAO.getRdfObjectPropertiesExceptThoseSpecifiedAndAddThemToIt(
@@ -292,8 +290,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
                     }});
     }
     
-    private void searchEventConcernsItemsAndSetThemToIt(
-            Event event){
+    private void searchEventConcernsItemsAndSetThemToIt(Event event){
                 
         SPARQLQueryBuilder concernsItemsQuery = 
                 prepareConcernsItemsSearchQuery(event.getUri());

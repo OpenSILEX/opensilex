@@ -47,6 +47,9 @@ public class EventDAOSesame extends DAOSesame<Event> {
     private static final String CONCERNS_URI_VARIABLE = "concernsUri";
     private static final String CONCERNS_URI_VARIABLE_SPARQL = 
             "?" + CONCERNS_URI_VARIABLE;
+    private static final String CONCERNS_TYPE_VARIABLE = "concernsType";
+    private static final String CONCERNS_TYPE_VARIABLE_SPARQL = 
+            "?" + CONCERNS_TYPE_VARIABLE;
     private static final String CONCERNS_LABEL_VARIABLE = "concernsLabel";
     private static final String CONCERNS_LABEL_VARIABLE_SPARQL = 
             "?" + CONCERNS_LABEL_VARIABLE;
@@ -186,6 +189,12 @@ public class EventDAOSesame extends DAOSesame<Event> {
         query.appendTriplet(sparqlVariableUri, 
                 Oeev.RELATION_CONCERNS.toString()
                 , CONCERNS_URI_VARIABLE_SPARQL, null);
+        
+        query.appendSelect(CONCERNS_TYPE_VARIABLE_SPARQL);
+        query.appendGroupBy(CONCERNS_TYPE_VARIABLE_SPARQL);
+        query.appendTriplet(CONCERNS_URI_VARIABLE_SPARQL, 
+                Rdf.RELATION_TYPE.toString()
+                , CONCERNS_TYPE_VARIABLE_SPARQL, null);
          
         query.appendTriplet(CONCERNS_URI_VARIABLE_SPARQL, 
                 Rdfs.RELATION_LABEL.toString()

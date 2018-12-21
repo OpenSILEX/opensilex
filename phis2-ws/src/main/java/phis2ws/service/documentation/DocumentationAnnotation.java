@@ -96,7 +96,8 @@ public final class DocumentationAnnotation {
     public static final String SENSOR_URI_DEFINITION = "a sensor URI (Unique Resource Identifier)";
     public static final String SENSOR_POST_DEFINITION = "JSON format of sensor data";
     public static final String SENSOR_PROFILE_POST_DEFINITION = "JSON format of sensor profile data";
-    public static final String LINK_SENSOR_VARIABLE_DEFINITION = "List of variables uris";
+    public static final String LINK_VARIABLES_DEFINITION = "List of variables uris";
+    public static final String LINK_SENSORS_DEFINITION = "List of sensors uris.";
 
     public static final String VARIABLES_DEFINITION = "A variable or comma-separated variables list";
 
@@ -216,6 +217,7 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_SPECIES_RDF_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#Species";
     public static final String EXAMPLE_SPECIES_URI = "http://www.phenome-fppn.fr/id/species/maize";
     public static final String EXAMPLE_SPECIES_FROM_SPECIES = "http://www.phenome-fppn.fr/vocabulary/2017#fromSpecies";
+    public static final String EXAMPLE_SPECIES_LABEL = "Maize";
 
     public static final String EXAMPLE_TRAIT_URI = "http://www.phenome-fppn.fr/phis_field/id/traits/t001";
     public static final String EXAMPLE_TRAIT_LABEL = "Height";

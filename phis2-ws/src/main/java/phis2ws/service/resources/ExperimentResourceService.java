@@ -1,13 +1,9 @@
 //**********************************************************************************************
 //                                       ExperimentResourceService.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
+// SILEX-PHIS
+// Copyright © INRA 2018
 // Creation date: January 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  October, 31 2017 : Passage de trial à experiment
-// Subject: Represents the experiment data service
 //***********************************************************************************************
 package phis2ws.service.resources;
 
@@ -56,6 +52,14 @@ import phis2ws.service.view.brapi.form.ResponseFormPOST;
 import phis2ws.service.view.brapi.form.ResponseFormExperiment;
 import phis2ws.service.view.model.phis.Experiment;
 
+/**
+ * Experiment services.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @update [Morgane Vidal] October, 31 2017 refactor trial to experiment
+ * @update [Morgane Vidal] December, 20 2018 add PUT services :
+ *                          - experiment/{uri}/variables 
+ *                          - experiment/{uri}/sensors
+ */
 @Api("/experiments")
 @Path("experiments")
 public class ExperimentResourceService extends ResourceService {
@@ -291,6 +295,155 @@ public class ExperimentResourceService extends ResourceService {
             postResponse = new ResponseFormPOST(new Status("Request error", StatusCodeMsg.ERR, "Empty experiment(s) to update"));
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
+    }
+    
+    /**
+     * Update the variables linked to an experiment.
+     * @example
+     * [
+     *   "http://www.opensilex.fr/platform/id/variables/v001",
+     *   "http://www.opensilex.fr/platform/id/variables/v003"
+     * ]
+     * @param variables
+     * @param uri
+     * @param context
+     * @return the result
+     * @example 
+     * {
+     *      "metadata": {
+     *          "pagination": null,
+     *          "status": [
+     *              {
+     *                  "message": "Resources updated",
+     *                  "exception": {
+     *                      "type": "Info",
+     *                      "href": null,
+     *                      "details": "The experiment http://www.opensilex.fr/platform/OSL2015-1 has now 2 linked variables"
+     *                  }
+     *              }
+     *          ],
+     *          "datafiles": [
+     *              "http://www.opensilex.fr/platform/OSL2015-1"
+     *          ]
+     *      }
+     * }
+     */
+    @PUT
+    @Path("{uri}/variables")
+    @ApiOperation(value = "Update the observed variables of an experiment")
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "Measured observed variables of the experiment updated", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response putVariables(
+            @ApiParam(value = DocumentationAnnotation.LINK_VARIABLES_DEFINITION) @URL ArrayList<String> variables,
+            @ApiParam(value = DocumentationAnnotation.EXPERIMENT_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI, required = true) @PathParam("uri") @Required @URL String uri,
+            @Context HttpServletRequest context) {
+        AbstractResultForm postResponse = null;
+        
+        ExperimentDao experimentDAO = new ExperimentDao();
+        if (context.getRemoteAddr() != null) {
+            experimentDAO.remoteUserAdress = context.getRemoteAddr();
+        }
+        
+        experimentDAO.user = userSession.getUser();
+        
+        POSTResultsReturn result = experimentDAO.checkAndUpdateMeasuredVariables(uri, variables);
+        
+        if (result.getHttpStatus().equals(Response.Status.CREATED)) {
+            postResponse = new ResponseFormPOST(result.statusList);
+            postResponse.getMetadata().setDatafiles(result.getCreatedResources());
+        } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                || result.getHttpStatus().equals(Response.Status.OK)
+                || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+            postResponse = new ResponseFormPOST(result.statusList);
+        }
+        
+        return Response.status(result.getHttpStatus()).entity(postResponse).build();
+    }
+    
+    /**
+     * Update the sensors linked to an experiment.
+     * @example
+     * [
+     *      "http://www.phenome-fppn.fr/opensilex/2018/s18001"
+     * ]
+     * @param sensors
+     * @param uri
+     * @param context
+     * @return the query result
+     * @example
+     * {
+     *      "metadata": {
+     *          "pagination": null,
+     *          "status": [
+     *              {
+     *                  "message": "Resources updated",
+     *                  "exception": {
+     *                      "type": "Info",
+     *                      "href": null,
+     *                      "details": "The experiment http://www.opensilex.fr/platform/OSL2018-1 has now 1 linked sensors"
+     *                  }
+     *              }
+     *          ],
+     *          "datafiles": [
+     *              "http://www.opensilex.fr/platform/OSL2015-1"
+     *          ]
+     *      }
+     * }
+     */
+    @PUT
+    @Path("{uri}/sensors")
+    @ApiOperation(value = "Update the sensors which participates in an experiment")
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "The list of sensors which participates in the experiment updated", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response putSensors(
+        @ApiParam(value = DocumentationAnnotation.LINK_SENSORS_DEFINITION) @URL ArrayList<String> sensors,
+        @ApiParam(value = DocumentationAnnotation.EXPERIMENT_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI, required = true) @PathParam("uri") @Required @URL String uri,
+        @Context HttpServletRequest context) {
+        AbstractResultForm postResponse = null;
+        
+        ExperimentDao experimentDAO = new ExperimentDao();
+        if (context.getRemoteAddr() != null) {
+            experimentDAO.remoteUserAdress = context.getRemoteAddr();
+        }
+        
+        experimentDAO.user = userSession.getUser();
+        
+        POSTResultsReturn result = experimentDAO.checkAndUpdateLinkedSensors(uri, sensors);
+        
+        if (result.getHttpStatus().equals(Response.Status.CREATED)) {
+            postResponse = new ResponseFormPOST(result.statusList);
+            postResponse.getMetadata().setDatafiles(result.getCreatedResources());
+        } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                || result.getHttpStatus().equals(Response.Status.OK)
+                || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+            postResponse = new ResponseFormPOST(result.statusList);
+        }
+        
+        return Response.status(result.getHttpStatus()).entity(postResponse).build();
     }
 
     /**

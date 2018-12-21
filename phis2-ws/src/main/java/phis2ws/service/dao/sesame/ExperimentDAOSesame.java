@@ -11,6 +11,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import static org.apache.jena.sparql.vocabulary.VocabTestQuery.query;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -30,7 +34,6 @@ import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Vocabulary;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
-import phis2ws.service.utils.sparql.SPARQLUpdateBuilder;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.Experiment;
 
@@ -207,16 +210,22 @@ public class ExperimentDAOSesame extends DAOSesame<Experiment> {
      *         false if an error occurred (see the error logs to get more details)
      */
     private boolean linkSensorsToExperiment(List<String> sensors, String experimentUri) {
-        SPARQLUpdateBuilder query = new SPARQLUpdateBuilder();
-        query.appendGraphURI(experimentUri);
+        //Generates insert query
+        UpdateBuilder spql = new UpdateBuilder();
+        Node graph  = NodeFactory.createURI(experimentUri);
+        
         sensors.forEach((sensor) -> {
-            query.appendTriplet(sensor, Vocabulary.RELATION_PARTICIPATES_IN.toString(), experimentUri, null);
+            Node subjectUriNode  = NodeFactory.createURI(sensor);
+            Node predicateUriNode  = NodeFactory.createURI(Vocabulary.RELATION_PARTICIPATES_IN.toString());
+            Node objectPropertyNode  = NodeFactory.createURI(experimentUri);
+            
+            spql.addInsert(graph, subjectUriNode, predicateUriNode, objectPropertyNode);
         });
         
         LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
         
         //Insert the properties in the triplestore
-        Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
+        Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, spql.buildRequest().toString());
         try {
             prepareUpdate.execute();
         } catch (UpdateExecutionException ex) {

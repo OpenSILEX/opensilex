@@ -9,7 +9,6 @@ package phis2ws.service.dao.sesame;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
@@ -68,6 +67,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     // search parameters
     private String searchUri;
     private String searchType;
+    private String searchConcernsItemUri;
     private String searchConcernsItemLabel;
     private String searchDateTimeRangeStartString;
     private String searchDateTimeRangeEndString;
@@ -112,21 +112,30 @@ public class EventDAOSesame extends DAOSesame<Event> {
     
     /**
      * Set a search query to applies the concerns items label filter. 
-     * This function DOES NOT ensure that the query returns the events concerns 
-     * items informations. This is done by another query further in the process.
+     * This function DOES NOT make the query return the events concerns items 
+     * informations. This is done by another query further in the process.
      */
     private void prepareSearchQueryConcernsItemFilter(
             SPARQLQueryBuilder query, String sparqlVariableUri){
 
-        if (searchConcernsItemLabel != null) {
+        if (searchConcernsItemLabel != null || searchConcernsItemUri != null) {
             query.appendTriplet(
                 sparqlVariableUri
                 , Oeev.RELATION_CONCERNS.toString()
                 , CONCERNS_ITEM_URI_VARIABLE_SPARQL, null);
-            query.appendTriplet(
-                CONCERNS_ITEM_URI_VARIABLE_SPARQL
-                , Rdfs.RELATION_LABEL.toString()
-                , "\"" + searchConcernsItemLabel + "\"", null);
+            
+            if (searchConcernsItemLabel != null){
+                query.appendTriplet(
+                    CONCERNS_ITEM_URI_VARIABLE_SPARQL
+                    , Rdfs.RELATION_LABEL.toString()
+                    , "\"" + searchConcernsItemLabel + "\"", null);
+            }
+            
+            if (searchConcernsItemUri != null){
+                query.appendToBody("\nVALUES " 
+                        + CONCERNS_ITEM_URI_VARIABLE_SPARQL
+                        +  "{<" + searchConcernsItemUri + ">}");
+            }
         }
     }
     
@@ -365,6 +374,14 @@ public class EventDAOSesame extends DAOSesame<Event> {
 
     public void setSearchType(String searchType) {
         this.searchType = searchType;
+    }
+
+    public String getSearchConcernsItemUri() {
+        return searchConcernsItemUri;
+    }
+
+    public void setSearchConcernsItemUri(String searchConcernsItemUri) {
+        this.searchConcernsItemUri = searchConcernsItemUri;
     }
 
     public String getSearchConcernsItemLabel() {

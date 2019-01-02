@@ -77,38 +77,46 @@ public class EventResourceService {
      * @param page
      * @param uri
      * @param type
-     * @param concernsLabel
+     * @param concernsItemUri
+     * @param concernsItemLabel
      * @param dateRangeStart
      * @param dateRangeEnd
      * @return  list of all events
      * e.g
      * {
-     *      "metadata": {
-     *          "pagination": {
-     *              "pageSize": 20,
-     *              "currentPage": 0,
-     *              "totalCount": 3,
-     *              "totalPages": 1
-     *          },
-     *          "status": [],
-     *          "datafiles": []
-     *      },
-     *      "result": {
-     *          "data": [
-     *              {
-     *                  "uri": 
-     * "http://www.phenome-fppn.fr/vocabulary/2018/oeev/id/events/ev001",
-     *                  "type : "http://www.phenome-fppn.fr/vocabulary/2018/oeev#MoveFrom",
-     *                  "concerns": "http://www.phenome-fppn.fr/m3p/arch/2017/c17000241",
-     *                  "dateTime" : "2018-11-14 07:58:26.891+01:00"
-     *                  properties: [{
-     *                      "rdfType": "vocabulary:Infrastructure",
-     *                      "relation": "oeev:from",
-     *                      "value": "vocabulary:Infrastructure"
-     *                  }]
-     *              },
-     *          ]
-     *      }
+     *      {
+  "metadata": {
+    "pagination": null,
+    "status": [],
+    "datafiles": []
+  },
+  "result": {
+    "data": [
+      {
+        "uri": "http://www.phenome-fppn.fr/id/event/5a1b3c0d-58af-4cfb-811e-e141b11453b1",
+        "type": "http://www.phenome-fppn.fr/vocabulary/2018/oeev#MoveFrom",
+        "concernsItems": [
+          {
+            "labels": [
+              "label2",
+              "label3"
+            ],
+            "uri": "http://www.phenome-fppn.fr/m3p/arch/2017/c17000241",
+            "typeUri": "http://www.phenome-fppn.fr/vocabulary/2017#Thermocouple"
+          }
+        ],
+        "dateTimeString": "2017-09-11T12:00:00+01:00",
+        "properties": [
+          {
+            "rdfType": "http://www.phenome-fppn.fr/vocabulary/2017#Thermocouple",
+            "relation": "http://www.phenome-fppn.fr/vocabulary/2018/oeev#from",
+            "value": "http://www.phenome-fppn.fr/m3p/phenoarch/"
+          }
+        ]
+      }
+    ]
+  }
+}
      * }
      */
     @GET
@@ -161,10 +169,17 @@ public class EventResourceService {
             ) @QueryParam("type") @URL 
             String type
         , @ApiParam (
-                value = "Search by object concerned label", 
-                example = DocumentationAnnotation.EXAMPLE_EVENT_CONCERNS_LABEL
-            ) @QueryParam("concernsLabel") 
-            String concernsLabel
+                value = "Search by concerns item uri"
+                , example = DocumentationAnnotation
+                        .EXAMPLE_EVENT_CONCERNS_ITEM_URI
+            ) @QueryParam("concernsItemUri") @URL 
+            String concernsItemUri
+        , @ApiParam (
+                value = "Search by concerns item label", 
+                example = DocumentationAnnotation
+                        .EXAMPLE_EVENT_CONCERNS_ITEM_LABEL
+            ) @QueryParam("concernsItemLabel") 
+            String concernsItemLabel
         , @ApiParam (
                 value = "Search by date - start of the range", 
                 example = DocumentationAnnotation.EXAMPLE_EVENT_DATE_RANGE_START
@@ -181,7 +196,8 @@ public class EventResourceService {
         
         eventDAO.setSearchUri(uri);
         eventDAO.setSearchType(type);
-        eventDAO.setSearchConcernsItemLabel(concernsLabel);
+        eventDAO.setSearchConcernsItemLabel(concernsItemLabel);
+        eventDAO.setSearchConcernsItemUri(concernsItemUri);
         eventDAO.setSearchDateTimeRangeStartString(dateRangeStart);
         eventDAO.setSearchDateTimeRangeEndString(dateRangeEnd);
         eventDAO.user = userSession.getUser();

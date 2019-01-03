@@ -25,7 +25,7 @@ public enum Vocabulary {
     CONCEPT_AGRONOMICAL_OBJECT {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "AgronomicalObject";
+            return NAMESPACE.toString() + "ScientificObject";
         }
     },
     CONCEPT_ANNOTATION {

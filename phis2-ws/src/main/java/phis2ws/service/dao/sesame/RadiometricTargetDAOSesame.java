@@ -97,7 +97,8 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
      * Get a radiometric target from a given binding set.
      * Assume that the following attributes exist : uri, label.
      * @param bindingSet a binding set, result from a search query
-     * @return a radiometric target with data extracted from the given binding set
+     * @return a radiometric target with data extracted from the given binding 
+     * set
      */
     private RadiometricTarget getFromBindingSet(BindingSet bindingSet) {
         RadiometricTarget radiometricTarget = new RadiometricTarget();
@@ -115,7 +116,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
     
     /**
      * Get the radiometric targets (uri, label) of the triplestore.
-     * @return the list of the radiometric target founded
+     * @return the list of the radiometric target found
      */
     public ArrayList<RadiometricTarget> allPaginate() {
         SPARQLQueryBuilder query = prepareSearchQuery();
@@ -180,7 +181,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
      * Check the given list of radiometric targets (check properties domain, etc.)
      * @param radiometricTargets
      * @see PropertyDAOSesame
-     * @return the result with the list of the founded errors (empty if no error)
+     * @return the result with the list of the found errors (empty if no error)
      */
     public POSTResultsReturn check(List<RadiometricTarget> radiometricTargets) {
         POSTResultsReturn checkResult = null;
@@ -351,14 +352,14 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
     /**
      * Check and insert the given radiometric targets in the triplestore
      * @param radiometricTargets
-     * @return the insertion result. Message error if errors founded in data
+     * @return the insertion result. Message error if errors found in data
      *         the list of the generated uri of the radiometric targets if the insertion has been done
      */
     public POSTResultsReturn checkAndInsert(List<RadiometricTarget> radiometricTargets) {
         POSTResultsReturn checkResult = check(radiometricTargets);
         if (checkResult.getDataState()) {
             return insert(radiometricTargets);
-        } else { //errors founded in data
+        } else { //errors found in data
             return checkResult;
         }
     }
@@ -401,10 +402,10 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
      * @return the Radiometric Target informations
      */
     public RadiometricTarget getRadiometricTarget(String radiometricTargetUri) {
-        PropertyDAOSesame propertyDAOSesame = new PropertyDAOSesame();
+        PropertyDAOSesame propertyDAOSesame = 
+                new PropertyDAOSesame(radiometricTargetUri);
         RadiometricTarget radiometricTarget = new RadiometricTarget();
-        propertyDAOSesame.uri = radiometricTargetUri;
-        propertyDAOSesame.getAllPropertiesWithLabels(radiometricTarget, null);
+        propertyDAOSesame.getRdfObjectPropertiesAndAddThemToIt(radiometricTarget, null);
         return radiometricTarget;
     }
     
@@ -415,8 +416,8 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
      * @see RadiometricTargetDAOSesame#update(java.util.List)
      * @param newRadiometricTargetData the new radiometric target data
      * @param oldRadiometricTargetData the old radiometric target data
-     * @return the list of the status with the errors if some has been founded.
-     *         null if no error founded
+     * @return the list of the status with the errors if some has been found.
+     *         null if no error found
      */
     private List<Status> compareNewAndOldRadiometricTarget(RadiometricTarget newRadiometricTargetData, RadiometricTarget oldRadiometricTargetData) {
         //Check each new radiometric target property to see if it has the same number or more occurences than the oldRadiometric.
@@ -488,7 +489,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
             //If a property has a null value, the relation will be deleted. 
             //\SILEX:info
             List<Status> compareNewToOldRadiometricTarget = compareNewAndOldRadiometricTarget(radiometricTarget, oldRadiometricTarget);
-            if (compareNewToOldRadiometricTarget.isEmpty()) { //No error has been founded
+            if (compareNewToOldRadiometricTarget.isEmpty()) { //No error has been found
                 //1. genereate query to delete already existing data
                 //SILEX:info
                 //We only delete the already existing data received by the client. 
@@ -512,7 +513,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
                     annotationUpdate = false;
                     updateStatus.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, "Malformed update query: " + e.getMessage()));
                 }
-            } else { //errors has been founded
+            } else { //errors has been found
                 updateStatus.addAll(compareNewToOldRadiometricTarget);
                 annotationUpdate = false;
             }
@@ -550,14 +551,14 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
     /**
      * Update the given radiometric targets in the triplestore
      * @param radiometricTargets
-     * @return the update result. Message error if errors founded in data
+     * @return the update result. Message error if errors found in data
      *         the list of the generated uri of the radiometric targets if the update has been done
      */
     public POSTResultsReturn checkAndUpdate(List<RadiometricTarget> radiometricTargets) {
         POSTResultsReturn checkResult = check(radiometricTargets);
         if (checkResult.getDataState()) {
             return update(radiometricTargets);
-        } else { //errors founded in data
+        } else { //errors found in data
             return checkResult;
         }
     }

@@ -47,7 +47,6 @@ import phis2ws.service.view.model.phis.Infrastructure;
 @Api("/infrastructures")
 @Path("/infrastructures")
 public class InfrastructureResourceService extends ResourceService {
-    private static final String PROPERTY_FILE_NAME = "service";
     
     /**
      * Search infrastructures by uri, rdfType. 
@@ -120,7 +119,7 @@ public class InfrastructureResourceService extends ResourceService {
             infrastructureDAO.label = label;
         }
         if (language == null) {
-            language = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILE_NAME, "defaultLanguage");;
+            language = DEFAULT_LANGUAGE;
         }
         infrastructureDAO.language = language;
         
@@ -235,7 +234,7 @@ public class InfrastructureResourceService extends ResourceService {
         propertyDAO.subClassOf = Vocabulary.CONCEPT_INFRASTRUCTURE;
         
         if (language == null) {
-            language = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILE_NAME, "defaultLanguage");;
+            language = DEFAULT_LANGUAGE;
         }
                 
         propertyDAO.user = userSession.getUser();
@@ -249,7 +248,7 @@ public class InfrastructureResourceService extends ResourceService {
         
         // Get all properties in the given language and fill them in infrastructure object
         Infrastructure infrastructure = new Infrastructure();
-        if (propertyDAO.getAllPropertiesWithLabels(infrastructure, language)) {
+        if (propertyDAO.getRdfObjectPropertiesAndAddThemToIt(infrastructure, language)) {
             // Convert the infrastructure to an InfrastructureDTO
             list.add(new InfrastructureDTO(infrastructure));
             

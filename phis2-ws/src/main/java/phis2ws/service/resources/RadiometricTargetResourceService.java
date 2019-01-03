@@ -374,7 +374,7 @@ public class RadiometricTargetResourceService extends ResourceService {
         
         // Get all properties in the given language and fill them in RadiometricTarget object
         RadiometricTarget radiometricTarget = new RadiometricTarget();
-        if (propertyDAO.getAllPropertiesWithLabels(radiometricTarget, null)) {
+        if (propertyDAO.getRdfObjectPropertiesAndAddThemToIt(radiometricTarget, null)) {
             // Convert the radiometricTarget to a RadiometricTargetDTO
             list.add(new RadiometricTargetDTO(radiometricTarget));
             

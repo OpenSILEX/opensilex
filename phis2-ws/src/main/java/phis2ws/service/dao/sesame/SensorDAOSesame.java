@@ -411,7 +411,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 Sensor sensor = getSensorFromBindingSet(bindingSet);
-                HashMap<String, String>  variables = getVariables(sensor.getUri());
+                HashMap<String, String> variables = getVariables(sensor.getUri());
                 sensor.setVariables(variables);
                 sensors.add(sensor);
             }

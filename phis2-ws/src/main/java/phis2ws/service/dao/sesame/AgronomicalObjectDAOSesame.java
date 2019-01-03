@@ -49,6 +49,7 @@ import phis2ws.service.ontologies.Vocabulary;
 import phis2ws.service.resources.dto.AgronomicalObjectDTO;
 import phis2ws.service.resources.dto.LayerDTO;
 import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyPostDTO;
+import static phis2ws.service.resources.validation.validators.URLValidator.validateURL;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.ResourcesUtils;
 import phis2ws.service.utils.UriGenerator;
@@ -169,7 +170,7 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
 
         query.appendGraph(context);
         query.appendAsk("");
-        query.appendToBody("?x <" + Vocabulary.RELATION_HAS_ALIAS.toString() + "> \"" + alias + "\"");
+        query.appendToBody("?x <" + Rdfs.RELATION_LABEL.toString() + "> \"" + alias + "\"");
         
         LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
         return query;
@@ -190,57 +191,77 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
         boolean dataOk = true;
         for (AgronomicalObjectDTO agronomicalObject : agronomicalObjectsDTO) {
             //On vérifie que les types soient effectivement présents dans l'ontologie
-             UriDaoSesame uriDao = new UriDaoSesame();
+            UriDaoSesame uriDao = new UriDaoSesame();
 
-             if (!uriDao.isSubClassOf(agronomicalObject.getRdfType(), Vocabulary.CONCEPT_AGRONOMICAL_OBJECT.toString())) {
-                 dataOk = false;
-                 checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Wrong agronomical object type value. See ontology"));
-             }
-             //SILEX:TODO
-             //Il faudra aussi faire une vérification sur les properties de l'ao : est-ce que les types sont
-             //bien présents dans l'ontologie ? Idem pour les relations
-             //\SILEX:TODO
+            if (!uriDao.isSubClassOf(agronomicalObject.getRdfType(), Vocabulary.CONCEPT_AGRONOMICAL_OBJECT.toString())) {
+                dataOk = false;
+                checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Wrong agronomical object type value. See ontology"));
+            }
+            //SILEX:TODO
+            //Il faudra aussi faire une vérification sur les properties de l'ao : est-ce que les types sont
+            //bien présents dans l'ontologie ? Idem pour les relations
+            //\SILEX:TODO
 
-             //check isPartOf
-             if (agronomicalObject.getIsPartOf() != null) {
-                 if (existUri(agronomicalObject.getIsPartOf())) {
-                     //1. get isPartOf object type
-                     uriDao.uri = agronomicalObject.getIsPartOf();
-                     ArrayList<Uri> typesResult = uriDao.getAskTypeAnswer();
-                     if (!uriDao.isSubClassOf(typesResult.get(0).getRdfType(), Vocabulary.CONCEPT_AGRONOMICAL_OBJECT.toString())) {
-                         dataOk = false;
-                         checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "is part of object type is not agronomical object"));
-                     }
-                 } else {
-                     dataOk = false;
-                     checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "unknown is part of uri"));
-                 }
-             }
+            //check isPartOf
+            if (agronomicalObject.getIsPartOf() != null) {
+                if (existUri(agronomicalObject.getIsPartOf())) {
+                    //1. get isPartOf object type
+                    uriDao.uri = agronomicalObject.getIsPartOf();
+                    ArrayList<Uri> typesResult = uriDao.getAskTypeAnswer();
+                    if (!uriDao.isSubClassOf(typesResult.get(0).getRdfType(), Vocabulary.CONCEPT_AGRONOMICAL_OBJECT.toString())) {
+                        dataOk = false;
+                        checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "is part of object type is not agronomical object"));
+                    }
+                } else {
+                    dataOk = false;
+                    checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "unknown is part of uri"));
+                }
+            }
 
-             //check properties
-             boolean missingAlias = true;
-             for (PropertyPostDTO property : agronomicalObject.getProperties()) {
-                 //check alias
-                 if (property.getRelation().equals(Vocabulary.RELATION_HAS_ALIAS.toString())) {
-                     missingAlias = false;
-                     //check unique alias in the experiment
-                     if (agronomicalObject.getExperiment() != null) {
-                         SPARQLQueryBuilder query = askExistAliasInContext(property.getValue(), agronomicalObject.getExperiment());
-                         BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
-                         boolean result = booleanQuery.evaluate();
+            //check properties
+            boolean missingAlias = true;
+            for (PropertyPostDTO property : agronomicalObject.getProperties()) {
+                //check alias
+                if (property.getRelation().equals(Rdfs.RELATION_LABEL.toString())) {
+                    missingAlias = false;
+                    //check unique alias in the experiment
+                    if (agronomicalObject.getExperiment() != null) {
+                        SPARQLQueryBuilder query = askExistAliasInContext(property.getValue(), agronomicalObject.getExperiment());
+                        BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
+                        boolean result = booleanQuery.evaluate();
 
-                         if (result) {
-                             dataOk = false;
-                             checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "already existing alias for the given experiment"));
-                         }
-                     }
-                 }
-             }
-
-             if (missingAlias) {
-                 dataOk = false;
-                 checkStatusList.add(new Status(StatusCodeMsg.MISSING_FIELDS, StatusCodeMsg.ERR, "missing alias"));
-             }
+                        if (result) {
+                            dataOk = false;
+                            checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "already existing alias for the given experiment"));
+                        }
+                    }
+                }
+                
+                boolean notExistingRange = true;
+                //check if property exists in the ontologies                    
+                for (Object range : Vocabulary.values()) {    
+                    if (property.getRelation().equals(range.toString())){
+                        notExistingRange = false;
+                        break;                        
+                    }
+                }
+                //check if property exists in the ontologies                    
+                for (Object range : Rdfs.values()) {    
+                    if (property.getRelation().equals(range.toString())){
+                        notExistingRange = false;
+                        break;                        
+                    }
+                }
+                if (notExistingRange == true) {
+                    dataOk = false;
+                    checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "the property relation " + property.getRelation() + " doesn't exist in the ontology"));
+                }
+            }
+        
+            if (missingAlias) {
+                dataOk = false;
+                checkStatusList.add(new Status(StatusCodeMsg.MISSING_FIELDS, StatusCodeMsg.ERR, "missing alias"));
+            }
         }
         agronomicalObjectsCheck = new POSTResultsReturn(dataOk, null, dataOk);
         agronomicalObjectsCheck.statusList = checkStatusList;
@@ -312,7 +333,13 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
                         spql.addInsert(graph, agronomicalObjectUri, propertyRelation, propertyNode);
                     }
                 } else {
-                    Node propertyNode = NodeFactory.createURI(property.getValue());
+                    Node propertyNode;
+                    if (validateURL(property.getValue())) {
+                        propertyNode = NodeFactory.createURI(property.getValue());
+                    } else {
+                        propertyNode = NodeFactory.createLiteral(property.getValue());                        
+                    }
+                    
                     org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
 
                     spql.addInsert(graph, agronomicalObjectUri, propertyRelation, propertyNode);                    
@@ -321,15 +348,14 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
             
             if (agronomicalObject.getUriExperiment() != null) {
                 Node experimentUri = NodeFactory.createURI(agronomicalObject.getUriExperiment());
-                org.apache.jena.rdf.model.Property relationHasPlot = ResourceFactory.createProperty(Vocabulary.RELATION_HAS_PLOT.toString());
+                org.apache.jena.rdf.model.Property relationParticipatesIn = ResourceFactory.createProperty(Vocabulary.RELATION_PARTICIPATES_IN.toString());
                 
-                spql.addInsert(graph, experimentUri, relationHasPlot, agronomicalObjectUri);  
+                spql.addInsert(graph, agronomicalObjectUri, relationParticipatesIn, experimentUri);  
             }
             
-            //isPartOf : the object which has part the element must not be a plot    
             if (agronomicalObject.getIsPartOf()!= null) {
                 Node agronomicalObjectPartOf = NodeFactory.createURI(agronomicalObject.getIsPartOf());
-                org.apache.jena.rdf.model.Property relationIsPartOf = ResourceFactory.createProperty(Vocabulary.RELATION_HAS_PLOT.toString());
+                org.apache.jena.rdf.model.Property relationIsPartOf = ResourceFactory.createProperty(Vocabulary.RELATION_IS_PART_OF.toString());
                 
                 spql.addInsert(graph, agronomicalObjectUri, relationIsPartOf, agronomicalObjectPartOf);  
             }
@@ -400,7 +426,7 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
         sparqlQuery.appendGraph(experimentURI);
         sparqlQuery.appendSelect("?" + CHILD +" ?" + RDF_TYPE + " ?" + PROPERTY + " ?" + PROPERTY_RELATION + " ?" + PROPERTY_TYPE);
         
-        sparqlQuery.appendTriplet(experimentURI, Vocabulary.RELATION_HAS_PLOT.toString(), "?" + CHILD, null);
+        sparqlQuery.appendTriplet("?" + CHILD, Vocabulary.RELATION_PARTICIPATES_IN.toString(),experimentURI, null);
         sparqlQuery.appendTriplet("?" + CHILD, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
         sparqlQuery.appendTriplet("?" + CHILD, "?" + PROPERTY_RELATION, "?" + PROPERTY, null);
         
@@ -723,14 +749,14 @@ public class AgronomicalObjectDAOSesame extends DAOSesame<AgronomicalObject> {
               sparqlQuery.appendFrom("<" + Contexts.VOCABULARY.toString() + "> \n FROM <" + experiment + ">");
         } else {
             sparqlQuery.appendSelect("?" + EXPERIMENT);
-            sparqlQuery.appendOptional("?" + EXPERIMENT + " <" + Vocabulary.RELATION_HAS_PLOT.toString() + "> " + agronomicalObjectURI);
+            sparqlQuery.appendOptional(agronomicalObjectURI + " <" + Vocabulary.RELATION_PARTICIPATES_IN.toString() + "> " + "?" + EXPERIMENT);
         }
         
         if (alias != null) {
-            sparqlQuery.appendTriplet(agronomicalObjectURI, Vocabulary.RELATION_HAS_ALIAS.toString(), "\"" + alias + "\"", null);
+            sparqlQuery.appendTriplet(agronomicalObjectURI, Rdfs.RELATION_LABEL.toString(), "\"" + alias + "\"", null);
         } else {
             sparqlQuery.appendSelect(" ?" + ALIAS);
-            sparqlQuery.appendTriplet(agronomicalObjectURI, Vocabulary.RELATION_HAS_ALIAS.toString(), "?" + ALIAS, null);
+            sparqlQuery.appendTriplet(agronomicalObjectURI, Rdfs.RELATION_LABEL.toString(), "?" + ALIAS, null);
         }
         
         if (rdfType != null) {

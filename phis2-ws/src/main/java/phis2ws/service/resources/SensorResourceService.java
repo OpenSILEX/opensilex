@@ -600,7 +600,7 @@ public class SensorResourceService extends ResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response putMeasuredVariables(
-            @ApiParam(value = DocumentationAnnotation.LINK_SENSOR_VARIABLE_DEFINITION) @URL ArrayList<String> variables,
+            @ApiParam(value = DocumentationAnnotation.LINK_VARIABLES_DEFINITION) @URL ArrayList<String> variables,
             @ApiParam(value = DocumentationAnnotation.SENSOR_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_SENSOR_URI, required = true) @PathParam("uri") @Required @URL String uri,
             @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;

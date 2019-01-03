@@ -30,15 +30,20 @@ import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.authentication.TokenManager;
+import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.model.User;
+import phis2ws.service.utils.dates.Dates;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
+import phis2ws.service.utils.sparql.SPARQLStringBuilder;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
 
@@ -65,14 +70,34 @@ public abstract class DAOSesame<T> {
     
     protected static final String COUNT_ELEMENT_QUERY = "count";
     
-    //The following constants are the constants used for each subclass to query the triplestore.
+    /*
+    The following constants are SPARQL variables name used for each subclass 
+    to query the triplestore.
+    */
     protected static final String URI = "uri";
     protected static final String RDF_TYPE = "rdfType";
     protected static final String LABEL = "label";
     protected static final String COMMENT = "comment";
     
+    protected static final String DATETIME_VARIABLE = "dateTime";
+    protected static final String DATETIME_VARIABLE_SPARQL =
+            "?" + DATETIME_VARIABLE;
+    
+    protected static final String DATE_RANGE_START_DATETIME_VARIABLE 
+            = "dateRangeStartDateTime";
+    protected static final String DATE_RANGE_START_DATETIME_VARIABLE_SPARQL = 
+            "?" + DATE_RANGE_START_DATETIME_VARIABLE;
+    
+    protected static final String DATE_RANGE_END_DATETIME_VARIABLE 
+            = "dateRangeEndDateTime";
+    protected static final String DATE_RANGE_END_DATETIME_VARIABLE_SPARQL =
+            "?" + DATE_RANGE_END_DATETIME_VARIABLE;
+    
+    protected final String DATETIMESTAMP_FORMAT_SPARQLE = 
+            DateFormat.YMDTHMSZZ.toString();
+    
     //Triplestore relations
-    protected final static URINamespaces ONTOLOGIES = new URINamespaces();
+    protected static final URINamespaces ONTOLOGIES = new URINamespaces();
 
     protected static Repository rep;
     private RepositoryConnection connection;
@@ -280,6 +305,82 @@ public abstract class DAOSesame<T> {
      * @return SPARQLQueryBuilder
      */
     abstract protected SPARQLQueryBuilder prepareSearchQuery();
+    
+    
+    /** Add a filter to the search query comparing a SPARQL dateTimeStamp 
+     * variable to a date. 
+     * SPARQL dateTimeStamp dates have to be handled in a specific way as 
+     * the comparison operators (<, >, etc.) aren't available for dateTimeStamp
+     * objects : 
+     * https://www.w3.org/TR/2013/REC-sparql11-query-20130321/#OperatorMapping 
+     * @param query
+     * @param filterDateString
+     * @param filterDateFormat
+     * @param filterDateSparqlVariable SPARQL variable (?abc format)
+     * @param comparisonSign e.g >, >=, <, <= 
+     * @param dateTimeStampToCompareSparqlVariable the SPARQL variable 
+     * (?abc format) of the dateTimeStamp to which the date has to be compared
+     */
+    protected void filterSearchQueryWithDateTimeStampComparison(
+            SPARQLStringBuilder query
+            , String filterDateString
+            , String filterDateFormat
+            , String filterDateSparqlVariable
+            , String comparisonSign
+            , String dateTimeStampToCompareSparqlVariable){
+        
+        DateTime filterDate = Dates.stringToDateTimeWithGivenPattern(
+                filterDateString, filterDateFormat);
+        
+        String filterDateStringInSparqlDateTimeStampFormat = DateTimeFormat
+                .forPattern(DATETIMESTAMP_FORMAT_SPARQLE).print(filterDate);
+
+        query.appendToBody("\nBIND(xsd:dateTime(str(\""
+                + filterDateStringInSparqlDateTimeStampFormat 
+                + "\")) as " + filterDateSparqlVariable + ") .");
+        
+        query.appendAndFilter(filterDateSparqlVariable + comparisonSign
+                + dateTimeStampToCompareSparqlVariable);
+    }
+
+    /**
+     * Append a filter to select only the results whose datetime is included 
+     * in the date range in parameter
+     * @param query
+     * @param filterRangeDatesStringFormat
+     * @param filterRangeStartDateString
+     * @param filterRangeEndDateString
+     * @param dateTimeStampToCompareSparqleVariable the SPARQL variable (?abc format) of 
+     * the dateTimeStamp to compare to the range
+     */
+    protected void filterSearchQueryWithDateRangeComparisonWithDateTimeStamp(
+            SPARQLStringBuilder query
+            , String filterRangeDatesStringFormat
+            , String filterRangeStartDateString
+            , String filterRangeEndDateString
+            , String dateTimeStampToCompareSparqleVariable){
+        
+        query.appendToBody("\nBIND(xsd:dateTime(str(" 
+                + dateTimeStampToCompareSparqleVariable 
+                + ")) as " + DATETIME_VARIABLE_SPARQL + ") .");
+        
+        if (filterRangeStartDateString != null){
+            filterSearchQueryWithDateTimeStampComparison(query
+                    , filterRangeStartDateString
+                    , filterRangeDatesStringFormat
+                    , DATE_RANGE_START_DATETIME_VARIABLE_SPARQL
+                    , " <= "
+                    , DATETIME_VARIABLE_SPARQL);
+        }
+        if (filterRangeEndDateString != null){
+            filterSearchQueryWithDateTimeStampComparison(query
+                    , filterRangeEndDateString
+                    , filterRangeDatesStringFormat
+                    , DATE_RANGE_END_DATETIME_VARIABLE_SPARQL
+                    , " >= "
+                    , DATETIME_VARIABLE_SPARQL);
+        }
+    }
 
     /**
      * Compte le nombre d'élement retournés par la requête

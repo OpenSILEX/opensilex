@@ -426,6 +426,8 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
             sparqlQuery.appendOrderBy("DESC(?" + CREATION_DATE + ")");
         }
         
+        sparqlQuery.appendLimit(getPageSize());
+        sparqlQuery.appendOffset(getPage() * getPageSize());
         LOGGER.debug(SPARQL_SELECT_QUERY + sparqlQuery.toString());
         
        return sparqlQuery;

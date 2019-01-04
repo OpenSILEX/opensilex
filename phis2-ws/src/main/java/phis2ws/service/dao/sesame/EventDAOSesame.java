@@ -334,17 +334,16 @@ public class EventDAOSesame extends DAOSesame<Event> {
         query.clearLimit();
         query.clearOffset();
         query.clearGroupBy();
-        query.appendSelect("(COUNT(DISTINCT " + URI_VARIABLE_SPARQLE + ") AS ?" 
-                + COUNT_ELEMENT_QUERY + ")");
+        query.appendSelect("(COUNT(DISTINCT " + URI_VARIABLE_SPARQLE + ") AS "
+                + "?" + COUNT_ELEMENT_QUERY + ")");
         LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
         return query;
     }
 
     @Override
-    public Integer count() 
-            throws RepositoryException
-            , MalformedQueryException
-            , QueryEvaluationException {
+    public Integer count() throws RepositoryException
+            , MalformedQueryException, QueryEvaluationException {
+        
         SPARQLQueryBuilder prepareCount = prepareCountSearchQuery();
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(
                 QueryLanguage.SPARQL

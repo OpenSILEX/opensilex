@@ -151,43 +151,38 @@ public class EventResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) 
             @QueryParam(GlobalWebserviceValues.PAGE_SIZE) 
             @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) 
-            @Min(0) 
-            int pageSize
+            @Min(0) int pageSize
         , @ApiParam(value = DocumentationAnnotation.PAGE) 
             @QueryParam(GlobalWebserviceValues.PAGE) 
             @DefaultValue(DefaultBrapiPaginationValues.PAGE) 
-            @Min(0) 
-            int page
+            @Min(0) int page
         , @ApiParam (
                 value = "Search by uri"
                 , example = DocumentationAnnotation.EXAMPLE_EVENT_URI
-            ) @QueryParam("uri") @URL 
-            String uri
+            ) @QueryParam("uri") @URL String uri
         , @ApiParam (
                 value = "Search by type", 
                 example = DocumentationAnnotation.EXAMPLE_EVENT_TYPE
-            ) @QueryParam("type") @URL 
-            String type
+            ) @QueryParam("type") @URL String type
         , @ApiParam (
                 value = "Search by concerns item uri"
                 , example = DocumentationAnnotation
                         .EXAMPLE_EVENT_CONCERNS_ITEM_URI
-            ) @QueryParam("concernsItemUri") @URL 
-            String concernsItemUri
+            ) @QueryParam("concernsItemUri") @URL String concernsItemUri
         , @ApiParam (
-                value = "Search by concerns item label", 
-                example = DocumentationAnnotation
+                value = "Search by concerns item label"
+                , example = DocumentationAnnotation
                         .EXAMPLE_EVENT_CONCERNS_ITEM_LABEL
-            ) @QueryParam("concernsItemLabel") 
-            String concernsItemLabel
+            ) @QueryParam("concernsItemLabel") String concernsItemLabel
         , @ApiParam (
-                value = "Search by date - start of the range", 
-                example = DocumentationAnnotation.EXAMPLE_EVENT_DATE_RANGE_START
+                value = "Search by date - start of the range"
+                , example = DocumentationAnnotation
+                        .EXAMPLE_EVENT_DATE_RANGE_START
             ) @QueryParam("dateRangeStart") @Date(DateFormat.YMDTHMSZZ) 
             String dateRangeStart
         , @ApiParam (
-                value = "Search by date - end of the range", 
-                example = DocumentationAnnotation.EXAMPLE_EVENT_DATE_RANGE_END
+                value = "Search by date - end of the range"
+                , example = DocumentationAnnotation.EXAMPLE_EVENT_DATE_RANGE_END
             ) @QueryParam("dateRangeEnd") @Date(DateFormat.YMDTHMSZZ) 
             String dateRangeEnd
     ) {
@@ -203,8 +198,6 @@ public class EventResourceService {
         eventDAO.user = userSession.getUser();
         eventDAO.setPage(page);
         eventDAO.setPageSize(pageSize);
-
-        Integer totalCount = eventDAO.count();
         
         ArrayList<Event> events = eventDAO.searchEvents();
         ArrayList<EventDTO> eventDTOs = new ArrayList();
@@ -225,7 +218,7 @@ public class EventResourceService {
             });
             
             responseForm = new ResponseFormEvent(eventDAO.getPageSize()
-                    , eventDAO.getPage(), eventDTOs, true, totalCount);
+                    , eventDAO.getPage(), eventDTOs, true, eventDAO.count());
             if (responseForm.getResult().dataSize() == 0) {
                 return noResultFound(responseForm, statusList);
             } else {

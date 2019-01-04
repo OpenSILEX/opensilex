@@ -24,12 +24,12 @@ import phis2ws.service.resources.validation.interfaces.URL;
  */
 public class ConcernItemDTO extends AbstractVerifiedClass {
     protected String uri;
-    protected String typeUri;
+    protected String typeURI;
 
     @Override
     public ConcernItem createObjectFromDTO() {
         ConcernItem concernedItem = new ConcernItem();
-        concernedItem.setRdfType(typeUri);
+        concernedItem.setRdfType(typeURI);
         concernedItem.setUri(uri);
         
         return concernedItem;
@@ -50,10 +50,10 @@ public class ConcernItemDTO extends AbstractVerifiedClass {
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_DOCUMENT_CONCERNED_TYPE_URI)
     public String getTypeURI() {
-        return typeUri;
+        return typeURI;
     }
 
     public void setTypeURI(String typeURI) {
-        this.typeUri = typeURI;
+        this.typeURI = typeURI;
     }
 }

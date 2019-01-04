@@ -1,5 +1,5 @@
 //**********************************************************************************************
-//                               AgronomicalObjectDTO.java 
+//                               ScientificObjectDTO.java 
 //
 // Author(s): Morgane Vidal
 // PHIS-SILEX version 1.0
@@ -21,47 +21,47 @@ import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyPostDTO;
-import phis2ws.service.view.model.phis.AgronomicalObject;
+import phis2ws.service.view.model.phis.ScientificObject;
 import phis2ws.service.resources.validation.interfaces.URL;
 
 /**
- * Represents the submitted JSON for the agronomical objects
+ * Represents the submitted JSON for the scientific objects
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class AgronomicalObjectDTO extends AbstractVerifiedClass {
+public class ScientificObjectDTO extends AbstractVerifiedClass {
     
-    //the argonomical object type 
+    //the scientific object type 
     //(e.g. http://www.phenome-fppn.fr/vocabulary/2017#Plot)
     private String rdfType;
-    //The WKT geometry (WGS84 EPSG4326) of the agronomical object
+    //The WKT geometry (WGS84 EPSG4326) of the scientific object
     //(e.g. POLYGON(0 1, 1 2, 2 3, 3 0, 0 1)
     private String geometry;
     //the concerned experiment (e.g. http://www.phenome-fppn.fr/diaphen/DIA2018-2)
     private String experiment;
-    //the object which as part the agronomical object 
+    //the object which as part the scientific object 
     //(e.g. http://www.phenome-fppn.fr/mtp/2017/o1032491)
     private String isPartOf;
-    //the year used to generated the agronomical object. If it is not given, this is the actual year
+    //the year used to generated the scientific object. If it is not given, this is the actual year
     //(e.g. 2017)
     private String year;
-    //the properties of the agronomical object
+    //the properties of the scientific object
     private ArrayList<PropertyPostDTO> properties;
 
     @Override
-    public AgronomicalObject createObjectFromDTO() {
-        AgronomicalObject agronomicalObject = new AgronomicalObject();
-        agronomicalObject.setRdfType(rdfType);
-        agronomicalObject.setGeometry(geometry);
-        agronomicalObject.setUriExperiment(experiment);
-        agronomicalObject.setIsPartOf(isPartOf);
+    public ScientificObject createObjectFromDTO() {
+        ScientificObject scientificObject = new ScientificObject();
+        scientificObject.setRdfType(rdfType);
+        scientificObject.setGeometry(geometry);
+        scientificObject.setUriExperiment(experiment);
+        scientificObject.setIsPartOf(isPartOf);
         
         if (properties != null) {
             properties.forEach((property) -> {
-                agronomicalObject.addProperty(property.createObjectFromDTO());
+                scientificObject.addProperty(property.createObjectFromDTO());
             });
         }
         
-        return agronomicalObject;
+        return scientificObject;
     }
     
     //SILEX:todo

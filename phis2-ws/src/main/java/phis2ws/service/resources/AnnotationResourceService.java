@@ -171,7 +171,7 @@ public class AnnotationResourceService extends ResourceService {
             @ApiParam(value = "Search by creator", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_CREATOR) @QueryParam("creator") @URL String creator,
             @ApiParam(value = "Search by motivation", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_MOTIVATEDBY) @QueryParam("motivatedBy") @URL String motivatedBy,
             @ApiParam(value = "Search by comment", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_COMMENT) @QueryParam("comment") String comment,
-            @ApiParam(value = "Search by target", example = DocumentationAnnotation.EXAMPLE_AGRONOMICAL_OBJECT_URI) @QueryParam("target") @URL String target) {
+            @ApiParam(value = "Search by target", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_URI) @QueryParam("target") @URL String target) {
 
         AnnotationDAOSesame annotationDAO = new AnnotationDAOSesame();
         if (uri != null) {

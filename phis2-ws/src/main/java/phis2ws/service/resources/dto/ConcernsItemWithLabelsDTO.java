@@ -20,7 +20,7 @@ public class ConcernsItemWithLabelsDTO extends ConcernItemDTO{
 
     public ConcernsItemWithLabelsDTO(ConcernItem concernItem) {
         this.uri = concernItem.getUri();
-        this.typeUri = concernItem.getRdfType();
+        this.typeURI = concernItem.getRdfType();
         this.labels = concernItem.getLabels();
     }
 

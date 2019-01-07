@@ -7,6 +7,7 @@
 //******************************************************************************
 package phis2ws.service.dao.sesame;
 
+import ch.qos.logback.core.CoreConstants;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -386,12 +387,21 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
         
         Resource radiometricTargetUri = ResourceFactory.createResource(radiometricTarget.getUri());
         
-        spql.addInsert(graph, radiometricTargetUri, RDFS.label, radiometricTarget.getLabel());
+        spql.addDelete(graph, radiometricTargetUri, RDFS.label, radiometricTarget.getLabel());
         
         for (Property property : radiometricTarget.getProperties()) {
             if (property.getValue() != null) {
                 org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
-                spql.addDelete(graph, radiometricTargetUri, propertyRelation, "?v" + radiometricTarget.getProperties().indexOf(property));
+                
+                if (property.getRdfType() != null) {
+                    Node propertyValue = NodeFactory.createURI(property.getValue());
+                    
+                    spql.addDelete(graph, radiometricTargetUri, propertyRelation, propertyValue);
+                    spql.addDelete(graph, propertyValue, RDF.type, property.getRdfType());
+                } else {
+                    Literal propertyValue = ResourceFactory.createStringLiteral(property.getValue());
+                    spql.addDelete(graph, radiometricTargetUri, propertyRelation, propertyValue);
+                }
             }
         }
         

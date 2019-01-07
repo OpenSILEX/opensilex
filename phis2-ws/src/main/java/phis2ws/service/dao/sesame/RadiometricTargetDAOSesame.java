@@ -378,19 +378,26 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
      * }
      * @return the query
      */
-    private String prepareDeleteQuery(RadiometricTarget radiometricTarget) {
-        String query = "DELETE WHERE { "
-                + "<" + radiometricTarget.getUri() + "> <" + Rdfs.RELATION_LABEL.toString() + "> ?label . ";
+    private UpdateRequest prepareDeleteQuery(RadiometricTarget radiometricTarget) {
+        UpdateBuilder spql = new UpdateBuilder();
+        
+        Node graph = NodeFactory.createURI(Contexts.RADIOMETRIC_TARGETS.toString());
+        
+        Resource radiometricTargetUri = ResourceFactory.createResource(radiometricTarget.getUri());
+        
+        spql.addInsert(graph, radiometricTargetUri, RDFS.label, radiometricTarget.getLabel());
         
         for (Property property : radiometricTarget.getProperties()) {
-            query += "<" + radiometricTarget.getUri() + "> <" + property.getRelation() + "> ?v" + radiometricTarget.getProperties().indexOf(property) + " . ";
+            if (property.getValue() != null) {
+                org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
+                spql.addDelete(graph, radiometricTargetUri, propertyRelation, "?v" + radiometricTarget.getProperties().indexOf(property));
+            }
         }
-                
-        query += " }";
         
-        LOGGER.debug(query);
+        UpdateRequest request = spql.buildRequest();
+        LOGGER.debug(request.toString());
         
-        return query;
+        return request;
     }
     
     /**
@@ -494,7 +501,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
                 //We only delete the already existing data received by the client. 
                 //It means that we delete only the properties given by the client.
                 //\SILEX:info
-                String deleteQuery = prepareDeleteQuery(radiometricTarget);
+                UpdateRequest deleteQuery = prepareDeleteQuery(radiometricTarget);
 
                 //2. generate query to insert new data
                 //SILEX:info
@@ -502,7 +509,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
                 //\SILEX:info
                 UpdateRequest insertQuery = prepareInsertQuery(radiometricTarget);            
                 try {
-                    Update prepareDelete = getConnection().prepareUpdate(deleteQuery);
+                    Update prepareDelete = getConnection().prepareUpdate(deleteQuery.toString());
                     Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, insertQuery.toString());
                     prepareDelete.execute();
                     prepareUpdate.execute();

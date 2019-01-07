@@ -190,6 +190,12 @@ public class TraitDaoSesame extends DAOSesame<Trait> {
         return traitsCheck;
     }
     
+    /**
+     * Prepare update query for trait
+     * 
+     * @param traitDTO
+     * @return update request
+     */
     private UpdateRequest prepareInsertQuery(TraitDTO traitDTO) {
         UpdateBuilder spql = new UpdateBuilder();
         
@@ -364,22 +370,32 @@ public class TraitDaoSesame extends DAOSesame<Trait> {
         return traits;
     }
     
-    private String prepareDeleteQuery(Trait trait) {
-        String deleteQuery;
-        deleteQuery = "DELETE WHERE {"
-                + "<" + trait.getUri() + "> <" + Rdfs.RELATION_LABEL.toString() + "> \"" + trait.getLabel() + "\" . "
-                + "<" + trait.getUri() + "> <" + Rdfs.RELATION_COMMENT.toString() + "> \"" + trait.getComment() + "\" . ";
-
+    /**
+     * Prepare delete query for trait
+     * 
+     * @param trait
+     * @return delete request
+     */
+    private UpdateRequest prepareDeleteQuery(Trait trait) {
+        UpdateBuilder spql = new UpdateBuilder();
+        
+        Node graph = NodeFactory.createURI(Contexts.VARIABLES.toString());
+        Resource traitUri = ResourceFactory.createResource(trait.getUri());
+        
+        spql.addDelete(graph, traitUri, RDFS.label, trait.getLabel());
+        spql.addDelete(graph, traitUri, RDFS.comment, trait.getComment());
+        
         for (OntologyReference ontologyReference : trait.getOntologiesReferences()) {
-            deleteQuery += "<" + trait.getUri() + "> <" + ontologyReference.getProperty() + "> <" + ontologyReference.getObject() + "> . ";
+            Property ontologyProperty = ResourceFactory.createProperty(ontologyReference.getProperty());
+            Node ontologyObject = NodeFactory.createURI(ontologyReference.getObject());
+            spql.addDelete(graph, traitUri, ontologyProperty, ontologyObject);
             if (ontologyReference.getSeeAlso() != null) {
-                deleteQuery += "<" + ontologyReference.getObject() + "> <" + Rdfs.RELATION_LABEL.toString() + "> " + ontologyReference.getSeeAlso() + " . ";
+                Literal seeAlso = ResourceFactory.createStringLiteral(ontologyReference.getSeeAlso());
+                spql.addDelete(graph, ontologyObject, RDFS.seeAlso, seeAlso);
             }
         }
-
-        deleteQuery += "}";
                 
-        return deleteQuery;
+        return spql.buildRequest();        
     }
     
     private POSTResultsReturn update(List<TraitDTO> traitsDTO) {
@@ -396,18 +412,18 @@ public class TraitDaoSesame extends DAOSesame<Trait> {
             uri = traitDTO.getUri();
             ArrayList<Trait> traitsCorresponding = allPaginate();
             if (traitsCorresponding.size() > 0) {
-                String deleteQuery = prepareDeleteQuery(traitsCorresponding.get(0));
+                UpdateRequest deleteQuery = prepareDeleteQuery(traitsCorresponding.get(0));
 
                 //2. Insertion des nouvelles données
                 UpdateRequest queryInsert = prepareInsertQuery(traitDTO);
                  try {
                         // début de la transaction : vérification de la requête
                         this.getConnection().begin();
-                        Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery);
-                        Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, queryInsert.toString());
+                        Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery.toString());
                         LOGGER.debug(getTraceabilityLogs() + " query : " + prepareDelete.toString());
-                        LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                         prepareDelete.execute();
+                        Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, queryInsert.toString());
+                        LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                         prepareUpdate.execute();
 
                         updatedResourcesURIList.add(traitDTO.getUri());

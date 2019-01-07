@@ -243,6 +243,49 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
     } 
     
     /**
+     * Prepare delete query for document metadata
+     * 
+     * @param documentMetadata
+     * @return delete request
+     */
+    private UpdateRequest prepareDeleteQuery(Document document) {
+        UpdateBuilder spql = new UpdateBuilder();
+        
+        Node graph = NodeFactory.createURI(Contexts.DOCUMENTS.toString());
+        Node documentUri = NodeFactory.createURI(document.getUri());
+        
+        Property relationCreator = ResourceFactory.createProperty(DublinCore.RELATION_CREATOR.toString());
+        spql.addDelete(graph, documentUri, relationCreator, document.getCreator());
+
+        Property relationLanguage = ResourceFactory.createProperty(DublinCore.RELATION_LANGUAGE.toString());
+        spql.addDelete(graph, documentUri, relationLanguage, document.getLanguage());
+
+        Property relationTitle = ResourceFactory.createProperty(DublinCore.RELATION_TITLE.toString());
+        spql.addDelete(graph, documentUri, relationTitle, document.getTitle());
+
+        Property relationDate = ResourceFactory.createProperty(DublinCore.RELATION_DATE.toString());
+        spql.addDelete(graph, documentUri, relationDate, document.getCreationDate());
+
+        Node documentType = NodeFactory.createURI(document.getDocumentType());
+        spql.addDelete(graph, documentUri, RDF.type, documentType);
+        
+        Property relationStatus = ResourceFactory.createProperty(Vocabulary.RELATION_STATUS.toString());
+        spql.addDelete(graph, documentUri, relationStatus, document.getStatus());
+        
+        if (document.getComment() != null) {
+            spql.addDelete(graph, documentUri, RDFS.comment, document.getComment());
+        }
+
+        for (ConcernItemDTO concernedItem : document.getConcernedItems()) {
+            Node concernedItemUri = NodeFactory.createURI(concernedItem.getUri());
+            Property relationConcern = ResourceFactory.createProperty(Vocabulary.RELATION_CONCERN.toString());
+            spql.addDelete(graph, documentUri, relationConcern, concernedItemUri);
+        }
+                
+        return spql.buildRequest();
+    }
+    
+    /**
      * Insert document's metadata in the triplestore and the file in mongo
      * @param documentsMetadata
      * @return the insert result, with each error or information
@@ -721,29 +764,10 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
             docDaoSesame.uri = documentMetadata.getUri();
             ArrayList<Document> documentsCorresponding = docDaoSesame.allPaginate();
 
-            String deleteQuery = null;
+            UpdateRequest deleteQuery = null;
             //1.2 Delete metatada associated to the URI
             if (documentsCorresponding.size() > 0) {
-                //SILEX:conception
-                //Such as the existing querybuilder for the insert, create a
-                //delete query builder and use it
-                deleteQuery =  "DELETE WHERE { "
-                                   + "<" + documentsCorresponding.get(0).getUri() + "> <" + DublinCore.RELATION_CREATOR.toString() + "> \"" + documentsCorresponding.get(0).getCreator() + "\" . "
-                                   + "<" + documentsCorresponding.get(0).getUri() + "> <" + DublinCore.RELATION_LANGUAGE.toString() + "> \"" + documentsCorresponding.get(0).getLanguage() + "\" . "
-                                   + "<" + documentsCorresponding.get(0).getUri() + "> <" + DublinCore.RELATION_TITLE.toString() + "> \"" + documentsCorresponding.get(0).getTitle() + "\" . "
-                                   + "<" + documentsCorresponding.get(0).getUri() + "> <" + DublinCore.RELATION_DATE.toString() + "> \"" + documentsCorresponding.get(0).getCreationDate() + "\" . "
-                                   + "<" + documentsCorresponding.get(0).getUri() + "> <" + Rdf.RELATION_TYPE.toString() + "> <" + documentsCorresponding.get(0).getDocumentType() +"> . "
-                                   + "<" + documentsCorresponding.get(0).getUri() + "> <" + Vocabulary.RELATION_STATUS.toString() + "> \"" + documentsCorresponding.get(0).getStatus() + "\" . ";
-
-                if (documentsCorresponding.get(0).getComment() != null) {
-                    deleteQuery += "<" + documentsCorresponding.get(0).getUri() + "> <" + Rdfs.RELATION_COMMENT.toString() + "> \"" + documentsCorresponding.get(0).getComment() + "\" . ";
-                }
-
-                for (ConcernItemDTO concernedItem : documentsCorresponding.get(0).getConcernedItems()) {
-                    deleteQuery += "<" + documentsCorresponding.get(0).getUri() + "> <" + Vocabulary.RELATION_CONCERN.toString() + "> <" + concernedItem.getUri() + "> . ";
-                }
-                deleteQuery += "}";
-                //\SILEX:conception
+                 deleteQuery = prepareDeleteQuery(documentsCorresponding.get(0));
             }
 
             //2. Insert updated metadata
@@ -752,13 +776,14 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
             try {
                 // début de la transaction : vérification de la requête
                 this.getConnection().begin();
-                Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery);
+                if (deleteQuery != null) {
+                    Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery.toString());
+                    LOGGER.debug(getTraceabilityLogs() + " query : " + prepareDelete.toString());
+                    prepareDelete.execute();
+                }
                 Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
-                LOGGER.debug(getTraceabilityLogs() + " query : " + prepareDelete.toString());
                 LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
-                prepareDelete.execute();
                 prepareUpdate.execute();
-
                 updatedResourcesURIList.add(documentMetadata.getUri());
             } catch (MalformedQueryException e) {
                 LOGGER.error(e.getMessage(), e);

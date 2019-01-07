@@ -314,6 +314,12 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
         return variablesCheck;
     }
     
+    /**
+     * Prepare update query for variable
+     * 
+     * @param variable
+     * @return update request
+     */    
     private UpdateRequest prepareInsertQuery(VariableDTO variable) {
         UpdateBuilder spql = new UpdateBuilder();
         
@@ -551,26 +557,45 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
         return variables;
     }
     
-    private String prepareDeleteQuery(Variable variable) {
-        String deleteQuery;
-        deleteQuery = "DELETE WHERE {"
-                + "<" + variable.getUri() + "> <" + Rdfs.RELATION_LABEL.toString() + "> \"" + variable.getLabel() + "\" . "
-                + "<" + variable.getUri() + "> <" + Rdfs.RELATION_COMMENT.toString() + "> \"" + variable.getComment() + "\" . "
-                + "<" + variable.getUri() + "> <" + Vocabulary.RELATION_HAS_TRAIT.toString() + "> <" + variable.getTrait() + "> . "
-                + "<" + variable.getUri() + "> <" + Vocabulary.RELATION_HAS_METHOD.toString() + "> <" + variable.getMethod() + "> . "
-                + "<" + variable.getUri() + "> <" + Vocabulary.RELATION_HAS_UNIT.toString() + "> <" + variable.getUnit() + "> . ";
-
+    /**
+     * Prepare delete query for variable
+     * 
+     * @param variable
+     * @return delete request
+     */
+    private UpdateRequest prepareDeleteQuery(Variable variable){
+        UpdateBuilder spql = new UpdateBuilder();
+        
+        Node graph = NodeFactory.createURI(Contexts.VARIABLES.toString());
+        Resource variableUri = ResourceFactory.createResource(variable.getUri());
+        
+        spql.addDelete(graph, variableUri, RDFS.label, variable.getLabel());
+        spql.addDelete(graph, variableUri, RDFS.comment, variable.getComment());
+        
+        Property relationTrait = ResourceFactory.createProperty(Vocabulary.RELATION_HAS_TRAIT.toString());
+        Property relationMethod = ResourceFactory.createProperty(Vocabulary.RELATION_HAS_METHOD.toString());
+        Property relationUnit = ResourceFactory.createProperty(Vocabulary.RELATION_HAS_UNIT.toString());
+        
+        Node traitUri = NodeFactory.createURI(variable.getTrait().getUri());
+        Node methodUri = NodeFactory.createURI(variable.getMethod().getUri());
+        Node unitUri = NodeFactory.createURI(variable.getUnit().getUri());        
+        
+        spql.addDelete(graph, variableUri, relationTrait, traitUri);
+        spql.addDelete(graph, variableUri, relationMethod, methodUri);
+        spql.addDelete(graph, variableUri, relationUnit, unitUri);
+        
         for (OntologyReference ontologyReference : variable.getOntologiesReferences()) {
-            deleteQuery += "<" + variable.getUri() + "> <" + ontologyReference.getProperty() + "> <" + ontologyReference.getObject() + "> . ";
+            Property ontologyProperty = ResourceFactory.createProperty(ontologyReference.getProperty());
+            Node ontologyObject = NodeFactory.createURI(ontologyReference.getObject());
+            spql.addDelete(graph, variableUri, ontologyProperty, ontologyObject);
             if (ontologyReference.getSeeAlso() != null) {
-                deleteQuery += "<" + ontologyReference.getObject() + "> <" + Rdfs.RELATION_SEE_ALSO.toString() + "> " + ontologyReference.getSeeAlso() + " . ";
+                Literal seeAlso = ResourceFactory.createStringLiteral(ontologyReference.getSeeAlso());
+                spql.addDelete(graph, ontologyObject, RDFS.seeAlso, seeAlso);
             }
         }
-
-        deleteQuery += "}";
                 
-        return deleteQuery;
-    }
+        return spql.buildRequest();        
+    }    
     
     private POSTResultsReturn update(List<VariableDTO> variablesDTO) {
         List<Status> updateStatusList = new ArrayList<>();
@@ -586,18 +611,18 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
             uri = variableDTO.getUri();
             ArrayList<Variable> variablesCorresponding = allPaginate();
             if (variablesCorresponding.size() > 0) {
-                String deleteQuery = prepareDeleteQuery(variablesCorresponding.get(0));
+                UpdateRequest deleteQuery = prepareDeleteQuery(variablesCorresponding.get(0));
 
                 //2. Insertion des nouvelles données
                 UpdateRequest queryInsert = prepareInsertQuery(variableDTO);
                  try {
                         // début de la transaction : vérification de la requête
                         this.getConnection().begin();
-                        Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery);
-                        Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, queryInsert.toString());
+                        Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery.toString());
                         LOGGER.debug(getTraceabilityLogs() + " query : " + prepareDelete.toString());
-                        LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                         prepareDelete.execute();
+                        Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, queryInsert.toString());
+                        LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                         prepareUpdate.execute();
 
                         updatedResourcesURIList.add(variableDTO.getUri());

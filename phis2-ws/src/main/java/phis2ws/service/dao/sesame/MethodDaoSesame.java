@@ -192,6 +192,12 @@ public class MethodDaoSesame extends DAOSesame<Method> {
         }
     }
     
+    /**
+     * Prepare update query for method
+     * 
+     * @param methodDTO
+     * @return update request
+     */
     private UpdateRequest prepareInsertQuery(MethodDTO methodDTO) {
         UpdateBuilder spql = new UpdateBuilder();
         
@@ -383,22 +389,32 @@ public class MethodDaoSesame extends DAOSesame<Method> {
         return methods;
     }
     
-    private String prepareDeleteQuery(Method method) {
-        String deleteQuery;
-        deleteQuery = "DELETE WHERE {"
-                + "<" + method.getUri() + "> <" + Rdfs.RELATION_LABEL.toString() + "> \"" + method.getLabel() + "\" . "
-                + "<" + method.getUri() + "> <" + Rdfs.RELATION_COMMENT.toString() + "> \"" + method.getComment() + "\" . ";
-
+    /**
+     * Prepare delete query for method
+     * 
+     * @param method
+     * @return delete request
+     */
+    private UpdateRequest prepareDeleteQuery(Method method) {
+        UpdateBuilder spql = new UpdateBuilder();
+        
+        Node graph = NodeFactory.createURI(Contexts.VARIABLES.toString());
+        Resource methodUri = ResourceFactory.createResource(method.getUri());
+        
+        spql.addDelete(graph, methodUri, RDFS.label, method.getLabel());
+        spql.addDelete(graph, methodUri, RDFS.comment, method.getComment());
+        
         for (OntologyReference ontologyReference : method.getOntologiesReferences()) {
-            deleteQuery += "<" + method.getUri() + "> <" + ontologyReference.getProperty() + "> <" + ontologyReference.getObject() + "> . ";
+            Property ontologyProperty = ResourceFactory.createProperty(ontologyReference.getProperty());
+            Node ontologyObject = NodeFactory.createURI(ontologyReference.getObject());
+            spql.addDelete(graph, methodUri, ontologyProperty, ontologyObject);
             if (ontologyReference.getSeeAlso() != null) {
-                deleteQuery += "<" + ontologyReference.getObject() + "> <" + Rdfs.RELATION_SEE_ALSO.toString() + "> " + ontologyReference.getSeeAlso() + " . ";
+                Literal seeAlso = ResourceFactory.createStringLiteral(ontologyReference.getSeeAlso());
+                spql.addDelete(graph, ontologyObject, RDFS.seeAlso, seeAlso);
             }
         }
-
-        deleteQuery += "}";
                 
-        return deleteQuery;
+        return spql.buildRequest();        
     }
     
     private POSTResultsReturn update(List<MethodDTO> methodsDTO) {
@@ -415,18 +431,18 @@ public class MethodDaoSesame extends DAOSesame<Method> {
             uri = methodDTO.getUri();
             ArrayList<Method> methodsCorresponding = allPaginate();
             if (methodsCorresponding.size() > 0) {
-                String deleteQuery = prepareDeleteQuery(methodsCorresponding.get(0));
+                UpdateRequest deleteQuery = prepareDeleteQuery(methodsCorresponding.get(0));
 
                 //2. Insertion des nouvelles données
                 UpdateRequest queryInsert = prepareInsertQuery(methodDTO);
                  try {
                         // début de la transaction : vérification de la requête
                         this.getConnection().begin();
-                        Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery);
-                        Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, queryInsert.toString());
+                        Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery.toString());
                         LOGGER.trace(getTraceabilityLogs() + " query : " + prepareDelete.toString());
-                        LOGGER.trace(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                         prepareDelete.execute();
+                        Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, queryInsert.toString());
+                        LOGGER.trace(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                         prepareUpdate.execute();
 
                         updatedResourcesURIList.add(methodDTO.getUri());

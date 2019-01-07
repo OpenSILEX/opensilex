@@ -185,6 +185,12 @@ public class UnitDaoSesame extends DAOSesame<Unit> {
         }
     }
     
+    /**
+     * Prepare update query for unit
+     * 
+     * @param unitDTO
+     * @return update request
+     */
     private UpdateRequest prepareInsertQuery(UnitDTO unitDTO) {
         UpdateBuilder spql = new UpdateBuilder();
         
@@ -376,22 +382,32 @@ public class UnitDaoSesame extends DAOSesame<Unit> {
         return units;
     }
     
-    private String prepareDeleteQuery(Unit unit) {
-        String deleteQuery;
-        deleteQuery = "DELETE WHERE {"
-                + "<" + unit.getUri() + "> <" + Rdfs.RELATION_LABEL.toString() + "> \"" + unit.getLabel() + "\" . "
-                + "<" + unit.getUri() + "> <" + Rdfs.RELATION_COMMENT.toString() + "> \"" + unit.getComment() + "\" . ";
-
+    /**
+     * Prepare delete query for unit
+     * 
+     * @param unit
+     * @return delete request
+     */
+    private UpdateRequest prepareDeleteQuery(Unit unit){
+        UpdateBuilder spql = new UpdateBuilder();
+        
+        Node graph = NodeFactory.createURI(Contexts.VARIABLES.toString());
+        Resource unitUri = ResourceFactory.createResource(unit.getUri());
+        
+        spql.addDelete(graph, unitUri, RDFS.label, unit.getLabel());
+        spql.addDelete(graph, unitUri, RDFS.comment, unit.getComment());
+        
         for (OntologyReference ontologyReference : unit.getOntologiesReferences()) {
-            deleteQuery += "<" + unit.getUri() + "> <" + ontologyReference.getProperty() + "> <" + ontologyReference.getObject() + "> . ";
+            Property ontologyProperty = ResourceFactory.createProperty(ontologyReference.getProperty());
+            Node ontologyObject = NodeFactory.createURI(ontologyReference.getObject());
+            spql.addDelete(graph, unitUri, ontologyProperty, ontologyObject);
             if (ontologyReference.getSeeAlso() != null) {
-                deleteQuery += "<" + ontologyReference.getObject() + "> <" + Rdfs.RELATION_SEE_ALSO.toString() + "> " + ontologyReference.getSeeAlso() + " . ";
+                Literal seeAlso = ResourceFactory.createStringLiteral(ontologyReference.getSeeAlso());
+                spql.addDelete(graph, ontologyObject, RDFS.seeAlso, seeAlso);
             }
         }
-
-        deleteQuery += "}";
                 
-        return deleteQuery;
+        return spql.buildRequest();        
     }
     
     private POSTResultsReturn update(List<UnitDTO> unitsDTO) {
@@ -408,18 +424,18 @@ public class UnitDaoSesame extends DAOSesame<Unit> {
             uri = unitDTO.getUri();
             ArrayList<Unit> unitsCorresponding = allPaginate();
             if (unitsCorresponding.size() > 0) {
-                String deleteQuery = prepareDeleteQuery(unitsCorresponding.get(0));
+                UpdateRequest deleteQuery = prepareDeleteQuery(unitsCorresponding.get(0));
 
                 //2. Insertion des nouvelles données
                 UpdateRequest queryInsert = prepareInsertQuery(unitDTO);
                  try {
                         // début de la transaction : vérification de la requête
                         this.getConnection().begin();
-                        Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery);
-                        Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, queryInsert.toString());
+                        Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery.toString());
                         LOGGER.debug(getTraceabilityLogs() + " query : " + prepareDelete.toString());
-                        LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                         prepareDelete.execute();
+                        Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, queryInsert.toString());
+                        LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                         prepareUpdate.execute();
 
                         updatedResourcesURIList.add(unitDTO.getUri());

@@ -81,8 +81,9 @@ public class EventDAOSesame extends DAOSesame<Event> {
         query.appendSelect(URI_VARIABLE_SPARQLE);
         query.appendGroupBy(URI_VARIABLE_SPARQLE);
         if (searchUri != null) {
-            query.appendToBody("\nVALUES " + URI_VARIABLE_SPARQLE 
-                    +  "{<" + searchUri + ">}");
+            query.appendAndFilter("regex (str("
+                + URI_VARIABLE_SPARQLE + ")"
+                + ", \"" + searchUri + "\", \"i\")");
         }
         return URI_VARIABLE_SPARQLE;
     }
@@ -128,17 +129,21 @@ public class EventDAOSesame extends DAOSesame<Event> {
                 query.appendTriplet(
                     CONCERNS_ITEM_URI_VARIABLE_SPARQL
                     , Rdfs.RELATION_LABEL.toString()
-                    , "\"" + searchConcernsItemLabel + "\"", null);
+                    , CONCERNS_ITEM_LABEL_VARIABLE_SPARQL, null);
+                
+                query.appendAndFilter("regex ("
+                    + CONCERNS_ITEM_LABEL_VARIABLE_SPARQL
+                    + ", \"" + searchConcernsItemLabel + "\", \"i\")");
             }
             
             if (searchConcernsItemUri != null){
-                query.appendToBody("\nVALUES " 
-                        + CONCERNS_ITEM_URI_VARIABLE_SPARQL
-                        +  "{<" + searchConcernsItemUri + ">}");
+                query.appendAndFilter("regex (str("
+                    + CONCERNS_ITEM_URI_VARIABLE_SPARQL + ")"
+                    + ", \"" + searchConcernsItemUri + "\", \"i\")");
             }
         }
     }
-    
+
     /**
      * Set a search query to select a datetime from an instant and to filter 
      * according to it if necessary

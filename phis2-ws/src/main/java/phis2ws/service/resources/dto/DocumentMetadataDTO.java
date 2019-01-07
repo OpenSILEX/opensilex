@@ -37,8 +37,6 @@ public class DocumentMetadataDTO extends AbstractVerifiedClass {
     
     private String serverFilePath; // ce champ n'est pas à fournir par le client. 
                                    // Sa valeur sera déterminée coté WS
-    
-   
 
     @Override
     public Object createObjectFromDTO() {
@@ -53,7 +51,7 @@ public class DocumentMetadataDTO extends AbstractVerifiedClass {
     public void setUri(String uri) {
         this.uri = uri;
     }
-    
+
     @URL
     @Required
     @ApiModelProperty(example = "http://www.phenome-fppn.fr/vocabulary/2015#ScientificDocument")

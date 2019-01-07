@@ -216,12 +216,12 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         Property relationDate = ResourceFactory.createProperty(DublinCore.RELATION_DATE.toString());
         spql.addInsert(graph, documentUri, relationDate, documentMetadata.getCreationDate());
 
-        Property relationFormat = ResourceFactory.createProperty(DublinCore.RELATION_FORMAT.toString());
-        spql.addInsert(graph, documentUri, relationFormat, documentMetadata.getExtension());
-
+        Property relationStatus = ResourceFactory.createProperty(Vocabulary.RELATION_STATUS.toString());
+        spql.addInsert(graph, documentUri, relationStatus, documentMetadata.getStatus());
+            
         if (documentMetadata.getExtension() != null) {
-            Property relationStatus = ResourceFactory.createProperty(Vocabulary.RELATION_STATUS.toString());
-            spql.addInsert(graph, documentUri, relationStatus, documentMetadata.getStatus());
+            Property relationFormat = ResourceFactory.createProperty(DublinCore.RELATION_FORMAT.toString());
+            spql.addInsert(graph, documentUri, relationFormat, documentMetadata.getExtension());
         }
         
         if (documentMetadata.getComment() != null && !documentMetadata.getComment().equals("")) {

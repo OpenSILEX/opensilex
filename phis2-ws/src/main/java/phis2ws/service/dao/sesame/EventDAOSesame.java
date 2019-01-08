@@ -41,7 +41,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     final static Logger LOGGER = LoggerFactory.getLogger(EventDAOSesame.class);
     
     // constants used for SPARQL variables
-    private static final String URI_VARIABLE_SPARQLE = "?" + URI;
+    private static final String URI_VARIABLE_SPARQL = "?" + URI;
     private static final String TYPE_VARIABLE_SPARQL = "?" + RDF_TYPE;
         
     private static final String CONCERNS_ITEM_URI_VARIABLE = "concernsUri";
@@ -67,14 +67,14 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * FILTER ( (regex (str(?uri), "http://www.phenome-fppn.fr/id/event/5a1b3c0d-58af-4cfb-811e-e141b11453b1", "i")) 
      */
     private String prepareSearchQueryUri(SPARQLQueryBuilder query, String searchUri){
-        query.appendSelect(URI_VARIABLE_SPARQLE);
-        query.appendGroupBy(URI_VARIABLE_SPARQLE);
+        query.appendSelect(URI_VARIABLE_SPARQL);
+        query.appendGroupBy(URI_VARIABLE_SPARQL);
         if (searchUri != null) {
             query.appendAndFilter("regex (str("
-                + URI_VARIABLE_SPARQLE + ")"
+                + URI_VARIABLE_SPARQL + ")"
                 + ", \"" + searchUri + "\", \"i\")");
         }
-        return URI_VARIABLE_SPARQLE;
+        return URI_VARIABLE_SPARQL;
     }
     
     /**
@@ -366,7 +366,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     private void searchEventPropertiesAndSetThemToIt(Event event){
 
         PropertyDAOSesame propertyDAO = new PropertyDAOSesame(event.getUri());
-        propertyDAO.getPropertiesExceptThoseSpecifiedAndAddThemToIt(
+        propertyDAO.getAllPropertiesWithLabelsExceptThoseSpecified(
                 event, null, new ArrayList(){
                     {
                         add(Rdf.RELATION_TYPE.toString());
@@ -447,7 +447,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
         query.clearLimit();
         query.clearOffset();
         query.clearGroupBy();
-        query.appendSelect("(COUNT(DISTINCT " + URI_VARIABLE_SPARQLE + ") AS "
+        query.appendSelect("(COUNT(DISTINCT " + URI_VARIABLE_SPARQL + ") AS "
                 + "?" + COUNT_ELEMENT_QUERY + ")");
         LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
         return query;

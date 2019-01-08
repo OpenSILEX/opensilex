@@ -688,8 +688,8 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      * @return true    if the definition object is correctly filled
      *          false   if the uri doesn't exists
      */
-    public boolean getRdfObjectPropertiesAndAddThemToIt(RdfResourceDefinition definition, String language) {
-        return getPropertiesExceptThoseSpecifiedAndAddThemToIt(
+    public boolean getAllPropertiesWithLabels(RdfResourceDefinition definition, String language) {
+        return getAllPropertiesWithLabelsExceptThoseSpecified(
                 definition, language, null);
     }       
     
@@ -699,11 +699,12 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      * 
      * @param definition The definition object which will be filled
      * @param language specify in which language labels should be returned.
-     * @param propertiesRelationsToIgnore
+     * @param propertiesRelationsToIgnore some relations sometimes must not be 
+     * considered as properties so we ignore them
      * @return true    if the definition object is correctly filled
      *          false   if the uri doesn't exists
      */
-    public boolean getPropertiesExceptThoseSpecifiedAndAddThemToIt(RdfResourceDefinition definition, String language, ArrayList<String> propertiesRelationsToIgnore) {
+    public boolean getAllPropertiesWithLabelsExceptThoseSpecified(RdfResourceDefinition definition, String language, ArrayList<String> propertiesRelationsToIgnore) {
         if (this.existUri(uri)) {
             /* Prepare and execute the query to retrieve all the relations, 
              properties and properties type with their labels for the given 

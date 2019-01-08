@@ -725,8 +725,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
                     property.setValue(bindingSet.getValue(PROPERTY).stringValue());
 
                     // 2. Affect the relation
-                    property.setRelation(
-                            bindingSet.getValue(RELATION).stringValue());
+                    property.setRelation(bindingSet.getValue(RELATION).stringValue());
                     if (property.getRelation().equals(RDFS.label.toString())) {
                         definition.setLabel(property.getValue());
                     }

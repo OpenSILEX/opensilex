@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -733,6 +734,9 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
                     // 2. Affect the relation
                     property.setRelation(
                             bindingSet.getValue(RELATION).stringValue());
+                    if (property.getRelation().equals(RDFS.label.toString())) {
+                        definition.setLabel(property.getValue());
+                    }
                     
                     // 3. affect the RDF type of the property if exists
                     if (bindingSet.hasBinding(PROPERTY_TYPE)) {

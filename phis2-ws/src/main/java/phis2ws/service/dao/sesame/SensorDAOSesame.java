@@ -626,7 +626,8 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
     /**
      * prepare a delete query of the triplets corresponding to the given sensor
      * e.g.
-     * DELETE WHERE { 
+     *  DELETE DATA {
+     *    GRAPH <http://www.phenome-fppn.fr/diaphen/set/sensors> {
      *      <http://www.phenome-fppn.fr/diaphen/2018/s18142> rdf:type <http://www.phenome-fppn.fr/vocabulary/2017#Thermocouple> . 
      *      <http://www.phenome-fppn.fr/diaphen/2018/s18142> rdfs:label "par03_p" . 
      *      <http://www.phenome-fppn.fr/diaphen/2018/s18142> <http://www.phenome-fppn.fr/vocabulary/2017#hasBrand> "Skye Instruments" . 
@@ -635,6 +636,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
      *      <http://www.phenome-fppn.fr/diaphen/2018/s18142> <http://www.phenome-fppn.fr/vocabulary/2017#serialNumber> "A1E345F32" .
      *      <http://www.phenome-fppn.fr/diaphen/2018/s18142> <http://www.phenome-fppn.fr/vocabulary/2017#dateOfPurchase> "2017-06-15" .
      *      <http://www.phenome-fppn.fr/diaphen/2018/s18142> <http://www.phenome-fppn.fr/vocabulary/2017#dateOfLastCalibration> "2017-06-15"
+     *    }
      * }
      * @param sensor
      * @return 

@@ -3,7 +3,8 @@
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 12  nov. 2018
-// Contact: andreas.garcia@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Contact: andreas.garcia@inra.fr, anne.tireau@inra.fr, 
+// pascal.neveu@inra.fr
 //******************************************************************************
 package phis2ws.service.dao.sesame;
 
@@ -39,30 +40,24 @@ public class EventDAOSesame extends DAOSesame<Event> {
     final static Logger LOGGER = LoggerFactory.getLogger(EventDAOSesame.class);
     
     // constants used for SPARQL variables
-    private static final String URI_VARIABLE = "uri";
-    private static final String URI_VARIABLE_SPARQLE = "?" + URI_VARIABLE;
+    private static final String URI_VARIABLE_SPARQLE = "?" + URI;
     private static final String TYPE_VARIABLE = "type";
     private static final String TYPE_VARIABLE_SPARQL = "?" + TYPE_VARIABLE;
         
     private static final String CONCERNS_ITEM_URI_VARIABLE = "concernsUri";
-    private static final String CONCERNS_ITEM_URI_VARIABLE_SPARQL = 
-            "?" + CONCERNS_ITEM_URI_VARIABLE;
+    private static final String CONCERNS_ITEM_URI_VARIABLE_SPARQL = "?" + CONCERNS_ITEM_URI_VARIABLE;
     private static final String CONCERNS_ITEM_TYPE_VARIABLE = "concernsType";
-    private static final String CONCERNS_ITEM_TYPE_VARIABLE_SPARQL = 
-            "?" + CONCERNS_ITEM_TYPE_VARIABLE;
+    private static final String CONCERNS_ITEM_TYPE_VARIABLE_SPARQL = "?" + CONCERNS_ITEM_TYPE_VARIABLE;
     private static final String CONCERNS_ITEM_LABEL_VARIABLE = "concernsLabel";
-    private static final String CONCERNS_ITEM_LABEL_VARIABLE_SPARQL = 
-            "?" + CONCERNS_ITEM_LABEL_VARIABLE;
+    private static final String CONCERNS_ITEM_LABEL_VARIABLE_SPARQL = "?" + CONCERNS_ITEM_LABEL_VARIABLE;
     private static final String CONCERNS_ITEM_LABELS_VARIABLE = "concernsLabels";
-    private static final String CONCERNS_ITEM_LABELS_VARIABLE_SPARQL = 
-            "?" + CONCERNS_ITEM_LABELS_VARIABLE;
+    private static final String CONCERNS_ITEM_LABELS_VARIABLE_SPARQL = "?" + CONCERNS_ITEM_LABELS_VARIABLE;
     
     private static final String TIME_VARIABLE = "time";
     private static final String TIME_VARIABLE_SPARQL = "?" + TIME_VARIABLE;
     
     private static final String DATETIMESTAMP_VARIABLE = "dateTimeStamp";
-    private static final String DATETIMESTAMP_VARIABLE_SPARQL = 
-            "?" + DATETIMESTAMP_VARIABLE;
+    private static final String DATETIMESTAMP_VARIABLE_SPARQL = "?" + DATETIMESTAMP_VARIABLE;
     
     // search parameters
     private String searchUri;
@@ -92,8 +87,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * Set a search query to select a type and to filter according to it 
      * if necessary
      */
-    private void prepareSearchQueryType(SPARQLQueryBuilder query
-            , String sparqlVariableUri){
+    private void prepareSearchQueryType(SPARQLQueryBuilder query, String sparqlVariableUri){
         query.appendSelect(TYPE_VARIABLE_SPARQL);
         query.appendGroupBy(TYPE_VARIABLE_SPARQL);
         query.appendTriplet(sparqlVariableUri
@@ -231,7 +225,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     private Event getEventFromBindingSet(BindingSet bindingSet) {
           
         String eventUri = getValueOfVariableFromBindingSet(
-                URI_VARIABLE, bindingSet);
+                URI, bindingSet);
                 
         String eventType = getValueOfVariableFromBindingSet(
                 TYPE_VARIABLE, bindingSet);

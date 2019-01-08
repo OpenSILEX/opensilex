@@ -189,17 +189,17 @@ public class EventResourceService {
 
         EventDAOSesame eventDAO = new EventDAOSesame();
         
-        eventDAO.setSearchUri(uri);
-        eventDAO.setSearchType(type);
-        eventDAO.setSearchConcernsItemLabel(concernsItemLabel);
-        eventDAO.setSearchConcernsItemUri(concernsItemUri);
-        eventDAO.setSearchDateTimeRangeStartString(dateRangeStart);
-        eventDAO.setSearchDateTimeRangeEndString(dateRangeEnd);
-        eventDAO.user = userSession.getUser();
-        eventDAO.setPage(page);
-        eventDAO.setPageSize(pageSize);
+        Event eventSearchParameters = new Event(uri, type, null, null, null);
         
-        ArrayList<Event> events = eventDAO.searchEvents();
+        ArrayList<Event> events = eventDAO.searchEvents(
+                eventSearchParameters, 
+                concernsItemLabel, 
+                concernsItemUri, 
+                dateRangeStart, 
+                dateRangeEnd, 
+                userSession.getUser(), 
+                page, 
+                pageSize);
         ArrayList<EventDTO> eventDTOs = new ArrayList();
         
         ArrayList<Status> statusList = new ArrayList<>();
@@ -217,8 +217,15 @@ public class EventResourceService {
                 eventDTOs.add(new EventDTO(event));
             });
             
+            int resultsCount = eventDAO.count(
+                eventSearchParameters, 
+                concernsItemLabel, 
+                concernsItemUri, 
+                dateRangeStart, 
+                dateRangeEnd, 
+                userSession.getUser());
             responseForm = new ResponseFormEvent(eventDAO.getPageSize()
-                    , eventDAO.getPage(), eventDTOs, true, eventDAO.count());
+                    , eventDAO.getPage(), eventDTOs, true, resultsCount);
             if (responseForm.getResult().dataSize() == 0) {
                 return noResultFound(responseForm, statusList);
             } else {

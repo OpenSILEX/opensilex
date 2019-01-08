@@ -140,7 +140,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * Set a search query to select a datetime from an instant and to filter 
      * according to it if necessary
      * @example SparQL filter added :
-     *  ?uri  <http://www.w3.org/2006/time#hasTime>  ?time  . 
+     * ?uri  <http://www.w3.org/2006/time#hasTime>  ?time  . 
      * ?time  <http://www.w3.org/2006/time#inXSDDateTimeStamp>  ?dateTimeStamp  . 
      * BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str(?dateTimeStamp)) as ?dateTime) .
      * BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str("2017-09-10T12:00:00+01:00")) as ?dateRangeStartDateTime) .
@@ -171,6 +171,36 @@ public class EventDAOSesame extends DAOSesame<Event> {
         }
     }
     
+    /**
+     *
+     * @param eventSearchParameters
+     * @param searchConcernsItemLabel
+     * @param searchConcernsItemUri
+     * @param dateRangeStartString
+     * @param dateRangeEndString
+     * @param user
+     * @return query
+     * @example
+     * SELECT DISTINCT  ?uri ?rdfType ?dateTimeStamp 
+     * WHERE {
+     *   ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
+     *   ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.phenome-fppn.fr/vocabulary/2018/oeev#MoveFrom> . 
+     *   ?uri  <http://www.phenome-fppn.fr/vocabulary/2018/oeev#concern>  ?concernsUri  . 
+     *   ?concernsUri  <http://www.w3.org/2000/01/rdf-schema#label>  ?concernsLabel  . 
+     *   ?uri  <http://www.w3.org/2006/time#hasTime>  ?time  . 
+     *   ?time  <http://www.w3.org/2006/time#inXSDDateTimeStamp>  ?dateTimeStamp  . 
+     *   BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str(?dateTimeStamp)) as ?dateTime) .
+     *   BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str("2017-09-08T12:00:00+01:00")) as ?dateRangeStartDateTime) .
+     *   BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str("2019-10-08T12:00:00+01:00")) as ?dateRangeEndDateTime) .
+     *   FILTER ( (regex (str(?uri), "http://www.phenome-fppn.fr/id/event/96e72788-6bdc-4f8e-abd1-ce9329371e8e", "i")) 
+     *    && (regex (?concernsLabel, "Plot Lavalette", "i")) 
+     *    && (regex (str(?concernsUri), "http://www.phenome-fppn.fr/m3p/arch/2017/c17000242", "i")) 
+     *    && (?dateRangeStartDateTime <= ?dateTime) && (?dateRangeEndDateTime >= ?dateTime) ) 
+     *  }
+     *  GROUP BY  ?uri ?rdfType ?dateTimeStamp 
+     *  LIMIT 20 
+     *  OFFSET 0 
+     */
     protected SPARQLQueryBuilder prepareSearchQuery(Event eventSearchParameters, String searchConcernsItemLabel, String searchConcernsItemUri, String dateRangeStartString, String dateRangeEndString, User user) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
@@ -195,6 +225,15 @@ public class EventDAOSesame extends DAOSesame<Event> {
      *
      * @param eventUri
      * @return query
+     * @example
+     * SELECT DISTINCT  ?concernsUri ?concernsType 
+     * (GROUP_CONCAT(DISTINCT ?concernsLabel; SEPARATOR=",") AS ?concernsLabels) 
+     * WHERE {
+     *  <http://www.phenome-fppn.fr/id/event/96e72788-6bdc-4f8e-abd1-ce9329371e8e>  <http://www.phenome-fppn.fr/vocabulary/2018/oeev#concern>  ?concernsUri  . 
+     *  ?concernsUri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?concernsType  . 
+     *  ?concernsUri  <http://www.w3.org/2000/01/rdf-schema#label>  ?concernsLabel  . 
+     * }
+     *  GROUP BY  ?concernsUri ?concernsType 
      */
     protected SPARQLQueryBuilder prepareConcernsItemsSearchQuery(
             String eventUri) {
@@ -272,6 +311,18 @@ public class EventDAOSesame extends DAOSesame<Event> {
                 , eventConcernsItemLabels);
     }
     
+    /**
+     *
+     * @param eventSearchParameters
+     * @param searchConcernsItemLabel
+     * @param searchConcernsItemUri
+     * @param dateRangeStartString
+     * @param dateRangeEndString
+     * @param user
+     * @param searchPage
+     * @param searchPageSize
+     * @return events
+     */
     public ArrayList<Event> searchEvents(Event eventSearchParameters, String searchConcernsItemLabel, String searchConcernsItemUri, String dateRangeStartString, String dateRangeEndString, User user, int searchPage, int searchPageSize) {
         
         SPARQLQueryBuilder eventsQuery = prepareSearchQuery(
@@ -347,9 +398,32 @@ public class EventDAOSesame extends DAOSesame<Event> {
     /**
      * Generate a query to count the results of the research with the 
      * searched parameters. 
+     * @example 
+     * SELECT DISTINCT  (COUNT(DISTINCT ?uri) AS ?count) 
+     * WHERE {
+     *  ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
+     *  ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.phenome-fppn.fr/vocabulary/2018/oeev#MoveFrom> . 
+     *  ?uri  <http://www.phenome-fppn.fr/vocabulary/2018/oeev#concern>  ?concernsUri  . 
+     *  ?concernsUri  <http://www.w3.org/2000/01/rdf-schema#label>  ?concernsLabel  . 
+     *  ?uri  <http://www.w3.org/2006/time#hasTime>  ?time  . 
+     *  ?time  <http://www.w3.org/2006/time#inXSDDateTimeStamp>  ?dateTimeStamp  . 
+     *  BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str(?dateTimeStamp)) as ?dateTime) .
+     *  BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str("2017-09-08T12:00:00+01:00")) as ?dateRangeStartDateTime) .
+     *  BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str("2019-10-08T12:00:00+01:00")) as ?dateRangeEndDateTime) .
+     *  FILTER ( (regex (str(?uri), "http://www.phenome-fppn.fr/id/event/96e72788-6bdc-4f8e-abd1-ce9329371e8e", "i")) 
+     *   && (regex (?concernsLabel, "Plot Lavalette", "i")) 
+     *   && (regex (str(?concernsUri), "http://www.phenome-fppn.fr/m3p/arch/2017/c17000242", "i")) 
+     *   && (?dateRangeStartDateTime <= ?dateTime) && (?dateRangeEndDateTime >= ?dateTime) ) 
+     *}
      */
     private SPARQLQueryBuilder prepareCountSearchQuery(Event eventSearchParameters, String searchConcernsItemLabel, String searchConcernsItemUri, String dateRangeStartString, String dateRangeEndString, User user) {
-        SPARQLQueryBuilder query = this.prepareSearchQuery(eventSearchParameters, searchConcernsItemLabel, searchConcernsItemUri, dateRangeStartString, dateRangeEndString, user);
+        SPARQLQueryBuilder query = this.prepareSearchQuery(
+                eventSearchParameters, 
+                searchConcernsItemLabel, 
+                searchConcernsItemUri, 
+                dateRangeStartString, 
+                dateRangeEndString, 
+                user);
         query.clearSelect();
         query.clearLimit();
         query.clearOffset();
@@ -360,10 +434,29 @@ public class EventDAOSesame extends DAOSesame<Event> {
         return query;
     }
 
+    /**
+     *
+     * @param eventSearchParameters
+     * @param searchConcernsItemLabel
+     * @param searchConcernsItemUri
+     * @param dateRangeStartString
+     * @param dateRangeEndString
+     * @param user
+     * @return events number
+     * @throws RepositoryException
+     * @throws MalformedQueryException
+     * @throws QueryEvaluationException
+     */
     public Integer count(Event eventSearchParameters, String searchConcernsItemLabel, String searchConcernsItemUri, String dateRangeStartString, String dateRangeEndString, User user) throws RepositoryException
             , MalformedQueryException, QueryEvaluationException {
         
-        SPARQLQueryBuilder prepareCount = prepareCountSearchQuery(eventSearchParameters, searchConcernsItemLabel, searchConcernsItemUri, dateRangeStartString, dateRangeEndString, user);
+        SPARQLQueryBuilder prepareCount = prepareCountSearchQuery(
+                eventSearchParameters, 
+                searchConcernsItemLabel, 
+                searchConcernsItemUri, 
+                dateRangeStartString, 
+                dateRangeEndString, 
+                user);
         
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(
                 QueryLanguage.SPARQL
@@ -387,7 +480,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
 
     @Override
     public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
-        return count(new Event(null, null, null, null, null), null, null, null
-                , null, null);
+        return count(new Event(null, null, null, null, null)
+                , null, null, null, null, null);
     }
 }

@@ -156,7 +156,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
                 , TIME_VARIABLE_SPARQL, null);
         query.appendTriplet(
                 TIME_VARIABLE_SPARQL
-                , Time.RELATION_IN_XSD_DATE_TIMESTAMP.toString()
+                , Time.RELATION_IN_XSD_DATETIMESTAMP.toString()
                 , DATETIMESTAMP_VARIABLE_SPARQL, null);
         
         if (searchDateTimeRangeStartString != null 

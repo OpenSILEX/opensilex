@@ -4,6 +4,7 @@
 // Copyright © INRA 2018
 // Creation date: 13 nov. 2018
 // Contact: andreas.garcia@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Subject: Represents the event data service
 //******************************************************************************
 package phis2ws.service.resources;
 
@@ -47,7 +48,7 @@ import phis2ws.service.view.model.phis.Event;
  */
 @Api("/events")
 @Path("/events")
-public class EventResourceService {
+public class EventResourceService  extends ResourceService {
     final static Logger LOGGER = 
             LoggerFactory.getLogger(EventResourceService.class);
     
@@ -82,41 +83,41 @@ public class EventResourceService {
      * @param dateRangeStart
      * @param dateRangeEnd
      * @return  list of all events
-     * e.g
+     * @example
      * {
-     *      {
-  "metadata": {
-    "pagination": null,
-    "status": [],
-    "datafiles": []
-  },
-  "result": {
-    "data": [
-      {
-        "uri": "http://www.phenome-fppn.fr/id/event/5a1b3c0d-58af-4cfb-811e-e141b11453b1",
-        "type": "http://www.phenome-fppn.fr/vocabulary/2018/oeev#MoveFrom",
-        "concernsItems": [
-          {
-            "labels": [
-              "label2",
-              "label3"
-            ],
-            "uri": "http://www.phenome-fppn.fr/m3p/arch/2017/c17000241",
-            "typeUri": "http://www.phenome-fppn.fr/vocabulary/2017#Thermocouple"
-          }
-        ],
-        "dateTimeString": "2017-09-11T12:00:00+01:00",
-        "properties": [
-          {
-            "rdfType": "http://www.phenome-fppn.fr/vocabulary/2017#Thermocouple",
-            "relation": "http://www.phenome-fppn.fr/vocabulary/2018/oeev#from",
-            "value": "http://www.phenome-fppn.fr/m3p/phenoarch/"
-          }
-        ]
-      }
-    ]
-  }
-}
+     *   {
+           "metadata": {
+             "pagination": null,
+             "status": [],
+             "datafiles": []
+           },
+           "result": {
+             "data": [
+               {
+                 "uri": "http://www.phenome-fppn.fr/id/event/5a1b3c0d-58af-4cfb-811e-e141b11453b1",
+                 "type": "http://www.phenome-fppn.fr/vocabulary/2018/oeev#MoveFrom",
+                 "concernsItems": [
+                   {
+                     "labels": [
+                       "label2",
+                       "label3"
+                     ],
+                     "uri": "http://www.phenome-fppn.fr/m3p/arch/2017/c17000241",
+                     "typeUri": "http://www.phenome-fppn.fr/vocabulary/2017#Thermocouple"
+                   }
+                 ],
+                 "dateTimeString": "2017-09-11T12:00:00+01:00",
+                 "properties": [
+                   {
+                     "rdfType": "http://www.phenome-fppn.fr/vocabulary/2017#Thermocouple",
+                     "relation": "http://www.phenome-fppn.fr/vocabulary/2018/oeev#from",
+                     "value": "http://www.phenome-fppn.fr/m3p/phenoarch/"
+                   }
+                 ]
+               }
+             ]
+           }
+         }
      * }
      */
     @GET
@@ -233,21 +234,5 @@ public class EventResourceService {
                 return Response.status(Response.Status.OK).entity(responseForm).build();
             }
         }
-    }
-        
-    /**
-     * Return a generic response when no result are found
-     * @param getResponse
-     * @param insertStatusList
-     * @return the response "no result found" for the service
-     */
-    private Response noResultFound(ResultForm getResponse
-            , ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status(StatusCodeMsg.NO_RESULTS
-                                , StatusCodeMsg.INFO
-                                , "No event found"));
-        getResponse.setStatus(insertStatusList);
-        return Response.status(Response.Status.NOT_FOUND)
-                .entity(getResponse).build();
     }
 }

@@ -17,9 +17,9 @@ public enum Xsd {
         public String toString() {
             return "http://www.w3.org/2001/XMLSchema#";
         }
-    }
+    }, 
     
-    , FUNCTION_DATETIME {
+    FUNCTION_DATETIME {
         @Override
         public String toString() {
             return NAMESPACE.toString() + "dateTime";

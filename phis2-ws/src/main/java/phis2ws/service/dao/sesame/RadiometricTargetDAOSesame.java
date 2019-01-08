@@ -385,7 +385,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
         PropertyDAOSesame propertyDAOSesame = 
                 new PropertyDAOSesame(radiometricTargetUri);
         RadiometricTarget radiometricTarget = new RadiometricTarget();
-        propertyDAOSesame.getRdfObjectPropertiesAndAddThemToIt(radiometricTarget, null);
+        propertyDAOSesame.getAllPropertiesWithLabels(radiometricTarget, null);
         return radiometricTarget;
     }
     

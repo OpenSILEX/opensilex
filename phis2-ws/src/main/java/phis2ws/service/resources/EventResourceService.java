@@ -77,8 +77,8 @@ public class EventResourceService {
      * @param page
      * @param uri
      * @param type
-     * @param concernsItemUri
-     * @param concernsItemLabel
+     * @param concernsUri
+     * @param concernsLabel
      * @param dateRangeStart
      * @param dateRangeEnd
      * @return  list of all events
@@ -165,15 +165,15 @@ public class EventResourceService {
                 example = DocumentationAnnotation.EXAMPLE_EVENT_TYPE
             ) @QueryParam("type") @URL String type
         , @ApiParam (
-                value = "Search by concerns item uri"
+                value = "Search by concerns uri"
                 , example = DocumentationAnnotation
                         .EXAMPLE_EVENT_CONCERNS_ITEM_URI
-            ) @QueryParam("concernsItemUri") @URL String concernsItemUri
+            ) @QueryParam("concernsUri") @URL String concernsUri
         , @ApiParam (
-                value = "Search by concerns item label"
+                value = "Search by concerns label"
                 , example = DocumentationAnnotation
                         .EXAMPLE_EVENT_CONCERNS_ITEM_LABEL
-            ) @QueryParam("concernsItemLabel") String concernsItemLabel
+            ) @QueryParam("concernsLabel") String concernsLabel
         , @ApiParam (
                 value = "Search by date - start of the range"
                 , example = DocumentationAnnotation
@@ -193,8 +193,8 @@ public class EventResourceService {
         
         ArrayList<Event> events = eventDAO.searchEvents(
                 eventSearchParameters, 
-                concernsItemLabel, 
-                concernsItemUri, 
+                concernsLabel, 
+                concernsUri, 
                 dateRangeStart, 
                 dateRangeEnd, 
                 userSession.getUser(), 
@@ -219,8 +219,8 @@ public class EventResourceService {
             
             int resultsCount = eventDAO.count(
                 eventSearchParameters, 
-                concernsItemLabel, 
-                concernsItemUri, 
+                concernsLabel, 
+                concernsUri, 
                 dateRangeStart, 
                 dateRangeEnd, 
                 userSession.getUser());

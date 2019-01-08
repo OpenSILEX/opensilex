@@ -61,7 +61,20 @@ public class ScientificObjectResourceService extends ResourceService {
      * Enter a set of scientific objects into the triplestore and associate them to an experiment if it is given
      * @param scientificObjectsDTO scientific objects to save
      * @param context query context element to get the ip address information of the user
-     *                
+     * @example 
+     * [
+        {
+          "rdfType": "http://www.phenome-fppn.fr/vocabulary/2017#Plant",
+          "experiment": "http://www.phenome-fppn.fr/diaphen/DIA2017-2",
+          "year": "2018",
+          "properties": [
+           {
+             "relation": "http://www.w3.org/2000/01/rdf-schema#label",
+             "value": "plt030"
+           }
+          ]
+        }
+     * 
      * @return 
      */
     @POST

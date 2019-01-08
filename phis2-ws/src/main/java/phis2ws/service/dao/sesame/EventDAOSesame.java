@@ -70,6 +70,8 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * Set a search query to select an URI and to filter according to it 
      * if necessary
      * @return the URI SPARQL variable
+     * @example SparQL filter added :
+     * FILTER ( (regex (str(?uri), "http://www.phenome-fppn.fr/id/event/5a1b3c0d-58af-4cfb-811e-e141b11453b1", "i")) 
      */
     private String prepareSearchQueryUri(SPARQLQueryBuilder query){
         query.appendSelect(URI_VARIABLE_SPARQLE);
@@ -85,6 +87,8 @@ public class EventDAOSesame extends DAOSesame<Event> {
     /**
      * Set a search query to select a type and to filter according to it 
      * if necessary
+     * @example SparQL filter added :
+     *  ?type  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.phenome-fppn.fr/vocabulary/2018/oeev#MoveFrom> . 
      */
     private void prepareSearchQueryType(SPARQLQueryBuilder query, String sparqlVariableUri){
         query.appendSelect(TYPE_VARIABLE_SPARQL);
@@ -108,6 +112,9 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * Set a search query to applies the concerns items label filter. 
      * This function DOES NOT make the query return the events concerns items 
      * informations. This is done by another query further in the process.
+     * @example SparQL filter added :
+     *  ?uri  <http://www.phenome-fppn.fr/vocabulary/2018/oeev#concern>  ?concernsUri  . 
+     *  ?concernsUri  <http://www.w3.org/2000/01/rdf-schema#label>  ?concernsLabel  . 
      */
     private void prepareSearchQueryConcernsItemFilter(
             SPARQLQueryBuilder query, String sparqlVariableUri){
@@ -140,6 +147,12 @@ public class EventDAOSesame extends DAOSesame<Event> {
     /**
      * Set a search query to select a datetime from an instant and to filter 
      * according to it if necessary
+     * @example SparQL filter added :
+     *  ?uri  <http://www.w3.org/2006/time#hasTime>  ?time  . 
+     * ?time  <http://www.w3.org/2006/time#inXSDDateTimeStamp>  ?dateTimeStamp  . 
+     * BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str(?dateTimeStamp)) as ?dateTime) .
+     * BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str("2017-09-10T12:00:00+01:00")) as ?dateRangeStartDateTime) .
+     * BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str("2017-09-12T12:00:00+01:00")) as ?dateRangeEndDateTime) .
      */
     private void prepareSearchQueryDateTime(SPARQLQueryBuilder query
         , String sparqlVariableUri){  

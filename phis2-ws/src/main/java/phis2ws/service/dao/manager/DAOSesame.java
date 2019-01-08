@@ -318,6 +318,10 @@ public abstract class DAOSesame<T> {
      * @param comparisonSign e.g >, >=, <, <= 
      * @param dateTimeStampToCompareSparqlVariable the SPARQL variable 
      * (?abc format) of the dateTimeStamp to which the date has to be compared
+     * @example SparQL code added to the query :
+        BIND(xsd:dateTime(str("2017-09-10T12:00:00+01:00")) as ?dateRangeStartDateTime) .
+        FILTER ( (?dateRangeStartDateTime <= ?dateTime) ) 
+     
      */
     protected void filterSearchQueryWithDateTimeStampComparison(
             SPARQLStringBuilder query
@@ -350,8 +354,7 @@ public abstract class DAOSesame<T> {
      * @param filterRangeEndDateString
      * @param dateTimeStampToCompareSparqleVariable the SPARQL variable (?abc 
      * format) of the dateTimeStamp to compare to the range
-     * @example SparQL codeadded to the query :
-        ?time  <http://www.w3.org/2006/time#inXSDDateTimeStamp>  ?dateTimeStamp  . 
+     * @example SparQL code added to the query :
         BIND(xsd:dateTime(str(?dateTimeStamp)) as ?dateTime) .
         BIND(xsd:dateTime(str("2017-09-10T12:00:00+01:00")) as ?dateRangeStartDateTime) .
         BIND(xsd:dateTime(str("2017-09-12T12:00:00+01:00")) as ?dateRangeEndDateTime) .

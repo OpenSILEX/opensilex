@@ -639,27 +639,44 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
      * @param sensor
      * @return 
      */
-    private String prepareDeleteQuery(Sensor sensor) {
-        String query;
-        query = "DELETE WHERE { "
-                + "<" + sensor.getUri() + "> <" + Rdf.RELATION_TYPE.toString() + "> <" + sensor.getRdfType() + "> . "
-                + "<" + sensor.getUri() + "> <" + Rdfs.RELATION_LABEL.toString() + "> \"" + sensor.getLabel() + "\" . "
-                + "<" + sensor.getUri() + "> <" + Vocabulary.RELATION_HAS_BRAND.toString() + "> \"" + sensor.getBrand() + "\" . "
-                + "<" + sensor.getUri() + "> <" + Vocabulary.RELATION_IN_SERVICE_DATE.toString() + "> \"" + sensor.getInServiceDate() + "\" . "
-                + "<" + sensor.getUri() + "> <" + Vocabulary.RELATION_PERSON_IN_CHARGE.toString() + "> \"" + sensor.getPersonInCharge() + "\" . ";
+    private UpdateRequest prepareDeleteQuery(Sensor sensor) {
+        UpdateBuilder spql = new UpdateBuilder();
+        
+        Node graph = NodeFactory.createURI(Contexts.SENSORS.toString());
+        
+        Resource sensorUri = ResourceFactory.createResource(sensor.getUri());
+        
+        Node sensorType = NodeFactory.createURI(sensor.getRdfType());
+        
+        spql.addDelete(graph, sensorUri, RDF.type, sensorType);
+        spql.addDelete(graph, sensorUri, RDFS.label, sensor.getLabel());
+        
+        Property relationHasBrand = ResourceFactory.createProperty(Vocabulary.RELATION_HAS_BRAND.toString());
+        Property relationInServiceDate = ResourceFactory.createProperty(Vocabulary.RELATION_IN_SERVICE_DATE.toString());
+        Property relationPersonInCharge = ResourceFactory.createProperty(Vocabulary.RELATION_PERSON_IN_CHARGE.toString());
+        
+        spql.addDelete(graph, sensorUri, relationHasBrand, sensor.getBrand() );
+        spql.addDelete(graph, sensorUri, relationInServiceDate, sensor.getInServiceDate());
+        spql.addDelete(graph, sensorUri, relationPersonInCharge, sensor.getPersonInCharge() );
         
         if (sensor.getSerialNumber() != null) {
-            query += "<" + sensor.getUri() + "> <" + Vocabulary.RELATION_SERIAL_NUMBER.toString() + "> \"" + sensor.getSerialNumber() + "\" . ";
+            Property relationSerialNumber = ResourceFactory.createProperty(Vocabulary.RELATION_SERIAL_NUMBER.toString());
+            spql.addDelete(graph, sensorUri, relationSerialNumber, sensor.getSerialNumber() );
         }
+        
         if (sensor.getDateOfPurchase() != null) {
-            query += "<" + sensor.getUri() + "> <" + Vocabulary.RELATION_DATE_OF_PURCHASE.toString() + "> \"" + sensor.getDateOfPurchase() + "\" . ";
+            Property relationDateOfPurchase = ResourceFactory.createProperty(Vocabulary.RELATION_DATE_OF_PURCHASE.toString());
+            spql.addDelete(graph, sensorUri, relationDateOfPurchase, sensor.getDateOfPurchase() );
         }
+        
         if (sensor.getDateOfLastCalibration() != null) {
-            query += "<" + sensor.getUri() + "> <" + Vocabulary.RELATION_DATE_OF_LAST_CALIBRATION.toString() + "> \"" + sensor.getDateOfLastCalibration() + "\" . ";
+            Property relationDateOfCalibration = ResourceFactory.createProperty(Vocabulary.RELATION_DATE_OF_LAST_CALIBRATION.toString());
+            spql.addDelete(graph, sensorUri, relationDateOfCalibration, sensor.getDateOfLastCalibration() );
         }
         
-        query += " }";
+        UpdateRequest query = spql.buildRequest();
         
+        LOGGER.debug(getTraceabilityLogs() + " query : " + query.toString());
         return query;
     }
     
@@ -683,17 +700,17 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
             uri = sensorDTO.getUri();
             ArrayList<Sensor> sensorsCorresponding = allPaginate();
             if (sensorsCorresponding.size() > 0) {
-                String deleteQuery = prepareDeleteQuery(sensorsCorresponding.get(0));
+                UpdateRequest deleteQuery = prepareDeleteQuery(sensorsCorresponding.get(0));
                 
                 //2. insert new data
                 UpdateRequest insertQuery = prepareInsertQuery(sensorDTO.createObjectFromDTO());
                 try {
                     this.getConnection().begin();
-                    Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery);
-                    Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, insertQuery.toString());
+                    Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery.toString());
                     LOGGER.debug(getTraceabilityLogs() + " query : " + prepareDelete.toString());
-                    LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                     prepareDelete.execute();
+                    Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, insertQuery.toString());
+                    LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                     prepareUpdate.execute();
                     updatedResourcesUri.add(sensorDTO.getUri());
                 } catch (MalformedQueryException e) {

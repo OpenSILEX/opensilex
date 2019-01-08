@@ -41,8 +41,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     
     // constants used for SPARQL variables
     private static final String URI_VARIABLE_SPARQLE = "?" + URI;
-    private static final String TYPE_VARIABLE = "type";
-    private static final String TYPE_VARIABLE_SPARQL = "?" + TYPE_VARIABLE;
+    private static final String TYPE_VARIABLE_SPARQL = "?" + RDF_TYPE;
         
     private static final String CONCERNS_ITEM_URI_VARIABLE = "concernsUri";
     private static final String CONCERNS_ITEM_URI_VARIABLE_SPARQL = "?" + CONCERNS_ITEM_URI_VARIABLE;
@@ -228,7 +227,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
                 URI, bindingSet);
                 
         String eventType = getValueOfVariableFromBindingSet(
-                TYPE_VARIABLE, bindingSet);
+                RDF_TYPE, bindingSet);
         
         String eventDateTimeString = getValueOfVariableFromBindingSet(
                 DATETIMESTAMP_VARIABLE, bindingSet);    

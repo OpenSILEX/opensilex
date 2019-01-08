@@ -197,6 +197,11 @@ public class EventDAOSesame extends DAOSesame<Event> {
         return query;
     }
     
+    /**
+     *
+     * @param eventUri
+     * @return query
+     */
     protected SPARQLQueryBuilder prepareConcernsItemsSearchQuery(
             String eventUri) {
         
@@ -370,51 +375,99 @@ public class EventDAOSesame extends DAOSesame<Event> {
         return count;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getSearchUri() {
         return searchUri;
     }
 
+    /**
+     *
+     * @param searchUri
+     */
     public void setSearchUri(String searchUri) {
         this.searchUri = searchUri;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getSearchType() {
         return searchType;
     }
 
+    /**
+     *
+     * @param searchType
+     */
     public void setSearchType(String searchType) {
         this.searchType = searchType;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getSearchConcernsItemUri() {
         return searchConcernsItemUri;
     }
 
+    /**
+     *
+     * @param searchConcernsItemUri
+     */
     public void setSearchConcernsItemUri(String searchConcernsItemUri) {
         this.searchConcernsItemUri = searchConcernsItemUri;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getSearchConcernsItemLabel() {
         return searchConcernsItemLabel;
     }
 
+    /**
+     *
+     * @param searchConcernsItemLabel
+     */
     public void setSearchConcernsItemLabel(String searchConcernsItemLabel) {
         this.searchConcernsItemLabel = searchConcernsItemLabel;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getSearchDateTimeRangeStartString() {
         return searchDateTimeRangeStartString;
     }
 
+    /**
+     *
+     * @param searchDateTimeRangeStartString
+     */
     public void setSearchDateTimeRangeStartString(
             String searchDateTimeRangeStartString) {
         this.searchDateTimeRangeStartString = searchDateTimeRangeStartString;
     }
     
+    /**
+     *
+     * @return
+     */
     public String getSearchDateTimeRangeEndString() {
         return searchDateTimeRangeEndString;
     }
 
+    /**
+     *
+     * @param searchDateTimeRangeEndString
+     */
     public void setSearchDateTimeRangeEndString(
             String searchDateTimeRangeEndString) {
         this.searchDateTimeRangeEndString = searchDateTimeRangeEndString;

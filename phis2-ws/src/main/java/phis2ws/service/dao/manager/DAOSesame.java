@@ -303,7 +303,6 @@ public abstract class DAOSesame<T> {
      */
     abstract protected SPARQLQueryBuilder prepareSearchQuery();
     
-    
     /** Add a filter to the search query comparing a SPARQL dateTimeStamp 
      * variable to a date. 
      * SPARQL dateTimeStamp dates have to be handled in a specific way as 

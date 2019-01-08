@@ -86,8 +86,7 @@ public abstract class DAOSesame<T> {
     protected static final String DATE_RANGE_END_DATETIME_VARIABLE = "dateRangeEndDateTime";
     protected static final String DATE_RANGE_END_DATETIME_VARIABLE_SPARQL = "?" + DATE_RANGE_END_DATETIME_VARIABLE;
     
-    protected final String DATETIMESTAMP_FORMAT_SPARQLE = 
-            DateFormat.YMDTHMSZZ.toString();
+    protected final String DATETIMESTAMP_FORMAT_SPARQLE = DateFormat.YMDTHMSZZ.toString();
     
     //Triplestore relations
     protected static final URINamespaces ONTOLOGIES = new URINamespaces();

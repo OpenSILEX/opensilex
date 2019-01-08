@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.dao.manager.DAOSesame;
+import phis2ws.service.model.User;
 import phis2ws.service.ontologies.Oeev;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
@@ -58,14 +59,6 @@ public class EventDAOSesame extends DAOSesame<Event> {
     private static final String DATETIMESTAMP_VARIABLE = "dateTimeStamp";
     private static final String DATETIMESTAMP_VARIABLE_SPARQL = "?" + DATETIMESTAMP_VARIABLE;
     
-    // search parameters
-    private String searchUri;
-    private String searchType;
-    private String searchConcernsItemUri;
-    private String searchConcernsItemLabel;
-    private String searchDateTimeRangeStartString;
-    private String searchDateTimeRangeEndString;
-    
     /**
      * Set a search query to select an URI and to filter according to it 
      * if necessary
@@ -73,7 +66,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * @example SparQL filter added :
      * FILTER ( (regex (str(?uri), "http://www.phenome-fppn.fr/id/event/5a1b3c0d-58af-4cfb-811e-e141b11453b1", "i")) 
      */
-    private String prepareSearchQueryUri(SPARQLQueryBuilder query){
+    private String prepareSearchQueryUri(SPARQLQueryBuilder query, String searchUri){
         query.appendSelect(URI_VARIABLE_SPARQLE);
         query.appendGroupBy(URI_VARIABLE_SPARQLE);
         if (searchUri != null) {
@@ -90,7 +83,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * @example SparQL filter added :
      *  ?type  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.phenome-fppn.fr/vocabulary/2018/oeev#MoveFrom> . 
      */
-    private void prepareSearchQueryType(SPARQLQueryBuilder query, String sparqlVariableUri){
+    private void prepareSearchQueryType(SPARQLQueryBuilder query, String sparqlVariableUri, String searchType){
         query.appendSelect(TYPE_VARIABLE_SPARQL);
         query.appendGroupBy(TYPE_VARIABLE_SPARQL);
         query.appendTriplet(sparqlVariableUri
@@ -116,8 +109,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
      *  ?uri  <http://www.phenome-fppn.fr/vocabulary/2018/oeev#concern>  ?concernsUri  . 
      *  ?concernsUri  <http://www.w3.org/2000/01/rdf-schema#label>  ?concernsLabel  . 
      */
-    private void prepareSearchQueryConcernsItemFilter(
-            SPARQLQueryBuilder query, String sparqlVariableUri){
+    private void prepareSearchQueryConcernsItemFilter(SPARQLQueryBuilder query, String sparqlVariableUri, String searchConcernsItemLabel, String searchConcernsItemUri){
 
         if (searchConcernsItemLabel != null || searchConcernsItemUri != null) {
             query.appendTriplet(
@@ -154,8 +146,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str("2017-09-10T12:00:00+01:00")) as ?dateRangeStartDateTime) .
      * BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str("2017-09-12T12:00:00+01:00")) as ?dateRangeEndDateTime) .
      */
-    private void prepareSearchQueryDateTime(SPARQLQueryBuilder query
-        , String sparqlVariableUri){  
+    private void prepareSearchQueryDateTime(SPARQLQueryBuilder query, String sparqlVariableUri, String searchDateTimeRangeStartString, String searchDateTimeRangeEndString){  
         
         query.appendSelect(DATETIMESTAMP_VARIABLE_SPARQL);
         query.appendGroupBy(DATETIMESTAMP_VARIABLE_SPARQL);
@@ -180,18 +171,21 @@ public class EventDAOSesame extends DAOSesame<Event> {
         }
     }
     
-    @Override
-    protected SPARQLQueryBuilder prepareSearchQuery() {
+    protected SPARQLQueryBuilder prepareSearchQuery(Event eventSearchParameters, String searchConcernsItemLabel, String searchConcernsItemUri, String dateRangeStartString, String dateRangeEndString, User user) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
         
-        String sparqlVariableUri = prepareSearchQueryUri(query);
-        prepareSearchQueryType(query, sparqlVariableUri);  
-        prepareSearchQueryConcernsItemFilter(query, sparqlVariableUri); 
-        prepareSearchQueryDateTime(query, sparqlVariableUri); 
+        String sparqlVariableUri = prepareSearchQueryUri(query, eventSearchParameters.getUri());
+        prepareSearchQueryType(query, sparqlVariableUri, eventSearchParameters.getType());  
+        prepareSearchQueryConcernsItemFilter(query, sparqlVariableUri, 
+                searchConcernsItemLabel, 
+                searchConcernsItemUri); 
+        prepareSearchQueryDateTime(query, sparqlVariableUri, 
+                dateRangeStartString, dateRangeEndString); 
         
-        query.appendLimit(this.getPageSize());
-        query.appendOffset(this.getPage() * this.getPageSize());
+        
+        query.appendLimit(getPageSize());
+        query.appendOffset(getPage() * getPageSize());
         
         LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
         return query;
@@ -278,9 +272,19 @@ public class EventDAOSesame extends DAOSesame<Event> {
                 , eventConcernsItemLabels);
     }
     
-    public ArrayList<Event> searchEvents() {
+    public ArrayList<Event> searchEvents(Event eventSearchParameters, String searchConcernsItemLabel, String searchConcernsItemUri, String dateRangeStartString, String dateRangeEndString, User user, int searchPage, int searchPageSize) {
         
-        SPARQLQueryBuilder eventsQuery = prepareSearchQuery();
+        SPARQLQueryBuilder eventsQuery = prepareSearchQuery(
+                eventSearchParameters, 
+                searchConcernsItemLabel, 
+                searchConcernsItemUri, 
+                dateRangeStartString, 
+                dateRangeEndString, 
+                user);
+        
+        setPage(searchPage);
+        setPageSize(searchPageSize);
+        
         TupleQuery eventsTupleQuery = getConnection()
                 .prepareTupleQuery(QueryLanguage.SPARQL, eventsQuery.toString());
         
@@ -344,8 +348,8 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * Generate a query to count the results of the research with the 
      * searched parameters. 
      */
-    private SPARQLQueryBuilder prepareCountSearchQuery() {
-        SPARQLQueryBuilder query = this.prepareSearchQuery();
+    private SPARQLQueryBuilder prepareCountSearchQuery(Event eventSearchParameters, String searchConcernsItemLabel, String searchConcernsItemUri, String dateRangeStartString, String dateRangeEndString, User user) {
+        SPARQLQueryBuilder query = this.prepareSearchQuery(eventSearchParameters, searchConcernsItemLabel, searchConcernsItemUri, dateRangeStartString, dateRangeEndString, user);
         query.clearSelect();
         query.clearLimit();
         query.clearOffset();
@@ -356,11 +360,11 @@ public class EventDAOSesame extends DAOSesame<Event> {
         return query;
     }
 
-    @Override
-    public Integer count() throws RepositoryException
+    public Integer count(Event eventSearchParameters, String searchConcernsItemLabel, String searchConcernsItemUri, String dateRangeStartString, String dateRangeEndString, User user) throws RepositoryException
             , MalformedQueryException, QueryEvaluationException {
         
-        SPARQLQueryBuilder prepareCount = prepareCountSearchQuery();
+        SPARQLQueryBuilder prepareCount = prepareCountSearchQuery(eventSearchParameters, searchConcernsItemLabel, searchConcernsItemUri, dateRangeStartString, dateRangeEndString, user);
+        
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(
                 QueryLanguage.SPARQL
                 , prepareCount.toString());
@@ -375,101 +379,15 @@ public class EventDAOSesame extends DAOSesame<Event> {
         return count;
     }
 
-    /**
-     *
-     * @return
-     */
-    public String getSearchUri() {
-        return searchUri;
+    @Override
+    protected SPARQLQueryBuilder prepareSearchQuery() {
+        return prepareSearchQuery(new Event(null, null, null, null, null)
+                , null, null, null, null, null);
     }
 
-    /**
-     *
-     * @param searchUri
-     */
-    public void setSearchUri(String searchUri) {
-        this.searchUri = searchUri;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public String getSearchType() {
-        return searchType;
-    }
-
-    /**
-     *
-     * @param searchType
-     */
-    public void setSearchType(String searchType) {
-        this.searchType = searchType;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public String getSearchConcernsItemUri() {
-        return searchConcernsItemUri;
-    }
-
-    /**
-     *
-     * @param searchConcernsItemUri
-     */
-    public void setSearchConcernsItemUri(String searchConcernsItemUri) {
-        this.searchConcernsItemUri = searchConcernsItemUri;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public String getSearchConcernsItemLabel() {
-        return searchConcernsItemLabel;
-    }
-
-    /**
-     *
-     * @param searchConcernsItemLabel
-     */
-    public void setSearchConcernsItemLabel(String searchConcernsItemLabel) {
-        this.searchConcernsItemLabel = searchConcernsItemLabel;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public String getSearchDateTimeRangeStartString() {
-        return searchDateTimeRangeStartString;
-    }
-
-    /**
-     *
-     * @param searchDateTimeRangeStartString
-     */
-    public void setSearchDateTimeRangeStartString(
-            String searchDateTimeRangeStartString) {
-        this.searchDateTimeRangeStartString = searchDateTimeRangeStartString;
-    }
-    
-    /**
-     *
-     * @return
-     */
-    public String getSearchDateTimeRangeEndString() {
-        return searchDateTimeRangeEndString;
-    }
-
-    /**
-     *
-     * @param searchDateTimeRangeEndString
-     */
-    public void setSearchDateTimeRangeEndString(
-            String searchDateTimeRangeEndString) {
-        this.searchDateTimeRangeEndString = searchDateTimeRangeEndString;
+    @Override
+    public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
+        return count(new Event(null, null, null, null, null), null, null, null
+                , null, null);
     }
 }

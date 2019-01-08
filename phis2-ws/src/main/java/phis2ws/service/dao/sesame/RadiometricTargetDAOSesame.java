@@ -98,8 +98,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
      * Get a radiometric target from a given binding set.
      * Assume that the following attributes exist : uri, label.
      * @param bindingSet a binding set, result from a search query
-     * @return a radiometric target with data extracted from the given binding 
-     * set
+     * @return a radiometric target with data extracted from the given binding set
      */
     private RadiometricTarget getFromBindingSet(BindingSet bindingSet) {
         RadiometricTarget radiometricTarget = new RadiometricTarget();

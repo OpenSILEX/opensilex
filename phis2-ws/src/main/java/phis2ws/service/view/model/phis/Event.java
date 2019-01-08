@@ -16,14 +16,16 @@ import org.joda.time.DateTime;
  */
 public class Event extends RdfResourceDefinition {
     
+    // type eg. http://www.phenome-fppn.fr/vocabulary/2018/oeev#MoveFrom
     private String type;
+    
+    // concerned items
     private ArrayList<ConcernItem> concernsItems;
+    
+    // dateTime 
     private DateTime dateTime;
 
-    public Event(String uri, String type
-            , ArrayList<ConcernItem> concernsItems
-            , DateTime dateTime
-            , ArrayList<Property> properties) {
+    public Event(String uri, String type, ArrayList<ConcernItem> concernsItems, DateTime dateTime, ArrayList<Property> properties) {
         this.uri = uri;
         this.type = type;
         this.concernsItems = concernsItems;

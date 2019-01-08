@@ -17,6 +17,10 @@ import javax.ws.rs.core.Response;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.sparql.modify.request.UpdateDeleteWhere;
 import static org.apache.jena.sparql.vocabulary.VocabTestQuery.query;
 import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.MalformedQueryException;
@@ -372,18 +376,21 @@ public abstract class DAOSesame<T> {
      */
     protected boolean deleteObjectProperties(String subjectUri, String predicateUri, List<String> objectPropertiesUris) {
         //1. Generates delete query
-        String deleteQuery = "DELETE WHERE { ";
+        UpdateBuilder query = new UpdateBuilder();
+        
+        Resource subject = ResourceFactory.createResource(subjectUri);
+        Property predicate = ResourceFactory.createProperty(predicateUri);        
         
         for (String objectProperty : objectPropertiesUris) {
-            deleteQuery += "<" + subjectUri + "> <" + predicateUri + "> <" + objectProperty + "> . ";
+            Node object = NodeFactory.createURI(objectProperty);
+            query.addWhere(subject, predicate, object);
         }
         
-        deleteQuery += " }";
-        
-        LOGGER.debug(deleteQuery);
+        UpdateDeleteWhere request = query.buildDeleteWhere();
+        LOGGER.debug(request.toString());
         
         //2. Delete data in the triplestore
-        Update prepareDelete = getConnection().prepareUpdate(QueryLanguage.SPARQL, deleteQuery);
+        Update prepareDelete = getConnection().prepareUpdate(QueryLanguage.SPARQL, request.toString());
         try {
             prepareDelete.execute();
         } catch (UpdateExecutionException ex) {

@@ -468,9 +468,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      * @param objectRdfType
      * @return 
      */
-    public POSTResultsReturn checkCardinalities(
-            ArrayList<PropertyPostDTO> properties, String objectUri
-            , String objectRdfType) {        
+    public POSTResultsReturn checkCardinalities(ArrayList<PropertyPostDTO> properties, String objectUri, String objectRdfType) {        
         POSTResultsReturn check = null;
         //list of the returned results
         List<Status> checkStatus = new ArrayList<>();
@@ -536,7 +534,8 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      * ╚═════════════════════╩════════════╩═══════════════╩════════════════════════════╩═══════════════════════╩═════════════════╩════════════════════════════════╩════════════════╩═════════════════════════╝
      * 
      * @param language specify in which language labels should be returned
-     * @param relationsToIgnore
+     * @param relationsToIgnore some relations sometimes must not be considered
+     * as properties so we ignore them
      * @return the builded query
      * @example
      * SELECT DISTINCT  
@@ -574,9 +573,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      *     } 
      * }
      */
-    protected SPARQLQueryBuilder prepareSearchPropertiesQuery(
-            String language
-            , ArrayList<String> relationsToIgnore) {
+    protected SPARQLQueryBuilder prepareSearchPropertiesQuery(String language, ArrayList<String> relationsToIgnore) {
         
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
@@ -660,7 +657,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
             boolean firstRelationToIgnore = true;
             for (String relationToIgnore : relationsToIgnore){
                 
-                if(!firstRelationToIgnore){
+                if (!firstRelationToIgnore){
                     relationToIgnoreQuery += ", ";
                 }
                 else{
@@ -690,9 +687,8 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      * @return true    if the definition object is correctly filled
      *          false   if the uri doesn't exists
      */
-    public boolean getRdfObjectPropertiesAndAddThemToIt(
-            RdfResourceDefinition definition, String language) {
-        return getRdfObjectPropertiesExceptThoseSpecifiedAndAddThemToIt(
+    public boolean getRdfObjectPropertiesAndAddThemToIt(RdfResourceDefinition definition, String language) {
+        return getPropertiesExceptThoseSpecifiedAndAddThemToIt(
                 definition, language, null);
     }       
     
@@ -706,9 +702,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      * @return true    if the definition object is correctly filled
      *          false   if the uri doesn't exists
      */
-    public boolean getRdfObjectPropertiesExceptThoseSpecifiedAndAddThemToIt(
-            RdfResourceDefinition definition, String language
-            , ArrayList<String> propertiesRelationsToIgnore) {
+    public boolean getPropertiesExceptThoseSpecifiedAndAddThemToIt(RdfResourceDefinition definition, String language, ArrayList<String> propertiesRelationsToIgnore) {
         if (this.existUri(uri)) {
             /* Prepare and execute the query to retrieve all the relations, 
              properties and properties type with their labels for the given 
@@ -727,35 +721,29 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
                     Property property = new Property();
 
                     // 1. Affect the property
-                    property.setValue(
-                            bindingSet.getValue(PROPERTY).stringValue());
+                    property.setValue(bindingSet.getValue(PROPERTY).stringValue());
 
                     // 2. Affect the relation
-                    property.setRelation(
-                            bindingSet.getValue(RELATION).stringValue());
+                    property.setRelation(bindingSet.getValue(RELATION).stringValue());
                     
                     // 3. affect the RDF type of the property if exists
                     if (bindingSet.hasBinding(PROPERTY_TYPE)) {
-                        property.setRdfType(bindingSet
-                                .getValue(PROPERTY_TYPE).stringValue());
+                        property.setRdfType(bindingSet.getValue(PROPERTY_TYPE).stringValue());
                     }
 
                     // 4. Add property label if exists
                     if (bindingSet.hasBinding(PROPERTY_LABEL)) {
-                        property.addLastValueLabel(bindingSet
-                                .getValue(PROPERTY_LABEL).stringValue());
+                        property.addLastValueLabel(bindingSet.getValue(PROPERTY_LABEL).stringValue());
                     }
                     
                     // 5. Add relation label if exists
                     if (bindingSet.hasBinding(RELATION_LABEL)) {
-                        property.addLastRelationLabel(bindingSet
-                                .getValue(RELATION_LABEL).stringValue());
+                        property.addLastRelationLabel(bindingSet.getValue(RELATION_LABEL).stringValue());
                     }
                     
                     // 6. Add property rdf type label if exists
                     if (bindingSet.hasBinding(PROPERTY_TYPE_LABEL)) {
-                        property.addLastRdfTypeLabel(bindingSet
-                                .getValue(PROPERTY_TYPE_LABEL).stringValue());
+                        property.addLastRdfTypeLabel(bindingSet.getValue(PROPERTY_TYPE_LABEL).stringValue());
                     }
 
                     // 7. If definition already own the property, add current 
@@ -785,23 +773,19 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
                         // If property prefered label exists add it at the 
                         // begining of labels array
                         if (bindingSet.hasBinding(PROPERTY_PREF_LABEL)) {
-                            property.addFirstValueLabel(bindingSet
-                                    .getValue(PROPERTY_PREF_LABEL).stringValue());
+                            property.addFirstValueLabel(bindingSet.getValue(PROPERTY_PREF_LABEL).stringValue());
                         }
 
                         // If relation prefered label exists add it at the 
                         // begining of labels array
                         if (bindingSet.hasBinding(RELATION_PREF_LABEL)) {
-                            property.addFirstRelationLabel(bindingSet
-                                    .getValue(RELATION_PREF_LABEL).stringValue());
+                            property.addFirstRelationLabel(bindingSet.getValue(RELATION_PREF_LABEL).stringValue());
                         }
 
                         // If property type prefered label exists add it at the 
                         // begining of labels array
                         if (bindingSet.hasBinding(PROPERTY_TYPE_PREF_LABEL)) {
-                            property.addFirstRdfTypeLabel(bindingSet
-                                    .getValue(PROPERTY_TYPE_PREF_LABEL)
-                                    .stringValue());
+                            property.addFirstRdfTypeLabel(bindingSet.getValue(PROPERTY_TYPE_PREF_LABEL).stringValue());
                         }
                         
                         // Add property to definition

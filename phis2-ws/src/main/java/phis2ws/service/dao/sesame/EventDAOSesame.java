@@ -293,6 +293,12 @@ public class EventDAOSesame extends DAOSesame<Event> {
                 , new ArrayList<>());
     }
     
+    /**
+     *
+     * get a concerns items from a binding set
+     * @param bindingSet
+     * @return concerns item
+     */
     private ConcernItem getConcernsItemFromBindingSet(BindingSet bindingSet){
                 
         String concernsItemUri = getValueOfVariableFromBindingSet(
@@ -353,10 +359,14 @@ public class EventDAOSesame extends DAOSesame<Event> {
         return events;
     }
     
+    /**
+     * search event properties and set them to it
+     * @param event 
+     */
     private void searchEventPropertiesAndSetThemToIt(Event event){
 
         PropertyDAOSesame propertyDAO = new PropertyDAOSesame(event.getUri());
-        propertyDAO.getRdfObjectPropertiesExceptThoseSpecifiedAndAddThemToIt(
+        propertyDAO.getPropertiesExceptThoseSpecifiedAndAddThemToIt(
                 event, null, new ArrayList(){
                     {
                         add(Rdf.RELATION_TYPE.toString());
@@ -365,6 +375,10 @@ public class EventDAOSesame extends DAOSesame<Event> {
                     }});
     }
     
+    /**
+     * search event concerns items and set them to it
+     * @param event 
+     */
     private void searchEventConcernsItemsAndSetThemToIt(Event event){
                 
         SPARQLQueryBuilder concernsItemsQuery = 
@@ -385,8 +399,13 @@ public class EventDAOSesame extends DAOSesame<Event> {
         }
     }
     
-    private String getValueOfVariableFromBindingSet(String variableName
-        , BindingSet bindingSet){ 
+    
+    /**
+     * get the value of a variable from a binding set
+     * @param variableName 
+     * @param bindingSet 
+     */
+    private String getValueOfVariableFromBindingSet(String variableName, BindingSet bindingSet){ 
         Value selectedFieldValue = bindingSet.getValue(variableName);
         if (selectedFieldValue != null) {
             return selectedFieldValue.stringValue();

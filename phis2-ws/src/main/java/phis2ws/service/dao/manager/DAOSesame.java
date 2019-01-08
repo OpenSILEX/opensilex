@@ -307,8 +307,10 @@ public abstract class DAOSesame<T> {
      * variable to a date. 
      * SPARQL dateTimeStamp dates have to be handled in a specific way as 
      * the comparison operators (<, >, etc.) aren't available for dateTimeStamp
-     * objects : 
-     * https://www.w3.org/TR/2013/REC-sparql11-query-20130321/#OperatorMapping 
+     * objects.
+     * @see <a href="https://www.w3.org/TR/2013/REC-sparql11-query-20130321/#OperatorMapping">
+     * SparQL Operator Mapping
+     * </a>
      * @param query
      * @param filterDateString
      * @param filterDateFormat

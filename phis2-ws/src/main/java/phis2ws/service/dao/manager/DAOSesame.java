@@ -342,14 +342,20 @@ public abstract class DAOSesame<T> {
     }
 
     /**
-     * Append a filter to select only the results whose datetime is included 
-     * in the date range in parameter
+     * Append a filter to select only the results whose datetime is 
+     * included in the date range in parameter
      * @param query
      * @param filterRangeDatesStringFormat
      * @param filterRangeStartDateString
      * @param filterRangeEndDateString
-     * @param dateTimeStampToCompareSparqleVariable the SPARQL variable (?abc format) of 
-     * the dateTimeStamp to compare to the range
+     * @param dateTimeStampToCompareSparqleVariable the SPARQL variable (?abc 
+     * format) of the dateTimeStamp to compare to the range
+     * @example SparQL codeadded to the query :
+        ?time  <http://www.w3.org/2006/time#inXSDDateTimeStamp>  ?dateTimeStamp  . 
+        BIND(xsd:dateTime(str(?dateTimeStamp)) as ?dateTime) .
+        BIND(xsd:dateTime(str("2017-09-10T12:00:00+01:00")) as ?dateRangeStartDateTime) .
+        BIND(xsd:dateTime(str("2017-09-12T12:00:00+01:00")) as ?dateRangeEndDateTime) .
+        FILTER ( (?dateRangeStartDateTime <= ?dateTime) && (?dateRangeEndDateTime >= ?dateTime) ) 
      */
     protected void filterSearchQueryWithDateRangeComparisonWithDateTimeStamp(
             SPARQLStringBuilder query

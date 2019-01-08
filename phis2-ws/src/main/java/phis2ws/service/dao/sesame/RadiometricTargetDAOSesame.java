@@ -369,14 +369,23 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
      * Delete all the occurrences of each relation of the properties of the radiometric target.
      * @param radiometricTarget
      * @example
-     * DELETE WHERE { 
-     *      <http://www.phenome-fppn.fr/id/radiometricTargets/rt007> <http://www.w3.org/2000/01/rdf-schema#label> ?label . 
-     *      <http://www.phenome-fppn.fr/id/radiometricTargets/rt007> <http://www.phenome-fppn.fr/vocabulary/2017#hasBrand> ?v0 . 
-     *      <http://www.phenome-fppn.fr/id/radiometricTargets/rt007> <http://www.phenome-fppn.fr/vocabulary/2017#inServiceDate> ?v1 . 
-     *      <http://www.phenome-fppn.fr/id/radiometricTargets/rt007> <http://www.phenome-fppn.fr/vocabulary/2017#hasTechnicalContact> ?v2 . 
-     *      <http://www.phenome-fppn.fr/id/radiometricTargets/rt007> <http://www.phenome-fppn.fr/vocabulary/2017#hasRadiometricTargetMaterial> ?v3 . 
-     *      <http://www.phenome-fppn.fr/id/radiometricTargets/rt007> <http://www.phenome-fppn.fr/vocabulary/2017#hasShape> ?v4 .  
-     * }
+     *  DELETE DATA {
+     *    GRAPH <http://www.phenome-fppn.fr/diaphen/set/radiometricTargets> {
+     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.w3.org/2000/01/rdf-schema#label> "label" .
+     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.phenome-fppn.fr/vocabulary/2017#RadiometricTarget> .
+     *      <http://www.phenome-fppn.fr/vocabulary/2017#RadiometricTarget> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> "http://www.w3.org/2002/07/owl#Class" .
+     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.phenome-fppn.fr/vocabulary/2017#hasBrand> "brand" .
+     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.phenome-fppn.fr/vocabulary/2017#hasRadiometricTargetMaterial> "carpet" .
+     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.phenome-fppn.fr/vocabulary/2017#hasShape> "rectangular" .
+     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.phenome-fppn.fr/vocabulary/2017#dateOfLastCalibration> "2019-01-03" .
+     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.phenome-fppn.fr/vocabulary/2017#dateOfPurchase> "2019-01-02" .
+     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.phenome-fppn.fr/vocabulary/2017#hasShapeLength> "31" .
+     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.phenome-fppn.fr/vocabulary/2017#hasShapeWidth> "45" .
+     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.phenome-fppn.fr/vocabulary/2017#hasTechnicalContact> "admin@phis.fr" .
+     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.phenome-fppn.fr/vocabulary/2017#inServiceDate> "2019-01-01" .
+     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.phenome-fppn.fr/vocabulary/2017#serialNumber> "serial" .
+     *    }
+     *  }
      * @return the query
      */
     private UpdateRequest prepareDeleteQuery(RadiometricTarget radiometricTarget) {
@@ -511,7 +520,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
                 //We only delete the already existing data received by the client. 
                 //It means that we delete only the properties given by the client.
                 //\SILEX:info
-                UpdateRequest deleteQuery = prepareDeleteQuery(radiometricTarget);
+                UpdateRequest deleteQuery = prepareDeleteQuery(oldRadiometricTarget);
 
                 //2. generate query to insert new data
                 //SILEX:info

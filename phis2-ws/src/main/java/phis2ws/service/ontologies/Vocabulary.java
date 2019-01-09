@@ -319,6 +319,12 @@ public enum Vocabulary {
             return NAMESPACE.toString() + "measures";
         }
     },
+    RELATION_PARTICIPATES_IN {
+       @Override
+        public String toString() {
+            return NAMESPACE.toString() + "participatesIn";
+        } 
+    },
     RELATION_PERSON_IN_CHARGE {
         @Override
         public String toString() {

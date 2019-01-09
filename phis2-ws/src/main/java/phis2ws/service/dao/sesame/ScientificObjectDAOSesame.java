@@ -169,24 +169,7 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
         LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
         return query;
     }
-    
-    /**
-     * generates the sparql ask query to know if a given property exists in the triplestore 
-     * @param property
-     * @param context
-     * @return the query
-     */
-    private SPARQLQueryBuilder askExistProperty(String property) {
-        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
-        query.appendDistinct(Boolean.TRUE);
-
-        query.appendAsk("");
-        query.appendToBody("?x <" + property + "> " + "?y");
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
-        return query;
-    }
-    
     /**
      * Check if the scientific objects are accurates
      * @param ScientificObjectsDTO
@@ -242,19 +225,10 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
                             checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "already existing alias for the given experiment"));
                         }
                     }
-                }
+                }                
                 
-                //check if property exists in the ontology Vocabulary  
-                SPARQLQueryBuilder query_voc = askExistProperty(property.getRelation());
-                BooleanQuery booleanQuery_voc = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query_voc.toString());
-                boolean result_voc = booleanQuery_voc.evaluate();                
-                
-                //check if property exists in the ontology Rdfs                    
-                SPARQLQueryBuilder query_rdfs = askExistProperty(property.getRelation());
-                BooleanQuery booleanQuery_rdfs = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query_rdfs.toString());
-                boolean result_rdfs = booleanQuery_rdfs.evaluate();
-                
-                if ((result_rdfs == false) && (result_voc == false)) {
+                //check if property exists in the ontology Vocabulary --> see how to check rdfs                
+                if (existUri(property.getRelation()) == false) {
                     dataOk = false;
                     checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "the property relation " + property.getRelation() + " doesn't exist in the ontology"));
                 }

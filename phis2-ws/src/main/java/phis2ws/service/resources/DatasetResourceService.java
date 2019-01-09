@@ -205,7 +205,7 @@ public class DatasetResourceService extends ResourceService {
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
         @ApiParam(value = "Search by experiment", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI) @QueryParam("experiment") @URL String experiment,
         @ApiParam(value = "Search by variable", example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI) @QueryParam("variable") @URL String variable,
-        @ApiParam(value = "Search by agronomical(s) object(s), separated by coma", example = DocumentationAnnotation.EXAMPLE_AGRONOMICAL_OBJECT_URI + "," + DocumentationAnnotation.EXAMPLE_AGRONOMICAL_OBJECT_URI) @QueryParam("agronomicalObjects") String agronomicalObjects,
+        @ApiParam(value = "Search by agronomical(s) object(s), separated by coma", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_URI + "," + DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_URI) @QueryParam("agronomicalObjects") String agronomicalObjects,
         @ApiParam(value = "Search by interval - Start date", example = DocumentationAnnotation.EXAMPLE_DATETIME) @QueryParam("startDate") @Date(DateFormat.YMD) String startDate,
         @ApiParam(value = "Search by interval - End date", example = DocumentationAnnotation.EXAMPLE_DATETIME) @QueryParam("endDate") @Date(DateFormat.YMD) String endDate,
         @ApiParam(value = "Search by sensor", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("sensor")  @URL String sensor,

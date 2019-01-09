@@ -64,8 +64,8 @@ public final class DocumentationAnnotation {
     public static final String PROJECT_URI_DEFINITION = "A project URI (Unique Resource Identifier)";
     public static final String PROJECT_POST_DATA_DEFINITION = "JSON format of project data";
 
-    public static final String AGRONOMICAL_OBJECT_URI_DEFINITION = "Agronomical object URI (Unique Resource Identifier)";
-    public static final String AGRONOMICAL_OBJECT_POST_DATA_DEFINITION = "JSON format of agronomical object data";
+    public static final String SCIENTIFIC_OBJECT_URI_DEFINITION = "Scientific object URI (Unique Resource Identifier)";
+    public static final String SCIENTIFIC_OBJECT_POST_DATA_DEFINITION = "JSON format of scientific object data";
 
     public static final String GROUP_URI_DEFINITION = "A group uri";
     public static final String GROUP_POST_DATA_DEFINITION = "JSON format of group data";
@@ -142,13 +142,13 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_FILE_INFORMATION_CHECKSUM = "106fa487baa1728083747de1c6df73e9";
     public static final String EXAMPLE_FILE_INFORMATION_EXTENSION = "jpg";
 
-    public static final String EXAMPLE_AGRONOMICAL_OBJECT_URI = "http://www.phenome-fppn.fr/phenovia/2017/o1032481";
-    public static final String EXAMPLE_AGRONOMICAL_OBJECT_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#Plot";
+    public static final String EXAMPLE_SCIENTIFIC_OBJECT_URI = "http://www.phenome-fppn.fr/phenovia/2017/o1032481";
+    public static final String EXAMPLE_SCIENTIFIC_OBJECT_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#Plot";
 
     public static final String EXAMPLE_IMAGE_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#HemisphericalImage";
     public static final String EXAMPLE_IMAGE_URI = "http://www.phenome-fppn.fr/phis_field/2017/i170000000000";
     public static final String EXAMPLE_IMAGE_DATE = EXAMPLE_DATETIME;
-    public static final String EXAMPLE_IMAGE_CONCERNED_ITEMS = EXAMPLE_AGRONOMICAL_OBJECT_URI + ";" + EXAMPLE_AGRONOMICAL_OBJECT_URI;
+    public static final String EXAMPLE_IMAGE_CONCERNED_ITEMS = EXAMPLE_SCIENTIFIC_OBJECT_URI + ";" + EXAMPLE_SCIENTIFIC_OBJECT_URI;
 
     public static final String EXAMPLE_PROJECT_URI = "http://phenome-fppn.fr/phis_field/projectTest";
     public static final String EXAMPLE_PROJECT_NAME = "projectTest";

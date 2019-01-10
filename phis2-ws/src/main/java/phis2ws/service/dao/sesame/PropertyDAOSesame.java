@@ -701,10 +701,8 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
             /* Prepare and execute the query to retrieve all the relations, 
              properties and properties type with their labels for the given 
             uri and language*/
-            SPARQLQueryBuilder query = prepareSearchPropertiesQuery(language
-                    , propertiesRelationsToIgnore);
-            TupleQuery tupleQuery = getConnection()
-                    .prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+            SPARQLQueryBuilder query = prepareSearchPropertiesQuery(language, propertiesRelationsToIgnore);
+            TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         
             definition.setUri(uri);
         

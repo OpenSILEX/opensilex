@@ -18,6 +18,7 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.update.UpdateRequest;
+import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.BindingSet;
@@ -39,7 +40,6 @@ import phis2ws.service.dao.phis.UserDaoPhisBrapi;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.model.User;
 import phis2ws.service.ontologies.Contexts;
-import phis2ws.service.ontologies.DublinCore;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Vocabulary;
@@ -204,24 +204,19 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         Node documentType = NodeFactory.createURI(documentMetadata.getDocumentType());
         spql.addInsert(graph, documentUri, RDF.type, documentType);
 
-        Property relationCreator = ResourceFactory.createProperty(DublinCore.RELATION_CREATOR.toString());
-        spql.addInsert(graph, documentUri, relationCreator, documentMetadata.getCreator());
+        spql.addInsert(graph, documentUri, DCTerms.creator, documentMetadata.getCreator());
 
-        Property relationLanguage = ResourceFactory.createProperty(DublinCore.RELATION_LANGUAGE.toString());
-        spql.addInsert(graph, documentUri, relationLanguage, documentMetadata.getLanguage());
+        spql.addInsert(graph, documentUri, DCTerms.language, documentMetadata.getLanguage());
 
-        Property relationTitle = ResourceFactory.createProperty(DublinCore.RELATION_TITLE.toString());
-        spql.addInsert(graph, documentUri, relationTitle, documentMetadata.getTitle());
+        spql.addInsert(graph, documentUri, DCTerms.title, documentMetadata.getTitle());
 
-        Property relationDate = ResourceFactory.createProperty(DublinCore.RELATION_DATE.toString());
-        spql.addInsert(graph, documentUri, relationDate, documentMetadata.getCreationDate());
+        spql.addInsert(graph, documentUri, DCTerms.date, documentMetadata.getCreationDate());
 
         Property relationStatus = ResourceFactory.createProperty(Vocabulary.RELATION_STATUS.toString());
         spql.addInsert(graph, documentUri, relationStatus, documentMetadata.getStatus());
             
         if (documentMetadata.getExtension() != null) {
-            Property relationFormat = ResourceFactory.createProperty(DublinCore.RELATION_FORMAT.toString());
-            spql.addInsert(graph, documentUri, relationFormat, documentMetadata.getExtension());
+            spql.addInsert(graph, documentUri, DCTerms.format, documentMetadata.getExtension());
         }
         
         if (documentMetadata.getComment() != null && !documentMetadata.getComment().equals("")) {
@@ -254,17 +249,13 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         Node graph = NodeFactory.createURI(Contexts.DOCUMENTS.toString());
         Node documentUri = NodeFactory.createURI(document.getUri());
         
-        Property relationCreator = ResourceFactory.createProperty(DublinCore.RELATION_CREATOR.toString());
-        spql.addDelete(graph, documentUri, relationCreator, document.getCreator());
+        spql.addDelete(graph, documentUri, DCTerms.creator, document.getCreator());
 
-        Property relationLanguage = ResourceFactory.createProperty(DublinCore.RELATION_LANGUAGE.toString());
-        spql.addDelete(graph, documentUri, relationLanguage, document.getLanguage());
+        spql.addDelete(graph, documentUri, DCTerms.language, document.getLanguage());
 
-        Property relationTitle = ResourceFactory.createProperty(DublinCore.RELATION_TITLE.toString());
-        spql.addDelete(graph, documentUri, relationTitle, document.getTitle());
+        spql.addDelete(graph, documentUri, DCTerms.title, document.getTitle());
 
-        Property relationDate = ResourceFactory.createProperty(DublinCore.RELATION_DATE.toString());
-        spql.addDelete(graph, documentUri, relationDate, document.getCreationDate());
+        spql.addDelete(graph, documentUri, DCTerms.date, document.getCreationDate());
 
         Node documentType = NodeFactory.createURI(document.getDocumentType());
         spql.addDelete(graph, documentUri, RDF.type, documentType);
@@ -437,42 +428,42 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         
         sparqlQuery.appendGroupBy("?" + CREATOR);
         sparqlQuery.appendSelect("?" + CREATOR);
-        sparqlQuery.appendTriplet(select, DublinCore.RELATION_CREATOR.toString(), "?" + CREATOR, null);
+        sparqlQuery.appendTriplet(select, DCTerms.creator.getURI(), "?" + CREATOR, null);
         
         if (creator != null) {
             sparqlQuery.appendAndFilter("regex(STR(?" + CREATOR +"), '" + creator + "', 'i')");
         }
         
         if (language != null) {
-            sparqlQuery.appendTriplet(select, DublinCore.RELATION_LANGUAGE.toString(), "\"" + language + "\"", null);
+            sparqlQuery.appendTriplet(select, DCTerms.language.getURI(), "\"" + language + "\"", null);
         } else {
             sparqlQuery.appendSelect(" ?" + LANGUAGE);
             sparqlQuery.appendGroupBy(" ?" + LANGUAGE);
-            sparqlQuery.appendTriplet(select, DublinCore.RELATION_LANGUAGE.toString(), "?" + LANGUAGE, null);
+            sparqlQuery.appendTriplet(select, DCTerms.language.getURI(), "?" + LANGUAGE, null);
         }
         
         sparqlQuery.appendGroupBy("?" + TITLE);
         sparqlQuery.appendSelect("?" + TITLE);
-        sparqlQuery.appendTriplet(select, DublinCore.RELATION_TITLE.toString(), "?" + TITLE, null);
+        sparqlQuery.appendTriplet(select, DCTerms.title.getURI(), "?" + TITLE, null);
         
         if (title != null) {
             sparqlQuery.appendAndFilter("regex(STR(?" + TITLE +"), '" + title + "', 'i')");
         }
         
         if (creationDate != null) {
-            sparqlQuery.appendTriplet(select, DublinCore.RELATION_DATE.toString(), "\"" + creationDate + "\"", null);
+            sparqlQuery.appendTriplet(select, DCTerms.date.getURI(), "\"" + creationDate + "\"", null);
         } else {
             sparqlQuery.appendGroupBy("?" + CREATION_DATE);
             sparqlQuery.appendSelect("?" + CREATION_DATE);
-            sparqlQuery.appendTriplet(select, DublinCore.RELATION_DATE.toString(), "?" + CREATION_DATE, null);
+            sparqlQuery.appendTriplet(select, DCTerms.date.getURI(), "?" + CREATION_DATE, null);
         }
         
         if (format != null) {
-            sparqlQuery.appendTriplet(select, DublinCore.RELATION_FORMAT.toString(), "\"" + format + "\"", null);
+            sparqlQuery.appendTriplet(select, DCTerms.format.getURI(), "\"" + format + "\"", null);
         } else {
             sparqlQuery.appendGroupBy("?" + FORMAT);
             sparqlQuery.appendSelect("?" + FORMAT);
-            sparqlQuery.appendTriplet(select, DublinCore.RELATION_FORMAT.toString(), "?" + FORMAT, null);
+            sparqlQuery.appendTriplet(select, DCTerms.format.getURI(), "?" + FORMAT, null);
         }
         
         if (!concernedItemsUris.isEmpty() && concernedItemsUris.size() > 0) {

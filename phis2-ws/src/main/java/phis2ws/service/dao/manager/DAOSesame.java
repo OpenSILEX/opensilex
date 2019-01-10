@@ -93,7 +93,7 @@ public abstract class DAOSesame<T> {
     protected static final String DATE_RANGE_END_DATETIME_VARIABLE = "dateRangeEndDateTime";
     protected static final String DATE_RANGE_END_DATETIME_VARIABLE_SPARQL = "?" + DATE_RANGE_END_DATETIME_VARIABLE;
     
-    protected final String DATETIMESTAMP_FORMAT_SPARQLE = DateFormat.YMDTHMSZZ.toString();
+    protected final String DATETIMESTAMP_FORMAT_SPARQL = DateFormat.YMDTHMSZZ.toString();
     
     //Triplestore relations
     protected static final URINamespaces ONTOLOGIES = new URINamespaces();
@@ -323,22 +323,16 @@ public abstract class DAOSesame<T> {
      * @example SparQL code added to the query :
         BIND(xsd:dateTime(str("2017-09-10T12:00:00+01:00")) as ?dateRangeStartDateTime) .
         FILTER ( (?dateRangeStartDateTime <= ?dateTime) ) 
-     
      */
     protected void filterSearchQueryWithDateTimeStampComparison( SPARQLStringBuilder query, String filterDateString, String filterDateFormat, String filterDateSparqlVariable, String comparisonSign, String dateTimeStampToCompareSparqlVariable){
         
-        DateTime filterDate = Dates.stringToDateTimeWithGivenPattern(
-                filterDateString, filterDateFormat);
+        DateTime filterDate = Dates.stringToDateTimeWithGivenPattern(filterDateString, filterDateFormat);
         
-        String filterDateStringInSparqlDateTimeStampFormat = DateTimeFormat
-                .forPattern(DATETIMESTAMP_FORMAT_SPARQLE).print(filterDate);
+        String filterDateStringInSparqlDateTimeStampFormat = DateTimeFormat.forPattern(DATETIMESTAMP_FORMAT_SPARQL).print(filterDate);
 
-        query.appendToBody("\nBIND(<" + Xsd.FUNCTION_DATETIME.toString() 
-                + ">(str(\"" + filterDateStringInSparqlDateTimeStampFormat 
-                + "\")) as " + filterDateSparqlVariable + ") .");
+        query.appendToBody("\nBIND(<" + Xsd.FUNCTION_DATETIME.toString() + ">(str(\"" + filterDateStringInSparqlDateTimeStampFormat + "\")) as " + filterDateSparqlVariable + ") .");
         
-        query.appendAndFilter(filterDateSparqlVariable + comparisonSign
-                + dateTimeStampToCompareSparqlVariable);
+        query.appendAndFilter(filterDateSparqlVariable + comparisonSign + dateTimeStampToCompareSparqlVariable);
     }
 
     /**
@@ -363,20 +357,10 @@ public abstract class DAOSesame<T> {
                 + ")) as " + DATETIME_VARIABLE_SPARQL + ") .");
         
         if (filterRangeStartDateString != null){
-            filterSearchQueryWithDateTimeStampComparison(query
-                    , filterRangeStartDateString
-                    , filterRangeDatesStringFormat
-                    , DATE_RANGE_START_DATETIME_VARIABLE_SPARQL
-                    , " <= "
-                    , DATETIME_VARIABLE_SPARQL);
+            filterSearchQueryWithDateTimeStampComparison(query, filterRangeStartDateString, filterRangeDatesStringFormat, DATE_RANGE_START_DATETIME_VARIABLE_SPARQL, " <= ", DATETIME_VARIABLE_SPARQL);
         }
         if (filterRangeEndDateString != null){
-            filterSearchQueryWithDateTimeStampComparison(query
-                    , filterRangeEndDateString
-                    , filterRangeDatesStringFormat
-                    , DATE_RANGE_END_DATETIME_VARIABLE_SPARQL
-                    , " >= "
-                    , DATETIME_VARIABLE_SPARQL);
+            filterSearchQueryWithDateTimeStampComparison(query, filterRangeEndDateString, filterRangeDatesStringFormat, DATE_RANGE_END_DATETIME_VARIABLE_SPARQL, " >= ", DATETIME_VARIABLE_SPARQL);
         }
     }
 

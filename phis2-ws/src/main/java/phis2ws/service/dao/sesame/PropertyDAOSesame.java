@@ -642,18 +642,13 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
 
         // 8. If subClassOf is specified, add filter on uri rdf:type
         if (subClassOf != null) {
-            query.appendTriplet("<" + uri + ">"
-                    , Rdf.RELATION_TYPE.toString()
-                    , "?" + RDF_TYPE, null);
-            query.appendTriplet("?" + RDF_TYPE, "<" 
-                    + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*"
-                    , "<" + subClassOf + ">", null);
+            query.appendTriplet("<" + uri + ">", Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
+            query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", "<" + subClassOf + ">", null);
         }
         
         if (relationsToIgnore != null)
         {
-            String relationToIgnoreQuery = 
-                    "FILTER (?" + RELATION + " NOT IN (";
+            String relationToIgnoreQuery = "FILTER (?" + RELATION + " NOT IN (";
             
             boolean firstRelationToIgnore = true;
             for (String relationToIgnore : relationsToIgnore){
@@ -665,8 +660,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
                     firstRelationToIgnore = false;
                 }
                 
-                relationToIgnoreQuery += 
-                            "<" + relationToIgnore + ">";
+                relationToIgnoreQuery += "<" + relationToIgnore + ">";
             }
             relationToIgnoreQuery += "))";
             
@@ -689,8 +683,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      *          false   if the uri doesn't exists
      */
     public boolean getAllPropertiesWithLabels(RdfResourceDefinition definition, String language) {
-        return getAllPropertiesWithLabelsExceptThoseSpecified(
-                definition, language, null);
+        return getAllPropertiesWithLabelsExceptThoseSpecified(definition, language, null);
     }       
     
      /**

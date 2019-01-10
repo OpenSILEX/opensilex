@@ -156,26 +156,26 @@ public class ExperimentDAOSesame extends DAOSesame<Experiment> {
     
     /**
      * Update the list of the variables linked to the given experiment.
-     * /!\ Prerequisite : the data must have been checked before.
-     * @see ExperimentDao#checkAndUpdateObservedVariables(java.lang.String, java.util.List) 
+     * /!\ Prerequisite : the information must have been checked before.
+     * @see ExperimentDao#checkAndUpdateLinkedVariables(java.lang.String, java.util.List) 
      * @param experimentUri
      * @param variables
      * @return The update result.
      */
-    public POSTResultsReturn updateMeasuredVariables(String experimentUri, List<String> variables) {
+    public POSTResultsReturn updateLinkedVariables(String experimentUri, List<String> variables) {
         POSTResultsReturn result;
         List<Status> updateStatus = new ArrayList<>();
         
         boolean update = true;
 
         //1. Delete old object properties
-        HashMap<String, String> actualMeasuredVariables = getVariables(experimentUri);
-        List<String> oldMeasuredVariables = new ArrayList<>();
-        actualMeasuredVariables.entrySet().forEach((oldVariable) -> {
-            oldMeasuredVariables.add(oldVariable.getKey());
+        HashMap<String, String> actualLinkedVariables = getVariables(experimentUri);
+        List<String> oldLinkedVariables = new ArrayList<>();
+        actualLinkedVariables.entrySet().forEach((oldVariable) -> {
+            oldLinkedVariables.add(oldVariable.getKey());
         });
         
-        if (deleteObjectProperties(experimentUri, Vocabulary.RELATION_MEASURES.toString(), oldMeasuredVariables)) {
+        if (deleteObjectProperties(experimentUri, Vocabulary.RELATION_MEASURES.toString(), oldLinkedVariables)) {
             //2. Add new object properties
             if (addObjectProperties(experimentUri, Vocabulary.RELATION_MEASURES.toString(), variables, experimentUri)) {
                 updateStatus.add(new Status(StatusCodeMsg.RESOURCES_UPDATED, StatusCodeMsg.INFO, "The experiment " + experimentUri + " has now " + variables.size() + " linked variables"));
@@ -265,7 +265,7 @@ public class ExperimentDAOSesame extends DAOSesame<Experiment> {
     
     /**
      * Update the list of the sensors linked to the given experiment.
-     * /!\ Prerequisite : the data must have been checked before.
+     * /!\ Prerequisite : the information must have been checked before.
      * @see ExperimentDao#checkAndUpdateLinkedSensors(java.lang.String, java.util.List)
      * @param experimentUri
      * @param sensors

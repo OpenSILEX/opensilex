@@ -23,6 +23,9 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.dao.manager.DAOPhisBrapi;
+import phis2ws.service.dao.sesame.ExperimentDAOSesame;
+import phis2ws.service.dao.sesame.SensorDAOSesame;
+import phis2ws.service.dao.sesame.VariableDaoSesame;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.model.User;
@@ -255,6 +258,15 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
             experiments = getExperimentsProjects(experiments, statement);
             for (Experiment experiment : experiments) {
                 experiment.setGroupList(this.getExperimentGroups(experiment));
+            }
+            
+            //Get experiments variables
+            ExperimentDAOSesame experimentDAOSesame = new ExperimentDAOSesame();
+            for (Experiment experiment : experiments) {
+                HashMap<String, String> variables = experimentDAOSesame.getVariables(experiment.getUri());
+                experiment.setVariables(variables);
+                HashMap<String, String> sensors = experimentDAOSesame.getSensors(experiment.getUri());
+                experiment.setSensors(sensors);
             }
             
         } catch (SQLException ex) {
@@ -926,5 +938,157 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
             postResult = new POSTResultsReturn(false, Response.Status.INTERNAL_SERVER_ERROR, e.toString());
         }
         return postResult;
+    }
+    
+    /**
+     * Check the given information and right on experiment to update the list of 
+     * observed variables which is mesured during the given experiment.
+     * @param experimentUri
+     * @param variables
+     * @return the check result.
+     */
+    public POSTResultsReturn checkLinkedVariables(String experimentUri, List<String> variables) {
+        POSTResultsReturn checkResult = new POSTResultsReturn();
+        List<Status> checkStatus = new ArrayList<>();
+        
+        boolean dataOk = true;
+        
+        Experiment experiment = new Experiment(experimentUri);
+        try {
+            //1. Check if the experimentUri exist in the database.
+            if (existInDB(experiment) && canUserUpdateExperiment(experiment)) {
+                //2. Check if the user has the rigth to update the experiment
+                if (canUserUpdateExperiment(experiment)) {
+                    //3. Check for each variable uri given if it exist and is a variable.
+                    VariableDaoSesame variableDaoSesame = new VariableDaoSesame();
+                    for (String variableUri : variables) {
+                        if (!variableDaoSesame.existAndIsVariable(variableUri)) {
+                            dataOk = false;
+                            checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
+                                StatusCodeMsg.UNKNOWN_URI + " " + variableUri));
+                        }
+                    }
+                } else {
+                    dataOk = false;
+                    checkStatus.add(new Status(StatusCodeMsg.ACCESS_DENIED, StatusCodeMsg.ERR, 
+                        StatusCodeMsg.ACCESS_DENIED + ". You cannot update " + experimentUri));
+                }
+            } else {
+                dataOk = false;
+                checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
+                    StatusCodeMsg.UNKNOWN_URI + " " + experimentUri));
+            }
+        } catch (Exception ex) {
+            java.util.logging.Logger.getLogger(ExperimentDao.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        checkResult = new POSTResultsReturn(dataOk, null, dataOk);
+        checkResult.statusList = checkStatus;
+        return checkResult;
+    }
+    
+    /**
+     * Check the given information and rights on experiment to update the list of 
+     * sensors which participates in the given experiment.
+     * @param experimentUri
+     * @param sensors
+     * @return the check result.
+     */
+    public POSTResultsReturn checkLinkedSensors(String experimentUri, List<String> sensors) {
+        POSTResultsReturn checkResult = new POSTResultsReturn();
+        List<Status> checkStatus = new ArrayList<>();
+        
+        boolean dataOk = true;
+        
+        Experiment experiment = new Experiment(experimentUri);
+        try {
+            //1. Check if the experimentUri exist in the database.
+            if (existInDB(experiment) && canUserUpdateExperiment(experiment)) {
+                //2. Check if the user has the rigth to update the experiment
+                if (canUserUpdateExperiment(experiment)) {
+                    //3. Check for each sensor uri given if it exist and is a sensor.
+                    SensorDAOSesame sensorDAOSesame = new SensorDAOSesame();
+                    for (String sensorUri : sensors) {
+                        if (!sensorDAOSesame.existAndIsSensor(sensorUri)) {
+                            dataOk = false;
+                            checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
+                                StatusCodeMsg.UNKNOWN_URI + " " + sensorUri));
+                        }
+                    }
+                } else {
+                    dataOk = false;
+                    checkStatus.add(new Status(StatusCodeMsg.ACCESS_DENIED, StatusCodeMsg.ERR, 
+                        StatusCodeMsg.ACCESS_DENIED + ". You cannot update " + experimentUri));
+                }
+            } else {
+                dataOk = false;
+                checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
+                    StatusCodeMsg.UNKNOWN_URI + " " + experimentUri));
+            }
+        } catch (Exception ex) {
+            java.util.logging.Logger.getLogger(ExperimentDao.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        checkResult = new POSTResultsReturn(dataOk, null, dataOk);
+        checkResult.statusList = checkStatus;
+        return checkResult;
+    }
+    
+    /**
+     * Update the list of variables linked to the given experiment. 
+     * /!\ Prerequisite : the information must have been checked before. 
+     * @see ExperimentDao#checkLinkedVariables(java.lang.String, java.util.List)
+     * @see ExperimentDAOSesame#updateLinkedVariables(java.lang.String, java.util.List) 
+     * @param experimentUri
+     * @param variables
+     * @return the update result.
+     */
+    private POSTResultsReturn updateLinkedVariables(String experimentUri, List<String> variables) {
+        ExperimentDAOSesame experimentDAOSesame = new ExperimentDAOSesame();
+        return experimentDAOSesame.updateLinkedVariables(experimentUri, variables);
+    }
+    
+    /**
+     * Update the list of sensors linked to the given experiment. 
+     * /!\ Prerequisite : the information must have been checked before. 
+     * @see ExperimentDao#checkLinkedSensors(java.lang.String, java.util.List)
+     * @see ExperimentDAOSesame#updateLinkedSensors(java.lang.String, java.util.List)
+     * @param experimentUri
+     * @param sensors
+     * @return the update result.
+     */
+    private POSTResultsReturn updateLinkedSensors(String experimentUri, List<String> sensors) {
+        ExperimentDAOSesame experimentDAOSesame = new ExperimentDAOSesame();
+        return experimentDAOSesame.updateLinkedSensors(experimentUri, sensors);
+    }
+    
+    /**
+     * Check and update the variables observed in the given experiment.
+     * @param experimentUri
+     * @param variables
+     * @return the update result.
+     */
+    public POSTResultsReturn checkAndUpdateLinkedVariables(String experimentUri, List<String> variables) {
+        POSTResultsReturn checkResult = checkLinkedVariables(experimentUri, variables);
+        if (checkResult.getDataState()) {
+             return updateLinkedVariables(experimentUri, variables);
+        } else { //Error in the data
+            return checkResult;
+        }
+    }
+    
+    /**
+     * Check and update the sensors linked to the given experiment.
+     * @param experimentUri
+     * @param sensors
+     * @return the update result.
+     */
+    public POSTResultsReturn checkAndUpdateLinkedSensors(String experimentUri, List<String> sensors) {
+       POSTResultsReturn checkResult = checkLinkedSensors(experimentUri, sensors);
+        if (checkResult.getDataState()) {
+             return updateLinkedSensors(experimentUri, sensors);
+        } else { //Error in the data
+            return checkResult;
+        } 
     }
 }

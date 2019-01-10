@@ -23,9 +23,8 @@ import phis2ws.service.resources.validation.interfaces.URL;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ConcernItemDTO extends AbstractVerifiedClass {
-    private String uri;
-    private String typeURI;
-
+    protected String uri;
+    protected String typeURI;
 
     @Override
     public ConcernItem createObjectFromDTO() {

@@ -1,5 +1,5 @@
 //**********************************************************************************************
-//                                       AgronomicalObjectDao.java 
+//                                       ScientificObjectDao.java 
 //
 // Author(s): Morgane Vidal
 // PHIS-SILEX version 1.0
@@ -7,7 +7,7 @@
 // Creation date: July 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  August 28, 2017
-// Subject: A DAO specific to retrieve agronomical object data
+// Subject: A DAO specific to retrieve scientific object data
 //***********************************************************************************************
 package phis2ws.service.dao.phis;
 
@@ -26,16 +26,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.dao.manager.DAOPhisBrapi;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.resources.dto.AgronomicalObjectDTO;
-import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
+import phis2ws.service.resources.dto.ScientificObjectDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.sql.SQLQueryBuilder;
 import phis2ws.service.view.brapi.Status;
-import phis2ws.service.view.model.phis.AgronomicalObject;
+import phis2ws.service.view.model.phis.ScientificObject;
 
-public class AgronomicalObjectDAO extends DAOPhisBrapi<AgronomicalObject, AgronomicalObjectDTO> {
+public class ScientificObjectDAO extends DAOPhisBrapi<ScientificObject, ScientificObjectDTO> {
     
-    final static Logger LOGGER = LoggerFactory.getLogger(AgronomicalObjectDAO.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(ScientificObjectDAO.class);
     
     public String uri;
     private final String URI = "uri";
@@ -47,18 +46,18 @@ public class AgronomicalObjectDAO extends DAOPhisBrapi<AgronomicalObject, Agrono
     public String namedGraph;
     private final String NAMED_GRAPH = "named_graph";
     
-    public AgronomicalObjectDAO() {
+    public ScientificObjectDAO() {
         super();
         setTable("agronomical_object");
         setTableAlias("ao");
     }
 
     @Override
-    public POSTResultsReturn checkAndInsert(AgronomicalObjectDTO newObject) {
+    public POSTResultsReturn checkAndInsert(ScientificObjectDTO newObject) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
-    private POSTResultsReturn checkAndInsertAgronomicalObjectsList(List<AgronomicalObject> newAgronomicalObjects) throws Exception {
+    private POSTResultsReturn checkAndInsertScientificObjectsList(List<ScientificObject> newScientificObjects) throws Exception {
         //init result returned maps
         List<Status> insertStatusList = new ArrayList<>();
         boolean dataState = true;
@@ -86,13 +85,13 @@ public class AgronomicalObjectDAO extends DAOPhisBrapi<AgronomicalObject, Agrono
                 
                 insertPreparedStatement = connection.prepareStatement(insertGab);
                 
-                for (AgronomicalObject agronomicalObject : newAgronomicalObjects) {
-                    if (!existInDB(agronomicalObject)) {
+                for (ScientificObject scientificObject : newScientificObjects) {
+                    if (!existInDB(scientificObject)) {
                         insertionLeft = true;
-                        insertPreparedStatement.setString(1, agronomicalObject.getUri());
-                        insertPreparedStatement.setString(2, agronomicalObject.getRdfType());
-                        insertPreparedStatement.setString(3, agronomicalObject.getGeometry());
-                        insertPreparedStatement.setString(4, agronomicalObject.getUriExperiment());
+                        insertPreparedStatement.setString(1, scientificObject.getUri());
+                        insertPreparedStatement.setString(2, scientificObject.getRdfType());
+                        insertPreparedStatement.setString(3, scientificObject.getGeometry());
+                        insertPreparedStatement.setString(4, scientificObject.getUriExperiment());
                         
                         LOGGER.debug(getTraceabilityLogs() + " quert : " + insertPreparedStatement.toString());
                         
@@ -121,13 +120,13 @@ public class AgronomicalObjectDAO extends DAOPhisBrapi<AgronomicalObject, Agrono
                 //Si data insérées et existantes
                 if (exists > 0 && inserted > 0) {
                     results = new POSTResultsReturn(resultState, insertionState, dataState);
-                    insertStatusList.add(new Status(StatusCodeMsg.ALREADY_EXISTING_DATA, StatusCodeMsg.INFO, "All agronomical objects already exist"));
+                    insertStatusList.add(new Status(StatusCodeMsg.ALREADY_EXISTING_DATA, StatusCodeMsg.INFO, "All scientific objects already exist"));
                     results.setHttpStatus(Response.Status.OK);
                 } else {
                     if (exists > 0) { //Si données existantes et aucunes insérées
-                        insertStatusList.add(new Status (StatusCodeMsg.ALREADY_EXISTING_DATA, StatusCodeMsg.INFO, String.valueOf(exists) + " agronomical objects already exists"));
+                        insertStatusList.add(new Status (StatusCodeMsg.ALREADY_EXISTING_DATA, StatusCodeMsg.INFO, String.valueOf(exists) + " scientific objects already exists"));
                     } else { //Si données qui n'existent pas et donc sont insérées
-                        insertStatusList.add(new Status(StatusCodeMsg.DATA_INSERTED, StatusCodeMsg.INFO, String.valueOf(inserted) + " agronomical objects inserted"));
+                        insertStatusList.add(new Status(StatusCodeMsg.DATA_INSERTED, StatusCodeMsg.INFO, String.valueOf(inserted) + " scientific objects inserted"));
                     }
                 }   
                 results = new POSTResultsReturn(resultState, insertionState, dataState);
@@ -162,10 +161,10 @@ public class AgronomicalObjectDAO extends DAOPhisBrapi<AgronomicalObject, Agrono
         return results;
     }
     
-    public POSTResultsReturn checkAndInsertListAO(List<AgronomicalObject> newObjects) {
+    public POSTResultsReturn checkAndInsertListAO(List<ScientificObject> newObjects) {
         POSTResultsReturn postResult;
         try {
-            postResult = this.checkAndInsertAgronomicalObjectsList(newObjects);
+            postResult = this.checkAndInsertScientificObjectsList(newObjects);
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
             postResult = new POSTResultsReturn(false, Response.Status.INTERNAL_SERVER_ERROR, e.toString());
@@ -175,7 +174,7 @@ public class AgronomicalObjectDAO extends DAOPhisBrapi<AgronomicalObject, Agrono
     }
 
     @Override
-    public POSTResultsReturn checkAndUpdateList(List<AgronomicalObjectDTO> newObjects) {
+    public POSTResultsReturn checkAndUpdateList(List<ScientificObjectDTO> newObjects) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -198,33 +197,33 @@ public class AgronomicalObjectDAO extends DAOPhisBrapi<AgronomicalObject, Agrono
     }
 
     @Override
-    public AgronomicalObject findByFields(Map<String, Object> Attr, String table) {
+    public ScientificObject findByFields(Map<String, Object> Attr, String table) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public AgronomicalObject single(int id) {
+    public ScientificObject single(int id) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public ArrayList<AgronomicalObject> all() {
+    public ArrayList<ScientificObject> all() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public AgronomicalObject get(ResultSet result) throws SQLException {
-        AgronomicalObject agronomicalObject = new AgronomicalObject();
-        agronomicalObject.setUri(result.getString(URI));
-        agronomicalObject.setGeometry(result.getString(GEOMETRY));
-        agronomicalObject.setRdfType(result.getString(TYPE));
-        agronomicalObject.setUriExperiment(result.getString(NAMED_GRAPH));
+    public ScientificObject get(ResultSet result) throws SQLException {
+        ScientificObject scientificObject = new ScientificObject();
+        scientificObject.setUri(result.getString(URI));
+        scientificObject.setGeometry(result.getString(GEOMETRY));
+        scientificObject.setRdfType(result.getString(TYPE));
+        scientificObject.setUriExperiment(result.getString(NAMED_GRAPH));
         
-        return agronomicalObject;
+        return scientificObject;
     }
 
     @Override
-    public ArrayList<AgronomicalObject> allPaginate() {
+    public ArrayList<ScientificObject> allPaginate() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -234,7 +233,7 @@ public class AgronomicalObjectDAO extends DAOPhisBrapi<AgronomicalObject, Agrono
     }
 
     @Override
-    protected AgronomicalObject compareAndMergeObjects(AgronomicalObject fromDB, AgronomicalObject object) {
+    protected ScientificObject compareAndMergeObjects(ScientificObject fromDB, ScientificObject object) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -245,12 +244,12 @@ public class AgronomicalObjectDAO extends DAOPhisBrapi<AgronomicalObject, Agrono
     
     /**
      * 
-     * @param agronomicalObjectsURIs la liste des uris pour lesquelles on veut la géométrie
+     * @param scientificObjectsURIs la liste des uris pour lesquelles on veut la géométrie
      * @return la géométrie associée à chaque uri, dans la BD, en geojson 
      *          ex : {"type":"Polygon","coordinates":[[[0,0],[10,0],[10,10],[0,10],[0,0]]]}
      * @throws java.sql.SQLException
      */
-    public HashMap<String, String> getGeometries(ArrayList<String> agronomicalObjectsURIs) throws SQLException {
+    public HashMap<String, String> getGeometries(ArrayList<String> scientificObjectsURIs) throws SQLException {
         Connection connection = null;
         Statement statement = null;
         try {    
@@ -261,8 +260,8 @@ public class AgronomicalObjectDAO extends DAOPhisBrapi<AgronomicalObject, Agrono
             query.appendSelect("ST_AsGeoJSON(ST_Transform(" + GEOMETRY + ", 4326)), ao." + URI);
             query.appendFrom(table, tableAlias);
 
-            for (String agronomicalObjectURI : agronomicalObjectsURIs) {
-                query.appendORWhereConditionIfNeeded(URI, agronomicalObjectURI, "=", null, tableAlias);
+            for (String scientificObjectURI : scientificObjectsURIs) {
+                query.appendORWhereConditionIfNeeded(URI, scientificObjectURI, "=", null, tableAlias);
             }
 
             LOGGER.debug(getTraceabilityLogs() + " quert : " + query.toString());
@@ -276,7 +275,7 @@ public class AgronomicalObjectDAO extends DAOPhisBrapi<AgronomicalObject, Agrono
 
             return geometries;                
         } catch (SQLException ex) {
-            java.util.logging.Logger.getLogger(AgronomicalObjectDAO.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ScientificObjectDAO.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         } finally {
             if (statement != null) {
@@ -291,10 +290,10 @@ public class AgronomicalObjectDAO extends DAOPhisBrapi<AgronomicalObject, Agrono
     /**
      * 
      * @param year
-     * @return String correspondant au nombre d'agronomical objects actuellement 
-     *                enregistrés sur l'année year
+     * @return String corresponds to the number of scientific objects 
+     *                recorded for the year
      */
-    public String getNumberOfAgronomicalObjectForYear(String year) {
+    public String getNumberOfScientificObjectForYear(String year) {
         try {
             String toReturn;
             try (Connection connection = dataSource.getConnection(); 
@@ -311,13 +310,13 @@ public class AgronomicalObjectDAO extends DAOPhisBrapi<AgronomicalObject, Agrono
             
             return toReturn;
         } catch (SQLException ex) {
-            java.util.logging.Logger.getLogger(AgronomicalObjectDAO.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ScientificObjectDAO.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         }  
     }
 
     @Override
-    public POSTResultsReturn checkAndInsertList(List<AgronomicalObjectDTO> newObjects) {
+    public POSTResultsReturn checkAndInsertList(List<ScientificObjectDTO> newObjects) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

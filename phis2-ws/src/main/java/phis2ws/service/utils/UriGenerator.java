@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.dao.mongo.ImageMetadataDaoMongo;
-import phis2ws.service.dao.sesame.AgronomicalObjectDAOSesame;
+import phis2ws.service.dao.sesame.ScientificObjectDAOSesame;
 import phis2ws.service.dao.sesame.AnnotationDAOSesame;
 import phis2ws.service.dao.sesame.MethodDaoSesame;
 import phis2ws.service.dao.sesame.RadiometricTargetDAOSesame;
@@ -145,8 +145,8 @@ public class UriGenerator {
     private String generateAgronomicalObjectUri(String year) {
         //1. get the higher number for the year 
         //(i.e. the last inserted agronomical object for the year)
-        AgronomicalObjectDAOSesame agronomicalObjectDAO = new AgronomicalObjectDAOSesame();
-        int lastAgronomicalObjectIdFromYear = agronomicalObjectDAO.getLastAgronomicalObjectIdFromYear(year);
+        ScientificObjectDAOSesame agronomicalObjectDAO = new ScientificObjectDAOSesame();
+        int lastAgronomicalObjectIdFromYear = agronomicalObjectDAO.getLastScientificObjectIdFromYear(year);
 
         //2. generates agronomical object uri
         int agronomicalObjectNumber = lastAgronomicalObjectIdFromYear + 1;
@@ -392,7 +392,7 @@ public class UriGenerator {
             return generateMethodUri();
         } else if (Vocabulary.CONCEPT_UNIT.toString().equals(instanceType)) {
             return generateUnitUri();
-        } else if (uriDaoSesame.isSubClassOf(instanceType, Vocabulary.CONCEPT_AGRONOMICAL_OBJECT.toString())) {
+        } else if (uriDaoSesame.isSubClassOf(instanceType, Vocabulary.CONCEPT_SCIENTIFIC_OBJECT.toString())) {
             return generateAgronomicalObjectUri(year);
         } else if (Vocabulary.CONCEPT_VARIETY.toString().equals(instanceType)) {
             return generateVarietyUri(additionalInformation);

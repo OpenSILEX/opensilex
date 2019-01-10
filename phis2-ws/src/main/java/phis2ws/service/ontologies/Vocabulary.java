@@ -22,10 +22,10 @@ public enum Vocabulary {
         }
     },
     
-    CONCEPT_AGRONOMICAL_OBJECT {
+    CONCEPT_SCIENTIFIC_OBJECT {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "AgronomicalObject";
+            return NAMESPACE.toString() + "ScientificObject";
         }
     },
     CONCEPT_ANNOTATION {
@@ -342,5 +342,5 @@ public enum Vocabulary {
         public String toString() {
             return NAMESPACE.toString() + "status";
         }
-    }
+    },
 }

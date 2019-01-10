@@ -46,7 +46,7 @@ public class DataDTO extends AbstractVerifiedClass {
     
     @URL
     @Required
-    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_AGRONOMICAL_OBJECT_URI)
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_URI)
     public String getAgronomicalObject() {
         return agronomicalObject;
     }

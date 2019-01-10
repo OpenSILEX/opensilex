@@ -11,6 +11,8 @@
 //***********************************************************************************************
 package phis2ws.service.view.model.phis;
 
+import java.util.ArrayList;
+
 /**
  * represents the concern item view
  * @author Morgane Vidal <morgane.vidal@inra.fr>
@@ -19,8 +21,15 @@ public class ConcernItem {
     
     private String uri;
     private String rdfType;
+    private ArrayList<String> labels;
 
     public ConcernItem() {
+    }
+
+    public ConcernItem(String uri, String rdfType, ArrayList<String> labels) {
+        this.uri = uri;
+        this.rdfType = rdfType;
+        this.labels = labels;
     }
 
     public String getUri() {
@@ -37,5 +46,13 @@ public class ConcernItem {
 
     public void setRdfType(String rdfType) {
         this.rdfType = rdfType;
+    }
+
+    public ArrayList<String> getLabels() {
+        return labels;
+    }
+
+    public void setLabels(ArrayList<String> labels) {
+        this.labels = labels;
     }
 }

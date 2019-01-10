@@ -9,6 +9,7 @@ package phis2ws.service.resources;
 
 import java.util.ArrayList;
 import javax.ws.rs.core.Response;
+import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.authentication.Session;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
@@ -20,6 +21,10 @@ import phis2ws.service.view.manager.ResultForm;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ResourceService {
+    
+    //The default language of the application
+    protected static final String DEFAULT_LANGUAGE = PropertiesFileManager.getConfigFileProperty("service", "defaultLanguage");
+    
     //user session
     @SessionInject
     protected Session userSession;

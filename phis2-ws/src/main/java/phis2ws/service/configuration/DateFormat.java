@@ -28,6 +28,12 @@ public enum DateFormat {
             return "yyyy-MM-dd'T'HH:mm:ssZ";
         }
     },
+    YMDTHMSZZ {
+        @Override
+        public String toString(){
+            return "yyyy-MM-dd'T'HH:mm:ssZZ";
+        }
+    },
     YMD {
         @Override
         public String toString(){

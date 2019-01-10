@@ -83,6 +83,15 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     protected final String RELATION_PREF_LABEL = "relationPrefLabel";    
     protected final String PROPERTY_PREF_LABEL = "propertyPrefLabel";    
     protected final String PROPERTY_TYPE_PREF_LABEL = "propertyTypePrefLabel";   
+
+    public PropertyDAOSesame() {
+        super();
+    }
+    
+    public PropertyDAOSesame(String uri) {
+        super();
+        this.uri = uri;
+    }
     
     /**
      * prepare the sparql query to get the list of properties and their relations
@@ -525,6 +534,8 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      * ╚═════════════════════╩════════════╩═══════════════╩════════════════════════════╩═══════════════════════╩═════════════════╩════════════════════════════════╩════════════════╩═════════════════════════╝
      * 
      * @param language specify in which language labels should be returned
+     * @param relationsToIgnore some relations sometimes must not be considered
+     * as properties so we ignore them
      * @return the builded query
      * @example
      * SELECT DISTINCT  
@@ -562,7 +573,8 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      *     } 
      * }
      */
-    protected SPARQLQueryBuilder prepareSearchPropertiesQuery(String language) {
+    protected SPARQLQueryBuilder prepareSearchPropertiesQuery(String language, ArrayList<String> relationsToIgnore) {
+        
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
 
@@ -629,8 +641,35 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
 
         // 8. If subClassOf is specified, add filter on uri rdf:type
         if (subClassOf != null) {
-            query.appendTriplet("<" + uri + ">", Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
-            query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", "<" + subClassOf + ">", null);
+            query.appendTriplet("<" + uri + ">"
+                    , Rdf.RELATION_TYPE.toString()
+                    , "?" + RDF_TYPE, null);
+            query.appendTriplet("?" + RDF_TYPE, "<" 
+                    + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*"
+                    , "<" + subClassOf + ">", null);
+        }
+        
+        if (relationsToIgnore != null)
+        {
+            String relationToIgnoreQuery = 
+                    "FILTER (?" + RELATION + " NOT IN (";
+            
+            boolean firstRelationToIgnore = true;
+            for (String relationToIgnore : relationsToIgnore){
+                
+                if (!firstRelationToIgnore){
+                    relationToIgnoreQuery += ", ";
+                }
+                else{
+                    firstRelationToIgnore = false;
+                }
+                
+                relationToIgnoreQuery += 
+                            "<" + relationToIgnore + ">";
+            }
+            relationToIgnoreQuery += "))";
+            
+            query.appendToBody(relationToIgnoreQuery);
         }
         
         LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
@@ -643,16 +682,36 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      * and fill the RDF Resource defintion object with the values and labels
      * 
      * @param definition The definition object which will be filled
-     * @param language specify in which language labels should be returned. The language can be null
+     * @param language specify in which language labels should be returned. The 
+     * language can be null
      * @return true    if the definition object is correctly filled
      *          false   if the uri doesn't exists
      */
     public boolean getAllPropertiesWithLabels(RdfResourceDefinition definition, String language) {
+        return getAllPropertiesWithLabelsExceptThoseSpecified(
+                definition, language, null);
+    }       
+    
+     /**
+     * Search all the properties corresponding to the given object uri
+     * and fill the RDF Resource defintion object with the values and labels
+     * 
+     * @param definition The definition object which will be filled
+     * @param language specify in which language labels should be returned.
+     * @param propertiesRelationsToIgnore some relations sometimes must not be 
+     * considered as properties so we ignore them
+     * @return true    if the definition object is correctly filled
+     *          false   if the uri doesn't exists
+     */
+    public boolean getAllPropertiesWithLabelsExceptThoseSpecified(RdfResourceDefinition definition, String language, ArrayList<String> propertiesRelationsToIgnore) {
         if (this.existUri(uri)) {
-            // Prepare and execute the query to retrieve all relation, 
-            //  properties and properties type with theur labels for the given uri and language
-            SPARQLQueryBuilder query = prepareSearchPropertiesQuery(language);
-            TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+            /* Prepare and execute the query to retrieve all the relations, 
+             properties and properties type with their labels for the given 
+            uri and language*/
+            SPARQLQueryBuilder query = prepareSearchPropertiesQuery(language
+                    , propertiesRelationsToIgnore);
+            TupleQuery tupleQuery = getConnection()
+                    .prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         
             definition.setUri(uri);
         
@@ -688,34 +747,44 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
                         property.addLastRdfTypeLabel(bindingSet.getValue(PROPERTY_TYPE_LABEL).stringValue());
                     }
 
-                    // 7. If definition already own the property, add current property labels to the existing property
-                    //    otherwise define prefered labels and add property to definition
+                    // 7. If definition already own the property, add current 
+                    // property labels to the existing property
+                    //    otherwise define prefered labels and add property to 
+                    // definition
                     if (definition.hasProperty(property)) {
                         // Retrieve the existing property
-                        Property existingProperty = definition.getProperty(property);
+                        Property existingProperty = definition
+                                .getProperty(property);
 
                         // Prefered label are ignored in this case because they
                         // already are defined in the existing property
                         
                         // Merge new labels with previous existing
-                        existingProperty.addRdfTypeLabels(property.getRdfTypeLabels());
-                        existingProperty.addRelationLabels(property.getRelationLabels());
-                        existingProperty.addValueLabels(property.getValueLabels());
+                        existingProperty.addRdfTypeLabels(
+                                property.getRdfTypeLabels());
+                        existingProperty.addRelationLabels(
+                                property.getRelationLabels());
+                        existingProperty.addValueLabels(
+                                property.getValueLabels());
                         
                         
-                        // Set the property variable with the existing property to add prefered labels if exists
+                        // Set the property variable with the existing property 
+                        // to add prefered labels if exists
                     } else {
-                        // If property prefered label exists add it at the begining of labels array
+                        // If property prefered label exists add it at the 
+                        // begining of labels array
                         if (bindingSet.hasBinding(PROPERTY_PREF_LABEL)) {
                             property.addFirstValueLabel(bindingSet.getValue(PROPERTY_PREF_LABEL).stringValue());
                         }
 
-                        // If relation prefered label exists add it at the begining of labels array
+                        // If relation prefered label exists add it at the 
+                        // begining of labels array
                         if (bindingSet.hasBinding(RELATION_PREF_LABEL)) {
                             property.addFirstRelationLabel(bindingSet.getValue(RELATION_PREF_LABEL).stringValue());
                         }
 
-                        // If property type prefered label exists add it at the begining of labels array
+                        // If property type prefered label exists add it at the 
+                        // begining of labels array
                         if (bindingSet.hasBinding(PROPERTY_TYPE_PREF_LABEL)) {
                             property.addFirstRdfTypeLabel(bindingSet.getValue(PROPERTY_TYPE_PREF_LABEL).stringValue());
                         }
@@ -725,7 +794,6 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
                     }
                 }
             }
-            
             return true;
         } else {
             return false;

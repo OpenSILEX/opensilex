@@ -155,7 +155,8 @@ public class Dates {
      *         null if the date could not be converted
      */
     public static DateTime stringToDateTimeWithGivenPattern(String stringDate, String pattern) {
-        final org.joda.time.format.DateTimeFormatter formatter = DateTimeFormat.forPattern(pattern);
+        final org.joda.time.format.DateTimeFormatter formatter 
+                = DateTimeFormat.forPattern(pattern);
         try {
             return formatter.withOffsetParsed().parseDateTime(stringDate);
         } catch (Exception e) {

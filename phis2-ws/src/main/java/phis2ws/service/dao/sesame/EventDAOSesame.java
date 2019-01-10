@@ -70,9 +70,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
         query.appendSelect(URI_VARIABLE_SPARQL);
         query.appendGroupBy(URI_VARIABLE_SPARQL);
         if (searchUri != null) {
-            query.appendAndFilter("regex (str("
-                + URI_VARIABLE_SPARQL + ")"
-                + ", \"" + searchUri + "\", \"i\")");
+            query.appendAndFilter("regex (str(" + URI_VARIABLE_SPARQL + ")" + ", \"" + searchUri + "\", \"i\")");
         }
         return URI_VARIABLE_SPARQL;
     }
@@ -86,18 +84,11 @@ public class EventDAOSesame extends DAOSesame<Event> {
     private void prepareSearchQueryType(SPARQLQueryBuilder query, String sparqlVariableUri, String searchType){
         query.appendSelect(TYPE_VARIABLE_SPARQL);
         query.appendGroupBy(TYPE_VARIABLE_SPARQL);
-        query.appendTriplet(sparqlVariableUri
-            , Rdf.RELATION_TYPE.toString(), TYPE_VARIABLE_SPARQL, null);
+        query.appendTriplet(sparqlVariableUri, Rdf.RELATION_TYPE.toString(), TYPE_VARIABLE_SPARQL, null);
         if (searchType != null) {
-            query.appendTriplet(TYPE_VARIABLE_SPARQL
-                , "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*"
-                , searchType
-                , null);
+            query.appendTriplet(TYPE_VARIABLE_SPARQL, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", searchType, null);
         } else {
-            query.appendTriplet(TYPE_VARIABLE_SPARQL
-                , "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*"
-                , Oeev.CONCEPT_EVENT.toString()
-                , null);
+            query.appendTriplet(TYPE_VARIABLE_SPARQL, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeev.CONCEPT_EVENT.toString(), null);
         }    
     }
     
@@ -112,26 +103,16 @@ public class EventDAOSesame extends DAOSesame<Event> {
     private void prepareSearchQueryConcernsItemFilter(SPARQLQueryBuilder query, String sparqlVariableUri, String searchConcernsItemLabel, String searchConcernsItemUri){
 
         if (searchConcernsItemLabel != null || searchConcernsItemUri != null) {
-            query.appendTriplet(
-                sparqlVariableUri
-                , Oeev.RELATION_CONCERNS.toString()
-                , CONCERNS_ITEM_URI_VARIABLE_SPARQL, null);
+            query.appendTriplet(sparqlVariableUri, Oeev.RELATION_CONCERNS.toString(), CONCERNS_ITEM_URI_VARIABLE_SPARQL, null);
             
             if (searchConcernsItemLabel != null){
-                query.appendTriplet(
-                    CONCERNS_ITEM_URI_VARIABLE_SPARQL
-                    , Rdfs.RELATION_LABEL.toString()
-                    , CONCERNS_ITEM_LABEL_VARIABLE_SPARQL, null);
+                query.appendTriplet(CONCERNS_ITEM_URI_VARIABLE_SPARQL, Rdfs.RELATION_LABEL.toString(), CONCERNS_ITEM_LABEL_VARIABLE_SPARQL, null);
                 
-                query.appendAndFilter("regex ("
-                    + CONCERNS_ITEM_LABEL_VARIABLE_SPARQL
-                    + ", \"" + searchConcernsItemLabel + "\", \"i\")");
+                query.appendAndFilter("regex(" + CONCERNS_ITEM_LABEL_VARIABLE_SPARQL + ", \"" + searchConcernsItemLabel + "\", \"i\")");
             }
             
             if (searchConcernsItemUri != null){
-                query.appendAndFilter("regex (str("
-                    + CONCERNS_ITEM_URI_VARIABLE_SPARQL + ")"
-                    + ", \"" + searchConcernsItemUri + "\", \"i\")");
+                query.appendAndFilter("regex (str(" + CONCERNS_ITEM_URI_VARIABLE_SPARQL + ")" + ", \"" + searchConcernsItemUri + "\", \"i\")");
             }
         }
     }
@@ -150,24 +131,11 @@ public class EventDAOSesame extends DAOSesame<Event> {
         
         query.appendSelect(DATETIMESTAMP_VARIABLE_SPARQL);
         query.appendGroupBy(DATETIMESTAMP_VARIABLE_SPARQL);
-        query.appendTriplet(
-                sparqlVariableUri
-                , Time.RELATION_HAS_TIME.toString()
-                , TIME_VARIABLE_SPARQL, null);
-        query.appendTriplet(
-                TIME_VARIABLE_SPARQL
-                , Time.RELATION_IN_XSD_DATETIMESTAMP.toString()
-                , DATETIMESTAMP_VARIABLE_SPARQL, null);
+        query.appendTriplet(sparqlVariableUri, Time.RELATION_HAS_TIME.toString(), TIME_VARIABLE_SPARQL, null);
+        query.appendTriplet(TIME_VARIABLE_SPARQL, Time.RELATION_IN_XSD_DATETIMESTAMP.toString(), DATETIMESTAMP_VARIABLE_SPARQL, null);
         
-        if (searchDateTimeRangeStartString != null 
-                || searchDateTimeRangeEndString != null) {
-            filterSearchQueryWithDateRangeComparisonWithDateTimeStamp(
-                    query
-                    , DateFormat.YMDTHMSZZ.toString()
-                    , searchDateTimeRangeStartString 
-                    , searchDateTimeRangeEndString
-                    , DATETIMESTAMP_VARIABLE_SPARQL
-            );
+        if (searchDateTimeRangeStartString != null || searchDateTimeRangeEndString != null) {
+            filterSearchQueryWithDateRangeComparisonWithDateTimeStamp(query, DateFormat.YMDTHMSZZ.toString(), searchDateTimeRangeStartString, searchDateTimeRangeEndString, DATETIMESTAMP_VARIABLE_SPARQL);
         }
     }
     
@@ -207,12 +175,8 @@ public class EventDAOSesame extends DAOSesame<Event> {
         
         String sparqlVariableUri = prepareSearchQueryUri(query, eventSearchParameters.getUri());
         prepareSearchQueryType(query, sparqlVariableUri, eventSearchParameters.getType());  
-        prepareSearchQueryConcernsItemFilter(query, sparqlVariableUri, 
-                searchConcernsItemLabel, 
-                searchConcernsItemUri); 
-        prepareSearchQueryDateTime(query, sparqlVariableUri, 
-                dateRangeStartString, dateRangeEndString); 
-        
+        prepareSearchQueryConcernsItemFilter(query, sparqlVariableUri, searchConcernsItemLabel, searchConcernsItemUri); 
+        prepareSearchQueryDateTime(query, sparqlVariableUri, dateRangeStartString, dateRangeEndString); 
         
         query.appendLimit(getPageSize());
         query.appendOffset(getPage() * getPageSize());
@@ -245,23 +209,15 @@ public class EventDAOSesame extends DAOSesame<Event> {
         
         query.appendSelect(CONCERNS_ITEM_URI_VARIABLE_SPARQL);
         query.appendGroupBy(CONCERNS_ITEM_URI_VARIABLE_SPARQL);
-        query.appendTriplet(sparqlVariableUri, 
-                Oeev.RELATION_CONCERNS.toString()
-                , CONCERNS_ITEM_URI_VARIABLE_SPARQL, null);
+        query.appendTriplet(sparqlVariableUri, Oeev.RELATION_CONCERNS.toString(), CONCERNS_ITEM_URI_VARIABLE_SPARQL, null);
         
         query.appendSelect(CONCERNS_ITEM_TYPE_VARIABLE_SPARQL);
         query.appendGroupBy(CONCERNS_ITEM_TYPE_VARIABLE_SPARQL);
-        query.appendTriplet(CONCERNS_ITEM_URI_VARIABLE_SPARQL, 
-                Rdf.RELATION_TYPE.toString()
-                , CONCERNS_ITEM_TYPE_VARIABLE_SPARQL, null);
+        query.appendTriplet(CONCERNS_ITEM_URI_VARIABLE_SPARQL, Rdf.RELATION_TYPE.toString(), CONCERNS_ITEM_TYPE_VARIABLE_SPARQL, null);
          
-        query.appendTriplet(CONCERNS_ITEM_URI_VARIABLE_SPARQL, 
-                Rdfs.RELATION_LABEL.toString()
-                , CONCERNS_ITEM_LABEL_VARIABLE_SPARQL, null);
+        query.appendTriplet(CONCERNS_ITEM_URI_VARIABLE_SPARQL, Rdfs.RELATION_LABEL.toString(), CONCERNS_ITEM_LABEL_VARIABLE_SPARQL, null);
         
-        query.appendSelectConcat(CONCERNS_ITEM_LABEL_VARIABLE_SPARQL
-               , SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR
-               , CONCERNS_ITEM_LABELS_VARIABLE_SPARQL);
+        query.appendSelectConcat(CONCERNS_ITEM_LABEL_VARIABLE_SPARQL, SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR, CONCERNS_ITEM_LABELS_VARIABLE_SPARQL);
         
         LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
         return query;
@@ -274,23 +230,17 @@ public class EventDAOSesame extends DAOSesame<Event> {
      */
     private Event getEventFromBindingSet(BindingSet bindingSet) {
           
-        String eventUri = getValueOfVariableFromBindingSet(
-                URI, bindingSet);
+        String eventUri = getValueOfVariableFromBindingSet(URI, bindingSet);
                 
-        String eventType = getValueOfVariableFromBindingSet(
-                RDF_TYPE, bindingSet);
+        String eventType = getValueOfVariableFromBindingSet(RDF_TYPE, bindingSet);
         
-        String eventDateTimeString = getValueOfVariableFromBindingSet(
-                DATETIMESTAMP_VARIABLE, bindingSet);    
+        String eventDateTimeString = getValueOfVariableFromBindingSet(DATETIMESTAMP_VARIABLE, bindingSet);    
         DateTime eventDateTime = null;
         if (eventDateTimeString != null) {
-            eventDateTime = Dates.stringToDateTimeWithGivenPattern(
-                    eventDateTimeString
-                    , DateFormat.YMDTHMSZZ.toString());
+            eventDateTime = Dates.stringToDateTimeWithGivenPattern(eventDateTimeString, DateFormat.YMDTHMSZZ.toString());
         }
         
-        return new Event(eventUri, eventType, new ArrayList<>(), eventDateTime
-                , new ArrayList<>());
+        return new Event(eventUri, eventType, new ArrayList<>(), eventDateTime, new ArrayList<>());
     }
     
     /**
@@ -301,20 +251,13 @@ public class EventDAOSesame extends DAOSesame<Event> {
      */
     private ConcernItem getConcernsItemFromBindingSet(BindingSet bindingSet){
                 
-        String concernsItemUri = getValueOfVariableFromBindingSet(
-                CONCERNS_ITEM_URI_VARIABLE, bindingSet);
-        String concernsItemType = getValueOfVariableFromBindingSet(
-                CONCERNS_ITEM_TYPE_VARIABLE, bindingSet);
+        String concernsItemUri = getValueOfVariableFromBindingSet(CONCERNS_ITEM_URI_VARIABLE, bindingSet);
+        String concernsItemType = getValueOfVariableFromBindingSet(CONCERNS_ITEM_TYPE_VARIABLE, bindingSet);
         
-        String eventConcernsItemLabelsConcatenated = 
-                getValueOfVariableFromBindingSet(CONCERNS_ITEM_LABELS_VARIABLE
-                    , bindingSet);
-        ArrayList<String> eventConcernsItemLabels = 
-                new ArrayList<>(Arrays.asList(eventConcernsItemLabelsConcatenated
-                        .split(SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR)));
+        String eventConcernsItemLabelsConcatenated = getValueOfVariableFromBindingSet(CONCERNS_ITEM_LABELS_VARIABLE, bindingSet);
+        ArrayList<String> eventConcernsItemLabels = new ArrayList<>(Arrays.asList(eventConcernsItemLabelsConcatenated.split(SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR)));
 
-        return new ConcernItem(concernsItemUri, concernsItemType
-                , eventConcernsItemLabels);
+        return new ConcernItem(concernsItemUri, concernsItemType, eventConcernsItemLabels);
     }
     
     /**
@@ -331,19 +274,12 @@ public class EventDAOSesame extends DAOSesame<Event> {
      */
     public ArrayList<Event> searchEvents(Event eventSearchParameters, String searchConcernsItemLabel, String searchConcernsItemUri, String dateRangeStartString, String dateRangeEndString, User user, int searchPage, int searchPageSize) {
         
-        SPARQLQueryBuilder eventsQuery = prepareSearchQuery(
-                eventSearchParameters, 
-                searchConcernsItemLabel, 
-                searchConcernsItemUri, 
-                dateRangeStartString, 
-                dateRangeEndString, 
-                user);
+        SPARQLQueryBuilder eventsQuery = prepareSearchQuery(eventSearchParameters, searchConcernsItemLabel, searchConcernsItemUri, dateRangeStartString, dateRangeEndString, user);
         
         setPage(searchPage);
         setPageSize(searchPageSize);
         
-        TupleQuery eventsTupleQuery = getConnection()
-                .prepareTupleQuery(QueryLanguage.SPARQL, eventsQuery.toString());
+        TupleQuery eventsTupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, eventsQuery.toString());
         
         ArrayList<Event> events;
         try (TupleQueryResult eventsResult = eventsTupleQuery.evaluate()) {
@@ -381,24 +317,17 @@ public class EventDAOSesame extends DAOSesame<Event> {
      */
     private void searchEventConcernsItemsAndSetThemToIt(Event event){
                 
-        SPARQLQueryBuilder concernsItemsQuery = 
-                prepareConcernsItemsSearchQuery(event.getUri());
-        TupleQuery concernsItemsTupleQuery = getConnection()
-                .prepareTupleQuery(QueryLanguage.SPARQL
-                        , concernsItemsQuery.toString());
+        SPARQLQueryBuilder concernsItemsQuery = prepareConcernsItemsSearchQuery(event.getUri());
+        TupleQuery concernsItemsTupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, concernsItemsQuery.toString());
 
-        try (TupleQueryResult concernsItemsTupleQueryResult = 
-                concernsItemsTupleQuery.evaluate()) {
-
+        try (TupleQueryResult concernsItemsTupleQueryResult = concernsItemsTupleQuery.evaluate()) {
             ConcernItem concernsItem;
             while(concernsItemsTupleQueryResult.hasNext()){
-                concernsItem = getConcernsItemFromBindingSet(
-                            concernsItemsTupleQueryResult.next());
+                concernsItem = getConcernsItemFromBindingSet(concernsItemsTupleQueryResult.next());
                 event.addConcernsItem(concernsItem);
             }
         }
     }
-    
     
     /**
      * get the value of a variable from a binding set
@@ -410,7 +339,6 @@ public class EventDAOSesame extends DAOSesame<Event> {
         if (selectedFieldValue != null) {
             return selectedFieldValue.stringValue();
         }
-        
         return null;
     }
 
@@ -436,19 +364,12 @@ public class EventDAOSesame extends DAOSesame<Event> {
      *}
      */
     private SPARQLQueryBuilder prepareCountSearchQuery(Event eventSearchParameters, String searchConcernsItemLabel, String searchConcernsItemUri, String dateRangeStartString, String dateRangeEndString, User user) {
-        SPARQLQueryBuilder query = this.prepareSearchQuery(
-                eventSearchParameters, 
-                searchConcernsItemLabel, 
-                searchConcernsItemUri, 
-                dateRangeStartString, 
-                dateRangeEndString, 
-                user);
+        SPARQLQueryBuilder query = this.prepareSearchQuery(eventSearchParameters, searchConcernsItemLabel, searchConcernsItemUri, dateRangeStartString, dateRangeEndString, user);
         query.clearSelect();
         query.clearLimit();
         query.clearOffset();
         query.clearGroupBy();
-        query.appendSelect("(COUNT(DISTINCT " + URI_VARIABLE_SPARQL + ") AS "
-                + "?" + COUNT_ELEMENT_QUERY + ")");
+        query.appendSelect("(COUNT(DISTINCT " + URI_VARIABLE_SPARQL + ") AS " + "?" + COUNT_ELEMENT_QUERY + ")");
         LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
         return query;
     }
@@ -469,23 +390,14 @@ public class EventDAOSesame extends DAOSesame<Event> {
     public Integer count(Event eventSearchParameters, String searchConcernsItemLabel, String searchConcernsItemUri, String dateRangeStartString, String dateRangeEndString, User user) throws RepositoryException
             , MalformedQueryException, QueryEvaluationException {
         
-        SPARQLQueryBuilder prepareCount = prepareCountSearchQuery(
-                eventSearchParameters, 
-                searchConcernsItemLabel, 
-                searchConcernsItemUri, 
-                dateRangeStartString, 
-                dateRangeEndString, 
-                user);
+        SPARQLQueryBuilder prepareCount = prepareCountSearchQuery(eventSearchParameters, searchConcernsItemLabel, searchConcernsItemUri, dateRangeStartString, dateRangeEndString, user);
         
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(
-                QueryLanguage.SPARQL
-                , prepareCount.toString());
+        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
         Integer count = 0;
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             if (result.hasNext()) {
                 BindingSet bindingSet = result.next();
-                count = Integer.parseInt(
-                        bindingSet.getValue(COUNT_ELEMENT_QUERY).stringValue());
+                count = Integer.parseInt(bindingSet.getValue(COUNT_ELEMENT_QUERY).stringValue());
             }
         }
         return count;
@@ -493,13 +405,11 @@ public class EventDAOSesame extends DAOSesame<Event> {
 
     @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
-        return prepareSearchQuery(new Event(null, null, null, null, null)
-                , null, null, null, null, null);
+        return prepareSearchQuery(new Event(null, null, null, null, null), null, null, null, null, null);
     }
 
     @Override
     public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
-        return count(new Event(null, null, null, null, null)
-                , null, null, null, null, null);
+        return count(new Event(null, null, null, null, null), null, null, null, null, null);
     }
 }

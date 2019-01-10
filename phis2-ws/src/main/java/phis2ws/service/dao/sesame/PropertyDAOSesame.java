@@ -746,19 +746,15 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
                     // definition
                     if (definition.hasProperty(property)) {
                         // Retrieve the existing property
-                        Property existingProperty = definition
-                                .getProperty(property);
+                        Property existingProperty = definition.getProperty(property);
 
                         // Prefered label are ignored in this case because they
                         // already are defined in the existing property
                         
                         // Merge new labels with previous existing
-                        existingProperty.addRdfTypeLabels(
-                                property.getRdfTypeLabels());
-                        existingProperty.addRelationLabels(
-                                property.getRelationLabels());
-                        existingProperty.addValueLabels(
-                                property.getValueLabels());
+                        existingProperty.addRdfTypeLabels(property.getRdfTypeLabels());
+                        existingProperty.addRelationLabels(property.getRelationLabels());
+                        existingProperty.addValueLabels(property.getValueLabels());
                         
                         
                         // Set the property variable with the existing property 

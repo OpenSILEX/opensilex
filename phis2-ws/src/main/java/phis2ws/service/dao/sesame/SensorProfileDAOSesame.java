@@ -190,7 +190,6 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
             
             if (property.getRdfType() != null) {
                 Node propertyValue = NodeFactory.createURI(property.getValue());
-                
                 spql.addInsert(graph, sensorProfileUri, propertyRelation, propertyValue);
                 spql.addInsert(graph,propertyValue, RDF.type, property.getRdfType());
             } else {

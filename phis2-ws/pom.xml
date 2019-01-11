@@ -63,7 +63,7 @@
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver</artifactId>
-            <version>3.5.0</version>
+            <version>3.9.0</version>
             <type>jar</type>
         </dependency>
         <dependency>
@@ -249,6 +249,11 @@
             <artifactId>jaxb-api</artifactId>
             <version>2.3.1</version>
         </dependency>        
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-querybuilder</artifactId>
+            <version>3.9.0</version>
+        </dependency>
     </dependencies>
 
     <build>

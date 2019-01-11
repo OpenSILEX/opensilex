@@ -13,6 +13,7 @@
 package phis2ws.service.view.model.phis;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Experiment {
     private String uri;
@@ -30,6 +31,8 @@ public class Experiment {
     private ArrayList<Project> projects = new ArrayList<>();
     private ArrayList<Group> groups = new ArrayList<>();
     private ArrayList<Contact> contacts = new ArrayList<>();
+    private HashMap<String, String> variables = new HashMap<>();
+    private HashMap<String, String> sensors = new HashMap<>();
     
     public Experiment() {
         
@@ -153,6 +156,22 @@ public class Experiment {
     
     public void setGroupList(ArrayList<Group> groups) {
         this.groups = groups;
+    }
+
+    public HashMap<String, String> getVariables() {
+        return variables;
+    }
+
+    public void setVariables(HashMap<String, String> variables) {
+        this.variables = variables;
+    }
+
+    public HashMap<String, String> getSensors() {
+        return sensors;
+    }
+
+    public void setSensors(HashMap<String, String> sensors) {
+        this.sensors = sensors;
     }
     
     /**

@@ -283,11 +283,12 @@ public class EventDAOSesame extends DAOSesame<Event> {
         setPage(searchPage);
         setPageSize(searchPageSize);
         
+        // get events from storage
         TupleQuery eventsTupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, eventsQuery.toString());
         
         ArrayList<Event> events;
+        // for each event, set its properties and concerns Items
         try (TupleQueryResult eventsResult = eventsTupleQuery.evaluate()) {
-            
             events = new ArrayList<>();
             while (eventsResult.hasNext()) {
                 Event event = getEventFromBindingSet(eventsResult.next());
@@ -367,7 +368,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
      *   && (?dateRangeStartDateTime <= ?dateTime) && (?dateRangeEndDateTime >= ?dateTime) ) 
      *}
      */
-    private SPARQLQueryBuilder prepareCountSearchQuery(Event eventSearchParameters, String searchConcernsItemLabel, String searchConcernsItemUri, String dateRangeStartString, String dateRangeEndString, User user) {
+    private SPARQLQueryBuilder prepareCountQuery(Event eventSearchParameters, String searchConcernsItemLabel, String searchConcernsItemUri, String dateRangeStartString, String dateRangeEndString, User user) {
         SPARQLQueryBuilder query = this.prepareSearchQuery(eventSearchParameters, searchConcernsItemLabel, searchConcernsItemUri, dateRangeStartString, dateRangeEndString, user);
         query.clearSelect();
         query.clearLimit();
@@ -386,16 +387,17 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * @param dateRangeStartString
      * @param dateRangeEndString
      * @param user
-     * @return events number
+     * @return results number
      * @throws RepositoryException
      * @throws MalformedQueryException
      * @throws QueryEvaluationException
      */
-    public Integer count(Event eventSearchParameters, String searchConcernsItemLabel, String searchConcernsItemUri, String dateRangeStartString, String dateRangeEndString, User user) throws RepositoryException, MalformedQueryException, QueryEvaluationException {
+    public Integer count(Event eventSearchParameters, String searchConcernsItemLabel, String searchConcernsItemUri, String dateRangeStartString, String dateRangeEndString, User user) 
+            throws RepositoryException, MalformedQueryException, QueryEvaluationException {
         
-        SPARQLQueryBuilder prepareCount = prepareCountSearchQuery(eventSearchParameters, searchConcernsItemLabel, searchConcernsItemUri, dateRangeStartString, dateRangeEndString, user);
+        SPARQLQueryBuilder countQuery = prepareCountQuery(eventSearchParameters, searchConcernsItemLabel, searchConcernsItemUri, dateRangeStartString, dateRangeEndString, user);
         
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
+        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, countQuery.toString());
         Integer count = 0;
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             if (result.hasNext()) {

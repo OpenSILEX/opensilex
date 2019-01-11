@@ -6,7 +6,7 @@
 // Copyright © - INRA - 2016
 // Creation date: august 2016
 // Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  October, 2016
+// Last modification date: 11 jan. 2019
 // Subject:This abstract class is the base of all Dao class for the Sesame TripleStore 
 //***********************************************************************************************
 package phis2ws.service.dao.manager;
@@ -315,8 +315,8 @@ public abstract class DAOSesame<T> {
      * @param dateTimeStampToCompareSparqlVariable the SPARQL variable 
      * (?abc format) of the dateTimeStamp to which the date has to be compared
      * @example SparQL code added to the query :
-        BIND(xsd:dateTime(str("2017-09-10T12:00:00+01:00")) as ?dateRangeStartDateTime) .
-        FILTER ( (?dateRangeStartDateTime <= ?dateTime) ) 
+     *   BIND(xsd:dateTime(str("2017-09-10T12:00:00+01:00")) as ?dateRangeStartDateTime) .
+     *   FILTER ( (?dateRangeStartDateTime <= ?dateTime) ) 
      */
     protected void filterSearchQueryWithDateTimeStampComparison( SPARQLStringBuilder query, String filterDateString, String filterDateFormat, String filterDateSparqlVariable, String comparisonSign, String dateTimeStampToCompareSparqlVariable){
         
@@ -339,10 +339,10 @@ public abstract class DAOSesame<T> {
      * @param dateTimeStampToCompareSparqleVariable the SPARQL variable (?abc 
      * format) of the dateTimeStamp to compare to the range
      * @example SparQL code added to the query :
-        BIND(xsd:dateTime(str(?dateTimeStamp)) as ?dateTime) .
-        BIND(xsd:dateTime(str("2017-09-10T12:00:00+01:00")) as ?dateRangeStartDateTime) .
-        BIND(xsd:dateTime(str("2017-09-12T12:00:00+01:00")) as ?dateRangeEndDateTime) .
-        FILTER ( (?dateRangeStartDateTime <= ?dateTime) && (?dateRangeEndDateTime >= ?dateTime) ) 
+     *   BIND(xsd:dateTime(str(?dateTimeStamp)) as ?dateTime) .
+     *   BIND(xsd:dateTime(str("2017-09-10T12:00:00+01:00")) as ?dateRangeStartDateTime) .
+     *   BIND(xsd:dateTime(str("2017-09-12T12:00:00+01:00")) as ?dateRangeEndDateTime) .
+     *   FILTER ( (?dateRangeStartDateTime <= ?dateTime) && (?dateRangeEndDateTime >= ?dateTime) ) 
      */
     protected void filterSearchQueryWithDateRangeComparisonWithDateTimeStamp(SPARQLStringBuilder query, String filterRangeDatesStringFormat, String filterRangeStartDateString, String filterRangeEndDateString, String dateTimeStampToCompareSparqleVariable){
         

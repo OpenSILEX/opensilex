@@ -42,13 +42,13 @@ import phis2ws.service.view.brapi.form.ResponseFormEvent;
 import phis2ws.service.view.model.phis.Event;
 
 /**
+ * Service to get events
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
 @Api("/events")
 @Path("/events")
 public class EventResourceService  extends ResourceService {
-    final static Logger LOGGER = 
-            LoggerFactory.getLogger(EventResourceService.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(EventResourceService.class);
     
     //user session
     @SessionInject
@@ -83,113 +83,65 @@ public class EventResourceService  extends ResourceService {
      * @return  list of all events
      * @example
      * {
-     *   {
-           "metadata": {
-             "pagination": null,
-             "status": [],
-             "datafiles": []
-           },
-           "result": {
-             "data": [
-               {
-                 "uri": "http://www.phenome-fppn.fr/id/event/5a1b3c0d-58af-4cfb-811e-e141b11453b1",
-                 "type": "http://www.phenome-fppn.fr/vocabulary/2018/oeev#MoveFrom",
-                 "concernsItems": [
-                   {
-                     "labels": [
-                       "label2",
-                       "label3"
-                     ],
-                     "uri": "http://www.phenome-fppn.fr/m3p/arch/2017/c17000241",
-                     "typeUri": "http://www.phenome-fppn.fr/vocabulary/2017#Thermocouple"
-                   }
-                 ],
-                 "dateTimeString": "2017-09-11T12:00:00+01:00",
-                 "properties": [
-                   {
-                     "rdfType": "http://www.phenome-fppn.fr/vocabulary/2017#Thermocouple",
-                     "relation": "http://www.phenome-fppn.fr/vocabulary/2018/oeev#from",
-                     "value": "http://www.phenome-fppn.fr/m3p/phenoarch/"
-                   }
-                 ]
-               }
-             ]
-           }
-         }
+     *  {
+     *     "metadata": {
+     *       "pagination": null,
+     *       "status": [],
+     *       "datafiles": []
+     *     },
+     *     "result": {
+     *       "data": [
+     *         {
+     *           "uri": "http://www.phenome-fppn.fr/id/event/5a1b3c0d-58af-4cfb-811e-e141b11453b1",
+     *           "type": "http://www.phenome-fppn.fr/vocabulary/2018/oeev#MoveFrom",
+     *           "concerns": [
+     *             {
+     *               "labels": [
+     *                 "label2",
+     *                 "label3"
+     *               ],
+     *               "uri": "http://www.phenome-fppn.fr/m3p/arch/2017/c17000241",
+     *               "typeUri": "http://www.phenome-fppn.fr/vocabulary/2017#Thermocouple"
+     *             }
+     *           ],
+     *           "date": "2017-09-11T12:00:00+01:00",
+     *           "properties": [
+     *             {
+     *               "rdfType": "http://www.phenome-fppn.fr/vocabulary/2017#Thermocouple",
+     *               "relation": "http://www.phenome-fppn.fr/vocabulary/2018/oeev#from",
+     *               "value": "http://www.phenome-fppn.fr/m3p/phenoarch/"
+     *             }
+     *           ]
+     *         }
+     *       ]
+     *     }
+     *   }
      * }
      */
     @GET
-    @ApiOperation(value = 
-        "Get all events corresponding to the search parameters given.",
-        notes = 
-        "Retrieve all events authorized for the user corresponding to the "
-        + "search parameters given")
+    @ApiOperation(value = "Get all events corresponding to the search parameters given.",notes = "Retrieve all events authorized for the user corresponding to the " + "search parameters given")
     @ApiResponses(value = {
-        @ApiResponse(code = 200
-                , message = "Retrieve all events"
-                , response = Event.class
-                , responseContainer = "List"),
-        @ApiResponse(code = 400
-                , message = DocumentationAnnotation.BAD_USER_INFORMATION),
-        @ApiResponse(code = 401
-                , message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-        @ApiResponse(code = 500
-                , message = DocumentationAnnotation.ERROR_FETCH_DATA)
+        @ApiResponse(code = 200, message = "Retrieve all events", response = Event.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-            name = GlobalWebserviceValues.AUTHORIZATION
-            , required = true
-            , dataType = GlobalWebserviceValues.DATA_TYPE_STRING
-            , paramType = GlobalWebserviceValues.HEADER
-            , value = DocumentationAnnotation.ACCES_TOKEN
-            , example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiImplicitParams({@ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true, dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER, value = DocumentationAnnotation.ACCES_TOKEN, example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")})
     @Produces(MediaType.APPLICATION_JSON)
     public Response getEventsBySearch(
-            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) 
-            @QueryParam(GlobalWebserviceValues.PAGE_SIZE) 
-            @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) 
-            @Min(0) int pageSize
-        , @ApiParam(value = DocumentationAnnotation.PAGE) 
-            @QueryParam(GlobalWebserviceValues.PAGE) 
-            @DefaultValue(DefaultBrapiPaginationValues.PAGE) 
-            @Min(0) int page
-        , @ApiParam (
-                value = "Search by uri"
-                , example = DocumentationAnnotation.EXAMPLE_EVENT_URI
-            ) @QueryParam("uri") @URL String uri
-        , @ApiParam (
-                value = "Search by type", 
-                example = DocumentationAnnotation.EXAMPLE_EVENT_TYPE
-            ) @QueryParam("type") @URL String type
-        , @ApiParam (
-                value = "Search by concerns uri"
-                , example = DocumentationAnnotation
-                        .EXAMPLE_EVENT_CONCERNS_ITEM_URI
-            ) @QueryParam("concernsUri") @URL String concernsUri
-        , @ApiParam (
-                value = "Search by concerns label"
-                , example = DocumentationAnnotation
-                        .EXAMPLE_EVENT_CONCERNS_ITEM_LABEL
-            ) @QueryParam("concernsLabel") String concernsLabel
-        , @ApiParam (
-                value = "Search by date - start of the range"
-                , example = DocumentationAnnotation
-                        .EXAMPLE_EVENT_DATE_RANGE_START
-            ) @QueryParam("dateRangeStart") @Date(DateFormat.YMDTHMSZZ) 
-            String dateRangeStart
-        , @ApiParam (
-                value = "Search by date - end of the range"
-                , example = DocumentationAnnotation.EXAMPLE_EVENT_DATE_RANGE_END
-            ) @QueryParam("dateRangeEnd") @Date(DateFormat.YMDTHMSZZ) 
-            String dateRangeEnd
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize, 
+        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page, 
+        @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_EVENT_URI) @QueryParam("uri") @URL String uri, 
+        @ApiParam(value = "Search by type", example = DocumentationAnnotation.EXAMPLE_EVENT_TYPE) @QueryParam("type") @URL String type, 
+        @ApiParam(value = "Search by concerns uri", example = DocumentationAnnotation.EXAMPLE_EVENT_CONCERNS_ITEM_URI) @QueryParam("concernsUri") @URL String concernsUri, 
+        @ApiParam(value = "Search by concerns label", example = DocumentationAnnotation.EXAMPLE_EVENT_CONCERNS_ITEM_LABEL) @QueryParam("concernsLabel") String concernsLabel, 
+        @ApiParam(value = "Search by date - start of the range", example = DocumentationAnnotation.EXAMPLE_EVENT_DATE_RANGE_START) @QueryParam("dateRangeStart") @Date(DateFormat.YMDTHMSZZ) String dateRangeStart, 
+        @ApiParam(value = "Search by date - end of the range", example = DocumentationAnnotation.EXAMPLE_EVENT_DATE_RANGE_END) @QueryParam("dateRangeEnd") @Date(DateFormat.YMDTHMSZZ) String dateRangeEnd
     ) {
-
         EventDAOSesame eventDAO = new EventDAOSesame();
         
+        // 1. Search events with parameters
         Event eventSearchParameters = new Event(uri, type, null, null, null);
-        
         ArrayList<Event> events = eventDAO.searchEvents(
                 eventSearchParameters, 
                 concernsLabel, 
@@ -199,8 +151,9 @@ public class EventResourceService  extends ResourceService {
                 userSession.getUser(), 
                 page, 
                 pageSize);
-        ArrayList<EventDTO> eventDTOs = new ArrayList();
         
+        // 2. Analyse result
+        ArrayList<EventDTO> eventDTOs = new ArrayList();
         ArrayList<Status> statusList = new ArrayList<>();
         ResponseFormEvent responseForm;
         
@@ -212,10 +165,12 @@ public class EventResourceService  extends ResourceService {
             return noResultFound(responseForm, statusList);
         } else { // Results
             
+            // Generate DTOs
             events.forEach((event) -> {
                 eventDTOs.add(new EventDTO(event));
             });
             
+            // Return DTOs
             int resultsCount = eventDAO.count(
                 eventSearchParameters, 
                 concernsLabel, 
@@ -223,8 +178,7 @@ public class EventResourceService  extends ResourceService {
                 dateRangeStart, 
                 dateRangeEnd, 
                 userSession.getUser());
-            responseForm = new ResponseFormEvent(eventDAO.getPageSize()
-                    , eventDAO.getPage(), eventDTOs, true, resultsCount);
+            responseForm = new ResponseFormEvent(eventDAO.getPageSize(), eventDAO.getPage(), eventDTOs, true, resultsCount);
             if (responseForm.getResult().dataSize() == 0) {
                 return noResultFound(responseForm, statusList);
             } else {

@@ -44,7 +44,7 @@ public class EventDTO extends AbstractVerifiedClass {
         });
         
         DateTime eventDateTime = event.getDateTime();
-        if(eventDateTime != null){
+        if (eventDateTime != null){
             this.date = DateTimeFormat
                     .forPattern(DateFormat.YMDTHMSZZ.toString())
                     .print(eventDateTime);
@@ -74,11 +74,8 @@ public class EventDTO extends AbstractVerifiedClass {
             modelConcernsItems.add(concernsItem.createObjectFromDTO());
         });
         
-        DateTime dateTime = Dates.stringToDateTimeWithGivenPattern(
-                    this.date
-                    , DateFormat.YMDTHMSZZ.toString());
+        DateTime dateTime = Dates.stringToDateTimeWithGivenPattern(this.date, DateFormat.YMDTHMSZZ.toString());
         
-        return new Event(this.uri, this.type, modelConcernsItems, dateTime
-                , modelProperties);
+        return new Event(this.uri, this.type, modelConcernsItems, dateTime, modelProperties);
     }
 }

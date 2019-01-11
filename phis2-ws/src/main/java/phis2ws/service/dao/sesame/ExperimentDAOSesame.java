@@ -10,7 +10,14 @@ package phis2ws.service.dao.sesame;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.graph.Graph;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.update.UpdateRequest;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -30,7 +37,6 @@ import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Vocabulary;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
-import phis2ws.service.utils.sparql.SPARQLUpdateBuilder;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.Experiment;
 
@@ -207,21 +213,30 @@ public class ExperimentDAOSesame extends DAOSesame<Experiment> {
      *         false if an error occurred (see the error logs to get more details)
      */
     private boolean linkSensorsToExperiment(List<String> sensors, String experimentUri) {
-        SPARQLUpdateBuilder query = new SPARQLUpdateBuilder();
-        query.appendGraphURI(experimentUri);
-        sensors.forEach((sensor) -> {
-            query.appendTriplet(sensor, Vocabulary.RELATION_PARTICIPATES_IN.toString(), experimentUri, null);
-        });
-        
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
-        
-        //Insert the properties in the triplestore
-        Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
-        try {
-            prepareUpdate.execute();
-        } catch (UpdateExecutionException ex) {
-            LOGGER.error("Add object properties error : " + ex.getMessage());
-            return false;
+        //Add links to sensors if needed
+        if (!sensors.isEmpty()) {
+            UpdateBuilder updateBuilder = new UpdateBuilder();
+            Node graph = NodeFactory.createURI(experimentUri);
+            Resource experiment = ResourceFactory.createResource(experimentUri);
+            Property participatesIn = ResourceFactory.createProperty(Vocabulary.RELATION_PARTICIPATES_IN.toString());
+
+            sensors.forEach((sensor) -> {
+                Resource sensorUri = ResourceFactory.createResource(sensor);
+
+                updateBuilder.addInsert(graph, sensorUri, participatesIn, experiment);
+            });
+
+            UpdateRequest updateRequest = updateBuilder.buildRequest();
+            LOGGER.debug(SPARQL_SELECT_QUERY + updateRequest.toString());
+
+            //Insert the properties in the triplestore
+            Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, updateRequest.toString());
+            try {
+                prepareUpdate.execute();
+            } catch (UpdateExecutionException ex) {
+                LOGGER.error("Add object properties error : " + ex.getMessage());
+                return false;
+            }
         }
         
         return true;
@@ -240,24 +255,30 @@ public class ExperimentDAOSesame extends DAOSesame<Experiment> {
      *         false if the delete has not been done.
      */
     private boolean deleteLinksSensorsExperiment(List<String> sensors, String experimentUri) {
-        //1. Generates delete query
-        String deleteQuery = "DELETE WHERE { ";
-        
-        for (String sensor : sensors) {
-            deleteQuery += "<" + sensor + "> <" + Vocabulary.RELATION_PARTICIPATES_IN.toString() + "> <" + experimentUri + "> . ";
-        }
-        
-        deleteQuery += " }";
-        
-        LOGGER.debug(deleteQuery);
-        
-        //2. Delete data in the triplestore
-        Update prepareDelete = getConnection().prepareUpdate(QueryLanguage.SPARQL, deleteQuery);
-        try {
-            prepareDelete.execute();
-        } catch (UpdateExecutionException ex) {
-            LOGGER.error("Delete object properties error : " + ex.getMessage());
-            return false;
+        //1. Generates delete query (if needed)
+        if (!sensors.isEmpty()) {
+            UpdateBuilder deleteBuilder = new UpdateBuilder();
+            Node graph = NodeFactory.createURI(experimentUri);
+            Resource experiment = ResourceFactory.createResource(experimentUri);
+            Property participatesIn = ResourceFactory.createProperty(Vocabulary.RELATION_PARTICIPATES_IN.toString());
+
+            for (String sensor : sensors) {
+                Resource sensorRes = ResourceFactory.createResource(sensor);
+                deleteBuilder.addDelete(graph, sensorRes, participatesIn, experiment);
+            }
+
+            UpdateRequest delete = deleteBuilder.buildRequest();
+
+            LOGGER.debug("delete : " + delete.toString());
+
+            //2. Delete data in the triplestore
+            Update prepareDelete = getConnection().prepareUpdate(QueryLanguage.SPARQL, delete.toString());
+            try {
+                prepareDelete.execute();
+            } catch (UpdateExecutionException ex) {
+                LOGGER.error("Delete object properties error : " + ex.getMessage());
+                return false;
+            }
         }
         
         return true;

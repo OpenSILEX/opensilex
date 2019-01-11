@@ -3,8 +3,7 @@
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 12  nov. 2018
-// Contact: andreas.garcia@inra.fr, anne.tireau@inra.fr, 
-// pascal.neveu@inra.fr
+// Contact: andreas.garcia@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package phis2ws.service.dao.sesame;
 
@@ -64,7 +63,9 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * if necessary
      * @return the URI SPARQL variable
      * @example SparQL filter added :
-     * FILTER ( (regex (str(?uri), "http://www.phenome-fppn.fr/id/event/5a1b3c0d-58af-4cfb-811e-e141b11453b1", "i")) 
+     * SELECT DISTINCT  ?uri
+     * FILTER ( (regex (str(?uri), "http://www.phenome-fppn.fr/id/event/5a1b3c0d-58af-4cfb-811e-e141b11453b1", "i"))
+     * GROUP BY ?uri
      */
     private String prepareSearchQueryUri(SPARQLQueryBuilder query, String searchUri){
         query.appendSelect(URI_VARIABLE_SPARQL);
@@ -79,7 +80,9 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * Set a search query to select a type and to filter according to it 
      * if necessary
      * @example SparQL filter added :
-     *  ?type  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.phenome-fppn.fr/vocabulary/2018/oeev#MoveFrom> . 
+     *  SELECT DISTINCT ?rdfType
+     *  ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.phenome-fppn.fr/vocabulary/2018/oeev#MoveFrom> . 
+     *  GROUP BY ?rdfType
      */
     private void prepareSearchQueryType(SPARQLQueryBuilder query, String sparqlVariableUri, String searchType){
         query.appendSelect(TYPE_VARIABLE_SPARQL);
@@ -121,11 +124,13 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * Set a search query to select a datetime from an instant and to filter 
      * according to it if necessary
      * @example SparQL filter added :
+     * SELECT DISTINCT ?dateTimeStamp
      * ?uri  <http://www.w3.org/2006/time#hasTime>  ?time  . 
      * ?time  <http://www.w3.org/2006/time#inXSDDateTimeStamp>  ?dateTimeStamp  . 
      * BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str(?dateTimeStamp)) as ?dateTime) .
      * BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str("2017-09-10T12:00:00+01:00")) as ?dateRangeStartDateTime) .
      * BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str("2017-09-12T12:00:00+01:00")) as ?dateRangeEndDateTime) .
+     * GROUP BY ?dateTimeStamp
      */
     private void prepareSearchQueryDateTime(SPARQLQueryBuilder query, String sparqlVariableUri, String searchDateTimeRangeStartString, String searchDateTimeRangeEndString){  
         
@@ -140,7 +145,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     }
     
     /**
-     *
+     * Prepare the event search query
      * @param eventSearchParameters
      * @param searchConcernsItemLabel
      * @param searchConcernsItemUri
@@ -186,7 +191,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     }
     
     /**
-     *
+     * Prepare the concerns items search query
      * @param eventUri
      * @return query
      * @example
@@ -244,8 +249,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     }
     
     /**
-     *
-     * get a concerns items from a binding set
+     * Get a concerns items from a binding set
      * @param bindingSet
      * @return concerns item
      */
@@ -261,7 +265,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     }
     
     /**
-     *
+     * Search events stored
      * @param eventSearchParameters
      * @param searchConcernsItemLabel
      * @param searchConcernsItemUri
@@ -296,7 +300,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     }
     
     /**
-     * search event properties and set them to it
+     * Search event properties and set them to it
      * @param event 
      */
     private void searchEventPropertiesAndSetThemToIt(Event event){
@@ -312,7 +316,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     }
     
     /**
-     * search event concerns items and set them to it
+     * Search event concerns items and set them to it
      * @param event 
      */
     private void searchEventConcernsItemsAndSetThemToIt(Event event){
@@ -330,7 +334,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     }
     
     /**
-     * get the value of a variable from a binding set
+     * Get the value of a variable from a binding set
      * @param variableName 
      * @param bindingSet 
      */
@@ -375,7 +379,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     }
 
     /**
-     *
+     * Count results number
      * @param eventSearchParameters
      * @param searchConcernsItemLabel
      * @param searchConcernsItemUri
@@ -387,8 +391,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * @throws MalformedQueryException
      * @throws QueryEvaluationException
      */
-    public Integer count(Event eventSearchParameters, String searchConcernsItemLabel, String searchConcernsItemUri, String dateRangeStartString, String dateRangeEndString, User user) throws RepositoryException
-            , MalformedQueryException, QueryEvaluationException {
+    public Integer count(Event eventSearchParameters, String searchConcernsItemLabel, String searchConcernsItemUri, String dateRangeStartString, String dateRangeEndString, User user) throws RepositoryException, MalformedQueryException, QueryEvaluationException {
         
         SPARQLQueryBuilder prepareCount = prepareCountSearchQuery(eventSearchParameters, searchConcernsItemLabel, searchConcernsItemUri, dateRangeStartString, dateRangeEndString, user);
         

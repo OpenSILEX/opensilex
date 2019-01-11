@@ -51,6 +51,7 @@ import phis2ws.service.view.brapi.form.ResponseFormPOST;
  *
  * @author Arnaud Charleroy
  * @update [Morgane Vidal] 04 Oct, 2018 : Rename existObject to existUri and change the query of the method existUri.
+ * @update [Andréas Garcia] 11 Jan, 2019 : Add generic date time stamp comparison SparQL filter.
  * @param <T>
  */
 public abstract class DAOSesame<T> {
@@ -68,10 +69,10 @@ public abstract class DAOSesame<T> {
     
     protected static final String COUNT_ELEMENT_QUERY = "count";
     
-    /*
-    The following constants are SPARQL variables name used for each subclass 
-    to query the triplestore.
-    */
+    /**
+     * The following constants are SPARQL variables name used for each subclass 
+     * to query the triplestore.
+     */
     protected static final String URI = "uri";
     protected static final String RDF_TYPE = "rdfType";
     protected static final String LABEL = "label";

@@ -287,9 +287,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
         UpdateBuilder spql = new UpdateBuilder();
         
         Node graph = NodeFactory.createURI(Contexts.ANNOTATIONS.toString());
-        
         Resource annotationUri = ResourceFactory.createResource(annotation.getUri());
-        
         Node annotationConcept = NodeFactory.createURI(Vocabulary.CONCEPT_ANNOTATION.toString());
         
         spql.addInsert(graph, annotationUri, RDF.type, annotationConcept);

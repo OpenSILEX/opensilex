@@ -236,6 +236,9 @@ public class TokenResourceService implements BrapiCall{
                         if (sessionStartDateTime != null) {
                             Seconds secondsBetween = Seconds.secondsBetween(sessionStartDateTime, new DateTime());
                             int expiration = Integer.valueOf(PropertiesFileManager.getConfigFileProperty("service", "sessionTime")) - secondsBetween.getSeconds();
+                            //SILEX:info
+                            //sometimes token expiration time become negative and crash the webapp
+                            //this code force regeneration of a new token in this case
                             if (expiration <= 0) {
                                 TokenManager.Instance().removeSession(userSessionId);
                                 TokenManager.Instance().createToken(session);
@@ -243,8 +246,8 @@ public class TokenResourceService implements BrapiCall{
                                 secondsBetween = Seconds.secondsBetween(sessionStartDateTime, new DateTime());
                                 expiration = Integer.valueOf(PropertiesFileManager.getConfigFileProperty("service", "sessionTime")) - secondsBetween.getSeconds();
                             }
+                            //\SILEX:info
                             expires_in = Integer.toString(expiration);
-                            
                         }
                     }
                     // return result

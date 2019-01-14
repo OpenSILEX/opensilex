@@ -12,6 +12,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.update.UpdateRequest;
+import org.apache.jena.vocabulary.DCTerms;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -31,7 +40,6 @@ import phis2ws.service.dao.phis.UserDaoPhisBrapi;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.model.User;
 import phis2ws.service.ontologies.Contexts;
-import phis2ws.service.ontologies.DublinCore;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Vocabulary;
@@ -40,7 +48,6 @@ import phis2ws.service.resources.dto.DocumentMetadataDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.ResourcesUtils;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
-import phis2ws.service.utils.sparql.SPARQLUpdateBuilder;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.Document;
 import phis2ws.service.view.model.phis.Experiment;
@@ -183,6 +190,93 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
     }
 
     /**
+     * Prepare insert query for document metadata
+     * 
+     * @param documentMetadata
+     * @return update request
+     */
+    private UpdateRequest prepareInsertQuery(DocumentMetadataDTO documentMetadata) {
+        UpdateBuilder spql = new UpdateBuilder();
+        Node graph = NodeFactory.createURI(Contexts.DOCUMENTS.toString());
+
+        Node documentUri = NodeFactory.createURI(documentMetadata.getUri());
+
+        Node documentType = NodeFactory.createURI(documentMetadata.getDocumentType());
+        spql.addInsert(graph, documentUri, RDF.type, documentType);
+
+        spql.addInsert(graph, documentUri, DCTerms.creator, documentMetadata.getCreator());
+
+        spql.addInsert(graph, documentUri, DCTerms.language, documentMetadata.getLanguage());
+
+        spql.addInsert(graph, documentUri, DCTerms.title, documentMetadata.getTitle());
+
+        spql.addInsert(graph, documentUri, DCTerms.date, documentMetadata.getCreationDate());
+
+        Property relationStatus = ResourceFactory.createProperty(Vocabulary.RELATION_STATUS.toString());
+        spql.addInsert(graph, documentUri, relationStatus, documentMetadata.getStatus());
+            
+        if (documentMetadata.getExtension() != null) {
+            spql.addInsert(graph, documentUri, DCTerms.format, documentMetadata.getExtension());
+        }
+        
+        if (documentMetadata.getComment() != null && !documentMetadata.getComment().equals("")) {
+            spql.addInsert(graph, documentUri, RDFS.comment, documentMetadata.getComment());
+        }
+
+        if (!(documentMetadata.getConcern() == null) && !documentMetadata.getConcern().isEmpty()) {
+            for (ConcernItemDTO concernedItem : documentMetadata.getConcern()) {
+                Node concernedItemUri = NodeFactory.createURI(concernedItem.getUri());
+                Node concernedItemType = NodeFactory.createURI(concernedItem.getTypeURI());
+                Property relationConcern = ResourceFactory.createProperty(Vocabulary.RELATION_CONCERN.toString());
+
+                spql.addInsert(graph, documentUri, relationConcern, concernedItemUri);
+                spql.addInsert(graph, concernedItemUri, RDF.type, concernedItemType);
+            }
+        }
+
+        return spql.buildRequest();
+    } 
+    
+    /**
+     * Prepare delete query for document metadata
+     * 
+     * @param documentMetadata
+     * @return delete request
+     */
+    private UpdateRequest prepareDeleteQuery(Document document) {
+        UpdateBuilder spql = new UpdateBuilder();
+        
+        Node graph = NodeFactory.createURI(Contexts.DOCUMENTS.toString());
+        Node documentUri = NodeFactory.createURI(document.getUri());
+        
+        spql.addDelete(graph, documentUri, DCTerms.creator, document.getCreator());
+
+        spql.addDelete(graph, documentUri, DCTerms.language, document.getLanguage());
+
+        spql.addDelete(graph, documentUri, DCTerms.title, document.getTitle());
+
+        spql.addDelete(graph, documentUri, DCTerms.date, document.getCreationDate());
+
+        Node documentType = NodeFactory.createURI(document.getDocumentType());
+        spql.addDelete(graph, documentUri, RDF.type, documentType);
+        
+        Property relationStatus = ResourceFactory.createProperty(Vocabulary.RELATION_STATUS.toString());
+        spql.addDelete(graph, documentUri, relationStatus, document.getStatus());
+        
+        if (document.getComment() != null) {
+            spql.addDelete(graph, documentUri, RDFS.comment, document.getComment());
+        }
+
+        for (ConcernItemDTO concernedItem : document.getConcernedItems()) {
+            Node concernedItemUri = NodeFactory.createURI(concernedItem.getUri());
+            Property relationConcern = ResourceFactory.createProperty(Vocabulary.RELATION_CONCERN.toString());
+            spql.addDelete(graph, documentUri, relationConcern, concernedItemUri);
+        }
+                
+        return spql.buildRequest();
+    }
+    
+    /**
      * Insert document's metadata in the triplestore and the file in mongo
      * @param documentsMetadata
      * @return the insert result, with each error or information
@@ -206,6 +300,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
             //1. Save document in mongodb
             final String documentName = generateDocumentsURI(); 
             
+            annotObject.setUri(documentName);
             POSTResultsReturn saveFileResult = saveFileInMongoDB(annotObject.getServerFilePath(), documentName);
             insertStatus.addAll(saveFileResult.statusList);
             
@@ -218,35 +313,12 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
                 //\SILEX:conception
                 //Document's metadata are correct and can be savec in triplestore                  
                 //3. Save metadata in triplestore
-                SPARQLUpdateBuilder spqlInsert = new SPARQLUpdateBuilder();
-
-                spqlInsert.appendGraphURI(Contexts.DOCUMENTS.toString()); //Documents named graph
-                spqlInsert.appendTriplet(documentName, Rdf.RELATION_TYPE.toString(), annotObject.getDocumentType(), null);
-                spqlInsert.appendTriplet(documentName, DublinCore.RELATION_CREATOR.toString(), "\"" + annotObject.getCreator() + "\"", null);
-                spqlInsert.appendTriplet(documentName, DublinCore.RELATION_LANGUAGE.toString(), "\"" + annotObject.getLanguage() + "\"", null);
-                spqlInsert.appendTriplet(documentName, DublinCore.RELATION_TITLE.toString(), "\"" + annotObject.getTitle() + "\"", null);
-                spqlInsert.appendTriplet(documentName, DublinCore.RELATION_DATE.toString(), "\"" + annotObject.getCreationDate() + "\"", null);
-                spqlInsert.appendTriplet(documentName, DublinCore.RELATION_FORMAT.toString(), "\"" + annotObject.getExtension() + "\"", null);
-                spqlInsert.appendTriplet(documentName, Vocabulary.RELATION_STATUS.toString(), "\"" + annotObject.getStatus() + "\"", null);
-
-                if (annotObject.getComment() != null) {
-                    //SILEX:info
-                    // Use of ''' to escape \r\n characters from comment string which break the generated request string
-                    //\SILEX:info
-                    spqlInsert.appendTriplet(documentName, Rdfs.RELATION_COMMENT.toString(), "'''" + annotObject.getComment() + "'''", null);
-                }
-
-                if (!(annotObject.getConcern() == null) && !annotObject.getConcern().isEmpty()) {
-                    for (ConcernItemDTO concernedItem : annotObject.getConcern()) {
-                        spqlInsert.appendTriplet(documentName, Vocabulary.RELATION_CONCERN.toString(), concernedItem.getUri(), null);
-                        spqlInsert.appendTriplet(concernedItem.getUri(), Rdf.RELATION_TYPE.toString(), concernedItem.getTypeURI(), null);
-                    }
-                }
+                UpdateRequest query = prepareInsertQuery(annotObject);
 
                 try {
                     // transaction begining
                     this.getConnection().begin();
-                    Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spqlInsert.toString());
+                    Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
                     LOGGER.trace(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                     prepareUpdate.execute();
 
@@ -356,42 +428,42 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         
         sparqlQuery.appendGroupBy("?" + CREATOR);
         sparqlQuery.appendSelect("?" + CREATOR);
-        sparqlQuery.appendTriplet(select, DublinCore.RELATION_CREATOR.toString(), "?" + CREATOR, null);
+        sparqlQuery.appendTriplet(select, DCTerms.creator.getURI(), "?" + CREATOR, null);
         
         if (creator != null) {
             sparqlQuery.appendAndFilter("regex(STR(?" + CREATOR +"), '" + creator + "', 'i')");
         }
         
         if (language != null) {
-            sparqlQuery.appendTriplet(select, DublinCore.RELATION_LANGUAGE.toString(), "\"" + language + "\"", null);
+            sparqlQuery.appendTriplet(select, DCTerms.language.getURI(), "\"" + language + "\"", null);
         } else {
             sparqlQuery.appendSelect(" ?" + LANGUAGE);
             sparqlQuery.appendGroupBy(" ?" + LANGUAGE);
-            sparqlQuery.appendTriplet(select, DublinCore.RELATION_LANGUAGE.toString(), "?" + LANGUAGE, null);
+            sparqlQuery.appendTriplet(select, DCTerms.language.getURI(), "?" + LANGUAGE, null);
         }
         
         sparqlQuery.appendGroupBy("?" + TITLE);
         sparqlQuery.appendSelect("?" + TITLE);
-        sparqlQuery.appendTriplet(select, DublinCore.RELATION_TITLE.toString(), "?" + TITLE, null);
+        sparqlQuery.appendTriplet(select, DCTerms.title.getURI(), "?" + TITLE, null);
         
         if (title != null) {
             sparqlQuery.appendAndFilter("regex(STR(?" + TITLE +"), '" + title + "', 'i')");
         }
         
         if (creationDate != null) {
-            sparqlQuery.appendTriplet(select, DublinCore.RELATION_DATE.toString(), "\"" + creationDate + "\"", null);
+            sparqlQuery.appendTriplet(select, DCTerms.date.getURI(), "\"" + creationDate + "\"", null);
         } else {
             sparqlQuery.appendGroupBy("?" + CREATION_DATE);
             sparqlQuery.appendSelect("?" + CREATION_DATE);
-            sparqlQuery.appendTriplet(select, DublinCore.RELATION_DATE.toString(), "?" + CREATION_DATE, null);
+            sparqlQuery.appendTriplet(select, DCTerms.date.getURI(), "?" + CREATION_DATE, null);
         }
         
         if (format != null) {
-            sparqlQuery.appendTriplet(select, DublinCore.RELATION_FORMAT.toString(), "\"" + format + "\"", null);
+            sparqlQuery.appendTriplet(select, DCTerms.format.getURI(), "\"" + format + "\"", null);
         } else {
             sparqlQuery.appendGroupBy("?" + FORMAT);
             sparqlQuery.appendSelect("?" + FORMAT);
-            sparqlQuery.appendTriplet(select, DublinCore.RELATION_FORMAT.toString(), "?" + FORMAT, null);
+            sparqlQuery.appendTriplet(select, DCTerms.format.getURI(), "?" + FORMAT, null);
         }
         
         if (!concernedItemsUris.isEmpty() && concernedItemsUris.size() > 0) {
@@ -683,65 +755,26 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
             docDaoSesame.uri = documentMetadata.getUri();
             ArrayList<Document> documentsCorresponding = docDaoSesame.allPaginate();
 
-            String deleteQuery = null;
+            UpdateRequest deleteQuery = null;
             //1.2 Delete metatada associated to the URI
             if (documentsCorresponding.size() > 0) {
-                //SILEX:conception
-                //Such as the existing querybuilder for the insert, create a
-                //delete query builder and use it
-                deleteQuery =  "DELETE WHERE { "
-                                   + "<" + documentsCorresponding.get(0).getUri() + "> <" + DublinCore.RELATION_CREATOR.toString() + "> \"" + documentsCorresponding.get(0).getCreator() + "\" . "
-                                   + "<" + documentsCorresponding.get(0).getUri() + "> <" + DublinCore.RELATION_LANGUAGE.toString() + "> \"" + documentsCorresponding.get(0).getLanguage() + "\" . "
-                                   + "<" + documentsCorresponding.get(0).getUri() + "> <" + DublinCore.RELATION_TITLE.toString() + "> \"" + documentsCorresponding.get(0).getTitle() + "\" . "
-                                   + "<" + documentsCorresponding.get(0).getUri() + "> <" + DublinCore.RELATION_DATE.toString() + "> \"" + documentsCorresponding.get(0).getCreationDate() + "\" . "
-                                   + "<" + documentsCorresponding.get(0).getUri() + "> <" + Rdf.RELATION_TYPE.toString() + "> <" + documentsCorresponding.get(0).getDocumentType() +"> . "
-                                   + "<" + documentsCorresponding.get(0).getUri() + "> <" + Vocabulary.RELATION_STATUS.toString() + "> \"" + documentsCorresponding.get(0).getStatus() + "\" . ";
-
-                if (documentsCorresponding.get(0).getComment() != null) {
-                    deleteQuery += "<" + documentsCorresponding.get(0).getUri() + "> <" + Rdfs.RELATION_COMMENT.toString() + "> \"" + documentsCorresponding.get(0).getComment() + "\" . ";
-                }
-
-                for (ConcernItemDTO concernedItem : documentsCorresponding.get(0).getConcernedItems()) {
-                    deleteQuery += "<" + documentsCorresponding.get(0).getUri() + "> <" + Vocabulary.RELATION_CONCERN.toString() + "> <" + concernedItem.getUri() + "> . ";
-                }
-                deleteQuery += "}";
-                //\SILEX:conception
+                 deleteQuery = prepareDeleteQuery(documentsCorresponding.get(0));
             }
 
             //2. Insert updated metadata
-            SPARQLUpdateBuilder spqlInsert = new SPARQLUpdateBuilder();
-            spqlInsert.appendGraphURI(Contexts.DOCUMENTS.toString()); 
-            spqlInsert.appendTriplet(documentMetadata.getUri(), Rdf.RELATION_TYPE.toString(), documentMetadata.getDocumentType(), null);
-            spqlInsert.appendTriplet(documentMetadata.getUri(), DublinCore.RELATION_CREATOR.toString(), "\"" + documentMetadata.getCreator() + "\"", null);
-            spqlInsert.appendTriplet(documentMetadata.getUri(), DublinCore.RELATION_LANGUAGE.toString(), "\"" + documentMetadata.getLanguage() + "\"", null);
-            spqlInsert.appendTriplet(documentMetadata.getUri(), DublinCore.RELATION_TITLE.toString(), "\"" + documentMetadata.getTitle() + "\"", null);
-            spqlInsert.appendTriplet(documentMetadata.getUri(), DublinCore.RELATION_DATE.toString(), "\"" + documentMetadata.getCreationDate() + "\"", null);
-            spqlInsert.appendTriplet(documentMetadata.getUri(), Vocabulary.RELATION_STATUS.toString(), "\"" + documentMetadata.getStatus() + "\"", null);
-
-            if (documentMetadata.getComment() != null) {
-                //SILEX:info
-                // Use of ''' to escape \r\n characters from comment string which break the generated request string
-                //\SILEX:info
-                spqlInsert.appendTriplet(documentMetadata.getUri(), Rdfs.RELATION_COMMENT.toString(), "'''" + documentMetadata.getComment() + "'''", null);
-            }
-
-            if (documentMetadata.getConcern() != null && !documentMetadata.getConcern().isEmpty() && documentMetadata.getConcern().size() > 0) {
-                for (ConcernItemDTO concernedItem : documentMetadata.getConcern()) {
-                    spqlInsert.appendTriplet(documentMetadata.getUri(), Vocabulary.RELATION_CONCERN.toString(), concernedItem.getUri(), null);
-                    spqlInsert.appendTriplet(concernedItem.getUri(), Rdf.RELATION_TYPE.toString(), concernedItem.getTypeURI(), null);
-                }
-            }
-
+            UpdateRequest query = prepareInsertQuery(documentMetadata);
+            
             try {
                 // début de la transaction : vérification de la requête
                 this.getConnection().begin();
-                Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery);
-                Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spqlInsert.toString());
-                LOGGER.debug(getTraceabilityLogs() + " query : " + prepareDelete.toString());
+                if (deleteQuery != null) {
+                    Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery.toString());
+                    LOGGER.debug(getTraceabilityLogs() + " query : " + prepareDelete.toString());
+                    prepareDelete.execute();
+                }
+                Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
                 LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
-                prepareDelete.execute();
                 prepareUpdate.execute();
-
                 updatedResourcesURIList.add(documentMetadata.getUri());
             } catch (MalformedQueryException e) {
                 LOGGER.error(e.getMessage(), e);

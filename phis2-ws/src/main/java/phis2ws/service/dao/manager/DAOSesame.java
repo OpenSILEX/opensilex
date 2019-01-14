@@ -81,18 +81,20 @@ public abstract class DAOSesame<T> {
      * to query the triplestore.
      */
     protected static final String URI = "uri";
+    protected static final String URI_SELECT_NAME_SPARQL = "?" + URI;
     protected static final String RDF_TYPE = "rdfType";
+    protected static final String RDF_TYPE_SELECT_NAME_SPARQL = "?" + RDF_TYPE;
     protected static final String LABEL = "label";
     protected static final String COMMENT = "comment";
     
-    protected static final String DATETIME_VARIABLE = "dateTime";
-    protected static final String DATETIME_VARIABLE_SPARQL = "?" + DATETIME_VARIABLE;
+    protected static final String DATETIME_SELECT_NAME = "dateTime";
+    protected static final String DATETIME_SELECT_NAME_SPARQL = "?" + DATETIME_SELECT_NAME;
     
-    protected static final String DATE_RANGE_START_DATETIME_VARIABLE = "dateRangeStartDateTime";
-    protected static final String DATE_RANGE_START_DATETIME_VARIABLE_SPARQL = "?" + DATE_RANGE_START_DATETIME_VARIABLE;
+    protected static final String DATE_RANGE_START_DATETIME_SELECT_NAME = "dateRangeStartDateTime";
+    protected static final String DATE_RANGE_START_DATETIME_SELECT_NAME_SPARQL = "?" + DATE_RANGE_START_DATETIME_SELECT_NAME;
     
-    protected static final String DATE_RANGE_END_DATETIME_VARIABLE = "dateRangeEndDateTime";
-    protected static final String DATE_RANGE_END_DATETIME_VARIABLE_SPARQL = "?" + DATE_RANGE_END_DATETIME_VARIABLE;
+    protected static final String DATE_RANGE_END_DATETIME_SELECT_NAME = "dateRangeEndDateTime";
+    protected static final String DATE_RANGE_END_DATETIME_SELECT_NAME_SPARQL = "?" + DATE_RANGE_END_DATETIME_SELECT_NAME;
     
     protected final String DATETIMESTAMP_FORMAT_SPARQL = DateFormat.YMDTHMSZZ.toString();
     
@@ -355,13 +357,13 @@ public abstract class DAOSesame<T> {
         
         query.appendToBody("\nBIND(<" + Xsd.FUNCTION_DATETIME.toString() 
                 + ">(str(" + dateTimeStampToCompareSparqleVariable 
-                + ")) as " + DATETIME_VARIABLE_SPARQL + ") .");
+                + ")) as " + DATETIME_SELECT_NAME_SPARQL + ") .");
         
         if (filterRangeStartDateString != null){
-            filterSearchQueryWithDateTimeStampComparison(query, filterRangeStartDateString, filterRangeDatesStringFormat, DATE_RANGE_START_DATETIME_VARIABLE_SPARQL, " <= ", DATETIME_VARIABLE_SPARQL);
+            filterSearchQueryWithDateTimeStampComparison(query, filterRangeStartDateString, filterRangeDatesStringFormat, DATE_RANGE_START_DATETIME_SELECT_NAME_SPARQL, " <= ", DATETIME_SELECT_NAME_SPARQL);
         }
         if (filterRangeEndDateString != null){
-            filterSearchQueryWithDateTimeStampComparison(query, filterRangeEndDateString, filterRangeDatesStringFormat, DATE_RANGE_END_DATETIME_VARIABLE_SPARQL, " >= ", DATETIME_VARIABLE_SPARQL);
+            filterSearchQueryWithDateTimeStampComparison(query, filterRangeEndDateString, filterRangeDatesStringFormat, DATE_RANGE_END_DATETIME_SELECT_NAME_SPARQL, " >= ", DATETIME_SELECT_NAME_SPARQL);
         }
     }
 

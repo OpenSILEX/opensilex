@@ -30,7 +30,7 @@ public enum Oeev {
     RELATION_CONCERNS {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "concern";
+            return NAMESPACE.toString() + "concerns";
         }
     }, 
     

@@ -240,8 +240,8 @@ public final class DocumentationAnnotation {
 
     public static final String EXAMPLE_EVENT_URI = "http://www.phenome-fppn.fr/id/event/96e72788-6bdc-4f8e-abd1-ce9329371e8e";
     public static final String EXAMPLE_EVENT_TYPE = "http://www.phenome-fppn.fr/vocabulary/2018/oeev#MoveFrom";
-    public static final String EXAMPLE_EVENT_CONCERNS_ITEM_URI = "http://www.phenome-fppn.fr/m3p/arch/2017/c17000242";
-    public static final String EXAMPLE_EVENT_CONCERNS_ITEM_LABEL = "Plot Lavalette";
+    public static final String EXAMPLE_EVENT_CONCERNED_ITEM_URI = "http://www.phenome-fppn.fr/m3p/arch/2017/c17000242";
+    public static final String EXAMPLE_EVENT_CONCERNED_ITEM_LABEL = "Plot Lavalette";
     public static final String EXAMPLE_EVENT_DATE_RANGE_START = "2017-09-08T12:00:00+01:00";
     public static final String EXAMPLE_EVENT_DATE_RANGE_END = "2019-10-08T12:00:00+01:00";
 

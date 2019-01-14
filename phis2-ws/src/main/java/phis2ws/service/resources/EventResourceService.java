@@ -76,8 +76,8 @@ public class EventResourceService  extends ResourceService {
      * @param page
      * @param uri
      * @param type
-     * @param concernsUri
-     * @param concernsLabel
+     * @param concernedItemUri
+     * @param concernedItemLabel
      * @param dateRangeStart
      * @param dateRangeEnd
      * @return  list of all events
@@ -94,7 +94,7 @@ public class EventResourceService  extends ResourceService {
      *         {
      *           "uri": "http://www.phenome-fppn.fr/id/event/5a1b3c0d-58af-4cfb-811e-e141b11453b1",
      *           "type": "http://www.phenome-fppn.fr/vocabulary/2018/oeev#MoveFrom",
-     *           "concerns": [
+     *           "concernedItems": [
      *             {
      *               "labels": [
      *                 "label2",
@@ -133,8 +133,8 @@ public class EventResourceService  extends ResourceService {
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page, 
         @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_EVENT_URI) @QueryParam("uri") @URL String uri, 
         @ApiParam(value = "Search by type", example = DocumentationAnnotation.EXAMPLE_EVENT_TYPE) @QueryParam("type") @URL String type, 
-        @ApiParam(value = "Search by concerns uri", example = DocumentationAnnotation.EXAMPLE_EVENT_CONCERNS_ITEM_URI) @QueryParam("concernsUri") @URL String concernsUri, 
-        @ApiParam(value = "Search by concerns label", example = DocumentationAnnotation.EXAMPLE_EVENT_CONCERNS_ITEM_LABEL) @QueryParam("concernsLabel") String concernsLabel, 
+        @ApiParam(value = "Search by concerned item uri", example = DocumentationAnnotation.EXAMPLE_EVENT_CONCERNED_ITEM_URI) @QueryParam("concernedItemUri") @URL String concernedItemUri, 
+        @ApiParam(value = "Search by concerned item label", example = DocumentationAnnotation.EXAMPLE_EVENT_CONCERNED_ITEM_LABEL) @QueryParam("concernedItemLabel") String concernedItemLabel, 
         @ApiParam(value = "Search by date - start of the range", example = DocumentationAnnotation.EXAMPLE_EVENT_DATE_RANGE_START) @QueryParam("dateRangeStart") @Date(DateFormat.YMDTHMSZZ) String dateRangeStart, 
         @ApiParam(value = "Search by date - end of the range", example = DocumentationAnnotation.EXAMPLE_EVENT_DATE_RANGE_END) @QueryParam("dateRangeEnd") @Date(DateFormat.YMDTHMSZZ) String dateRangeEnd
     ) {
@@ -144,8 +144,8 @@ public class EventResourceService  extends ResourceService {
         Event eventSearchParameters = new Event(uri, type, null, null, null);
         ArrayList<Event> events = eventDAO.searchEvents(
                 eventSearchParameters, 
-                concernsLabel, 
-                concernsUri, 
+                concernedItemLabel, 
+                concernedItemUri, 
                 dateRangeStart, 
                 dateRangeEnd, 
                 userSession.getUser(), 
@@ -173,8 +173,8 @@ public class EventResourceService  extends ResourceService {
             // Return DTOs
             int resultsCount = eventDAO.count(
                 eventSearchParameters, 
-                concernsLabel, 
-                concernsUri, 
+                concernedItemLabel, 
+                concernedItemUri, 
                 dateRangeStart, 
                 dateRangeEnd, 
                 userSession.getUser());

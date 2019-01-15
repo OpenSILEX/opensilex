@@ -33,7 +33,7 @@ public class Event extends RdfResourceDefinition {
         this.properties = properties;
     }
     
-    public void addConcernedItem(ConcernItem concernedItem){
+    public void addConcernedItem(ConcernItem concernedItem) {
         this.concernedItems.add(concernedItem);
     }
 

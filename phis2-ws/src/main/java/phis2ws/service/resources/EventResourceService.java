@@ -113,7 +113,7 @@ public class EventResourceService  extends ResourceService {
      * }
      */
     @GET
-    @ApiOperation(value = "Get all events corresponding to the search parameters given.",notes = "Retrieve all events authorized for the user corresponding to the " + "search parameters given")
+    @ApiOperation(value = "Get all events corresponding to the search parameters given.", notes = "Retrieve all events authorized for the user corresponding to the " + "search parameters given")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Retrieve all events", response = Event.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),

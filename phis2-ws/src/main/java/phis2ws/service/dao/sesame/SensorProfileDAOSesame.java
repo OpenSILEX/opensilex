@@ -184,8 +184,6 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
         Node graph = NodeFactory.createURI(Contexts.SENSORS.toString());
         Resource sensorProfileUri = ResourceFactory.createResource(sensorProfile.getUri());
         
-        Resource sensorProfileUri = ResourceFactory.createResource(sensorProfile.getUri());
-        
         for (Property property : sensorProfile.getProperties()) {
             org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
             

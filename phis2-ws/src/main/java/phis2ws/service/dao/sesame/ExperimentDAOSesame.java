@@ -10,11 +10,14 @@ package phis2ws.service.dao.sesame;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
-import static org.apache.jena.sparql.vocabulary.VocabTestQuery.query;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.update.UpdateRequest;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -159,26 +162,26 @@ public class ExperimentDAOSesame extends DAOSesame<Experiment> {
     
     /**
      * Update the list of the variables linked to the given experiment.
-     * /!\ Prerequisite : the data must have been checked before.
-     * @see ExperimentDao#checkAndUpdateObservedVariables(java.lang.String, java.util.List) 
+     * /!\ Prerequisite : the information must have been checked before.
+     * @see ExperimentDao#checkAndUpdateLinkedVariables(java.lang.String, java.util.List) 
      * @param experimentUri
      * @param variables
      * @return The update result.
      */
-    public POSTResultsReturn updateMeasuredVariables(String experimentUri, List<String> variables) {
+    public POSTResultsReturn updateLinkedVariables(String experimentUri, List<String> variables) {
         POSTResultsReturn result;
         List<Status> updateStatus = new ArrayList<>();
         
         boolean update = true;
 
         //1. Delete old object properties
-        HashMap<String, String> actualMeasuredVariables = getVariables(experimentUri);
-        List<String> oldMeasuredVariables = new ArrayList<>();
-        actualMeasuredVariables.entrySet().forEach((oldVariable) -> {
-            oldMeasuredVariables.add(oldVariable.getKey());
+        HashMap<String, String> actualLinkedVariables = getVariables(experimentUri);
+        List<String> oldLinkedVariables = new ArrayList<>();
+        actualLinkedVariables.entrySet().forEach((oldVariable) -> {
+            oldLinkedVariables.add(oldVariable.getKey());
         });
         
-        if (deleteObjectProperties(experimentUri, Vocabulary.RELATION_MEASURES.toString(), oldMeasuredVariables)) {
+        if (deleteObjectProperties(experimentUri, Vocabulary.RELATION_MEASURES.toString(), oldLinkedVariables)) {
             //2. Add new object properties
             if (addObjectProperties(experimentUri, Vocabulary.RELATION_MEASURES.toString(), variables, experimentUri)) {
                 updateStatus.add(new Status(StatusCodeMsg.RESOURCES_UPDATED, StatusCodeMsg.INFO, "The experiment " + experimentUri + " has now " + variables.size() + " linked variables"));
@@ -210,27 +213,30 @@ public class ExperimentDAOSesame extends DAOSesame<Experiment> {
      *         false if an error occurred (see the error logs to get more details)
      */
     private boolean linkSensorsToExperiment(List<String> sensors, String experimentUri) {
-        //Generates insert query
-        UpdateBuilder spql = new UpdateBuilder();
-        Node graph  = NodeFactory.createURI(experimentUri);
-        
-        sensors.forEach((sensor) -> {
-            Node subjectUriNode  = NodeFactory.createURI(sensor);
-            Node predicateUriNode  = NodeFactory.createURI(Vocabulary.RELATION_PARTICIPATES_IN.toString());
-            Node objectPropertyNode  = NodeFactory.createURI(experimentUri);
-            
-            spql.addInsert(graph, subjectUriNode, predicateUriNode, objectPropertyNode);
-        });
-        
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
-        
-        //Insert the properties in the triplestore
-        Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, spql.buildRequest().toString());
-        try {
-            prepareUpdate.execute();
-        } catch (UpdateExecutionException ex) {
-            LOGGER.error("Add object properties error : " + ex.getMessage());
-            return false;
+        //Add links to sensors if needed
+        if (!sensors.isEmpty()) {
+            UpdateBuilder updateBuilder = new UpdateBuilder();
+            Node graph = NodeFactory.createURI(experimentUri);
+            Resource experiment = ResourceFactory.createResource(experimentUri);
+            Property participatesIn = ResourceFactory.createProperty(Vocabulary.RELATION_PARTICIPATES_IN.toString());
+
+            sensors.forEach((sensor) -> {
+                Resource sensorUri = ResourceFactory.createResource(sensor);
+
+                updateBuilder.addInsert(graph, sensorUri, participatesIn, experiment);
+            });
+
+            UpdateRequest updateRequest = updateBuilder.buildRequest();
+            LOGGER.debug(SPARQL_SELECT_QUERY + updateRequest.toString());
+
+            //Insert the properties in the triplestore
+            Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, updateRequest.toString());
+            try {
+                prepareUpdate.execute();
+            } catch (UpdateExecutionException ex) {
+                LOGGER.error("Add object properties error : " + ex.getMessage());
+                return false;
+            }
         }
         
         return true;
@@ -249,24 +255,30 @@ public class ExperimentDAOSesame extends DAOSesame<Experiment> {
      *         false if the delete has not been done.
      */
     private boolean deleteLinksSensorsExperiment(List<String> sensors, String experimentUri) {
-        //1. Generates delete query
-        String deleteQuery = "DELETE WHERE { ";
-        
-        for (String sensor : sensors) {
-            deleteQuery += "<" + sensor + "> <" + Vocabulary.RELATION_PARTICIPATES_IN.toString() + "> <" + experimentUri + "> . ";
-        }
-        
-        deleteQuery += " }";
-        
-        LOGGER.debug(deleteQuery);
-        
-        //2. Delete data in the triplestore
-        Update prepareDelete = getConnection().prepareUpdate(QueryLanguage.SPARQL, deleteQuery);
-        try {
-            prepareDelete.execute();
-        } catch (UpdateExecutionException ex) {
-            LOGGER.error("Delete object properties error : " + ex.getMessage());
-            return false;
+        //1. Generates delete query (if needed)
+        if (!sensors.isEmpty()) {
+            UpdateBuilder deleteBuilder = new UpdateBuilder();
+            Node graph = NodeFactory.createURI(experimentUri);
+            Resource experiment = ResourceFactory.createResource(experimentUri);
+            Property participatesIn = ResourceFactory.createProperty(Vocabulary.RELATION_PARTICIPATES_IN.toString());
+
+            for (String sensor : sensors) {
+                Resource sensorRes = ResourceFactory.createResource(sensor);
+                deleteBuilder.addDelete(graph, sensorRes, participatesIn, experiment);
+            }
+
+            UpdateRequest delete = deleteBuilder.buildRequest();
+
+            LOGGER.debug("delete : " + delete.toString());
+
+            //2. Delete data in the triplestore
+            Update prepareDelete = getConnection().prepareUpdate(QueryLanguage.SPARQL, delete.toString());
+            try {
+                prepareDelete.execute();
+            } catch (UpdateExecutionException ex) {
+                LOGGER.error("Delete object properties error : " + ex.getMessage());
+                return false;
+            }
         }
         
         return true;
@@ -274,7 +286,7 @@ public class ExperimentDAOSesame extends DAOSesame<Experiment> {
     
     /**
      * Update the list of the sensors linked to the given experiment.
-     * /!\ Prerequisite : the data must have been checked before.
+     * /!\ Prerequisite : the information must have been checked before.
      * @see ExperimentDao#checkAndUpdateLinkedSensors(java.lang.String, java.util.List)
      * @param experimentUri
      * @param sensors

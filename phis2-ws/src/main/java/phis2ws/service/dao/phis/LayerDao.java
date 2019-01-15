@@ -31,14 +31,14 @@ import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
-import phis2ws.service.dao.sesame.AgronomicalObjectDAOSesame;
+import phis2ws.service.dao.sesame.ScientificObjectDAOSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Vocabulary;
 import phis2ws.service.resources.dto.LayerDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
-import phis2ws.service.view.model.phis.AgronomicalObject;
+import phis2ws.service.view.model.phis.ScientificObject;
 import phis2ws.service.view.model.phis.Property;
 
 
@@ -61,7 +61,7 @@ public class LayerDao {
     public String depth;
     public String filePath;
     public String fileWebPath;
-    public HashMap<String, AgronomicalObject> children = new HashMap<>();
+    public HashMap<String, ScientificObject> children = new HashMap<>();
     
     private static final String LAYER_FILE_SERVER_DIRECTORY = PropertiesFileManager.getConfigFileProperty("service", "layerFileServerDirectory");
     private static final String LAYER_FILE_SERVER_ADDRESS = PropertiesFileManager.getConfigFileProperty("service", "layerFileServerAddress");
@@ -73,16 +73,16 @@ public class LayerDao {
      * @param layerDTO 
      */
       public void searchAndUpdateChildren(LayerDTO layerDTO) throws SQLException {
-        AgronomicalObjectDAOSesame agronomicalObjectDaoSesame = new AgronomicalObjectDAOSesame();
-        AgronomicalObjectDAO agronomicalObject = new AgronomicalObjectDAO();
+        ScientificObjectDAOSesame agronomicalObjectDaoSesame = new ScientificObjectDAOSesame();
+        ScientificObjectDAO agronomicalObject = new ScientificObjectDAO();
         
-        HashMap<String, AgronomicalObject> childrendAgronomicalObjectDaoSesame = agronomicalObjectDaoSesame.searchChildren(layerDTO);
+        HashMap<String, ScientificObject> childrendAgronomicalObjectDaoSesame = agronomicalObjectDaoSesame.searchChildren(layerDTO);
         
         ArrayList<String> childrenURIs = new ArrayList<>(childrendAgronomicalObjectDaoSesame.keySet());
         HashMap<String,String> childrenAgronomicalObjectsGeometries = agronomicalObject.getGeometries(childrenURIs);
         
-        for (Entry<String, AgronomicalObject> child : childrendAgronomicalObjectDaoSesame.entrySet()) {
-            AgronomicalObject ao = child.getValue();
+        for (Entry<String, ScientificObject> child : childrendAgronomicalObjectDaoSesame.entrySet()) {
+            ScientificObject ao = child.getValue();
             ao.setGeometry(childrenAgronomicalObjectsGeometries.get(child.getKey()));
             children.put(child.getKey(), ao);
         }
@@ -154,7 +154,7 @@ public class LayerDao {
                 writer.write("\"type\" : \"FeatureCollection\",");
                 writer.write("\"features\" : [");
                 int nbChild = 0;
-                for (Entry<String, AgronomicalObject> child : children.entrySet()) {
+                for (Entry<String, ScientificObject> child : children.entrySet()) {
                     //On écrit chaque enfant
                     writer.write("{\"type\" : \"Feature\",");
 

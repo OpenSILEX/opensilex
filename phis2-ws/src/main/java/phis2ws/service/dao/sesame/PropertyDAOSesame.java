@@ -535,8 +535,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      * ╚═════════════════════╩════════════╩═══════════════╩════════════════════════════╩═══════════════════════╩═════════════════╩════════════════════════════════╩════════════════╩═════════════════════════╝
      * 
      * @param language specify in which language labels should be returned
-     * @param relationsToIgnore some relations sometimes must not be considered
-     * as properties so we ignore them
+     * @param relationsToIgnore some relations sometimes must not be considered as properties so we ignore them
      * @return the builded query
      * @example
      * SELECT DISTINCT  
@@ -702,10 +701,8 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
             /* Prepare and execute the query to retrieve all the relations, 
              properties and properties type with their labels for the given 
             uri and language*/
-            SPARQLQueryBuilder query = prepareSearchPropertiesQuery(language
-                    , propertiesRelationsToIgnore);
-            TupleQuery tupleQuery = getConnection()
-                    .prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+            SPARQLQueryBuilder query = prepareSearchPropertiesQuery(language, propertiesRelationsToIgnore);
+            TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         
             definition.setUri(uri);
         
@@ -744,44 +741,31 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
                         property.addLastRdfTypeLabel(bindingSet.getValue(PROPERTY_TYPE_LABEL).stringValue());
                     }
 
-                    // 7. If definition already own the property, add current 
-                    // property labels to the existing property
-                    //    otherwise define prefered labels and add property to 
-                    // definition
+                    // 7. If definition already own the property, add current property labels to the existing property otherwise define prefered labels and add property to definition
                     if (definition.hasProperty(property)) {
                         // Retrieve the existing property
-                        Property existingProperty = definition
-                                .getProperty(property);
+                        Property existingProperty = definition.getProperty(property);
 
-                        // Prefered label are ignored in this case because they
-                        // already are defined in the existing property
+                        // Prefered label are ignored in this case because they already are defined in the existing property
                         
                         // Merge new labels with previous existing
-                        existingProperty.addRdfTypeLabels(
-                                property.getRdfTypeLabels());
-                        existingProperty.addRelationLabels(
-                                property.getRelationLabels());
-                        existingProperty.addValueLabels(
-                                property.getValueLabels());
+                        existingProperty.addRdfTypeLabels(property.getRdfTypeLabels());
+                        existingProperty.addRelationLabels(property.getRelationLabels());
+                        existingProperty.addValueLabels(property.getValueLabels());
                         
-                        
-                        // Set the property variable with the existing property 
-                        // to add prefered labels if exists
+                        // Set the property variable with the existing property to add prefered labels if exists
                     } else {
-                        // If property prefered label exists add it at the 
-                        // begining of labels array
+                        // If property prefered label exists add it at the begining of labels array
                         if (bindingSet.hasBinding(PROPERTY_PREF_LABEL)) {
                             property.addFirstValueLabel(bindingSet.getValue(PROPERTY_PREF_LABEL).stringValue());
                         }
 
-                        // If relation prefered label exists add it at the 
-                        // begining of labels array
+                        // If relation prefered label exists add it at the begining of labels array
                         if (bindingSet.hasBinding(RELATION_PREF_LABEL)) {
                             property.addFirstRelationLabel(bindingSet.getValue(RELATION_PREF_LABEL).stringValue());
                         }
 
-                        // If property type prefered label exists add it at the 
-                        // begining of labels array
+                        // If property type prefered label exists add it at the begining of labels array
                         if (bindingSet.hasBinding(PROPERTY_TYPE_PREF_LABEL)) {
                             property.addFirstRdfTypeLabel(bindingSet.getValue(PROPERTY_TYPE_PREF_LABEL).stringValue());
                         }

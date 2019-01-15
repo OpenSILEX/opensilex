@@ -14,11 +14,11 @@ import phis2ws.service.PropertiesFileManager;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public enum Contexts {
-    //The context which contains all the declared agronomical objects
-    AGONOMICAL_OBJECTS {
+    //The context which contains all the declared scientific objects
+    SCIENTIFIC_OBJECTS {
         @Override
         public String toString() {
-            return PLATFORM.toString() + "agronomicalObjects";
+            return PLATFORM.toString() + "scientificObjects";
         }
     },
     //The context which contains all the declared annotations
@@ -40,6 +40,13 @@ public enum Contexts {
         @Override
         public String toString() {
             return PLATFORM.toString() + "set/infrastructure";
+        }
+    },
+    //The context which contains all the declared events
+    EVENTS {
+        @Override
+        public String toString() {
+            return PLATFORM.toString() + "set/events";
         }
     },
     //The context which contains all the declared sensors

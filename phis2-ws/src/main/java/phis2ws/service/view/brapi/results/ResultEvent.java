@@ -34,8 +34,7 @@ public class ResultEvent extends Result<EventDTO> {
      * @param pagination
      * @param paginate 
      */
-    public ResultEvent(ArrayList<EventDTO> events
-            , Pagination pagination, boolean paginate) {
+    public ResultEvent(ArrayList<EventDTO> events, Pagination pagination, boolean paginate) {
         super(events, pagination, paginate);
     }
 }

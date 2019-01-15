@@ -33,8 +33,8 @@ import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.dao.manager.DAOMongo;
-import phis2ws.service.dao.phis.AgronomicalObjectDAO;
-import phis2ws.service.dao.sesame.AgronomicalObjectDAOSesame;
+import phis2ws.service.dao.phis.ScientificObjectDAO;
+import phis2ws.service.dao.sesame.ScientificObjectDAOSesame;
 import phis2ws.service.dao.sesame.SensorDAOSesame;
 import phis2ws.service.dao.sesame.VariableDaoSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
@@ -42,7 +42,7 @@ import phis2ws.service.resources.dto.DataDTO;
 import phis2ws.service.resources.dto.DatasetDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
-import phis2ws.service.view.model.phis.AgronomicalObject;
+import phis2ws.service.view.model.phis.ScientificObject;
 import phis2ws.service.view.model.phis.Data;
 import phis2ws.service.view.model.phis.Dataset;
 
@@ -179,12 +179,12 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
      * agronomical objects list 
      */
     private void updateAgronomicalObjectsWithExperimentsAgronomicalObjects() {
-        AgronomicalObjectDAOSesame agronomicalObjectDaoSesame = new AgronomicalObjectDAOSesame();
+        ScientificObjectDAOSesame agronomicalObjectDaoSesame = new ScientificObjectDAOSesame();
         agronomicalObjectDaoSesame.experiment = experiment;
         
-        ArrayList<AgronomicalObject> agronomicalObjectsSearched = agronomicalObjectDaoSesame.allPaginate();
+        ArrayList<ScientificObject> agronomicalObjectsSearched = agronomicalObjectDaoSesame.allPaginate();
         
-        for (AgronomicalObject agronomicalObject : agronomicalObjectsSearched) {
+        for (ScientificObject agronomicalObject : agronomicalObjectsSearched) {
             this.agronomicalObjects.add(agronomicalObject.getUri());
         }
     }
@@ -265,8 +265,8 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
             //if the datasetDTO follows the rules
             for (DataDTO data : datasetDTO.getData()) {
                 //is agronomical object exist ?
-                AgronomicalObjectDAO agronomicalObjectDao = new AgronomicalObjectDAO();
-                if (!agronomicalObjectDao.existInDB(new AgronomicalObject(data.getAgronomicalObject()))) {
+                ScientificObjectDAO agronomicalObjectDao = new ScientificObjectDAO();
+                if (!agronomicalObjectDao.existInDB(new ScientificObject(data.getAgronomicalObject()))) {
                     dataState = false;
                     insertStatusList.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Unknown Agronomical Object URI : " + data.getAgronomicalObject()));
                 }

@@ -1,6 +1,5 @@
 //**********************************************************************************************
-//                                       ResultTrait.java 
-//                               ResultAgronomicalObject.java 
+//                                       ResultTrait.java  
 // SILEX-PHIS
 // Copyright © INRA 2017
 // Creation date: November, 23 2017

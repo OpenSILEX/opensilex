@@ -39,7 +39,6 @@ import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.dao.phis.UserDaoPhisBrapi;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.ontologies.Contexts;
-import phis2ws.service.ontologies.DublinCore;
 import phis2ws.service.ontologies.Oa;
 import phis2ws.service.ontologies.Vocabulary;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
@@ -119,14 +118,14 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
         
         query.appendSelect("?" + CREATED);
         query.appendGroupBy("?" + CREATED);
-        query.appendTriplet(annotationUri, DublinCore.RELATION_CREATED.toString(), "?" + CREATED, null);
+        query.appendTriplet(annotationUri, DCTerms.created.getURI(), "?" + CREATED, null);
 
         if (creator != null) {
-            query.appendTriplet(annotationUri, DublinCore.RELATION_CREATOR.toString(), creator, null);
+            query.appendTriplet(annotationUri, DCTerms.creator.getURI(), creator, null);
         } else {
             query.appendSelect("?" + CREATOR);
             query.appendGroupBy("?" + CREATOR);
-            query.appendTriplet(annotationUri, DublinCore.RELATION_CREATOR.toString(), "?" + CREATOR, null);
+            query.appendTriplet(annotationUri, DCTerms.creator.getURI(), "?" + CREATOR, null);
         }
 
         if (motivatedBy != null) {
@@ -287,21 +286,17 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
         UpdateBuilder spql = new UpdateBuilder();
         
         Node graph = NodeFactory.createURI(Contexts.ANNOTATIONS.toString());
-        
         Resource annotationUri = ResourceFactory.createResource(annotation.getUri());
-        
         Node annotationConcept = NodeFactory.createURI(Vocabulary.CONCEPT_ANNOTATION.toString());
         
         spql.addInsert(graph, annotationUri, RDF.type, annotationConcept);
         
         DateTimeFormatter formatter = DateTimeFormat.forPattern(DateFormats.YMDTHMSZ_FORMAT);
         Literal creationDate = ResourceFactory.createTypedLiteral(annotation.getCreated().toString(formatter), XSDDatatype.XSDdateTime);
-        Property dcRelationCreated = ResourceFactory.createProperty(DublinCore.RELATION_CREATED.toString());
-        spql.addInsert(graph, annotationUri, dcRelationCreated, creationDate);
+        spql.addInsert(graph, annotationUri, DCTerms.created, creationDate);
         
-        Property dcRelationCreator = ResourceFactory.createProperty(DublinCore.RELATION_CREATOR.toString());
         Node creator =  NodeFactory.createURI(annotation.getCreator());
-        spql.addInsert(graph, annotationUri, dcRelationCreator, creator);
+        spql.addInsert(graph, annotationUri, DCTerms.creator, creator);
 
         Property relationMotivatedBy = ResourceFactory.createProperty(Oa.RELATION_MOTIVATED_BY.toString());
         Node motivatedByReason =  NodeFactory.createURI(annotation.getMotivatedBy());

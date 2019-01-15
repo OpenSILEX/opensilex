@@ -359,7 +359,7 @@ public class ExperimentResourceService extends ResourceService {
         
         experimentDAO.user = userSession.getUser();
         
-        POSTResultsReturn result = experimentDAO.checkAndUpdateMeasuredVariables(uri, variables);
+        POSTResultsReturn result = experimentDAO.checkAndUpdateLinkedVariables(uri, variables);
         
         if (result.getHttpStatus().equals(Response.Status.CREATED)) {
             postResponse = new ResponseFormPOST(result.statusList);

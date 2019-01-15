@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                       ConcernsItemWithLabelDTO.java
+//                      ConcernedItemWithLabelDTO.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 20 déc. 2018
@@ -11,47 +11,31 @@ import java.util.ArrayList;
 import phis2ws.service.view.model.phis.ConcernItem;
 
 /**
- * DTO of Concern Item with label 
+ * DTO of a concerned item with labels
  * @author andreas
  */
-public class ConcernsItemWithLabelsDTO extends ConcernItemDTO{
+public class ConcernedItemWithLabelsDTO extends ConcernItemDTO{
     
     // labels
     protected ArrayList<String> labels = new ArrayList();
 
-    /**
-     *
-     * @param concernItem
-     */
-    public ConcernsItemWithLabelsDTO(ConcernItem concernItem) {
-        this.uri = concernItem.getUri();
-        this.typeURI = concernItem.getRdfType();
-        this.labels = concernItem.getLabels();
+    public ConcernedItemWithLabelsDTO(ConcernItem concernedItem) {
+        this.uri = concernedItem.getUri();
+        this.typeURI = concernedItem.getRdfType();
+        this.labels = concernedItem.getLabels();
     }
 
-    /**
-     *
-     * @return concerns Item model
-     */
     @Override
     public ConcernItem createObjectFromDTO() {
-        ConcernItem concernItem = super.createObjectFromDTO();
-        concernItem.setLabels(labels);
-        return concernItem;
+        ConcernItem concernedItem = super.createObjectFromDTO();
+        concernedItem.setLabels(labels);
+        return concernedItem;
     }
-    
-    /**
-     *
-     * @return labels
-     */
+
     public ArrayList<String> getLabels() {
         return labels;
     }
 
-    /**
-     *
-     * @param labels
-     */
     public void setLabels(ArrayList<String> labels) {
         this.labels = labels;
     }

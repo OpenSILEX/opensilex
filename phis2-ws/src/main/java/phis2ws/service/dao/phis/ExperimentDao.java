@@ -953,12 +953,13 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
     }
     
     /**
-     * Check the given data to update the list of the observed variables linked to the experiment.
+     * Check the given information and right on experiment to update the list of 
+     * observed variables which is mesured during the given experiment.
      * @param experimentUri
      * @param variables
      * @return the check result.
      */
-    public POSTResultsReturn checkObservedVariables(String experimentUri, List<String> variables) {
+    public POSTResultsReturn checkLinkedVariables(String experimentUri, List<String> variables) {
         POSTResultsReturn checkResult = new POSTResultsReturn();
         List<Status> checkStatus = new ArrayList<>();
         
@@ -999,7 +1000,8 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
     }
     
     /**
-     * Check the given data to update the list of sensors which participates in the givenexperiment.
+     * Check the given information and rights on experiment to update the list of 
+     * sensors which participates in the given experiment.
      * @param experimentUri
      * @param sensors
      * @return the check result.
@@ -1046,21 +1048,21 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
     
     /**
      * Update the list of variables linked to the given experiment. 
-     * /!\ Prerequisite : the data must have been checked before. 
-     * @see ExperimentDao#checkObservedVariables(java.lang.String, java.util.List)
-     * @see ExperimentDAOSesame#updateMeasuredVariables(java.lang.String, java.util.List) 
+     * /!\ Prerequisite : the information must have been checked before. 
+     * @see ExperimentDao#checkLinkedVariables(java.lang.String, java.util.List)
+     * @see ExperimentDAOSesame#updateLinkedVariables(java.lang.String, java.util.List) 
      * @param experimentUri
      * @param variables
      * @return the update result.
      */
-    private POSTResultsReturn updateMeasuredVariables(String experimentUri, List<String> variables) {
+    private POSTResultsReturn updateLinkedVariables(String experimentUri, List<String> variables) {
         ExperimentDAOSesame experimentDAOSesame = new ExperimentDAOSesame();
-        return experimentDAOSesame.updateMeasuredVariables(experimentUri, variables);
+        return experimentDAOSesame.updateLinkedVariables(experimentUri, variables);
     }
     
     /**
      * Update the list of sensors linked to the given experiment. 
-     * /!\ Prerequisite : the data must have been checked before. 
+     * /!\ Prerequisite : the information must have been checked before. 
      * @see ExperimentDao#checkLinkedSensors(java.lang.String, java.util.List)
      * @see ExperimentDAOSesame#updateLinkedSensors(java.lang.String, java.util.List)
      * @param experimentUri
@@ -1078,10 +1080,10 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
      * @param variables
      * @return the update result.
      */
-    public POSTResultsReturn checkAndUpdateMeasuredVariables(String experimentUri, List<String> variables) {
-        POSTResultsReturn checkResult = checkObservedVariables(experimentUri, variables);
+    public POSTResultsReturn checkAndUpdateLinkedVariables(String experimentUri, List<String> variables) {
+        POSTResultsReturn checkResult = checkLinkedVariables(experimentUri, variables);
         if (checkResult.getDataState()) {
-             return updateMeasuredVariables(experimentUri, variables);
+             return updateLinkedVariables(experimentUri, variables);
         } else { //Error in the data
             return checkResult;
         }

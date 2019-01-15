@@ -67,7 +67,7 @@ public class LayerDTO extends AbstractVerifiedClass {
 
     @Required
     @URL
-    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_AGRONOMICAL_OBJECT_TYPE)
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_TYPE)
     public String getObjectType() {
         return objectType;
     }

@@ -259,7 +259,6 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
         UpdateBuilder spql = new UpdateBuilder();
         
         Node graph = NodeFactory.createURI(Contexts.RADIOMETRIC_TARGETS.toString());
-        
         Resource radiometricTargetUri = ResourceFactory.createResource(radiometricTarget.getUri());
         Node radiometricTargetConcept = NodeFactory.createURI(Vocabulary.CONCEPT_RADIOMETRIC_TARGET.toString());
         
@@ -272,7 +271,6 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
                 
                 if (property.getRdfType() != null) {
                     Node propertyValue = NodeFactory.createURI(property.getValue());
-                    
                     spql.addInsert(graph, radiometricTargetUri, propertyRelation, propertyValue);
                     spql.addInsert(graph, propertyValue, RDF.type, property.getRdfType());
                 } else {
@@ -283,8 +281,8 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
         }
         
         UpdateRequest query = spql.buildRequest();
-        
         LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
+        
         return query;
     }
     
@@ -392,7 +390,6 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
         UpdateBuilder spql = new UpdateBuilder();
         
         Node graph = NodeFactory.createURI(Contexts.RADIOMETRIC_TARGETS.toString());
-        
         Resource radiometricTargetUri = ResourceFactory.createResource(radiometricTarget.getUri());
         
         spql.addDelete(graph, radiometricTargetUri, RDFS.label, radiometricTarget.getLabel());
@@ -403,7 +400,6 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
                 
                 if (property.getRdfType() != null) {
                     Node propertyValue = NodeFactory.createURI(property.getValue());
-                    
                     spql.addDelete(graph, radiometricTargetUri, propertyRelation, propertyValue);
                     spql.addDelete(graph, propertyValue, RDF.type, property.getRdfType());
                 } else {
@@ -626,7 +622,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
             BindingSet bindingSet = result.next();
             uri = bindingSet.getValue(URI).stringValue();
         }
-         
+
         if (uri == null) {
             return 0;
         } else {

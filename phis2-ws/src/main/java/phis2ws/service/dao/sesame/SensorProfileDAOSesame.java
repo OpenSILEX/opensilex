@@ -182,6 +182,7 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
         UpdateBuilder spql = new UpdateBuilder();
         
         Node graph = NodeFactory.createURI(Contexts.SENSORS.toString());
+        Resource sensorProfileUri = ResourceFactory.createResource(sensorProfile.getUri());
         
         Resource sensorProfileUri = ResourceFactory.createResource(sensorProfile.getUri());
         
@@ -190,7 +191,6 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
             
             if (property.getRdfType() != null) {
                 Node propertyValue = NodeFactory.createURI(property.getValue());
-                
                 spql.addInsert(graph, sensorProfileUri, propertyRelation, propertyValue);
                 spql.addInsert(graph,propertyValue, RDF.type, property.getRdfType());
             } else {
@@ -200,8 +200,8 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
         }
         
         UpdateRequest query = spql.buildRequest();
-        
         LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
+        
         return query;
     }
     

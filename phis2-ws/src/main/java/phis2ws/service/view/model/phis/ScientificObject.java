@@ -1,5 +1,5 @@
 //**********************************************************************************************
-//                               AgronomicalObject.java 
+//                               ScientificObject.java 
 //
 // Author(s): Morgane Vidal
 // PHIS-SILEX version 1.0
@@ -7,7 +7,7 @@
 // Creation date: august 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  January, 2017
-// Subject: Represents the agronomical object
+// Subject: Represents the scientific object
 //***********************************************************************************************
 
 package phis2ws.service.view.model.phis;
@@ -15,20 +15,20 @@ package phis2ws.service.view.model.phis;
 import java.util.ArrayList;
 
 /**
- * Represents an agronomical object view
+ * Represents an scientific object view
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class AgronomicalObject {
+public class ScientificObject {
     
-    //agronomical object uri
+    //scientific object uri
     private String uri;
-    //type of the agronomical object
+    //type of the scientific object
     private String rdfType;
-    //geometry of the argonomical object
+    //geometry of the scientific object
     private String geometry;
-    //experiment of the argonomical object
+    //experiment of the scientific object
     private String experiment;
-    //object which has part the agronomical object
+    //object which has part the scientific object
     private String isPartOf;
     
     //SILEX:INFO
@@ -39,11 +39,11 @@ public class AgronomicalObject {
     
     private ArrayList<Property> properties = new ArrayList<>();
 
-    public AgronomicalObject(String uri) {
+    public ScientificObject(String uri) {
         this.uri = uri;
     }
 
-    public AgronomicalObject() {
+    public ScientificObject() {
        
     }
     

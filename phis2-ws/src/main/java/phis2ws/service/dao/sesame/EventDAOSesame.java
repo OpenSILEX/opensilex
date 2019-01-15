@@ -64,7 +64,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * FILTER ( (regex (str(?uri), "http://www.phenome-fppn.fr/id/event/5a1b3c0d-58af-4cfb-811e-e141b11453b1", "i"))
      * GROUP BY ?uri
      */
-    private String prepareSearchQueryUri(SPARQLQueryBuilder query, String searchUri){
+    private String prepareSearchQueryUri(SPARQLQueryBuilder query, String searchUri) {
         query.appendSelect(URI_SELECT_NAME_SPARQL);
         query.appendGroupBy(URI_SELECT_NAME_SPARQL);
         if (searchUri != null) {
@@ -81,7 +81,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
      *  ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.phenome-fppn.fr/vocabulary/2018/oeev#MoveFrom> . 
      *  GROUP BY ?rdfType
      */
-    private void prepareSearchQueryType(SPARQLQueryBuilder query, String uriSelectNameSparql, String searchType){
+    private void prepareSearchQueryType(SPARQLQueryBuilder query, String uriSelectNameSparql, String searchType) {
         query.appendSelect(RDF_TYPE_SELECT_NAME_SPARQL);
         query.appendGroupBy(RDF_TYPE_SELECT_NAME_SPARQL);
         query.appendTriplet(uriSelectNameSparql, Rdf.RELATION_TYPE.toString(), RDF_TYPE_SELECT_NAME_SPARQL, null);
@@ -100,18 +100,18 @@ public class EventDAOSesame extends DAOSesame<Event> {
      *  ?uri  <http://www.phenome-fppn.fr/vocabulary/2018/oeev#concerns>  ?concernedItemUri  . 
      *  ?concernedItemUri  <http://www.w3.org/2000/01/rdf-schema#label>  ?concernedItemLabel  . 
      */
-    private void prepareSearchQueryConcernedItemFilter(SPARQLQueryBuilder query, String uriSelectNameSparql, String searchConcernedItemLabel, String searchConcernedItemUri){
+    private void prepareSearchQueryConcernedItemFilter(SPARQLQueryBuilder query, String uriSelectNameSparql, String searchConcernedItemLabel, String searchConcernedItemUri) {
 
         if (searchConcernedItemLabel != null || searchConcernedItemUri != null) {
             query.appendTriplet(uriSelectNameSparql, Oeev.RELATION_CONCERNS.toString(), CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, null);
             
-            if (searchConcernedItemLabel != null){
+            if (searchConcernedItemLabel != null) {
                 query.appendTriplet(CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, Rdfs.RELATION_LABEL.toString(), CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL, null);
                 
                 query.appendAndFilter("regex(" + CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL + ", \"" + searchConcernedItemLabel + "\", \"i\")");
             }
             
-            if (searchConcernedItemUri != null){
+            if (searchConcernedItemUri != null) {
                 query.appendAndFilter("regex (str(" + CONCERNED_ITEM_URI_SELECT_NAME_SPARQL + ")" + ", \"" + searchConcernedItemUri + "\", \"i\")");
             }
         }
@@ -129,7 +129,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str("2017-09-12T12:00:00+01:00")) as ?dateRangeEndDateTime) .
      * GROUP BY ?dateTimeStamp
      */
-    private void prepareSearchQueryDateTime(SPARQLQueryBuilder query, String uriSelectNameSparql, String searchDateTimeRangeStartString, String searchDateTimeRangeEndString){  
+    private void prepareSearchQueryDateTime(SPARQLQueryBuilder query, String uriSelectNameSparql, String searchDateTimeRangeStartString, String searchDateTimeRangeEndString) {  
         
         query.appendSelect(DATETIMESTAMP_SELECT_NAME_SPARQL);
         query.appendGroupBy(DATETIMESTAMP_SELECT_NAME_SPARQL);
@@ -249,7 +249,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * @param bindingSet
      * @return concerned item
      */
-    private ConcernItem getConcernedItemFromBindingSet(BindingSet bindingSet){
+    private ConcernItem getConcernedItemFromBindingSet(BindingSet bindingSet) {
                 
         String concernedItemUri = getValueOfSelectNameFromBindingSet(CONCERNED_ITEM_URI_SELECT_NAME, bindingSet);
         String concernedItemType = getValueOfSelectNameFromBindingSet(CONCERNED_ITEM_TYPE_SELECT_NAME, bindingSet);
@@ -300,11 +300,11 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * Search event properties and set them to it
      * @param event 
      */
-    private void searchEventPropertiesAndSetThemToIt(Event event){
+    private void searchEventPropertiesAndSetThemToIt(Event event) {
 
         PropertyDAOSesame propertyDAO = new PropertyDAOSesame(event.getUri());
         propertyDAO.getAllPropertiesWithLabelsExceptThoseSpecified(
-                event, null, new ArrayList(){
+                event, null, new ArrayList() {
                     {
                         add(Rdf.RELATION_TYPE.toString());
                         add(Time.RELATION_HAS_TIME.toString());
@@ -316,14 +316,14 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * Search event concerned items and set them to it
      * @param event 
      */
-    private void searchEventConcernedItemsAndSetThemToIt(Event event){
+    private void searchEventConcernedItemsAndSetThemToIt(Event event) {
                 
         SPARQLQueryBuilder concernedItemsQuery = prepareConcernedItemsSearchQuery(event.getUri());
         TupleQuery concernedItemsTupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, concernedItemsQuery.toString());
 
         try (TupleQueryResult concernedItemsTupleQueryResult = concernedItemsTupleQuery.evaluate()) {
             ConcernItem concernedItem;
-            while(concernedItemsTupleQueryResult.hasNext()){
+            while(concernedItemsTupleQueryResult.hasNext()) {
                 concernedItem = getConcernedItemFromBindingSet(concernedItemsTupleQueryResult.next());
                 event.addConcernedItem(concernedItem);
             }
@@ -335,7 +335,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * @param selectName 
      * @param bindingSet 
      */
-    private String getValueOfSelectNameFromBindingSet(String selectName, BindingSet bindingSet){ 
+    private String getValueOfSelectNameFromBindingSet(String selectName, BindingSet bindingSet) { 
         Value selectedFieldValue = bindingSet.getValue(selectName);
         if (selectedFieldValue != null) {
             return selectedFieldValue.stringValue();
@@ -406,11 +406,11 @@ public class EventDAOSesame extends DAOSesame<Event> {
 
     @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
-        return prepareSearchQuery(new Event(null, null, null, null, null), null, null, null, null, null);
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
-        return count(new Event(null, null, null, null, null), null, null, null, null, null);
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

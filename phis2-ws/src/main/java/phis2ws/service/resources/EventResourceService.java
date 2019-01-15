@@ -27,13 +27,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.sesame.EventDAOSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
-import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.event.EventDTO;
 import phis2ws.service.resources.validation.interfaces.Date;
 import phis2ws.service.resources.validation.interfaces.URL;
@@ -115,7 +113,7 @@ public class EventResourceService  extends ResourceService {
      * }
      */
     @GET
-    @ApiOperation(value = "Get all events corresponding to the search parameters given.",notes = "Retrieve all events authorized for the user corresponding to the " + "search parameters given")
+    @ApiOperation(value = "Get all events corresponding to the search parameters given.", notes = "Retrieve all events authorized for the user corresponding to the " + "search parameters given")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Retrieve all events", response = Event.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),

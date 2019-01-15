@@ -50,10 +50,6 @@ import phis2ws.service.view.model.phis.Event;
 public class EventResourceService  extends ResourceService {
     final static Logger LOGGER = LoggerFactory.getLogger(EventResourceService.class);
     
-    //user session
-    @SessionInject
-    Session userSession;
-    
     /**
      * Generates an Event list from a given list of EventDTO
      * @param event

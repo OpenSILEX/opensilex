@@ -88,6 +88,7 @@ import phis2ws.service.resources.validation.interfaces.SortingValue;
  * @update [Arnaud Charleroy] 04 September, 2018 : create automatically document directory if not
  * @update [Arnaud Charleroy] 07, September 2018 : add sort feature, query optimization (limit , offset, group_concat)
  *                                                 add comments and CONSTANTS to the code
+ * @update [Andréas Garcia] 15 Jan. 2019 : Replace "concern" occurences by "concernedItem"
  */
 @Api("/documents")
 @Path("/documents")

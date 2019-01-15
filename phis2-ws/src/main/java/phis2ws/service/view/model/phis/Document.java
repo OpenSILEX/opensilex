@@ -14,6 +14,9 @@ package phis2ws.service.view.model.phis;
 import java.util.ArrayList;
 import phis2ws.service.resources.dto.ConcernItemDTO;
 
+/**
+ * @update [Andréas Garcia] 15 Jan. 2019 : Replace "concern" occurences by "concernedItem"
+ */
 public class Document {
     private String uri;
     private String documentType;

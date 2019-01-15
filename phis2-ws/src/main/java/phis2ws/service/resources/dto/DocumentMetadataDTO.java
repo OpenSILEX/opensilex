@@ -21,6 +21,9 @@ import phis2ws.service.resources.validation.interfaces.Date;
 import phis2ws.service.resources.validation.interfaces.DocumentStatus;
 import phis2ws.service.resources.validation.interfaces.URL;
 
+/**
+ * @update [Andréas Garcia] 15 Jan. 2019 : Replace "concern" occurences by "concernedItem"
+ */
 public class DocumentMetadataDTO extends AbstractVerifiedClass {
     private String uri; // /!\ ne sera pas utilisé pour le POST de métadonnées
     private String documentType;
@@ -31,7 +34,7 @@ public class DocumentMetadataDTO extends AbstractVerifiedClass {
     private String creationDate;
     private String extension;
     private String comment;
-    private List<ConcernItemDTO> concern; // Liste des éléments auxquels le doc est lié
+    private List<ConcernItemDTO> concernedItems; // Liste des éléments auxquels le doc est lié
     private String status; // Status du document (linked / unlinked). Linked quand l'objet auquel il est
                            // lié existe réellement, unlinked quand il ne l'est pas encore  
     
@@ -110,12 +113,12 @@ public class DocumentMetadataDTO extends AbstractVerifiedClass {
     }
     
     @Valid
-    public List<ConcernItemDTO> getConcern() {
-        return concern;
+    public List<ConcernItemDTO> getConcernedItems() {
+        return concernedItems;
     }
 
-    public void setConcern(List<ConcernItemDTO> concern) {
-        this.concern = concern;
+    public void setConcernedItems(List<ConcernItemDTO> concernedItems) {
+        this.concernedItems = concernedItems;
     }
     
     @ApiModelProperty(example = "jpg")

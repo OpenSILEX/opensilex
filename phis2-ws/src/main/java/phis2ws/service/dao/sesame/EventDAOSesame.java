@@ -406,11 +406,11 @@ public class EventDAOSesame extends DAOSesame<Event> {
 
     @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
-        return prepareSearchQuery(new Event(null, null, null, null, null), null, null, null, null, null);
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
-        return count(new Event(null, null, null, null, null), null, null, null, null, null);
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

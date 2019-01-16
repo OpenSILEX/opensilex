@@ -23,6 +23,7 @@ import java.util.logging.Level;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.vocabulary.RDF;
@@ -311,10 +312,10 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
                         spql.addInsert(graph, scientificObjectUri, propertyRelation, propertyNode);
                     }
                 } else {
-                    Node propertyNode = NodeFactory.createURI(property.getValue());
+                    Literal propertyLiteral = ResourceFactory.createStringLiteral(property.getValue());
                     org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
 
-                    spql.addInsert(graph, scientificObjectUri, propertyRelation, propertyNode);                    
+                    spql.addInsert(graph, scientificObjectUri, propertyRelation, propertyLiteral);         
                 }
                 
             }
@@ -335,7 +336,7 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
             }
             
             try {
-//                this.getConnection().begin();
+                this.getConnection().begin();
                 Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spql.buildRequest().toString());
                 LOGGER.debug(getTraceabilityLogs() + SPARQL_SELECT_QUERY + prepareUpdate.toString());
                 prepareUpdate.execute();

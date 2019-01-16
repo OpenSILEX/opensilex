@@ -31,7 +31,7 @@ import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.sesame.InfrastructureDAOSesame;
 import phis2ws.service.dao.sesame.PropertyDAOSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
-import phis2ws.service.ontologies.Vocabulary;
+import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.resources.dto.infrastructures.InfrastructureDTO;
 import phis2ws.service.resources.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
 import phis2ws.service.resources.validation.interfaces.Required;
@@ -182,7 +182,7 @@ public class InfrastructureResourceService extends ResourceService {
      *           {
      *             "rdfType": null,
      *             "relation": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-     *             "value": "http://www.phenome-fppn.fr/vocabulary/2017#Installation"
+     *             "value": "http://www.opensilex.org/vocabulary/oeso#Installation"
      *           },
      *           {
      *             "rdfType": null,
@@ -191,12 +191,12 @@ public class InfrastructureResourceService extends ResourceService {
      *           },
      *           {
      *             "rdfType": null,
-     *             "relation": "http://www.phenome-fppn.fr/vocabulary/2017#hasPart",
+     *             "relation": "http://www.opensilex.org/vocabulary/oeso#hasPart",
      *             "value": "http://www.phenome-fppn.fr/diaphen/ea1"
      *           },
      *           {
      *             "rdfType": null,
-     *             "relation": "http://www.phenome-fppn.fr/vocabulary/2017#hasPart",
+     *             "relation": "http://www.opensilex.org/vocabulary/oeso#hasPart",
      *             "value": "http://www.phenome-fppn.fr/diaphen/ef1"
      *           }
      *         ]
@@ -231,7 +231,7 @@ public class InfrastructureResourceService extends ResourceService {
         PropertyDAOSesame propertyDAO = new PropertyDAOSesame();
         
         propertyDAO.uri = uri;
-        propertyDAO.subClassOf = Vocabulary.CONCEPT_INFRASTRUCTURE;
+        propertyDAO.subClassOf = Oeso.CONCEPT_INFRASTRUCTURE;
         
         if (language == null) {
             language = DEFAULT_LANGUAGE;

@@ -57,7 +57,7 @@ import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.mongo.ImageMetadataDaoMongo;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.ontologies.Vocabulary;
+import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.resources.dto.ImageMetadataDTO;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
@@ -150,7 +150,7 @@ public class ImageResourceService extends ResourceService {
                     
                     //generates the imageUri
                     UriGenerator uriGenerator = new UriGenerator();
-                    final String imageUri = uriGenerator.generateNewInstanceUri(Vocabulary.CONCEPT_IMAGE.toString(), Year.now().toString(), lastGeneratedUri);
+                    final String imageUri = uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_IMAGE.toString(), Year.now().toString(), lastGeneratedUri);
                     lastGeneratedUri = imageUri;
                     
                     final String uploadLink = uploadPath.path("images").path("upload").queryParam("uri", imageUri).toString();
@@ -370,7 +370,7 @@ public class ImageResourceService extends ResourceService {
      * @param pageSize
      * @param page
      * @param uri image uri (e.g http://www.phenome-fppn.fr/phis_field/2017/i170000000000)
-     * @param rdfType image type (e.g http://www.phenome-fppn.fr/vocabulary/2017#HemisphericalImage)
+     * @param rdfType image type (e.g http://www.opensilex.org/vocabulary/oeso#HemisphericalImage)
      * @param concernedItems uris of the items concerned by the searched image(s), separated by ";". (e.g http://phenome-fppn.fr/phis_field/ao1;http://phenome-fppn.fr/phis_field/ao2)
      * @param startDate start date of the shooting. Format YYYY-MM-DD (e.g 2015-07-07)
      * @param endDate end date of the shooting. Format YYYY-MM-DD (e.g 2015-07-08)

@@ -94,7 +94,7 @@ public class AcquisitionSessionResourceService extends ResourceService {
      *          "data": [
      *              {
      *                  "Installation": null,
-     *                  "GroupPlot_type": "http://www.phenome-fppn.fr/vocabulary/2017#Experiment",
+     *                  "GroupPlot_type": "http://www.opensilex.org/vocabulary/oeso#Experiment",
      *                  "GroupPlot_alias": "",
      *                  "GroupPlot_uri": "http://www.phenome-fppn.fr/mauguio/diaphen/DIA2008-1",
      *                  "GroupPlot_species": "",
@@ -102,7 +102,7 @@ public class AcquisitionSessionResourceService extends ResourceService {
      *              },
      *              {
      *                  "Installation": null,
-     *                  "GroupPlot_type": "http://www.phenome-fppn.fr/vocabulary/2017#Experiment",
+     *                  "GroupPlot_type": "http://www.opensilex.org/vocabulary/oeso#Experiment",
      *                  "GroupPlot_alias": "testURI2",
      *                  "GroupPlot_uri": "http://www.phenome-fppn.fr/mauguio/diaphen/DIA2015-1",
      *                  "GroupPlot_species": "",

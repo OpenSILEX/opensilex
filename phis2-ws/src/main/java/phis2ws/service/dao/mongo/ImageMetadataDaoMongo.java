@@ -86,7 +86,7 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
      *         Query example :
      *         { 
      *              "uri" : "http://www.phenome-fppn.fr/phis_field/2017/i170000000000" , 
-     *              "rdfType" : "http://www.phenome-fppn.fr/vocabulary/2017#HemisphericalImage" , 
+     *              "rdfType" : "http://www.opensilex.org/vocabulary/oeso#HemisphericalImage" , 
      *              "$and" : 
      *                  [ 
      *                      { 

@@ -412,7 +412,7 @@ public abstract class DAOSesame<T> {
      * @example
      * INSERT DATA {
      *      GRAPH <http://www.phenome-fppn.fr/diaphen/sensors> { 
-     *          <http://www.phenome-fppn.fr/diaphen/2018/s18533>  <http://www.phenome-fppn.fr/vocabulary/2017#measures>  <http://www.phenome-fppn.fr/id/variables/v001> . 
+     *          <http://www.phenome-fppn.fr/diaphen/2018/s18533>  <http://www.opensilex.org/vocabulary/oeso#measures>  <http://www.phenome-fppn.fr/id/variables/v001> . 
      * }}
      * @return true if the insertion has been done
      *         false if an error occurred (see the error logs to get more details)
@@ -451,7 +451,7 @@ public abstract class DAOSesame<T> {
      * @param objectPropertiesUris
      * @example
      * DELETE WHERE { 
-     *  <http://www.phenome-fppn.fr/diaphen/2018/s18533> <http://www.phenome-fppn.fr/vocabulary/2017#measures> <http://www.phenome-fppn.fr/id/variables/v001> .  
+     *  <http://www.phenome-fppn.fr/diaphen/2018/s18533> <http://www.opensilex.org/vocabulary/oeso#measures> <http://www.phenome-fppn.fr/id/variables/v001> .  
      * }
      * @return true if the object properties have been deleted
      *         false if the delete has not been done.

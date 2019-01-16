@@ -17,7 +17,7 @@ public class Layer {
     
     /**
      * @param objectURI URI de l'objet auquel la couche correspond
-     * @param objectType type de l'objet (ex : http://www.phenome-fppn.fr/Vocabulary/2017/Experiment)
+     * @param objectType type de l'objet (ex : http://www.opensilex.org/vocabulary/oeso/Experiment)
      * @param depth true si la couche a tous les descendants de objectURI
      *              false si on elle n'a que les enfants directs
      * @param filePath le chemin du fichier geoJSON correspondant à la couche

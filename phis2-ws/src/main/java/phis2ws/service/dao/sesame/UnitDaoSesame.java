@@ -40,7 +40,7 @@ import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Skos;
-import phis2ws.service.ontologies.Vocabulary;
+import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.resources.dto.UnitDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.UriGenerator;
@@ -76,7 +76,7 @@ public class UnitDaoSesame extends DAOSesame<Unit> {
             unitUri = "?uri";
             query.appendSelect("?uri");
         }
-        query.appendTriplet(unitUri, Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_UNIT.toString(), null);
+        query.appendTriplet(unitUri, Rdf.RELATION_TYPE.toString(), Oeso.CONCEPT_UNIT.toString(), null);
         
         if (label != null) {
             query.appendTriplet(unitUri, Rdfs.RELATION_LABEL.toString(),"\"" + label + "\"", null);
@@ -147,7 +147,7 @@ public class UnitDaoSesame extends DAOSesame<Unit> {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         
         query.appendSelect("?uri");
-        query.appendTriplet("?uri", Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_UNIT.toString(), null);
+        query.appendTriplet("?uri", Rdf.RELATION_TYPE.toString(), Oeso.CONCEPT_UNIT.toString(), null);
         query.appendOrderBy("DESC(?uri)");
         query.appendLimit(1);
         
@@ -196,7 +196,7 @@ public class UnitDaoSesame extends DAOSesame<Unit> {
         
         Node graph = NodeFactory.createURI(Contexts.VARIABLES.toString());
         
-        Node unitConcept = NodeFactory.createURI(Vocabulary.CONCEPT_UNIT.toString());
+        Node unitConcept = NodeFactory.createURI(Oeso.CONCEPT_UNIT.toString());
         Resource unitUri = ResourceFactory.createResource(unitDTO.getUri());
 
         spql.addInsert(graph, unitUri, RDF.type, unitConcept);
@@ -237,7 +237,7 @@ public class UnitDaoSesame extends DAOSesame<Unit> {
         
         while (iteratorUnitDTO.hasNext() && annotationInsert) {
             UnitDTO unitDTO = iteratorUnitDTO.next();
-            unitDTO.setUri(uriGenerator.generateNewInstanceUri(Vocabulary.CONCEPT_UNIT.toString(), null, null));
+            unitDTO.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_UNIT.toString(), null, null));
             
             //Enregistrement dans le triplestore
             UpdateRequest spqlInsert = prepareInsertQuery(unitDTO);

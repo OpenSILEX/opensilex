@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
-import phis2ws.service.ontologies.Vocabulary;
+import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.model.phis.Species;
 
@@ -51,7 +51,7 @@ public class SpeciesDAOSesame extends DAOSesame<Species> {
      * @param language
      * @example
      * SELECT DISTINCT  (COUNT(DISTINCT ?uri) as ?count) WHERE {
-     *      ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  <http://www.phenome-fppn.fr/vocabulary/2017#Species> . 
+     *      ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  <http://www.opensilex.org/vocabulary/oeso#Species> . 
      *      OPTIONAL {
      *          ?uri <http://www.w3.org/2000/01/rdf-schema#label> ?label . 
      *      }
@@ -95,7 +95,7 @@ public class SpeciesDAOSesame extends DAOSesame<Species> {
      * @param language
      * @example
      * SELECT DISTINCT  ?uri  ?label WHERE {
-     *      ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  <http://www.phenome-fppn.fr/vocabulary/2017#Species> . 
+     *      ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  <http://www.opensilex.org/vocabulary/oeso#Species> . 
      *      OPTIONAL {
      *          ?uri <http://www.w3.org/2000/01/rdf-schema#label> ?label . 
      *      }
@@ -120,7 +120,7 @@ public class SpeciesDAOSesame extends DAOSesame<Species> {
         }
         
         //2. Add rdf type
-        query.appendTriplet(speciesUri, Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_SPECIES.toString(), Boolean.FALSE);
+        query.appendTriplet(speciesUri, Rdf.RELATION_TYPE.toString(), Oeso.CONCEPT_SPECIES.toString(), Boolean.FALSE);
         
         //3. Filter with label and language if needed
         query.beginBodyOptional();

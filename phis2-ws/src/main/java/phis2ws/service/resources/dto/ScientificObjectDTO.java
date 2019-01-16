@@ -31,7 +31,7 @@ import phis2ws.service.resources.validation.interfaces.URL;
 public class ScientificObjectDTO extends AbstractVerifiedClass {
     
     //the scientific object type 
-    //(e.g. http://www.phenome-fppn.fr/vocabulary/2017#Plot)
+    //(e.g. http://www.opensilex.org/vocabulary/oeso#Plot)
     private String rdfType;
     //The WKT geometry (WGS84 EPSG4326) of the scientific object
     //(e.g. POLYGON(0 1, 1 2, 2 3, 3 0, 0 1)
@@ -76,7 +76,7 @@ public class ScientificObjectDTO extends AbstractVerifiedClass {
     
     @Required
     @URL
-    @ApiModelProperty(example = "http://www.phenome-fppn.fr/vocabulary/2017#Plot")
+    @ApiModelProperty(example = "http://www.opensilex.org/vocabulary/oeso#Plot")
     public String getRdfType() {
         return rdfType;
     }

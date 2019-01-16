@@ -286,8 +286,8 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
             if (scientificObject.getUriExperiment() != null) {
                 graph = NodeFactory.createURI(scientificObject.getUriExperiment());
                 
+                //Add participates in (scientific object participates in experiment)
                 Node participatesIn = NodeFactory.createURI(Vocabulary.RELATION_PARTICIPATES_IN.toString());
-                //Add participates in relation
                 spql.addInsert(graph, scientificObjectUri, participatesIn, graph);
             } else {
                 graph = NodeFactory.createURI(Contexts.SCIENTIFIC_OBJECTS.toString());

@@ -274,10 +274,10 @@ public class EventDAOSesame extends DAOSesame<Event> {
      */
     public ArrayList<Event> searchEvents(Event eventSearchParameters, String searchConcernedItemLabel, String searchConcernedItemUri, String dateRangeStartString, String dateRangeEndString, User user, int searchPage, int searchPageSize) {
         
-        SPARQLQueryBuilder eventsQuery = prepareSearchQuery(eventSearchParameters, searchConcernedItemLabel, searchConcernedItemUri, dateRangeStartString, dateRangeEndString, user);
-        
         setPage(searchPage);
         setPageSize(searchPageSize);
+        
+        SPARQLQueryBuilder eventsQuery = prepareSearchQuery(eventSearchParameters, searchConcernedItemLabel, searchConcernedItemUri, dateRangeStartString, dateRangeEndString, user);
         
         // get events from storage
         TupleQuery eventsTupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, eventsQuery.toString());

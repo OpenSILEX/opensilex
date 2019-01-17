@@ -72,8 +72,8 @@ public class EventResourceService  extends ResourceService {
      * @param type
      * @param concernedItemUri
      * @param concernedItemLabel
-     * @param dateRangeStart
-     * @param dateRangeEnd
+     * @param startDate
+     * @param endDate
      * @return  list of all events
      * @example
      * {
@@ -129,8 +129,8 @@ public class EventResourceService  extends ResourceService {
         @ApiParam(value = "Search by type", example = DocumentationAnnotation.EXAMPLE_EVENT_TYPE) @QueryParam("type") @URL String type, 
         @ApiParam(value = "Search by concerned item uri", example = DocumentationAnnotation.EXAMPLE_EVENT_CONCERNED_ITEM_URI) @QueryParam("concernedItemUri") @URL String concernedItemUri, 
         @ApiParam(value = "Search by concerned item label", example = DocumentationAnnotation.EXAMPLE_EVENT_CONCERNED_ITEM_LABEL) @QueryParam("concernedItemLabel") String concernedItemLabel, 
-        @ApiParam(value = "Search by date - start of the range", example = DocumentationAnnotation.EXAMPLE_EVENT_DATE_RANGE_START) @QueryParam("dateRangeStart") @Date(DateFormat.YMDTHMSZZ) String dateRangeStart, 
-        @ApiParam(value = "Search by date - end of the range", example = DocumentationAnnotation.EXAMPLE_EVENT_DATE_RANGE_END) @QueryParam("dateRangeEnd") @Date(DateFormat.YMDTHMSZZ) String dateRangeEnd
+        @ApiParam(value = "Search by date - start of the range", example = DocumentationAnnotation.EXAMPLE_EVENT_DATE_RANGE_START) @QueryParam("startDate") @Date(DateFormat.YMDTHMSZZ) String startDate, 
+        @ApiParam(value = "Search by date - end of the range", example = DocumentationAnnotation.EXAMPLE_EVENT_DATE_RANGE_END) @QueryParam("endDate") @Date(DateFormat.YMDTHMSZZ) String endDate
     ) {
         EventDAOSesame eventDAO = new EventDAOSesame();
         
@@ -140,8 +140,8 @@ public class EventResourceService  extends ResourceService {
                 eventSearchParameters, 
                 concernedItemLabel, 
                 concernedItemUri, 
-                dateRangeStart, 
-                dateRangeEnd, 
+                startDate, 
+                endDate, 
                 userSession.getUser(), 
                 page, 
                 pageSize);
@@ -169,8 +169,8 @@ public class EventResourceService  extends ResourceService {
                 eventSearchParameters, 
                 concernedItemLabel, 
                 concernedItemUri, 
-                dateRangeStart, 
-                dateRangeEnd, 
+                startDate, 
+                endDate, 
                 userSession.getUser());
             responseForm = new ResponseFormEvent(eventDAO.getPageSize(), eventDAO.getPage(), eventDTOs, true, resultsCount);
             if (responseForm.getResult().dataSize() == 0) {

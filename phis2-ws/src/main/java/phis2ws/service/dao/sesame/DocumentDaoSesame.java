@@ -545,7 +545,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
 
         sparqlQuery.appendSelect(" ?" + CONCERNED_ITEM_URI + " ?" + CONCERNED_ITEM_TYPE);
         sparqlQuery.appendTriplet(uriDocument, Vocabulary.RELATION_CONCERN.toString(), "?" + CONCERNED_ITEM_URI, null);
-        sparqlQuery.appendTriplet("?concernedItem", Rdf.RELATION_TYPE.toString(), "?" + CONCERNED_ITEM_TYPE, null);
+        sparqlQuery.appendTriplet("?" + CONCERNED_ITEM_URI, Rdf.RELATION_TYPE.toString(), "?" + CONCERNED_ITEM_TYPE, null);
 
         LOGGER.debug(SPARQL_SELECT_QUERY + sparqlQuery.toString());
 

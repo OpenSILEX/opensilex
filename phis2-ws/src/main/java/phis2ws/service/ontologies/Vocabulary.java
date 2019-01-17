@@ -172,7 +172,7 @@ public enum Vocabulary {
     RELATION_CONCERN {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "concern";
+            return NAMESPACE.toString() + "concerns";
         }
     },
     RELATION_DATE_OF_LAST_CALIBRATION {

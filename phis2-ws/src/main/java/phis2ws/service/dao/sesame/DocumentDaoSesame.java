@@ -228,7 +228,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
             for (ConcernItemDTO concernedItemDTO : documentMetadata.getConcernedItems()) {
                 Node concernedItemUri = NodeFactory.createURI(concernedItemDTO.getUri());
                 Node concernedItemType = NodeFactory.createURI(concernedItemDTO.getTypeURI());
-                Property relationConcerns = ResourceFactory.createProperty(Vocabulary.RELATION_CONCERN.toString());
+                Property relationConcerns = ResourceFactory.createProperty(Vocabulary.RELATION_CONCERNS.toString());
 
                 spql.addInsert(graph, documentUri, relationConcerns, concernedItemUri);
                 spql.addInsert(graph, concernedItemUri, RDF.type, concernedItemType);
@@ -270,7 +270,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
 
         for (ConcernItemDTO concernedItem : document.getConcernedItems()) {
             Node concernedItemUri = NodeFactory.createURI(concernedItem.getUri());
-            Property relationConcern = ResourceFactory.createProperty(Vocabulary.RELATION_CONCERN.toString());
+            Property relationConcern = ResourceFactory.createProperty(Vocabulary.RELATION_CONCERNS.toString());
             spql.addDelete(graph, documentUri, relationConcern, concernedItemUri);
         }
                 
@@ -469,7 +469,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         
         if (!concernedItemsUris.isEmpty() && concernedItemsUris.size() > 0) {
             for (String concernedItemUri : concernedItemsUris) {
-                sparqlQuery.appendTriplet(select, Vocabulary.RELATION_CONCERN.toString(), concernedItemUri, null);
+                sparqlQuery.appendTriplet(select, Vocabulary.RELATION_CONCERNS.toString(), concernedItemUri, null);
             }
         } 
         
@@ -544,7 +544,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         sparqlQuery.appendGraph(Contexts.DOCUMENTS.toString());
 
         sparqlQuery.appendSelect(" ?" + CONCERNED_ITEM_URI + " ?" + CONCERNED_ITEM_TYPE);
-        sparqlQuery.appendTriplet(uriDocument, Vocabulary.RELATION_CONCERN.toString(), "?" + CONCERNED_ITEM_URI, null);
+        sparqlQuery.appendTriplet(uriDocument, Vocabulary.RELATION_CONCERNS.toString(), "?" + CONCERNED_ITEM_URI, null);
         sparqlQuery.appendTriplet("?" + CONCERNED_ITEM_URI, Rdf.RELATION_TYPE.toString(), "?" + CONCERNED_ITEM_TYPE, null);
 
         LOGGER.debug(SPARQL_SELECT_QUERY + sparqlQuery.toString());

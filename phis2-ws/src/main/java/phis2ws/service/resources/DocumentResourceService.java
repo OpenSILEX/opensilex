@@ -148,11 +148,11 @@ public class DocumentResourceService extends ResourceService {
                     String name = new StringBuilder("document").append(ResourcesUtils.getUniqueID()).toString(); // docsM + idUni
                     final String docsUri = Contexts.DOCUMENTS.toString() + "/" + name;
                     final String uploadLink = uploadPath.path("documents").path("upload").queryParam("uri", docsUri).toString();
-//                  //Ajout URI en attente
+                    //Ajout URI en attente
                     uriList.add(uploadLink);
                     WAITING_ANNOT_FILE_CHECK.put(docsUri, false); // fichier en attente
                     WAITING_ANNOT_INFORMATION.put(docsUri, docsM);
-//                        //Lancement THREAD pour le fichier en attente
+                    //Lancement THREAD pour le fichier en attente
                     THREAD_POOL.submit(new DocumentWaitingCheck(docsUri));
                 }
                 final Status waitingTimeStatus = new Status("Timeout", StatusCodeMsg.INFO, " Timeout :" + PropertiesFileManager.getConfigFileProperty("service", "waitingFileTime") + " seconds");

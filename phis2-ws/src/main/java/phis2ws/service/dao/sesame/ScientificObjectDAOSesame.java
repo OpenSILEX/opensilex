@@ -431,7 +431,6 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
     private SPARQLQueryBuilder prepareSearchChildrenWithContains(String objectURI, String objectType) {
         SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
         sparqlQuery.appendDistinct(true);
-        sparqlQuery.appendPrefix("geo", GeoSPARQL.NAMESPACE.toString());
         if (objectType.equals(Vocabulary.CONCEPT_EXPERIMENT.toString())) {
             sparqlQuery.appendGraph(objectURI);
         }

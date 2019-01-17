@@ -40,7 +40,7 @@ import phis2ws.service.resources.dto.ConcernItemDTO;
 import phis2ws.service.resources.dto.ImageMetadataDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
-import phis2ws.service.view.model.phis.ConcernItem;
+import phis2ws.service.view.model.phis.ConcernedItem;
 import phis2ws.service.view.model.phis.ImageMetadata;
 
 /**
@@ -154,10 +154,10 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
      * @param concernedItemsDocuments
      * @return the concerned items extracted from the document list
      */
-    private ArrayList<ConcernItem> mongoDocumentListToConcernedItems(List<Document> concernedItemsDocuments) {
-        ArrayList<ConcernItem> concernedItemsToReturn = new ArrayList<>();
+    private ArrayList<ConcernedItem> mongoDocumentListToConcernedItems(List<Document> concernedItemsDocuments) {
+        ArrayList<ConcernedItem> concernedItemsToReturn = new ArrayList<>();
         for (Document concernedItemDocument : concernedItemsDocuments) {
-            ConcernItem concernedItem = new ConcernItem();
+            ConcernedItem concernedItem = new ConcernedItem();
             concernedItem.setUri(concernedItemDocument.getString(DB_FIELDS_CONCERNED_ITEM_URI));
             concernedItem.setRdfType(concernedItemDocument.getString(DB_FIELDS_RDF_TYPE));
             concernedItemsToReturn.add(concernedItem);
@@ -311,7 +311,7 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
            
            //Concern
            ArrayList<Document> concernedItemsToSave = new ArrayList<>();
-           for (ConcernItem concernItem : imageMetadata.getConcernedItems()) {
+           for (ConcernedItem concernItem : imageMetadata.getConcernedItems()) {
                Document concern = new Document();
                concern.append(DB_FIELDS_CONCERNED_ITEM_URI, concernItem.getUri());
                concern.append(DB_FIELDS_RDF_TYPE, concernItem.getRdfType());

@@ -20,12 +20,12 @@ public class Event extends RdfResourceDefinition {
     private String type;
     
     // concerned items
-    private ArrayList<ConcernItem> concernedItems;
+    private ArrayList<ConcernedItem> concernedItems;
     
     // dateTime 
     private DateTime dateTime;
 
-    public Event(String uri, String type, ArrayList<ConcernItem> concernedItems, DateTime dateTime, ArrayList<Property> properties) {
+    public Event(String uri, String type, ArrayList<ConcernedItem> concernedItems, DateTime dateTime, ArrayList<Property> properties) {
         this.uri = uri;
         this.type = type;
         this.concernedItems = concernedItems;
@@ -33,7 +33,7 @@ public class Event extends RdfResourceDefinition {
         this.properties = properties;
     }
     
-    public void addConcernedItem(ConcernItem concernedItem) {
+    public void addConcernedItem(ConcernedItem concernedItem) {
         this.concernedItems.add(concernedItem);
     }
 
@@ -45,11 +45,11 @@ public class Event extends RdfResourceDefinition {
         this.type = type;
     }
 
-    public ArrayList<ConcernItem> getConcernedItems() {
+    public ArrayList<ConcernedItem> getConcernedItems() {
         return concernedItems;
     }
 
-    public void setConcernedItems(ArrayList<ConcernItem> concernedItems) {
+    public void setConcernedItems(ArrayList<ConcernedItem> concernedItems) {
         this.concernedItems = concernedItems;
     }
 

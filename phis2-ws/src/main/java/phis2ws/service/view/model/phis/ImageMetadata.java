@@ -24,7 +24,7 @@ public class ImageMetadata {
     //image type (in the ontology)
     private String rdfType;
     //elements concerned by the image
-    private ArrayList<ConcernItem> concernedItems = new ArrayList<>();
+    private ArrayList<ConcernedItem> concernedItems = new ArrayList<>();
     //shooting configuration
     private ShootingConfiguration configuration;
     //informations about the image file
@@ -41,15 +41,15 @@ public class ImageMetadata {
         this.uri = uri;
     }
 
-    public ArrayList<ConcernItem> getConcernedItems() {
+    public ArrayList<ConcernedItem> getConcernedItems() {
         return concernedItems;
     }
 
-    public void setConcernedItems(ArrayList<ConcernItem> concernedItems) {
+    public void setConcernedItems(ArrayList<ConcernedItem> concernedItems) {
         this.concernedItems = concernedItems;
     }
     
-    public void addConcernedItem(ConcernItem concernedItem) {
+    public void addConcernedItem(ConcernedItem concernedItem) {
         this.concernedItems.add(concernedItem);
     }
 

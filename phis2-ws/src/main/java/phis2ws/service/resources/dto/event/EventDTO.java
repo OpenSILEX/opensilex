@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import phis2ws.service.configuration.DateFormat;
-import phis2ws.service.resources.dto.ConcernsItemWithLabelsDTO;
+import phis2ws.service.resources.dto.ConcernedItemWithLabelsDTO;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyDTO;
 import phis2ws.service.utils.dates.Dates;
@@ -28,7 +28,7 @@ public class EventDTO extends AbstractVerifiedClass {
     
     private final String uri;
     private final String type;
-    private final ArrayList<ConcernsItemWithLabelsDTO> concerns = new ArrayList<>();
+    private final ArrayList<ConcernedItemWithLabelsDTO> concernedItems = new ArrayList<>();
     private final String date;
     protected ArrayList<PropertyDTO> properties = new ArrayList<>();
     
@@ -39,12 +39,12 @@ public class EventDTO extends AbstractVerifiedClass {
     public EventDTO(Event event) {
         this.uri = event.getUri();
         this.type = event.getType();
-        event.getConcernsItems().forEach((concernsItem) -> {
-            this.concerns.add(new ConcernsItemWithLabelsDTO(concernsItem));
+        event.getConcernedItems().forEach((concernedItem) -> {
+            this.concernedItems.add(new ConcernedItemWithLabelsDTO(concernedItem));
         });
         
         DateTime eventDateTime = event.getDateTime();
-        if(eventDateTime != null){
+        if (eventDateTime != null){
             this.date = DateTimeFormat
                     .forPattern(DateFormat.YMDTHMSZZ.toString())
                     .print(eventDateTime);
@@ -69,16 +69,13 @@ public class EventDTO extends AbstractVerifiedClass {
             modelProperties.add(property.createObjectFromDTO());
         });
         
-        ArrayList<ConcernItem> modelConcernsItems = new ArrayList<>();
-        this.concerns.forEach((concernsItem) -> {
-            modelConcernsItems.add(concernsItem.createObjectFromDTO());
+        ArrayList<ConcernItem> modelConcernedItems = new ArrayList<>();
+        this.concernedItems.forEach((concernedItem) -> {
+            modelConcernedItems.add(concernedItem.createObjectFromDTO());
         });
         
-        DateTime dateTime = Dates.stringToDateTimeWithGivenPattern(
-                    this.date
-                    , DateFormat.YMDTHMSZZ.toString());
+        DateTime dateTime = Dates.stringToDateTimeWithGivenPattern(this.date, DateFormat.YMDTHMSZZ.toString());
         
-        return new Event(this.uri, this.type, modelConcernsItems, dateTime
-                , modelProperties);
+        return new Event(this.uri, this.type, modelConcernedItems, dateTime, modelProperties);
     }
 }

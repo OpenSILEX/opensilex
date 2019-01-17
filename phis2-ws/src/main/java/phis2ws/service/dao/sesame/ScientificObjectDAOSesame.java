@@ -23,6 +23,7 @@ import java.util.logging.Level;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.vocabulary.RDF;
@@ -278,15 +279,19 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
             //2. Register in triplestore
             UpdateBuilder spql = new UpdateBuilder();
             
+            Resource scientificObjectUri = ResourceFactory.createResource(scientificObject.getUri());
+            Node scientificObjectType = NodeFactory.createURI(scientificObject.getRdfType());
+            
             Node graph = null;
             if (scientificObject.getUriExperiment() != null) {
-                graph = NodeFactory.createURI(scientificObject.getUriExperiment() );
+                graph = NodeFactory.createURI(scientificObject.getUriExperiment());
+                
+                //Add participates in (scientific object participates in experiment)
+                Node participatesIn = NodeFactory.createURI(Vocabulary.RELATION_PARTICIPATES_IN.toString());
+                spql.addInsert(graph, scientificObjectUri, participatesIn, graph);
             } else {
                 graph = NodeFactory.createURI(Contexts.SCIENTIFIC_OBJECTS.toString());
             }
-            
-            Resource scientificObjectUri = ResourceFactory.createResource(scientificObject.getUri());
-            Node scientificObjectType = NodeFactory.createURI(scientificObject.getRdfType());
             
             spql.addInsert(graph, scientificObjectUri, RDF.type, scientificObjectType);
             
@@ -311,10 +316,10 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
                         spql.addInsert(graph, scientificObjectUri, propertyRelation, propertyNode);
                     }
                 } else {
-                    Node propertyNode = NodeFactory.createURI(property.getValue());
+                    Literal propertyLiteral = ResourceFactory.createStringLiteral(property.getValue());
                     org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
 
-                    spql.addInsert(graph, scientificObjectUri, propertyRelation, propertyNode);                    
+                    spql.addInsert(graph, scientificObjectUri, propertyRelation, propertyLiteral);         
                 }
                 
             }
@@ -335,7 +340,7 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
             }
             
             try {
-//                this.getConnection().begin();
+                this.getConnection().begin();
                 Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spql.buildRequest().toString());
                 LOGGER.debug(getTraceabilityLogs() + SPARQL_SELECT_QUERY + prepareUpdate.toString());
                 prepareUpdate.execute();
@@ -426,7 +431,6 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
     private SPARQLQueryBuilder prepareSearchChildrenWithContains(String objectURI, String objectType) {
         SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
         sparqlQuery.appendDistinct(true);
-        sparqlQuery.appendPrefix("geo", GeoSPARQL.NAMESPACE.toString());
         if (objectType.equals(Vocabulary.CONCEPT_EXPERIMENT.toString())) {
             sparqlQuery.appendGraph(objectURI);
         }

@@ -41,10 +41,7 @@ public class Property {
     public Property() {
     }
     
-    public Property(String rdfType, LinkedList<String> rdfTypeLabels
-            , String relation, LinkedList<String> relationLabels
-            , String value, LinkedList<String> valueLabels
-            , String domain, HashMap<String, String> labels) {
+    public Property(String rdfType, LinkedList<String> rdfTypeLabels, String relation, LinkedList<String> relationLabels, String value, LinkedList<String> valueLabels, String domain, HashMap<String, String> labels) {
         this.rdfType = rdfType;
         this.rdfTypeLabels = rdfTypeLabels;
         this.relation = relation;

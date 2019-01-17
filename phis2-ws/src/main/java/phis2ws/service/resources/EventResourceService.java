@@ -129,8 +129,8 @@ public class EventResourceService  extends ResourceService {
         @ApiParam(value = "Search by type", example = DocumentationAnnotation.EXAMPLE_EVENT_TYPE) @QueryParam("type") @URL String type, 
         @ApiParam(value = "Search by concerned item uri", example = DocumentationAnnotation.EXAMPLE_EVENT_CONCERNED_ITEM_URI) @QueryParam("concernedItemUri") @URL String concernedItemUri, 
         @ApiParam(value = "Search by concerned item label", example = DocumentationAnnotation.EXAMPLE_EVENT_CONCERNED_ITEM_LABEL) @QueryParam("concernedItemLabel") String concernedItemLabel, 
-        @ApiParam(value = "Search by date - start of the range", example = DocumentationAnnotation.EXAMPLE_EVENT_DATE_RANGE_START) @QueryParam("startDate") @Date(DateFormat.YMDTHMSZZ) String startDate, 
-        @ApiParam(value = "Search by date - end of the range", example = DocumentationAnnotation.EXAMPLE_EVENT_DATE_RANGE_END) @QueryParam("endDate") @Date(DateFormat.YMDTHMSZZ) String endDate
+        @ApiParam(value = "Search by date - start of the range", example = DocumentationAnnotation.EXAMPLE_EVENT_START_DATE) @QueryParam("startDate") @Date(DateFormat.YMDTHMSZZ) String startDate, 
+        @ApiParam(value = "Search by date - end of the range", example = DocumentationAnnotation.EXAMPLE_EVENT_END_DATE) @QueryParam("endDate") @Date(DateFormat.YMDTHMSZZ) String endDate
     ) {
         EventDAOSesame eventDAO = new EventDAOSesame();
         

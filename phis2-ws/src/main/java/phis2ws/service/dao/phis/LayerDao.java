@@ -34,6 +34,7 @@ import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.dao.sesame.ScientificObjectDAOSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.ontologies.Rdf;
+import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Vocabulary;
 import phis2ws.service.resources.dto.LayerDTO;
 import phis2ws.service.utils.POSTResultsReturn;
@@ -121,7 +122,7 @@ public class LayerDao {
         typesByRelationOrConcept.put(Vocabulary.RELATION_FROM_SPECIES.toString(), "species");
         typesByRelationOrConcept.put(Vocabulary.RELATION_HAS_EXPERIMENT_MODALITIES.toString(), "experimentModalities");
         typesByRelationOrConcept.put(Vocabulary.RELATION_HAS_REPETITION.toString(), "repetition");
-        typesByRelationOrConcept.put(Vocabulary.RELATION_HAS_ALIAS.toString(), "alias");
+        typesByRelationOrConcept.put(Rdfs.RELATION_LABEL.toString(), "label");
         typesByRelationOrConcept.put(Rdf.RELATION_TYPE.toString(), "typeElement");
         
         return typesByRelationOrConcept;

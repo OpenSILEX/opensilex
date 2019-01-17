@@ -286,8 +286,8 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
             if (scientificObject.getUriExperiment() != null) {
                 graph = NodeFactory.createURI(scientificObject.getUriExperiment());
                 
+                //Add participates in (scientific object participates in experiment)
                 Node participatesIn = NodeFactory.createURI(Vocabulary.RELATION_PARTICIPATES_IN.toString());
-                //Add participates in relation
                 spql.addInsert(graph, scientificObjectUri, participatesIn, graph);
             } else {
                 graph = NodeFactory.createURI(Contexts.SCIENTIFIC_OBJECTS.toString());
@@ -431,7 +431,6 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
     private SPARQLQueryBuilder prepareSearchChildrenWithContains(String objectURI, String objectType) {
         SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
         sparqlQuery.appendDistinct(true);
-        sparqlQuery.appendPrefix("geo", GeoSPARQL.NAMESPACE.toString());
         if (objectType.equals(Vocabulary.CONCEPT_EXPERIMENT.toString())) {
             sparqlQuery.appendGraph(objectURI);
         }

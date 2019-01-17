@@ -2,7 +2,6 @@
 //                            ResponseFormEvent.java
 //
 // Author(s): Andréas Garcia <andreas.garcia@inra.fr>
-// PHIS-SILEX version 1.0
 // Copyright © - INRA - 2018
 // Creation date: 13 nov. 2018
 // Contact: andreas.garcia@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
@@ -27,8 +26,7 @@ public class ResponseFormEvent extends ResultForm {
      * @param list results list
      * @param paginate 
      */
-    public ResponseFormEvent(int pageSize, int currentPage
-            , ArrayList<EventDTO> list, boolean paginate) {
+    public ResponseFormEvent(int pageSize, int currentPage, ArrayList<EventDTO> list, boolean paginate) {
         metadata = new Metadata(pageSize, currentPage, list.size());
         if (list.size() > 1) {
             result = new ResultEvent(list, metadata.getPagination(), paginate);
@@ -45,8 +43,7 @@ public class ResponseFormEvent extends ResultForm {
      * @param paginate 
      * @param totalCount number of result
      */
-    public ResponseFormEvent(int pageSize, int currentPage
-            , ArrayList<EventDTO> list, boolean paginate, int totalCount) {
+    public ResponseFormEvent(int pageSize, int currentPage, ArrayList<EventDTO> list, boolean paginate, int totalCount) {
         metadata = new Metadata(pageSize, currentPage, totalCount);
         if (list.size() > 1) {
             result = new ResultEvent(list, metadata.getPagination(), paginate);

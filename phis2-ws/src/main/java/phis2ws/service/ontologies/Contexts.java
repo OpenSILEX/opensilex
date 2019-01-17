@@ -42,6 +42,13 @@ public enum Contexts {
             return PLATFORM.toString() + "set/infrastructure";
         }
     },
+    //The context which contains all the declared events
+    EVENTS {
+        @Override
+        public String toString() {
+            return PLATFORM.toString() + "set/events";
+        }
+    },
     //The context which contains all the declared sensors
     SENSORS {
         @Override

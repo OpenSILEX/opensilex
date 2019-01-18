@@ -8,7 +8,7 @@
 package phis2ws.service.resources.dto;
 
 import java.util.ArrayList;
-import phis2ws.service.view.model.phis.ConcernItem;
+import phis2ws.service.view.model.phis.ConcernedItem;
 
 /**
  * DTO of a concerned item with labels
@@ -19,15 +19,15 @@ public class ConcernedItemWithLabelsDTO extends ConcernItemDTO {
     // labels
     protected ArrayList<String> labels = new ArrayList();
 
-    public ConcernedItemWithLabelsDTO(ConcernItem concernedItem) {
+    public ConcernedItemWithLabelsDTO(ConcernedItem concernedItem) {
         this.uri = concernedItem.getUri();
         this.typeURI = concernedItem.getRdfType();
         this.labels = concernedItem.getLabels();
     }
 
     @Override
-    public ConcernItem createObjectFromDTO() {
-        ConcernItem concernedItem = super.createObjectFromDTO();
+    public ConcernedItem createObjectFromDTO() {
+        ConcernedItem concernedItem = super.createObjectFromDTO();
         concernedItem.setLabels(labels);
         return concernedItem;
     }

@@ -169,7 +169,7 @@ public enum Vocabulary {
             return NAMESPACE.toString() + "brdfP4";
         }
     },
-    RELATION_CONCERN {
+    RELATION_CONCERNS {
         @Override
         public String toString() {
             return NAMESPACE.toString() + "concerns";

@@ -29,7 +29,7 @@ import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Time;
 import phis2ws.service.utils.dates.Dates;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
-import phis2ws.service.view.model.phis.ConcernItem;
+import phis2ws.service.view.model.phis.ConcernedItem;
 import phis2ws.service.view.model.phis.Event;
 
 /**
@@ -249,7 +249,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * @param bindingSet
      * @return concerned item
      */
-    private ConcernItem getConcernedItemFromBindingSet(BindingSet bindingSet) {
+    private ConcernedItem getConcernedItemFromBindingSet(BindingSet bindingSet) {
                 
         String concernedItemUri = getValueOfSelectNameFromBindingSet(CONCERNED_ITEM_URI_SELECT_NAME, bindingSet);
         String concernedItemType = getValueOfSelectNameFromBindingSet(CONCERNED_ITEM_TYPE_SELECT_NAME, bindingSet);
@@ -257,7 +257,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
         String concernedItemLabelsConcatenated = getValueOfSelectNameFromBindingSet(CONCERNED_ITEM_LABELS_SELECT_NAME, bindingSet);
         ArrayList<String> concernedItemLabels = new ArrayList<>(Arrays.asList(concernedItemLabelsConcatenated.split(SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR)));
 
-        return new ConcernItem(concernedItemUri, concernedItemType, concernedItemLabels);
+        return new ConcernedItem(concernedItemUri, concernedItemType, concernedItemLabels);
     }
     
     /**
@@ -322,7 +322,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
         TupleQuery concernedItemsTupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, concernedItemsQuery.toString());
 
         try (TupleQueryResult concernedItemsTupleQueryResult = concernedItemsTupleQuery.evaluate()) {
-            ConcernItem concernedItem;
+            ConcernedItem concernedItem;
             while(concernedItemsTupleQueryResult.hasNext()) {
                 concernedItem = getConcernedItemFromBindingSet(concernedItemsTupleQueryResult.next());
                 event.addConcernedItem(concernedItem);

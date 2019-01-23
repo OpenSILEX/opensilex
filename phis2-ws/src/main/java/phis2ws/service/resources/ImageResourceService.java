@@ -202,7 +202,7 @@ public class ImageResourceService extends ResourceService {
      */
     private String getServerImagesDirectory() {
         return PropertiesFileManager.getConfigFileProperty("service", "uploadImageServerDirectory") + "/"
-                + PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "platform") + "/" 
+                + PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "infrastructure") + "/" 
                 + Year.now().toString();
     }
     
@@ -213,7 +213,7 @@ public class ImageResourceService extends ResourceService {
      */
     private String getWebAccessImagesDirectory() {
         return PropertiesFileManager.getConfigFileProperty("service", "imageFileServerDirectory") + "/"
-                + PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "platform") + "/" 
+                + PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "infrastructure") + "/" 
                 + Year.now().toString();
     }
     

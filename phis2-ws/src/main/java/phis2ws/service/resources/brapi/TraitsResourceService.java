@@ -35,8 +35,9 @@ import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
-import phis2ws.service.view.brapi.form.BrapiResponseForm;
+import phis2ws.service.view.brapi.form.BrapiMultiResponseForm;
 import phis2ws.service.resources.dto.trait.BrapiTraitDTO;
+import phis2ws.service.view.brapi.form.BrapiSingleResponseForm;
 import phis2ws.service.view.model.phis.Call;
 import phis2ws.service.view.model.phis.Trait;
 
@@ -215,7 +216,7 @@ public class TraitsResourceService implements BrapiCall {
      * @param insertStatusList
      * @return the response "no result found" for the service
      */
-    private Response noResultFound(BrapiResponseForm getResponse, ArrayList<Status> insertStatusList) {
+    private Response noResultFound(BrapiMultiResponseForm getResponse, ArrayList<Status> insertStatusList) {
         insertStatusList.add(new Status("No result", StatusCodeMsg.INFO, "No result"));
         getResponse.getMetadata().setStatus(insertStatusList);
         return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
@@ -229,10 +230,10 @@ public class TraitsResourceService implements BrapiCall {
     private Response getTraitsData(TraitDaoSesame traitDAO) {
         ArrayList<Status> statusList = new ArrayList<>();
         ArrayList<Trait> traits = traitDAO.allPaginate();                
-        BrapiResponseForm getResponse;           
+        BrapiMultiResponseForm getResponse;           
                 
         if (traits == null) {
-            getResponse = new BrapiResponseForm(0, 0, traits, true);
+            getResponse = new BrapiMultiResponseForm(0, 0, traits, true);
             return noResultFound(getResponse, statusList);
         } else if (!traits.isEmpty()) {
             ArrayList<BrapiTraitDTO> brapiTraits= new ArrayList();
@@ -242,16 +243,16 @@ public class TraitsResourceService implements BrapiCall {
                 brapiTraits.add(brapiTrait);
             }
             if (traits.size() == 1) {
-                getResponse = new BrapiResponseForm(brapiTraits.get(0));
-                getResponse.getMetadata().setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(getResponse).build();
+                BrapiSingleResponseForm getSingleResponse = new BrapiSingleResponseForm(brapiTraits.get(0));
+                getSingleResponse.getMetadata().setStatus(statusList);
+                return Response.status(Response.Status.OK).entity(getSingleResponse).build();
             } else {
-                getResponse = new BrapiResponseForm(traitDAO.getPageSize(), traitDAO.getPage(), brapiTraits, false);
+                getResponse = new BrapiMultiResponseForm(traitDAO.getPageSize(), traitDAO.getPage(), brapiTraits, false);
                 getResponse.getMetadata().setStatus(statusList);
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         } else {
-            getResponse = new BrapiResponseForm(0, 0, traits, true);
+            getResponse = new BrapiMultiResponseForm(0, 0, traits, true);
             return noResultFound(getResponse, statusList);
         }
     }

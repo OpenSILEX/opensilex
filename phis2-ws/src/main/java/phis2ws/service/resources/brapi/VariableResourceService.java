@@ -35,7 +35,8 @@ import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
-import phis2ws.service.view.brapi.form.BrapiResponseForm;
+import phis2ws.service.view.brapi.form.BrapiMultiResponseForm;
+import phis2ws.service.view.brapi.form.BrapiSingleResponseForm;
 import phis2ws.service.view.model.phis.BrapiVariable;
 import phis2ws.service.view.model.phis.Call;
 import phis2ws.service.view.model.phis.Variable;
@@ -220,7 +221,7 @@ public class VariableResourceService implements BrapiCall {
         return getVarData(varDAO);
     }    
     
-    private Response noResultFound(BrapiResponseForm getResponse, ArrayList<Status> insertStatusList) {
+    private Response noResultFound(BrapiMultiResponseForm getResponse, ArrayList<Status> insertStatusList) {
         insertStatusList.add(new Status("No result", StatusCodeMsg.INFO, "No result"));
         getResponse.getMetadata().setStatus(insertStatusList);
         return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
@@ -263,21 +264,21 @@ public class VariableResourceService implements BrapiCall {
             varList.add(brapiVar); 
         }
 
-        BrapiResponseForm getResponse;
+        BrapiMultiResponseForm getResponse;
 
         if (!varList.isEmpty()) {
             if (varList.size() == 1) {
                 BrapiVariable variable = varList.get(0);
-                getResponse = new BrapiResponseForm(variable);
-                getResponse.getMetadata().setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(getResponse).build();
+                BrapiSingleResponseForm getSingleResponse = new BrapiSingleResponseForm(variable);
+                getSingleResponse.getMetadata().setStatus(statusList);
+                return Response.status(Response.Status.OK).entity(getSingleResponse).build();
             } else {
-                getResponse = new BrapiResponseForm(varDAO.getPageSize(), varDAO.getPage(), varList, false);
+                getResponse = new BrapiMultiResponseForm(varDAO.getPageSize(), varDAO.getPage(), varList, false);
                 getResponse.getMetadata().setStatus(statusList);
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         } else {
-            getResponse = new BrapiResponseForm(0, 0, varList, true);
+            getResponse = new BrapiMultiResponseForm(0, 0, varList, true);
             return noResultFound(getResponse, statusList);
         }
     }

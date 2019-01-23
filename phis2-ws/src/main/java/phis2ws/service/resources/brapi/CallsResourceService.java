@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.view.brapi.Status;
-import phis2ws.service.view.brapi.form.BrapiResponseForm;
+import phis2ws.service.view.brapi.form.BrapiMultiResponseForm;
 import phis2ws.service.view.model.phis.Call;
 
 @Api("/brapi/v1/calls")
@@ -103,7 +103,7 @@ public class CallsResourceService implements BrapiCall {
             }
         }
 
-        BrapiResponseForm getResponse = new BrapiResponseForm(limit, page, callsInfoList, false);
+        BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(limit, page, callsInfoList, false);
         getResponse.getMetadata().setStatus(statusList);
         return Response.status(Response.Status.OK).entity(getResponse).build();
     }

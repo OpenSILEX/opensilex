@@ -14,6 +14,8 @@ import java.util.ArrayList;
 /**
  * Represents the image metadata view
  * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @update [Andréas Garcia] Jan., 2019 : modify "concern(s)" occurences into 
+ * "concernedItem(s)"
  */
 public class ImageMetadata {
     

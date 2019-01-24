@@ -1,12 +1,10 @@
 //**********************************************************************************************
-//                                       ImageResourceService.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
-// Creation date: December, 8 2017
+//                                       ImageResourceService.java
+// PHIS-SILEX
+// Copyright © INRA 2017
+// Creation date: Dec., 8 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  January, 03 2018
+// Last modification date: Jan., 2019
 // Subject: Represents the images data service
 //***********************************************************************************************
 package phis2ws.service.resources;
@@ -35,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -78,6 +75,8 @@ import phis2ws.service.view.model.phis.ImageMetadata;
 /**
  * Represents the images service
  * @author Morgane Vidal 
+ * @update [Andréas Garcia] Jan., 2019 : modify "concern(s)" occurences into 
+ * "concernedItem(s)"
  */
 @Api("/images")
 @Path("/images")
@@ -101,7 +100,7 @@ public class ImageResourceService extends ResourceService {
      * metadata wanted for each image : 
      *              { 
      *                  rdfType,
-     *                  concern [
+     *                  concernedItems [
      *                      {
      *                          uri,
      *                          typeURI

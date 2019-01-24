@@ -225,7 +225,7 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
             }
 
             //2. Check if the concerned items exist in the triplestore
-            for (ConcernItemDTO concernedItem : imageMetadata.getConcern()) {
+            for (ConcernItemDTO concernedItem : imageMetadata.getConcernedItems()) {
                 if (!imageMetadataDaoSesame.existUri(concernedItem.getUri())) {
                     dataOk = false;
                     checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Unknown concerned item given : " + concernedItem.getUri()));
@@ -309,13 +309,13 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
            metadata.append(DB_FIELDS_IMAGE_URI, imageMetadata.getUri());
            metadata.append(DB_FIELDS_RDF_TYPE, imageMetadata.getRdfType());
            
-           //Concern
+           //Concerned Item
            ArrayList<Document> concernedItemsToSave = new ArrayList<>();
-           for (ConcernedItem concernItem : imageMetadata.getConcernedItems()) {
-               Document concern = new Document();
-               concern.append(DB_FIELDS_CONCERNED_ITEM_URI, concernItem.getUri());
-               concern.append(DB_FIELDS_RDF_TYPE, concernItem.getRdfType());
-               concernedItemsToSave.add(concern);
+           for (ConcernedItem concernedItem : imageMetadata.getConcernedItems()) {
+               Document concernedItemDocument = new Document();
+               concernedItemDocument.append(DB_FIELDS_CONCERNED_ITEM_URI, concernedItem.getUri());
+               concernedItemDocument.append(DB_FIELDS_RDF_TYPE, concernedItem.getRdfType());
+               concernedItemsToSave.add(concernedItemDocument);
            }
            metadata.append(DB_FIELDS_CONCERN, concernedItemsToSave);
            

@@ -1,9 +1,7 @@
 //**********************************************************************************************
 //                                       ImageMetadata.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
+// PHIS-SILEX
+// Copyright © - INRA 2017
 // Creation date: December, 11 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  January, 03 2018
@@ -16,6 +14,8 @@ import java.util.ArrayList;
 /**
  * Represents the image metadata view
  * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @update [Andréas Garcia] Jan., 2019 : modify "concern(s)" occurences into 
+ * "concernedItem(s)"
  */
 public class ImageMetadata {
     

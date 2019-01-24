@@ -7,14 +7,14 @@
 // Creation date: December, 11 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  December, 11 2017
-// Subject: Represents the concern item view
+// Subject: Represents the concerned item view
 //***********************************************************************************************
 package phis2ws.service.view.model.phis;
 
 import java.util.ArrayList;
 
 /**
- * represents the concern item view
+ * represents the concerned item view
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ConcernedItem {

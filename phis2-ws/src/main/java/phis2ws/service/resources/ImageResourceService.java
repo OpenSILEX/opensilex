@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -202,7 +203,7 @@ public class ImageResourceService extends ResourceService {
      */
     private String getServerImagesDirectory() {
         return PropertiesFileManager.getConfigFileProperty("service", "uploadImageServerDirectory") + "/"
-                + PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "platform") + "/" 
+                + PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "infrastructure") + "/" 
                 + Year.now().toString();
     }
     
@@ -213,7 +214,7 @@ public class ImageResourceService extends ResourceService {
      */
     private String getWebAccessImagesDirectory() {
         return PropertiesFileManager.getConfigFileProperty("service", "imageFileServerDirectory") + "/"
-                + PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "platform") + "/" 
+                + PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "infrastructure") + "/" 
                 + Year.now().toString();
     }
     
@@ -288,7 +289,7 @@ public class ImageResourceService extends ResourceService {
         final String serverFileName = getImageName(imageUri) + "." + WAITING_METADATA_INFORMATION.get(imageUri).getFileInformations().getExtension();
         final String serverImagesDirectory = getServerImagesDirectory();
         final String webAccessImagesDirectory = getWebAccessImagesDirectory();
-        
+    
         try {
             WAITING_METADATA_FILE_CHECK.put(imageUri, Boolean.TRUE);
             //SILEX:test
@@ -297,7 +298,7 @@ public class ImageResourceService extends ResourceService {
         } catch (SftpException e) {
             try {
                 //Create repository if it does not exist
-                jsch.getChannelSftp().mkdir(serverImagesDirectory);
+                jsch.createNestedDirectories(serverImagesDirectory);
                 jsch.getChannelSftp().cd(serverImagesDirectory);
                 LOGGER.debug("Create directory : " + serverImagesDirectory);
             } catch (SftpException ex) {

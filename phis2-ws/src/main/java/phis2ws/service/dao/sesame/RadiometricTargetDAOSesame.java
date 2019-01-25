@@ -379,7 +379,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
      *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.phenome-fppn.fr/vocabulary/2017#dateOfPurchase> "2019-01-02" .
      *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.phenome-fppn.fr/vocabulary/2017#hasShapeLength> "31" .
      *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.phenome-fppn.fr/vocabulary/2017#hasShapeWidth> "45" .
-     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.phenome-fppn.fr/vocabulary/2017#hasTechnicalContact> "admin@phis.fr" .
+     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.phenome-fppn.fr/vocabulary/2017#hasTechnicalContact> "admin@opensilex.org" .
      *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.phenome-fppn.fr/vocabulary/2017#inServiceDate> "2019-01-01" .
      *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.phenome-fppn.fr/vocabulary/2017#serialNumber> "serial" .
      *    }

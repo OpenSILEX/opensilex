@@ -44,8 +44,7 @@ import phis2ws.service.view.model.phis.ImageMetadata;
 /**
  * Represents the MongoDB Data Access Object for the images metadata
  * @author Morgane Vidal <morgane.vidal@inra.fr>
- * @update [Andréas Garcia] Jan., 2019 : modify "concern(s)" occurences into 
- * "concernedItem(s)" in Java variables and MongoDB fields
+ * @update [Andréas Garcia] Jan., 2019 : modify "concern(s)" occurences into "concernedItem(s)" in Java variables and MongoDB fields
  */
 public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
 

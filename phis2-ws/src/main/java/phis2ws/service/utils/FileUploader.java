@@ -4,7 +4,7 @@
 // Copyright © INRA 2016
 // Creation date: May 2016
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Subject: A class which permit to send a file to a distant server
+// Subject: A class which permits to send a file to a distant server
 //***********************************************************************************************
 package phis2ws.service.utils;
 
@@ -24,10 +24,9 @@ import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
  
 /**
- * Classe qui étends la libraire JSch qui permet de réaliser des appels en SFTP en Java de façon siplifiée.
+ * Classe qui étend la libraire JSch qui permet de réaliser des appels en SFTP en Java de façon siplifiée.
  * @author Arnaud Charleroy
- * @update [Andréas Garcia] 23 Jan., 2019 : Add generic function to create nested 
- * directories from a complete path
+ * @update [Andréas Garcia] 23 Jan., 2019: Add generic function to create nested directories from a complete path
  */
 public class FileUploader extends JSch{
     final static Logger LOGGER = LoggerFactory.getLogger(FileUploader.class);

@@ -4,7 +4,6 @@
 // Copyright © INRA 2017
 // Creation date: Dec., 8 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date: Jan., 2019
 // Subject: Represents the images data service
 //***********************************************************************************************
 package phis2ws.service.resources;
@@ -75,8 +74,7 @@ import phis2ws.service.view.model.phis.ImageMetadata;
 /**
  * Represents the images service
  * @author Morgane Vidal 
- * @update [Andréas Garcia] Jan., 2019 : modify "concern(s)" occurences into 
- * "concernedItem(s)"
+ * @update [Andréas Garcia] Jan., 2019 : modify "concern(s)" occurences into "concernedItem(s)"
  */
 @Api("/images")
 @Path("/images")

@@ -1,11 +1,9 @@
 //**********************************************************************************************
 //                                       FileUploader.java 
-// Author(s): Arnaud Charleroy 
 // PHIS-SILEX
 // Copyright © INRA 2016
 // Creation date: May 2016
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  Jan., 2019
 // Subject: A class which permit to send a file to a distant server
 //***********************************************************************************************
 package phis2ws.service.utils;
@@ -95,10 +93,10 @@ public class FileUploader extends JSch{
     
     /**
      * Create nested directories from a given path.
-     * The mkdir function of thet ChannelSftp object can only create one 
+     * The mkdir function of the ChannelSftp object can only create one 
      * directory in the current folder. If a path with several folders is given, 
      * an exception is thrown.
-     * So we have to mannually implement the behaviour desired.
+     * So we have to manually implement the behaviour desired.
      * @param nestedDirectoriesPath
      * @throws SftpException 
      */

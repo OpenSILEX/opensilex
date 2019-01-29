@@ -121,7 +121,7 @@ public class LayerDao {
         typesByRelationOrConcept.put(Oeso.RELATION_FROM_VARIETY.toString(), "variety");
         typesByRelationOrConcept.put(Oeso.RELATION_FROM_SPECIES.toString(), "species");
         typesByRelationOrConcept.put(Oeso.RELATION_HAS_EXPERIMENT_MODALITIES.toString(), "experimentModalities");
-        typesByRelationOrConcept.put(Oeso.RELATION_HAS_REPETITION.toString(), "repetition");
+        typesByRelationOrConcept.put(Oeso.RELATION_HAS_REPLICATION.toString(), "replication");
         typesByRelationOrConcept.put(Rdfs.RELATION_LABEL.toString(), "label");
         typesByRelationOrConcept.put(Rdf.RELATION_TYPE.toString(), "typeElement");
         

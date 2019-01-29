@@ -253,10 +253,10 @@ public enum Oeso {
             return NAMESPACE.toString() + "hasRadiometricTargetMaterial";
         }
     },
-    RELATION_HAS_REPETITION {
+    RELATION_HAS_REPLICATION {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "hasRepetition";
+            return NAMESPACE.toString() + "hasReplication";
         }
     },
     RELATION_HAS_SHAPE {

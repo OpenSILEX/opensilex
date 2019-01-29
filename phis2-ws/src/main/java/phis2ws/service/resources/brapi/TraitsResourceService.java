@@ -69,7 +69,7 @@ public class TraitsResourceService implements BrapiCall {
         ArrayList<String> callMethods = new ArrayList<>();
         callMethods.add("GET");
         ArrayList<String> callVersions = new ArrayList<>();
-        callVersions.add("1.2");
+        callVersions.add("1.3");
         Call call1 = new Call("traits", calldatatypes, callMethods, callVersions);
         //\SILEX:info 
         
@@ -80,7 +80,7 @@ public class TraitsResourceService implements BrapiCall {
         ArrayList<String> callMethods2 = new ArrayList<>();
         callMethods2.add("GET");
         ArrayList<String> callVersions2 = new ArrayList<>();
-        callVersions2.add("1.2");
+        callVersions2.add("1.3");
         Call call2 = new Call("traits/{traitDbId}", calldatatypes2, callMethods2, callVersions2);
         //\SILEX:info 
         
@@ -112,7 +112,7 @@ public class TraitsResourceService implements BrapiCall {
             {
               "defaultValue": null,
               "description": "",
-              "name": "Leaf_Area_Index",
+              "traitName": "Leaf_Area_Index",
               "observationVariables": [
                 "http://www.phenome-fppn.fr/platform/id/variables/v001"
               ],
@@ -122,7 +122,7 @@ public class TraitsResourceService implements BrapiCall {
             {
               "defaultValue": null,
               "description": "",
-              "name": "NDVI",
+              "traitName": "NDVI",
               "observationVariables": [
                 "http://www.phenome-fppn.fr/platform/id/variables/v002"
               ],
@@ -179,7 +179,7 @@ public class TraitsResourceService implements BrapiCall {
           "data": {
             "defaultValue": null,
             "description": null,
-            "name": "myTrait",
+            "traitName": "myTrait",
             "observationVariables": null,
             "traitDbId": "http://www.phenome-fppn.fr/platform/id/traits/t003",
             "traitId": null

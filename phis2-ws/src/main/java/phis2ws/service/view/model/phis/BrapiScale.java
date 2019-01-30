@@ -15,10 +15,14 @@ package phis2ws.service.view.model.phis;
 public class BrapiScale {
     //The id of the unit in the triplestore e.g. http://www.phenome-fppn.fr/platform/id/units/u001
     private String scaleDbid;
-    //The name of the unit in the triplestore e.g. "m2.m2"
-    private String name;
-    private String datatype;
+    //The scaleName of the unit in the triplestore e.g. "m2.m2"
+    private String scaleName;
+    private String dataType;
     private String decimalPlaces;
+    //SILEX:todo
+    //class ontologyReference and get info
+    private String ontologyReference;
+    //\SILEX
     private String xref;
     private String validValues;
 
@@ -33,20 +37,20 @@ public class BrapiScale {
         this.scaleDbid = scaleDbid;
     }
 
-    public String getName() {
-        return name;
+    public String getScaleName() {
+        return scaleName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setScaleName(String scaleName) {
+        this.scaleName = scaleName;
     }
 
-    public String getDatatype() {
-        return datatype;
+    public String getDataType() {
+        return dataType;
     }
 
-    public void setDatatype(String datatype) {
-        this.datatype = datatype;
+    public void setDataType(String dataType) {
+        this.dataType = dataType;
     }
 
     public String getDecimalPlaces() {
@@ -55,6 +59,14 @@ public class BrapiScale {
 
     public void setDecimalPlaces(String decimalPlaces) {
         this.decimalPlaces = decimalPlaces;
+    }
+
+    public String getOntologyReference() {
+        return ontologyReference;
+    }
+
+    public void setOntologyReference(String ontologyReference) {
+        this.ontologyReference = ontologyReference;
     }
 
     public String getXref() {

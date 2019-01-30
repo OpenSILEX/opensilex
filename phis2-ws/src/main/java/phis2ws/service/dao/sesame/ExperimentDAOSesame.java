@@ -34,7 +34,7 @@ import phis2ws.service.dao.phis.ExperimentDao;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
-import phis2ws.service.ontologies.Vocabulary;
+import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.brapi.Status;
@@ -65,20 +65,20 @@ public class ExperimentDAOSesame extends DAOSesame<Experiment> {
      * @return The prepared query
      * @example 
      * SELECT DISTINCT  ?uri ?label WHERE {
-     *      ?rdfType  rdfs:subClassOf*  <http://www.phenome-fppn.fr/vocabulary/2017#Variable> . 
+     *      ?rdfType  rdfs:subClassOf*  <http://www.opensilex.org/vocabulary/oeso#Variable> . 
      *      ?uri rdf:type ?rdfType .
      *      ?uri  rdfs:label ?label .
-     *      <http://www.phenome-fppn.fr/2018/DIA2018-1> <http://www.phenome-fppn.fr/vocabulary/2017#measures> ?uri
+     *      <http://www.phenome-fppn.fr/2018/DIA2018-1> <http://www.opensilex.org/vocabulary/oeso#measures> ?uri
      * }
      */
     private SPARQLQueryBuilder prepareSearchVariablesQuery(String experimentUri) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         
         query.appendSelect("?" + URI + " ?" + LABEL );
-        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_VARIABLE.toString(), null);
+        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_VARIABLE.toString(), null);
         query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
         query.appendTriplet("?" + URI, Rdfs.RELATION_LABEL.toString(), "?" + LABEL, null);
-        query.appendTriplet(experimentUri, Vocabulary.RELATION_MEASURES.toString(), "?" + URI, null);
+        query.appendTriplet(experimentUri, Oeso.RELATION_MEASURES.toString(), "?" + URI, null);
         
         LOGGER.debug(query.toString());
         
@@ -92,20 +92,20 @@ public class ExperimentDAOSesame extends DAOSesame<Experiment> {
      * @return The prepared query
      * @example 
      * SELECT DISTINCT  ?uri ?label WHERE {
-     *      ?rdfType  rdfs:subClassOf*  <http://www.phenome-fppn.fr/vocabulary/2017#Sensors> . 
+     *      ?rdfType  rdfs:subClassOf*  <http://www.opensilex.org/vocabulary/oeso#Sensors> . 
      *      ?uri rdf:type ?rdfType .
      *      ?uri  rdfs:label ?label .
-     *      <http://www.phenome-fppn.fr/2018/DIA2018-1> <http://www.phenome-fppn.fr/vocabulary/2017#participatesIn> ?uri
+     *      <http://www.phenome-fppn.fr/2018/DIA2018-1> <http://www.opensilex.org/vocabulary/oeso#participatesIn> ?uri
      * }
      */
     private SPARQLQueryBuilder prepareSearchSensorsQuery(String experimentUri) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         
         query.appendSelect("?" + URI + " ?" + LABEL );
-        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_SENSING_DEVICE.toString(), null);
+        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_SENSING_DEVICE.toString(), null);
         query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
         query.appendTriplet("?" + URI, Rdfs.RELATION_LABEL.toString(), "?" + LABEL, null);
-        query.appendTriplet("?" + URI, Vocabulary.RELATION_PARTICIPATES_IN.toString(), experimentUri, null);
+        query.appendTriplet("?" + URI, Oeso.RELATION_PARTICIPATES_IN.toString(), experimentUri, null);
         
         LOGGER.debug(query.toString());
         
@@ -181,9 +181,9 @@ public class ExperimentDAOSesame extends DAOSesame<Experiment> {
             oldLinkedVariables.add(oldVariable.getKey());
         });
         
-        if (deleteObjectProperties(experimentUri, Vocabulary.RELATION_MEASURES.toString(), oldLinkedVariables)) {
+        if (deleteObjectProperties(experimentUri, Oeso.RELATION_MEASURES.toString(), oldLinkedVariables)) {
             //2. Add new object properties
-            if (addObjectProperties(experimentUri, Vocabulary.RELATION_MEASURES.toString(), variables, experimentUri)) {
+            if (addObjectProperties(experimentUri, Oeso.RELATION_MEASURES.toString(), variables, experimentUri)) {
                 updateStatus.add(new Status(StatusCodeMsg.RESOURCES_UPDATED, StatusCodeMsg.INFO, "The experiment " + experimentUri + " has now " + variables.size() + " linked variables"));
             } else {
                 update = false;
@@ -218,7 +218,7 @@ public class ExperimentDAOSesame extends DAOSesame<Experiment> {
             UpdateBuilder updateBuilder = new UpdateBuilder();
             Node graph = NodeFactory.createURI(experimentUri);
             Resource experiment = ResourceFactory.createResource(experimentUri);
-            Property participatesIn = ResourceFactory.createProperty(Vocabulary.RELATION_PARTICIPATES_IN.toString());
+            Property participatesIn = ResourceFactory.createProperty(Oeso.RELATION_PARTICIPATES_IN.toString());
 
             sensors.forEach((sensor) -> {
                 Resource sensorUri = ResourceFactory.createResource(sensor);
@@ -260,7 +260,7 @@ public class ExperimentDAOSesame extends DAOSesame<Experiment> {
             UpdateBuilder deleteBuilder = new UpdateBuilder();
             Node graph = NodeFactory.createURI(experimentUri);
             Resource experiment = ResourceFactory.createResource(experimentUri);
-            Property participatesIn = ResourceFactory.createProperty(Vocabulary.RELATION_PARTICIPATES_IN.toString());
+            Property participatesIn = ResourceFactory.createProperty(Oeso.RELATION_PARTICIPATES_IN.toString());
 
             for (String sensor : sensors) {
                 Resource sensorRes = ResourceFactory.createResource(sensor);

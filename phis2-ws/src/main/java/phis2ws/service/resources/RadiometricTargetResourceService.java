@@ -100,7 +100,7 @@ public class RadiometricTargetResourceService extends ResourceService {
      *      "properties": [
      *          {
      *              "rdfType": null,
-     *              "relation": "http://www.phenome-fppn.fr/vocabulary/2017#hasvfcShape",
+     *              "relation": "http://www.opensilex.org/vocabulary/oeso#hasvfcShape",
      *              "value": "3"
      *          },
      *          {
@@ -319,7 +319,7 @@ public class RadiometricTargetResourceService extends ResourceService {
      *              {
      *                "rdfType": "http://www.w3.org/2002/07/owl#Class",
      *                "relation": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-     *                "value": "http://www.phenome-fppn.fr/vocabulary/2017#RadiometricTarget"
+     *                "value": "http://www.opensilex.org/vocabulary/oeso#RadiometricTarget"
      *              },
      *              {
      *                "rdfType": null,
@@ -328,12 +328,12 @@ public class RadiometricTargetResourceService extends ResourceService {
      *              },
      *              {
      *                "rdfType": null,
-     *                "relation": "http://www.phenome-fppn.fr/vocabulary/2017#dateOfLastCalibration",
+     *                "relation": "http://www.opensilex.org/vocabulary/oeso#dateOfLastCalibration",
      *                "value": "6-09-07"
      *              },
      *              {
      *                "rdfType": null,
-     *                "relation": "http://www.phenome-fppn.fr/vocabulary/2017#dateOfPurchase",
+     *                "relation": "http://www.opensilex.org/vocabulary/oeso#dateOfPurchase",
      *                "value": "6-08-10"
      *              }
      *         ]

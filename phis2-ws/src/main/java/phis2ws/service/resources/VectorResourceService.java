@@ -124,7 +124,7 @@ public class VectorResourceService extends ResourceService {
      *          "data": [
      *              {
      *                  "uri": "http://www.phenome-fppn.fr/diaphen/2018/v1801",
-     *                  "rdfType": "http://www.phenome-fppn.fr/vocabulary/2017#UAV",
+     *                  "rdfType": "http://www.opensilex.org/vocabulary/oeso#UAV",
      *                  "label": "alias",
      *                  "brand": "brand",
      *                  "serialNumber" : "serialNumber",
@@ -214,7 +214,7 @@ public class VectorResourceService extends ResourceService {
      *          "data": [
      *              {
      *                 "uri": "http://www.phenome-fppn.fr/diaphen/2018/v1825",
-     *                 "rdfType": "http://www.phenome-fppn.fr/vocabulary/2017#UAV",
+     *                 "rdfType": "http://www.opensilex.org/vocabulary/oeso#UAV",
      *                 "label": "aria_hr1_p",
      *                 "brand": "unknown",
      *                 "inServiceDate": null,
@@ -265,7 +265,7 @@ public class VectorResourceService extends ResourceService {
      * @param vectors list of the vectors to insert.
      *                e.g of vector data :
      * {
-     *      "rdfType": "http://www.phenome-fppn.fr/vocabulary/2017#UAV",
+     *      "rdfType": "http://www.opensilex.org/vocabulary/oeso#UAV",
      *      "label": "par03_p",
      *      "brand": "Skye Instruments",
      *      "serialNumber": "A1E345F32",
@@ -330,7 +330,7 @@ public class VectorResourceService extends ResourceService {
      * [
      *      {
      *          "uri": "http://www.phenome-fppn.fr/diaphen/2018/v18142",
-     *          "rdfType": "http://www.phenome-fppn.fr/vocabulary/2017#UAV",
+     *          "rdfType": "http://www.opensilex.org/vocabulary/oeso#UAV",
      *          "label": "testNewLabel",
      *          "brand": "Skye Instrdfgduments",
      *          "serialNumber": "A1E34qsf5F32",

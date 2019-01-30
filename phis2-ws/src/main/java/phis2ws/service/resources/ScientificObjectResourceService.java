@@ -64,7 +64,7 @@ public class ScientificObjectResourceService extends ResourceService {
      * @example 
      * [
         {
-          "rdfType": "http://www.phenome-fppn.fr/vocabulary/2017#Plant",
+          "rdfType": "http://www.opensilex.org/vocabulary/oeso#Plant",
           "experiment": "http://www.phenome-fppn.fr/diaphen/DIA2017-2",
           "year": "2018",
           "properties": [

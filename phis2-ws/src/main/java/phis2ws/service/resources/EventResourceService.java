@@ -95,13 +95,13 @@ public class EventResourceService  extends ResourceService {
      *                 "label3"
      *               ],
      *               "uri": "http://www.phenome-fppn.fr/m3p/arch/2017/c17000241",
-     *               "typeUri": "http://www.phenome-fppn.fr/vocabulary/2017#Thermocouple"
+     *               "typeUri": "http://www.opensilex.org/vocabulary/oeso#Thermocouple"
      *             }
      *           ],
      *           "date": "2017-09-11T12:00:00+01:00",
      *           "properties": [
      *             {
-     *               "rdfType": "http://www.phenome-fppn.fr/vocabulary/2017#Thermocouple",
+     *               "rdfType": "http://www.opensilex.org/vocabulary/oeso#Thermocouple",
      *               "relation": "http://www.phenome-fppn.fr/vocabulary/2018/oeev#from",
      *               "value": "http://www.phenome-fppn.fr/m3p/phenoarch/"
      *             }

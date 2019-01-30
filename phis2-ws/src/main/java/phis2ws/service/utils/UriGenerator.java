@@ -25,7 +25,7 @@ import phis2ws.service.dao.sesame.VariableDaoSesame;
 import phis2ws.service.dao.sesame.VectorDAOSesame;
 import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Foaf;
-import phis2ws.service.ontologies.Vocabulary;
+import phis2ws.service.ontologies.Oeso;
 
 /**
  * generate differents kinds of uris (vector, sensor, ...)
@@ -380,29 +380,29 @@ public class UriGenerator {
 
         UriDaoSesame uriDaoSesame = new UriDaoSesame();
 
-        if (uriDaoSesame.isSubClassOf(instanceType, Vocabulary.CONCEPT_VECTOR.toString())) {
+        if (uriDaoSesame.isSubClassOf(instanceType, Oeso.CONCEPT_VECTOR.toString())) {
             return generateVectorUri(year);
-        } else if (uriDaoSesame.isSubClassOf(instanceType, Vocabulary.CONCEPT_SENSING_DEVICE.toString())) {
+        } else if (uriDaoSesame.isSubClassOf(instanceType, Oeso.CONCEPT_SENSING_DEVICE.toString())) {
             return generateSensorUri(year);
-        } else if (Vocabulary.CONCEPT_VARIABLE.toString().equals(instanceType)) {
+        } else if (Oeso.CONCEPT_VARIABLE.toString().equals(instanceType)) {
             return generateVariableUri();
-        } else if (Vocabulary.CONCEPT_TRAIT.toString().equals(instanceType)) {
+        } else if (Oeso.CONCEPT_TRAIT.toString().equals(instanceType)) {
             return generateTraitUri();
-        } else if (Vocabulary.CONCEPT_METHOD.toString().equals(instanceType)) {
+        } else if (Oeso.CONCEPT_METHOD.toString().equals(instanceType)) {
             return generateMethodUri();
-        } else if (Vocabulary.CONCEPT_UNIT.toString().equals(instanceType)) {
+        } else if (Oeso.CONCEPT_UNIT.toString().equals(instanceType)) {
             return generateUnitUri();
-        } else if (uriDaoSesame.isSubClassOf(instanceType, Vocabulary.CONCEPT_SCIENTIFIC_OBJECT.toString())) {
+        } else if (uriDaoSesame.isSubClassOf(instanceType, Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString())) {
             return generateAgronomicalObjectUri(year);
-        } else if (Vocabulary.CONCEPT_VARIETY.toString().equals(instanceType)) {
+        } else if (Oeso.CONCEPT_VARIETY.toString().equals(instanceType)) {
             return generateVarietyUri(additionalInformation);
-        } else if (uriDaoSesame.isSubClassOf(instanceType, Vocabulary.CONCEPT_IMAGE.toString())) {
+        } else if (uriDaoSesame.isSubClassOf(instanceType, Oeso.CONCEPT_IMAGE.toString())) {
             return generateImageUri(year, additionalInformation);
         } else if (instanceType.equals(Foaf.CONCEPT_AGENT.toString()) || uriDaoSesame.isSubClassOf(instanceType, Foaf.CONCEPT_AGENT.toString())) {
             return generateAgentUri(additionalInformation);
-        } else if (instanceType.equals(Vocabulary.CONCEPT_ANNOTATION.toString())) {
+        } else if (instanceType.equals(Oeso.CONCEPT_ANNOTATION.toString())) {
             return generateAnnotationUri();
-        } else if (instanceType.equals(Vocabulary.CONCEPT_RADIOMETRIC_TARGET.toString())) {
+        } else if (instanceType.equals(Oeso.CONCEPT_RADIOMETRIC_TARGET.toString())) {
             return generateRadiometricTargetUri();
         }
 

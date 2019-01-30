@@ -21,10 +21,10 @@ import phis2ws.service.view.model.phis.Property;
  */
 public class PropertyDTO extends AbstractVerifiedClass {
 
-    //property type (e.g. http://www.phenome-fppn.fr/vocabulary/2017#Variety)
+    //property type (e.g. http://www.opensilex.org/vocabulary/oeso#Variety)
     //null if it is a string (so not an uri)
     protected String rdfType;
-    //relation name (e.g. http://www.phenome-fppn.fr/vocabulary/2017#fromVariety)
+    //relation name (e.g. http://www.opensilex.org/vocabulary/oeso#fromVariety)
     protected String relation;
     //the value (e.g. http://www.phenome-fppn.fr/id/species/maize)
     protected String value;

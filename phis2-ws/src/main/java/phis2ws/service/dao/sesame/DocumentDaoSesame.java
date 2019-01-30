@@ -42,7 +42,7 @@ import phis2ws.service.model.User;
 import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
-import phis2ws.service.ontologies.Vocabulary;
+import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.resources.dto.ConcernItemDTO;
 import phis2ws.service.resources.dto.DocumentMetadataDTO;
 import phis2ws.service.utils.POSTResultsReturn;
@@ -213,7 +213,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
 
         spql.addInsert(graph, documentUri, DCTerms.date, documentMetadata.getCreationDate());
 
-        Property relationStatus = ResourceFactory.createProperty(Vocabulary.RELATION_STATUS.toString());
+        Property relationStatus = ResourceFactory.createProperty(Oeso.RELATION_STATUS.toString());
         spql.addInsert(graph, documentUri, relationStatus, documentMetadata.getStatus());
             
         if (documentMetadata.getExtension() != null) {
@@ -228,7 +228,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
             for (ConcernItemDTO concernedItemDTO : documentMetadata.getConcernedItems()) {
                 Node concernedItemUri = NodeFactory.createURI(concernedItemDTO.getUri());
                 Node concernedItemType = NodeFactory.createURI(concernedItemDTO.getTypeURI());
-                Property relationConcerns = ResourceFactory.createProperty(Vocabulary.RELATION_CONCERNS.toString());
+                Property relationConcerns = ResourceFactory.createProperty(Oeso.RELATION_CONCERNS.toString());
 
                 spql.addInsert(graph, documentUri, relationConcerns, concernedItemUri);
                 spql.addInsert(graph, concernedItemUri, RDF.type, concernedItemType);
@@ -261,7 +261,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         Node documentType = NodeFactory.createURI(document.getDocumentType());
         spql.addDelete(graph, documentUri, RDF.type, documentType);
         
-        Property relationStatus = ResourceFactory.createProperty(Vocabulary.RELATION_STATUS.toString());
+        Property relationStatus = ResourceFactory.createProperty(Oeso.RELATION_STATUS.toString());
         spql.addDelete(graph, documentUri, relationStatus, document.getStatus());
         
         if (document.getComment() != null) {
@@ -270,7 +270,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
 
         for (ConcernItemDTO concernedItem : document.getConcernedItems()) {
             Node concernedItemUri = NodeFactory.createURI(concernedItem.getUri());
-            Property relationConcern = ResourceFactory.createProperty(Vocabulary.RELATION_CONCERNS.toString());
+            Property relationConcern = ResourceFactory.createProperty(Oeso.RELATION_CONCERNS.toString());
             spql.addDelete(graph, documentUri, relationConcern, concernedItemUri);
         }
                 
@@ -370,8 +370,8 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         SPARQLQueryBuilder sparqlQ = new SPARQLQueryBuilder();
         sparqlQ.appendDistinct(true);
         sparqlQ.appendSelect("?documentType");
-        sparqlQ.appendTriplet("?documentType", "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_DOCUMENT.toString(), null);
-        sparqlQ.appendFilter("?documentType != <" + Vocabulary.CONCEPT_DOCUMENT.toString() +">");
+        sparqlQ.appendTriplet("?documentType", "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_DOCUMENT.toString(), null);
+        sparqlQ.appendFilter("?documentType != <" + Oeso.CONCEPT_DOCUMENT.toString() +">");
 
         LOGGER.debug(sparqlQ.toString());
         TupleQuery tupleQueryTo = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQ.toString());
@@ -395,7 +395,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
      *  ?documentUri  dc:title  ?title  . 
      *  ?documentUri  dc:date  ?creationDate  . 
      *  ?documentUri  dc:format  ?format  . 
-     *  ?documentUri  <http://www.phenome-fppn.fr/vocabulary/2017#status>  ?status  . 
+     *  ?documentUri  <http://www.opensilex.org/vocabulary/oeso#status>  ?status  . 
      *  ?documentUri  rdfs:comment  ?comment  . 
      * FILTER ( (regex(STR(?creator), 'admin', 'i')) && (regex(STR(?title), 'liste', 'i')) ) 
      * }}
@@ -469,16 +469,16 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         
         if (!concernedItemsUris.isEmpty() && concernedItemsUris.size() > 0) {
             for (String concernedItemUri : concernedItemsUris) {
-                sparqlQuery.appendTriplet(select, Vocabulary.RELATION_CONCERNS.toString(), concernedItemUri, null);
+                sparqlQuery.appendTriplet(select, Oeso.RELATION_CONCERNS.toString(), concernedItemUri, null);
             }
         } 
         
         if (status != null) {
-            sparqlQuery.appendTriplet(select, Vocabulary.RELATION_STATUS.toString(), "\"" + status + "\"", null);
+            sparqlQuery.appendTriplet(select, Oeso.RELATION_STATUS.toString(), "\"" + status + "\"", null);
         } else {
             sparqlQuery.appendSelect(" ?" + STATUS);
             sparqlQuery.appendGroupBy("?" + STATUS);
-            sparqlQuery.appendTriplet(select, Vocabulary.RELATION_STATUS.toString(), "?" + STATUS, null);
+            sparqlQuery.appendTriplet(select, Oeso.RELATION_STATUS.toString(), "?" + STATUS, null);
         }
         
         //SILEX:info
@@ -544,7 +544,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         sparqlQuery.appendGraph(Contexts.DOCUMENTS.toString());
 
         sparqlQuery.appendSelect(" ?" + CONCERNED_ITEM_URI + " ?" + CONCERNED_ITEM_TYPE);
-        sparqlQuery.appendTriplet(uriDocument, Vocabulary.RELATION_CONCERNS.toString(), "?" + CONCERNED_ITEM_URI, null);
+        sparqlQuery.appendTriplet(uriDocument, Oeso.RELATION_CONCERNS.toString(), "?" + CONCERNED_ITEM_URI, null);
         sparqlQuery.appendTriplet("?" + CONCERNED_ITEM_URI, Rdf.RELATION_TYPE.toString(), "?" + CONCERNED_ITEM_TYPE, null);
 
         LOGGER.debug(SPARQL_SELECT_QUERY + sparqlQuery.toString());
@@ -568,7 +568,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
      *  ?documentUri  dc:title  ?title  . 
      *  ?documentUri  dc:date  ?creationDate  . 
      *  ?documentUri  dc:format  ?format  . 
-     *  ?documentUri  <http://www.phenome-fppn.fr/vocabulary/2017#status>  ?status  . 
+     *  ?documentUri  <http://www.opensilex.org/vocabulary/oeso#status>  ?status  . 
      *  ?documentUri  rdfs:comment  ?comment  . 
      * FILTER ( (regex(STR(?creator), 'admin', 'i')) && (regex(STR(?title), 'liste', 'i')) ) 
      * }}
@@ -619,7 +619,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         } else {
             ExperimentDao experimentDao = new ExperimentDao();
             for (ConcernItemDTO concernedItem : document.getConcernedItems()) {
-                if (concernedItem.getTypeURI().equals(Vocabulary.CONCEPT_EXPERIMENT.toString())) {
+                if (concernedItem.getTypeURI().equals(Oeso.CONCEPT_EXPERIMENT.toString())) {
                     Experiment experiment = new Experiment(concernedItem.getUri());
                     
                     if (experimentDao.canUserSeeExperiment(u, experiment)) {

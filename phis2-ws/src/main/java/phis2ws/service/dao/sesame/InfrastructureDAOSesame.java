@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
-import phis2ws.service.ontologies.Vocabulary;
+import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.model.phis.Infrastructure;
 
@@ -54,7 +54,7 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
      * SELECT  ?uri ?rdfType  ?label 
      * WHERE {
      *   ?uri  ?0  ?rdfType  . 
-     *   ?rdfType  rdfs:subClassOf*  <http://www.phenome-fppn.fr/vocabulary/2017#Infrastructure> . 
+     *   ?rdfType  rdfs:subClassOf*  <http://www.opensilex.org/vocabulary/oeso#Infrastructure> . 
      *   OPTIONAL {
      *     ?uri rdfs:label ?label . 
      *   }
@@ -82,7 +82,7 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
         } else {
             query.appendSelect("?" + RDF_TYPE);
             query.appendTriplet(infrastructureUri, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
-            query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_INFRASTRUCTURE.toString(), null);
+            query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_INFRASTRUCTURE.toString(), null);
         }
         
         // Select RDF Type label in specified language
@@ -97,7 +97,7 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
         // Select parent infrastructure URI (is part of) if exists
         query.beginBodyOptional();
         query.appendSelect("?" + IS_PART_OF);
-        query.appendTriplet(infrastructureUri, Vocabulary.RELATION_IS_PART_OF.toString(), "?" + IS_PART_OF, null);
+        query.appendTriplet(infrastructureUri, Oeso.RELATION_IS_PART_OF.toString(), "?" + IS_PART_OF, null);
         query.endBodyOptional();
                 
         // Select infrastructure name
@@ -139,7 +139,7 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
      * SELECT (COUNT(DISTINCT ?uri) as ?count)
      * WHERE {
      *   ?uri  ?0  ?rdfType  . 
-     *   ?rdfType  rdfs:subClassOf*  <http://www.phenome-fppn.fr/vocabulary/2017#Infrastructure> . 
+     *   ?rdfType  rdfs:subClassOf*  <http://www.opensilex.org/vocabulary/oeso#Infrastructure> . 
      *   OPTIONAL {
      *     ?uri rdfs:label ?label . 
      *   }

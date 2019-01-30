@@ -44,8 +44,7 @@ import phis2ws.service.view.model.phis.ImageMetadata;
 /**
  * Represents the MongoDB Data Access Object for the images metadata
  * @author Morgane Vidal <morgane.vidal@inra.fr>
- * @update [Andréas Garcia] Jan., 2019 : modify "concern(s)" occurences into 
- * "concernedItem(s)" in Java variables and MongoDB fields
+ * @update [Andréas Garcia] Jan., 2019 : modify "concern(s)" occurences into "concernedItem(s)" in Java variables and MongoDB fields
  */
 public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
 
@@ -87,7 +86,7 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
      *         Query example :
      *         { 
      *              "uri" : "http://www.phenome-fppn.fr/phis_field/2017/i170000000000" , 
-     *              "rdfType" : "http://www.phenome-fppn.fr/vocabulary/2017#HemisphericalImage" , 
+     *              "rdfType" : "http://www.opensilex.org/vocabulary/oeso#HemisphericalImage" , 
      *              "$and" : 
      *                  [ 
      *                      { 

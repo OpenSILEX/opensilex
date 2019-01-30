@@ -14,11 +14,11 @@ import phis2ws.service.PropertiesFileManager;
  * Contains the ontology (oepo here) relations and context.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public enum Vocabulary {
+public enum Oeso {
     NAMESPACE {
         @Override
         public String toString() {
-            return "http://www.phenome-fppn.fr/vocabulary/2017#";
+            return "http://www.opensilex.org/vocabulary/oeso#";
         }
     },
     
@@ -253,10 +253,10 @@ public enum Vocabulary {
             return NAMESPACE.toString() + "hasRadiometricTargetMaterial";
         }
     },
-    RELATION_HAS_REPETITION {
+    RELATION_HAS_REPLICATION {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "hasRepetition";
+            return NAMESPACE.toString() + "hasReplication";
         }
     },
     RELATION_HAS_SHAPE {

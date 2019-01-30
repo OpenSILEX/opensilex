@@ -143,9 +143,9 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_FILE_INFORMATION_EXTENSION = "jpg";
 
     public static final String EXAMPLE_SCIENTIFIC_OBJECT_URI = "http://www.phenome-fppn.fr/phenovia/2017/o1032481";
-    public static final String EXAMPLE_SCIENTIFIC_OBJECT_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#Plot";
+    public static final String EXAMPLE_SCIENTIFIC_OBJECT_TYPE = "http://www.opensilex.org/vocabulary/oeso#Plot";
 
-    public static final String EXAMPLE_IMAGE_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#HemisphericalImage";
+    public static final String EXAMPLE_IMAGE_TYPE = "http://www.opensilex.org/vocabulary/oeso#HemisphericalImage";
     public static final String EXAMPLE_IMAGE_URI = "http://www.phenome-fppn.fr/phis_field/2017/i170000000000";
     public static final String EXAMPLE_IMAGE_DATE = EXAMPLE_DATETIME;
     public static final String EXAMPLE_IMAGE_CONCERNED_ITEMS = EXAMPLE_SCIENTIFIC_OBJECT_URI + ";" + EXAMPLE_SCIENTIFIC_OBJECT_URI;
@@ -175,7 +175,7 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_GROUP_LEVEL = "Owner";
     public static final String EXAMPLE_GROUP_AVAILABLE = "true";
 
-    public static final String EXAMPLE_USER_EMAIL = "admin@phis.fr";
+    public static final String EXAMPLE_USER_EMAIL = "admin@opensilex.org";
     public static final String EXAMPLE_USER_PASSWORD = "21232f297a57a5a743894a0e4a801fc3";
     public static final String EXAMPLE_USER_FIRST_NAME = "Marie";
     public static final String EXAMPLE_USER_FAMILY_NAME = "Dupont";
@@ -191,17 +191,17 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_DATA_VALUE = "3.0000000";
 
     public static final String EXAMPLE_DOCUMENT_URI = "http://www.phenome-fppn.fr/phis_field/documents/documente597f57ba71d421a86277d830f4b9885";
-    public static final String EXAMPLE_DOCUMENT_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#ScientificDocument";
+    public static final String EXAMPLE_DOCUMENT_TYPE = "http://www.opensilex.org/vocabulary/oeso#ScientificDocument";
     public static final String EXAMPLE_DOCUMENT_CREATOR = "John Doe";
     public static final String EXAMPLE_DOCUMENT_LANGUAGE = "fr";
     public static final String EXAMPLE_DOCUMENT_CREATION_DATE = "2017-07-07";
     public static final String EXAMPLE_DOCUMENT_EXTENSION = "png";
     public static final String EXAMPLE_DOCUMENT_TITLE = "title";
-    public static final String EXAMPLE_DOCUMENT_CONCERNED_TYPE_URI = "http://www.phenome-fppn.fr/vocabulary/2017#Experiment";
+    public static final String EXAMPLE_DOCUMENT_CONCERNED_TYPE_URI = "http://www.opensilex.org/vocabulary/oeso#Experiment";
     public static final String EXAMPLE_DOCUMENT_STATUS = "linked";
 
     public static final String EXAMPLE_SENSOR_URI = "http://www.phenome-fppn.fr/diaphen/2018/s18001";
-    public static final String EXAMPLE_SENSOR_RDF_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#Sensor";
+    public static final String EXAMPLE_SENSOR_RDF_TYPE = "http://www.opensilex.org/vocabulary/oeso#Sensor";
     public static final String EXAMPLE_SENSOR_LABEL = "par03_p";
     public static final String EXAMPLE_SENSOR_BRAND = "Skye Instruments";
     public static final String EXAMPLE_SENSOR_VARIABLE = "http://www.phenome-fppn.fr/phenovia/id/variables/v001";
@@ -214,16 +214,16 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_SHOOTING_CONFIGURATION_POSITION = "POINT(0, 0)";
     public static final String EXAMPLE_SHOOTING_CONFIGURATION_DATE = EXAMPLE_EXPERIMENT_START_DATE;
 
-    public static final String EXAMPLE_SPECIES_RDF_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#Species";
+    public static final String EXAMPLE_SPECIES_RDF_TYPE = "http://www.opensilex.org/vocabulary/oeso#Species";
     public static final String EXAMPLE_SPECIES_URI = "http://www.phenome-fppn.fr/id/species/maize";
-    public static final String EXAMPLE_SPECIES_FROM_SPECIES = "http://www.phenome-fppn.fr/vocabulary/2017#fromSpecies";
+    public static final String EXAMPLE_SPECIES_FROM_SPECIES = "http://www.opensilex.org/vocabulary/oeso#fromSpecies";
     public static final String EXAMPLE_SPECIES_LABEL = "Maize";
 
     public static final String EXAMPLE_TRAIT_URI = "http://www.phenome-fppn.fr/phis_field/id/traits/t001";
     public static final String EXAMPLE_TRAIT_LABEL = "Height";
 
     public static final String EXAMPLE_TRIPLET_SUBJECT = "http://www.phenome-fppn.fr/diaphen/DIA2018-2";
-    public static final String EXAMPLE_TRIPLET_PROPERTY = "http://www.phenome-fppn.fr/vocabulary/2017#hasDocument";
+    public static final String EXAMPLE_TRIPLET_PROPERTY = "http://www.opensilex.org/vocabulary/oeso#hasDocument";
     public static final String EXAMPLE_TRIPLET_OBJECT = "http://www.phenome-fppn.fr/phis_field/documents/documente597f57ba71d421a86277d830f4b9885";
     public static final String EXAMPLE_TRIPLET_OBJECT_LANGUAGE = "en-US";
     public static final String EXAMPLE_TRIPLET_OBJECT_TYPE = "uri";
@@ -239,14 +239,14 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_VARIABLE_LABEL = "LAI";
 
     public static final String EXAMPLE_EVENT_URI = "http://www.phenome-fppn.fr/id/event/96e72788-6bdc-4f8e-abd1-ce9329371e8e";
-    public static final String EXAMPLE_EVENT_TYPE = "http://www.phenome-fppn.fr/vocabulary/2018/oeev#MoveFrom";
+    public static final String EXAMPLE_EVENT_TYPE = "http://www.opensilex.org/vocabulary/oeev#MoveFrom";
     public static final String EXAMPLE_EVENT_CONCERNED_ITEM_URI = "http://www.phenome-fppn.fr/m3p/arch/2017/c17000242";
     public static final String EXAMPLE_EVENT_CONCERNED_ITEM_LABEL = "Plot Lavalette";
     public static final String EXAMPLE_EVENT_START_DATE = "2017-09-08T12:00:00+01:00";
     public static final String EXAMPLE_EVENT_END_DATE = "2019-10-08T12:00:00+01:00";
 
     public static final String EXAMPLE_VECTOR_URI = "http://www.phenome-fppn.fr/diaphen/2018/v1801";
-    public static final String EXAMPLE_VECTOR_RDF_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#UAV";
+    public static final String EXAMPLE_VECTOR_RDF_TYPE = "http://www.opensilex.org/vocabulary/oeso#UAV";
     public static final String EXAMPLE_VECTOR_LABEL = "par03_p";
     public static final String EXAMPLE_VECTOR_BRAND = "Skye Instruments";
     public static final String EXAMPLE_VECTOR_SERIAL_NUMBER = "A1E345F32";
@@ -254,13 +254,13 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_VECTOR_DATE_OF_PURCHASE = EXAMPLE_DATE;
     public static final String EXAMPLE_VECTOR_PERSON_IN_CHARGE = EXAMPLE_USER_EMAIL;
 
-    public static final String EXAMPLE_CONCEPT_URI = "http://www.phenome-fppn.fr/vocabulary/2017#Document";
+    public static final String EXAMPLE_CONCEPT_URI = "http://www.opensilex.org/vocabulary/oeso#Document";
     public static final String EXAMPLE_DEEP = "true";
-    public static final String EXAMPLE_SIBLING_URI = "http://www.phenome-fppn.fr/vocabulary/2017#ScientificDocument";
+    public static final String EXAMPLE_SIBLING_URI = "http://www.opensilex.org/vocabulary/oeso#ScientificDocument";
 
     public static final String EXAMPLE_CONCEPT_LABEL = "'document'@en";
 
-    public static final String EXAMPLE_RDFTYPE_URI = "http://www.phenome-fppn.fr/vocabulary/2017#ScientificDocument";
+    public static final String EXAMPLE_RDFTYPE_URI = "http://www.opensilex.org/vocabulary/oeso#ScientificDocument";
     public static final String EXAMPLE_INSTANCE_URI = "http://www.phenome-fppn.fr/phenovia/documents/document90fb96ace2894cdb9f4575173d8ed4c9";
 
     public static final String EXAMPLE_WAS_GENERATED_BY_DOCUMENT = EXAMPLE_DOCUMENT_URI;
@@ -283,7 +283,7 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_SORTING_ALLOWABLE_VALUES = "asc,desc";
 
     public static final String EXAMPLE_INFRASTRUCTURE_URI = "http://www.phenome-fppn.fr/diaphen";
-    public static final String EXAMPLE_INFRASTRUCTURE_RDF_TYPE = "http://www.phenome-fppn.fr/vocabulary/2017#Infrastructure";
+    public static final String EXAMPLE_INFRASTRUCTURE_RDF_TYPE = "http://www.opensilex.org/vocabulary/oeso#Infrastructure";
     public static final String EXAMPLE_INFRASTRUCTURE_LABEL = "EMPHASIS";
     
     public static final String EXAMPLE_LANGUAGE = "en";

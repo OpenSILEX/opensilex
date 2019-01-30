@@ -41,7 +41,7 @@ import phis2ws.service.model.User;
 import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
-import phis2ws.service.ontologies.Vocabulary;
+import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.resources.dto.VectorDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.UriGenerator;
@@ -90,7 +90,7 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
         SPARQLQueryBuilder queryNumberVectors = new SPARQLQueryBuilder();
         queryNumberVectors.appendSelect("(COUNT(DISTINCT ?vector) AS ?count)");
         queryNumberVectors.appendTriplet("?vector", "<" + Rdf.RELATION_TYPE.toString() + ">", "?rdfType", null);
-        queryNumberVectors.appendTriplet("?rdfType", "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", "<" + Vocabulary.CONCEPT_VECTOR.toString() + ">", null);
+        queryNumberVectors.appendTriplet("?rdfType", "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", "<" + Oeso.CONCEPT_VECTOR.toString() + ">", null);
         queryNumberVectors.appendFilter("REGEX(STR(?vector), \".*/" + year + "/.*\")");
         
         LOGGER.debug(SPARQL_SELECT_QUERY + queryNumberVectors.toString());
@@ -133,16 +133,16 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
      * SELECT DISTINCT ?uri?rdfType ?label ?brand ?inServiceDate?dateOfPurchase 
      * WHERE {
      *      ?uri  ?0  ?rdfType  . 
-     *      ?rdfType  rdfs:subClassOf*  <http://www.phenome-fppn.fr/vocabulary/2017#Vector> . 
+     *      ?rdfType  rdfs:subClassOf*  <http://www.opensilex.org/vocabulary/oeso#Vector> . 
      *      OPTIONAL {
      *          ?uri rdfs:label ?label . 
      *      }
-     *      ?uri  <http://www.phenome-fppn.fr/vocabulary/2017#hasBrand>  ?brand  . 
+     *      ?uri  <http://www.opensilex.org/vocabulary/oeso#hasBrand>  ?brand  . 
      *      OPTIONAL {
-     *          ?uri <http://www.phenome-fppn.fr/vocabulary/2017#inServiceDate> ?inServiceDate . 
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#inServiceDate> ?inServiceDate . 
      *      }
      *      OPTIONAL {
-     *          ?uri <http://www.phenome-fppn.fr/vocabulary/2017#dateOfPurchase> ?dateOfPurchase . 
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#dateOfPurchase> ?dateOfPurchase . 
      * }}
      */
     @Override
@@ -163,7 +163,7 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
         } else {
             query.appendSelect("?" + RDF_TYPE);
             query.appendTriplet(sensorUri, "<" + Rdf.RELATION_TYPE.toString() + ">", "?" + RDF_TYPE, null);
-            query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", "<" + Vocabulary.CONCEPT_VECTOR.toString() + ">", null);
+            query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", "<" + Oeso.CONCEPT_VECTOR.toString() + ">", null);
         }        
 
         if (label != null) {
@@ -176,44 +176,44 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
         }
 
         if (brand != null) {
-            query.appendTriplet(sensorUri, Vocabulary.RELATION_HAS_BRAND.toString(), "\"" + brand + "\"", null);
+            query.appendTriplet(sensorUri, Oeso.RELATION_HAS_BRAND.toString(), "\"" + brand + "\"", null);
         } else {
             query.appendSelect(" ?" + BRAND);
-            query.appendTriplet(sensorUri, Vocabulary.RELATION_HAS_BRAND.toString(), "?" + BRAND, null);
+            query.appendTriplet(sensorUri, Oeso.RELATION_HAS_BRAND.toString(), "?" + BRAND, null);
         }
         
         if (serialNumber != null) {
-            query.appendTriplet(sensorUri, Vocabulary.RELATION_SERIAL_NUMBER.toString(), "\"" + serialNumber + "\"", null);
+            query.appendTriplet(sensorUri, Oeso.RELATION_SERIAL_NUMBER.toString(), "\"" + serialNumber + "\"", null);
         } else {
             query.appendSelect(" ?" + SERIAL_NUMBER);
             query.beginBodyOptional();
-            query.appendToBody(sensorUri + " <" + Vocabulary.RELATION_SERIAL_NUMBER.toString() + "> " + "?" + SERIAL_NUMBER + " .");
+            query.appendToBody(sensorUri + " <" + Oeso.RELATION_SERIAL_NUMBER.toString() + "> " + "?" + SERIAL_NUMBER + " .");
             query.endBodyOptional();
         }
 
         if (inServiceDate != null) {
-            query.appendTriplet(sensorUri, Vocabulary.RELATION_IN_SERVICE_DATE.toString(), "\"" + inServiceDate + "\"", null);
+            query.appendTriplet(sensorUri, Oeso.RELATION_IN_SERVICE_DATE.toString(), "\"" + inServiceDate + "\"", null);
         } else {
             query.appendSelect(" ?" + IN_SERVICE_DATE);
             query.beginBodyOptional();
-            query.appendToBody(sensorUri + " <" + Vocabulary.RELATION_IN_SERVICE_DATE.toString() + "> " + "?" + IN_SERVICE_DATE + " . ");
+            query.appendToBody(sensorUri + " <" + Oeso.RELATION_IN_SERVICE_DATE.toString() + "> " + "?" + IN_SERVICE_DATE + " . ");
             query.endBodyOptional();
         }
 
         if (dateOfPurchase != null) {
-            query.appendTriplet(sensorUri, Vocabulary.RELATION_DATE_OF_PURCHASE.toString(), "\"" + dateOfPurchase + "\"", null);
+            query.appendTriplet(sensorUri, Oeso.RELATION_DATE_OF_PURCHASE.toString(), "\"" + dateOfPurchase + "\"", null);
         } else {
             query.appendSelect("?" + DATE_OF_PURCHASE);
             query.beginBodyOptional();
-            query.appendToBody(sensorUri + " <" + Vocabulary.RELATION_DATE_OF_PURCHASE.toString() + "> " + "?" + DATE_OF_PURCHASE + " . ");
+            query.appendToBody(sensorUri + " <" + Oeso.RELATION_DATE_OF_PURCHASE.toString() + "> " + "?" + DATE_OF_PURCHASE + " . ");
             query.endBodyOptional();
         }
         
         if (personInCharge != null) {
-            query.appendTriplet(sensorUri, Vocabulary.RELATION_PERSON_IN_CHARGE.toString(), personInCharge, null);
+            query.appendTriplet(sensorUri, Oeso.RELATION_PERSON_IN_CHARGE.toString(), personInCharge, null);
         } else {
             query.appendSelect("?" + PERSON_IN_CHARGE);
-            query.appendTriplet(sensorUri, Vocabulary.RELATION_PERSON_IN_CHARGE.toString(), "?" + PERSON_IN_CHARGE, null);
+            query.appendTriplet(sensorUri, Oeso.RELATION_PERSON_IN_CHARGE.toString(), "?" + PERSON_IN_CHARGE, null);
         }
         
         query.appendLimit(this.getPageSize());
@@ -229,21 +229,21 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
      * @example 
      * SELECT DISTINCT  (count(distinct ?uri) as ?count) WHERE {
      *      ?uri  ?0  ?rdfType  . 
-     *      ?rdfType  rdfs:subClassOf*  <http://www.phenome-fppn.fr/vocabulary/2017#Vector> . 
+     *      ?rdfType  rdfs:subClassOf*  <http://www.opensilex.org/vocabulary/oeso#Vector> . 
      *      OPTIONAL {
      *          ?uri rdfs:label ?label . 
      *      }
-     *      ?uri  <http://www.phenome-fppn.fr/vocabulary/2017#hasBrand>  ?brand  . 
+     *      ?uri  <http://www.opensilex.org/vocabulary/oeso#hasBrand>  ?brand  . 
      *      OPTIONAL {
-     *          ?uri <http://www.phenome-fppn.fr/vocabulary/2017#serialNumber> ?serialNumber .
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#serialNumber> ?serialNumber .
      *      }
      *      OPTIONAL {
-     *          ?uri <http://www.phenome-fppn.fr/vocabulary/2017#inServiceDate> ?inServiceDate . 
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#inServiceDate> ?inServiceDate . 
      *      }
      *      OPTIONAL {
-     *          ?uri <http://www.phenome-fppn.fr/vocabulary/2017#dateOfPurchase> ?dateOfPurchase . 
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#dateOfPurchase> ?dateOfPurchase . 
      *      }
-     *      ?uri  <http://www.phenome-fppn.fr/vocabulary/2017#personInCharge>  ?personInCharge  . 
+     *      ?uri  <http://www.opensilex.org/vocabulary/oeso#personInCharge>  ?personInCharge  . 
      * }
      * @return Query generated to count the elements, with the searched parameters
      */
@@ -283,7 +283,7 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
      * @example
      * SELECT  (count(distinct ?uri) as ?count) 
      * WHERE {
-     *      ?rdfType  rdfs:subClassOf*  <http://www.phenome-fppn.fr/vocabulary/2017#UAV> . 
+     *      ?rdfType  rdfs:subClassOf*  <http://www.opensilex.org/vocabulary/oeso#UAV> . 
      *      ?uri  rdf:type  ?rdfType  . 
      *      ?uri  rdfs:label  ?label  . 
      * }
@@ -306,7 +306,7 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
      * @example
      * SELECT  (count(distinct ?uri) as ?count) 
      * WHERE {
-     *      ?rdfType  rdfs:subClassOf*  <http://www.phenome-fppn.fr/vocabulary/2017#UAV> . 
+     *      ?rdfType  rdfs:subClassOf*  <http://www.opensilex.org/vocabulary/oeso#UAV> . 
      *      ?uri  rdf:type  ?rdfType  . 
      *      ?uri  rdfs:label  ?label  . 
      * }
@@ -332,7 +332,7 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
      * @example
      * SELECT ?uri WHERE {
      *  ?uri  rdf:type  ?type  . 
-     *  ?type  rdfs:subClassOf*  <http://www.phenome-fppn.fr/vocabulary/2017#Vector> . 
+     *  ?type  rdfs:subClassOf*  <http://www.opensilex.org/vocabulary/oeso#Vector> . 
      *  FILTER ( regex(str(?uri), ".*\/2018/.*") ) 
      * }
      * ORDER BY desc(?uri)
@@ -342,7 +342,7 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
         
         query.appendSelect("?" + URI);
         query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?type", null);
-        query.appendTriplet("?type", "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_VECTOR.toString(), null);
+        query.appendTriplet("?type", "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_VECTOR.toString(), null);
         query.appendFilter("regex(str(?uri), \".*/" + year + "/.*\")");
         query.appendOrderBy("desc(?uri)");
         query.appendLimit(1);
@@ -486,7 +486,7 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
                 try {
                     //2.1 check type (subclass of Vector)
                     UriDaoSesame uriDaoSesame = new UriDaoSesame();
-                    if (!uriDaoSesame.isSubClassOf(vectorDTO.getRdfType(), Vocabulary.CONCEPT_VECTOR.toString())) {
+                    if (!uriDaoSesame.isSubClassOf(vectorDTO.getRdfType(), Oeso.CONCEPT_VECTOR.toString())) {
                         dataOk = false;
                         checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Bad vector type given"));
                     }
@@ -516,13 +516,13 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
      * e.g.
      * INSERT DATA {
      *  GRAPH <http://www.phenome-fppn.fr/diaphen/vectors> { 
-     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  rdf:type  <http://www.phenome-fppn.fr/vocabulary/2017#UAV> . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  rdf:type  <http://www.opensilex.org/vocabulary/oeso#UAV> . 
      *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  rdfs:label  "par03_p"  . 
-     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.phenome-fppn.fr/vocabulary/2017#hasBrand>  "Skye Instruments"  . 
-     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.phenome-fppn.fr/vocabulary/2017#inServiceDate>  "2017-06-15"  . 
-     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.phenome-fppn.fr/vocabulary/2017#personInCharge>  "morgane.vidal@inra.fr"  . 
-     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.phenome-fppn.fr/vocabulary/2017#serialNumber>  "A1E345F32"  . 
-     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.phenome-fppn.fr/vocabulary/2017#dateOfPurchase>  "2017-06-15"  . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.opensilex.org/vocabulary/oeso#hasBrand>  "Skye Instruments"  . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.opensilex.org/vocabulary/oeso#inServiceDate>  "2017-06-15"  . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.opensilex.org/vocabulary/oeso#personInCharge>  "morgane.vidal@inra.fr"  . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.opensilex.org/vocabulary/oeso#serialNumber>  "A1E345F32"  . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.opensilex.org/vocabulary/oeso#dateOfPurchase>  "2017-06-15"  . 
      *  }
      * }
      * @param vector
@@ -539,20 +539,20 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
                 
         query.addInsert(graph, vectorUri, RDFS.label, vector.getLabel());
 
-        Property relationHasBrand = ResourceFactory.createProperty(Vocabulary.RELATION_HAS_BRAND.toString());
-        Property relationInServiceDate = ResourceFactory.createProperty(Vocabulary.RELATION_IN_SERVICE_DATE.toString());
-        Property relationPersonInCharge = ResourceFactory.createProperty(Vocabulary.RELATION_PERSON_IN_CHARGE.toString());
+        Property relationHasBrand = ResourceFactory.createProperty(Oeso.RELATION_HAS_BRAND.toString());
+        Property relationInServiceDate = ResourceFactory.createProperty(Oeso.RELATION_IN_SERVICE_DATE.toString());
+        Property relationPersonInCharge = ResourceFactory.createProperty(Oeso.RELATION_PERSON_IN_CHARGE.toString());
         
         query.addInsert(graph, vectorUri, relationHasBrand, vector.getBrand());
         query.addInsert(graph, vectorUri, relationInServiceDate, vector.getInServiceDate());
         query.addInsert(graph, vectorUri, relationPersonInCharge, vector.getPersonInCharge());
         
         if (vector.getSerialNumber() != null) {
-            Property relationSerialNumber = ResourceFactory.createProperty(Vocabulary.RELATION_SERIAL_NUMBER.toString());
+            Property relationSerialNumber = ResourceFactory.createProperty(Oeso.RELATION_SERIAL_NUMBER.toString());
             query.addInsert(graph, vectorUri, relationSerialNumber, vector.getSerialNumber());
         }
         if (vector.getDateOfPurchase() != null) {
-            Property relationDateOfPurchase = ResourceFactory.createProperty(Vocabulary.RELATION_DATE_OF_PURCHASE.toString());
+            Property relationDateOfPurchase = ResourceFactory.createProperty(Oeso.RELATION_DATE_OF_PURCHASE.toString());
             query.addInsert(graph, vectorUri, relationDateOfPurchase, vector.getDateOfPurchase());
         }
         
@@ -619,12 +619,12 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
      * e.g.
      * DELETE DATA { 
      *  GRAPH <http://www.phenome-fppn.fr/diaphen/vectors> { 
-     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142> rdf:type <http://www.phenome-fppn.fr/vocabulary/2017#UAV> . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142> rdf:type <http://www.opensilex.org/vocabulary/oeso#UAV> . 
      *      <http://www.phenome-fppn.fr/diaphen/2018/v18142> rdfs:label "par03_p" . 
-     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142> <http://www.phenome-fppn.fr/vocabulary/2017#hasBrand> "Skye Instruments" . 
-     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142> <http://www.phenome-fppn.fr/vocabulary/2017#inServiceDate> "2017-06-15" . 
-     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142> <http://www.phenome-fppn.fr/vocabulary/2017#personInCharge> "morgane.vidal@inra.fr" . 
-     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142> <http://www.phenome-fppn.fr/vocabulary/2017#serialNumber> "A1E345F32" .
+     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142> <http://www.opensilex.org/vocabulary/oeso#hasBrand> "Skye Instruments" . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142> <http://www.opensilex.org/vocabulary/oeso#inServiceDate> "2017-06-15" . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142> <http://www.opensilex.org/vocabulary/oeso#personInCharge> "morgane.vidal@inra.fr" . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142> <http://www.opensilex.org/vocabulary/oeso#serialNumber> "A1E345F32" .
      *   }
      * }
      * @param vector
@@ -641,20 +641,20 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
                 
         query.addDelete(graph, vectorUri, RDFS.label, vector.getLabel());
 
-        Property relationHasBrand = ResourceFactory.createProperty(Vocabulary.RELATION_HAS_BRAND.toString());
-        Property relationInServiceDate = ResourceFactory.createProperty(Vocabulary.RELATION_IN_SERVICE_DATE.toString());
-        Property relationPersonInCharge = ResourceFactory.createProperty(Vocabulary.RELATION_PERSON_IN_CHARGE.toString());
+        Property relationHasBrand = ResourceFactory.createProperty(Oeso.RELATION_HAS_BRAND.toString());
+        Property relationInServiceDate = ResourceFactory.createProperty(Oeso.RELATION_IN_SERVICE_DATE.toString());
+        Property relationPersonInCharge = ResourceFactory.createProperty(Oeso.RELATION_PERSON_IN_CHARGE.toString());
         
         query.addDelete(graph, vectorUri, relationHasBrand, vector.getBrand());
         query.addDelete(graph, vectorUri, relationInServiceDate, vector.getInServiceDate());
         query.addDelete(graph, vectorUri, relationPersonInCharge, vector.getPersonInCharge());
         
         if (vector.getSerialNumber() != null) {
-            Property relationSerialNumber = ResourceFactory.createProperty(Vocabulary.RELATION_SERIAL_NUMBER.toString());
+            Property relationSerialNumber = ResourceFactory.createProperty(Oeso.RELATION_SERIAL_NUMBER.toString());
             query.addDelete(graph, vectorUri, relationSerialNumber, vector.getSerialNumber());
         }
         if (vector.getDateOfPurchase() != null) {
-            Property relationDateOfPurchase = ResourceFactory.createProperty(Vocabulary.RELATION_DATE_OF_PURCHASE.toString());
+            Property relationDateOfPurchase = ResourceFactory.createProperty(Oeso.RELATION_DATE_OF_PURCHASE.toString());
             query.addDelete(graph, vectorUri, relationDateOfPurchase, vector.getDateOfPurchase());
         }
         
@@ -773,7 +773,7 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
      * Generates the query to get the uri, label and rdf type of all the uav
      * @example
      * SELECT DISTINCT  ?uri ?label ?rdfType WHERE {
-     *      ?uri  rdfs:subClassOf*  <http://www.phenome-fppn.fr/vocabulary/2017#UAV> . 
+     *      ?uri  rdfs:subClassOf*  <http://www.opensilex.org/vocabulary/oeso#UAV> . 
      *      ?uri rdf:type ?rdfType .
      *      ?uri  rdfs:label  ?label  .
      * }
@@ -783,7 +783,7 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         
         query.appendSelect("?" + URI + " ?" + RDF_TYPE + " ?" + LABEL );
-        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_UAV.toString(), null);
+        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_UAV.toString(), null);
         query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
         query.appendTriplet("?" + URI, Rdfs.RELATION_LABEL.toString(), "?" + LABEL, null);
         query.appendOrderBy("desc(?" + LABEL + ")");

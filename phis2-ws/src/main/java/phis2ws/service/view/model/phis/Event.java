@@ -16,7 +16,7 @@ import org.joda.time.DateTime;
  */
 public class Event extends RdfResourceDefinition {
     
-    // type eg. http://www.phenome-fppn.fr/vocabulary/2018/oeev#MoveFrom
+    // type eg. http://www.opensilex.org/vocabulary/oeev#MoveFrom
     private String type;
     
     // concerned items

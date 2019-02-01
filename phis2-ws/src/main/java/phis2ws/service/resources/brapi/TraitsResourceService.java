@@ -207,7 +207,7 @@ public class TraitsResourceService implements BrapiCall {
         @ApiParam(value = DocumentationAnnotation.TRAIT_URI_DEFINITION, required = true, example=DocumentationAnnotation.EXAMPLE_TRAIT_URI) @PathParam("traitDbId") @Required @URL String traitDbId
     ) throws SQLException {        
         TraitDaoSesame traitDAO = new TraitDaoSesame(traitDbId);           
-        return getTraitsData(traitDAO);
+        return getOneTraitData(traitDAO);
     }    
     
     /**
@@ -221,39 +221,61 @@ public class TraitsResourceService implements BrapiCall {
         getResponse.getMetadata().setStatus(insertStatusList);
         return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
     }
-    
-    /**
-     * Search Traits corresponding to search params given by a user
-     * @param BrapiTraitDAO
-     * @return the traits available in the system
+        /**
+     * Return variable data for the service GET traits with a list of elements in the result
+     * @param traitDAO
+     * @return the response with the traits data list 
      */
     private Response getTraitsData(TraitDaoSesame traitDAO) {
         ArrayList<Status> statusList = new ArrayList<>();
-        ArrayList<Trait> traits = traitDAO.allPaginate();                
-        BrapiMultiResponseForm getResponse;           
-                
-        if (traits == null) {
-            getResponse = new BrapiMultiResponseForm(0, 0, traits, true);
+        ArrayList<BrapiTraitDTO> brapiTraits = getBrapiTraitsData(traitDAO);
+        BrapiMultiResponseForm getResponse;
+        if (!brapiTraits.isEmpty()) {
+            getResponse = new BrapiMultiResponseForm(traitDAO.getPageSize(), traitDAO.getPage(), brapiTraits, false);
+            getResponse.getMetadata().setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
+        } else {
+            getResponse = new BrapiMultiResponseForm(0, 0, brapiTraits, true);
             return noResultFound(getResponse, statusList);
-        } else if (!traits.isEmpty()) {
-            ArrayList<BrapiTraitDTO> brapiTraits= new ArrayList();
+        }
+    }
+    
+    /**
+     * Return trait data for the service  GET traits/traitDbId: only one element in the result
+     * @param traitDAO
+     * @return the response with one trait data
+     */
+    private Response getOneTraitData(TraitDaoSesame traitDAO) {
+        ArrayList<Status> statusList = new ArrayList<>();
+        ArrayList<BrapiTraitDTO> brapiTraits = getBrapiTraitsData(traitDAO);
+        BrapiSingleResponseForm getResponse;
+        if (!brapiTraits.isEmpty()){
+            BrapiTraitDTO trait = brapiTraits.get(0);
+            getResponse = new BrapiSingleResponseForm(trait);
+            getResponse.getMetadata().setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
+        } else {
+            BrapiMultiResponseForm getNoResponse = new BrapiMultiResponseForm(0, 0, brapiTraits, true);
+            return noResultFound(getNoResponse, statusList);
+        }
+    } 
+    
+    /**
+     * Get list of brapi traits from the TraitDAO corresponding to the user search query
+     * @param BrapiTraitDAO
+     * @return the traits available in the system
+     */
+    private ArrayList<BrapiTraitDTO> getBrapiTraitsData(TraitDaoSesame traitDAO) {
+        ArrayList<Trait> traits = traitDAO.allPaginate();  
+        ArrayList<BrapiTraitDTO> brapiTraits = new ArrayList();          
+                
+        if (!traits.isEmpty()) {
             for (Trait trait:traits) {
                 BrapiTraitDTO brapiTrait = new BrapiTraitDTO(trait);
                 brapiTrait.setObservationVariables(traitDAO.getVariableFromTrait(trait));
                 brapiTraits.add(brapiTrait);
             }
-            if (traits.size() == 1) {
-                BrapiSingleResponseForm getSingleResponse = new BrapiSingleResponseForm(brapiTraits.get(0));
-                getSingleResponse.getMetadata().setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(getSingleResponse).build();
-            } else {
-                getResponse = new BrapiMultiResponseForm(traitDAO.getPageSize(), traitDAO.getPage(), brapiTraits, false);
-                getResponse.getMetadata().setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(getResponse).build();
-            }
-        } else {
-            getResponse = new BrapiMultiResponseForm(0, 0, traits, true);
-            return noResultFound(getResponse, statusList);
         }
+        return brapiTraits;
     }
 }

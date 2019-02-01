@@ -15,7 +15,7 @@ import phis2ws.service.resources.dto.ConcernedItemWithLabelsDTO;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyDTO;
 import phis2ws.service.utils.dates.Dates;
-import phis2ws.service.view.model.phis.ConcernItem;
+import phis2ws.service.view.model.phis.ConcernedItem;
 import phis2ws.service.view.model.phis.Event;
 import phis2ws.service.view.model.phis.Property;
 
@@ -69,7 +69,7 @@ public class EventDTO extends AbstractVerifiedClass {
             modelProperties.add(property.createObjectFromDTO());
         });
         
-        ArrayList<ConcernItem> modelConcernedItems = new ArrayList<>();
+        ArrayList<ConcernedItem> modelConcernedItems = new ArrayList<>();
         this.concernedItems.forEach((concernedItem) -> {
             modelConcernedItems.add(concernedItem.createObjectFromDTO());
         });

@@ -14,6 +14,7 @@ package phis2ws.service.view.model.phis;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.HashMap;
 import java.util.Map;
+import phis2ws.service.documentation.DocumentationAnnotation;
 
 /**
  * Model of the Uri object
@@ -25,7 +26,7 @@ public class Uri {
     private Map<String, String> properties = new HashMap<>();
     private Map<String,String> annotations = new HashMap<>();
     
-    @ApiModelProperty(example = "http://www.phenome-fppn.fr/vocabulary/2017#Document")
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI)
     public String getUri() {
         return uri;
     }

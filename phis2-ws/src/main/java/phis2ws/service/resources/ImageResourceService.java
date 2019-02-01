@@ -1,12 +1,9 @@
 //**********************************************************************************************
-//                                       ImageResourceService.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
-// Creation date: December, 8 2017
+//                                       ImageResourceService.java
+// PHIS-SILEX
+// Copyright © INRA 2017
+// Creation date: Dec., 8 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  January, 03 2018
 // Subject: Represents the images data service
 //***********************************************************************************************
 package phis2ws.service.resources;
@@ -60,7 +57,7 @@ import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.mongo.ImageMetadataDaoMongo;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.ontologies.Vocabulary;
+import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.resources.dto.ImageMetadataDTO;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
@@ -77,6 +74,7 @@ import phis2ws.service.view.model.phis.ImageMetadata;
 /**
  * Represents the images service
  * @author Morgane Vidal 
+ * @update [Andréas Garcia] Jan., 2019 : modify "concern(s)" occurences into "concernedItem(s)"
  */
 @Api("/images")
 @Path("/images")
@@ -100,7 +98,7 @@ public class ImageResourceService extends ResourceService {
      * metadata wanted for each image : 
      *              { 
      *                  rdfType,
-     *                  concern [
+     *                  concernedItems [
      *                      {
      *                          uri,
      *                          typeURI
@@ -152,7 +150,7 @@ public class ImageResourceService extends ResourceService {
                     
                     //generates the imageUri
                     UriGenerator uriGenerator = new UriGenerator();
-                    final String imageUri = uriGenerator.generateNewInstanceUri(Vocabulary.CONCEPT_IMAGE.toString(), Year.now().toString(), lastGeneratedUri);
+                    final String imageUri = uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_IMAGE.toString(), Year.now().toString(), lastGeneratedUri);
                     lastGeneratedUri = imageUri;
                     
                     final String uploadLink = uploadPath.path("images").path("upload").queryParam("uri", imageUri).toString();
@@ -202,7 +200,7 @@ public class ImageResourceService extends ResourceService {
      */
     private String getServerImagesDirectory() {
         return PropertiesFileManager.getConfigFileProperty("service", "uploadImageServerDirectory") + "/"
-                + PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "platform") + "/" 
+                + PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "infrastructure") + "/" 
                 + Year.now().toString();
     }
     
@@ -213,7 +211,7 @@ public class ImageResourceService extends ResourceService {
      */
     private String getWebAccessImagesDirectory() {
         return PropertiesFileManager.getConfigFileProperty("service", "imageFileServerDirectory") + "/"
-                + PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "platform") + "/" 
+                + PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "infrastructure") + "/" 
                 + Year.now().toString();
     }
     
@@ -288,7 +286,7 @@ public class ImageResourceService extends ResourceService {
         final String serverFileName = getImageName(imageUri) + "." + WAITING_METADATA_INFORMATION.get(imageUri).getFileInformations().getExtension();
         final String serverImagesDirectory = getServerImagesDirectory();
         final String webAccessImagesDirectory = getWebAccessImagesDirectory();
-        
+    
         try {
             WAITING_METADATA_FILE_CHECK.put(imageUri, Boolean.TRUE);
             //SILEX:test
@@ -297,7 +295,7 @@ public class ImageResourceService extends ResourceService {
         } catch (SftpException e) {
             try {
                 //Create repository if it does not exist
-                jsch.getChannelSftp().mkdir(serverImagesDirectory);
+                jsch.createNestedDirectories(serverImagesDirectory);
                 jsch.getChannelSftp().cd(serverImagesDirectory);
                 LOGGER.debug("Create directory : " + serverImagesDirectory);
             } catch (SftpException ex) {
@@ -372,7 +370,7 @@ public class ImageResourceService extends ResourceService {
      * @param pageSize
      * @param page
      * @param uri image uri (e.g http://www.phenome-fppn.fr/phis_field/2017/i170000000000)
-     * @param rdfType image type (e.g http://www.phenome-fppn.fr/vocabulary/2017#HemisphericalImage)
+     * @param rdfType image type (e.g http://www.opensilex.org/vocabulary/oeso#HemisphericalImage)
      * @param concernedItems uris of the items concerned by the searched image(s), separated by ";". (e.g http://phenome-fppn.fr/phis_field/ao1;http://phenome-fppn.fr/phis_field/ao2)
      * @param startDate start date of the shooting. Format YYYY-MM-DD (e.g 2015-07-07)
      * @param endDate end date of the shooting. Format YYYY-MM-DD (e.g 2015-07-08)
@@ -383,7 +381,7 @@ public class ImageResourceService extends ResourceService {
      *              { //first image description
      *                  uri,
      *                  rdfType,
-     *                  concern [
+     *                  concernedItems [
      *                      {
      *                          uri,
      *                          rdfType
@@ -423,7 +421,7 @@ public class ImageResourceService extends ResourceService {
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
         @ApiParam(value = "Search by image uri", example = DocumentationAnnotation.EXAMPLE_IMAGE_URI) @QueryParam("uri") @URL String uri,
         @ApiParam(value = "Search by image type", example = DocumentationAnnotation.EXAMPLE_IMAGE_TYPE) @QueryParam("rdfType") @URL String rdfType,
-        @ApiParam(value = "Search by concerned item uri - each concerned item uri must be separated by ;", example = DocumentationAnnotation.EXAMPLE_IMAGE_CONCERNED_ITEMS) @QueryParam("concernedItems") String concernedItems,
+        @ApiParam(value = "Search by concerned item uri - each concerned item uri must be separated by \";\"", example = DocumentationAnnotation.EXAMPLE_IMAGE_CONCERNED_ITEMS) @QueryParam("concernedItems") String concernedItems,
         @ApiParam(value = "Search by interval - start date", example = DocumentationAnnotation.EXAMPLE_IMAGE_DATE) @QueryParam("startDate") @phis2ws.service.resources.validation.interfaces.Date(DateFormat.YMDHMSZ) String startDate,
         @ApiParam(value = "Search by interval - end date", example = DocumentationAnnotation.EXAMPLE_IMAGE_DATE) @QueryParam("endDate") @phis2ws.service.resources.validation.interfaces.Date(DateFormat.YMDHMSZ) String endDate,
         @ApiParam(value = "Search by sensor", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("sensor") @URL String sensor) {

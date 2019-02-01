@@ -20,7 +20,7 @@ import phis2ws.service.view.model.phis.Property;
  */
 public class InfrastructureDTO extends RdfResourceDefinitionDTO {
     
-    //infrastructure type eg. http://www.phenome-fppn.fr/vocabulary/2017#LocalInfrastructure
+    //infrastructure type eg. http://www.opensilex.org/vocabulary/oeso#LocalInfrastructure
     private String rdfType;
 
     //infrastructure type label eg. European Infrastructure

@@ -18,7 +18,7 @@ import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.dao.phis.ExperimentDao;
 import phis2ws.service.dao.phis.UserDaoPhisBrapi;
 import phis2ws.service.model.User;
-import phis2ws.service.ontologies.Vocabulary;
+import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.resources.dto.acquisitionSession.MetadataFileDTO;
 import phis2ws.service.resources.dto.acquisitionSession.MetadataFilePhenomobileDTO;
 import phis2ws.service.resources.dto.acquisitionSession.MetadataFileUAVDTO;
@@ -40,7 +40,7 @@ public class AcquisitionSessionDAOSesame extends DAOSesame<Object> {
     
     //The rdf type of the vector concerned by the acquisition session. 
     //Used in the GET fileMetadata to generate the informations for the file of definition the acquisition session for 4P.
-    //e.g. http://www.phenome-fppn.fr/vocabulary/2017#UAV
+    //e.g. http://www.opensilex.org/vocabulary/oeso#UAV
     public String vectorRdfType;
 
     @Override
@@ -63,8 +63,8 @@ public class AcquisitionSessionDAOSesame extends DAOSesame<Object> {
         ArrayList<Integer> sizes = new ArrayList<>();
         
         //if the vector is an uav or a field robot, it has specific file metadata
-        if (uriDaoSesame.isSubClassOf(vectorRdfType, Vocabulary.CONCEPT_FIELD_ROBOT.toString())
-                || uriDaoSesame.isSubClassOf(vectorRdfType, Vocabulary.CONCEPT_UAV.toString())) {
+        if (uriDaoSesame.isSubClassOf(vectorRdfType, Oeso.CONCEPT_FIELD_ROBOT.toString())
+                || uriDaoSesame.isSubClassOf(vectorRdfType, Oeso.CONCEPT_UAV.toString())) {
             //Common metadata
             //1. get the number of group plots (just the experiments in this version)
             ExperimentDao experimentDAO = new ExperimentDao();
@@ -78,15 +78,15 @@ public class AcquisitionSessionDAOSesame extends DAOSesame<Object> {
             sizes.add(1);
             
             //uav
-            if (uriDaoSesame.isSubClassOf(vectorRdfType, Vocabulary.CONCEPT_UAV.toString())) {
+            if (uriDaoSesame.isSubClassOf(vectorRdfType, Oeso.CONCEPT_UAV.toString())) {
                 //3. get the number of cameras
                 SensorDAOSesame sensorDAO = new SensorDAOSesame();
-                sensorDAO.rdfType = Vocabulary.CONCEPT_CAMERA.toString();
+                sensorDAO.rdfType = Oeso.CONCEPT_CAMERA.toString();
                 sizes.add(sensorDAO.countCameras());
 
                 //4. get the number of vectors
                 VectorDAOSesame vectorDAO = new VectorDAOSesame();
-                vectorDAO.rdfType = Vocabulary.CONCEPT_UAV.toString();
+                vectorDAO.rdfType = Oeso.CONCEPT_UAV.toString();
                 sizes.add(vectorDAO.countUAVs());
 
                 //5. get the number of radiometric targets
@@ -119,8 +119,8 @@ public class AcquisitionSessionDAOSesame extends DAOSesame<Object> {
         ArrayList<RadiometricTarget> radiometricTargets = new ArrayList<>();
         
         //if the vector is an uav or a field robot, it has specific file metadata
-        if (uriDaoSesame.isSubClassOf(vectorRdfType, Vocabulary.CONCEPT_FIELD_ROBOT.toString())
-                || uriDaoSesame.isSubClassOf(vectorRdfType, Vocabulary.CONCEPT_UAV.toString())) {
+        if (uriDaoSesame.isSubClassOf(vectorRdfType, Oeso.CONCEPT_FIELD_ROBOT.toString())
+                || uriDaoSesame.isSubClassOf(vectorRdfType, Oeso.CONCEPT_UAV.toString())) {
             //Common metadata
             //1. get the group plot list with the alias, uri and species (just the experiments in this version)
             ExperimentDao experimentDAO = new ExperimentDao();
@@ -137,10 +137,10 @@ public class AcquisitionSessionDAOSesame extends DAOSesame<Object> {
             sizes.add(users.size());
             
             //3. platform
-            installations.add(Vocabulary.PLATFORM_URI.toString());
+            installations.add(Oeso.PLATFORM_URI.toString());
             
             //Metadata for the uav
-            if (uriDaoSesame.isSubClassOf(vectorRdfType, Vocabulary.CONCEPT_UAV.toString())) {
+            if (uriDaoSesame.isSubClassOf(vectorRdfType, Oeso.CONCEPT_UAV.toString())) {
                 //3. get the camera list
                 SensorDAOSesame sensorDAO = new SensorDAOSesame();
                 sensorDAO.setPage(page);
@@ -167,7 +167,7 @@ public class AcquisitionSessionDAOSesame extends DAOSesame<Object> {
         //generates the file metadata list
         int maxListSize = Collections.max(sizes);
         //field robot metadata
-        if (uriDaoSesame.isSubClassOf(vectorRdfType, Vocabulary.CONCEPT_FIELD_ROBOT.toString())) {
+        if (uriDaoSesame.isSubClassOf(vectorRdfType, Oeso.CONCEPT_FIELD_ROBOT.toString())) {
             for (int i = 0; i < maxListSize; i++) {
                 MetadataFilePhenomobileDTO fileMetadata = new MetadataFilePhenomobileDTO();
                 
@@ -175,7 +175,7 @@ public class AcquisitionSessionDAOSesame extends DAOSesame<Object> {
                     fileMetadata.setGroupPlotUri(experiments.get(i).getUri());
                     fileMetadata.setGroupPlotAlias(experiments.get(i).getAlias());
                     fileMetadata.setGroupPlotSpecies(experiments.get(i).getCropSpecies());
-                    fileMetadata.setGroupPlotType(Vocabulary.CONCEPT_EXPERIMENT.toString());
+                    fileMetadata.setGroupPlotType(Oeso.CONCEPT_EXPERIMENT.toString());
                 }
 
                 if (users.size() > i) {
@@ -184,20 +184,20 @@ public class AcquisitionSessionDAOSesame extends DAOSesame<Object> {
                 
                 fileMetadataList.add(fileMetadata);
             }
-        } else if (uriDaoSesame.isSubClassOf(vectorRdfType, Vocabulary.CONCEPT_UAV.toString())) {
+        } else if (uriDaoSesame.isSubClassOf(vectorRdfType, Oeso.CONCEPT_UAV.toString())) {
             //uav metadata
             for (int i = 0; i < maxListSize; i++) {
                 MetadataFileUAVDTO fileMetadata = new MetadataFileUAVDTO();
                 
                 if (installations.size() > i) {
-                    fileMetadata.setInstallation(Vocabulary.PLATFORM_URI.toString());
+                    fileMetadata.setInstallation(Oeso.PLATFORM_URI.toString());
                 }
                 
                 if (experiments.size() > i) {
                     fileMetadata.setGroupPlotUri(experiments.get(i).getUri());
                     fileMetadata.setGroupPlotAlias(experiments.get(i).getAlias());
                     fileMetadata.setGroupPlotSpecies(experiments.get(i).getCropSpecies());
-                    fileMetadata.setGroupPlotType(Vocabulary.CONCEPT_EXPERIMENT.toString());
+                    fileMetadata.setGroupPlotType(Oeso.CONCEPT_EXPERIMENT.toString());
                 }
 
                 if (users.size() > i) {
@@ -237,7 +237,7 @@ public class AcquisitionSessionDAOSesame extends DAOSesame<Object> {
     public ArrayList<MetadataFileDTO> allPaginateFileMetadata() {
         //Check if the rdf type is a subclass of vector
         UriDaoSesame uriDAOSesame = new UriDaoSesame();
-        if (uriDAOSesame.isSubClassOf(vectorRdfType, Vocabulary.CONCEPT_VECTOR.toString())) {
+        if (uriDAOSesame.isSubClassOf(vectorRdfType, Oeso.CONCEPT_VECTOR.toString())) {
             return getFileMetadata();
         } else {
             return null;

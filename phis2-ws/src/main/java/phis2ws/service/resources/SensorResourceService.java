@@ -156,7 +156,7 @@ public class SensorResourceService extends ResourceService {
      *          "data": [
      *              {
      *                  "uri": "http://www.phenome-fppn.fr/diaphen/2018/s18001",
-     *                  "rdfType": "http://www.phenome-fppn.fr/vocabulary/2017#LevelMeasurementRainGauge",
+     *                  "rdfType": "http://www.opensilex.org/vocabulary/oeso#LevelMeasurementRainGauge",
      *                  "label": "alias",
      *                  "brand": "brand",
      *                  "serialNumber": "E1ISHFUSK2345",
@@ -251,7 +251,7 @@ public class SensorResourceService extends ResourceService {
      *          "data": [
      *              {
      *                 "uri": "http://www.phenome-fppn.fr/diaphen/2018/s18025",
-     *                 "rdfType": "http://www.phenome-fppn.fr/vocabulary/2017#HumiditySensor",
+     *                 "rdfType": "http://www.opensilex.org/vocabulary/oeso#HumiditySensor",
      *                 "label": "aria_hr1_p",
      *                 "brand": "unknown",
      *                 "serialNumber": null,
@@ -327,7 +327,7 @@ public class SensorResourceService extends ResourceService {
      *                      {
      *                         "rdfType": null,
      *                         "relation": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-     *                         "value": "http://www.phenome-fppn.fr/vocabulary/2017#MultispectralCamera"
+     *                         "value": "http://www.opensilex.org/vocabulary/oeso#MultispectralCamera"
      *                       },
      *                       {
      *                         "rdfType": null,
@@ -381,7 +381,7 @@ public class SensorResourceService extends ResourceService {
      * @param sensors list of sensors to insert.
      *                e.g.
      * {
-     *      "rdfType": "http://www.phenome-fppn.fr/vocabulary/2017#Thermocouple",
+     *      "rdfType": "http://www.opensilex.org/vocabulary/oeso#Thermocouple",
      *      "label": "tcorg0001",
      *      "brand": "Homemade",
      *      "serialNumber": "A1E345F32",
@@ -447,7 +447,7 @@ public class SensorResourceService extends ResourceService {
      * [
      *      {
      *          "uri": "http://www.phenome-fppn.fr/diaphen/2018/s18142",
-     *          "rdfType": "http://www.phenome-fppn.fr/vocabulary/2017#Thermocouple",
+     *          "rdfType": "http://www.opensilex.org/vocabulary/oeso#Thermocouple",
      *          "label": "testNewLabel",
      *          "brand": "Skye Instrdfgduments",
      *          "serialNumber": "A1E34qsf5F32",

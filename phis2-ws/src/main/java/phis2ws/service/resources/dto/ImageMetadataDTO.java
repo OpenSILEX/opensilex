@@ -1,12 +1,9 @@
 //**********************************************************************************************
-//                                       ImageMetadata.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
-// Creation date: December, 8 2017
+//                                       ImageMetadata.java
+// PHIS-SILEX
+// Copyright © INRA 2017
+// Creation date: Dec., 8 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  December, 8 2017
 // Subject: Represents the submitted JSON for the images
 //***********************************************************************************************
 package phis2ws.service.resources.dto;
@@ -23,11 +20,12 @@ import phis2ws.service.view.model.phis.ImageMetadata;
 /**
  * corresponds to the submitted JSON for the images metadata
  * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @update [Andréas Garcia] Jan., 2019 : modify "concern(s)" occurences into "concernedItem(s)"
  */
 public class ImageMetadataDTO extends AbstractVerifiedClass {
     
     private String rdfType;
-    private List<ConcernItemDTO> concern;
+    private List<ConcernItemDTO> concernedItems;
     private ShootingConfigurationDTO configuration;
     private FileInformationDTO fileInfo;
 
@@ -35,8 +33,8 @@ public class ImageMetadataDTO extends AbstractVerifiedClass {
     public ImageMetadata createObjectFromDTO() {
        ImageMetadata imageMetadata = new ImageMetadata();
        imageMetadata.setRdfType(rdfType);
-       for (ConcernItemDTO concernItemDTO : concern) {
-           imageMetadata.addConcernedItem(concernItemDTO.createObjectFromDTO());
+       for (ConcernItemDTO concernedItemDTO : concernedItems) {
+           imageMetadata.addConcernedItem(concernedItemDTO.createObjectFromDTO());
        }
        
        imageMetadata.setConfiguration(configuration.createObjectFromDTO());
@@ -57,12 +55,12 @@ public class ImageMetadataDTO extends AbstractVerifiedClass {
     }
     
     @Valid
-    public List<ConcernItemDTO> getConcern() {
-        return concern;
+    public List<ConcernItemDTO> getConcernedItems() {
+        return concernedItems;
     }
 
-    public void setConcern(List<ConcernItemDTO> concern) {
-        this.concern = concern;
+    public void setConcernedItems(List<ConcernItemDTO> concernedItems) {
+        this.concernedItems = concernedItems;
     }
 
     @Valid

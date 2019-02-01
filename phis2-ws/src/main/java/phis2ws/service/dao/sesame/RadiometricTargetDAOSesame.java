@@ -36,7 +36,7 @@ import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
-import phis2ws.service.ontologies.Vocabulary;
+import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
@@ -62,7 +62,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
      * Generates the query to get the uri and the label of the radiometric targets
      * @example
      * SELECT DISTINCT  ?uri ?label WHERE {
-     *      ?uri  rdf:type  <http://www.phenome-fppn.fr/vocabulary/2017#RadiometricTarget> . 
+     *      ?uri  rdf:type  <http://www.opensilex.org/vocabulary/oeso#RadiometricTarget> . 
      *      ?uri  rdfs:label  ?label  .
      * }
      * @return the query
@@ -81,7 +81,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
         }
         
         query.appendSelect("?" + LABEL);
-        query.appendTriplet(select, Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_RADIOMETRIC_TARGET.toString(), null);
+        query.appendTriplet(select, Rdf.RELATION_TYPE.toString(), Oeso.CONCEPT_RADIOMETRIC_TARGET.toString(), null);
         query.appendTriplet(select, Rdfs.RELATION_LABEL.toString(), "?" + LABEL, null);
         if (label != null) {
             query.appendFilter("REGEX ( ?" + LABEL + ",\".*" + label + ".*\",\"i\")");
@@ -141,7 +141,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
      * @example 
      * SELECT DISTINCT  (count(distinct ?uri) as ?count) 
      * WHERE {
-     *      ?uri  rdf:type  <http://www.phenome-fppn.fr/vocabulary/2017#RadiometricTarget> . 
+     *      ?uri  rdf:type  <http://www.opensilex.org/vocabulary/oeso#RadiometricTarget> . 
      *      ?uri  rdfs:label  ?label  . 
      * }
      * @return Query generated to count the elements, with the searched parameters
@@ -213,7 +213,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
                     if (existUri(property.getRelation())) {
                         //2.2 check the domain of the property
                         propertyDAO.relation = property.getRelation();
-                        if (!propertyDAO.isRelationDomainCompatibleWithRdfType(Vocabulary.CONCEPT_RADIOMETRIC_TARGET.toString())) {
+                        if (!propertyDAO.isRelationDomainCompatibleWithRdfType(Oeso.CONCEPT_RADIOMETRIC_TARGET.toString())) {
                             validData = false;
                             status.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, 
                                             "the type of the given uri is not in the domain of the relation " + property.getRelation()));
@@ -249,9 +249,9 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
      * @example
      * INSERT DATA {
      *      GRAPH <http://www.phenome-fppn.fr/diaphen/set/radiometricTargets> { 
-     *          <http://www.phenome-fppn.fr/id/radiometricTargets/rt002>  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  <http://www.phenome-fppn.fr/vocabulary/2017#RadiometricTarget> . 
+     *          <http://www.phenome-fppn.fr/id/radiometricTargets/rt002>  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  <http://www.opensilex.org/vocabulary/oeso#RadiometricTarget> . 
      *          <http://www.phenome-fppn.fr/id/radiometricTargets/rt002>  <http://www.w3.org/2000/01/rdf-schema#label>  "rt1"  . 
-     *          <http://www.phenome-fppn.fr/id/radiometricTargets/rt002>  < http://www.phenome-fppn.fr/vocabulary/2017#hasShape>  "3"  . 
+     *          <http://www.phenome-fppn.fr/id/radiometricTargets/rt002>  < http://www.opensilex.org/vocabulary/oeso#hasShape>  "3"  . 
      *      }
      * }
      */
@@ -260,7 +260,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
         
         Node graph = NodeFactory.createURI(Contexts.RADIOMETRIC_TARGETS.toString());
         Resource radiometricTargetUri = ResourceFactory.createResource(radiometricTarget.getUri());
-        Node radiometricTargetConcept = NodeFactory.createURI(Vocabulary.CONCEPT_RADIOMETRIC_TARGET.toString());
+        Node radiometricTargetConcept = NodeFactory.createURI(Oeso.CONCEPT_RADIOMETRIC_TARGET.toString());
         
         spql.addInsert(graph, radiometricTargetUri, RDF.type, radiometricTargetConcept);
         spql.addInsert(graph, radiometricTargetUri, RDFS.label, radiometricTarget.getLabel());
@@ -307,7 +307,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
         getConnection().begin();
         for (RadiometricTarget radiometricTarget : radiometricTargets) {
             //Generate uri
-            radiometricTarget.setUri(uriGenerator.generateNewInstanceUri(Vocabulary.CONCEPT_RADIOMETRIC_TARGET.toString(), null, null));
+            radiometricTarget.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_RADIOMETRIC_TARGET.toString(), null, null));
             //Insert radiometric target
             UpdateRequest query = prepareInsertQuery(radiometricTarget);
             
@@ -370,18 +370,18 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
      *  DELETE DATA {
      *    GRAPH <http://www.phenome-fppn.fr/diaphen/set/radiometricTargets> {
      *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.w3.org/2000/01/rdf-schema#label> "label" .
-     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.phenome-fppn.fr/vocabulary/2017#RadiometricTarget> .
-     *      <http://www.phenome-fppn.fr/vocabulary/2017#RadiometricTarget> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> "http://www.w3.org/2002/07/owl#Class" .
-     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.phenome-fppn.fr/vocabulary/2017#hasBrand> "brand" .
-     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.phenome-fppn.fr/vocabulary/2017#hasRadiometricTargetMaterial> "carpet" .
-     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.phenome-fppn.fr/vocabulary/2017#hasShape> "rectangular" .
-     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.phenome-fppn.fr/vocabulary/2017#dateOfLastCalibration> "2019-01-03" .
-     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.phenome-fppn.fr/vocabulary/2017#dateOfPurchase> "2019-01-02" .
-     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.phenome-fppn.fr/vocabulary/2017#hasShapeLength> "31" .
-     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.phenome-fppn.fr/vocabulary/2017#hasShapeWidth> "45" .
-     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.phenome-fppn.fr/vocabulary/2017#hasTechnicalContact> "admin@phis.fr" .
-     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.phenome-fppn.fr/vocabulary/2017#inServiceDate> "2019-01-01" .
-     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.phenome-fppn.fr/vocabulary/2017#serialNumber> "serial" .
+     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.opensilex.org/vocabulary/oeso#RadiometricTarget> .
+     *      <http://www.opensilex.org/vocabulary/oeso#RadiometricTarget> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> "http://www.w3.org/2002/07/owl#Class" .
+     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.opensilex.org/vocabulary/oeso#hasBrand> "brand" .
+     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.opensilex.org/vocabulary/oeso#hasRadiometricTargetMaterial> "carpet" .
+     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.opensilex.org/vocabulary/oeso#hasShape> "rectangular" .
+     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.opensilex.org/vocabulary/oeso#dateOfLastCalibration> "2019-01-03" .
+     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.opensilex.org/vocabulary/oeso#dateOfPurchase> "2019-01-02" .
+     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.opensilex.org/vocabulary/oeso#hasShapeLength> "31" .
+     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.opensilex.org/vocabulary/oeso#hasShapeWidth> "45" .
+     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.opensilex.org/vocabulary/oeso#hasTechnicalContact> "admin@opensilex.org" .
+     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.opensilex.org/vocabulary/oeso#inServiceDate> "2019-01-01" .
+     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.opensilex.org/vocabulary/oeso#serialNumber> "serial" .
      *    }
      *  }
      * @return the query
@@ -588,7 +588,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
      * Prepare a query to get the higher id of the radiometric targets.
      * @example 
      * SELECT ?uri WHERE {
-     *      ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.phenome-fppn.fr/vocabulary/2017#RadiometricTarget> . 
+     *      ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.opensilex.org/vocabulary/oeso#RadiometricTarget> . 
      * }
      * ORDER BY DESC(?uri) 
      * @return the query
@@ -597,7 +597,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         
         query.appendSelect("?" + URI);
-        query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_RADIOMETRIC_TARGET.toString(), null);
+        query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), Oeso.CONCEPT_RADIOMETRIC_TARGET.toString(), null);
         query.appendOrderBy("DESC(?" + URI + ")");
         query.appendLimit(1);
         

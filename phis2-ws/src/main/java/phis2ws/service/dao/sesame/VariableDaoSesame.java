@@ -39,7 +39,7 @@ import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Skos;
-import phis2ws.service.ontologies.Vocabulary;
+import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.resources.dto.VariableDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.UriGenerator;
@@ -83,14 +83,14 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
      * SELECT DISTINCT  ?uri  ?label  ?comment  ?trait  ?method  ?unit 
      * WHERE {
      *      GRAPH <http://www.phenome-fppn.fr/diaphen/variables> {
-     *          ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  <http://www.phenome-fppn.fr/vocabulary/2017#Variable> . 
+     *          ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  <http://www.opensilex.org/vocabulary/oeso#Variable> . 
      *          ?uri  <http://www.w3.org/2000/01/rdf-schema#label>  ?label  . 
      *          OPTIONAL {
      *              ?uri <http://www.w3.org/2000/01/rdf-schema#comment> ?comment . 
      *          }
-     *          ?uri  <http://www.phenome-fppn.fr/vocabulary/2017#hasTrait>  ?trait  . 
-     *          ?uri  <http://www.phenome-fppn.fr/vocabulary/2017#hasMethod>  ?method  . 
-     *          ?uri  <http://www.phenome-fppn.fr/vocabulary/2017#hasUnit>  ?unit  . 
+     *          ?uri  <http://www.opensilex.org/vocabulary/oeso#hasTrait>  ?trait  . 
+     *          ?uri  <http://www.opensilex.org/vocabulary/oeso#hasMethod>  ?method  . 
+     *          ?uri  <http://www.opensilex.org/vocabulary/oeso#hasUnit>  ?unit  . 
      *      }
      * }
      * LIMIT 20 
@@ -113,7 +113,7 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
             variableURI = "?" + URI;
             query.appendSelect("?" + URI);
         }
-        query.appendTriplet(variableURI, Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_VARIABLE.toString(), null);
+        query.appendTriplet(variableURI, Rdf.RELATION_TYPE.toString(), Oeso.CONCEPT_VARIABLE.toString(), null);
         
         if (label != null) {
             query.appendTriplet(variableURI, Rdfs.RELATION_LABEL.toString(),"\"" + label + "\"", null);
@@ -132,24 +132,24 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
         }
         
         if (trait != null) {
-            query.appendTriplet(variableURI, Vocabulary.RELATION_HAS_TRAIT.toString(), trait, null);
+            query.appendTriplet(variableURI, Oeso.RELATION_HAS_TRAIT.toString(), trait, null);
         } else {
             query.appendSelect(" ?trait");
-            query.appendTriplet(variableURI, Vocabulary.RELATION_HAS_TRAIT.toString(), "?trait", null);
+            query.appendTriplet(variableURI, Oeso.RELATION_HAS_TRAIT.toString(), "?trait", null);
         }
         
         if (method != null) {
-            query.appendTriplet(variableURI, Vocabulary.RELATION_HAS_METHOD.toString(), method, null);
+            query.appendTriplet(variableURI, Oeso.RELATION_HAS_METHOD.toString(), method, null);
         } else {
             query.appendSelect(" ?method");
-            query.appendTriplet(variableURI, Vocabulary.RELATION_HAS_METHOD.toString(), "?method", null);
+            query.appendTriplet(variableURI, Oeso.RELATION_HAS_METHOD.toString(), "?method", null);
         }
         
         if (unit != null) {
-            query.appendTriplet(variableURI, Vocabulary.RELATION_HAS_UNIT.toString(), unit, null);
+            query.appendTriplet(variableURI, Oeso.RELATION_HAS_UNIT.toString(), unit, null);
         } else {
             query.appendSelect(" ?unit");
-            query.appendTriplet(variableURI, Vocabulary.RELATION_HAS_UNIT.toString(), "?unit", null);
+            query.appendTriplet(variableURI, Oeso.RELATION_HAS_UNIT.toString(), "?unit", null);
         }
         
         query.appendLimit(getPageSize());
@@ -167,7 +167,7 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         
         query.appendSelect("?" + URI);
-        query.appendTriplet("?uri", Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_VARIABLE.toString(), null);
+        query.appendTriplet("?uri", Rdf.RELATION_TYPE.toString(), Oeso.CONCEPT_VARIABLE.toString(), null);
         query.appendOrderBy("DESC(?" + URI + ")");
         query.appendLimit(1);
         
@@ -228,14 +228,14 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
      * SELECT DISTINCT  (COUNT(DISTINCT ?uri) AS ?count) 
      * WHERE {
      *      GRAPH <http://www.phenome-fppn.fr/diaphen/variables> { 
-     *          ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  <http://www.phenome-fppn.fr/vocabulary/2017#Variable> . 
+     *          ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  <http://www.opensilex.org/vocabulary/oeso#Variable> . 
      *          ?uri  <http://www.w3.org/2000/01/rdf-schema#label>  ?label  . 
      *          OPTIONAL {
      *              ?uri <http://www.w3.org/2000/01/rdf-schema#comment> ?comment . 
      *          }
-     *          ?uri  <http://www.phenome-fppn.fr/vocabulary/2017#hasTrait>  ?trait  . 
-     *          ?uri  <http://www.phenome-fppn.fr/vocabulary/2017#hasMethod>  ?method  . 
-     *          ?uri  <http://www.phenome-fppn.fr/vocabulary/2017#hasUnit>  ?unit  . 
+     *          ?uri  <http://www.opensilex.org/vocabulary/oeso#hasTrait>  ?trait  . 
+     *          ?uri  <http://www.opensilex.org/vocabulary/oeso#hasMethod>  ?method  . 
+     *          ?uri  <http://www.opensilex.org/vocabulary/oeso#hasUnit>  ?unit  . 
      *      }
      * }
      * @return Query generated to count the elements, with the searched parameters
@@ -325,7 +325,7 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
         
         Node graph = NodeFactory.createURI(Contexts.VARIABLES.toString());
 
-        Node variableConcept = NodeFactory.createURI(Vocabulary.CONCEPT_VARIABLE.toString());
+        Node variableConcept = NodeFactory.createURI(Oeso.CONCEPT_VARIABLE.toString());
         Resource variableUri = ResourceFactory.createResource(variable.getUri());
 
         spql.addInsert(graph, variableUri, RDF.type, variableConcept);
@@ -335,9 +335,9 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
             spql.addInsert(graph, variableUri, RDFS.comment, variable.getComment());
         }
 
-        Property relationTrait = ResourceFactory.createProperty(Vocabulary.RELATION_HAS_TRAIT.toString());
-        Property relationMethod = ResourceFactory.createProperty(Vocabulary.RELATION_HAS_METHOD.toString());
-        Property relationUnit = ResourceFactory.createProperty(Vocabulary.RELATION_HAS_UNIT.toString());
+        Property relationTrait = ResourceFactory.createProperty(Oeso.RELATION_HAS_TRAIT.toString());
+        Property relationMethod = ResourceFactory.createProperty(Oeso.RELATION_HAS_METHOD.toString());
+        Property relationUnit = ResourceFactory.createProperty(Oeso.RELATION_HAS_UNIT.toString());
         
         Node trait = NodeFactory.createURI(variable.getTrait());
         Node method = NodeFactory.createURI(variable.getMethod());
@@ -379,7 +379,7 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
         while (iteratorVariablesDTO.hasNext() && annotationInsert) {
             VariableDTO variableDTO = iteratorVariablesDTO.next();
             
-            variableDTO.setUri(uriGenerator.generateNewInstanceUri(Vocabulary.CONCEPT_VARIABLE.toString(), null, null));
+            variableDTO.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_VARIABLE.toString(), null, null));
 
             //Enregistrement dans le triplestore
             UpdateRequest spqlInsert = prepareInsertQuery(variableDTO);
@@ -572,9 +572,9 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
         spql.addDelete(graph, variableUri, RDFS.label, variable.getLabel());
         spql.addDelete(graph, variableUri, RDFS.comment, variable.getComment());
         
-        Property relationTrait = ResourceFactory.createProperty(Vocabulary.RELATION_HAS_TRAIT.toString());
-        Property relationMethod = ResourceFactory.createProperty(Vocabulary.RELATION_HAS_METHOD.toString());
-        Property relationUnit = ResourceFactory.createProperty(Vocabulary.RELATION_HAS_UNIT.toString());
+        Property relationTrait = ResourceFactory.createProperty(Oeso.RELATION_HAS_TRAIT.toString());
+        Property relationMethod = ResourceFactory.createProperty(Oeso.RELATION_HAS_METHOD.toString());
+        Property relationUnit = ResourceFactory.createProperty(Oeso.RELATION_HAS_UNIT.toString());
         
         Node traitUri = NodeFactory.createURI(variable.getTrait().getUri());
         Node methodUri = NodeFactory.createURI(variable.getMethod().getUri());
@@ -683,14 +683,14 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
      * @example 
      * ASK { 
      *   <http://www.phenome-fppn.fr/id/variables/v001>  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
-     *   ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.phenome-fppn.fr/vocabulary/2017#Variable> . 
+     *   ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.opensilex.org/vocabulary/oeso#Variable> . 
      * }
      * @return the query
      */
     private SPARQLQueryBuilder prepareIsVariableQuery(String uri) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendTriplet("<" + uri + ">", Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
-        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_VARIABLE.toString(), null);
+        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_VARIABLE.toString(), null);
         
         query.appendAsk("");
         LOGGER.debug(query.toString());

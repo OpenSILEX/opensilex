@@ -149,8 +149,8 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
      * e.g.
      * INSERT DATA {
      *      GRAPH <http://www.phenome-fppn.fr/diaphen/1520935678173> { 
-     *          <http://www.phenome-fppn.fr/diaphen/2018/s18001>  rdf:type  <http://www.phenome-fppn.fr/vocabulary/2017#Sensor> . 
-     *          <http://www.phenome-fppn.fr/diaphen/2018/s18001>  <http://www.phenome-fppn.fr/vocabulary/2017#hasSensor>  <http://www.phenome-fppn.fr/phenovia/2017/o1032482> . 
+     *          <http://www.phenome-fppn.fr/diaphen/2018/s18001>  rdf:type  <http://www.opensilex.org/vocabulary/oeso#Sensor> . 
+     *          <http://www.phenome-fppn.fr/diaphen/2018/s18001>  <http://www.opensilex.org/vocabulary/oeso#hasSensor>  <http://www.phenome-fppn.fr/phenovia/2017/o1032482> . 
      *      }
      * }
      */

@@ -1,13 +1,10 @@
 //**********************************************************************************************
 //                                       FileUploader.java 
-//
-// Author(s): Arnaud Charleroy 
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2016
-// Creation date: may 2016
-// Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  October, 2016
-// Subject: A class which permit to send a file to a distant server
+// PHIS-SILEX
+// Copyright © INRA 2016
+// Creation date: May 2016
+// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Subject: A class which permits to send a file to a distant server
 //***********************************************************************************************
 package phis2ws.service.utils;
 
@@ -27,8 +24,9 @@ import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
  
 /**
- * Classe qui étends la libraire JSch qui permet de réaliser des appels en SFTP en Java de façon siplifiée.
+ * Classe qui étend la libraire JSch qui permet de réaliser des appels en SFTP en Java de façon siplifiée.
  * @author Arnaud Charleroy
+ * @update [Andréas Garcia] 23 Jan., 2019: Add generic function to create nested directories from a complete path
  */
 public class FileUploader extends JSch{
     final static Logger LOGGER = LoggerFactory.getLogger(FileUploader.class);
@@ -91,6 +89,39 @@ public class FileUploader extends JSch{
         
         return true;
     }
+    
+    /**
+     * Create nested directories from a given path.
+     * The mkdir function of the ChannelSftp object can only create one 
+     * directory in the current folder. If a path with several folders is given, 
+     * an exception is thrown.
+     * So we have to manually implement the behaviour desired.
+     * @param nestedDirectoriesPath
+     * @throws SftpException 
+     */
+    public void createNestedDirectories(String nestedDirectoriesPath) throws SftpException {
+        ChannelSftp channelTarget = getChannelSftp();
+        
+        // Split the complete path into a list of folders
+        String[] directories = nestedDirectoriesPath.split("/");
+        channelTarget.cd("/");
+        for (String directory : directories) {
+            if (directory.length() > 0) {
+                try {
+                    channelTarget.cd(directory);
+                } catch (SftpException e2) {
+                    // If the folder doesn't exist, create it and go into
+                    channelTarget.mkdir(directory);
+                    channelTarget.cd(directory);
+                }
+            }
+        }
+        // Go back to the original folder
+        for (String directory : directories) {
+            channelTarget.cd("..");
+        }
+    }
+    
     /**
      * Fermeture des ressources
      */

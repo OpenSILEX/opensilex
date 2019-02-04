@@ -193,10 +193,10 @@ public enum Oeso {
             return NAMESPACE.toString() + "deviceProperty";
         }
     },
-    RELATION_HAS_GENOTYPE {
+    RELATION_FROM_GENOTYPE {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "hasGenotype";
+            return NAMESPACE.toString() + "fromGenotype";
         }
     },
     RELATION_HAS_SPECIES {
@@ -331,10 +331,10 @@ public enum Oeso {
             return NAMESPACE.toString() + "personInCharge";
         }
     },
-    RELATION_SERIAL_NUMBER {
+    RELATION_HAS_SERIAL_NUMBER {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "serialNumber";
+            return NAMESPACE.toString() + "hasSerialNumber";
         }
     },
     RELATION_STATUS {

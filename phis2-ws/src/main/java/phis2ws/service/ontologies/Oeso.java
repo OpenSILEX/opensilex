@@ -193,22 +193,22 @@ public enum Oeso {
             return NAMESPACE.toString() + "deviceProperty";
         }
     },
-    RELATION_FROM_GENOTYPE {
+    RELATION_HAS_GENOTYPE {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "fromGenotype";
+            return NAMESPACE.toString() + "hasGenotype";
         }
     },
-    RELATION_FROM_SPECIES {
+    RELATION_HAS_SPECIES {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "fromSpecies";
+            return NAMESPACE.toString() + "hasSpecies";
         }
     },
-    RELATION_FROM_VARIETY {
+    RELATION_HAS_VARIETY {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "fromVariety";
+            return NAMESPACE.toString() + "hasVariety";
         }
     },
     RELATION_HAS_ALIAS {

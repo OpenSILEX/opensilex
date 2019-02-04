@@ -66,7 +66,7 @@ public class PropertyLabelsDTO extends PropertyDTO {
         rdfTypeLabels.addAll(labels);
     }
     
-    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SPECIES_FROM_SPECIES)
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SPECIES_HAS_SPECIES)
     public LinkedList<String> getRelationLabels() {
         return relationLabels;
     }

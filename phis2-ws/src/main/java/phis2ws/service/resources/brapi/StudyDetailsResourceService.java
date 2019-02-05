@@ -33,7 +33,8 @@ import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
-import phis2ws.service.view.brapi.form.BrapiResponseForm;
+import phis2ws.service.view.brapi.form.BrapiMultiResponseForm;
+import phis2ws.service.view.brapi.form.BrapiSingleResponseForm;
 import phis2ws.service.view.model.phis.Call;
 import phis2ws.service.view.model.phis.StudyDetails;
 
@@ -105,13 +106,13 @@ public class StudyDetailsResourceService implements BrapiCall{
         return getStudyData(studyDAO);
         }
      
-    private Response noResultFound(BrapiResponseForm getResponse, ArrayList<Status> insertStatusList) {
+    private Response noResultFound(BrapiMultiResponseForm getResponse, ArrayList<Status> insertStatusList) {
         insertStatusList.add(new Status("No result", StatusCodeMsg.INFO, "This study doesn't exist"));
         getResponse.getMetadata().setStatus(insertStatusList);
         return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
     }
     
-    private Response sqlError(BrapiResponseForm getResponse, ArrayList<Status> insertStatusList) {
+    private Response sqlError(BrapiMultiResponseForm getResponse, ArrayList<Status> insertStatusList) {
          insertStatusList.add(new Status("SQL error" ,StatusCodeMsg.ERR, "can't fetch result"));
          getResponse.getMetadata().setStatus(insertStatusList);
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(getResponse).build();
@@ -123,17 +124,16 @@ public class StudyDetailsResourceService implements BrapiCall{
      * @return Response for the user: contains study corresponding to the query 
      */
     private Response getStudyData(StudyDAO studyDAO) throws SQLException{
-        ArrayList<Status> statusList = new ArrayList<>();
-        BrapiResponseForm getResponse;    
+        ArrayList<Status> statusList = new ArrayList<>(); 
         StudyDetails study = studyDAO.getStudyInfo();
         if (study.getStudyDbId() == null) {
             //quick fix to manage the case where the studyDbId doesn't exist in the base
             ArrayList<StudyDetails> nostudy= new ArrayList();
-            getResponse = new BrapiResponseForm(0, 0, nostudy, true);
+            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, nostudy, true);
             return noResultFound(getResponse, statusList);
         } else {
-            getResponse = new BrapiResponseForm(study);
-            return Response.status(Response.Status.OK).entity(getResponse).build();
+            BrapiSingleResponseForm getSingleResponse = new BrapiSingleResponseForm(study);
+            return Response.status(Response.Status.OK).entity(getSingleResponse).build();
         }        
     }
 }

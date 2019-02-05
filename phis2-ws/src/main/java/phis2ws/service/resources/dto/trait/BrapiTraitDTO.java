@@ -20,7 +20,7 @@ public class BrapiTraitDTO {
     //The comment of the trait in the triplestore e.g. "one-sided green leaf area per unit ground surface area"
     private String description;
     //The label of the trait in the triplestore e.g. Leaf_Area_Index
-    private String name;
+    private String traitName;
     private ArrayList<String> observationVariables;
     //The id of the trait in the triplestore e.g. http://www.phenome-fppn.fr/platform/id/traits/t001
     private String traitDbId;
@@ -31,7 +31,7 @@ public class BrapiTraitDTO {
     
     public BrapiTraitDTO(Trait trait) {
         this.traitDbId = trait.getUri();
-        this.name = trait.getLabel();
+        this.traitName = trait.getLabel();
         this.description = trait.getComment();
     }    
 
@@ -51,12 +51,12 @@ public class BrapiTraitDTO {
         this.description = description;
     }
 
-    public String getName() {
-        return name;
+    public String getTraitName() {
+        return traitName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setTraitName(String traitName) {
+        this.traitName = traitName;
     }
 
     public ArrayList<String> getObservationVariables() {

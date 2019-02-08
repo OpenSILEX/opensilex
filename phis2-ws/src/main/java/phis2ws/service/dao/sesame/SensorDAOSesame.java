@@ -181,11 +181,11 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         }
         
         if (serialNumber != null) {
-            query.appendTriplet(sensorUri, Oeso.RELATION_SERIAL_NUMBER.toString(), "\"" + serialNumber + "\"", null);
+            query.appendTriplet(sensorUri, Oeso.RELATION_HAS_SERIAL_NUMBER.toString(), "\"" + serialNumber + "\"", null);
         } else {
             query.appendSelect("?" + SERIAL_NUMBER);
             query.beginBodyOptional();
-            query.appendToBody(sensorUri + " <" + Oeso.RELATION_SERIAL_NUMBER.toString() + "> ?" + SERIAL_NUMBER + " . ");
+            query.appendToBody(sensorUri + " <" + Oeso.RELATION_HAS_SERIAL_NUMBER.toString() + "> ?" + SERIAL_NUMBER + " . ");
             query.endBodyOptional();
         }
 
@@ -243,7 +243,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
      *      }
      *      ?uri  <http://www.opensilex.org/vocabulary/oeso#hasBrand>  ?brand  . 
      *      OPTIONAL {
-     *          ?uri <http://www.opensilex.org/vocabulary/oeso#serialNumber> ?serialNumber . 
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#hasSerialNumber> ?serialNumber . 
      *      }
      *      OPTIONAL {
      *          ?uri <http://www.opensilex.org/vocabulary/oeso#inServiceDate> ?inServiceDate . 
@@ -534,7 +534,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         spql.addInsert(graph, sensorUri, relationPersonInCharge, sensor.getPersonInCharge() );
         
         if (sensor.getSerialNumber() != null) {
-            Property relationSerialNumber = ResourceFactory.createProperty(Oeso.RELATION_SERIAL_NUMBER.toString());
+            Property relationSerialNumber = ResourceFactory.createProperty(Oeso.RELATION_HAS_SERIAL_NUMBER.toString());
             spql.addInsert(graph, sensorUri, relationSerialNumber, sensor.getSerialNumber() );
         }
         
@@ -662,7 +662,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         spql.addDelete(graph, sensorUri, relationPersonInCharge, sensor.getPersonInCharge() );
         
         if (sensor.getSerialNumber() != null) {
-            Property relationSerialNumber = ResourceFactory.createProperty(Oeso.RELATION_SERIAL_NUMBER.toString());
+            Property relationSerialNumber = ResourceFactory.createProperty(Oeso.RELATION_HAS_SERIAL_NUMBER.toString());
             spql.addDelete(graph, sensorUri, relationSerialNumber, sensor.getSerialNumber() );
         }
         

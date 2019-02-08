@@ -22,7 +22,7 @@ public class Property {
     private String rdfType;
     private LinkedList<String> rdfTypeLabels = new LinkedList<>();
     //relation name 
-    //(e.g. http://www.opensilex.org/vocabulary/oeso#fromVariety)
+    //(e.g. http://www.opensilex.org/vocabulary/oeso#hasVariety)
     private String relation;
     private LinkedList<String> relationLabels = new LinkedList<>();
     //value

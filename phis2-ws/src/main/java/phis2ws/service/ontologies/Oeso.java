@@ -199,16 +199,16 @@ public enum Oeso {
             return NAMESPACE.toString() + "fromGenotype";
         }
     },
-    RELATION_FROM_SPECIES {
+    RELATION_HAS_SPECIES {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "fromSpecies";
+            return NAMESPACE.toString() + "hasSpecies";
         }
     },
-    RELATION_FROM_VARIETY {
+    RELATION_HAS_VARIETY {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "fromVariety";
+            return NAMESPACE.toString() + "hasVariety";
         }
     },
     RELATION_HAS_ALIAS {
@@ -331,10 +331,10 @@ public enum Oeso {
             return NAMESPACE.toString() + "personInCharge";
         }
     },
-    RELATION_SERIAL_NUMBER {
+    RELATION_HAS_SERIAL_NUMBER {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "serialNumber";
+            return NAMESPACE.toString() + "hasSerialNumber";
         }
     },
     RELATION_STATUS {

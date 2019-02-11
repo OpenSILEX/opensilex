@@ -760,4 +760,32 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
     public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+    
+    /**
+     * checks if the scientific object exists
+     * @param uri
+     * @return 0 if the object uri doesn't exist, 1 if it does exist
+     */
+    public boolean existScientificObject(String uri) {        
+        SPARQLQueryBuilder query = askExistScientificObject(uri);
+        BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
+        boolean result = booleanQuery.evaluate();    
+        return result;
+    }
+
+    /**
+     * generates the sparql ask query to know if the scientific object uri exists
+     * existing in a given context
+     * @param uri
+     * @return the query
+     */
+    private SPARQLQueryBuilder askExistScientificObject(String uri) {
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        query.appendAsk("");
+        query.appendTriplet("<" + uri + ">", Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
+        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString(), null);
+
+        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        return query;
+    }
 }

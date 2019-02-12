@@ -48,7 +48,7 @@
             <id>test</id>
             <properties>
                 <build.profile.id>test</build.profile.id>
-                <target.war.name>phenomeMtpVMAPI</target.war.name>
+                <target.war.name>openSilexTestAPI</target.war.name>
             </properties>
         </profile>
     </profiles>

@@ -582,7 +582,11 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
         this.getConnection().begin();
         //\SILEX:test
         vectors.stream().map((vectorDTO) -> vectorDTO.createObjectFromDTO()).map((vector) -> {
-            vector.setUri(uriGenerator.generateNewInstanceUri(vector.getRdfType(), null, null));
+            try {
+                vector.setUri(uriGenerator.generateNewInstanceUri(vector.getRdfType(), null, null));
+            } catch (Exception ex) { //In the vectors case, no exception should be raised
+                java.util.logging.Logger.getLogger(VectorDAOSesame.class.getName()).log(Level.SEVERE, null, ex);
+            }
             return vector;            
         }).forEachOrdered((vector) -> {
             UpdateRequest query = prepareInsertQuery(vector);

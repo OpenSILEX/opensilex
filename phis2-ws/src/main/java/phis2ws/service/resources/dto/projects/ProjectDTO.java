@@ -12,7 +12,7 @@
 //          Contains the list of the elements which might be send by the Client
 //          to save the database
 //***********************************************************************************************
-package phis2ws.service.resources.dto;
+package phis2ws.service.resources.dto.projects;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;

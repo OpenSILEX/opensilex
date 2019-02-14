@@ -40,7 +40,8 @@ import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.phis.ProjectDao;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.resources.dto.ProjectDTO;
+import phis2ws.service.resources.dto.projects.ProjectDTO;
+import phis2ws.service.resources.dto.projects.ProjectPostDTO;
 import phis2ws.service.resources.validation.interfaces.Date;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
@@ -208,7 +209,7 @@ public class ProjectResourceService extends ResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postProject(
-            @ApiParam(value = DocumentationAnnotation.PROJECT_POST_DATA_DEFINITION) @Valid ArrayList<ProjectDTO> projects,
+            @ApiParam(value = DocumentationAnnotation.PROJECT_POST_DATA_DEFINITION) @Valid ArrayList<ProjectPostDTO> projects,
             @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         
@@ -222,11 +223,11 @@ public class ProjectResourceService extends ResourceService {
             projectDao.user = userSession.getUser();
 
             //Vérification des projets et insertion en BD
-            POSTResultsReturn result = projectDao.checkAndInsertList(projects);
+            POSTResultsReturn result = projectDao.checkAndInsert(projects);
 
             if (result.getHttpStatus().equals(Response.Status.CREATED)) { //201, projets insérés
                 postResponse = new ResponseFormPOST(result.statusList);
-                return Response.status(result.getHttpStatus()).entity(postResponse).build();
+                postResponse.getMetadata().setDatafiles(result.getCreatedResources());
             } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
                     || result.getHttpStatus().equals(Response.Status.OK)
                     || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {

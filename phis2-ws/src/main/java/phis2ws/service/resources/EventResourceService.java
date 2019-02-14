@@ -21,6 +21,7 @@ import javax.validation.constraints.Min;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -33,14 +34,17 @@ import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.sesame.EventDAOSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.event.EventDTO;
+import phis2ws.service.resources.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
 import phis2ws.service.resources.validation.interfaces.Date;
+import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.ResponseFormEvent;
 import phis2ws.service.view.model.phis.Event;
 
 /**
- * Service to get events
+ * Service to handle events
+ * @update [Andréas Garcia] 14 Feb. 2019: Add event detail service
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
 @Api("/events")
@@ -132,7 +136,7 @@ public class EventResourceService  extends ResourceService {
         @ApiParam(value = "Search by date - start of the range", example = DocumentationAnnotation.EXAMPLE_EVENT_START_DATE) @QueryParam("startDate") @Date(DateFormat.YMDTHMSZZ) String startDate, 
         @ApiParam(value = "Search by date - end of the range", example = DocumentationAnnotation.EXAMPLE_EVENT_END_DATE) @QueryParam("endDate") @Date(DateFormat.YMDTHMSZZ) String endDate
     ) {
-        EventDAOSesame eventDAO = new EventDAOSesame();
+        EventDAOSesame eventDAO = new EventDAOSesame(userSession.getUser());
         
         // 1. Search events with parameters
         Event eventSearchParameters = new Event(uri, type, null, null, null);
@@ -142,7 +146,6 @@ public class EventResourceService  extends ResourceService {
                 concernedItemUri, 
                 startDate, 
                 endDate, 
-                userSession.getUser(), 
                 page, 
                 pageSize);
         
@@ -170,9 +173,57 @@ public class EventResourceService  extends ResourceService {
                 concernedItemLabel, 
                 concernedItemUri, 
                 startDate, 
-                endDate, 
-                userSession.getUser());
+                endDate);
             responseForm = new ResponseFormEvent(eventDAO.getPageSize(), eventDAO.getPage(), eventDTOs, true, resultsCount);
+            if (responseForm.getResult().dataSize() == 0) {
+                return noResultFound(responseForm, statusList);
+            } else {
+                responseForm.setStatus(statusList);
+                return Response.status(Response.Status.OK).entity(responseForm).build();
+            }
+        }
+    }
+    
+    
+    @GET
+    @Path("{uri}")
+    @ApiOperation(value = "Get an event's details corresponding to the search uri",
+                  notes = "Get an event's details corresponding to the search uri authorized for the user corresponding to the search uri")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Get an event's details", response = RdfResourceDefinitionDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+            dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+            value = DocumentationAnnotation.ACCES_TOKEN,
+            example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getEventDetailed(
+        @ApiParam(value = DocumentationAnnotation.INFRASTRUCTURE_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_EVENT_URI) @PathParam("uri") @URL @Required String uri) {
+        
+        EventDAOSesame eventDAO = new EventDAOSesame(userSession.getUser());
+        
+        // 1. Search an event's details with its URI
+        Event event = eventDAO.searchEventDetailed(uri);
+        
+        // 2. Analyse result
+        ArrayList<EventDTO> eventDTOs = new ArrayList();
+        ArrayList<Status> statusList = new ArrayList<>();
+        ResponseFormEvent responseForm;
+        
+        if (event == null) { // Request failure
+            responseForm = new ResponseFormEvent(0, 0, eventDTOs, true, 0);
+            return noResultFound(responseForm, statusList);
+        } else { // Results
+            
+            // Generate DTO
+            eventDTOs.add(new EventDTO(event));
+            
+            responseForm = new ResponseFormEvent(eventDAO.getPageSize(), eventDAO.getPage(), eventDTOs, true, 0);
             if (responseForm.getResult().dataSize() == 0) {
                 return noResultFound(responseForm, statusList);
             } else {

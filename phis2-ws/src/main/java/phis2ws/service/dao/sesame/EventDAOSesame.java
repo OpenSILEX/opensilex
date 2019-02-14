@@ -34,6 +34,7 @@ import phis2ws.service.view.model.phis.Event;
 
 /**
  * Dao for Events
+ * @update [Andréas Garcia] 14 Feb. 2019: Add event detail service
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
 public class EventDAOSesame extends DAOSesame<Event> {
@@ -54,9 +55,14 @@ public class EventDAOSesame extends DAOSesame<Event> {
     
     private static final String DATETIMESTAMP_SELECT_NAME = "dateTimeStamp";
     private static final String DATETIMESTAMP_SELECT_NAME_SPARQL = "?" + DATETIMESTAMP_SELECT_NAME;
+
+    public EventDAOSesame(User user) {
+        super(user);
+    }
+    
     
     /**
-     * Set a search query to select an URI and to filter according to it 
+     * Set a search query to select an URI and add a filter according to it 
      * if necessary
      * @return the value of the URI's value in the SELECT
      * @example SparQL filter added :
@@ -64,9 +70,12 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * FILTER ( (regex (str(?uri), "http://www.phenome-fppn.fr/id/event/5a1b3c0d-58af-4cfb-811e-e141b11453b1", "i"))
      * GROUP BY ?uri
      */
-    private String prepareSearchQueryUri(SPARQLQueryBuilder query, String searchUri) {
+    private String prepareSearchQueryUri(SPARQLQueryBuilder query, String searchUri, boolean inGroupBy) {
         query.appendSelect(URI_SELECT_NAME_SPARQL);
-        query.appendGroupBy(URI_SELECT_NAME_SPARQL);
+        
+        if(inGroupBy){
+            query.appendGroupBy(URI_SELECT_NAME_SPARQL);
+        }
         if (searchUri != null) {
             query.appendAndFilter("regex (str(" + URI_SELECT_NAME_SPARQL + ")" + ", \"" + searchUri + "\", \"i\")");
         }
@@ -81,9 +90,11 @@ public class EventDAOSesame extends DAOSesame<Event> {
      *  ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.opensilex.org/vocabulary/oeev#MoveFrom> . 
      *  GROUP BY ?rdfType
      */
-    private void prepareSearchQueryType(SPARQLQueryBuilder query, String uriSelectNameSparql, String searchType) {
+    private void prepareSearchQueryType(SPARQLQueryBuilder query, String uriSelectNameSparql, String searchType, boolean inGroupBy) {
         query.appendSelect(RDF_TYPE_SELECT_NAME_SPARQL);
-        query.appendGroupBy(RDF_TYPE_SELECT_NAME_SPARQL);
+        if(inGroupBy){
+            query.appendGroupBy(RDF_TYPE_SELECT_NAME_SPARQL);
+        }
         query.appendTriplet(uriSelectNameSparql, Rdf.RELATION_TYPE.toString(), RDF_TYPE_SELECT_NAME_SPARQL, null);
         if (searchType != null) {
             query.appendTriplet(RDF_TYPE_SELECT_NAME_SPARQL, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", searchType, null);
@@ -129,10 +140,12 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str("2017-09-12T12:00:00+01:00")) as ?dateRangeEndDateTime) .
      * GROUP BY ?dateTimeStamp
      */
-    private void prepareSearchQueryDateTime(SPARQLQueryBuilder query, String uriSelectNameSparql, String searchDateTimeRangeStartString, String searchDateTimeRangeEndString) {  
+    private void prepareSearchQueryDateTime(SPARQLQueryBuilder query, String uriSelectNameSparql, String searchDateTimeRangeStartString, String searchDateTimeRangeEndString, boolean inGroupBy) {  
         
         query.appendSelect(DATETIMESTAMP_SELECT_NAME_SPARQL);
-        query.appendGroupBy(DATETIMESTAMP_SELECT_NAME_SPARQL);
+        if(inGroupBy){
+            query.appendGroupBy(DATETIMESTAMP_SELECT_NAME_SPARQL);
+        }
         query.appendTriplet(uriSelectNameSparql, Time.RELATION_HAS_TIME.toString(), TIME_SELECT_NAME_SPARQL, null);
         query.appendTriplet(TIME_SELECT_NAME_SPARQL, Time.RELATION_IN_XSD_DATETIMESTAMP.toString(), DATETIMESTAMP_SELECT_NAME_SPARQL, null);
         
@@ -171,17 +184,43 @@ public class EventDAOSesame extends DAOSesame<Event> {
      *  LIMIT 20 
      *  OFFSET 0 
      */
-    protected SPARQLQueryBuilder prepareSearchQuery(Event eventSearchParameters, String searchConcernedItemLabel, String searchConcernedItemUri, String dateRangeStartString, String dateRangeEndString, User user) {
+    protected SPARQLQueryBuilder prepareSearchQueryEvents(Event eventSearchParameters, String searchConcernedItemLabel, String searchConcernedItemUri, String dateRangeStartString, String dateRangeEndString) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
         
-        String uriSelectNameSparql = prepareSearchQueryUri(query, eventSearchParameters.getUri());
-        prepareSearchQueryType(query, uriSelectNameSparql, eventSearchParameters.getType());  
+        String uriSelectNameSparql = prepareSearchQueryUri(query, eventSearchParameters.getUri(), true);
+        prepareSearchQueryType(query, uriSelectNameSparql, eventSearchParameters.getType(), true);  
         prepareSearchQueryConcernedItemFilter(query, uriSelectNameSparql, searchConcernedItemLabel, searchConcernedItemUri); 
-        prepareSearchQueryDateTime(query, uriSelectNameSparql, dateRangeStartString, dateRangeEndString); 
+        prepareSearchQueryDateTime(query, uriSelectNameSparql, dateRangeStartString, dateRangeEndString, true); 
         
         query.appendLimit(getPageSize());
         query.appendOffset(getPage() * getPageSize());
+        
+        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        return query;
+    }
+    
+    /**
+     * Prepare the event search query
+     * @param searchUri
+     * @return query
+     * @example
+     * SELECT  ?uri ?rdfType ?dateTimeStamp 
+     * WHERE {
+     *   ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
+     *   ?uri  <http://www.w3.org/2006/time#hasTime>  ?time  . 
+     *   ?time  <http://www.w3.org/2006/time#inXSDDateTimeStamp>  ?dateTimeStamp  . 
+     *   FILTER (regex (str(?uri), "http://opensilex.org/id/event/96e72788-6bdc-4f8e-abd1-ce9329371e8e", "i"))
+     *  }
+     */
+    protected SPARQLQueryBuilder prepareSearchQueryEventDetailed(String searchUri) {
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        query.appendDistinct(Boolean.TRUE);
+        
+        String uriSelectNameSparql = prepareSearchQueryUri(query, searchUri, false);
+        prepareSearchQueryType(query, uriSelectNameSparql, null, false);  
+        prepareSearchQueryConcernedItemFilter(query, uriSelectNameSparql, null, null); 
+        prepareSearchQueryDateTime(query, uriSelectNameSparql, null, null, false); 
         
         LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
         return query;
@@ -195,7 +234,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * SELECT DISTINCT  ?concernedItemUri ?concernedItemType 
      * (GROUP_CONCAT(DISTINCT ?concernedItemLabel; SEPARATOR=",") AS ?concernedItemLabels) 
      * WHERE {
-     *  <http://www.phenome-fppn.fr/id/event/96e72788-6bdc-4f8e-abd1-ce9329371e8e>  <http://www.opensilex.org/vocabulary/oeev#concerns>  ?concernedItemUri  . 
+     *  <http://opensilex.org/<instance>/event/96e72788-6bdc-4f8e-abd1-ce9329371e8e>  <http://www.opensilex.org/vocabulary/oeev#concerns>  ?concernedItemUri  . 
      *  ?concernedItemUri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?concernedItemType  . 
      *  ?concernedItemUri  <http://www.w3.org/2000/01/rdf-schema#label>  ?concernedItemLabel  . 
      * }
@@ -272,12 +311,12 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * @param searchPageSize
      * @return events
      */
-    public ArrayList<Event> searchEvents(Event eventSearchParameters, String searchConcernedItemLabel, String searchConcernedItemUri, String dateRangeStartString, String dateRangeEndString, User user, int searchPage, int searchPageSize) {
+    public ArrayList<Event> searchEvents(Event eventSearchParameters, String searchConcernedItemLabel, String searchConcernedItemUri, String dateRangeStartString, String dateRangeEndString, int searchPage, int searchPageSize) {
         
         setPage(searchPage);
         setPageSize(searchPageSize);
         
-        SPARQLQueryBuilder eventsQuery = prepareSearchQuery(eventSearchParameters, searchConcernedItemLabel, searchConcernedItemUri, dateRangeStartString, dateRangeEndString, user);
+        SPARQLQueryBuilder eventsQuery = prepareSearchQueryEvents(eventSearchParameters, searchConcernedItemLabel, searchConcernedItemUri, dateRangeStartString, dateRangeEndString);
         
         // get events from storage
         TupleQuery eventsTupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, eventsQuery.toString());
@@ -295,6 +334,35 @@ public class EventDAOSesame extends DAOSesame<Event> {
         }
         return events;
     }
+ 
+    
+    /**
+     * Search an event with details 
+     * @param searchUri
+     * @return events
+     */
+    public Event searchEventDetailed(String searchUri) {
+        
+        SPARQLQueryBuilder eventsQuery = prepareSearchQueryEventDetailed(searchUri);
+        
+        // get events from storage
+        TupleQuery eventsTupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, eventsQuery.toString());
+        
+        Event event;
+        event = null;
+//        // for each event, set its properties and concerned Items
+//        try (TupleQueryResult eventsResult = eventsTupleQuery.evaluate()) {
+//            events = new ArrayList<>();
+//            while (eventsResult.hasNext()) {
+//                Event event = getEventFromBindingSet(eventsResult.next());
+//                searchEventPropertiesAndSetThemToIt(event);
+//                searchEventConcernedItemsAndSetThemToIt(event);
+//                events.add(event);
+//            }
+//        }
+        return event;
+    }
+    
     
     /**
      * Search event properties and set them to it
@@ -364,8 +432,8 @@ public class EventDAOSesame extends DAOSesame<Event> {
      *   && (?dateRangeStartDateTime <= ?dateTime) && (?dateRangeEndDateTime >= ?dateTime) ) 
      *}
      */
-    private SPARQLQueryBuilder prepareCountQuery(Event eventSearchParameters, String searchConcernedItemLabel, String searchConcernedItemUri, String dateRangeStartString, String dateRangeEndString, User user) {
-        SPARQLQueryBuilder query = this.prepareSearchQuery(eventSearchParameters, searchConcernedItemLabel, searchConcernedItemUri, dateRangeStartString, dateRangeEndString, user);
+    private SPARQLQueryBuilder prepareCountQuery(Event eventSearchParameters, String searchConcernedItemLabel, String searchConcernedItemUri, String dateRangeStartString, String dateRangeEndString) {
+        SPARQLQueryBuilder query = this.prepareSearchQueryEvents(eventSearchParameters, searchConcernedItemLabel, searchConcernedItemUri, dateRangeStartString, dateRangeEndString);
         query.clearSelect();
         query.clearLimit();
         query.clearOffset();
@@ -388,10 +456,10 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * @throws MalformedQueryException
      * @throws QueryEvaluationException
      */
-    public Integer count(Event eventSearchParameters, String searchConcernedItemLabel, String searchConcernedItemUri, String dateRangeStartString, String dateRangeEndString, User user) 
+    public Integer count(Event eventSearchParameters, String searchConcernedItemLabel, String searchConcernedItemUri, String dateRangeStartString, String dateRangeEndString) 
             throws RepositoryException, MalformedQueryException, QueryEvaluationException {
         
-        SPARQLQueryBuilder countQuery = prepareCountQuery(eventSearchParameters, searchConcernedItemLabel, searchConcernedItemUri, dateRangeStartString, dateRangeEndString, user);
+        SPARQLQueryBuilder countQuery = prepareCountQuery(eventSearchParameters, searchConcernedItemLabel, searchConcernedItemUri, dateRangeStartString, dateRangeEndString);
         
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, countQuery.toString());
         Integer count = 0;

@@ -19,7 +19,7 @@ import phis2ws.service.view.model.phis.Contact;
 import phis2ws.service.view.model.phis.Project;
 
 /**
- *
+ * Project post DTO
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ProjectPostDTO extends AbstractVerifiedClass {
@@ -73,7 +73,7 @@ public class ProjectPostDTO extends AbstractVerifiedClass {
         this.name = name;
     }
 
-    @ApiModelProperty(example = "P T")
+    @ApiModelProperty(example = "PT")
     public String getAcronyme() {
         return acronyme;
     }

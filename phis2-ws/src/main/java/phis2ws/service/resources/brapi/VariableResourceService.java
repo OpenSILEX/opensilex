@@ -177,7 +177,7 @@ public class VariableResourceService implements BrapiCall {
                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_JSON)    
-    public Response getTraitsList ( 
+    public Response getVariablesList ( 
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
         //SILEX:todo
@@ -213,7 +213,7 @@ public class VariableResourceService implements BrapiCall {
                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_JSON)    
-    public Response getTraitDetails ( 
+    public Response getVariableDetails ( 
         @ApiParam(value = DocumentationAnnotation.VARIABLE_URI_DEFINITION, required = true, example=DocumentationAnnotation.EXAMPLE_VARIABLE_URI) @PathParam("observationVariableDbId") @Required @URL String observationVariableDbId
     ) throws SQLException {        
         VariableDaoSesame varDAO = new VariableDaoSesame();

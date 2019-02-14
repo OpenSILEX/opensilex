@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.logging.Level;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -206,7 +207,11 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
         for (TripletDTO triplet : tripletsGroup) {
             //if there is a type, generate the uri
             if (triplet.getS().equals(REQUEST_GENERATION_URI_STRING) && uri == null) {
-                uri = uriGenerator.generateNewInstanceUri(rdfType, null, null);
+                try {
+                    uri = uriGenerator.generateNewInstanceUri(rdfType, null, null);
+                } catch (Exception ex) {
+                    java.util.logging.Logger.getLogger(TripletDAOSesame.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         }
 

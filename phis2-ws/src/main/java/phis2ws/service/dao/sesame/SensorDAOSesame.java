@@ -577,7 +577,11 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         
         for (SensorDTO sensorDTO : sensorsDTO) {
             Sensor sensor = sensorDTO.createObjectFromDTO();
-            sensor.setUri(uriGenerator.generateNewInstanceUri(sensorDTO.getRdfType(), null, null));
+            try {
+                sensor.setUri(uriGenerator.generateNewInstanceUri(sensorDTO.getRdfType(), null, null));
+            } catch (Exception ex) { //In the sensors case, no exception should be raised
+                annotationInsert = false;
+            }
             
             UpdateRequest query = prepareInsertQuery(sensor);
             Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());

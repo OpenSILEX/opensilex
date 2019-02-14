@@ -10,6 +10,7 @@ package phis2ws.service.dao.sesame;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -305,8 +306,12 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
         
         getConnection().begin();
         for (RadiometricTarget radiometricTarget : radiometricTargets) {
-            //Generate uri
-            radiometricTarget.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_RADIOMETRIC_TARGET.toString(), null, null));
+            try {
+                //Generate uri
+                radiometricTarget.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_RADIOMETRIC_TARGET.toString(), null, null));
+            } catch (Exception ex) { //In the radiometric target case, no exception should be raised
+                insert = false;
+            }
             //Insert radiometric target
             UpdateRequest query = prepareInsertQuery(radiometricTarget);
             

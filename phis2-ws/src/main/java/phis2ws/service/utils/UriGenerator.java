@@ -9,12 +9,8 @@ package phis2ws.service.utils;
 import java.util.Calendar;
 import java.util.UUID;
 import org.apache.jena.sparql.AlreadyExists;
-import org.eclipse.rdf4j.query.MalformedQueryException;
-import org.eclipse.rdf4j.query.QueryEvaluationException;
-import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
-import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.dao.mongo.ImageMetadataDaoMongo;
 import phis2ws.service.dao.phis.ProjectDao;
 import phis2ws.service.dao.sesame.ScientificObjectDAOSesame;
@@ -30,7 +26,6 @@ import phis2ws.service.dao.sesame.VectorDAOSesame;
 import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Foaf;
 import phis2ws.service.ontologies.Oeso;
-import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.model.phis.Project;
 
 /**
@@ -50,9 +45,6 @@ import phis2ws.service.view.model.phis.Project;
 public class UriGenerator {
 
     final static Logger LOGGER = LoggerFactory.getLogger(UriGenerator.class);
-
-    private static final String PROPERTIES_SERVICE_FILE_NAME = "sesame_rdf_config";
-    private static final String PROPERTIES_SERVICE_BASE_URI = "baseURI";
 
     private static final String URI_CODE_AGRONOMICAL_OBJECT = "o";
     private static final String URI_CODE_IMAGE = "i";

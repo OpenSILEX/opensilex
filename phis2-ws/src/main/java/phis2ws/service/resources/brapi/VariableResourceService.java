@@ -296,6 +296,7 @@ public class VariableResourceService implements BrapiCall {
             BrapiScale scale = new BrapiScale();
             scale.setScaleDbid(var.getUnit().getUri());
             scale.setScaleName(var.getUnit().getLabel());
+            scale.setDataType("Numerical");
             brapiVar.setScale(scale);
             
             varList.add(brapiVar); 

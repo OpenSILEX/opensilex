@@ -183,11 +183,11 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
         }
         
         if (serialNumber != null) {
-            query.appendTriplet(sensorUri, Oeso.RELATION_SERIAL_NUMBER.toString(), "\"" + serialNumber + "\"", null);
+            query.appendTriplet(sensorUri, Oeso.RELATION_HAS_SERIAL_NUMBER.toString(), "\"" + serialNumber + "\"", null);
         } else {
             query.appendSelect(" ?" + SERIAL_NUMBER);
             query.beginBodyOptional();
-            query.appendToBody(sensorUri + " <" + Oeso.RELATION_SERIAL_NUMBER.toString() + "> " + "?" + SERIAL_NUMBER + " .");
+            query.appendToBody(sensorUri + " <" + Oeso.RELATION_HAS_SERIAL_NUMBER.toString() + "> " + "?" + SERIAL_NUMBER + " .");
             query.endBodyOptional();
         }
 
@@ -235,7 +235,7 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
      *      }
      *      ?uri  <http://www.opensilex.org/vocabulary/oeso#hasBrand>  ?brand  . 
      *      OPTIONAL {
-     *          ?uri <http://www.opensilex.org/vocabulary/oeso#serialNumber> ?serialNumber .
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#hasSerialNumber> ?serialNumber .
      *      }
      *      OPTIONAL {
      *          ?uri <http://www.opensilex.org/vocabulary/oeso#inServiceDate> ?inServiceDate . 
@@ -521,7 +521,7 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
      *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.opensilex.org/vocabulary/oeso#hasBrand>  "Skye Instruments"  . 
      *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.opensilex.org/vocabulary/oeso#inServiceDate>  "2017-06-15"  . 
      *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.opensilex.org/vocabulary/oeso#personInCharge>  "morgane.vidal@inra.fr"  . 
-     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.opensilex.org/vocabulary/oeso#serialNumber>  "A1E345F32"  . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.opensilex.org/vocabulary/oeso#hasSerialNumber>  "A1E345F32"  . 
      *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.opensilex.org/vocabulary/oeso#dateOfPurchase>  "2017-06-15"  . 
      *  }
      * }
@@ -548,7 +548,7 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
         query.addInsert(graph, vectorUri, relationPersonInCharge, vector.getPersonInCharge());
         
         if (vector.getSerialNumber() != null) {
-            Property relationSerialNumber = ResourceFactory.createProperty(Oeso.RELATION_SERIAL_NUMBER.toString());
+            Property relationSerialNumber = ResourceFactory.createProperty(Oeso.RELATION_HAS_SERIAL_NUMBER.toString());
             query.addInsert(graph, vectorUri, relationSerialNumber, vector.getSerialNumber());
         }
         if (vector.getDateOfPurchase() != null) {
@@ -624,7 +624,7 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
      *      <http://www.phenome-fppn.fr/diaphen/2018/v18142> <http://www.opensilex.org/vocabulary/oeso#hasBrand> "Skye Instruments" . 
      *      <http://www.phenome-fppn.fr/diaphen/2018/v18142> <http://www.opensilex.org/vocabulary/oeso#inServiceDate> "2017-06-15" . 
      *      <http://www.phenome-fppn.fr/diaphen/2018/v18142> <http://www.opensilex.org/vocabulary/oeso#personInCharge> "morgane.vidal@inra.fr" . 
-     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142> <http://www.opensilex.org/vocabulary/oeso#serialNumber> "A1E345F32" .
+     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142> <http://www.opensilex.org/vocabulary/oeso#hasSerialNumber> "A1E345F32" .
      *   }
      * }
      * @param vector
@@ -650,7 +650,7 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
         query.addDelete(graph, vectorUri, relationPersonInCharge, vector.getPersonInCharge());
         
         if (vector.getSerialNumber() != null) {
-            Property relationSerialNumber = ResourceFactory.createProperty(Oeso.RELATION_SERIAL_NUMBER.toString());
+            Property relationSerialNumber = ResourceFactory.createProperty(Oeso.RELATION_HAS_SERIAL_NUMBER.toString());
             query.addDelete(graph, vectorUri, relationSerialNumber, vector.getSerialNumber());
         }
         if (vector.getDateOfPurchase() != null) {

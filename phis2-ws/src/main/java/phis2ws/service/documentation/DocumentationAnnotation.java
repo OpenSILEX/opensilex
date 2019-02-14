@@ -216,7 +216,7 @@ public final class DocumentationAnnotation {
 
     public static final String EXAMPLE_SPECIES_RDF_TYPE = "http://www.opensilex.org/vocabulary/oeso#Species";
     public static final String EXAMPLE_SPECIES_URI = "http://www.phenome-fppn.fr/id/species/maize";
-    public static final String EXAMPLE_SPECIES_FROM_SPECIES = "http://www.opensilex.org/vocabulary/oeso#fromSpecies";
+    public static final String EXAMPLE_SPECIES_HAS_SPECIES = "http://www.opensilex.org/vocabulary/oeso#hasSpecies";
     public static final String EXAMPLE_SPECIES_LABEL = "Maize";
 
     public static final String EXAMPLE_TRAIT_URI = "http://www.phenome-fppn.fr/phis_field/id/traits/t001";

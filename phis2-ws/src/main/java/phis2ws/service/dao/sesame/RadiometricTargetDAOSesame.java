@@ -7,7 +7,6 @@
 //******************************************************************************
 package phis2ws.service.dao.sesame;
 
-import ch.qos.logback.core.CoreConstants;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -381,7 +380,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
      *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.opensilex.org/vocabulary/oeso#hasShapeWidth> "45" .
      *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.opensilex.org/vocabulary/oeso#hasTechnicalContact> "admin@opensilex.org" .
      *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.opensilex.org/vocabulary/oeso#inServiceDate> "2019-01-01" .
-     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.opensilex.org/vocabulary/oeso#serialNumber> "serial" .
+     *      <http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt004> <http://www.opensilex.org/vocabulary/oeso#hasSerialNumber> "serial" .
      *    }
      *  }
      * @return the query

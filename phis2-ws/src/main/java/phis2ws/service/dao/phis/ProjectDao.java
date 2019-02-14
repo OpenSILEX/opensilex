@@ -82,6 +82,7 @@ public class ProjectDao extends DAOPhisBrapi<Project, ProjectDTO> {
         boolean insertionState = true;
         POSTResultsReturn results = null;
         ArrayList<Project> projects = new ArrayList<>();
+        ArrayList<String> createdResourcesURIs = new ArrayList<>();
         
         for (ProjectPostDTO projectDTO : newProjects) {
             Project project = projectDTO.createObjectFromDTO();
@@ -148,6 +149,7 @@ public class ProjectDao extends DAOPhisBrapi<Project, ProjectDTO> {
                         }
 
                         insertPreparedStatementProject.execute();
+                        createdResourcesURIs.add(project.getUri());
                         LOGGER.trace(log + " quert : " + insertPreparedStatementProject.toString());
 
                         for (Contact contact : project.getContacts()) {
@@ -185,7 +187,7 @@ public class ProjectDao extends DAOPhisBrapi<Project, ProjectDTO> {
                 if (exists > 0 && inserted > 0) {
                     results = new POSTResultsReturn(resultState, insertionState, dataState);
                     insertStatusList.add(new Status("Already existing data", StatusCodeMsg.INFO, "All projects already exist"));
-                    results.setHttpStatus(Response.Status.OK);
+                    results.setHttpStatus(Response.Status.CREATED);
                     results.statusList = insertStatusList;
                 } else {
                     if (exists > 0) { //Si données existantes et aucunes insérées
@@ -195,6 +197,7 @@ public class ProjectDao extends DAOPhisBrapi<Project, ProjectDTO> {
                     }
                 }   
                 results = new POSTResultsReturn(resultState, insertionState, dataState);
+                results.createdResources = createdResourcesURIs;
             } catch (SQLException e) {
                 LOGGER.error(e.getMessage(), e);
                 
@@ -224,6 +227,7 @@ public class ProjectDao extends DAOPhisBrapi<Project, ProjectDTO> {
         } else {
             results = new POSTResultsReturn(resultState, insertionState, dataState);
             results.statusList = insertStatusList;
+            results.createdResources = createdResourcesURIs;
         }
         
         return results;

@@ -227,7 +227,7 @@ public class ProjectResourceService extends ResourceService {
 
             if (result.getHttpStatus().equals(Response.Status.CREATED)) { //201, projets insérés
                 postResponse = new ResponseFormPOST(result.statusList);
-                return Response.status(result.getHttpStatus()).entity(postResponse).build();
+                postResponse.getMetadata().setDatafiles(result.getCreatedResources());
             } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
                     || result.getHttpStatus().equals(Response.Status.OK)
                     || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {

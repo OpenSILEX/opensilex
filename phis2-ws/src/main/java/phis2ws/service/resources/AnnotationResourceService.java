@@ -1,5 +1,5 @@
 //******************************************************************************
-//                            AnnotationResourceService.java
+//                       AnnotationResourceService.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 21 Jun, 2018
@@ -46,14 +46,16 @@ import phis2ws.service.view.model.phis.Annotation;
 
 /**
  * Represents the annotation service.
+ * @update [Arnaud Charleroy] 23 August, 2018: update coding style.
+ * @update [Andréas Garcia] 15 Feb. 2019: search parameters are no longer dao 
+ * class attributes but parameters sent through search functions
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
- * @update [Arnaud Charleroy] 23 August, 2018 : update coding style.
  */
 @Api("/annotations")
 @Path("/annotations")
 public class AnnotationResourceService extends ResourceService {
     /**
-     * insert given annotations in the triplestore
+     * Insert given annotations in the triplestore
      * @example
      * [
      *   {
@@ -93,11 +95,10 @@ public class AnnotationResourceService extends ResourceService {
         AbstractResultForm postResponse = null;
         //If there are at least one list of annotations
         if (annotations != null && !annotations.isEmpty()) {
-            AnnotationDAOSesame annotationDAOSesame = new AnnotationDAOSesame();
+            AnnotationDAOSesame annotationDAOSesame = new AnnotationDAOSesame(userSession.getUser());
             if (context.getRemoteAddr() != null) {
                 annotationDAOSesame.remoteUserAdress = context.getRemoteAddr();
             }
-            annotationDAOSesame.user = userSession.getUser();
 
             POSTResultsReturn insertResult = annotationDAOSesame.checkAndInsert(annotations);
             //annotations inserted
@@ -117,16 +118,8 @@ public class AnnotationResourceService extends ResourceService {
     }
 
     /**
-     * search annotation by uri, creator, comment, date of creation, target
-     * @param pageSize
-     * @param page
-     * @param uri
-     * @param creator
-     * @param comment
-     * @param target
-     * @param motivatedBy
-     * @return list of the annotation corresponding to the search params given
-     * e.g { 
+     * Search annotations by uri, creator, comment, date of creation, target
+     * @example { 
      * "metadata": { 
      *      "pagination": { 
      *          "pageSize": 20,
@@ -147,6 +140,14 @@ public class AnnotationResourceService extends ResourceService {
      *              "http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy" 
      *            ] 
      *      },{...} )}}
+     * @param pageSize
+     * @param page
+     * @param uri
+     * @param creator
+     * @param comment
+     * @param target
+     * @param motivatedBy
+     * @return list of the annotation corresponding to the search params given
      */
     @GET
     @ApiOperation(value = "Get all annotations corresponding to the search params given",
@@ -169,43 +170,20 @@ public class AnnotationResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
             @ApiParam(value = "Search by annotation uri", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_URI) @QueryParam("uri") @URL String uri,
             @ApiParam(value = "Search by creator", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_CREATOR) @QueryParam("creator") @URL String creator,
-            @ApiParam(value = "Search by motivation", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_MOTIVATEDBY) @QueryParam("motivatedBy") @URL String motivatedBy,
+            @ApiParam(value = "Search by target", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_URI) @QueryParam("target") @URL String target,
             @ApiParam(value = "Search by comment", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_COMMENT) @QueryParam("comment") String comment,
-            @ApiParam(value = "Search by target", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_URI) @QueryParam("target") @URL String target) {
+            @ApiParam(value = "Search by motivation", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_MOTIVATEDBY) @QueryParam("motivatedBy") @URL String motivatedBy) {
 
-        AnnotationDAOSesame annotationDAO = new AnnotationDAOSesame();
-        if (uri != null) {
-            annotationDAO.uri = uri;
-        }
-
-        if (creator != null) {
-            annotationDAO.creator = creator;
-        }
-        if (target != null) {
-            annotationDAO.target = target;
-        }
-        if (comment != null) {
-            annotationDAO.bodyValue = comment;
-        }
-
-        if (motivatedBy != null) {
-            annotationDAO.motivatedBy = motivatedBy;
-        }
-
-        annotationDAO.user = userSession.getUser();
-        annotationDAO.setPage(page);
-        annotationDAO.setPageSize(pageSize);
-
-        return getAnnotationData(annotationDAO);
+        return getAnnotations(uri, creator, target, comment, motivatedBy, page, pageSize);
     }
 
     /**
-     * get the informations about a annotation
-     *
+     * Get the informations about a annotation
      * @param uri
      * @param pageSize
      * @param page
-     * @return the informations about the annotation if it exists e.g. {
+     * @example
+     * {
      * "metadata": { "pagination": null, "status": [], "datafiles": [] },
      * "result": { 
      * "data": [ { 
@@ -219,6 +197,7 @@ public class AnnotationResourceService extends ResourceService {
      *      "http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy" 
      *    ] 
      * } ] } }
+     * @return the informations about the annotation if it exists
      */
     @GET
     @Path("{uri}")
@@ -246,31 +225,37 @@ public class AnnotationResourceService extends ResourceService {
             final Status status = new Status(StatusCodeMsg.ACCESS_ERROR, StatusCodeMsg.ERR, "Empty annotation uri");
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
         }
-       
-        AnnotationDAOSesame annotationDAO = new AnnotationDAOSesame();
-        annotationDAO.uri = uri;
-        annotationDAO.setPage(page);
-        annotationDAO.setPageSize(pageSize);
-        annotationDAO.user = userSession.getUser();
 
-        return getAnnotationData(annotationDAO);
+        return getAnnotations(uri, null, null, null, null, page, pageSize);
     }
 
     /**
-     * Search annotations corresponding to search params given by a user
-     *
+     * Search annotations corresponding to search parameters given by a user
      * @param annotationDAOSesame
      * @return the annotations corresponding to the search
      */
-    private Response getAnnotationData(AnnotationDAOSesame annotationDAOSesame) {
+    private Response getAnnotations(String searchUri, String searchCreator, String searchTarget, String searchComment, String searchMotivatedBy, int searchPage, int searchPageSize) {
         ArrayList<Annotation> annotations;
         ArrayList<Status> statusList = new ArrayList<>();
         ResponseFormAnnotation getResponse;
+        AnnotationDAOSesame annotationDAOSesame = new AnnotationDAOSesame(userSession.getUser());
 
         // Count all annotations for this specific request
-        Integer totalCount = annotationDAOSesame.count();
+        Integer totalCount = annotationDAOSesame.count(
+            searchUri,
+            searchCreator,
+            searchTarget,
+            searchComment,
+            searchMotivatedBy);
         // Retreive all annotations returned by the query
-        annotations = annotationDAOSesame.allPaginate();
+        annotations = annotationDAOSesame.searchAnnotations(
+            searchUri,
+            searchCreator,
+            searchTarget,
+            searchComment,
+            searchMotivatedBy,
+            searchPage,
+            searchPageSize);
 
         if (annotations == null) {
             getResponse = new ResponseFormAnnotation(0, 0, annotations, true);

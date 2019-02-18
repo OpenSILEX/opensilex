@@ -225,12 +225,13 @@ public class ProjectResourceService extends ResourceService {
             //Vérification des projets et insertion en BD
             POSTResultsReturn result = projectDao.checkAndInsert(projects);
 
-            if (result.getHttpStatus().equals(Response.Status.CREATED)) { //201, projets insérés
+            if (result.getHttpStatus().equals(Response.Status.CREATED)) { //201, projects inserted
                 postResponse = new ResponseFormPOST(result.statusList);
                 postResponse.getMetadata().setDatafiles(result.getCreatedResources());
             } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
                     || result.getHttpStatus().equals(Response.Status.OK)
-                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)
+                    || result.getHttpStatus().equals(Response.Status.CONFLICT)) {
                 postResponse = new ResponseFormPOST(result.statusList);
             }
             return Response.status(result.getHttpStatus()).entity(postResponse).build();

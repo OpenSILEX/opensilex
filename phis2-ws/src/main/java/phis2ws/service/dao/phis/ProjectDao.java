@@ -150,19 +150,20 @@ public class ProjectDao extends DAOPhisBrapi<Project, ProjectDTO> {
 
                         insertPreparedStatementProject.execute();
                         createdResourcesURIs.add(project.getUri());
-                        LOGGER.trace(log + " quert : " + insertPreparedStatementProject.toString());
+                        LOGGER.debug(log + " quert : " + insertPreparedStatementProject.toString());
 
                         for (Contact contact : project.getContacts()) {
                             insertPreparedStatementProjectContact.setString(1, project.getUri());
                             insertPreparedStatementProjectContact.setString(2, contact.getEmail());
                             insertPreparedStatementProjectContact.setString(3, contact.getType());
                             insertPreparedStatementProjectContact.execute();
-                            LOGGER.trace(log + " quert : " + insertPreparedStatementProjectContact.toString());
+                            LOGGER.debug(log + " quert : " + insertPreparedStatementProjectContact.toString());
                         }
                         inserted++;
                     } catch (AlreadyExists ex) {
                     //AlreadyExists throwed by the UriGenerator if the project uri generated already exists
                         exists++;
+                        insertStatusList.add(new Status (StatusCodeMsg.ALREADY_EXISTING_DATA, StatusCodeMsg.INFO, project.getAcronyme()+ " already exists"));
                     }
                     
                     //Insertion par batch
@@ -186,18 +187,19 @@ public class ProjectDao extends DAOPhisBrapi<Project, ProjectDTO> {
                 //Si data insérées et existantes
                 if (exists > 0 && inserted > 0) {
                     results = new POSTResultsReturn(resultState, insertionState, dataState);
-                    insertStatusList.add(new Status("Already existing data", StatusCodeMsg.INFO, "All projects already exist"));
                     results.setHttpStatus(Response.Status.CREATED);
                     results.statusList = insertStatusList;
                 } else {
+                    results = new POSTResultsReturn(resultState, insertionState, dataState);
                     if (exists > 0) { //Si données existantes et aucunes insérées
-                        insertStatusList.add(new Status ("Already existing data", StatusCodeMsg.INFO, String.valueOf(exists) + " project already exists"));
+                        results.setHttpStatus(Response.Status.CONFLICT); //409 
                     } else { //Si données qui n'existent pas et donc sont insérées
                         insertStatusList.add(new Status("Data inserted", StatusCodeMsg.INFO, String.valueOf(inserted) + " projects inserted"));
                     }
                 }   
-                results = new POSTResultsReturn(resultState, insertionState, dataState);
+                
                 results.createdResources = createdResourcesURIs;
+                results.statusList = insertStatusList;
             } catch (SQLException e) {
                 LOGGER.error(e.getMessage(), e);
                 

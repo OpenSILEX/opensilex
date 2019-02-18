@@ -13,7 +13,7 @@
 //          to save the database.
 //***********************************************************************************************
 
-package phis2ws.service.resources.dto;
+package phis2ws.service.resources.dto.experiments;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;

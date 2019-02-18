@@ -4,8 +4,8 @@
 // Copyright © INRA 2018
 // Creation date: 13 nov. 2018
 // Contact: andreas.garcia@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Subject: Represents the event data service
 //******************************************************************************
+
 package phis2ws.service.resources;
 
 import io.swagger.annotations.Api;
@@ -33,13 +33,15 @@ import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.sesame.EventDAOSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
-import phis2ws.service.resources.dto.event.EventDTO;
+import phis2ws.service.resources.dto.event.EventDetailedDTO;
+import phis2ws.service.resources.dto.event.EventSimpleDTO;
 import phis2ws.service.resources.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
 import phis2ws.service.resources.validation.interfaces.Date;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
-import phis2ws.service.view.brapi.form.ResponseFormEvent;
+import phis2ws.service.view.brapi.form.ResponseFormEventDetailed;
+import phis2ws.service.view.brapi.form.ResponseFormEventSimple;
 import phis2ws.service.view.model.phis.Event;
 
 /**
@@ -57,7 +59,7 @@ public class EventResourceService  extends ResourceService {
      * @param event
      * @return the list of events
      */
-    private List<Event> eventDTOsToEvents(List<EventDTO> eventDTOs) {
+    private List<Event> eventDTOsToEvents(List<EventSimpleDTO> eventDTOs) {
         ArrayList<Event> events = new ArrayList<>();
         
         eventDTOs.forEach(eventDTO -> {
@@ -69,16 +71,6 @@ public class EventResourceService  extends ResourceService {
     
     /**
      * Search all events
-     * 
-     * @param pageSize
-     * @param page
-     * @param uri
-     * @param type
-     * @param concernedItemUri
-     * @param concernedItemLabel
-     * @param startDate
-     * @param endDate
-     * @return  list of all events
      * @example
      * {
      *  {
@@ -115,6 +107,15 @@ public class EventResourceService  extends ResourceService {
      *     }
      *   }
      * }
+     * @param pageSize
+     * @param page
+     * @param uri
+     * @param type
+     * @param concernedItemUri
+     * @param concernedItemLabel
+     * @param startDate
+     * @param endDate
+     * @return  list of all events
      */
     @GET
     @ApiOperation(value = "Get all events corresponding to the search parameters given.", notes = "Retrieve all events authorized for the user corresponding to the " + "search parameters given")
@@ -139,9 +140,9 @@ public class EventResourceService  extends ResourceService {
         EventDAOSesame eventDAO = new EventDAOSesame(userSession.getUser());
         
         // 1. Search events with parameters
-        Event eventSearchParameters = new Event(uri, type, null, null, null);
         ArrayList<Event> events = eventDAO.searchEvents(
-                eventSearchParameters, 
+                uri,
+                type,
                 concernedItemLabel, 
                 concernedItemUri, 
                 startDate, 
@@ -150,31 +151,32 @@ public class EventResourceService  extends ResourceService {
                 pageSize);
         
         // 2. Analyse result
-        ArrayList<EventDTO> eventDTOs = new ArrayList();
+        ArrayList<EventSimpleDTO> eventDTOs = new ArrayList();
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormEvent responseForm;
+        ResponseFormEventSimple responseForm;
         
         if (events == null) { // Request failure
-            responseForm = new ResponseFormEvent(0, 0, eventDTOs, true, 0);
+            responseForm = new ResponseFormEventSimple(0, 0, eventDTOs, true, 0);
             return noResultFound(responseForm, statusList);
         } else if (events.isEmpty()) { // No result
-            responseForm = new ResponseFormEvent(0, 0, eventDTOs, true, 0);
+            responseForm = new ResponseFormEventSimple(0, 0, eventDTOs, true, 0);
             return noResultFound(responseForm, statusList);
         } else { // Results
             
             // Generate DTOs
             events.forEach((event) -> {
-                eventDTOs.add(new EventDTO(event));
+                eventDTOs.add(new EventSimpleDTO(event));
             });
             
             // Return DTOs
             int resultsCount = eventDAO.count(
-                eventSearchParameters, 
+                uri,
+                type,
                 concernedItemLabel, 
                 concernedItemUri, 
                 startDate, 
                 endDate);
-            responseForm = new ResponseFormEvent(eventDAO.getPageSize(), eventDAO.getPage(), eventDTOs, true, resultsCount);
+            responseForm = new ResponseFormEventSimple(eventDAO.getPageSize(), eventDAO.getPage(), eventDTOs, true, resultsCount);
             if (responseForm.getResult().dataSize() == 0) {
                 return noResultFound(responseForm, statusList);
             } else {
@@ -203,7 +205,7 @@ public class EventResourceService  extends ResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getEventDetailed(
-        @ApiParam(value = DocumentationAnnotation.INFRASTRUCTURE_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_EVENT_URI) @PathParam("uri") @URL @Required String uri) {
+        @ApiParam(value = DocumentationAnnotation.EVENT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_EVENT_URI) @PathParam("uri") @URL @Required String uri) {
         
         EventDAOSesame eventDAO = new EventDAOSesame(userSession.getUser());
         
@@ -211,19 +213,19 @@ public class EventResourceService  extends ResourceService {
         Event event = eventDAO.searchEventDetailed(uri);
         
         // 2. Analyse result
-        ArrayList<EventDTO> eventDTOs = new ArrayList();
+        ArrayList<EventDetailedDTO> eventDTOs = new ArrayList();
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormEvent responseForm;
+        ResponseFormEventDetailed responseForm;
         
         if (event == null) { // Request failure
-            responseForm = new ResponseFormEvent(0, 0, eventDTOs, true, 0);
+            responseForm = new ResponseFormEventDetailed(0, 0, eventDTOs, true, 0);
             return noResultFound(responseForm, statusList);
         } else { // Results
             
             // Generate DTO
-            eventDTOs.add(new EventDTO(event));
+            eventDTOs.add(new EventDetailedDTO(event));
             
-            responseForm = new ResponseFormEvent(eventDAO.getPageSize(), eventDAO.getPage(), eventDTOs, true, 0);
+            responseForm = new ResponseFormEventDetailed(0, 0, eventDTOs, true, 0);
             if (responseForm.getResult().dataSize() == 0) {
                 return noResultFound(responseForm, statusList);
             } else {

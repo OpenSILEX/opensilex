@@ -84,13 +84,13 @@ public class AnnotationResourceService extends ResourceService {
     })
     @ApiImplicitParams({
         @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+            dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+            value = DocumentationAnnotation.ACCES_TOKEN,
+            example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     public Response postAnnotations(
-            @ApiParam(value = DocumentationAnnotation.ANNOTATION_POST_DATA_DEFINITION) @Valid ArrayList<AnnotationDTO> annotations,
-            @Context HttpServletRequest context) {
+        @ApiParam(value = DocumentationAnnotation.ANNOTATION_POST_DATA_DEFINITION) @Valid ArrayList<AnnotationDTO> annotations,
+        @Context HttpServletRequest context) {
 
         AbstractResultForm postResponse = null;
         //If there are at least one list of annotations
@@ -179,9 +179,6 @@ public class AnnotationResourceService extends ResourceService {
 
     /**
      * Get the informations about a annotation
-     * @param uri
-     * @param pageSize
-     * @param page
      * @example
      * {
      * "metadata": { "pagination": null, "status": [], "datafiles": [] },
@@ -197,6 +194,9 @@ public class AnnotationResourceService extends ResourceService {
      *      "http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy" 
      *    ] 
      * } ] } }
+     * @param uri
+     * @param pageSize
+     * @param page
      * @return the informations about the annotation if it exists
      */
     @GET
@@ -235,7 +235,6 @@ public class AnnotationResourceService extends ResourceService {
      * @return the annotations corresponding to the search
      */
     private Response getAnnotations(String searchUri, String searchCreator, String searchTarget, String searchComment, String searchMotivatedBy, int searchPage, int searchPageSize) {
-        ArrayList<Annotation> annotations;
         ArrayList<Status> statusList = new ArrayList<>();
         ResponseFormAnnotation getResponse;
         AnnotationDAOSesame annotationDAOSesame = new AnnotationDAOSesame(userSession.getUser());
@@ -247,8 +246,9 @@ public class AnnotationResourceService extends ResourceService {
             searchTarget,
             searchComment,
             searchMotivatedBy);
+        
         // Retreive all annotations returned by the query
-        annotations = annotationDAOSesame.searchAnnotations(
+        ArrayList<Annotation> annotations = annotationDAOSesame.searchAnnotations(
             searchUri,
             searchCreator,
             searchTarget,
@@ -256,15 +256,21 @@ public class AnnotationResourceService extends ResourceService {
             searchMotivatedBy,
             searchPage,
             searchPageSize);
+        
+        ArrayList<AnnotationDTO> annotationDTOs = new ArrayList();
 
         if (annotations == null) {
-            getResponse = new ResponseFormAnnotation(0, 0, annotations, true);
+            getResponse = new ResponseFormAnnotation(0, 0, annotationDTOs, true);
             return noResultFound(getResponse, statusList);
         } else if (annotations.isEmpty()) {
-            getResponse = new ResponseFormAnnotation(0, 0, annotations, true);
+            getResponse = new ResponseFormAnnotation(0, 0, annotationDTOs, true);
             return noResultFound(getResponse, statusList);
         } else {
-            getResponse = new ResponseFormAnnotation(annotationDAOSesame.getPageSize(), annotationDAOSesame.getPage(), annotations, true, totalCount);
+            // Generate DTOs
+            annotations.forEach((annotation) -> {
+                annotationDTOs.add(new AnnotationDTO(annotation));
+            });
+            getResponse = new ResponseFormAnnotation(annotationDAOSesame.getPageSize(), annotationDAOSesame.getPage(), annotationDTOs, true, totalCount);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }

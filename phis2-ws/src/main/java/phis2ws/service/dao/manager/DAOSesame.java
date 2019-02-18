@@ -1,14 +1,11 @@
 //**********************************************************************************************
-//                                       DAOSesame.java 
-//
-// Author(s): Arnaud Charleroy
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2016
-// Creation date: august 2016
-// Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date: 11 jan. 2019
-// Subject:This abstract class is the base of all Dao class for the Sesame TripleStore 
+//                              DAOSesame.java 
+// SILEX-PHIS
+// Copyright © INRA 2016
+// Creation date: Aug 2016
+// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //***********************************************************************************************
+
 package phis2ws.service.dao.manager;
 
 import java.util.List;
@@ -53,13 +50,11 @@ import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
 
 /**
- * Répresente une définition de la classe DAO permettant de se connecter au
- * TripleStore Sesame
- *
- * @author Arnaud Charleroy
+ * DAO class to query the triplestore 
  * @update [Morgane Vidal] 04 Oct, 2018 : Rename existObject to existUri and change the query of the method existUri.
  * @update [Andréas Garcia] 11 Jan, 2019 : Add generic date time stamp comparison SparQL filter.
  * @param <T>
+ * @author Arnaud Charleroy
  */
 public abstract class DAOSesame<T> {
 
@@ -125,6 +120,11 @@ public abstract class DAOSesame<T> {
             ResponseFormPOST postForm = new ResponseFormPOST(new Status("Can't connect to triplestore", StatusCodeMsg.ERR, e.getMessage()));
             throw new WebApplicationException(Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postForm).build());
         }
+    }
+
+    public DAOSesame(User user) {
+        this();
+        this.user = user;
     }
 
     public DAOSesame(String repositoryID) {

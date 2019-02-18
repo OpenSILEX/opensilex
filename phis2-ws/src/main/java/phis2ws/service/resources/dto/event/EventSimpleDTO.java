@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                 EventDTO.java
+//                         EventSimpleDTO.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 13 nov. 2018
@@ -11,22 +11,28 @@ import java.util.ArrayList;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import phis2ws.service.configuration.DateFormat;
+import phis2ws.service.resources.dto.AnnotationDTO;
 import phis2ws.service.resources.dto.ConcernedItemWithLabelsDTO;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyDTO;
+import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.utils.dates.Dates;
 import phis2ws.service.view.model.phis.ConcernedItem;
 import phis2ws.service.view.model.phis.Event;
 import phis2ws.service.view.model.phis.Property;
+import phis2ws.service.view.model.phis.Annotation;
 
 /**
  * DTO representing an event
  * 
  * @author Andréas Garcia<andreas.garcia@inra.fr>
  */
-public class EventDTO extends AbstractVerifiedClass {
+public class EventSimpleDTO extends AbstractVerifiedClass {
     
+    @URL
     private final String uri;
+    
+    @URL
     private final String type;
     private final ArrayList<ConcernedItemWithLabelsDTO> concernedItems = new ArrayList<>();
     private final String date;
@@ -36,7 +42,7 @@ public class EventDTO extends AbstractVerifiedClass {
      * Constructor to create a DTO from an Event model
      * @param event 
      */
-    public EventDTO(Event event) {
+    public EventSimpleDTO(Event event) {
         this.uri = event.getUri();
         this.type = event.getType();
         event.getConcernedItems().forEach((concernedItem) -> {
@@ -76,6 +82,6 @@ public class EventDTO extends AbstractVerifiedClass {
         
         DateTime dateTime = Dates.stringToDateTimeWithGivenPattern(this.date, DateFormat.YMDTHMSZZ.toString());
         
-        return new Event(this.uri, this.type, modelConcernedItems, dateTime, modelProperties);
+        return new Event(this.uri, this.type, modelConcernedItems, dateTime, modelProperties, null);
     }
 }

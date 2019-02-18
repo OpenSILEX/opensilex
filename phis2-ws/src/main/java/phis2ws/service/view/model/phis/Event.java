@@ -24,13 +24,17 @@ public class Event extends RdfResourceDefinition {
     
     // dateTime 
     private DateTime dateTime;
+    
+    // annotations 
+    private ArrayList<Annotation> annotations;
 
-    public Event(String uri, String type, ArrayList<ConcernedItem> concernedItems, DateTime dateTime, ArrayList<Property> properties) {
+    public Event(String uri, String type, ArrayList<ConcernedItem> concernedItems, DateTime dateTime, ArrayList<Property> properties, ArrayList<Annotation> annotations) {
         this.uri = uri;
         this.type = type;
         this.concernedItems = concernedItems;
         this.dateTime = dateTime;
         this.properties = properties;
+        this.annotations = annotations;
     }
     
     public void addConcernedItem(ConcernedItem concernedItem) {
@@ -59,5 +63,13 @@ public class Event extends RdfResourceDefinition {
 
     public void setDateTime(DateTime dateTime) {
         this.dateTime = dateTime;
+    }
+
+    public ArrayList<Annotation> getAnnotations() {
+        return annotations;
+    }
+
+    public void setAnnotations(ArrayList<Annotation> annotations) {
+        this.annotations = annotations;
     }
 }

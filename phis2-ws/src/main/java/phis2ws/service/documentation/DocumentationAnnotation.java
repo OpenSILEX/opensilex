@@ -238,7 +238,8 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_VARIABLE_URI = "http://www.phenome-fppn.fr/diaphen/id/variable/v0000001";
     public static final String EXAMPLE_VARIABLE_LABEL = "LAI";
 
-    public static final String EXAMPLE_EVENT_URI = "http://www.phenome-fppn.fr/id/event/96e72788-6bdc-4f8e-abd1-ce9329371e8e";
+    public static final String EVENT_URI_DEFINITION = "An event URI (Unique Resource Identifier)";
+    public static final String EXAMPLE_EVENT_URI = "http://www.opensilex.org/id/event/12590c87-1c34-426b-a231-beb7acb33415";
     public static final String EXAMPLE_EVENT_TYPE = "http://www.opensilex.org/vocabulary/oeev#MoveFrom";
     public static final String EXAMPLE_EVENT_CONCERNED_ITEM_URI = "http://www.phenome-fppn.fr/m3p/arch/2017/c17000242";
     public static final String EXAMPLE_EVENT_CONCERNED_ITEM_LABEL = "Plot Lavalette";

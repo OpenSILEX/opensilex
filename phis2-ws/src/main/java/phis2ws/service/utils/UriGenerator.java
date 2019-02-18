@@ -6,12 +6,15 @@
 //******************************************************************************
 package phis2ws.service.utils;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.UUID;
 import org.apache.jena.sparql.AlreadyExists;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.dao.mongo.ImageMetadataDaoMongo;
+import phis2ws.service.dao.phis.ExperimentDao;
 import phis2ws.service.dao.phis.ProjectDao;
 import phis2ws.service.dao.sesame.ScientificObjectDAOSesame;
 import phis2ws.service.dao.sesame.AnnotationDAOSesame;
@@ -23,9 +26,11 @@ import phis2ws.service.dao.sesame.TraitDaoSesame;
 import phis2ws.service.dao.sesame.UnitDaoSesame;
 import phis2ws.service.dao.sesame.VariableDaoSesame;
 import phis2ws.service.dao.sesame.VectorDAOSesame;
+import phis2ws.service.model.User;
 import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Foaf;
 import phis2ws.service.ontologies.Oeso;
+import phis2ws.service.view.model.phis.Experiment;
 import phis2ws.service.view.model.phis.Project;
 
 /**
@@ -42,10 +47,7 @@ import phis2ws.service.view.model.phis.Project;
  *              - Second user : Jean Dupont-Marie http://www.phenome-fppn.fr/diaphen/id/agent/jean_dupont-marie01
  * \SILEX:todo
  */
-public class UriGenerator {
-
-    final static Logger LOGGER = LoggerFactory.getLogger(UriGenerator.class);
-
+public class UriGenerator {    
     private static final String URI_CODE_AGRONOMICAL_OBJECT = "o";
     private static final String URI_CODE_IMAGE = "i";
     private static final String URI_CODE_METHOD = "m";
@@ -56,6 +58,7 @@ public class UriGenerator {
     private static final String URI_CODE_VARIABLE = "v";
     private static final String URI_CODE_VECTOR = "v";
 
+    private static final String PLATFORM_CODE =  PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "infrastructureCode") ;
     private static final String PLATFORM_URI = Contexts.PLATFORM.toString();
     private static final String PLATFORM_URI_ID = PLATFORM_URI + "id/";
     private static final String PLATFORM_URI_ID_AGENT = PLATFORM_URI_ID + "agent/";
@@ -379,6 +382,22 @@ public class UriGenerator {
         
         return projectUri;
     }
+    
+    /**
+     * Generates a new experiment uri. An experiment uri follows the patter :
+     * <prefix>:<unic_code>
+     * <unic_code> = infrastructure code + 4 digits year + auto increment digit (per year)
+     * @example http://www.opensilex.org/demo/DMO2019-1
+     * @param year the year of the campaign of the experiment
+     * @return the new uri
+     */
+    private String generateExperimentUri(String year) {
+        //1. Get the number of experiments for the given campaign year
+        ExperimentDao experimentDAO = new ExperimentDao();
+        int experimentsNb = experimentDAO.getNumberOfExperimentsByCampaign(year);
+        //2. Generates the uri of the experiment
+        return PLATFORM_URI + PLATFORM_CODE + year + "-" + experimentsNb;
+    }
 
     /**
      * generates the uri of a new instance of instanceType
@@ -425,6 +444,8 @@ public class UriGenerator {
             return generateRadiometricTargetUri();
         } else if (instanceType.equals(Oeso.CONCEPT_PROJECT.toString())) {
             return generateProjectUri(additionalInformation);
+        } else if (instanceType.equals(Oeso.CONCEPT_EXPERIMENT.toString())) {
+            return generateExperimentUri(year);
         }
 
         return null;

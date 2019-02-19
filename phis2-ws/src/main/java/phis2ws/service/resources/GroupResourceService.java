@@ -39,7 +39,8 @@ import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.phis.GroupDao;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.resources.dto.GroupDTO;
+import phis2ws.service.resources.dto.group.GroupDTO;
+import phis2ws.service.resources.dto.group.GroupPostDTO;
 import phis2ws.service.resources.validation.interfaces.GroupLevel;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
@@ -177,7 +178,7 @@ public class GroupResourceService extends ResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postGroup(
-    @ApiParam(value = DocumentationAnnotation.GROUP_POST_DATA_DEFINITION, required = true) @Valid ArrayList<GroupDTO> groups,
+    @ApiParam(value = DocumentationAnnotation.GROUP_POST_DATA_DEFINITION, required = true) @Valid ArrayList<GroupPostDTO> groups,
     @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         
@@ -191,14 +192,15 @@ public class GroupResourceService extends ResourceService {
             groupDao.user = userSession.getUser();
             
             //Vérification des groupes et insertion en BD
-            POSTResultsReturn result = groupDao.checkAndInsertList(groups);
+            POSTResultsReturn result = groupDao.checkAndInsertGroups(groups);
             
             if (result.getHttpStatus().equals(Response.Status.CREATED)) { //201, projets insérés
                 postResponse = new ResponseFormPOST(result.statusList);
-                return Response.status(result.getHttpStatus()).entity(postResponse).build();
+                postResponse.getMetadata().setDatafiles(result.getCreatedResources());
             } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
                     || result.getHttpStatus().equals(Response.Status.OK)
-                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)
+                    || result.getHttpStatus().equals(Response.Status.CONFLICT)) {
                 postResponse = new ResponseFormPOST(result.statusList);
             }
             return Response.status(result.getHttpStatus()).entity(postResponse).build();

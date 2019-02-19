@@ -22,13 +22,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import javax.ws.rs.core.Response;
+import org.apache.jena.shared.AlreadyExistsException;
+import org.apache.jena.sparql.AlreadyExists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.dao.manager.DAOPhisBrapi;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.model.User;
-import phis2ws.service.resources.dto.GroupDTO;
+import phis2ws.service.ontologies.Foaf;
+import phis2ws.service.resources.dto.group.GroupDTO;
+import phis2ws.service.resources.dto.group.GroupPostDTO;
 import phis2ws.service.utils.POSTResultsReturn;
+import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.sql.JoinAttributes;
 import phis2ws.service.utils.sql.SQLQueryBuilder;
 import phis2ws.service.view.brapi.Status;
@@ -61,7 +66,7 @@ public class GroupDao extends DAOPhisBrapi<Group, GroupDTO> {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
-    private POSTResultsReturn checkAndInsertGroupList(List<GroupDTO> newGroups) throws SQLException, Exception {
+    private POSTResultsReturn checkAndInsertGroupList(List<GroupPostDTO> newGroups) throws SQLException, Exception {
         //init result returned maps
         List<Status> insertStatusList = new ArrayList<>();
         boolean dataState = true;
@@ -69,8 +74,9 @@ public class GroupDao extends DAOPhisBrapi<Group, GroupDTO> {
         boolean insertionState = true;
         POSTResultsReturn results = null;
         ArrayList<Group> groups = new ArrayList<>();
+        ArrayList<String> createdResourcesURIs = new ArrayList<>();
         
-        for (GroupDTO groupDTO : newGroups) {
+        for (GroupPostDTO groupDTO : newGroups) {
             Group group = groupDTO.createObjectFromDTO();
             groups.add(group);
         }
@@ -100,9 +106,12 @@ public class GroupDao extends DAOPhisBrapi<Group, GroupDTO> {
 
                 insertPreparedStatement = connection.prepareStatement(insertGab);
                 insertPreparedStatementGroupUser = connection.prepareStatement(insertGabGroupUsers);
+                UriGenerator uriGenerator = new UriGenerator();
                 
                 for (Group group : groups) {
-                    if (!existInDB(group)) {
+                    try {
+                        //Generate group uri
+                        group.setUri(uriGenerator.generateNewInstanceUri(Foaf.CONCEPT_GROUP.toString(), null, group.getName()));
                         insertionLeft = true;
                         insertPreparedStatement.setString(1, group.getUri());
                         insertPreparedStatement.setString(2, group.getName());
@@ -118,18 +127,21 @@ public class GroupDao extends DAOPhisBrapi<Group, GroupDTO> {
                             log += "User : " + user.getEmail() + " - ";
                         }
                         
-                        LOGGER.trace(log + " quert : " + insertPreparedStatement.toString());
+                        LOGGER.debug(log + " quert : " + insertPreparedStatement.toString());
                         insertPreparedStatement.execute();
+                        createdResourcesURIs.add(group.getUri());
                         
                         for (User u : group.getUsers()) {
                             insertPreparedStatementGroupUser.setString(1, group.getUri());
                             insertPreparedStatementGroupUser.setString(2, u.getEmail());
-                            LOGGER.trace(log + " quert : " + insertPreparedStatementGroupUser.toString());
+                            LOGGER.debug(log + " quert : " + insertPreparedStatementGroupUser.toString());
                             insertPreparedStatementGroupUser.execute();
                         }
                         inserted++;
-                    } else {
+                    } catch (AlreadyExists ex) {
+                        //AlreadyExists throwed by the UriGenerator if the group uri generated already exists
                         exists++;
+                        insertStatusList.add(new Status (StatusCodeMsg.ALREADY_EXISTING_DATA, StatusCodeMsg.INFO, group.getName() + " already exists"));
                     }
                     
                     //Insertion par batch
@@ -152,16 +164,18 @@ public class GroupDao extends DAOPhisBrapi<Group, GroupDTO> {
                 if (exists > 0 && inserted > 0) {
                     results = new POSTResultsReturn(resultState, insertionState, dataState);
                     insertStatusList.add(new Status("Already existing data", StatusCodeMsg.INFO, "All groups already exist"));
-                    results.setHttpStatus(Response.Status.OK);
+                    results.setHttpStatus(Response.Status.CREATED);
                     results.statusList = insertStatusList;
                 } else {
+                    results = new POSTResultsReturn(resultState, insertionState, dataState);
                     if (exists > 0) { //Si données existantes et aucunes insérées
-                        insertStatusList.add(new Status ("Already existing data", StatusCodeMsg.INFO, String.valueOf(exists) + " group already exists"));
+                        results.setHttpStatus(Response.Status.CONFLICT); //409
                     } else { //Si données qui n'existent pas et donc sont insérées
                         insertStatusList.add(new Status("Data inserted", StatusCodeMsg.INFO, String.valueOf(inserted) + " groups inserted"));
                     }
                 }   
-                results = new POSTResultsReturn(resultState, insertionState, dataState);
+                results.createdResources = createdResourcesURIs;
+                results.statusList = insertStatusList;
                 
             } catch (SQLException e) {
                  LOGGER.error(e.getMessage(), e);
@@ -192,13 +206,13 @@ public class GroupDao extends DAOPhisBrapi<Group, GroupDTO> {
         } else {
             results = new POSTResultsReturn(resultState, insertionState, dataState);
             results.statusList = insertStatusList;
+            results.createdResources = createdResourcesURIs;
         }
         
         return results;
     }
 
-    @Override
-    public POSTResultsReturn checkAndInsertList(List<GroupDTO> newObjects) {
+    public POSTResultsReturn checkAndInsertGroups(List<GroupPostDTO> newObjects) {
         POSTResultsReturn postResult;
         try {
             postResult = this.checkAndInsertGroupList(newObjects);
@@ -551,5 +565,10 @@ public class GroupDao extends DAOPhisBrapi<Group, GroupDTO> {
             postResult = new POSTResultsReturn(false, Response.Status.INTERNAL_SERVER_ERROR, e.toString());
         }
         return postResult;
+    }
+
+    @Override
+    public POSTResultsReturn checkAndInsertList(List<GroupDTO> newObjects) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

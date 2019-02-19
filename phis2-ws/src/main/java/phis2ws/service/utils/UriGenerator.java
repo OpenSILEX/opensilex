@@ -6,15 +6,13 @@
 //******************************************************************************
 package phis2ws.service.utils;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.UUID;
 import org.apache.jena.sparql.AlreadyExists;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.dao.mongo.ImageMetadataDaoMongo;
 import phis2ws.service.dao.phis.ExperimentDao;
+import phis2ws.service.dao.phis.GroupDao;
 import phis2ws.service.dao.phis.ProjectDao;
 import phis2ws.service.dao.sesame.ScientificObjectDAOSesame;
 import phis2ws.service.dao.sesame.AnnotationDAOSesame;
@@ -26,11 +24,10 @@ import phis2ws.service.dao.sesame.TraitDaoSesame;
 import phis2ws.service.dao.sesame.UnitDaoSesame;
 import phis2ws.service.dao.sesame.VariableDaoSesame;
 import phis2ws.service.dao.sesame.VectorDAOSesame;
-import phis2ws.service.model.User;
 import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Foaf;
 import phis2ws.service.ontologies.Oeso;
-import phis2ws.service.view.model.phis.Experiment;
+import phis2ws.service.view.model.phis.Group;
 import phis2ws.service.view.model.phis.Project;
 
 /**
@@ -384,7 +381,7 @@ public class UriGenerator {
     }
     
     /**
-     * Generates a new experiment uri. An experiment uri follows the patter :
+     * Generates a new experiment uri. An experiment uri follows the pattern :
      * <prefix>:<unic_code>
      * <unic_code> = infrastructure code + 4 digits year + auto increment digit (per year)
      * @example http://www.opensilex.org/demo/DMO2019-1
@@ -397,6 +394,28 @@ public class UriGenerator {
         int experimentsNb = experimentDAO.getNumberOfExperimentsByCampaign(year);
         //2. Generates the uri of the experiment
         return PLATFORM_URI + PLATFORM_CODE + year + "-" + experimentsNb;
+    }
+    
+    /**
+     * Generates a new group uri. A group uri follows the pattern :
+     * <prefix>:<groupName>
+     * @example http://www.opensilex.org/demo/INRA-MISTEA.GAMMA
+     * @param name the group name
+     * @return the new generated uri
+     * @throws Exception 
+     */
+    private String generateGroupUri(String name) throws Exception {
+        //1. Generates URI
+        String groupUri = PLATFORM_URI + name;
+        //2. Check if the generated URI already exists
+        GroupDao groupDao = new GroupDao();
+        Group group = new Group(groupUri);
+        
+        if (groupDao.existInDB(group)) {
+            throw new AlreadyExists("The group uri " + groupUri + " already exist in the triplestore.");
+        }
+        
+        return groupUri;
     }
 
     /**
@@ -446,6 +465,8 @@ public class UriGenerator {
             return generateProjectUri(additionalInformation);
         } else if (instanceType.equals(Oeso.CONCEPT_EXPERIMENT.toString())) {
             return generateExperimentUri(year);
+        } else if (instanceType.equals(Foaf.CONCEPT_GROUP.toString())) {
+            return generateGroupUri(additionalInformation);
         }
 
         return null;

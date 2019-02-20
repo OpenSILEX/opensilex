@@ -29,7 +29,7 @@ public enum GeoSPARQL {
     RELATION_CONTAINS_MULTIPLE {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + RELATION_CONTAINS.toString() + "*";
+            return RELATION_CONTAINS.toString() + "*";
         }
     }
 }

@@ -8,11 +8,11 @@ package phis2ws.service.utils;
 
 import java.util.Calendar;
 import java.util.UUID;
-import javax.ws.rs.core.Context;
+import org.apache.jena.sparql.AlreadyExists;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
-import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.dao.mongo.ImageMetadataDaoMongo;
+import phis2ws.service.dao.phis.ProjectDao;
 import phis2ws.service.dao.sesame.ScientificObjectDAOSesame;
 import phis2ws.service.dao.sesame.AnnotationDAOSesame;
 import phis2ws.service.dao.sesame.MethodDaoSesame;
@@ -26,6 +26,7 @@ import phis2ws.service.dao.sesame.VectorDAOSesame;
 import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Foaf;
 import phis2ws.service.ontologies.Oeso;
+import phis2ws.service.view.model.phis.Project;
 
 /**
  * generate differents kinds of uris (vector, sensor, ...)
@@ -44,9 +45,6 @@ import phis2ws.service.ontologies.Oeso;
 public class UriGenerator {
 
     final static Logger LOGGER = LoggerFactory.getLogger(UriGenerator.class);
-
-    private static final String PROPERTIES_SERVICE_FILE_NAME = "sesame_rdf_config";
-    private static final String PROPERTIES_SERVICE_BASE_URI = "baseURI";
 
     private static final String URI_CODE_AGRONOMICAL_OBJECT = "o";
     private static final String URI_CODE_IMAGE = "i";
@@ -361,6 +359,26 @@ public class UriGenerator {
             return PLATFORM_URI + year + nbImagesByYear;
         }
     }
+    
+    /**
+     * Generates a new project uri. A project uri follows the patter :
+     * <prefix>:<projectAcronyme>
+     * @example http://www.opensilex.org/demo/PA
+     * @param projectAcronyme the project acronyme
+     * @return the new uri
+     */
+    private String generateProjectUri(String projectAcronyme) throws Exception {
+        //1. generates uri
+        String projectUri = PLATFORM_URI + projectAcronyme;
+        //2. check if uri exist
+        ProjectDao projectDAO = new ProjectDao();
+        Project project = new Project(projectUri);
+        if (projectDAO.existInDB(project)) {
+            throw new AlreadyExists("The project uri " + projectUri + " already exist in the triplestore.");
+        }
+        
+        return projectUri;
+    }
 
     /**
      * generates the uri of a new instance of instanceType
@@ -372,8 +390,9 @@ public class UriGenerator {
      * uri generators. (e.g. the variety name, or the last generated uri for the
      * images)
      * @return the generated uri
+     * @throws java.lang.Exception
      */
-    public String generateNewInstanceUri(String instanceType, String year, String additionalInformation) {
+    public String generateNewInstanceUri(String instanceType, String year, String additionalInformation) throws Exception {
         if (year == null) {
             year = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
         }
@@ -404,6 +423,8 @@ public class UriGenerator {
             return generateAnnotationUri();
         } else if (instanceType.equals(Oeso.CONCEPT_RADIOMETRIC_TARGET.toString())) {
             return generateRadiometricTargetUri();
+        } else if (instanceType.equals(Oeso.CONCEPT_PROJECT.toString())) {
+            return generateProjectUri(additionalInformation);
         }
 
         return null;

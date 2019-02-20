@@ -1,37 +1,29 @@
-//**********************************************************************************************
-//                                       ProjectDTO.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
-// Creation date: March 2017
+//******************************************************************************
+//                                       ProjectDTO.java
+// SILEX-PHIS
+// Copyright © INRA 2019
+// Creation date: 14 févr. 2019
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  May, 2017
-// Subject: A class which contains methods to automatically check the attributes
-//          of a class, from rules defined by user.
-//          Contains the list of the elements which might be send by the Client
-//          to save the database
-//***********************************************************************************************
-package phis2ws.service.resources.dto;
+//******************************************************************************
+package phis2ws.service.resources.dto.projects;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import javax.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.DateFormat;
-import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.resources.validation.interfaces.Date;
+import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.Contact;
 import phis2ws.service.view.model.phis.Project;
 
-public class ProjectDTO extends AbstractVerifiedClass {
+/**
+ * Project post DTO
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
+public class ProjectPostDTO extends AbstractVerifiedClass {
 
-    final static Logger LOGGER = LoggerFactory.getLogger(ProjectDTO.class);
-
-    private String uri;
     private String name;
     private String acronyme;
     private String subprojectType;
@@ -48,7 +40,7 @@ public class ProjectDTO extends AbstractVerifiedClass {
 
     @Override
     public Project createObjectFromDTO() {
-        Project project = new Project(uri);
+        Project project = new Project();
         project.setName(name);
         project.setAcronyme(acronyme);
         project.setSubprojectType(subprojectType);
@@ -71,17 +63,6 @@ public class ProjectDTO extends AbstractVerifiedClass {
         return project;
     }
 
-    @URL
-    @Required
-    @ApiModelProperty(example = "http://phenome-fppn.fr/phis_field/projectTest")
-    public String getUri() {
-        return uri;
-    }
-
-    public void setUri(String uri) {
-        this.uri = uri;
-    }
-
     @Required
     @ApiModelProperty(example = "projectTest")
     public String getName() {
@@ -92,7 +73,7 @@ public class ProjectDTO extends AbstractVerifiedClass {
         this.name = name;
     }
 
-    @ApiModelProperty(example = "P T")
+    @ApiModelProperty(example = "PT")
     public String getAcronyme() {
         return acronyme;
     }

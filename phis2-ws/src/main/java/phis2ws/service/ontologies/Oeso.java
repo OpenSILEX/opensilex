@@ -82,6 +82,12 @@ public enum Oeso {
             return NAMESPACE.toString() + "Method";
         }
     },
+    CONCEPT_PROJECT {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "Project";
+        }
+    },
     CONCEPT_RADIOMETRIC_TARGET {
         @Override
         public String toString() {

@@ -10,6 +10,7 @@ package phis2ws.service.dao.sesame;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
@@ -18,6 +19,7 @@ import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.sparql.AlreadyExists;
 import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
@@ -242,7 +244,11 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
 
         for (AnnotationDTO annotationDTO : annotationsDTO) {
             Annotation annotation = annotationDTO.createObjectFromDTO();
-            annotation.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_ANNOTATION.toString(), null, null));
+            try {
+                annotation.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_ANNOTATION.toString(), null, null));
+            } catch (Exception ex) { //In the annotations case, no exception should be raised
+                annotationInsert = false;
+            }
 
             UpdateRequest query = prepareInsertQuery(annotation);
             Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());

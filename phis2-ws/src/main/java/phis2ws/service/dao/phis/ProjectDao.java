@@ -22,12 +22,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import javax.ws.rs.core.Response;
+import org.apache.jena.sparql.AlreadyExists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.dao.manager.DAOPhisBrapi;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.resources.dto.ProjectDTO;
+import phis2ws.service.ontologies.Oeso;
+import phis2ws.service.resources.dto.projects.ProjectDTO;
+import phis2ws.service.resources.dto.projects.ProjectPostDTO;
 import phis2ws.service.utils.POSTResultsReturn;
+import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.sql.JoinAttributes;
 import phis2ws.service.utils.sql.SQLQueryBuilder;
 import phis2ws.service.view.brapi.Status;
@@ -70,7 +74,7 @@ public class ProjectDao extends DAOPhisBrapi<Project, ProjectDTO> {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
-    private POSTResultsReturn checkAndInsertProjectList(List<ProjectDTO> newProjects) throws SQLException, Exception {
+    private POSTResultsReturn checkAndInsertProjectList(List<ProjectPostDTO> newProjects) throws SQLException, Exception {
         //init resuts returned maps
         List<Status> insertStatusList = new ArrayList<>();
         boolean dataState = true;
@@ -78,8 +82,9 @@ public class ProjectDao extends DAOPhisBrapi<Project, ProjectDTO> {
         boolean insertionState = true;
         POSTResultsReturn results = null;
         ArrayList<Project> projects = new ArrayList<>();
+        ArrayList<String> createdResourcesURIs = new ArrayList<>();
         
-        for (ProjectDTO projectDTO : newProjects) {
+        for (ProjectPostDTO projectDTO : newProjects) {
             Project project = projectDTO.createObjectFromDTO();
             projects.add(project);
         }
@@ -112,9 +117,13 @@ public class ProjectDao extends DAOPhisBrapi<Project, ProjectDTO> {
 
                 insertPreparedStatementProject = connection.prepareStatement(insertGabProject);
                 insertPreparedStatementProjectContact = connection.prepareStatement(insertGabProjectContact);
+                UriGenerator uriGenerator = new UriGenerator();
                 
                 for (Project project : projects) {
-                    if (!existInDB(project)) {
+                    try {
+                        //Generate project uri
+                        project.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_PROJECT.toString(), null, project.getAcronyme()));
+                        
                         insertionLeft = true;
                         insertPreparedStatementProject.setString(1, project.getUri());
                         insertPreparedStatementProject.setString(2, project.getName());
@@ -129,7 +138,7 @@ public class ProjectDao extends DAOPhisBrapi<Project, ProjectDTO> {
                         insertPreparedStatementProject.setString(11, project.getObjective());
                         insertPreparedStatementProject.setString(12, project.getParentProject());
                         insertPreparedStatementProject.setString(13, project.getWebsite());
-                        
+
                         //Ajout dans les logs de qui a fait quoi (traçabilité)
                         String log = "";
                         if (remoteUserAdress != null) {
@@ -138,20 +147,23 @@ public class ProjectDao extends DAOPhisBrapi<Project, ProjectDTO> {
                         if (user != null) {
                             log += "User : " + user.getEmail() + " - ";
                         }
-                        
+
                         insertPreparedStatementProject.execute();
-                        LOGGER.trace(log + " quert : " + insertPreparedStatementProject.toString());
-                        
+                        createdResourcesURIs.add(project.getUri());
+                        LOGGER.debug(log + " quert : " + insertPreparedStatementProject.toString());
+
                         for (Contact contact : project.getContacts()) {
                             insertPreparedStatementProjectContact.setString(1, project.getUri());
                             insertPreparedStatementProjectContact.setString(2, contact.getEmail());
                             insertPreparedStatementProjectContact.setString(3, contact.getType());
                             insertPreparedStatementProjectContact.execute();
-                            LOGGER.trace(log + " quert : " + insertPreparedStatementProjectContact.toString());
+                            LOGGER.debug(log + " quert : " + insertPreparedStatementProjectContact.toString());
                         }
                         inserted++;
-                    } else {
+                    } catch (AlreadyExists ex) {
+                    //AlreadyExists throwed by the UriGenerator if the project uri generated already exists
                         exists++;
+                        insertStatusList.add(new Status (StatusCodeMsg.ALREADY_EXISTING_DATA, StatusCodeMsg.INFO, project.getAcronyme()+ " already exists"));
                     }
                     
                     //Insertion par batch
@@ -175,17 +187,19 @@ public class ProjectDao extends DAOPhisBrapi<Project, ProjectDTO> {
                 //Si data insérées et existantes
                 if (exists > 0 && inserted > 0) {
                     results = new POSTResultsReturn(resultState, insertionState, dataState);
-                    insertStatusList.add(new Status("Already existing data", StatusCodeMsg.INFO, "All projects already exist"));
-                    results.setHttpStatus(Response.Status.OK);
+                    results.setHttpStatus(Response.Status.CREATED);
                     results.statusList = insertStatusList;
                 } else {
+                    results = new POSTResultsReturn(resultState, insertionState, dataState);
                     if (exists > 0) { //Si données existantes et aucunes insérées
-                        insertStatusList.add(new Status ("Already existing data", StatusCodeMsg.INFO, String.valueOf(exists) + " project already exists"));
+                        results.setHttpStatus(Response.Status.CONFLICT); //409 
                     } else { //Si données qui n'existent pas et donc sont insérées
                         insertStatusList.add(new Status("Data inserted", StatusCodeMsg.INFO, String.valueOf(inserted) + " projects inserted"));
                     }
                 }   
-                results = new POSTResultsReturn(resultState, insertionState, dataState);
+                
+                results.createdResources = createdResourcesURIs;
+                results.statusList = insertStatusList;
             } catch (SQLException e) {
                 LOGGER.error(e.getMessage(), e);
                 
@@ -215,6 +229,7 @@ public class ProjectDao extends DAOPhisBrapi<Project, ProjectDTO> {
         } else {
             results = new POSTResultsReturn(resultState, insertionState, dataState);
             results.statusList = insertStatusList;
+            results.createdResources = createdResourcesURIs;
         }
         
         return results;
@@ -226,8 +241,7 @@ public class ProjectDao extends DAOPhisBrapi<Project, ProjectDTO> {
      * @param newObjects list des projets
      * @return
      */
-    @Override
-    public POSTResultsReturn checkAndInsertList(List<ProjectDTO> newObjects) {
+    public POSTResultsReturn checkAndInsert(List<ProjectPostDTO> newObjects) {
         POSTResultsReturn postResult;
         try {
             postResult = this.checkAndInsertProjectList(newObjects);
@@ -596,5 +610,10 @@ public class ProjectDao extends DAOPhisBrapi<Project, ProjectDTO> {
             postResult = new POSTResultsReturn(false, Response.Status.INTERNAL_SERVER_ERROR, e.toString());
         }
         return postResult;
+    }
+
+    @Override
+    public POSTResultsReturn checkAndInsertList(List<ProjectDTO> newObjects) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

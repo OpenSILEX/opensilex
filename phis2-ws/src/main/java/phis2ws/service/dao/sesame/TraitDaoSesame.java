@@ -14,6 +14,7 @@ package phis2ws.service.dao.sesame;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -241,7 +242,11 @@ public class TraitDaoSesame extends DAOSesame<Trait> {
         
         while (iteratorTraitDTO.hasNext() && annotationInsert) {
             TraitDTO traitDTO = iteratorTraitDTO.next();
-            traitDTO.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_TRAIT.toString(), null, null));
+            try {
+                traitDTO.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_TRAIT.toString(), null, null));
+            } catch (Exception ex) { //In the traits case, no exception should be raised
+                annotationInsert = false;
+            }
             //Enregistrement dans le triplestore
             UpdateRequest spqlInsert = prepareInsertQuery(traitDTO);
             

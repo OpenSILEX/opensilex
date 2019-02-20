@@ -1,17 +1,9 @@
-//**********************************************************************************************
-//                                       ExperimentPostDTO.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
-// Creation date: January 2017
+//******************************************************************************
+//                                       ExperimentPostDTO.java
+// SILEX-PHIS
+// Copyright © INRA 2019
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  October, 31 2017 : Passage de trial à experiment
-// Subject: A class which contains methods to automatically check the attributes
-//          of a class, from rules defined by user.
-//          Contains the list of the elements which might be send by the client
-//          to save the database.
-//***********************************************************************************************
+//******************************************************************************
 
 package phis2ws.service.resources.dto.experiments;
 

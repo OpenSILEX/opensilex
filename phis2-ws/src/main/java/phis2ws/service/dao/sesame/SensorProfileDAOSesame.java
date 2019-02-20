@@ -37,7 +37,7 @@ import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
-import phis2ws.service.ontologies.Vocabulary;
+import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.resources.dto.SensorProfileDTO;
 import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyPostDTO;
 import phis2ws.service.utils.POSTResultsReturn;
@@ -71,7 +71,7 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
         query.appendSelect("?" + RELATION + " ?" + PROPERTY);
         query.appendTriplet("<" + uri + ">", "?" + RELATION, "?" + PROPERTY, null);
         query.appendTriplet("<" + uri + ">", Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
-        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_SENSING_DEVICE.toString(), null);
+        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_SENSING_DEVICE.toString(), null);
         
         LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
         
@@ -106,7 +106,7 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
                 if (urisTypes.size() > 0) {
                     String rdfType = urisTypes.get(0).getRdfType();
                     
-                    if (!uriDaoSesame.isSubClassOf(rdfType, Vocabulary.CONCEPT_SENSING_DEVICE.toString())) {
+                    if (!uriDaoSesame.isSubClassOf(rdfType, Oeso.CONCEPT_SENSING_DEVICE.toString())) {
                         validData = false;
                         checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "The type of the given uri is not a Sensing Device"));
                     }
@@ -172,8 +172,8 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
      * @return the query
      * e.g.
      * INSERT DATA {
-     *  GRAPH <http://www.phenome-fppn.fr/vocabulary/2017#sensors> {
-     *      <http://www.phenome-fppn.fr/diaphen/2019/s18143> <http://www.phenome-fppn.fr/vocabulary/2017#wavelength> "150" . 
+     *  GRAPH <http://www.opensilex.org/vocabulary/oeso#sensors> {
+     *      <http://www.phenome-fppn.fr/diaphen/2019/s18143> <http://www.opensilex.org/vocabulary/oeso#wavelength> "150" . 
      * ....
      *  }
      * }
@@ -182,7 +182,6 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
         UpdateBuilder spql = new UpdateBuilder();
         
         Node graph = NodeFactory.createURI(Contexts.SENSORS.toString());
-        
         Resource sensorProfileUri = ResourceFactory.createResource(sensorProfile.getUri());
         
         for (Property property : sensorProfile.getProperties()) {
@@ -190,7 +189,6 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
             
             if (property.getRdfType() != null) {
                 Node propertyValue = NodeFactory.createURI(property.getValue());
-                
                 spql.addInsert(graph, sensorProfileUri, propertyRelation, propertyValue);
                 spql.addInsert(graph,propertyValue, RDF.type, property.getRdfType());
             } else {
@@ -200,8 +198,8 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
         }
         
         UpdateRequest query = spql.buildRequest();
-        
         LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
+        
         return query;
     }
     

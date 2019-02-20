@@ -23,13 +23,13 @@ public enum GeoSPARQL {
     RELATION_CONTAINS {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "contains*";
+            return NAMESPACE.toString() + "contains";
         }
     },
     RELATION_CONTAINS_MULTIPLE {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + RELATION_CONTAINS.toString() + "*";
+            return RELATION_CONTAINS.toString() + "*";
         }
     }
 }

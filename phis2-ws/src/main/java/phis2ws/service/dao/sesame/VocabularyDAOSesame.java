@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.ontologies.Rdfs;
-import phis2ws.service.ontologies.Vocabulary;
+import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.resources.dto.PropertyVocabularyDTO;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.model.phis.Namespace;
@@ -83,7 +83,7 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
      * generates the SPARQL query to get the list of the contact properties e.g.
      * SELECT ?contactProperty 
      * WHERE { 
-     *  ?contactProperty rdfs:subPropertyOf* <http://www.phenome-fppn.fr/vocabulary/2017#hasContact> . 
+     *  ?contactProperty rdfs:subPropertyOf* <http://www.opensilex.org/vocabulary/oeso#hasContact> . 
      * }
      *
      * @return
@@ -91,7 +91,7 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
     protected SPARQLQueryBuilder prepareGetContactProperties() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendSelect("?" + PROPERTY);
-        query.appendTriplet("?" + PROPERTY, "<" + Rdfs.RELATION_SUBPROPERTY_OF.toString() + ">*", Vocabulary.RELATION_HAS_CONTACT.toString(), null);
+        query.appendTriplet("?" + PROPERTY, "<" + Rdfs.RELATION_SUBPROPERTY_OF.toString() + ">*", Oeso.RELATION_HAS_CONTACT.toString(), null);
         LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
         return query;
     }
@@ -100,7 +100,7 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
      * generates the SPARQL query to get the list of the device properties e.g.
      * SELECT ?property 
      * WHERE { 
-     *  ?property rdfs:subPropertyOf <http://www.phenome-fppn.fr/vocabulary/2017#deviceProperty> . 
+     *  ?property rdfs:subPropertyOf <http://www.opensilex.org/vocabulary/oeso#deviceProperty> . 
      * }
      *
      * @return
@@ -108,7 +108,7 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
     protected SPARQLQueryBuilder prepareGetDeviceProperties() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendSelect("?" + PROPERTY);
-        query.appendTriplet("?" + PROPERTY, "<" + Rdfs.RELATION_SUBPROPERTY_OF.toString() + ">*", Vocabulary.RELATION_DEVICE_PROPERTY.toString(), null);
+        query.appendTriplet("?" + PROPERTY, "<" + Rdfs.RELATION_SUBPROPERTY_OF.toString() + ">*", Oeso.RELATION_DEVICE_PROPERTY.toString(), null);
         LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
         return query;
     }

@@ -28,7 +28,7 @@ import phis2ws.service.view.model.phis.Property;
 public class PropertyVocabularyDTO extends AbstractVerifiedClass {
     
     //relation name 
-    //(e.g. http://www.phenome-fppn.fr/vocabulary/2017#fromVariety)
+    //(e.g. http://www.opensilex.org/vocabulary/oeso#hasVariety)
     private String relation;
     //the list of the labels of the property. Hash Map with the languages if needed
     //it is a hash map with the language and the label
@@ -44,7 +44,7 @@ public class PropertyVocabularyDTO extends AbstractVerifiedClass {
     }
 
     @URL
-    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SPECIES_FROM_SPECIES)
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SPECIES_HAS_SPECIES)
     public String getRelation() {
         return relation;
     }

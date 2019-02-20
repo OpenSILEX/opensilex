@@ -1,5 +1,5 @@
 //**********************************************************************************************
-//                                       ExperimentDTO.java 
+//                                       ExperimentPostDTO.java 
 //
 // Author(s): Morgane Vidal
 // PHIS-SILEX version 1.0
@@ -13,13 +13,11 @@
 //          to save the database.
 //***********************************************************************************************
 
-package phis2ws.service.resources.dto;
+package phis2ws.service.resources.dto.experiments;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import javax.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
@@ -30,11 +28,12 @@ import phis2ws.service.view.model.phis.Group;
 import phis2ws.service.view.model.phis.Project;
 import phis2ws.service.view.model.phis.Experiment;
 
-public class ExperimentDTO extends AbstractVerifiedClass {
-
-    final static Logger LOGGER = LoggerFactory.getLogger(ExperimentDTO.class);
+/**
+ * The DTO of the POST experiment.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
+public class ExperimentPostDTO extends AbstractVerifiedClass {
     
-    private String uri;
     private String startDate;
     private String endDate;
     private String field;
@@ -51,7 +50,7 @@ public class ExperimentDTO extends AbstractVerifiedClass {
     
     @Override
     public Experiment createObjectFromDTO() {
-        Experiment experiment = new Experiment(uri);
+        Experiment experiment = new Experiment();
         experiment.setStartDate(startDate);
         experiment.setEndDate(endDate);
         experiment.setField(field);
@@ -83,17 +82,6 @@ public class ExperimentDTO extends AbstractVerifiedClass {
             }
         }
         return experiment;
-    }
-    
-    @URL
-    @Required
-    @ApiModelProperty(example = "http://www.phenome-fppn.fr/diaphen/drops")
-    public String getUri() {
-        return uri;
-    }
-
-    public void setUri(String uri) {
-        this.uri = uri;
     }
     
     @Date(DateFormat.YMD)

@@ -86,7 +86,7 @@ public class ScientificObjectDAO extends DAOPhisBrapi<ScientificObject, Scientif
                 insertPreparedStatement = connection.prepareStatement(insertGab);
                 
                 for (ScientificObject scientificObject : newScientificObjects) {
-                    if (!existInDB(scientificObject)) {
+                    if (!existInDB(scientificObject) && scientificObject.getGeometry() != null) {
                         insertionLeft = true;
                         insertPreparedStatement.setString(1, scientificObject.getUri());
                         insertPreparedStatement.setString(2, scientificObject.getRdfType());

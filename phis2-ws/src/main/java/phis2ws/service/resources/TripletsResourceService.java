@@ -70,13 +70,13 @@ public class TripletsResourceService extends ResourceService {
      *      {
      *          "s": "?",
      *          "p": "rdf:type",
-     *          "o": "http://www.phenome-fppn.fr/vocabulary/2017#Experiment",
+     *          "o": "http://www.opensilex.org/vocabulary/oeso#Experiment",
      *          "o_type": "uri",
      *          "g": "http://www.phenome-fppn.fr/phis_field/DIA2017-2"
      *      },
      *      {
      *        "s": "?",
-     *        "p": "http://www.phenome-fppn.fr/vocabulary/2017#hasDocument",
+     *        "p": "http://www.opensilex.org/vocabulary/oeso#hasDocument",
      *        "o": "http://www.phenome-fppn.fr/phis_field/documents/documente597f57ba71d421a86277d830f4b9885",
      *        "o_type": "uri" ,
      *        "g": "http://www.phenome-fppn.fr/phis_field/DIA2017-2"

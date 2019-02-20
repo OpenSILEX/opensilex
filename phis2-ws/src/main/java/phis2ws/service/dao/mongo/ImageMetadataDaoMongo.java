@@ -1,12 +1,10 @@
 //**********************************************************************************************
-//                                       ImageMetadataDaoSesame.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
-// Creation date: December, 11 2017
+//                                       ImageMetadataDaoSesame.java
+// PHIS-SILEX
+// Copyright © INRA 2017
+// Creation date: Dec., 11 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  December, 11 2017
+// Last modification date:  Dec., 11 2017
 // Subject: A Dao specific to insert image metadata in mongodb
 //***********************************************************************************************
 package phis2ws.service.dao.mongo;
@@ -40,12 +38,13 @@ import phis2ws.service.resources.dto.ConcernItemDTO;
 import phis2ws.service.resources.dto.ImageMetadataDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
-import phis2ws.service.view.model.phis.ConcernItem;
+import phis2ws.service.view.model.phis.ConcernedItem;
 import phis2ws.service.view.model.phis.ImageMetadata;
 
 /**
  * Represents the MongoDB Data Access Object for the images metadata
  * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @update [Andréas Garcia] Jan., 2019 : modify "concern(s)" occurences into "concernedItem(s)" in Java variables and MongoDB fields
  */
 public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
 
@@ -71,7 +70,7 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
     //Represents the mongodb documents label for the rdf types
     final static String DB_FIELDS_RDF_TYPE = "rdfType";
     //Represents the mongodb documents label for the concerned items list
-    final static String DB_FIELDS_CONCERN = "concern";
+    final static String DB_FIELDS_CONCERNED_ITEMS = "concernedItems";
     //Represents the mongodb documents label for the shooting configurations
     final static String DB_FIELDS_SHOOTING_CONFIGURATION = "shootingConfiguration";
         //Represents the mongodb documents label for the storage
@@ -87,18 +86,18 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
      *         Query example :
      *         { 
      *              "uri" : "http://www.phenome-fppn.fr/phis_field/2017/i170000000000" , 
-     *              "rdfType" : "http://www.phenome-fppn.fr/vocabulary/2017#HemisphericalImage" , 
+     *              "rdfType" : "http://www.opensilex.org/vocabulary/oeso#HemisphericalImage" , 
      *              "$and" : 
      *                  [ 
      *                      { 
-     *                          "concern" : { 
+     *                          "concernedItems" : { 
      *                              "$elemMatch" : { 
      *                                  "uri" : "http://phenome-fppn.fr/phis_field/ao1"
      *                              }
      *                          }
      *                      },
      *                      { 
-     *                          "concern" : { 
+     *                          "concernedItems" : { 
      *                              "$elemMatch" : { 
      *                                  "uri" : "http://phenome-fppn.fr/phis_field/ao1"
      *                              }
@@ -123,7 +122,7 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
        if (concernedItems != null && !concernedItems.isEmpty()) {
            BasicDBList and = new BasicDBList();
            for (String concernedItem : concernedItems) {
-               BasicDBObject clause = new BasicDBObject(DB_FIELDS_CONCERN, new BasicDBObject(MONGO_ELEM_MATCH, new BasicDBObject(DB_FIELDS_CONCERNED_ITEM_URI, concernedItem)));
+               BasicDBObject clause = new BasicDBObject(DB_FIELDS_CONCERNED_ITEMS, new BasicDBObject(MONGO_ELEM_MATCH, new BasicDBObject(DB_FIELDS_CONCERNED_ITEM_URI, concernedItem)));
                and.add(clause);
            }
            
@@ -154,10 +153,10 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
      * @param concernedItemsDocuments
      * @return the concerned items extracted from the document list
      */
-    private ArrayList<ConcernItem> mongoDocumentListToConcernedItems(List<Document> concernedItemsDocuments) {
-        ArrayList<ConcernItem> concernedItemsToReturn = new ArrayList<>();
+    private ArrayList<ConcernedItem> mongoDocumentListToConcernedItems(List<Document> concernedItemsDocuments) {
+        ArrayList<ConcernedItem> concernedItemsToReturn = new ArrayList<>();
         for (Document concernedItemDocument : concernedItemsDocuments) {
-            ConcernItem concernedItem = new ConcernItem();
+            ConcernedItem concernedItem = new ConcernedItem();
             concernedItem.setUri(concernedItemDocument.getString(DB_FIELDS_CONCERNED_ITEM_URI));
             concernedItem.setRdfType(concernedItemDocument.getString(DB_FIELDS_RDF_TYPE));
             concernedItemsToReturn.add(concernedItem);
@@ -186,7 +185,7 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
                 imageMetadata.setRdfType(imageMetadataDocument.getString(DB_FIELDS_RDF_TYPE));
                 
                 //Add the elements concerned by the image in the ImageMetadata
-                List<Document> concernedItemDocuments = (List<Document>) imageMetadataDocument.get(DB_FIELDS_CONCERN);
+                List<Document> concernedItemDocuments = (List<Document>) imageMetadataDocument.get(DB_FIELDS_CONCERNED_ITEMS);
                 imageMetadata.setConcernedItems(mongoDocumentListToConcernedItems(concernedItemDocuments));
                 
                 //Add the shootingConfiguration
@@ -225,7 +224,7 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
             }
 
             //2. Check if the concerned items exist in the triplestore
-            for (ConcernItemDTO concernedItem : imageMetadata.getConcern()) {
+            for (ConcernItemDTO concernedItem : imageMetadata.getConcernedItems()) {
                 if (!imageMetadataDaoSesame.existUri(concernedItem.getUri())) {
                     dataOk = false;
                     checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Unknown concerned item given : " + concernedItem.getUri()));
@@ -309,15 +308,15 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
            metadata.append(DB_FIELDS_IMAGE_URI, imageMetadata.getUri());
            metadata.append(DB_FIELDS_RDF_TYPE, imageMetadata.getRdfType());
            
-           //Concern
+           //Concerned Item
            ArrayList<Document> concernedItemsToSave = new ArrayList<>();
-           for (ConcernItem concernItem : imageMetadata.getConcernedItems()) {
-               Document concern = new Document();
-               concern.append(DB_FIELDS_CONCERNED_ITEM_URI, concernItem.getUri());
-               concern.append(DB_FIELDS_RDF_TYPE, concernItem.getRdfType());
-               concernedItemsToSave.add(concern);
+           for (ConcernedItem concernedItem : imageMetadata.getConcernedItems()) {
+               Document concernedItemDocument = new Document();
+               concernedItemDocument.append(DB_FIELDS_CONCERNED_ITEM_URI, concernedItem.getUri());
+               concernedItemDocument.append(DB_FIELDS_RDF_TYPE, concernedItem.getRdfType());
+               concernedItemsToSave.add(concernedItemDocument);
            }
-           metadata.append(DB_FIELDS_CONCERN, concernedItemsToSave);
+           metadata.append(DB_FIELDS_CONCERNED_ITEMS, concernedItemsToSave);
            
            //Configuration
            Document configuration = new Document();

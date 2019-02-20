@@ -7,26 +7,26 @@
 // Creation date: December, 11 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 // Last modification date:  December, 11 2017
-// Subject: Represents the concern item view
+// Subject: Represents the concerned item view
 //***********************************************************************************************
 package phis2ws.service.view.model.phis;
 
 import java.util.ArrayList;
 
 /**
- * represents the concern item view
+ * represents the concerned item view
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class ConcernItem {
+public class ConcernedItem {
     
     private String uri;
     private String rdfType;
     private ArrayList<String> labels;
 
-    public ConcernItem() {
+    public ConcernedItem() {
     }
 
-    public ConcernItem(String uri, String rdfType, ArrayList<String> labels) {
+    public ConcernedItem(String uri, String rdfType, ArrayList<String> labels) {
         this.uri = uri;
         this.rdfType = rdfType;
         this.labels = labels;

@@ -1,24 +1,23 @@
 //******************************************************************************
-//                                       ResponseFormAnnotation.java
+//                     ResponseFormEventSimple.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 21 juin 2018
-// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Creation date: 13 nov. 2018
+// Contact: andreas.garcia@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package phis2ws.service.view.brapi.form;
 
 import java.util.ArrayList;
-import phis2ws.service.resources.dto.AnnotationDTO;
+import phis2ws.service.resources.dto.event.EventSimpleDTO;
 import phis2ws.service.view.brapi.Metadata;
-import phis2ws.service.view.brapi.results.ResultAnnotation;
+import phis2ws.service.view.brapi.results.ResultEventSimple;
 import phis2ws.service.view.manager.ResultForm;
 
 /**
- * Allows the formating of the result of the request about Annotation
- * @update [Andréas Garcia] 15 Feb 2019: Use AnnotationDTO instead of Model
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * Do formatting of the result of a request of a Event
+ * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
-public class ResponseFormAnnotation extends ResultForm {
+public class ResponseFormEventSimple extends ResultForm {
     /**
      * Initialize fields metadata and result
      * @param pageSize results per page
@@ -26,12 +25,12 @@ public class ResponseFormAnnotation extends ResultForm {
      * @param list results list
      * @param paginate 
      */
-    public ResponseFormAnnotation(int pageSize, int currentPage, ArrayList<AnnotationDTO> list, boolean paginate) {
+    public ResponseFormEventSimple(int pageSize, int currentPage, ArrayList<EventSimpleDTO> list, boolean paginate) {
         metadata = new Metadata(pageSize, currentPage, list.size());
         if (list.size() > 1) {
-            result = new ResultAnnotation(list, metadata.getPagination(), paginate);
+            result = new ResultEventSimple(list, metadata.getPagination(), paginate);
         } else {
-            result = new ResultAnnotation(list);
+            result = new ResultEventSimple(list);
         }
     }
     
@@ -43,12 +42,12 @@ public class ResponseFormAnnotation extends ResultForm {
      * @param paginate 
      * @param totalCount number of result
      */
-    public ResponseFormAnnotation(int pageSize, int currentPage, ArrayList<AnnotationDTO> list, boolean paginate, int totalCount) {
+    public ResponseFormEventSimple(int pageSize, int currentPage, ArrayList<EventSimpleDTO> list, boolean paginate, int totalCount) {
         metadata = new Metadata(pageSize, currentPage, totalCount);
         if (list.size() > 1) {
-            result = new ResultAnnotation(list, metadata.getPagination(), paginate);
+            result = new ResultEventSimple(list, metadata.getPagination(), paginate);
         } else {
-            result = new ResultAnnotation(list);
+            result = new ResultEventSimple(list);
         }
     }
 }

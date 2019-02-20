@@ -18,11 +18,11 @@ import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyDTO;
  */
 public class Property {
     //type of the range (if needed)
-    //(e.g. http://www.phenome-fppn.fr/vocabulary/2017#Variety)
+    //(e.g. http://www.opensilex.org/vocabulary/oeso#Variety)
     private String rdfType;
     private LinkedList<String> rdfTypeLabels = new LinkedList<>();
     //relation name 
-    //(e.g. http://www.phenome-fppn.fr/vocabulary/2017#fromVariety)
+    //(e.g. http://www.opensilex.org/vocabulary/oeso#hasVariety)
     private String relation;
     private LinkedList<String> relationLabels = new LinkedList<>();
     //value
@@ -31,7 +31,7 @@ public class Property {
     private LinkedList<String> valueLabels = new LinkedList<>();
     //the domain of the property. For the first version, it is only a single string.
     //then, the union and others will be added
-    //(e.g. http://www.phenome-fppn.fr/vocabulary/2017#MultispectralCamera)
+    //(e.g. http://www.opensilex.org/vocabulary/oeso#MultispectralCamera)
     private String domain;
     //the list of the labels of the property. Hash Map with the languages if needed
     //it is a hash map with the language and the label
@@ -41,10 +41,7 @@ public class Property {
     public Property() {
     }
     
-    public Property(String rdfType, LinkedList<String> rdfTypeLabels
-            , String relation, LinkedList<String> relationLabels
-            , String value, LinkedList<String> valueLabels
-            , String domain, HashMap<String, String> labels) {
+    public Property(String rdfType, LinkedList<String> rdfTypeLabels, String relation, LinkedList<String> relationLabels, String value, LinkedList<String> valueLabels, String domain, HashMap<String, String> labels) {
         this.rdfType = rdfType;
         this.rdfTypeLabels = rdfTypeLabels;
         this.relation = relation;

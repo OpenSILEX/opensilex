@@ -28,7 +28,7 @@ import phis2ws.service.ontologies.Owl;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Skos;
-import phis2ws.service.ontologies.Vocabulary;
+import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyPostDTO;
 import phis2ws.service.resources.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
 import phis2ws.service.utils.POSTResultsReturn;
@@ -53,7 +53,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     public String uri;
         
     // This attribute is used to restrict available uri to a specific set of subclass
-    public Vocabulary subClassOf;
+    public Oeso subClassOf;
 
     //The following attributes are used to search properties in the triplestore
     //the property relation name. 
@@ -104,7 +104,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      * WHERE {
      *   <http://www.phenome-fppn.fr/diaphen>  ?relation  ?property  . 
      *   <http://www.phenome-fppn.fr/diaphen>  rdf:type  ?rdfType  . 
-     *   ?rdfType  rdfs:subClassOf*  <http://www.phenome-fppn.fr/vocabulary/2017#Infrastructure> . 
+     *   ?rdfType  rdfs:subClassOf*  <http://www.opensilex.org/vocabulary/oeso#Infrastructure> . 
      * }
      */
     @Override
@@ -169,7 +169,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      * e.g.
      * SELECT ?domain
      * WHERE {
-     *      <http://www.phenome-fppn.fr/vocabulary/2017#wavelength> rdfs:domain ?domain
+     *      <http://www.opensilex.org/vocabulary/oeso#wavelength> rdfs:domain ?domain
      * }
      */
     private SPARQLQueryBuilder prepareGetDomainQuery() {
@@ -207,7 +207,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      * Check if a given relation can be linked to a given rdfType. 
      * Check if there is a domain and if the rdfType corresponds to the domain.
      * /!\ The PropertyDAOSesame#relation must contain the relation which domain is checked
-     * @param rdfType the rdf type. e.g. http://www.phenome-fppn.fr/vocabulary/2017#RadiometricTarget
+     * @param rdfType the rdf type. e.g. http://www.opensilex.org/vocabulary/oeso#RadiometricTarget
      * @return true if the given property can be linked to the given rdfType
      *         false if the given rdfType is not part of the domain of the property.
      */
@@ -263,7 +263,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      *      _:x  rdf:type  owl:Restriction  . 
      *      _:x  owl:onProperty  ?relation  . 
      *      _:x  ?restriction  ?_cardinality  . 
-     *      <http://www.phenome-fppn.fr/vocabulary/2017#TIRCamera>  rdfs:subClassOf  _:x  . 
+     *      <http://www.opensilex.org/vocabulary/oeso#TIRCamera>  rdfs:subClassOf  _:x  . 
      *      bind( xsd:integer(?_cardinality) as ?cardinality) .
      *      FILTER ( ?restriction IN (<http://www.w3.org/2002/07/owl#cardinality>, 
      *                                <http://www.w3.org/2002/07/owl#minCardinality>, 
@@ -373,7 +373,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      * e.g. 
      * SELECT DISTINCT (count(distinct ?property) as ?count) 
      * WHERE {
-     *  <http://www.phenome-fppn.fr/diaphen/2018/s18523>  <http://www.phenome-fppn.fr/vocabulary/2017#hasLens>  ?property  . 
+     *  <http://www.phenome-fppn.fr/diaphen/2018/s18523>  <http://www.opensilex.org/vocabulary/oeso#hasLens>  ?property  . 
      * }
      */
     private SPARQLQueryBuilder prepareGetProperties(String objectUri) {
@@ -535,8 +535,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      * ╚═════════════════════╩════════════╩═══════════════╩════════════════════════════╩═══════════════════════╩═════════════════╩════════════════════════════════╩════════════════╩═════════════════════════╝
      * 
      * @param language specify in which language labels should be returned
-     * @param relationsToIgnore some relations sometimes must not be considered
-     * as properties so we ignore them
+     * @param relationsToIgnore some relations sometimes must not be considered as properties so we ignore them
      * @return the builded query
      * @example
      * SELECT DISTINCT  
@@ -545,7 +544,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      *     ?propertyType ?propertyTypePrefLabel ?propertyTypeLabel 
      * WHERE {
      *     <http://www.phenome-fppn.fr>  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
-     *     ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.phenome-fppn.fr/vocabulary/2017#Infrastructure>  . 
+     *     ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.opensilex.org/vocabulary/oeso#Infrastructure>  . 
      *     OPTIONAL {
      *         <http://www.phenome-fppn.fr> ?relation ?property 
      *         OPTIONAL {
@@ -642,18 +641,13 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
 
         // 8. If subClassOf is specified, add filter on uri rdf:type
         if (subClassOf != null) {
-            query.appendTriplet("<" + uri + ">"
-                    , Rdf.RELATION_TYPE.toString()
-                    , "?" + RDF_TYPE, null);
-            query.appendTriplet("?" + RDF_TYPE, "<" 
-                    + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*"
-                    , "<" + subClassOf + ">", null);
+            query.appendTriplet("<" + uri + ">", Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
+            query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", "<" + subClassOf + ">", null);
         }
         
         if (relationsToIgnore != null)
         {
-            String relationToIgnoreQuery = 
-                    "FILTER (?" + RELATION + " NOT IN (";
+            String relationToIgnoreQuery = "FILTER (?" + RELATION + " NOT IN (";
             
             boolean firstRelationToIgnore = true;
             for (String relationToIgnore : relationsToIgnore){
@@ -665,8 +659,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
                     firstRelationToIgnore = false;
                 }
                 
-                relationToIgnoreQuery += 
-                            "<" + relationToIgnore + ">";
+                relationToIgnoreQuery += "<" + relationToIgnore + ">";
             }
             relationToIgnoreQuery += "))";
             
@@ -689,8 +682,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      *          false   if the uri doesn't exists
      */
     public boolean getAllPropertiesWithLabels(RdfResourceDefinition definition, String language) {
-        return getAllPropertiesWithLabelsExceptThoseSpecified(
-                definition, language, null);
+        return getAllPropertiesWithLabelsExceptThoseSpecified(definition, language, null);
     }       
     
      /**
@@ -709,10 +701,8 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
             /* Prepare and execute the query to retrieve all the relations, 
              properties and properties type with their labels for the given 
             uri and language*/
-            SPARQLQueryBuilder query = prepareSearchPropertiesQuery(language
-                    , propertiesRelationsToIgnore);
-            TupleQuery tupleQuery = getConnection()
-                    .prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+            SPARQLQueryBuilder query = prepareSearchPropertiesQuery(language, propertiesRelationsToIgnore);
+            TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         
             definition.setUri(uri);
         
@@ -751,44 +741,31 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
                         property.addLastRdfTypeLabel(bindingSet.getValue(PROPERTY_TYPE_LABEL).stringValue());
                     }
 
-                    // 7. If definition already own the property, add current 
-                    // property labels to the existing property
-                    //    otherwise define prefered labels and add property to 
-                    // definition
+                    // 7. If definition already own the property, add current property labels to the existing property otherwise define prefered labels and add property to definition
                     if (definition.hasProperty(property)) {
                         // Retrieve the existing property
-                        Property existingProperty = definition
-                                .getProperty(property);
+                        Property existingProperty = definition.getProperty(property);
 
-                        // Prefered label are ignored in this case because they
-                        // already are defined in the existing property
+                        // Prefered label are ignored in this case because they already are defined in the existing property
                         
                         // Merge new labels with previous existing
-                        existingProperty.addRdfTypeLabels(
-                                property.getRdfTypeLabels());
-                        existingProperty.addRelationLabels(
-                                property.getRelationLabels());
-                        existingProperty.addValueLabels(
-                                property.getValueLabels());
+                        existingProperty.addRdfTypeLabels(property.getRdfTypeLabels());
+                        existingProperty.addRelationLabels(property.getRelationLabels());
+                        existingProperty.addValueLabels(property.getValueLabels());
                         
-                        
-                        // Set the property variable with the existing property 
-                        // to add prefered labels if exists
+                        // Set the property variable with the existing property to add prefered labels if exists
                     } else {
-                        // If property prefered label exists add it at the 
-                        // begining of labels array
+                        // If property prefered label exists add it at the begining of labels array
                         if (bindingSet.hasBinding(PROPERTY_PREF_LABEL)) {
                             property.addFirstValueLabel(bindingSet.getValue(PROPERTY_PREF_LABEL).stringValue());
                         }
 
-                        // If relation prefered label exists add it at the 
-                        // begining of labels array
+                        // If relation prefered label exists add it at the begining of labels array
                         if (bindingSet.hasBinding(RELATION_PREF_LABEL)) {
                             property.addFirstRelationLabel(bindingSet.getValue(RELATION_PREF_LABEL).stringValue());
                         }
 
-                        // If property type prefered label exists add it at the 
-                        // begining of labels array
+                        // If property type prefered label exists add it at the begining of labels array
                         if (bindingSet.hasBinding(PROPERTY_TYPE_PREF_LABEL)) {
                             property.addFirstRdfTypeLabel(bindingSet.getValue(PROPERTY_TYPE_PREF_LABEL).stringValue());
                         }

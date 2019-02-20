@@ -107,7 +107,7 @@ public class UriResourceService extends ResourceService {
      *          }, 
      *          "result": { 
      *              "data": [ 
-     *                  { "uri": "http://www.phenome-fppn.fr/vocabulary/2017#Document",
+     *                  { "uri": "http://www.opensilex.org/vocabulary/oeso#Document",
      *                    "infos": { 
      *                          "type":"http://www.w3.org/2002/07/owl#Class",
      *                          "label_en": "document",
@@ -261,7 +261,7 @@ public class UriResourceService extends ResourceService {
      *      "result": 
      *          { 
      *              "data": [ 
-     *                  { "uri": "http://www.phenome-fppn.fr/vocabulary/2017#Document",
+     *                  { "uri": "http://www.opensilex.org/vocabulary/oeso#Document",
      *                    "properties": {} 
      *                  }
      *              ] 
@@ -322,10 +322,10 @@ public class UriResourceService extends ResourceService {
      *      },
      *      "result": { 
      *          "data": [ 
-     *              { "uri": "http://www.phenome-fppn.fr/vocabulary/2017#DataFile",
+     *              { "uri": "http://www.opensilex.org/vocabulary/oeso#DataFile",
      *                "properties": {}
      *              },
-     *              { "uri": "http://www.phenome-fppn.fr/vocabulary/2017#TechnicalDocument",
+     *              { "uri": "http://www.opensilex.org/vocabulary/oeso#TechnicalDocument",
      *                "properties": {} 
      *              } 
      *          ] 
@@ -385,10 +385,10 @@ public class UriResourceService extends ResourceService {
      *      },
      *      "result": { 
      *          "data": [ 
-     *              { "uri": "http://www.phenome-fppn.fr/vocabulary/2017#Document",
+     *              { "uri": "http://www.opensilex.org/vocabulary/oeso#Document",
      *                "properties": {}
      *              }, 
-     *              { "uri": "http://www.phenome-fppn.fr/vocabulary/2017#DataFile",
+     *              { "uri": "http://www.opensilex.org/vocabulary/oeso#DataFile",
      *                "properties": {} 
      *              } 
      *          ] 

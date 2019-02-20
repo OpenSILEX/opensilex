@@ -34,7 +34,8 @@ import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.dao.sesame.ScientificObjectDAOSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.ontologies.Rdf;
-import phis2ws.service.ontologies.Vocabulary;
+import phis2ws.service.ontologies.Oeso;
+import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.resources.dto.LayerDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
@@ -46,7 +47,7 @@ public class LayerDao {
     
     /**
      * @param objectURI URI de l'objet auquel la couche correspond
-     * @param objectType type de l'objet (ex : http://www.phenome-fppn.fr/Vocabulary/2017/Experiment)
+     * @param objectType type de l'objet (ex : http://www.opensilex.org/vocabulary/oeso/Experiment)
      * @param depth true si la couche a tous les descendants de objectURI
      *              false si on elle n'a que les enfants directs
      * @param filePath le chemin du fichier geoJSON correspondant à la couche
@@ -113,15 +114,15 @@ public class LayerDao {
      */
     private HashMap<String, String> getTypesByURIRelationOrConcept() {
         HashMap<String, String> typesByRelationOrConcept = new HashMap<>();
-        typesByRelationOrConcept.put(Vocabulary.CONCEPT_VARIETY.toString(), "variety");
-        typesByRelationOrConcept.put(Vocabulary.CONCEPT_GENOTYPE.toString(), "genotype");
-        typesByRelationOrConcept.put(Vocabulary.CONCEPT_SPECIES.toString(), "species");
-        typesByRelationOrConcept.put(Vocabulary.RELATION_FROM_GENOTYPE.toString(), "genotype");
-        typesByRelationOrConcept.put(Vocabulary.RELATION_FROM_VARIETY.toString(), "variety");
-        typesByRelationOrConcept.put(Vocabulary.RELATION_FROM_SPECIES.toString(), "species");
-        typesByRelationOrConcept.put(Vocabulary.RELATION_HAS_EXPERIMENT_MODALITIES.toString(), "experimentModalities");
-        typesByRelationOrConcept.put(Vocabulary.RELATION_HAS_REPETITION.toString(), "repetition");
-        typesByRelationOrConcept.put(Vocabulary.RELATION_HAS_ALIAS.toString(), "alias");
+        typesByRelationOrConcept.put(Oeso.CONCEPT_VARIETY.toString(), "variety");
+        typesByRelationOrConcept.put(Oeso.CONCEPT_GENOTYPE.toString(), "genotype");
+        typesByRelationOrConcept.put(Oeso.CONCEPT_SPECIES.toString(), "species");
+        typesByRelationOrConcept.put(Oeso.RELATION_FROM_GENOTYPE.toString(), "genotype");
+        typesByRelationOrConcept.put(Oeso.RELATION_HAS_VARIETY.toString(), "variety");
+        typesByRelationOrConcept.put(Oeso.RELATION_HAS_SPECIES.toString(), "species");
+        typesByRelationOrConcept.put(Oeso.RELATION_HAS_EXPERIMENT_MODALITIES.toString(), "experimentModalities");
+        typesByRelationOrConcept.put(Oeso.RELATION_HAS_REPLICATION.toString(), "replication");
+        typesByRelationOrConcept.put(Rdfs.RELATION_LABEL.toString(), "label");
         typesByRelationOrConcept.put(Rdf.RELATION_TYPE.toString(), "typeElement");
         
         return typesByRelationOrConcept;

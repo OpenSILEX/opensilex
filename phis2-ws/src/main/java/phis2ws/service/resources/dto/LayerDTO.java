@@ -27,7 +27,7 @@ public class LayerDTO extends AbstractVerifiedClass {
     
     /**
      * @param objectUri l'uri de l'objet pour lequel on veut une couche
-     * @param objectType type de l'objet (ex : http://www.phenome-fppn.fr/Vocabulary/2017/Experiment)
+     * @param objectType type de l'objet (ex : http://www.opensilex.org/vocabulary/oeso/Experiment)
      * @param depth true si on souhaite avoir tous les déscendants représentés dans
      *                   la couche,
      *              false si on veut juste l'objet et ses enfants directs

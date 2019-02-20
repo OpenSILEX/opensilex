@@ -15,7 +15,7 @@ import io.swagger.annotations.ApiModelProperty;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
-import phis2ws.service.view.model.phis.ConcernItem;
+import phis2ws.service.view.model.phis.ConcernedItem;
 import phis2ws.service.resources.validation.interfaces.URL;
 
 /**
@@ -27,8 +27,8 @@ public class ConcernItemDTO extends AbstractVerifiedClass {
     protected String typeURI;
 
     @Override
-    public ConcernItem createObjectFromDTO() {
-        ConcernItem concernedItem = new ConcernItem();
+    public ConcernedItem createObjectFromDTO() {
+        ConcernedItem concernedItem = new ConcernedItem();
         concernedItem.setRdfType(typeURI);
         concernedItem.setUri(uri);
         

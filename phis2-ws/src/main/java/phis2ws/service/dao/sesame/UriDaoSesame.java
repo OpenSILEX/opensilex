@@ -65,7 +65,7 @@ public class UriDaoSesame extends DAOSesame<Uri> {
      * @return the query 
      * e.g. SELECT DISTINCT ?class ?type 
      * WHERE {
-     * <http://www.phenome-fppn.fr/vocabulary/2017#Document> ?class ?type . 
+     * <http://www.opensilex.org/vocabulary/oeso#Document> ?class ?type . 
      * }
      */
     @Override
@@ -516,7 +516,7 @@ public class UriDaoSesame extends DAOSesame<Uri> {
      * @param rdfType
      * @return the query. 
      * e.g. ASK {
-     *    <http://www.phenome-fppn.fr/vocabulary/2017#HemisphericalCamera>  rdfs:subClassOf* <http://www.phenome-fppn.fr/vocabulary/2017#SensingDevice> 
+     *    <http://www.opensilex.org/vocabulary/oeso#HemisphericalCamera>  rdfs:subClassOf* <http://www.opensilex.org/vocabulary/oeso#SensingDevice> 
      * }
      */
     private SPARQLQueryBuilder prepareIsSubclassOf(String rdfSubType, String rdfType) {
@@ -600,7 +600,7 @@ public class UriDaoSesame extends DAOSesame<Uri> {
      * generates a query to get the list of the labels of the uri attribute e.g.
      * SELECT DISTINCT ?label 
      * WHERE {
-     *  <http://www.phenome-fppn.fr/vocabulary/2017#hasTechnicalContact> rdfs:label ?label . 
+     *  <http://www.opensilex.org/vocabulary/oeso#hasTechnicalContact> rdfs:label ?label . 
      * }
      *
      * @return the generated query
@@ -622,7 +622,7 @@ public class UriDaoSesame extends DAOSesame<Uri> {
      * e.g. 
      * SELECT DISTINCT ?comment 
      * WHERE {
-     *      <http://www.phenome-fppn.fr/vocabulary/2017#hasTechnicalContact> rdfs:comment ?comment . 
+     *      <http://www.opensilex.org/vocabulary/oeso#hasTechnicalContact> rdfs:comment ?comment . 
      * }
      *
      * @return the generated query

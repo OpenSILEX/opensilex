@@ -16,25 +16,29 @@ import org.joda.time.DateTime;
  */
 public class Event extends RdfResourceDefinition {
     
-    // type eg. http://www.phenome-fppn.fr/vocabulary/2018/oeev#MoveFrom
+    // type eg. http://www.opensilex.org/vocabulary/oeev#MoveFrom
     private String type;
     
     // concerned items
-    private ArrayList<ConcernItem> concernsItems;
+    private ArrayList<ConcernedItem> concernedItems;
     
     // dateTime 
     private DateTime dateTime;
+    
+    // annotations 
+    private ArrayList<Annotation> annotations;
 
-    public Event(String uri, String type, ArrayList<ConcernItem> concernsItems, DateTime dateTime, ArrayList<Property> properties) {
+    public Event(String uri, String type, ArrayList<ConcernedItem> concernedItems, DateTime dateTime, ArrayList<Property> properties, ArrayList<Annotation> annotations) {
         this.uri = uri;
         this.type = type;
-        this.concernsItems = concernsItems;
+        this.concernedItems = concernedItems;
         this.dateTime = dateTime;
         this.properties = properties;
+        this.annotations = annotations;
     }
     
-    public void addConcernsItem(ConcernItem concerns){
-        this.concernsItems.add(concerns);
+    public void addConcernedItem(ConcernedItem concernedItem) {
+        this.concernedItems.add(concernedItem);
     }
 
     public String getType() {
@@ -45,12 +49,12 @@ public class Event extends RdfResourceDefinition {
         this.type = type;
     }
 
-    public ArrayList<ConcernItem> getConcernsItems() {
-        return concernsItems;
+    public ArrayList<ConcernedItem> getConcernedItems() {
+        return concernedItems;
     }
 
-    public void setConcernsItems(ArrayList<ConcernItem> concernsItems) {
-        this.concernsItems = concernsItems;
+    public void setConcernedItems(ArrayList<ConcernedItem> concernedItems) {
+        this.concernedItems = concernedItems;
     }
 
     public DateTime getDateTime() {
@@ -59,5 +63,13 @@ public class Event extends RdfResourceDefinition {
 
     public void setDateTime(DateTime dateTime) {
         this.dateTime = dateTime;
+    }
+
+    public ArrayList<Annotation> getAnnotations() {
+        return annotations;
+    }
+
+    public void setAnnotations(ArrayList<Annotation> annotations) {
+        this.annotations = annotations;
     }
 }

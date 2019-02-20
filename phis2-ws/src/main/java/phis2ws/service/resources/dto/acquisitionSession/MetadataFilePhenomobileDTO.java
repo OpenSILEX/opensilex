@@ -20,7 +20,7 @@ public class MetadataFilePhenomobileDTO extends MetadataFileDTO {
     @SerializedName("Installation")
     protected String installation;
     // The group plot type, associated to groupPlotAlias, groupPlotUri, groupPlotSpecies
-    // e.g. http://www.phenome-fppn.fr/vocabulary/2017#Experiment
+    // e.g. http://www.opensilex.org/vocabulary/oeso#Experiment
     @SerializedName("GroupPlot_type")
     protected String groupPlotType;
     // The alias of the group plot, associated to groupPlotType, groupPlotUri, groupPlotSpecies 

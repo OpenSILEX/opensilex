@@ -29,9 +29,12 @@ import phis2ws.service.dao.sesame.VariableDaoSesame;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.model.User;
+import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.resources.AcquisitionSessionResourceService;
-import phis2ws.service.resources.dto.ExperimentDTO;
+import phis2ws.service.resources.dto.experiments.ExperimentDTO;
+import phis2ws.service.resources.dto.experiments.ExperimentPostDTO;
 import phis2ws.service.utils.POSTResultsReturn;
+import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.sql.JoinAttributes;
 import phis2ws.service.utils.sql.SQLQueryBuilder;
 import phis2ws.service.view.model.phis.Contact;
@@ -411,7 +414,7 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
-    private POSTResultsReturn checkAndInsertExperimentList(List<ExperimentDTO> newExperiments) throws SQLException, Exception {
+    private POSTResultsReturn checkAndInsertExperimentList(List<ExperimentPostDTO> newExperiments) throws SQLException, Exception {
         //init results returned maps
         List<Status> insertStatusList = new ArrayList<>();
         boolean dataState = true;
@@ -419,8 +422,9 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
         boolean insertionState = true;
         POSTResultsReturn results = null;
         ArrayList<Experiment> experiments = new ArrayList<>();
+        ArrayList<String> createdResourcesURIs = new ArrayList<>();
         
-        for (ExperimentDTO experimentDTO : newExperiments) {
+        for (ExperimentPostDTO experimentDTO : newExperiments) {
             Experiment experiment = experimentDTO.createObjectFromDTO();
             experiments.add(experiment);
         }
@@ -466,9 +470,12 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
                 insertPreparedStatementAtGroupExperiment = con.prepareStatement(insertGabAtExperimentGroup);
                 insertPreparedStatementAtExperimentUsers = con.prepareStatement(insertGabAtExperimentUsers);
                 
+                UriGenerator uriGenerator = new UriGenerator();
+                
                 for (Experiment experiment : experiments) {
                     if (!existInDB(experiment)) {
                         insertionLeft = true;
+                        experiment.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_EXPERIMENT.toString(), experiment.getCampaign(), null));
                         insertPreparedStatementExperiments.setString(1, experiment.getUri());
                         insertPreparedStatementExperiments.setString(2, experiment.getStartDate());
                         insertPreparedStatementExperiments.setString(3, experiment.getEndDate()); 
@@ -491,6 +498,7 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
                         }
                        
                         insertPreparedStatementExperiments.execute();
+                        createdResourcesURIs.add(experiment.getUri());
                         
                         //Ajout dans at_trial_project des projets auxquels l'essai appartient
                         for (Project project : experiment.getProjects()) {
@@ -556,8 +564,9 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
                     } else { //Si données qui n'existent pas et donc sont insérées
                         insertStatusList.add(new Status("Data inserted", StatusCodeMsg.INFO, String.valueOf(inserted) + " experiments inserted"));
                     }
-                }   
+                }
                 results = new POSTResultsReturn(resultState, insertionState, dataState);
+                results.createdResources = createdResourcesURIs;
                 
             } catch (SQLException e) {
                 LOGGER.error(e.getMessage(), e);
@@ -594,6 +603,7 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
         } else {
             results = new POSTResultsReturn(resultState, insertionState, dataState);
             results.statusList = insertStatusList;
+            results.createdResources = createdResourcesURIs;
         }
         
         return results;
@@ -604,8 +614,7 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
      * @param newObjects liste des expérimentations
      * @return
      */
-    @Override
-    public POSTResultsReturn checkAndInsertList(List<ExperimentDTO> newObjects) {
+    public POSTResultsReturn checkAndInsertExperimentsList(List<ExperimentPostDTO> newObjects) {
         
          POSTResultsReturn postResult;
         try {
@@ -953,12 +962,13 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
     }
     
     /**
-     * Check the given data to update the list of the observed variables linked to the experiment.
+     * Check the given information and right on experiment to update the list of 
+     * observed variables which is mesured during the given experiment.
      * @param experimentUri
      * @param variables
      * @return the check result.
      */
-    public POSTResultsReturn checkObservedVariables(String experimentUri, List<String> variables) {
+    public POSTResultsReturn checkLinkedVariables(String experimentUri, List<String> variables) {
         POSTResultsReturn checkResult = new POSTResultsReturn();
         List<Status> checkStatus = new ArrayList<>();
         
@@ -999,7 +1009,8 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
     }
     
     /**
-     * Check the given data to update the list of sensors which participates in the givenexperiment.
+     * Check the given information and rights on experiment to update the list of 
+     * sensors which participates in the given experiment.
      * @param experimentUri
      * @param sensors
      * @return the check result.
@@ -1046,21 +1057,21 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
     
     /**
      * Update the list of variables linked to the given experiment. 
-     * /!\ Prerequisite : the data must have been checked before. 
-     * @see ExperimentDao#checkObservedVariables(java.lang.String, java.util.List)
-     * @see ExperimentDAOSesame#updateMeasuredVariables(java.lang.String, java.util.List) 
+     * /!\ Prerequisite : the information must have been checked before. 
+     * @see ExperimentDao#checkLinkedVariables(java.lang.String, java.util.List)
+     * @see ExperimentDAOSesame#updateLinkedVariables(java.lang.String, java.util.List) 
      * @param experimentUri
      * @param variables
      * @return the update result.
      */
-    private POSTResultsReturn updateMeasuredVariables(String experimentUri, List<String> variables) {
+    private POSTResultsReturn updateLinkedVariables(String experimentUri, List<String> variables) {
         ExperimentDAOSesame experimentDAOSesame = new ExperimentDAOSesame();
-        return experimentDAOSesame.updateMeasuredVariables(experimentUri, variables);
+        return experimentDAOSesame.updateLinkedVariables(experimentUri, variables);
     }
     
     /**
      * Update the list of sensors linked to the given experiment. 
-     * /!\ Prerequisite : the data must have been checked before. 
+     * /!\ Prerequisite : the information must have been checked before. 
      * @see ExperimentDao#checkLinkedSensors(java.lang.String, java.util.List)
      * @see ExperimentDAOSesame#updateLinkedSensors(java.lang.String, java.util.List)
      * @param experimentUri
@@ -1078,10 +1089,10 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
      * @param variables
      * @return the update result.
      */
-    public POSTResultsReturn checkAndUpdateMeasuredVariables(String experimentUri, List<String> variables) {
-        POSTResultsReturn checkResult = checkObservedVariables(experimentUri, variables);
+    public POSTResultsReturn checkAndUpdateLinkedVariables(String experimentUri, List<String> variables) {
+        POSTResultsReturn checkResult = checkLinkedVariables(experimentUri, variables);
         if (checkResult.getDataState()) {
-             return updateMeasuredVariables(experimentUri, variables);
+             return updateLinkedVariables(experimentUri, variables);
         } else { //Error in the data
             return checkResult;
         }
@@ -1100,5 +1111,61 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
         } else { //Error in the data
             return checkResult;
         } 
+    }
+
+    @Override
+    public POSTResultsReturn checkAndInsertList(List<ExperimentDTO> newObjects) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    /**
+     * Get the number of experiments existing in the database for the given campaign.
+     * @example
+     *  SELECT count(e.uri)
+     *  FROM experiment e
+     *  WHERE e.campaign="2019"
+     * @param campaign
+     * @return the number of experiments for the given campaign
+     */
+    public Integer getNumberOfExperimentsByCampaign(String campaign) {
+        SQLQueryBuilder query = new SQLQueryBuilder();
+        query.appendCount();
+        query.appendDistinct();
+        query.appendSelect(tableAlias + ".uri");
+        query.appendFrom(table, tableAlias);
+        query.appendWhereConditions("campaign", campaign, "=", null, tableAlias);
+       
+        Connection connection = null;
+        ResultSet resultSet = null;
+        Statement statement = null;
+
+        try {
+            connection = dataSource.getConnection();
+            statement = connection.createStatement();
+            resultSet = statement.executeQuery(query.toString());
+
+            if (resultSet.next()) {
+                return resultSet.getInt(1);
+            } else {
+                return 0;
+            }
+        } catch (SQLException e) {
+            LOGGER.error(e.getMessage(), e);
+            return null;
+        } finally {
+            try {
+                if (statement != null) {
+                    statement.close();
+                }
+                if (resultSet != null) {
+                    resultSet.close();
+                }
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException ex) {
+                LOGGER.error(ex.getMessage(), ex);
+            }
+        }
     }
 }

@@ -18,6 +18,7 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.update.UpdateRequest;
+import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.BindingSet;
@@ -39,10 +40,9 @@ import phis2ws.service.dao.phis.UserDaoPhisBrapi;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.model.User;
 import phis2ws.service.ontologies.Contexts;
-import phis2ws.service.ontologies.DublinCore;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
-import phis2ws.service.ontologies.Vocabulary;
+import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.resources.dto.ConcernItemDTO;
 import phis2ws.service.resources.dto.DocumentMetadataDTO;
 import phis2ws.service.utils.POSTResultsReturn;
@@ -67,6 +67,7 @@ import phis2ws.service.view.model.phis.Experiment;
  * A Dao specific to insert the metadata of a document inside the triplestore.
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  * @update [Morgane Vidal] 12 October, 2017 : add status on documents : linked/unlinked
+ * @update [Andréas Garcia] 15 Jan. 2019 : Replace "concern" occurences by "concernedItem"
  */
 public class DocumentDaoSesame extends DAOSesame<Document> {
     final static Logger LOGGER = LoggerFactory.getLogger(DocumentDaoSesame.class);
@@ -101,8 +102,8 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
     
     //List of the elements concerned by the document
     public List<String> concernedItemsUris = new ArrayList<>();
-    public static final String CONCERN = "concern";
-    public static final String CONCERN_TYPE = "concernType";
+    public static final String CONCERNED_ITEM_URI = "concernedItemUri";
+    public static final String CONCERNED_ITEM_TYPE = "concernedItemType";
     
     //Document's status. Equals to linked if the document has been linked to at 
     //least one element (concernedItems). Unlinked if the document isnt linked 
@@ -204,37 +205,32 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         Node documentType = NodeFactory.createURI(documentMetadata.getDocumentType());
         spql.addInsert(graph, documentUri, RDF.type, documentType);
 
-        Property relationCreator = ResourceFactory.createProperty(DublinCore.RELATION_CREATOR.toString());
-        spql.addInsert(graph, documentUri, relationCreator, documentMetadata.getCreator());
+        spql.addInsert(graph, documentUri, DCTerms.creator, documentMetadata.getCreator());
 
-        Property relationLanguage = ResourceFactory.createProperty(DublinCore.RELATION_LANGUAGE.toString());
-        spql.addInsert(graph, documentUri, relationLanguage, documentMetadata.getLanguage());
+        spql.addInsert(graph, documentUri, DCTerms.language, documentMetadata.getLanguage());
 
-        Property relationTitle = ResourceFactory.createProperty(DublinCore.RELATION_TITLE.toString());
-        spql.addInsert(graph, documentUri, relationTitle, documentMetadata.getTitle());
+        spql.addInsert(graph, documentUri, DCTerms.title, documentMetadata.getTitle());
 
-        Property relationDate = ResourceFactory.createProperty(DublinCore.RELATION_DATE.toString());
-        spql.addInsert(graph, documentUri, relationDate, documentMetadata.getCreationDate());
+        spql.addInsert(graph, documentUri, DCTerms.date, documentMetadata.getCreationDate());
 
-        Property relationStatus = ResourceFactory.createProperty(Vocabulary.RELATION_STATUS.toString());
+        Property relationStatus = ResourceFactory.createProperty(Oeso.RELATION_STATUS.toString());
         spql.addInsert(graph, documentUri, relationStatus, documentMetadata.getStatus());
             
         if (documentMetadata.getExtension() != null) {
-            Property relationFormat = ResourceFactory.createProperty(DublinCore.RELATION_FORMAT.toString());
-            spql.addInsert(graph, documentUri, relationFormat, documentMetadata.getExtension());
+            spql.addInsert(graph, documentUri, DCTerms.format, documentMetadata.getExtension());
         }
         
         if (documentMetadata.getComment() != null && !documentMetadata.getComment().equals("")) {
             spql.addInsert(graph, documentUri, RDFS.comment, documentMetadata.getComment());
         }
 
-        if (!(documentMetadata.getConcern() == null) && !documentMetadata.getConcern().isEmpty()) {
-            for (ConcernItemDTO concernedItem : documentMetadata.getConcern()) {
-                Node concernedItemUri = NodeFactory.createURI(concernedItem.getUri());
-                Node concernedItemType = NodeFactory.createURI(concernedItem.getTypeURI());
-                Property relationConcern = ResourceFactory.createProperty(Vocabulary.RELATION_CONCERN.toString());
+        if (!(documentMetadata.getConcernedItems() == null) && !documentMetadata.getConcernedItems().isEmpty()) {
+            for (ConcernItemDTO concernedItemDTO : documentMetadata.getConcernedItems()) {
+                Node concernedItemUri = NodeFactory.createURI(concernedItemDTO.getUri());
+                Node concernedItemType = NodeFactory.createURI(concernedItemDTO.getTypeURI());
+                Property relationConcerns = ResourceFactory.createProperty(Oeso.RELATION_CONCERNS.toString());
 
-                spql.addInsert(graph, documentUri, relationConcern, concernedItemUri);
+                spql.addInsert(graph, documentUri, relationConcerns, concernedItemUri);
                 spql.addInsert(graph, concernedItemUri, RDF.type, concernedItemType);
             }
         }
@@ -254,22 +250,18 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         Node graph = NodeFactory.createURI(Contexts.DOCUMENTS.toString());
         Node documentUri = NodeFactory.createURI(document.getUri());
         
-        Property relationCreator = ResourceFactory.createProperty(DublinCore.RELATION_CREATOR.toString());
-        spql.addDelete(graph, documentUri, relationCreator, document.getCreator());
+        spql.addDelete(graph, documentUri, DCTerms.creator, document.getCreator());
 
-        Property relationLanguage = ResourceFactory.createProperty(DublinCore.RELATION_LANGUAGE.toString());
-        spql.addDelete(graph, documentUri, relationLanguage, document.getLanguage());
+        spql.addDelete(graph, documentUri, DCTerms.language, document.getLanguage());
 
-        Property relationTitle = ResourceFactory.createProperty(DublinCore.RELATION_TITLE.toString());
-        spql.addDelete(graph, documentUri, relationTitle, document.getTitle());
+        spql.addDelete(graph, documentUri, DCTerms.title, document.getTitle());
 
-        Property relationDate = ResourceFactory.createProperty(DublinCore.RELATION_DATE.toString());
-        spql.addDelete(graph, documentUri, relationDate, document.getCreationDate());
+        spql.addDelete(graph, documentUri, DCTerms.date, document.getCreationDate());
 
         Node documentType = NodeFactory.createURI(document.getDocumentType());
         spql.addDelete(graph, documentUri, RDF.type, documentType);
         
-        Property relationStatus = ResourceFactory.createProperty(Vocabulary.RELATION_STATUS.toString());
+        Property relationStatus = ResourceFactory.createProperty(Oeso.RELATION_STATUS.toString());
         spql.addDelete(graph, documentUri, relationStatus, document.getStatus());
         
         if (document.getComment() != null) {
@@ -278,7 +270,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
 
         for (ConcernItemDTO concernedItem : document.getConcernedItems()) {
             Node concernedItemUri = NodeFactory.createURI(concernedItem.getUri());
-            Property relationConcern = ResourceFactory.createProperty(Vocabulary.RELATION_CONCERN.toString());
+            Property relationConcern = ResourceFactory.createProperty(Oeso.RELATION_CONCERNS.toString());
             spql.addDelete(graph, documentUri, relationConcern, concernedItemUri);
         }
                 
@@ -378,8 +370,8 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         SPARQLQueryBuilder sparqlQ = new SPARQLQueryBuilder();
         sparqlQ.appendDistinct(true);
         sparqlQ.appendSelect("?documentType");
-        sparqlQ.appendTriplet("?documentType", "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_DOCUMENT.toString(), null);
-        sparqlQ.appendFilter("?documentType != <" + Vocabulary.CONCEPT_DOCUMENT.toString() +">");
+        sparqlQ.appendTriplet("?documentType", "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_DOCUMENT.toString(), null);
+        sparqlQ.appendFilter("?documentType != <" + Oeso.CONCEPT_DOCUMENT.toString() +">");
 
         LOGGER.debug(sparqlQ.toString());
         TupleQuery tupleQueryTo = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQ.toString());
@@ -403,7 +395,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
      *  ?documentUri  dc:title  ?title  . 
      *  ?documentUri  dc:date  ?creationDate  . 
      *  ?documentUri  dc:format  ?format  . 
-     *  ?documentUri  <http://www.phenome-fppn.fr/vocabulary/2017#status>  ?status  . 
+     *  ?documentUri  <http://www.opensilex.org/vocabulary/oeso#status>  ?status  . 
      *  ?documentUri  rdfs:comment  ?comment  . 
      * FILTER ( (regex(STR(?creator), 'admin', 'i')) && (regex(STR(?title), 'liste', 'i')) ) 
      * }}
@@ -437,56 +429,56 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         
         sparqlQuery.appendGroupBy("?" + CREATOR);
         sparqlQuery.appendSelect("?" + CREATOR);
-        sparqlQuery.appendTriplet(select, DublinCore.RELATION_CREATOR.toString(), "?" + CREATOR, null);
+        sparqlQuery.appendTriplet(select, DCTerms.creator.getURI(), "?" + CREATOR, null);
         
         if (creator != null) {
             sparqlQuery.appendAndFilter("regex(STR(?" + CREATOR +"), '" + creator + "', 'i')");
         }
         
         if (language != null) {
-            sparqlQuery.appendTriplet(select, DublinCore.RELATION_LANGUAGE.toString(), "\"" + language + "\"", null);
+            sparqlQuery.appendTriplet(select, DCTerms.language.getURI(), "\"" + language + "\"", null);
         } else {
             sparqlQuery.appendSelect(" ?" + LANGUAGE);
             sparqlQuery.appendGroupBy(" ?" + LANGUAGE);
-            sparqlQuery.appendTriplet(select, DublinCore.RELATION_LANGUAGE.toString(), "?" + LANGUAGE, null);
+            sparqlQuery.appendTriplet(select, DCTerms.language.getURI(), "?" + LANGUAGE, null);
         }
         
         sparqlQuery.appendGroupBy("?" + TITLE);
         sparqlQuery.appendSelect("?" + TITLE);
-        sparqlQuery.appendTriplet(select, DublinCore.RELATION_TITLE.toString(), "?" + TITLE, null);
+        sparqlQuery.appendTriplet(select, DCTerms.title.getURI(), "?" + TITLE, null);
         
         if (title != null) {
             sparqlQuery.appendAndFilter("regex(STR(?" + TITLE +"), '" + title + "', 'i')");
         }
         
         if (creationDate != null) {
-            sparqlQuery.appendTriplet(select, DublinCore.RELATION_DATE.toString(), "\"" + creationDate + "\"", null);
+            sparqlQuery.appendTriplet(select, DCTerms.date.getURI(), "\"" + creationDate + "\"", null);
         } else {
             sparqlQuery.appendGroupBy("?" + CREATION_DATE);
             sparqlQuery.appendSelect("?" + CREATION_DATE);
-            sparqlQuery.appendTriplet(select, DublinCore.RELATION_DATE.toString(), "?" + CREATION_DATE, null);
+            sparqlQuery.appendTriplet(select, DCTerms.date.getURI(), "?" + CREATION_DATE, null);
         }
         
         if (format != null) {
-            sparqlQuery.appendTriplet(select, DublinCore.RELATION_FORMAT.toString(), "\"" + format + "\"", null);
+            sparqlQuery.appendTriplet(select, DCTerms.format.getURI(), "\"" + format + "\"", null);
         } else {
             sparqlQuery.appendGroupBy("?" + FORMAT);
             sparqlQuery.appendSelect("?" + FORMAT);
-            sparqlQuery.appendTriplet(select, DublinCore.RELATION_FORMAT.toString(), "?" + FORMAT, null);
+            sparqlQuery.appendTriplet(select, DCTerms.format.getURI(), "?" + FORMAT, null);
         }
         
         if (!concernedItemsUris.isEmpty() && concernedItemsUris.size() > 0) {
             for (String concernedItemUri : concernedItemsUris) {
-                sparqlQuery.appendTriplet(select, Vocabulary.RELATION_CONCERN.toString(), concernedItemUri, null);
+                sparqlQuery.appendTriplet(select, Oeso.RELATION_CONCERNS.toString(), concernedItemUri, null);
             }
         } 
         
         if (status != null) {
-            sparqlQuery.appendTriplet(select, Vocabulary.RELATION_STATUS.toString(), "\"" + status + "\"", null);
+            sparqlQuery.appendTriplet(select, Oeso.RELATION_STATUS.toString(), "\"" + status + "\"", null);
         } else {
             sparqlQuery.appendSelect(" ?" + STATUS);
             sparqlQuery.appendGroupBy("?" + STATUS);
-            sparqlQuery.appendTriplet(select, Vocabulary.RELATION_STATUS.toString(), "?" + STATUS, null);
+            sparqlQuery.appendTriplet(select, Oeso.RELATION_STATUS.toString(), "?" + STATUS, null);
         }
         
         //SILEX:info
@@ -546,14 +538,14 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
      * @param uriDocument
      * @return the search query
      */
-    private SPARQLQueryBuilder prepareSearchConcernQuery(String uriDocument) {
+    private SPARQLQueryBuilder prepareSearchConcernedItemsQuery(String uriDocument) {
         SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
         sparqlQuery.appendDistinct(true);
         sparqlQuery.appendGraph(Contexts.DOCUMENTS.toString());
 
-        sparqlQuery.appendSelect(" ?" + CONCERN + " ?" + CONCERN_TYPE);
-        sparqlQuery.appendTriplet(uriDocument, Vocabulary.RELATION_CONCERN.toString(), "?" + CONCERN, null);
-        sparqlQuery.appendTriplet("?concern", Rdf.RELATION_TYPE.toString(), "?" + CONCERN_TYPE, null);
+        sparqlQuery.appendSelect(" ?" + CONCERNED_ITEM_URI + " ?" + CONCERNED_ITEM_TYPE);
+        sparqlQuery.appendTriplet(uriDocument, Oeso.RELATION_CONCERNS.toString(), "?" + CONCERNED_ITEM_URI, null);
+        sparqlQuery.appendTriplet("?" + CONCERNED_ITEM_URI, Rdf.RELATION_TYPE.toString(), "?" + CONCERNED_ITEM_TYPE, null);
 
         LOGGER.debug(SPARQL_SELECT_QUERY + sparqlQuery.toString());
 
@@ -576,7 +568,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
      *  ?documentUri  dc:title  ?title  . 
      *  ?documentUri  dc:date  ?creationDate  . 
      *  ?documentUri  dc:format  ?format  . 
-     *  ?documentUri  <http://www.phenome-fppn.fr/vocabulary/2017#status>  ?status  . 
+     *  ?documentUri  <http://www.opensilex.org/vocabulary/oeso#status>  ?status  . 
      *  ?documentUri  rdfs:comment  ?comment  . 
      * FILTER ( (regex(STR(?creator), 'admin', 'i')) && (regex(STR(?title), 'liste', 'i')) ) 
      * }}
@@ -626,9 +618,9 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
             return true;
         } else {
             ExperimentDao experimentDao = new ExperimentDao();
-            for (ConcernItemDTO concernItem : document.getConcernedItems()) {
-                if (concernItem.getTypeURI().equals(Vocabulary.CONCEPT_EXPERIMENT.toString())) {
-                    Experiment experiment = new Experiment(concernItem.getUri());
+            for (ConcernItemDTO concernedItem : document.getConcernedItems()) {
+                if (concernedItem.getTypeURI().equals(Oeso.CONCEPT_EXPERIMENT.toString())) {
+                    Experiment experiment = new Experiment(concernedItem.getUri());
                     
                     if (experimentDao.canUserSeeExperiment(u, experiment)) {
                         return true;
@@ -716,15 +708,15 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
                     }
 
                     //Check if document is linked to other elements
-                    SPARQLQueryBuilder sparqlQueryConcern = prepareSearchConcernQuery(document.getUri());
-                    TupleQuery tupleQueryConcern = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQueryConcern.toString());
-                    TupleQueryResult resultConcern = tupleQueryConcern.evaluate();
-                    while (resultConcern.hasNext()) {
-                        BindingSet bindingSetConcern = resultConcern.next();
-                        if (bindingSetConcern.getValue(CONCERN) != null) {
+                    SPARQLQueryBuilder sparqlQueryConcernedItem = prepareSearchConcernedItemsQuery(document.getUri());
+                    TupleQuery tupleQueryConcernedItem = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQueryConcernedItem.toString());
+                    TupleQueryResult resultConcernedItem = tupleQueryConcernedItem.evaluate();
+                    while (resultConcernedItem.hasNext()) {
+                        BindingSet bindingSetConcernedItem = resultConcernedItem.next();
+                        if (bindingSetConcernedItem.getValue(CONCERNED_ITEM_URI) != null) {
                             ConcernItemDTO concernedItem = new ConcernItemDTO();
-                            concernedItem.setTypeURI(bindingSetConcern.getValue(CONCERN_TYPE).stringValue());
-                            concernedItem.setUri(bindingSetConcern.getValue(CONCERN).stringValue());
+                            concernedItem.setTypeURI(bindingSetConcernedItem.getValue(CONCERNED_ITEM_TYPE).stringValue());
+                            concernedItem.setUri(bindingSetConcernedItem.getValue(CONCERNED_ITEM_URI).stringValue());
                             document.addConcernedItem(concernedItem);
                         }
                     }

@@ -40,7 +40,8 @@ import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.phis.ExperimentDao;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.resources.dto.ExperimentDTO;
+import phis2ws.service.resources.dto.experiments.ExperimentDTO;
+import phis2ws.service.resources.dto.experiments.ExperimentPostDTO;
 import phis2ws.service.resources.validation.interfaces.Date;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
@@ -215,7 +216,7 @@ public class ExperimentResourceService extends ResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postExperiment(
-            @ApiParam(value = DocumentationAnnotation.EXPERIMENT_POST_DATA_DEFINITION) @Valid ArrayList<ExperimentDTO> experiments,
+            @ApiParam(value = DocumentationAnnotation.EXPERIMENT_POST_DATA_DEFINITION) @Valid ArrayList<ExperimentPostDTO> experiments,
             @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
 
@@ -231,11 +232,12 @@ public class ExperimentResourceService extends ResourceService {
                 experimentDao.user = userSession.getUser();
 
                 //Vérification des expérimentations et insertion dans la BD
-                POSTResultsReturn result = experimentDao.checkAndInsertList(experiments);
+                POSTResultsReturn result = experimentDao.checkAndInsertExperimentsList(experiments);
 
                 if (result.getHttpStatus().equals(Response.Status.CREATED)) {
-                    //Code 201, experiments insérés
+                    //Code 201, experiments created
                     postResponse = new ResponseFormPOST(result.statusList);
+                    postResponse.getMetadata().setDatafiles(result.getCreatedResources());
                 } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
                         || result.getHttpStatus().equals(Response.Status.OK)
                         || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
@@ -359,7 +361,7 @@ public class ExperimentResourceService extends ResourceService {
         
         experimentDAO.user = userSession.getUser();
         
-        POSTResultsReturn result = experimentDAO.checkAndUpdateMeasuredVariables(uri, variables);
+        POSTResultsReturn result = experimentDAO.checkAndUpdateLinkedVariables(uri, variables);
         
         if (result.getHttpStatus().equals(Response.Status.CREATED)) {
             postResponse = new ResponseFormPOST(result.statusList);

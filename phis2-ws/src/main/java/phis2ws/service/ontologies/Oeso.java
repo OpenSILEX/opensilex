@@ -14,11 +14,11 @@ import phis2ws.service.PropertiesFileManager;
  * Contains the ontology (oepo here) relations and context.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public enum Vocabulary {
+public enum Oeso {
     NAMESPACE {
         @Override
         public String toString() {
-            return "http://www.phenome-fppn.fr/vocabulary/2017#";
+            return "http://www.opensilex.org/vocabulary/oeso#";
         }
     },
     
@@ -80,6 +80,12 @@ public enum Vocabulary {
         @Override
         public String toString() {
             return NAMESPACE.toString() + "Method";
+        }
+    },
+    CONCEPT_PROJECT {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "Project";
         }
     },
     CONCEPT_RADIOMETRIC_TARGET {
@@ -169,10 +175,10 @@ public enum Vocabulary {
             return NAMESPACE.toString() + "brdfP4";
         }
     },
-    RELATION_CONCERN {
+    RELATION_CONCERNS {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "concern";
+            return NAMESPACE.toString() + "concerns";
         }
     },
     RELATION_DATE_OF_LAST_CALIBRATION {
@@ -199,16 +205,16 @@ public enum Vocabulary {
             return NAMESPACE.toString() + "fromGenotype";
         }
     },
-    RELATION_FROM_SPECIES {
+    RELATION_HAS_SPECIES {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "fromSpecies";
+            return NAMESPACE.toString() + "hasSpecies";
         }
     },
-    RELATION_FROM_VARIETY {
+    RELATION_HAS_VARIETY {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "fromVariety";
+            return NAMESPACE.toString() + "hasVariety";
         }
     },
     RELATION_HAS_ALIAS {
@@ -253,10 +259,10 @@ public enum Vocabulary {
             return NAMESPACE.toString() + "hasRadiometricTargetMaterial";
         }
     },
-    RELATION_HAS_REPETITION {
+    RELATION_HAS_REPLICATION {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "hasRepetition";
+            return NAMESPACE.toString() + "hasReplication";
         }
     },
     RELATION_HAS_SHAPE {
@@ -331,10 +337,10 @@ public enum Vocabulary {
             return NAMESPACE.toString() + "personInCharge";
         }
     },
-    RELATION_SERIAL_NUMBER {
+    RELATION_HAS_SERIAL_NUMBER {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "serialNumber";
+            return NAMESPACE.toString() + "hasSerialNumber";
         }
     },
     RELATION_STATUS {

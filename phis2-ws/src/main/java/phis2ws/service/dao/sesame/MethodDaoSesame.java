@@ -14,6 +14,7 @@ package phis2ws.service.dao.sesame;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -40,7 +41,7 @@ import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Skos;
-import phis2ws.service.ontologies.Vocabulary;
+import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.resources.dto.MethodDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.UriGenerator;
@@ -78,7 +79,7 @@ public class MethodDaoSesame extends DAOSesame<Method> {
             query.appendSelect("?uri");
         }
         
-        query.appendTriplet(methodUri, Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_METHOD.toString(), null);
+        query.appendTriplet(methodUri, Rdf.RELATION_TYPE.toString(), Oeso.CONCEPT_METHOD.toString(), null);
         
         if (label != null) {
             query.appendTriplet(methodUri, Rdfs.RELATION_LABEL.toString(),"\"" + label + "\"", null);
@@ -154,7 +155,7 @@ public class MethodDaoSesame extends DAOSesame<Method> {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         
         query.appendSelect("?uri");
-        query.appendTriplet("?uri", Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_METHOD.toString(), null);
+        query.appendTriplet("?uri", Rdf.RELATION_TYPE.toString(), Oeso.CONCEPT_METHOD.toString(), null);
         query.appendOrderBy("desc(?uri)");
         query.appendLimit(1);
         
@@ -203,7 +204,7 @@ public class MethodDaoSesame extends DAOSesame<Method> {
         
         Node graph = NodeFactory.createURI(Contexts.VARIABLES.toString());
         
-        Node methodConcept = NodeFactory.createURI(Vocabulary.CONCEPT_METHOD.toString());
+        Node methodConcept = NodeFactory.createURI(Oeso.CONCEPT_METHOD.toString());
         Resource methodUri = ResourceFactory.createResource(methodDTO.getUri());
 
         spql.addInsert(graph, methodUri, RDF.type, methodConcept);
@@ -244,7 +245,11 @@ public class MethodDaoSesame extends DAOSesame<Method> {
         
         while (iteratorMethodDTO.hasNext() && annotationInsert) {
             MethodDTO methodDTO = iteratorMethodDTO.next();
-            methodDTO.setUri(uriGenerator.generateNewInstanceUri(Vocabulary.CONCEPT_METHOD.toString(), null, null));
+            try {
+                methodDTO.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_METHOD.toString(), null, null));
+            } catch (Exception ex) { //In the method case, no exception should be raised
+                annotationInsert = false;
+            }
             
             //Enregistrement dans le triplestore
             UpdateRequest spqlInsert = prepareInsertQuery(methodDTO);

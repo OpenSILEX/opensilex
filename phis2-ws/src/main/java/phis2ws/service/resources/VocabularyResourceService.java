@@ -197,7 +197,7 @@ public class VocabularyResourceService extends ResourceService {
      *  "result": {
      *      "data": [ 
      *          { 
-     *              "relation": "http://www.phenome-fppn.fr/vocabulary/2017#hasTechnicalContact",
+     *              "relation": "http://www.opensilex.org/vocabulary/oeso#hasTechnicalContact",
      *              "labels": { 
      *                  "en": "technical contact", 
      *                  "fr": "contact technique" 
@@ -298,13 +298,13 @@ public class VocabularyResourceService extends ResourceService {
      *  "result": { 
      *      "data": [
      *              { 
-     *                  "relation": "http://www.phenome-fppn.fr/vocabulary/2017#dateOfLastCalibration",
+     *                  "relation": "http://www.opensilex.org/vocabulary/oeso#dateOfLastCalibration",
      *                  "labels": { 
      *                      "en": "date of last calibration", 
      *                      "fr": "date de la dernière calibration" } 
      *              }, 
      *              { 
-     *                  "relation": "http://www.phenome-fppn.fr/vocabulary/2017#dateOfPurchase",
+     *                  "relation": "http://www.opensilex.org/vocabulary/oeso#dateOfPurchase",
      *                  "labels": {
      *                      "en": "date of purchase",
      *                      "fr": "date d'achat" } 

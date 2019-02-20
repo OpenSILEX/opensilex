@@ -16,7 +16,7 @@ public enum Oeev {
     NAMESPACE {
         @Override
         public String toString() {
-            return "http://www.phenome-fppn.fr/vocabulary/2018/oeev#";
+            return "http://www.opensilex.org/vocabulary/oeev#";
         }
     },
     
@@ -30,7 +30,7 @@ public enum Oeev {
     RELATION_CONCERNS {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "concern";
+            return NAMESPACE.toString() + "concerns";
         }
     }, 
     

@@ -10,11 +10,14 @@ package phis2ws.service.dao.sesame;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
-import static org.apache.jena.sparql.vocabulary.VocabTestQuery.query;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.update.UpdateRequest;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -31,7 +34,7 @@ import phis2ws.service.dao.phis.ExperimentDao;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
-import phis2ws.service.ontologies.Vocabulary;
+import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.brapi.Status;
@@ -62,20 +65,20 @@ public class ExperimentDAOSesame extends DAOSesame<Experiment> {
      * @return The prepared query
      * @example 
      * SELECT DISTINCT  ?uri ?label WHERE {
-     *      ?rdfType  rdfs:subClassOf*  <http://www.phenome-fppn.fr/vocabulary/2017#Variable> . 
+     *      ?rdfType  rdfs:subClassOf*  <http://www.opensilex.org/vocabulary/oeso#Variable> . 
      *      ?uri rdf:type ?rdfType .
      *      ?uri  rdfs:label ?label .
-     *      <http://www.phenome-fppn.fr/2018/DIA2018-1> <http://www.phenome-fppn.fr/vocabulary/2017#measures> ?uri
+     *      <http://www.phenome-fppn.fr/2018/DIA2018-1> <http://www.opensilex.org/vocabulary/oeso#measures> ?uri
      * }
      */
     private SPARQLQueryBuilder prepareSearchVariablesQuery(String experimentUri) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         
         query.appendSelect("?" + URI + " ?" + LABEL );
-        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_VARIABLE.toString(), null);
+        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_VARIABLE.toString(), null);
         query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
         query.appendTriplet("?" + URI, Rdfs.RELATION_LABEL.toString(), "?" + LABEL, null);
-        query.appendTriplet(experimentUri, Vocabulary.RELATION_MEASURES.toString(), "?" + URI, null);
+        query.appendTriplet(experimentUri, Oeso.RELATION_MEASURES.toString(), "?" + URI, null);
         
         LOGGER.debug(query.toString());
         
@@ -89,20 +92,20 @@ public class ExperimentDAOSesame extends DAOSesame<Experiment> {
      * @return The prepared query
      * @example 
      * SELECT DISTINCT  ?uri ?label WHERE {
-     *      ?rdfType  rdfs:subClassOf*  <http://www.phenome-fppn.fr/vocabulary/2017#Sensors> . 
+     *      ?rdfType  rdfs:subClassOf*  <http://www.opensilex.org/vocabulary/oeso#Sensors> . 
      *      ?uri rdf:type ?rdfType .
      *      ?uri  rdfs:label ?label .
-     *      <http://www.phenome-fppn.fr/2018/DIA2018-1> <http://www.phenome-fppn.fr/vocabulary/2017#participatesIn> ?uri
+     *      <http://www.phenome-fppn.fr/2018/DIA2018-1> <http://www.opensilex.org/vocabulary/oeso#participatesIn> ?uri
      * }
      */
     private SPARQLQueryBuilder prepareSearchSensorsQuery(String experimentUri) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         
         query.appendSelect("?" + URI + " ?" + LABEL );
-        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_SENSING_DEVICE.toString(), null);
+        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_SENSING_DEVICE.toString(), null);
         query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
         query.appendTriplet("?" + URI, Rdfs.RELATION_LABEL.toString(), "?" + LABEL, null);
-        query.appendTriplet("?" + URI, Vocabulary.RELATION_PARTICIPATES_IN.toString(), experimentUri, null);
+        query.appendTriplet("?" + URI, Oeso.RELATION_PARTICIPATES_IN.toString(), experimentUri, null);
         
         LOGGER.debug(query.toString());
         
@@ -159,28 +162,28 @@ public class ExperimentDAOSesame extends DAOSesame<Experiment> {
     
     /**
      * Update the list of the variables linked to the given experiment.
-     * /!\ Prerequisite : the data must have been checked before.
-     * @see ExperimentDao#checkAndUpdateObservedVariables(java.lang.String, java.util.List) 
+     * /!\ Prerequisite : the information must have been checked before.
+     * @see ExperimentDao#checkAndUpdateLinkedVariables(java.lang.String, java.util.List) 
      * @param experimentUri
      * @param variables
      * @return The update result.
      */
-    public POSTResultsReturn updateMeasuredVariables(String experimentUri, List<String> variables) {
+    public POSTResultsReturn updateLinkedVariables(String experimentUri, List<String> variables) {
         POSTResultsReturn result;
         List<Status> updateStatus = new ArrayList<>();
         
         boolean update = true;
 
         //1. Delete old object properties
-        HashMap<String, String> actualMeasuredVariables = getVariables(experimentUri);
-        List<String> oldMeasuredVariables = new ArrayList<>();
-        actualMeasuredVariables.entrySet().forEach((oldVariable) -> {
-            oldMeasuredVariables.add(oldVariable.getKey());
+        HashMap<String, String> actualLinkedVariables = getVariables(experimentUri);
+        List<String> oldLinkedVariables = new ArrayList<>();
+        actualLinkedVariables.entrySet().forEach((oldVariable) -> {
+            oldLinkedVariables.add(oldVariable.getKey());
         });
         
-        if (deleteObjectProperties(experimentUri, Vocabulary.RELATION_MEASURES.toString(), oldMeasuredVariables)) {
+        if (deleteObjectProperties(experimentUri, Oeso.RELATION_MEASURES.toString(), oldLinkedVariables)) {
             //2. Add new object properties
-            if (addObjectProperties(experimentUri, Vocabulary.RELATION_MEASURES.toString(), variables, experimentUri)) {
+            if (addObjectProperties(experimentUri, Oeso.RELATION_MEASURES.toString(), variables, experimentUri)) {
                 updateStatus.add(new Status(StatusCodeMsg.RESOURCES_UPDATED, StatusCodeMsg.INFO, "The experiment " + experimentUri + " has now " + variables.size() + " linked variables"));
             } else {
                 update = false;
@@ -210,27 +213,30 @@ public class ExperimentDAOSesame extends DAOSesame<Experiment> {
      *         false if an error occurred (see the error logs to get more details)
      */
     private boolean linkSensorsToExperiment(List<String> sensors, String experimentUri) {
-        //Generates insert query
-        UpdateBuilder spql = new UpdateBuilder();
-        Node graph  = NodeFactory.createURI(experimentUri);
-        
-        sensors.forEach((sensor) -> {
-            Node subjectUriNode  = NodeFactory.createURI(sensor);
-            Node predicateUriNode  = NodeFactory.createURI(Vocabulary.RELATION_PARTICIPATES_IN.toString());
-            Node objectPropertyNode  = NodeFactory.createURI(experimentUri);
-            
-            spql.addInsert(graph, subjectUriNode, predicateUriNode, objectPropertyNode);
-        });
-        
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
-        
-        //Insert the properties in the triplestore
-        Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, spql.buildRequest().toString());
-        try {
-            prepareUpdate.execute();
-        } catch (UpdateExecutionException ex) {
-            LOGGER.error("Add object properties error : " + ex.getMessage());
-            return false;
+        //Add links to sensors if needed
+        if (!sensors.isEmpty()) {
+            UpdateBuilder updateBuilder = new UpdateBuilder();
+            Node graph = NodeFactory.createURI(experimentUri);
+            Resource experiment = ResourceFactory.createResource(experimentUri);
+            Property participatesIn = ResourceFactory.createProperty(Oeso.RELATION_PARTICIPATES_IN.toString());
+
+            sensors.forEach((sensor) -> {
+                Resource sensorUri = ResourceFactory.createResource(sensor);
+
+                updateBuilder.addInsert(graph, sensorUri, participatesIn, experiment);
+            });
+
+            UpdateRequest updateRequest = updateBuilder.buildRequest();
+            LOGGER.debug(SPARQL_SELECT_QUERY + updateRequest.toString());
+
+            //Insert the properties in the triplestore
+            Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, updateRequest.toString());
+            try {
+                prepareUpdate.execute();
+            } catch (UpdateExecutionException ex) {
+                LOGGER.error("Add object properties error : " + ex.getMessage());
+                return false;
+            }
         }
         
         return true;
@@ -249,24 +255,30 @@ public class ExperimentDAOSesame extends DAOSesame<Experiment> {
      *         false if the delete has not been done.
      */
     private boolean deleteLinksSensorsExperiment(List<String> sensors, String experimentUri) {
-        //1. Generates delete query
-        String deleteQuery = "DELETE WHERE { ";
-        
-        for (String sensor : sensors) {
-            deleteQuery += "<" + sensor + "> <" + Vocabulary.RELATION_PARTICIPATES_IN.toString() + "> <" + experimentUri + "> . ";
-        }
-        
-        deleteQuery += " }";
-        
-        LOGGER.debug(deleteQuery);
-        
-        //2. Delete data in the triplestore
-        Update prepareDelete = getConnection().prepareUpdate(QueryLanguage.SPARQL, deleteQuery);
-        try {
-            prepareDelete.execute();
-        } catch (UpdateExecutionException ex) {
-            LOGGER.error("Delete object properties error : " + ex.getMessage());
-            return false;
+        //1. Generates delete query (if needed)
+        if (!sensors.isEmpty()) {
+            UpdateBuilder deleteBuilder = new UpdateBuilder();
+            Node graph = NodeFactory.createURI(experimentUri);
+            Resource experiment = ResourceFactory.createResource(experimentUri);
+            Property participatesIn = ResourceFactory.createProperty(Oeso.RELATION_PARTICIPATES_IN.toString());
+
+            for (String sensor : sensors) {
+                Resource sensorRes = ResourceFactory.createResource(sensor);
+                deleteBuilder.addDelete(graph, sensorRes, participatesIn, experiment);
+            }
+
+            UpdateRequest delete = deleteBuilder.buildRequest();
+
+            LOGGER.debug("delete : " + delete.toString());
+
+            //2. Delete data in the triplestore
+            Update prepareDelete = getConnection().prepareUpdate(QueryLanguage.SPARQL, delete.toString());
+            try {
+                prepareDelete.execute();
+            } catch (UpdateExecutionException ex) {
+                LOGGER.error("Delete object properties error : " + ex.getMessage());
+                return false;
+            }
         }
         
         return true;
@@ -274,7 +286,7 @@ public class ExperimentDAOSesame extends DAOSesame<Experiment> {
     
     /**
      * Update the list of the sensors linked to the given experiment.
-     * /!\ Prerequisite : the data must have been checked before.
+     * /!\ Prerequisite : the information must have been checked before.
      * @see ExperimentDao#checkAndUpdateLinkedSensors(java.lang.String, java.util.List)
      * @param experimentUri
      * @param sensors

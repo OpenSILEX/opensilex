@@ -265,8 +265,8 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
             //if the datasetDTO follows the rules
             for (DataDTO data : datasetDTO.getData()) {
                 //is agronomical object exist ?
-                ScientificObjectDAO agronomicalObjectDao = new ScientificObjectDAO();
-                if (!agronomicalObjectDao.existInDB(new ScientificObject(data.getAgronomicalObject()))) {
+                ScientificObjectDAOSesame agronomicalObjectDao = new ScientificObjectDAOSesame();
+                if (!agronomicalObjectDao.existScientificObject(data.getAgronomicalObject())) {
                     dataState = false;
                     insertStatusList.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Unknown Agronomical Object URI : " + data.getAgronomicalObject()));
                 }
@@ -368,7 +368,7 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
                 dataCollection.insertMany(dataToInsert);
             }
             
-            insertStatusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, StatusCodeMsg.DATA_INSERTED));;
+            insertStatusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, StatusCodeMsg.DATA_INSERTED));
             result = new POSTResultsReturn(dataState);
             result.setHttpStatus(Response.Status.CREATED);
             result.createdResources = createdProvenances;

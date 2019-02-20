@@ -14,6 +14,7 @@ package phis2ws.service.dao.sesame;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -40,7 +41,7 @@ import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Skos;
-import phis2ws.service.ontologies.Vocabulary;
+import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.resources.dto.TraitDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.UriGenerator;
@@ -81,7 +82,7 @@ public class TraitDaoSesame extends DAOSesame<Trait> {
             traitURI = "?" + URI;
             query.appendSelect("?" + URI);
         }
-        query.appendTriplet(traitURI, Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_TRAIT.toString(), null);
+        query.appendTriplet(traitURI, Rdf.RELATION_TYPE.toString(), Oeso.CONCEPT_TRAIT.toString(), null);
         
         if (label != null) {
             query.appendTriplet(traitURI, Rdfs.RELATION_LABEL.toString(),"\"" + label + "\"", null);
@@ -116,7 +117,7 @@ public class TraitDaoSesame extends DAOSesame<Trait> {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         
         query.appendSelect("?uri");
-        query.appendTriplet("?uri", Rdf.RELATION_TYPE.toString(), Vocabulary.CONCEPT_TRAIT.toString(), null);
+        query.appendTriplet("?uri", Rdf.RELATION_TYPE.toString(), Oeso.CONCEPT_TRAIT.toString(), null);
         query.appendOrderBy("DESC(?uri)");
         query.appendLimit(1);
         
@@ -201,7 +202,7 @@ public class TraitDaoSesame extends DAOSesame<Trait> {
         
         Node graph = NodeFactory.createURI(Contexts.VARIABLES.toString());
         
-        Node traitConcept = NodeFactory.createURI(Vocabulary.CONCEPT_TRAIT.toString());
+        Node traitConcept = NodeFactory.createURI(Oeso.CONCEPT_TRAIT.toString());
         Resource traitUri = ResourceFactory.createResource(traitDTO.getUri());
 
         spql.addInsert(graph, traitUri, RDF.type, traitConcept);
@@ -241,7 +242,11 @@ public class TraitDaoSesame extends DAOSesame<Trait> {
         
         while (iteratorTraitDTO.hasNext() && annotationInsert) {
             TraitDTO traitDTO = iteratorTraitDTO.next();
-            traitDTO.setUri(uriGenerator.generateNewInstanceUri(Vocabulary.CONCEPT_TRAIT.toString(), null, null));
+            try {
+                traitDTO.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_TRAIT.toString(), null, null));
+            } catch (Exception ex) { //In the traits case, no exception should be raised
+                annotationInsert = false;
+            }
             //Enregistrement dans le triplestore
             UpdateRequest spqlInsert = prepareInsertQuery(traitDTO);
             
@@ -497,7 +502,7 @@ public class TraitDaoSesame extends DAOSesame<Trait> {
      * @example 
      * SELECT DISTINCT ?varUri
      * WHERE {
-     * ?varUri <http://www.phenome-fppn.fr/vocabulary/2017#hasTrait> http://www.phenome-fppn.fr/platform/id/traits/t001 .}
+     * ?varUri <http://www.opensilex.org/vocabulary/oeso#hasTrait> http://www.phenome-fppn.fr/platform/id/traits/t001 .}
      *
      * @param traitURI
      * @return query generated with the searched parameter above
@@ -505,7 +510,7 @@ public class TraitDaoSesame extends DAOSesame<Trait> {
     protected SPARQLQueryBuilder prepareSearchQueryVariables(String traitURI) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendSelect("?" + VAR_URI);
-        query.appendTriplet("?" + VAR_URI, Vocabulary.RELATION_HAS_TRAIT.toString(),traitURI, null);   
+        query.appendTriplet("?" + VAR_URI, Oeso.RELATION_HAS_TRAIT.toString(),traitURI, null);   
         return query;
     }    
     

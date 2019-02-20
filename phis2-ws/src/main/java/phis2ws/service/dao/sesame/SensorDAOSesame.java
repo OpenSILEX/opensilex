@@ -40,7 +40,7 @@ import phis2ws.service.model.User;
 import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
-import phis2ws.service.ontologies.Vocabulary;
+import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.resources.dto.SensorDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.UriGenerator;
@@ -92,7 +92,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         
         query.appendSelect("?" + URI);
         query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?type", null);
-        query.appendTriplet("?type", "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_SENSING_DEVICE.toString(), null);
+        query.appendTriplet("?type", "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_SENSING_DEVICE.toString(), null);
         query.appendFilter("regex(str(?uri), \".*/" + year + "/.*\")");
         query.appendOrderBy("desc(?uri)");
         query.appendLimit(1);
@@ -161,7 +161,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         } else {
             query.appendSelect("?" + RDF_TYPE);
             query.appendTriplet(sensorUri, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
-            query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_SENSING_DEVICE.toString(), null);
+            query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_SENSING_DEVICE.toString(), null);
         }        
 
         if (label != null) {
@@ -174,53 +174,53 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         }
 
         if (brand != null) {
-            query.appendTriplet(sensorUri, Vocabulary.RELATION_HAS_BRAND.toString(), "\"" + brand + "\"", null);
+            query.appendTriplet(sensorUri, Oeso.RELATION_HAS_BRAND.toString(), "\"" + brand + "\"", null);
         } else {
             query.appendSelect(" ?" + BRAND);
-            query.appendTriplet(sensorUri, Vocabulary.RELATION_HAS_BRAND.toString(), "?" + BRAND, null);
+            query.appendTriplet(sensorUri, Oeso.RELATION_HAS_BRAND.toString(), "?" + BRAND, null);
         }
         
         if (serialNumber != null) {
-            query.appendTriplet(sensorUri, Vocabulary.RELATION_SERIAL_NUMBER.toString(), "\"" + serialNumber + "\"", null);
+            query.appendTriplet(sensorUri, Oeso.RELATION_HAS_SERIAL_NUMBER.toString(), "\"" + serialNumber + "\"", null);
         } else {
             query.appendSelect("?" + SERIAL_NUMBER);
             query.beginBodyOptional();
-            query.appendToBody(sensorUri + " <" + Vocabulary.RELATION_SERIAL_NUMBER.toString() + "> ?" + SERIAL_NUMBER + " . ");
+            query.appendToBody(sensorUri + " <" + Oeso.RELATION_HAS_SERIAL_NUMBER.toString() + "> ?" + SERIAL_NUMBER + " . ");
             query.endBodyOptional();
         }
 
         if (inServiceDate != null) {
-            query.appendTriplet(sensorUri, Vocabulary.RELATION_IN_SERVICE_DATE.toString(), "\"" + inServiceDate + "\"", null);
+            query.appendTriplet(sensorUri, Oeso.RELATION_IN_SERVICE_DATE.toString(), "\"" + inServiceDate + "\"", null);
         } else {
             query.appendSelect(" ?" + IN_SERVICE_DATE);
             query.beginBodyOptional();
-            query.appendToBody(sensorUri + " <" + Vocabulary.RELATION_IN_SERVICE_DATE.toString() + "> " + "?" + IN_SERVICE_DATE + " . ");
+            query.appendToBody(sensorUri + " <" + Oeso.RELATION_IN_SERVICE_DATE.toString() + "> " + "?" + IN_SERVICE_DATE + " . ");
             query.endBodyOptional();
         }
 
         if (dateOfPurchase != null) {
-            query.appendTriplet(sensorUri, Vocabulary.RELATION_DATE_OF_PURCHASE.toString(), "\"" + dateOfPurchase + "\"", null);
+            query.appendTriplet(sensorUri, Oeso.RELATION_DATE_OF_PURCHASE.toString(), "\"" + dateOfPurchase + "\"", null);
         } else {
             query.appendSelect("?" + DATE_OF_PURCHASE);
             query.beginBodyOptional();
-            query.appendToBody(sensorUri + " <" + Vocabulary.RELATION_DATE_OF_PURCHASE.toString() + "> " + "?" + DATE_OF_PURCHASE + " . ");
+            query.appendToBody(sensorUri + " <" + Oeso.RELATION_DATE_OF_PURCHASE.toString() + "> " + "?" + DATE_OF_PURCHASE + " . ");
             query.endBodyOptional();
         }
 
         if (dateOfLastCalibration != null) {
-            query.appendTriplet(sensorUri, Vocabulary.RELATION_DATE_OF_LAST_CALIBRATION.toString(), "\"" + dateOfLastCalibration + "\"", null);
+            query.appendTriplet(sensorUri, Oeso.RELATION_DATE_OF_LAST_CALIBRATION.toString(), "\"" + dateOfLastCalibration + "\"", null);
         } else {
             query.appendSelect("?" + DATE_OF_LAST_CALIBRATION);
             query.beginBodyOptional();
-            query.appendToBody(sensorUri + " <" + Vocabulary.RELATION_DATE_OF_LAST_CALIBRATION.toString() + "> " + "?" + DATE_OF_LAST_CALIBRATION + " . ");
+            query.appendToBody(sensorUri + " <" + Oeso.RELATION_DATE_OF_LAST_CALIBRATION.toString() + "> " + "?" + DATE_OF_LAST_CALIBRATION + " . ");
             query.endBodyOptional();
         }
         
         if (personInCharge != null) {
-            query.appendTriplet(sensorUri, Vocabulary.RELATION_PERSON_IN_CHARGE.toString(), "\"" + personInCharge + "\"", null);
+            query.appendTriplet(sensorUri, Oeso.RELATION_PERSON_IN_CHARGE.toString(), "\"" + personInCharge + "\"", null);
         } else {
             query.appendSelect(" ?" + PERSON_IN_CHARGE);
-            query.appendTriplet(sensorUri, Vocabulary.RELATION_PERSON_IN_CHARGE.toString(), "?" + PERSON_IN_CHARGE, null);
+            query.appendTriplet(sensorUri, Oeso.RELATION_PERSON_IN_CHARGE.toString(), "?" + PERSON_IN_CHARGE, null);
         }
         
         query.appendLimit(this.getPageSize());
@@ -237,24 +237,24 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
      * SELECT DISTINCT  (count(distinct ?uri) as ?count) 
      * WHERE {
      *      ?uri  ?0  ?rdfType  . 
-     *      ?rdfType  rdfs:subClassOf*  <http://www.phenome-fppn.fr/vocabulary/2017#SensingDevice> . 
+     *      ?rdfType  rdfs:subClassOf*  <http://www.opensilex.org/vocabulary/oeso#SensingDevice> . 
      *      OPTIONAL {
      *          ?uri rdfs:label ?label . 
      *      }
-     *      ?uri  <http://www.phenome-fppn.fr/vocabulary/2017#hasBrand>  ?brand  . 
+     *      ?uri  <http://www.opensilex.org/vocabulary/oeso#hasBrand>  ?brand  . 
      *      OPTIONAL {
-     *          ?uri <http://www.phenome-fppn.fr/vocabulary/2017#serialNumber> ?serialNumber . 
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#hasSerialNumber> ?serialNumber . 
      *      }
      *      OPTIONAL {
-     *          ?uri <http://www.phenome-fppn.fr/vocabulary/2017#inServiceDate> ?inServiceDate . 
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#inServiceDate> ?inServiceDate . 
      *      }
      *      OPTIONAL {
-     *          ?uri <http://www.phenome-fppn.fr/vocabulary/2017#dateOfPurchase> ?dateOfPurchase . 
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#dateOfPurchase> ?dateOfPurchase . 
      *      }
      *      OPTIONAL {
-     *          ?uri <http://www.phenome-fppn.fr/vocabulary/2017#dateOfLastCalibration> ?dateOfLastCalibration . 
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#dateOfLastCalibration> ?dateOfLastCalibration . 
      *      }
-     *      ?uri  <http://www.phenome-fppn.fr/vocabulary/2017#personInCharge>  ?personInCharge  . 
+     *      ?uri  <http://www.opensilex.org/vocabulary/oeso#personInCharge>  ?personInCharge  . 
      * }
      * @return Query generated to count the elements, with the searched parameters
      */
@@ -294,7 +294,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
      * @example
      * SELECT  (count(distinct ?uri) as ?count) 
      * WHERE {
-     *      ?rdfType  rdfs:subClassOf*  <http://www.phenome-fppn.fr/vocabulary/2017#Camera> . 
+     *      ?rdfType  rdfs:subClassOf*  <http://www.opensilex.org/vocabulary/oeso#Camera> . 
      *      ?uri  rdf:type  ?rdfType  . 
      *      ?uri  rdfs:label  ?label  . 
      * }
@@ -422,7 +422,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
     private SPARQLQueryBuilder prepareIsSensorQuery(String uri) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendTriplet("<" + uri + ">", Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
-        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_SENSING_DEVICE.toString(), null);
+        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_SENSING_DEVICE.toString(), null);
         
         query.appendAsk("");
         LOGGER.debug(query.toString());
@@ -470,7 +470,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
                 try {
                     //2.1 check type (subclass of SensingDevice)
                     UriDaoSesame uriDaoSesame = new UriDaoSesame();
-                    if (!uriDaoSesame.isSubClassOf(sensor.getRdfType(), Vocabulary.CONCEPT_SENSING_DEVICE.toString())) {
+                    if (!uriDaoSesame.isSubClassOf(sensor.getRdfType(), Oeso.CONCEPT_SENSING_DEVICE.toString())) {
                         dataOk = false;
                         checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Bad sensor type given. Must be sublass of SensingDevice concept"));
                     }
@@ -500,14 +500,14 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
      * e.g.
      * INSERT DATA {
      *  GRAPH <http://www.phenome-fppn.fr/diaphen/sensors> { 
-     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  rdf:type  <http://www.phenome-fppn.fr/vocabulary/2017#Thermocouple> . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  rdf:type  <http://www.opensilex.org/vocabulary/oeso#Thermocouple> . 
      *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  rdfs:label  "par03_p"  . 
-     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.phenome-fppn.fr/vocabulary/2017#hasBrand>  "Homemade"  . 
-     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.phenome-fppn.fr/vocabulary/2017#inServiceDate>  "2017-06-15"  . 
-     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.phenome-fppn.fr/vocabulary/2017#personInCharge>  "morgane.vidal@inra.fr"  . 
-     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.phenome-fppn.fr/vocabulary/2017#serialNumber>  "A1E345F32"  . 
-     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.phenome-fppn.fr/vocabulary/2017#dateOfPurchase>  "2017-06-15"  . 
-     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.phenome-fppn.fr/vocabulary/2017#dateOfLastCalibration>  "2017-06-15"  . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.opensilex.org/vocabulary/oeso#hasBrand>  "Homemade"  . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.opensilex.org/vocabulary/oeso#inServiceDate>  "2017-06-15"  . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.opensilex.org/vocabulary/oeso#personInCharge>  "morgane.vidal@inra.fr"  . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.opensilex.org/vocabulary/oeso#serialNumber>  "A1E345F32"  . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.opensilex.org/vocabulary/oeso#dateOfPurchase>  "2017-06-15"  . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.opensilex.org/vocabulary/oeso#dateOfLastCalibration>  "2017-06-15"  . 
      *  }
      * }
      * @param sensor
@@ -525,26 +525,26 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         spql.addInsert(graph, sensorUri, RDF.type, sensorType);
         spql.addInsert(graph, sensorUri, RDFS.label, sensor.getLabel());
         
-        Property relationHasBrand = ResourceFactory.createProperty(Vocabulary.RELATION_HAS_BRAND.toString());
-        Property relationInServiceDate = ResourceFactory.createProperty(Vocabulary.RELATION_IN_SERVICE_DATE.toString());
-        Property relationPersonInCharge = ResourceFactory.createProperty(Vocabulary.RELATION_PERSON_IN_CHARGE.toString());
+        Property relationHasBrand = ResourceFactory.createProperty(Oeso.RELATION_HAS_BRAND.toString());
+        Property relationInServiceDate = ResourceFactory.createProperty(Oeso.RELATION_IN_SERVICE_DATE.toString());
+        Property relationPersonInCharge = ResourceFactory.createProperty(Oeso.RELATION_PERSON_IN_CHARGE.toString());
         
         spql.addInsert(graph, sensorUri, relationHasBrand, sensor.getBrand() );
         spql.addInsert(graph, sensorUri, relationInServiceDate, sensor.getInServiceDate());
         spql.addInsert(graph, sensorUri, relationPersonInCharge, sensor.getPersonInCharge() );
         
         if (sensor.getSerialNumber() != null) {
-            Property relationSerialNumber = ResourceFactory.createProperty(Vocabulary.RELATION_SERIAL_NUMBER.toString());
+            Property relationSerialNumber = ResourceFactory.createProperty(Oeso.RELATION_HAS_SERIAL_NUMBER.toString());
             spql.addInsert(graph, sensorUri, relationSerialNumber, sensor.getSerialNumber() );
         }
         
         if (sensor.getDateOfPurchase() != null) {
-            Property relationDateOfPurchase = ResourceFactory.createProperty(Vocabulary.RELATION_DATE_OF_PURCHASE.toString());
+            Property relationDateOfPurchase = ResourceFactory.createProperty(Oeso.RELATION_DATE_OF_PURCHASE.toString());
             spql.addInsert(graph, sensorUri, relationDateOfPurchase, sensor.getDateOfPurchase() );
         }
         
         if (sensor.getDateOfLastCalibration() != null) {
-            Property relationDateOfCalibration = ResourceFactory.createProperty(Vocabulary.RELATION_DATE_OF_LAST_CALIBRATION.toString());
+            Property relationDateOfCalibration = ResourceFactory.createProperty(Oeso.RELATION_DATE_OF_LAST_CALIBRATION.toString());
             spql.addInsert(graph, sensorUri, relationDateOfCalibration, sensor.getDateOfLastCalibration() );
         }
         
@@ -577,7 +577,11 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         
         for (SensorDTO sensorDTO : sensorsDTO) {
             Sensor sensor = sensorDTO.createObjectFromDTO();
-            sensor.setUri(uriGenerator.generateNewInstanceUri(sensorDTO.getRdfType(), null, null));
+            try {
+                sensor.setUri(uriGenerator.generateNewInstanceUri(sensorDTO.getRdfType(), null, null));
+            } catch (Exception ex) { //In the sensors case, no exception should be raised
+                annotationInsert = false;
+            }
             
             UpdateRequest query = prepareInsertQuery(sensor);
             Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
@@ -628,14 +632,14 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
      * e.g.
      *  DELETE DATA {
      *    GRAPH <http://www.phenome-fppn.fr/diaphen/set/sensors> {
-     *      <http://www.phenome-fppn.fr/diaphen/2018/s18142> rdf:type <http://www.phenome-fppn.fr/vocabulary/2017#Thermocouple> . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/s18142> rdf:type <http://www.opensilex.org/vocabulary/oeso#Thermocouple> . 
      *      <http://www.phenome-fppn.fr/diaphen/2018/s18142> rdfs:label "par03_p" . 
-     *      <http://www.phenome-fppn.fr/diaphen/2018/s18142> <http://www.phenome-fppn.fr/vocabulary/2017#hasBrand> "Skye Instruments" . 
-     *      <http://www.phenome-fppn.fr/diaphen/2018/s18142> <http://www.phenome-fppn.fr/vocabulary/2017#inServiceDate> "2017-06-15" . 
-     *      <http://www.phenome-fppn.fr/diaphen/2018/s18142> <http://www.phenome-fppn.fr/vocabulary/2017#personInCharge> "morgane.vidal@inra.fr" . 
-     *      <http://www.phenome-fppn.fr/diaphen/2018/s18142> <http://www.phenome-fppn.fr/vocabulary/2017#serialNumber> "A1E345F32" .
-     *      <http://www.phenome-fppn.fr/diaphen/2018/s18142> <http://www.phenome-fppn.fr/vocabulary/2017#dateOfPurchase> "2017-06-15" .
-     *      <http://www.phenome-fppn.fr/diaphen/2018/s18142> <http://www.phenome-fppn.fr/vocabulary/2017#dateOfLastCalibration> "2017-06-15"
+     *      <http://www.phenome-fppn.fr/diaphen/2018/s18142> <http://www.opensilex.org/vocabulary/oeso#hasBrand> "Skye Instruments" . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/s18142> <http://www.opensilex.org/vocabulary/oeso#inServiceDate> "2017-06-15" . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/s18142> <http://www.opensilex.org/vocabulary/oeso#personInCharge> "morgane.vidal@inra.fr" . 
+     *      <http://www.phenome-fppn.fr/diaphen/2018/s18142> <http://www.opensilex.org/vocabulary/oeso#serialNumber> "A1E345F32" .
+     *      <http://www.phenome-fppn.fr/diaphen/2018/s18142> <http://www.opensilex.org/vocabulary/oeso#dateOfPurchase> "2017-06-15" .
+     *      <http://www.phenome-fppn.fr/diaphen/2018/s18142> <http://www.opensilex.org/vocabulary/oeso#dateOfLastCalibration> "2017-06-15"
      *    }
      * }
      * @param sensor
@@ -653,26 +657,26 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         spql.addDelete(graph, sensorUri, RDF.type, sensorType);
         spql.addDelete(graph, sensorUri, RDFS.label, sensor.getLabel());
         
-        Property relationHasBrand = ResourceFactory.createProperty(Vocabulary.RELATION_HAS_BRAND.toString());
-        Property relationInServiceDate = ResourceFactory.createProperty(Vocabulary.RELATION_IN_SERVICE_DATE.toString());
-        Property relationPersonInCharge = ResourceFactory.createProperty(Vocabulary.RELATION_PERSON_IN_CHARGE.toString());
+        Property relationHasBrand = ResourceFactory.createProperty(Oeso.RELATION_HAS_BRAND.toString());
+        Property relationInServiceDate = ResourceFactory.createProperty(Oeso.RELATION_IN_SERVICE_DATE.toString());
+        Property relationPersonInCharge = ResourceFactory.createProperty(Oeso.RELATION_PERSON_IN_CHARGE.toString());
         
         spql.addDelete(graph, sensorUri, relationHasBrand, sensor.getBrand() );
         spql.addDelete(graph, sensorUri, relationInServiceDate, sensor.getInServiceDate());
         spql.addDelete(graph, sensorUri, relationPersonInCharge, sensor.getPersonInCharge() );
         
         if (sensor.getSerialNumber() != null) {
-            Property relationSerialNumber = ResourceFactory.createProperty(Vocabulary.RELATION_SERIAL_NUMBER.toString());
+            Property relationSerialNumber = ResourceFactory.createProperty(Oeso.RELATION_HAS_SERIAL_NUMBER.toString());
             spql.addDelete(graph, sensorUri, relationSerialNumber, sensor.getSerialNumber() );
         }
         
         if (sensor.getDateOfPurchase() != null) {
-            Property relationDateOfPurchase = ResourceFactory.createProperty(Vocabulary.RELATION_DATE_OF_PURCHASE.toString());
+            Property relationDateOfPurchase = ResourceFactory.createProperty(Oeso.RELATION_DATE_OF_PURCHASE.toString());
             spql.addDelete(graph, sensorUri, relationDateOfPurchase, sensor.getDateOfPurchase() );
         }
         
         if (sensor.getDateOfLastCalibration() != null) {
-            Property relationDateOfCalibration = ResourceFactory.createProperty(Vocabulary.RELATION_DATE_OF_LAST_CALIBRATION.toString());
+            Property relationDateOfCalibration = ResourceFactory.createProperty(Oeso.RELATION_DATE_OF_LAST_CALIBRATION.toString());
             spql.addDelete(graph, sensorUri, relationDateOfCalibration, sensor.getDateOfLastCalibration() );
         }
         
@@ -772,7 +776,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
      * Generates the query to get the uri, label and rdf type of all the cameras
      * @example 
      * SELECT DISTINCT  ?uri ?label ?rdfType WHERE {
-     *      ?uri  rdfs:subClassOf*  <http://www.phenome-fppn.fr/vocabulary/2017#Camera> . 
+     *      ?uri  rdfs:subClassOf*  <http://www.opensilex.org/vocabulary/oeso#Camera> . 
      *      ?uri rdf:type ?rdfType .
      *      ?uri  rdfs:label  ?label  .
      * }
@@ -783,7 +787,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
         query.appendDistinct(Boolean.TRUE);
         
         query.appendSelect("?" + URI + " ?" + RDF_TYPE + " ?" + LABEL );
-        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_CAMERA.toString(), null);
+        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_CAMERA.toString(), null);
         query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
         query.appendTriplet("?" + URI, Rdfs.RELATION_LABEL.toString(), "?" + LABEL, null);
         query.appendOrderBy("DESC(?" + LABEL + ")");
@@ -908,9 +912,9 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
             oldMeasuredVariables.add(oldVariable.getKey());
         });
         
-        if (deleteObjectProperties(sensorUri, Vocabulary.RELATION_MEASURES.toString(), oldMeasuredVariables)) {
+        if (deleteObjectProperties(sensorUri, Oeso.RELATION_MEASURES.toString(), oldMeasuredVariables)) {
             //2. Add new object properties
-            if (addObjectProperties(sensorUri, Vocabulary.RELATION_MEASURES.toString(), variables, Contexts.SENSORS.toString())) {
+            if (addObjectProperties(sensorUri, Oeso.RELATION_MEASURES.toString(), variables, Contexts.SENSORS.toString())) {
                 updateStatus.add(new Status(StatusCodeMsg.RESOURCES_UPDATED, StatusCodeMsg.INFO, "The sensor " + sensorUri + " has now " + variables.size() + " linked variables"));
             } else {
                 update = false;
@@ -949,20 +953,20 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
      * @return The prepared query
      * @example 
      * SELECT DISTINCT  ?uri ?label WHERE {
-     *      ?rdfType  rdfs:subClassOf*  <http://www.phenome-fppn.fr/vocabulary/2017#Variable> . 
+     *      ?rdfType  rdfs:subClassOf*  <http://www.opensilex.org/vocabulary/oeso#Variable> . 
      *      ?uri rdf:type ?rdfType .
      *      ?uri  rdfs:label ?label .
-     *      <http://www.phenome-fppn.fr/2018/s18001> <http://www.phenome-fppn.fr/vocabulary/2017#measures> ?uri
+     *      <http://www.phenome-fppn.fr/2018/s18001> <http://www.opensilex.org/vocabulary/oeso#measures> ?uri
      * }
      */
     private SPARQLQueryBuilder prepareSearchVariablesQuery(String sensorUri) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         
         query.appendSelect("?" + URI + " ?" + LABEL );
-        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Vocabulary.CONCEPT_VARIABLE.toString(), null);
+        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_VARIABLE.toString(), null);
         query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
         query.appendTriplet("?" + URI, Rdfs.RELATION_LABEL.toString(), "?" + LABEL, null);
-        query.appendTriplet(sensorUri, Vocabulary.RELATION_MEASURES.toString(), "?" + URI, null);
+        query.appendTriplet(sensorUri, Oeso.RELATION_MEASURES.toString(), "?" + URI, null);
         
         LOGGER.debug(query.toString());
         

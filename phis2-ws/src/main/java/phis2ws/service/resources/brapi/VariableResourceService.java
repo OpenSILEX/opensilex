@@ -70,7 +70,7 @@ public class VariableResourceService implements BrapiCall {
         ArrayList<String> callMethods = new ArrayList<>();
         callMethods.add("GET");
         ArrayList<String> callVersions = new ArrayList<>();
-        callVersions.add("1.2");
+        callVersions.add("1.3");
         Call call1 = new Call("variables", calldatatypes, callMethods, callVersions);
         //\SILEX:info 
         
@@ -81,7 +81,7 @@ public class VariableResourceService implements BrapiCall {
         ArrayList<String> callMethods2 = new ArrayList<>();
         callMethods2.add("GET");
         ArrayList<String> callVersions2 = new ArrayList<>();
-        callVersions2.add("1.2");
+        callVersions2.add("1.3");
         Call call2 = new Call("variables/{variables}", calldatatypes2, callMethods2, callVersions2);
         //\SILEX:info 
         

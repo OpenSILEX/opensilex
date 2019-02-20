@@ -15,7 +15,7 @@ import java.util.ArrayList;
  */
 public class Call {
     private String call;
-    private ArrayList<String> datatypes = new ArrayList<>();
+    private ArrayList<String> dataTypes = new ArrayList<>();
     private ArrayList<String> methods = new ArrayList<>();
     private ArrayList<String> versions = new ArrayList<>();
 
@@ -25,9 +25,9 @@ public class Call {
     }    
 
     //Constructor with param
-    public Call(String call, ArrayList<String> datatypes, ArrayList<String> methods, ArrayList<String> versions) {
+    public Call(String call, ArrayList<String> dataTypes, ArrayList<String> methods, ArrayList<String> versions) {
         this.call = call;
-        this.datatypes = datatypes;
+        this.dataTypes = dataTypes;
         this.methods = methods;
         this.versions = versions;
     }
@@ -41,12 +41,12 @@ public class Call {
         this.call = call;
     }
 
-    public ArrayList<String> getDatatypes() {
-        return datatypes;
+    public ArrayList<String> getDataTypes() {
+        return dataTypes;
     }
 
-    public void setDatatypes(ArrayList<String> datatypes) {
-        this.datatypes = datatypes;
+    public void setDataTypes(ArrayList<String> dataTypes) {
+        this.dataTypes = dataTypes;
     }
 
     public ArrayList<String> getMethods() {

@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.view.brapi.Status;
-import phis2ws.service.view.brapi.form.BrapiResponseForm;
+import phis2ws.service.view.brapi.form.BrapiMultiResponseForm;
 import phis2ws.service.view.model.phis.Call;
 
 @Api("/brapi/v1/calls")
@@ -68,7 +68,7 @@ public class CallsResourceService implements BrapiCall {
     IterableProvider<BrapiCall> brapiCallsList;
 
     /**
-     * @param datatype
+     * @param dataType
      * @param limit
      * @param page
      * @return brapi calls list returns in "data" is like this : [ { call1
@@ -87,7 +87,7 @@ public class CallsResourceService implements BrapiCall {
     public Response getCalls(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
-            @ApiParam(value = DocumentationAnnotation.CALL_DATATYPE_DEFINITION, example = DocumentationAnnotation.EXAMPLE_CALL_DATATYPE) @QueryParam("datatype") @Pattern(regexp = "json") String datatype) {
+            @ApiParam(value = DocumentationAnnotation.CALL_DATATYPE_DEFINITION, example = DocumentationAnnotation.EXAMPLE_CALL_DATATYPE) @QueryParam("dataType") @Pattern(regexp = "json") String dataType) {
 
         ArrayList<Status> statusList = new ArrayList();
         ArrayList<Call> callsInfoList = new ArrayList();
@@ -96,14 +96,14 @@ public class CallsResourceService implements BrapiCall {
             ArrayList<Call> callinfo = bc.callInfo();
             ArrayList<String> datatypesList = new ArrayList();
             for (Call c : callinfo) {
-                datatypesList.addAll(c.getDatatypes());
+                datatypesList.addAll(c.getDataTypes());
             }            
-            if (datatype == null || datatypesList.contains(datatype) == true) {
+            if (dataType == null || datatypesList.contains(dataType) == true) {
                 callsInfoList.addAll(callinfo);
             }
         }
 
-        BrapiResponseForm getResponse = new BrapiResponseForm(limit, page, callsInfoList, false);
+        BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(limit, page, callsInfoList, false);
         getResponse.getMetadata().setStatus(statusList);
         return Response.status(Response.Status.OK).entity(getResponse).build();
     }

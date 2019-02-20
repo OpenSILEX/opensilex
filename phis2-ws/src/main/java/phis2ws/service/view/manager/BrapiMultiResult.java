@@ -14,7 +14,7 @@ import phis2ws.service.view.brapi.BrapiPagination;
  * This class provides the format of Result when there is a list of several elements
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
-public class BrapiMultiResult<T> implements BrapiResult {
+public class BrapiMultiResult<T>{
     ArrayList<T> data;
 
     public BrapiMultiResult() {

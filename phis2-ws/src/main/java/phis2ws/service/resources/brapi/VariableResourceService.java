@@ -35,7 +35,8 @@ import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
-import phis2ws.service.view.brapi.form.BrapiResponseForm;
+import phis2ws.service.view.brapi.form.BrapiMultiResponseForm;
+import phis2ws.service.view.brapi.form.BrapiSingleResponseForm;
 import phis2ws.service.view.model.phis.BrapiVariable;
 import phis2ws.service.view.model.phis.Call;
 import phis2ws.service.view.model.phis.Variable;
@@ -176,7 +177,7 @@ public class VariableResourceService implements BrapiCall {
                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_JSON)    
-    public Response getTraitsList ( 
+    public Response getVariablesList ( 
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
         //SILEX:todo
@@ -188,7 +189,7 @@ public class VariableResourceService implements BrapiCall {
         varDAO.setPageSize(limit);
         varDAO.setPage(page);               
                 
-        return getVarData(varDAO);
+        return getVariablesData(varDAO);
     }
     
     /**
@@ -212,33 +213,70 @@ public class VariableResourceService implements BrapiCall {
                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_JSON)    
-    public Response getTraitDetails ( 
+    public Response getVariableDetails ( 
         @ApiParam(value = DocumentationAnnotation.VARIABLE_URI_DEFINITION, required = true, example=DocumentationAnnotation.EXAMPLE_VARIABLE_URI) @PathParam("observationVariableDbId") @Required @URL String observationVariableDbId
     ) throws SQLException {        
         VariableDaoSesame varDAO = new VariableDaoSesame();
         varDAO.uri = observationVariableDbId;
-        return getVarData(varDAO);
+        return getOneVariableData(varDAO);
     }    
     
-    private Response noResultFound(BrapiResponseForm getResponse, ArrayList<Status> insertStatusList) {
+    private Response noResultFound(BrapiMultiResponseForm getResponse, ArrayList<Status> insertStatusList) {
         insertStatusList.add(new Status("No result", StatusCodeMsg.INFO, "No result"));
         getResponse.getMetadata().setStatus(insertStatusList);
         return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
     }        
     
     /**
-     * Search variables corresponding to search params given by a user
+     * Return variable data for the service GET observationVariable with a list of elements in the result
      * @param varDAO
-     * @return the variables
+     * @return the response with the variables data list 
      */
-    private Response getVarData(VariableDaoSesame varDAO) {
+    private Response getVariablesData(VariableDaoSesame varDAO) {
         ArrayList<Status> statusList = new ArrayList<>();
+        ArrayList<BrapiVariable> brapiVariables = getBrapiVarData(varDAO);
+        BrapiMultiResponseForm getResponse;
+        if (!brapiVariables.isEmpty()) {
+            getResponse = new BrapiMultiResponseForm(varDAO.getPageSize(), varDAO.getPage(), brapiVariables, false);
+            getResponse.getMetadata().setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
+        } else {
+            getResponse = new BrapiMultiResponseForm(0, 0, brapiVariables, true);
+            return noResultFound(getResponse, statusList);
+        }
+    }
+    /**
+     * Return variable data for the service  GET observationVariable/observationVariableDbId: only one element in the result
+     * @param varDAO
+     * @return the response with one variable data
+     */
+    private Response getOneVariableData(VariableDaoSesame varDAO) {
+        ArrayList<Status> statusList = new ArrayList<>();
+        ArrayList<BrapiVariable> brapiVariables = getBrapiVarData(varDAO);
+        BrapiSingleResponseForm getResponse;
+        if (!brapiVariables.isEmpty()){
+            BrapiVariable variable = brapiVariables.get(0);
+            getResponse = new BrapiSingleResponseForm(variable);
+            getResponse.getMetadata().setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
+        } else {
+            BrapiMultiResponseForm getNoResponse = new BrapiMultiResponseForm(0, 0, brapiVariables, true);
+            return noResultFound(getNoResponse, statusList);
+        }
+    }    
+    
+    /**
+     * Get the list of brapi variables from the the DAO corresponding to the user search query
+     * @param varDAO
+     * @return the list of brapi variables
+     */
+    private ArrayList<BrapiVariable> getBrapiVarData(VariableDaoSesame varDAO) {
         ArrayList<Variable> variablesList = varDAO.allPaginate();
         ArrayList<BrapiVariable> varList = new ArrayList();
         for (Variable var:variablesList) {
             BrapiVariable brapiVar = new BrapiVariable();
             brapiVar.setObservationVariableDbId(var.getUri());
-            brapiVar.setName(var.getLabel());
+            brapiVar.setObservationVariableName(var.getLabel());
                         
             //trait 
             BrapiVariableTrait trait = new BrapiVariableTrait();
@@ -250,35 +288,20 @@ public class VariableResourceService implements BrapiCall {
             //method
             BrapiMethod method = new BrapiMethod();
             method.setMethodDbId(var.getMethod().getUri());
-            method.setName(var.getMethod().getLabel());
+            method.setMethodName(var.getMethod().getLabel());
             method.setDescription(var.getMethod().getComment());
             brapiVar.setMethod(method);
             
             //scale
             BrapiScale scale = new BrapiScale();
             scale.setScaleDbid(var.getUnit().getUri());
-            scale.setName(var.getUnit().getLabel());
+            scale.setScaleName(var.getUnit().getLabel());
+            scale.setDataType("Numerical");
             brapiVar.setScale(scale);
             
             varList.add(brapiVar); 
         }
-
-        BrapiResponseForm getResponse;
-
-        if (!varList.isEmpty()) {
-            if (varList.size() == 1) {
-                BrapiVariable variable = varList.get(0);
-                getResponse = new BrapiResponseForm(variable);
-                getResponse.getMetadata().setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(getResponse).build();
-            } else {
-                getResponse = new BrapiResponseForm(varDAO.getPageSize(), varDAO.getPage(), varList, false);
-                getResponse.getMetadata().setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(getResponse).build();
-            }
-        } else {
-            getResponse = new BrapiResponseForm(0, 0, varList, true);
-            return noResultFound(getResponse, statusList);
-        }
+        return varList;        
     }
+    
 }

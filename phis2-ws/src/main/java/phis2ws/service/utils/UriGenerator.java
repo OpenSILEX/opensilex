@@ -6,13 +6,15 @@
 //******************************************************************************
 package phis2ws.service.utils;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.UUID;
-import javax.ws.rs.core.Context;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
+import org.apache.jena.sparql.AlreadyExists;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.dao.mongo.ImageMetadataDaoMongo;
+import phis2ws.service.dao.phis.ExperimentDao;
+import phis2ws.service.dao.phis.GroupDao;
+import phis2ws.service.dao.phis.ProjectDao;
 import phis2ws.service.dao.sesame.ScientificObjectDAOSesame;
 import phis2ws.service.dao.sesame.AnnotationDAOSesame;
 import phis2ws.service.dao.sesame.MethodDaoSesame;
@@ -23,9 +25,13 @@ import phis2ws.service.dao.sesame.TraitDaoSesame;
 import phis2ws.service.dao.sesame.UnitDaoSesame;
 import phis2ws.service.dao.sesame.VariableDaoSesame;
 import phis2ws.service.dao.sesame.VectorDAOSesame;
+import phis2ws.service.model.User;
 import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Foaf;
 import phis2ws.service.ontologies.Oeso;
+import phis2ws.service.view.model.phis.Group;
+import phis2ws.service.view.model.phis.Experiment;
+import phis2ws.service.view.model.phis.Project;
 
 /**
  * generate differents kinds of uris (vector, sensor, ...)
@@ -41,13 +47,7 @@ import phis2ws.service.ontologies.Oeso;
  *              - Second user : Jean Dupont-Marie http://www.phenome-fppn.fr/diaphen/id/agent/jean_dupont-marie01
  * \SILEX:todo
  */
-public class UriGenerator {
-
-    final static Logger LOGGER = LoggerFactory.getLogger(UriGenerator.class);
-
-    private static final String PROPERTIES_SERVICE_FILE_NAME = "sesame_rdf_config";
-    private static final String PROPERTIES_SERVICE_BASE_URI = "baseURI";
-
+public class UriGenerator {    
     private static final String URI_CODE_AGRONOMICAL_OBJECT = "o";
     private static final String URI_CODE_IMAGE = "i";
     private static final String URI_CODE_METHOD = "m";
@@ -58,6 +58,7 @@ public class UriGenerator {
     private static final String URI_CODE_VARIABLE = "v";
     private static final String URI_CODE_VECTOR = "v";
 
+    private static final String PLATFORM_CODE =  PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "infrastructureCode") ;
     private static final String PLATFORM_URI = Contexts.PLATFORM.toString();
     private static final String PLATFORM_URI_ID = PLATFORM_URI + "id/";
     private static final String PLATFORM_URI_ID_AGENT = PLATFORM_URI_ID + "agent/";
@@ -361,6 +362,65 @@ public class UriGenerator {
             return PLATFORM_URI + year + nbImagesByYear;
         }
     }
+    
+    /**
+     * Generates a new project uri. A project uri follows the patter :
+     * <prefix>:<projectAcronyme>
+     * @example http://www.opensilex.org/demo/PA
+     * @param projectAcronyme the project acronyme
+     * @return the new uri
+     */
+    private String generateProjectUri(String projectAcronyme) throws Exception {
+        //1. generates uri
+        String projectUri = PLATFORM_URI + projectAcronyme;
+        //2. check if uri exist
+        ProjectDao projectDAO = new ProjectDao();
+        Project project = new Project(projectUri);
+        if (projectDAO.existInDB(project)) {
+            throw new AlreadyExists("The project uri " + projectUri + " already exist in the triplestore.");
+        }
+        
+        return projectUri;
+    }
+    
+    /**
+     * Generates a new experiment uri. An experiment uri follows the pattern :
+     * <prefix>:<unic_code>
+     * <unic_code> = infrastructure code + 4 digits year + auto increment digit (per year)
+     * @example http://www.opensilex.org/demo/DMO2019-1
+     * @param year the year of the campaign of the experiment
+     * @return the new uri
+     */
+    private String generateExperimentUri(String year) {
+        //1. Get the number of experiments for the given campaign year
+        ExperimentDao experimentDAO = new ExperimentDao();
+        int experimentsNb = experimentDAO.getNumberOfExperimentsByCampaign(year);
+        //2. Generates the uri of the experiment
+        return PLATFORM_URI + PLATFORM_CODE + year + "-" + experimentsNb;
+    }
+    
+    /**
+     * Generates a new group uri. A group uri follows the pattern :
+     * <prefix>:<groupName>
+     * @example http://www.opensilex.org/demo/INRA-MISTEA.GAMMA
+     * @param name the group name
+     * @return the new generated uri
+     * @throws Exception 
+     */
+    private String generateGroupUri(String name) throws Exception {
+        //1. Generates URI
+        String groupUri = PLATFORM_URI + name;
+        //2. Check if the generated URI already exists
+        GroupDao groupDao = new GroupDao();
+        Group group = new Group(groupUri);
+        
+        if (groupDao.existInDB(group)) {
+            throw new AlreadyExists("The group uri " + groupUri + " already exist in the triplestore.");
+        }
+        
+        return groupUri;
+    }
+
 
     /**
      * generates the uri of a new instance of instanceType
@@ -372,8 +432,9 @@ public class UriGenerator {
      * uri generators. (e.g. the variety name, or the last generated uri for the
      * images)
      * @return the generated uri
+     * @throws java.lang.Exception
      */
-    public String generateNewInstanceUri(String instanceType, String year, String additionalInformation) {
+    public String generateNewInstanceUri(String instanceType, String year, String additionalInformation) throws Exception {
         if (year == null) {
             year = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
         }
@@ -404,6 +465,12 @@ public class UriGenerator {
             return generateAnnotationUri();
         } else if (instanceType.equals(Oeso.CONCEPT_RADIOMETRIC_TARGET.toString())) {
             return generateRadiometricTargetUri();
+        } else if (instanceType.equals(Oeso.CONCEPT_PROJECT.toString())) {
+            return generateProjectUri(additionalInformation);
+        } else if (instanceType.equals(Oeso.CONCEPT_EXPERIMENT.toString())) {
+            return generateExperimentUri(year);
+        } else if (instanceType.equals(Foaf.CONCEPT_GROUP.toString())) {
+            return generateGroupUri(additionalInformation);
         }
 
         return null;

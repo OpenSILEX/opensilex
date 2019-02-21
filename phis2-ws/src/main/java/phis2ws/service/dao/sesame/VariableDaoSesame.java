@@ -10,6 +10,7 @@ package phis2ws.service.dao.sesame;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -379,7 +380,11 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
         while (iteratorVariablesDTO.hasNext() && annotationInsert) {
             VariableDTO variableDTO = iteratorVariablesDTO.next();
             
-            variableDTO.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_VARIABLE.toString(), null, null));
+            try {
+                variableDTO.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_VARIABLE.toString(), null, null));
+            } catch (Exception ex) { //In the variable case, no exception should be raised
+                annotationInsert = false;
+            }
 
             //Enregistrement dans le triplestore
             UpdateRequest spqlInsert = prepareInsertQuery(variableDTO);

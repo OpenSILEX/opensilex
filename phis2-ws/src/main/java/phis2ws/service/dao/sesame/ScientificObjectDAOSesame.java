@@ -273,8 +273,12 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
             ScientificObjectDTO scientificObjectDTO = iteratorScientificObjects.next();
             ScientificObject scientificObject = scientificObjectDTO.createObjectFromDTO();
             
-            //1. generates scientific object uri
-            scientificObject.setUri(uriGenerator.generateNewInstanceUri(scientificObject.getRdfType(), scientificObjectDTO.getYear(), null));
+            try {
+                //1. generates scientific object uri
+                scientificObject.setUri(uriGenerator.generateNewInstanceUri(scientificObject.getRdfType(), scientificObjectDTO.getYear(), null));
+            } catch (Exception ex) { //In the scientific object case, no exception should be raised
+                annotationInsert = false;
+            }
             
             //2. Register in triplestore
             UpdateBuilder spql = new UpdateBuilder();
@@ -300,13 +304,18 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
                 if (property.getRdfType() != null && !property.getRdfType().equals("")) {//Propriété typée
                     if (property.getRdfType().equals(Oeso.CONCEPT_VARIETY.toString())) {
                         
-                        String propertyURI = uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_VARIETY.toString(), null, property.getValue());
-                        Node propertyNode = NodeFactory.createURI(propertyURI);
-                        Node propertyType = NodeFactory.createURI(property.getRdfType());
-                        org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
-                        
-                        spql.addInsert(graph, propertyNode, RDF.type, propertyType);
-                        spql.addInsert(graph, scientificObjectUri, propertyRelation, propertyNode);
+                        String propertyURI;
+                        try {
+                            propertyURI = uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_VARIETY.toString(), null, property.getValue());
+                            Node propertyNode = NodeFactory.createURI(propertyURI);
+                            Node propertyType = NodeFactory.createURI(property.getRdfType());
+                            org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
+                            
+                            spql.addInsert(graph, propertyNode, RDF.type, propertyType);
+                            spql.addInsert(graph, scientificObjectUri, propertyRelation, propertyNode);
+                        } catch (Exception ex) { //In the variety case, no exception should be raised
+                            annotationInsert = false;
+                        }
                     } else {
                         Node propertyNode = NodeFactory.createURI(property.getValue());
                         Node propertyType = NodeFactory.createURI(property.getRdfType());

@@ -129,6 +129,7 @@ public class UserDTO extends AbstractVerifiedClass {
         this.affiliation = affiliation;
     }
 
+    @URL
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_USER_ORCID)
     public String getOrcid() {
         return orcid;

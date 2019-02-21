@@ -56,7 +56,7 @@ public class CallsResourceService implements BrapiCall {
         ArrayList<String> callMethods = new ArrayList<>();
         callMethods.add("GET");
         ArrayList<String> callVersions = new ArrayList<>();
-        callVersions.add("1.2");
+        callVersions.add("1.3");
         Call call = new Call("calls", calldatatypes, callMethods, callVersions);
         calls.add(call);
         return calls;

@@ -6,6 +6,7 @@
 //******************************************************************************
 package phis2ws.service.utils;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.UUID;
 import org.apache.jena.sparql.AlreadyExists;
@@ -24,10 +25,12 @@ import phis2ws.service.dao.sesame.TraitDaoSesame;
 import phis2ws.service.dao.sesame.UnitDaoSesame;
 import phis2ws.service.dao.sesame.VariableDaoSesame;
 import phis2ws.service.dao.sesame.VectorDAOSesame;
+import phis2ws.service.model.User;
 import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Foaf;
 import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.view.model.phis.Group;
+import phis2ws.service.view.model.phis.Experiment;
 import phis2ws.service.view.model.phis.Project;
 
 /**
@@ -417,6 +420,7 @@ public class UriGenerator {
         
         return groupUri;
     }
+
 
     /**
      * generates the uri of a new instance of instanceType

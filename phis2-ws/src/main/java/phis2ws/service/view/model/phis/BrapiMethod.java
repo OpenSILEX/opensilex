@@ -18,12 +18,30 @@ public class BrapiMethod {
     //The id of the method in the triplestore e.g. http://www.phenome-fppn.fr/platform/id/methods/m001
     private String methodDbId;
     //The label of the method in the triplestore e.g. "LAI_Computation"
-    private String name;
+    private String methodName;
     @SerializedName("class")
     private String brapiClass;
     private String description;
     //The comment of the method in the triplestore
     private String formula;
+    //SILEX:todo
+    //Create a brapiOntologyReference class to follow this format
+    //    "ontologyReference": {
+    //            "documentationLinks": [
+    //              {
+    //                "URL": "https://ontology.org/t1",
+    //                "type": "WEBPAGE",
+    //                "url": "https://ontology.org/t1"
+    //              }
+    //            ],
+    //            "ontologyDbId": "MO_123",
+    //            "ontologyName": "Ontology.org",
+    //            "version": "17"
+    //          }
+    //and see if we can use the ontologyReference of variableDAO to fill the attributes 
+    //but in the case where there are several references, which one should we get ?
+    private String ontologyReference;
+    //\SILEX
     private String reference;
 
     public BrapiMethod() {
@@ -37,12 +55,12 @@ public class BrapiMethod {
         this.methodDbId = methodDbId;
     }
 
-    public String getName() {
-        return name;
+    public String getMethodName() {
+        return methodName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setMethodName(String methodname) {
+        this.methodName = methodname;
     }
 
     public String getBrapiClass() {
@@ -67,6 +85,14 @@ public class BrapiMethod {
 
     public void setFormula(String formula) {
         this.formula = formula;
+    }
+
+    public String getOntologyReference() {
+        return ontologyReference;
+    }
+
+    public void setOntologyReference(String ontologyReference) {
+        this.ontologyReference = ontologyReference;
     }
 
     public String getReference() {

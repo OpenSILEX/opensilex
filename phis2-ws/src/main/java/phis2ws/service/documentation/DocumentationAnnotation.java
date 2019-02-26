@@ -120,7 +120,7 @@ public final class DocumentationAnnotation {
     public static final String CONCEPT_URI_DEFINITION = "A concept URI (Unique Resource Identifier)";
     public static final String DEEP ="true or false deppending if you want instances of concept progenity";
     
-    public static final String CALL_DATATYPE_DEFINITION = "The data type supported by the call";
+    public static final String CALL_DATATYPE_DEFINITION = "The data format supported by the call";
 
     //Global examples
     public static final String EXAMPLE_DATETIME = "2017-06-15 10:51:00+0200";

@@ -8,6 +8,7 @@
 package phis2ws.service.view.model.phis;
 
 import com.google.gson.annotations.SerializedName;
+import java.util.ArrayList;
 
 /**
  * Represents a variable trait according to brapi specification
@@ -18,18 +19,19 @@ public class BrapiVariableTrait {
     //The id of the trait in the triplestore e.g. http://www.phenome-fppn.fr/platform/id/traits/t001
     private String traitDbId;
     //The label of the trait in the triplestore e.g. Leaf_Area_Index
-    private String name;
+    private String traitName;
     @SerializedName("class")
     private String brapiclass;
     //The comment of the trait in the triplestore e.g. "one-sided green leaf area per unit ground surface area"
     private String description;
-    private String synonyms;
+    private ArrayList<String> synonyms;
     private String mainAbbreviation;
-    private String alternativeAbbreviations;
+    private ArrayList<String> alternativeAbbreviations;
     private String entity;
     private String attribute;
     private String status;
     private String xref;   
+    private String ontologyReference;
 
     public BrapiVariableTrait() {
     }
@@ -42,12 +44,12 @@ public class BrapiVariableTrait {
         this.traitDbId = traitDbId;
     }
 
-    public String getName() {
-        return name;
+    public String getTraitName() {
+        return traitName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setTraitName(String name) {
+        this.traitName = name;
     }
 
     public String getBrapiclass() {
@@ -66,11 +68,11 @@ public class BrapiVariableTrait {
         this.description = description;
     }
 
-    public String getSynonyms() {
+    public ArrayList<String> getSynonyms() {
         return synonyms;
     }
 
-    public void setSynonyms(String synonyms) {
+    public void setSynonyms(ArrayList<String> synonyms) {
         this.synonyms = synonyms;
     }
 
@@ -82,11 +84,11 @@ public class BrapiVariableTrait {
         this.mainAbbreviation = mainAbbreviation;
     }
 
-    public String getAlternativeAbbreviations() {
+    public ArrayList<String> getAlternativeAbbreviations() {
         return alternativeAbbreviations;
     }
 
-    public void setAlternativeAbbreviations(String alternativeAbbreviations) {
+    public void setAlternativeAbbreviations(ArrayList<String> alternativeAbbreviations) {
         this.alternativeAbbreviations = alternativeAbbreviations;
     }
 
@@ -121,4 +123,13 @@ public class BrapiVariableTrait {
     public void setXref(String xref) {
         this.xref = xref;
     }
+
+    public String getOntologyReference() {
+        return ontologyReference;
+    }
+
+    public void setOntologyReference(String ontologyReference) {
+        this.ontologyReference = ontologyReference;
+    }
+    
 }

@@ -8,6 +8,7 @@
 package phis2ws.service.view.model.phis;
 
 import java.util.ArrayList;
+import org.joda.time.DateTime;
 
 /**
  * Represents a variable according to brapi specifications
@@ -18,17 +19,19 @@ public class BrapiVariable {
     //The id of the variable in the triplestore e.g. http://www.phenome-fppn.fr/platform/id/variables/v001
     private String ObservationVariableDbId;
     //The label of the variable in the triplestore e.g. "Leaf-Area_Index_m2.m2"   
-    private String name;
-    private String ontologyDbId;
-    private String ontologyName;
+    private String ObservationVariableName;
+    //SILEX:todo
+    //class ontologyReference and get info
+    private String ontologyReference;
+    //\SILEX
     private ArrayList<String> synonyms;
-    private ArrayList<String>  contextOfUse;
+    private ArrayList<String> contextOfUse;
     private String growthStage;
     private String status;
     private String xref;
     private String institution;
     private String scientist;
-    private String submissionTimesTamp;
+    private DateTime submissionTimesTamp;
     private String language;
     private String crop;
     //The id of the trait in the triplestore e.g. http://www.phenome-fppn.fr/platform/id/traits/t001
@@ -38,6 +41,7 @@ public class BrapiVariable {
     //The id of the unit in the triplestore e.g. http://www.phenome-fppn.fr/platform/id/units/u001
     private BrapiScale scale;
     private String defaultValue;    
+    private String documentationURL;
 
     public BrapiVariable() {
     }
@@ -50,28 +54,20 @@ public class BrapiVariable {
         this.ObservationVariableDbId = ObservationVariableDbId;
     }
 
-    public String getName() {
-        return name;
+    public String getObservationVariableName() {
+        return ObservationVariableName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setObservationVariableName(String ObservationVariableName) {
+        this.ObservationVariableName = ObservationVariableName;
     }
 
-    public String getOntologyDbId() {
-        return ontologyDbId;
+    public String getOntologyReference() {
+        return ontologyReference;
     }
 
-    public void setOntologyDbId(String ontologyDbId) {
-        this.ontologyDbId = ontologyDbId;
-    }
-
-    public String getOntologyName() {
-        return ontologyName;
-    }
-
-    public void setOntologyName(String ontologyName) {
-        this.ontologyName = ontologyName;
+    public void setOntologyReference(String ontologyReference) {
+        this.ontologyReference = ontologyReference;
     }
 
     public ArrayList<String> getSynonyms() {
@@ -130,11 +126,11 @@ public class BrapiVariable {
         this.scientist = scientist;
     }
 
-    public String getSubmissionTimesTamp() {
+    public DateTime getSubmissionTimesTamp() {
         return submissionTimesTamp;
     }
 
-    public void setSubmissionTimesTamp(String submissionTimesTamp) {
+    public void setSubmissionTimesTamp(DateTime submissionTimesTamp) {
         this.submissionTimesTamp = submissionTimesTamp;
     }
 
@@ -185,4 +181,13 @@ public class BrapiVariable {
     public void setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
     }
+
+    public String getDocumentationURL() {
+        return documentationURL;
+    }
+
+    public void setDocumentationURL(String documentationURL) {
+        this.documentationURL = documentationURL;
+    }
+    
 }

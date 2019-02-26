@@ -277,12 +277,16 @@ public class VariableResourceService implements BrapiCall {
             BrapiVariable brapiVar = new BrapiVariable();
             brapiVar.setObservationVariableDbId(var.getUri());
             brapiVar.setObservationVariableName(var.getLabel());
+            brapiVar.setContextOfUse(new ArrayList());
+            brapiVar.setSynonyms(new ArrayList());
                         
             //trait 
             BrapiVariableTrait trait = new BrapiVariableTrait();
             trait.setTraitDbId(var.getTrait().getUri());
-            trait.setName(var.getTrait().getLabel());
+            trait.setTraitName(var.getTrait().getLabel());
             trait.setDescription(var.getTrait().getComment());
+            trait.setAlternativeAbbreviations(new ArrayList());
+            trait.setSynonyms(new ArrayList());
             brapiVar.setTrait(trait);
             
             //method

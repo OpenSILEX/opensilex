@@ -25,7 +25,21 @@ public class BrapiMethod {
     //The comment of the method in the triplestore
     private String formula;
     //SILEX:todo
-    //class ontologyReference and get info
+    //Create a brapiOntologyReference class to follow this format
+    //    "ontologyReference": {
+    //            "documentationLinks": [
+    //              {
+    //                "URL": "https://ontology.org/t1",
+    //                "type": "WEBPAGE",
+    //                "url": "https://ontology.org/t1"
+    //              }
+    //            ],
+    //            "ontologyDbId": "MO_123",
+    //            "ontologyName": "Ontology.org",
+    //            "version": "17"
+    //          }
+    //and see if we can use the ontologyReference of variableDAO to fill the attributes 
+    //but in the case where there are several references, which one should we get ?
     private String ontologyReference;
     //\SILEX
     private String reference;

@@ -17,9 +17,11 @@ import java.util.HashMap;
 public class StudyDetails {
     private String studyDbId;
     private String studyName;
-    private String studyType;
+    private String studyTypeDbId;
+    private String studyTypeName;
     private String studyDescription;
     private ArrayList<String> seasons;
+    private String commonCropName;
     private String trialDbId;
     private String trialName;
     private String startDate;
@@ -31,6 +33,7 @@ public class StudyDetails {
     private ArrayList<String> dataLinks; //TODO class Datalink
     private ArrayList<String> lastUpdate; //TODO 
     private HashMap<String,String> additionalInfo; //TODO
+    private String documentationURL;
 
     public StudyDetails() {
     }
@@ -56,11 +59,11 @@ public class StudyDetails {
     }
 
     public String getStudyType() {
-        return studyType;
+        return studyTypeName;
     }
 
-    public void setStudyType(String studyType) {
-        this.studyType = studyType;
+    public void setStudyType(String studyTypeName) {
+        this.studyTypeName = studyTypeName;
     }
 
     public String getStudyDescription() {
@@ -166,5 +169,38 @@ public class StudyDetails {
     public void setAdditionalInfo(HashMap<String, String> additionalInfo) {
         this.additionalInfo = additionalInfo;
     }    
+
+    public String getStudyTypeDbId() {
+        return studyTypeDbId;
+    }
+
+    public void setStudyTypeDbId(String studyTypeDbId) {
+        this.studyTypeDbId = studyTypeDbId;
+    }
+
+    public String getStudyTypeName() {
+        return studyTypeName;
+    }
+
+    public void setStudyTypeName(String studyTypeName) {
+        this.studyTypeName = studyTypeName;
+    }
+
+    public String getCommonCropName() {
+        return commonCropName;
+    }
+
+    public void setCommonCropName(String commonCropName) {
+        this.commonCropName = commonCropName;
+    }
+
+    public String getDocumentationURL() {
+        return documentationURL;
+    }
+
+    public void setDocumentationURL(String documentationURL) {
+        this.documentationURL = documentationURL;
+    }
+    
 }
 

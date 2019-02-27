@@ -33,7 +33,6 @@ import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.dao.manager.DAOMongo;
-import phis2ws.service.dao.phis.ScientificObjectDAO;
 import phis2ws.service.dao.sesame.ScientificObjectDAOSesame;
 import phis2ws.service.dao.sesame.SensorDAOSesame;
 import phis2ws.service.dao.sesame.VariableDaoSesame;

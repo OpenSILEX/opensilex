@@ -22,29 +22,30 @@ public class BrapiSingleResponseForm<T> {
      * Initialize metadata and result fields when there are only one element
      * @param data list of results
      * @example 
-     * {
-        "metadata": {
-          "pagination": {
-            "pageSize": 20,
-            "currentPage": 0,
-            "totalCount": 3,
-            "totalPages": 1
+     * Response Body
+        {
+          "metadata": {
+            "pagination": {
+              "pageSize": 0,
+              "currentPage": 0,
+              "totalCount": 0,
+              "totalPages": 0
+            },
+            "status": [],
+            "datafiles": []
           },
-          "status": [],
-          "datafiles": []
-        },
-        "result": {
-            {
-              "defaultValue": null,
-              "description": "",
-              "name": "Leaf_Area_Index",
-              "observationVariables": [
-                "http://www.phenome-fppn.fr/platform/id/variables/v001"
-              ],
-              "traitDbId": "http://www.phenome-fppn.fr/platform/id/traits/t001",
-              "traitId": null
-            }
-      }
+          "result": {
+            "defaultValue": null,
+            "description": "dfg",
+            "traitName": "drgd",
+            "observationVariables": [
+              "http://www.phenome-fppn.fr/test/id/variables/v008",
+              "http://www.phenome-fppn.fr/test/id/variables/v009"
+            ],
+            "traitDbId": "http://www.phenome-fppn.fr/test/id/traits/t008",
+            "traitId": null
+          }
+        }
      */
     public BrapiSingleResponseForm(T data) {
         metadata = new BrapiMetadata(0,0,0);

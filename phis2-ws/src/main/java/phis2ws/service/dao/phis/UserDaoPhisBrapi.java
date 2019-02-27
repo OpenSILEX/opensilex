@@ -589,7 +589,6 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
                         if (u.getOrcid() != null) {
                             u.setUri(u.getOrcid());
                         } else {
-                            // add URI 07/2018
                             // create uri suffix
                             String userUriSuffix = ResourcesUtils.createUserUriSuffix(u.getFirstName(), u.getFamilyName());
                             // set uri to agent

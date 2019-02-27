@@ -26,6 +26,12 @@ public enum Foaf {
             return NAMESPACE.toString() + "Agent";
         }
     },
+    CONCEPT_GROUP {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "Group";
+        }
+    },
     CONCEPT_PERSON {
         @Override
         public String toString() {

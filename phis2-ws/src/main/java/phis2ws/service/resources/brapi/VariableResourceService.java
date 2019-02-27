@@ -70,7 +70,7 @@ public class VariableResourceService implements BrapiCall {
         ArrayList<String> callMethods = new ArrayList<>();
         callMethods.add("GET");
         ArrayList<String> callVersions = new ArrayList<>();
-        callVersions.add("1.2");
+        callVersions.add("1.3");
         Call call1 = new Call("variables", calldatatypes, callMethods, callVersions);
         //\SILEX:info 
         
@@ -81,7 +81,7 @@ public class VariableResourceService implements BrapiCall {
         ArrayList<String> callMethods2 = new ArrayList<>();
         callMethods2.add("GET");
         ArrayList<String> callVersions2 = new ArrayList<>();
-        callVersions2.add("1.2");
+        callVersions2.add("1.3");
         Call call2 = new Call("variables/{variables}", calldatatypes2, callMethods2, callVersions2);
         //\SILEX:info 
         
@@ -177,7 +177,7 @@ public class VariableResourceService implements BrapiCall {
                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_JSON)    
-    public Response getTraitsList ( 
+    public Response getVariablesList ( 
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
         //SILEX:todo
@@ -213,7 +213,7 @@ public class VariableResourceService implements BrapiCall {
                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_JSON)    
-    public Response getTraitDetails ( 
+    public Response getVariableDetails ( 
         @ApiParam(value = DocumentationAnnotation.VARIABLE_URI_DEFINITION, required = true, example=DocumentationAnnotation.EXAMPLE_VARIABLE_URI) @PathParam("observationVariableDbId") @Required @URL String observationVariableDbId
     ) throws SQLException {        
         VariableDaoSesame varDAO = new VariableDaoSesame();
@@ -277,12 +277,16 @@ public class VariableResourceService implements BrapiCall {
             BrapiVariable brapiVar = new BrapiVariable();
             brapiVar.setObservationVariableDbId(var.getUri());
             brapiVar.setObservationVariableName(var.getLabel());
+            brapiVar.setContextOfUse(new ArrayList());
+            brapiVar.setSynonyms(new ArrayList());
                         
             //trait 
             BrapiVariableTrait trait = new BrapiVariableTrait();
             trait.setTraitDbId(var.getTrait().getUri());
-            trait.setName(var.getTrait().getLabel());
+            trait.setTraitName(var.getTrait().getLabel());
             trait.setDescription(var.getTrait().getComment());
+            trait.setAlternativeAbbreviations(new ArrayList());
+            trait.setSynonyms(new ArrayList());
             brapiVar.setTrait(trait);
             
             //method
@@ -296,6 +300,7 @@ public class VariableResourceService implements BrapiCall {
             BrapiScale scale = new BrapiScale();
             scale.setScaleDbid(var.getUnit().getUri());
             scale.setScaleName(var.getUnit().getLabel());
+            scale.setDataType("Numerical");
             brapiVar.setScale(scale);
             
             varList.add(brapiVar); 

@@ -14,6 +14,7 @@ package phis2ws.service.dao.sesame;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -244,7 +245,11 @@ public class MethodDaoSesame extends DAOSesame<Method> {
         
         while (iteratorMethodDTO.hasNext() && annotationInsert) {
             MethodDTO methodDTO = iteratorMethodDTO.next();
-            methodDTO.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_METHOD.toString(), null, null));
+            try {
+                methodDTO.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_METHOD.toString(), null, null));
+            } catch (Exception ex) { //In the method case, no exception should be raised
+                annotationInsert = false;
+            }
             
             //Enregistrement dans le triplestore
             UpdateRequest spqlInsert = prepareInsertQuery(methodDTO);

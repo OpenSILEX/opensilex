@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -146,22 +147,26 @@ public class ImageResourceService extends ResourceService {
                 ArrayList<String> imagesUploadLinks = new ArrayList<>();
                 String lastGeneratedUri = null;
                 for (ImageMetadataDTO imageMetadata : imagesMetadata) {
-                    final UriBuilder uploadPath = uri.getBaseUriBuilder();
-                    
-                    //generates the imageUri
-                    UriGenerator uriGenerator = new UriGenerator();
-                    final String imageUri = uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_IMAGE.toString(), Year.now().toString(), lastGeneratedUri);
-                    lastGeneratedUri = imageUri;
-                    
-                    final String uploadLink = uploadPath.path("images").path("upload").queryParam("uri", imageUri).toString();
-                    imagesUploadLinks.add(uploadLink);
-                    
-                    WAITING_METADATA_FILE_CHECK.put(imageUri, false); // file waiting
-                    ImageMetadata imageMetadataToSave = imageMetadata.createObjectFromDTO();
-                    imageMetadataToSave.setUri(imageUri);
-                    WAITING_METADATA_INFORMATION.put(imageUri, imageMetadataToSave);
-                    //Launch the thread for the expected file
-                    THREAD_POOL.submit(new ImageWaitingCheck(imageUri));
+                    try {
+                        final UriBuilder uploadPath = uri.getBaseUriBuilder();
+                        
+                        //generates the imageUri
+                        UriGenerator uriGenerator = new UriGenerator();
+                        final String imageUri = uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_IMAGE.toString(), Year.now().toString(), lastGeneratedUri);
+                        lastGeneratedUri = imageUri;
+                        
+                        final String uploadLink = uploadPath.path("images").path("upload").queryParam("uri", imageUri).toString();
+                        imagesUploadLinks.add(uploadLink);
+                        
+                        WAITING_METADATA_FILE_CHECK.put(imageUri, false); // file waiting
+                        ImageMetadata imageMetadataToSave = imageMetadata.createObjectFromDTO();
+                        imageMetadataToSave.setUri(imageUri);
+                        WAITING_METADATA_INFORMATION.put(imageUri, imageMetadataToSave);
+                        //Launch the thread for the expected file
+                        THREAD_POOL.submit(new ImageWaitingCheck(imageUri));
+                    } catch (Exception ex) { //In the images case, no exception should be raised
+                        java.util.logging.Logger.getLogger(ImageResourceService.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
                 final Status waitingTimeStatus = new Status(StatusCodeMsg.TIMEOUT, StatusCodeMsg.INFO, " Timeout :" + PropertiesFileManager.getConfigFileProperty("service", "waitingFileTime") + " seconds");
                 checkImageMetadata.statusList.add(waitingTimeStatus);

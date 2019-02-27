@@ -24,8 +24,6 @@ public class BrapiVariable {
     //class ontologyReference and get info
     private String ontologyReference;
     //\SILEX
-    private String ontologyDbId;
-    private String ontologyName;
     private ArrayList<String> synonyms;
     private ArrayList<String> contextOfUse;
     private String growthStage;
@@ -70,22 +68,6 @@ public class BrapiVariable {
 
     public void setOntologyReference(String ontologyReference) {
         this.ontologyReference = ontologyReference;
-    }
-
-    public String getOntologyDbId() {
-        return ontologyDbId;
-    }
-
-    public void setOntologyDbId(String ontologyDbId) {
-        this.ontologyDbId = ontologyDbId;
-    }
-
-    public String getOntologyName() {
-        return ontologyName;
-    }
-
-    public void setOntologyName(String ontologyName) {
-        this.ontologyName = ontologyName;
     }
 
     public ArrayList<String> getSynonyms() {

@@ -585,11 +585,15 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
                         } else {
                             insertPreparedStatementUser.setString(9, "f");
                         }
-                        // add URI 07/2018
-                        // create uri suffix
-                        String userUriSuffix = ResourcesUtils.createUserUriSuffix(u.getFirstName(), u.getFamilyName());
-                        // set uri to agent
-                        u.setUri(uriGenerator.generateNewInstanceUri(Foaf.CONCEPT_PERSON.toString(), null, userUriSuffix));
+                        
+                        if (u.getOrcid() != null) {
+                            u.setUri(u.getOrcid());
+                        } else {
+                            // create uri suffix
+                            String userUriSuffix = ResourcesUtils.createUserUriSuffix(u.getFirstName(), u.getFamilyName());
+                            // set uri to agent
+                            u.setUri(uriGenerator.generateNewInstanceUri(Foaf.CONCEPT_AGENT.toString(), null, userUriSuffix));
+                        }
                         insertPreparedStatementUser.setString(10, u.getUri());
 
                         //Ajout dans les logs de qui a fait quoi (traçabilité)
@@ -601,6 +605,7 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
                             log += "User : " + user.getEmail() + " - ";
                         }
 
+                        LOGGER.debug(insertPreparedStatementUser.toString());
                         insertPreparedStatementUser.execute();
 
                         //Ajout dans at_group_users des groupes auxquels l'utilisateur appartient.

@@ -1,10 +1,10 @@
-//**********************************************************************************************
-//                                       ExperimentDao.java 
+//******************************************************************************
+//                            ExperimentDao.java 
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: January 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-//***********************************************************************************************
+//******************************************************************************
 
 package phis2ws.service.dao.phis;
 
@@ -51,37 +51,70 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
     final static Logger LOGGER = LoggerFactory.getLogger(ExperimentDao.class);
     
     //Search parameters :
-    //The uri of an experiment.
-    //e.g. http://www.phenome-fppn.fr/diaphen/DIA2017-1
+     
+    /** 
+     * The uri of an experiment.
+     * @example http://www.phenome-fppn.fr/diaphen/DIA2017-1
+     */
     public String uri;
-    //The project uri related to an experiment.
+    
+    /**
+     * The project uri related to an experiment.
+     */
     public String projectUri;
-    //The start date of an experiment
-    //e.g. 2018-01-15
+    
+    /**
+     * The start date of an experiment
+     * @example 2018-01-15
+     */
     public String startDate;
-    //The end date of an experiment
-    //e.g. 2018-08-02
+    
+    /**
+     * The end date of an experiment
+     * @example 2018-08-02
+     */
     public String endDate;
-    //The field of an experiment
-    //e.g. field003
+    
+    /**
+     * The field of an experiment
+     * @example field003
+     */
     public String field;
-    //The campaign of an experiment
-    //e.g. 2017
+    
+    /**
+     * The campaign of an experiment
+     * @example 2017
+     */
     public String campaign;
-    //The place of an experiment
-    //e.g. Madone
+    
+    /**
+     * The place of an experiment
+     * @example Madone
+     */
     public String place;
-    //The alias of the experiment
-    //e.g. exp-16-03
+    
+    /**
+     * The alias of the experiment
+     * @example exp-16-03
+     */
     public String alias;
-    //The keywords of the experiment
-    //e.g. maize, phenotyping
+    
+    /**
+     * The keywords of the experiment
+     * @example maize, phenotyping
+     */
     public String keyword;
-    //The groups uris that can access an experiment
-    //e.g. http://www.phenome-fppn.fr/diaphen/DROPS,http://www.phenome-fppn.fr/diaphen/MISTEAGAMMA
+    
+    /**
+     * The groups uris that can access an experiment
+     * @example http://www.phenome-fppn.fr/diaphen/DROPS,http://www.phenome-fppn.fr/diaphen/MISTEAGAMMA
+     */
     public String groups;
-    //The crop species of an experiment
-    //e.g. Maize, Wheat
+    
+    /**
+     * The crop species of an experiment
+     * @example Maize, Wheat
+     */
     public String cropSpecies;
     
     public ExperimentDao() {
@@ -436,21 +469,21 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
             PreparedStatement insertPreparedStatementAtExperimentUsers = null;
             
             final String insertGabExperiment = "INSERT INTO \"trial\""
-                                    + "(\"uri\", \"start_date\", \"end_date\", \"field\","
-                                    + "\"campaign\", \"place\", \"alias\", \"comment\", \"keywords\","
-                                    + " \"objective\", \"crop_species\")"
-                                    + " VALUES (?, to_date(?, 'YYYY-MM-DD'), to_date(?, 'YYYY-MM-DD'), ?, ?, ?, ?, ?, ?, ?, ?)";
+                + "(\"uri\", \"start_date\", \"end_date\", \"field\","
+                + "\"campaign\", \"place\", \"alias\", \"comment\", \"keywords\","
+                + " \"objective\", \"crop_species\")"
+                + " VALUES (?, to_date(?, 'YYYY-MM-DD'), to_date(?, 'YYYY-MM-DD'), ?, ?, ?, ?, ?, ?, ?, ?)";
             
             final String insertGabAtExperimentProject = "INSERT INTO \"at_trial_project\""
-                                    + "(\"project_uri\", \"trial_uri\")"
-                                    + " VALUES (?, ?)";
+                + "(\"project_uri\", \"trial_uri\")"
+                + " VALUES (?, ?)";
             
             final String insertGabAtExperimentGroup = "INSERT INTO \"at_group_trial\""
-                                    + "(\"group_uri\", \"trial_uri\")"
-                                    + " VALUES (?, ?)";
+                + "(\"group_uri\", \"trial_uri\")"
+                + " VALUES (?, ?)";
             final String insertGabAtExperimentUsers = "INSERT INTO \"at_trial_users\""
-                    + "(\"trial_uri\", \"users_email\", \"type\")"
-                    + " VALUES (?, ?, ?)";
+                + "(\"trial_uri\", \"users_email\", \"type\")"
+                + " VALUES (?, ?, ?)";
             
             Connection con = null;
             int inserted = 0;
@@ -504,7 +537,7 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
                         for (Project project : experiment.getProjects()) {
                             insertPreparedStatementAtExperimentProject.setString(1, project.getUri());
                             insertPreparedStatementAtExperimentProject.setString(2, experiment.getUri());
-                            LOGGER.debug(log + " quert : " + insertPreparedStatementAtExperimentProject.toString());
+                            LOGGER.debug(log + " query : " + insertPreparedStatementAtExperimentProject.toString());
                             insertPreparedStatementAtExperimentProject.execute();
                         }
                         
@@ -512,7 +545,7 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
                         for (Group group : experiment.getGroups()) {
                             insertPreparedStatementAtGroupExperiment.setString(1, group.getUri());
                             insertPreparedStatementAtGroupExperiment.setString(2, experiment.getUri());
-                            LOGGER.debug(log + " quert : " + insertPreparedStatementAtExperimentProject.toString());
+                            LOGGER.debug(log + " query : " + insertPreparedStatementAtExperimentProject.toString());
                             insertPreparedStatementAtGroupExperiment.execute();
                         }
                         
@@ -549,9 +582,9 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
                 
                 con.commit(); //Envoi des données ds bd
                 
-////////////////////
+//
     //ATTENTION, vérifications à re regarder et re vérifier
-//////////////////
+//
                 //Si data insérées et existantes
                 if (exists > 0 && inserted > 0) {
                     results = new POSTResultsReturn(resultState, insertionState, dataState);

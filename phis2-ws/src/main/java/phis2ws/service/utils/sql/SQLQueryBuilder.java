@@ -21,6 +21,8 @@ import java.util.List;
  */
 public class SQLQueryBuilder {
 
+    public static final String CONTAINS_OPERATOR = "CONTAINS_OPERATOR";
+    
     private boolean count = false;
     private boolean distinct = false;
     private String attributes = null;
@@ -130,6 +132,10 @@ public class SQLQueryBuilder {
 
 public void appendORWhereConditions(String attribute, String value, String operator, String type, String tableAlias) {
         if (attribute != null && value != null) {
+            if (CONTAINS_OPERATOR.equals(operator)) {
+                operator = "ILIKE";
+                value = "%" + value + "%";
+            }
             if (where.length() > 0) {
                 this.where += " OR ";
             }
@@ -182,6 +188,10 @@ public void appendORWhereConditions(String attribute, String value, String opera
 
     public void appendWhereConditions(String attribute, String value, String operator, String type, String tableAlias) {
         if (attribute != null && value != null) {
+            if (CONTAINS_OPERATOR.equals(operator)) {
+                operator = "ILIKE";
+                value = "%" + value + "%";
+            }
             if (tableAlias != null) {
                 this.where += tableAlias + "." + "\"" + attribute + "\"";
             } else {
@@ -202,6 +212,11 @@ public void appendORWhereConditions(String attribute, String value, String opera
 
     public void appendANDWhereConditions(String attribute, String value, String operator, String type, String tableAlias) {
         if (attribute != null && value != null) {
+            if (CONTAINS_OPERATOR.equals(operator)) {
+                operator = "ILIKE";
+                value = "%" + value + "%";
+            }
+            
             if (where.length() > 0) {
                 this.where += " AND ";
             }

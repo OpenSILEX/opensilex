@@ -224,23 +224,9 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
             statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
             SQLQueryBuilder query = new SQLQueryBuilder();
             
-            Map<String, String> sqlFields = relationFieldsJavaSQLObject();
-           
             //Ajout des conditions dans la requête
             query.appendFrom(table, tableAlias);
-            query.appendANDWhereConditionIfNeeded(sqlFields.get("uri"), uri, "ILIKE", null, tableAlias);
-            query.appendANDWhereConditionIfNeeded(sqlFields.get("startDate"), startDate, "ILIKE", null, tableAlias);
-            query.appendANDWhereConditionIfNeeded(sqlFields.get("endDate"), endDate, "ILIKE", null, tableAlias);
-            query.appendANDWhereConditionIfNeeded(sqlFields.get("field"), field, "ILIKE", null, tableAlias);
-            query.appendANDWhereConditionIfNeeded(sqlFields.get("campaign"), campaign, "ILIKE", null, tableAlias);
-            query.appendANDWhereConditionIfNeeded(sqlFields.get("place"), place, "ILIKE", null, tableAlias);
-            query.appendANDWhereConditionIfNeeded(sqlFields.get("alias"), alias, "ILIKE", null, tableAlias);
-            query.appendANDWhereConditionIfNeeded(sqlFields.get("keyword"), keyword, "ILIKE", null, tableAlias);
-
-            if (projectUri != null) {
-                query.appendJoin("LEFT JOIN", "at_trial_project", "attp", tableAlias + ".uri = attp.trial_uri");
-                query.appendANDWhereConditions("project_uri", projectUri, "ILIKE", null, "attp");
-            }
+            addFilters(query);
             
             query.appendLimit(String.valueOf(pageSize));
             query.appendOffset(Integer.toString(this.getPage() * this.getPageSize()));
@@ -353,6 +339,27 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
         return experiments;
     }
     
+    /**
+     * Add filter for query experiment search
+     * @param query 
+     */
+    private void addFilters(SQLQueryBuilder query) {
+        Map<String, String> sqlFields = relationFieldsJavaSQLObject();
+        query.appendANDWhereConditionIfNeeded(sqlFields.get("uri"), uri, "ILIKE", null, tableAlias);
+        query.appendANDWhereConditionIfNeeded(sqlFields.get("startDate"), startDate, ">=", null, tableAlias);
+        query.appendANDWhereConditionIfNeeded(sqlFields.get("endDate"), endDate, "<=", null, tableAlias);
+        query.appendANDWhereConditionIfNeeded(sqlFields.get("field"), field, SQLQueryBuilder.CONTAINS_OPERATOR, null, tableAlias);
+        query.appendANDWhereConditionIfNeeded(sqlFields.get("campaign"), campaign, SQLQueryBuilder.CONTAINS_OPERATOR, null, tableAlias);
+        query.appendANDWhereConditionIfNeeded(sqlFields.get("place"), place, SQLQueryBuilder.CONTAINS_OPERATOR, null, tableAlias);
+        query.appendANDWhereConditionIfNeeded(sqlFields.get("alias"), alias, SQLQueryBuilder.CONTAINS_OPERATOR, null, tableAlias);
+        query.appendANDWhereConditionIfNeeded(sqlFields.get("keywords"), keyword, SQLQueryBuilder.CONTAINS_OPERATOR, null, tableAlias);
+                    
+        if (projectUri != null) {
+            query.appendJoin("LEFT JOIN", "at_trial_project", "attp", tableAlias + ".uri = attp.trial_uri");
+            query.appendANDWhereConditionIfNeeded("project_uri", projectUri, "ILIKE", null, "attp");
+        }
+    }
+    
     @Override
     public Integer count() {
         SQLQueryBuilder query = new SQLQueryBuilder();
@@ -365,10 +372,7 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
             query.appendWhereConditions("uri", uri, "=", null, tableAlias);
         }
         
-        if (projectUri != null) {
-            query.appendJoin("LEFT JOIN", "at_trial_project", "attp", tableAlias + ".uri = attp.trial_uri");
-            query.appendANDWhereConditionIfNeeded("project_uri", projectUri, "ILIKE", null, "attp");
-        }
+        addFilters(query);
 
         Connection connection = null;
         ResultSet resultSet = null;

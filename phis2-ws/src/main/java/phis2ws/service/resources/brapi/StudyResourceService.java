@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                       StudyDetailsResourceService.java
+//                                       StudyResourceService.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 22 août 2018
@@ -16,15 +16,21 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import javax.validation.constraints.Min;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.authentication.Session;
+import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.mongo.DatasetDAOMongo;
 import phis2ws.service.dao.phis.StudyDAO;
@@ -50,12 +56,14 @@ import phis2ws.service.view.model.phis.Variable;
 @Path("/brapi/v1/studies")
 
 /**
- * StudyDetails service
+ * Study services :
+ * GET Studies/{studyDbId}
+ * GET Studies/{studyDbId}/observations
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
-public class StudyDetailsResourceService implements BrapiCall{
+public class StudyResourceService implements BrapiCall{
     
-    final static Logger LOGGER = LoggerFactory.getLogger(StudyDetailsResourceService.class);  
+    final static Logger LOGGER = LoggerFactory.getLogger(StudyResourceService.class);  
     
      /**
      * Overriding BrapiCall method
@@ -65,14 +73,22 @@ public class StudyDetailsResourceService implements BrapiCall{
     @Override
     public ArrayList<Call> callInfo() {
         ArrayList<Call> calls = new ArrayList();
+        
+        //SILEX:info 
+        //Call GET Study/{stuDbId}
         ArrayList<String> calldatatypes = new ArrayList<>();
         calldatatypes.add("json");
         ArrayList<String> callMethods = new ArrayList<>();
         callMethods.add("GET");
         ArrayList<String> callVersions = new ArrayList<>();
         callVersions.add("1.3");
-        Call call = new Call("studies/{studyDbId}", calldatatypes, callMethods, callVersions);
-        calls.add(call);
+        Call call1 = new Call("studies/{studyDbId}", calldatatypes, callMethods, callVersions);
+        //Call GET Study/{stuDbId}
+        Call call2 = new Call("studies/{studyDbId}/observations", calldatatypes, callMethods, callVersions);
+        //\SILEX:info        
+        calls.add(call1);
+        calls.add(call2);
+        
         return calls;
     }
     
@@ -133,10 +149,14 @@ public class StudyDetailsResourceService implements BrapiCall{
     @Produces(MediaType.APPLICATION_JSON)   
     
     public Response getObservations (
-        @ApiParam(value = "studyDbId", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI ) @PathParam("studyDbId") @URL @Required String studyDbId
-        ) throws SQLException {               
+        @ApiParam(value = "studyDbId", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI ) @PathParam("studyDbId") @URL @Required String studyDbId,
+        @ApiParam(value = "observationVariableDbIds") @QueryParam(value = "observationVariableDbIds") List<String> observationVariableDbIds,  
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
+        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
+    ) throws SQLException {               
         
         StudyDAO studyDAO = new StudyDAO();
+        List<String> variableURIs = new ArrayList();
         
         if (studyDbId != null) {
             studyDAO.studyDbId = studyDbId;
@@ -145,11 +165,15 @@ public class StudyDetailsResourceService implements BrapiCall{
         studyDAO.limit=1;
         studyDAO.user = userSession.getUser();
         
-        return getStudyObservations(studyDAO);
+        if (observationVariableDbIds != null) {
+            variableURIs= observationVariableDbIds;
+        }
+        
+        return getStudyObservations(studyDAO, variableURIs, limit, page);
     }
     
     private Response noResultFound(BrapiMultiResponseForm getResponse, ArrayList<Status> insertStatusList) {
-        insertStatusList.add(new Status("No result", StatusCodeMsg.INFO, "This study doesn't exist"));
+        insertStatusList.add(new Status("No result", StatusCodeMsg.INFO, "no result for this query"));
         getResponse.getMetadata().setStatus(insertStatusList);
         return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
     }
@@ -183,13 +207,46 @@ public class StudyDetailsResourceService implements BrapiCall{
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    private Response getStudyObservations(StudyDAO studyDAO) {
+    /**
+     * Retrieve the observations corresponding to the user query (parameters: one specific study and eventually some variables)
+     * @param ArrayList<Dataset> datasets
+     * @return observations list 
+     */
+    private Response getStudyObservations(StudyDAO studyDAO, List<String> variableURIs, int limit, int page) {
         ArrayList<Status> statusList = new ArrayList<>(); 
         DatasetDAOMongo datasetDAOMongo = new DatasetDAOMongo();
+        ArrayList<BrapiObservationDTO> observations = new ArrayList();
+        datasetDAOMongo.experiment = studyDAO.studyDbId; 
         
-        datasetDAOMongo.experiment = studyDAO.studyDbId;
-        ArrayList<Dataset> datasets = new ArrayList<>();
-        datasets = datasetDAOMongo.allPaginate();
+        if (variableURIs.isEmpty()) {        
+            ArrayList<Dataset> datasets = datasetDAOMongo.allPaginate();
+            observations = getObservationsFromDatasets(datasets);
+        } else {
+            //in case a variable uri is duplicated, we keep distinct uris
+            List<String> uniqueVariableURIs= variableURIs.stream().distinct().collect(Collectors.toList());
+            for (String variableURI:uniqueVariableURIs) { 
+                datasetDAOMongo.variable = variableURI;
+                ArrayList<Dataset> datasets = datasetDAOMongo.allPaginate();
+                ArrayList<BrapiObservationDTO> variableURIObservations = getObservationsFromDatasets(datasets);
+                observations.addAll(variableURIObservations);              
+            }
+        }     
+        
+        if (observations.isEmpty()) {
+            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, observations, true);
+            return noResultFound(getResponse, statusList);
+        } else {
+            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(limit, page, observations, false);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
+        }    
+    }
+    
+    /**
+     * Create observations with datasets attributes
+     * @param ArrayList<Dataset> datasets
+     * @return observations list 
+     */
+    private ArrayList<BrapiObservationDTO> getObservationsFromDatasets(ArrayList<Dataset> datasets) {
         ArrayList<BrapiObservationDTO> observations = new ArrayList();
         for (Dataset dataset:datasets){
             ArrayList<Data> dataList = dataset.getData();
@@ -210,15 +267,7 @@ public class StudyDetailsResourceService implements BrapiCall{
                 observation.setObservationLevel(scientificObjects.get(0).getRdfType());
                 observations.add(observation);
             }
-        }      
-        
-        if (observations.isEmpty()) {
-            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, observations, true);
-            return noResultFound(getResponse, statusList);
-        } else {
-            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(datasetDAOMongo.getPageSize(), datasetDAOMongo.getPage(), observations, false);
-            return Response.status(Response.Status.OK).entity(getResponse).build();
-        }
-        
+        } 
+        return observations;
     }
 }

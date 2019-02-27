@@ -7,15 +7,11 @@
 //******************************************************************************
 package phis2ws.service.resources.dto.phenotype;
 
-import org.joda.time.DateTime;
-import phis2ws.service.view.model.phis.Data;
 import phis2ws.service.view.model.phis.Dataset;
-import phis2ws.service.view.model.phis.ScientificObject;
-import phis2ws.service.view.model.phis.Variable;
 
 /**
- *
- * @author boizetal
+ * Represents the response of the brapi call get Observations by study
+ * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class BrapiObservationDTO {
     private String germplasmDbId;
@@ -28,7 +24,10 @@ public class BrapiObservationDTO {
     private String observationVariableDbId;
     private String observationVariableName;
     private String operator;
-    private String season; // create class season with season, seasonDbId, year
+    //SILEX:todo
+    // create a class season with season, seasonDbId, year
+    private String season; 
+    //\SILEX
     private String studyDbId;
     private String uploadedBy;
     private String value;
@@ -150,9 +149,7 @@ public class BrapiObservationDTO {
 
     public void setValue(String value) {
         this.value = value;
-    }
-    
-    
+    }  
     
 }
     

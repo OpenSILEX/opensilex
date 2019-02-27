@@ -96,6 +96,47 @@ public class StudyResourceService implements BrapiCall{
     @SessionInject
     Session userSession;
     
+    /**
+     * Retrieve one study information
+     * @param studyDbId
+     * @return the study information
+     * @example
+     *  {
+         "metadata": {
+           "pagination": {
+             "pageSize": 0,
+             "currentPage": 0,
+             "totalCount": 0,
+             "totalPages": 0
+           },
+           "status": null,
+           "datafiles": []
+         },
+         "result": {
+           "studyDbId": "http://www.opensilex.org/demo/DMO2018-3",
+           "studyName": "EXP01",
+           "studyTypeDbId": null,
+           "studyTypeName": null,
+           "studyDescription": "",
+           "seasons": [
+             "2018"
+           ],
+           "commonCropName": "",
+           "trialDbId": null,
+           "trialName": null,
+           "startDate": "2018-07-01",
+           "endDate": "2019-02-01",
+           "active": false,
+           "license": null,
+           "location": null,
+           "contacts": [],
+           "dataLinks": [],
+           "lastUpdate": null,
+           "additionalInfo": null,
+           "documentationURL": null
+         }
+        }
+     */    
     @GET
     @Path("{studyDbId}")
     @ApiOperation(value = "Retrieve study details", notes = "Retrieve study details")
@@ -130,6 +171,47 @@ public class StudyResourceService implements BrapiCall{
         return getStudyData(studyDAO);
         }
 
+    /**
+     * Retrieve one study observations
+     * @param studyDbId
+     * @param observationVariableDbIds
+     * @param limit
+     * @param page
+     * @return the study observations
+     * @example
+     *  {
+            "metadata": {
+              "pagination": {
+                "pageSize": 20,
+                "currentPage": 0,
+                "totalCount": 1,
+                "totalPages": 1
+              },
+              "status": null,
+              "datafiles": []
+            },
+            "result": {
+              "data": [
+                {
+                  "germplasmDbId": null,
+                  "germplasmName": null,
+                  "observationDbId": null,
+                  "observationLevel": "http://www.opensilex.org/vocabulary/oeso#Plant",
+                  "observationTimeStamp": "2019-02-27",
+                  "observationUnitDbId": "http://www.phenome-fppn.fr/platform/2019/o19000001",
+                  "observationUnitName": "Plant01",
+                  "observationVariableDbId": "http://www.phenome-fppn.fr/platform/id/variables/v004",
+                  "observationVariableName": "ttt_mmm_uuu",
+                  "operator": null,
+                  "season": null,
+                  "studyDbId": "http://www.opensilex.org/demo/DMO2018-3",
+                  "uploadedBy": null,
+                  "value": "0.484969"
+                }
+              ]
+            }
+        }
+     */  
     @GET
     @Path("{studyDbId}/observations")
     @ApiOperation(value = "Get the observations associated to a specific study", notes = "Get the observations associated to a specific study")
@@ -203,10 +285,6 @@ public class StudyResourceService implements BrapiCall{
         }        
     }
     
-    private Response getStudyVariables(StudyDAO studyDAO) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
     /**
      * Retrieve the observations corresponding to the user query (parameters: one specific study and eventually some variables)
      * @param ArrayList<Dataset> datasets

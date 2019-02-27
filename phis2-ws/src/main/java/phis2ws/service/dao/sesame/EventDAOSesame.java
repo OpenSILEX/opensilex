@@ -387,9 +387,15 @@ public class EventDAOSesame extends DAOSesame<Event> {
                 searchEventPropertiesAndSetThemToIt(event);
                 searchEventConcernedItemsAndSetThemToIt(event);
                 
+                //SILEX:todo think about pagination within a widget (like 
+                // the annotation one): what should be the best practice?
+                // For the moment we use only one page by taking the max value 
+                // of page size
                 AnnotationDAOSesame annotationDAO = new AnnotationDAOSesame(this.user);
-                ArrayList<Annotation> annotations = annotationDAO.searchAnnotations(null, null, event.getUri(), null, null, 0, 1000);
+                int pageSizeMaxValue = Integer.parseInt(PropertiesFileManager.getConfigFileProperty("service", "pageSizeMax"));
+                ArrayList<Annotation> annotations = annotationDAO.searchAnnotations(null, null, event.getUri(), null, null, 0, pageSizeMaxValue);
                 event.setAnnotations(annotations);
+                //\SILEX:todo
             }
         }
         return event;

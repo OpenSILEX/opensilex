@@ -111,7 +111,8 @@ public class EventDAOSesame extends DAOSesame<Event> {
     /**
      * Set a search query to applies the concerned items label filter. 
      * This function DOES NOT make the query return the events concerned items 
-     * informations. This is done by another query further in the process.
+     * informations. This is eventually done by another query further in the 
+     * process.
      * @example SparQL filter added:
      *  WHERE {
      *    ?uri  <http://www.opensilex.org/vocabulary/oeev#concerns>  ?concernedItemUri  . 
@@ -523,11 +524,11 @@ public class EventDAOSesame extends DAOSesame<Event> {
 
     @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

@@ -13,7 +13,6 @@ import phis2ws.service.view.model.phis.Event;
 
 /**
  * DTO representing an event
- * 
  * @author Andréas Garcia<andreas.garcia@inra.fr>
  */
 public class EventDetailedDTO extends EventSimpleDTO {

@@ -43,12 +43,11 @@ import phis2ws.service.view.brapi.form.ResponseFormAnnotation;
 import phis2ws.service.view.brapi.form.ResponseFormGET;
 import phis2ws.service.view.model.phis.Annotation;
 
-
 /**
- * Represents the annotation service.
+ * Represent the annotation service.
  * @update [Arnaud Charleroy] 23 August, 2018: update coding style.
- * @update [Andréas Garcia] 15 Feb. 2019: search parameters are no longer dao 
- * class attributes but parameters sent through search functions
+ * @update [Andréas Garcia] 15 Feb. 2019: search parameters are no longer DAO 
+ * class attributes but parameters sent through the search functions
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 @Api("/annotations")
@@ -101,7 +100,7 @@ public class AnnotationResourceService extends ResourceService {
             }
 
             POSTResultsReturn insertResult = annotationDAOSesame.checkAndInsert(annotations);
-            //annotations inserted
+            // annotations inserted
             if (insertResult.getHttpStatus().equals(Response.Status.CREATED)) {
                 postResponse = new ResponseFormPOST(insertResult.statusList);
                 postResponse.getMetadata().setDatafiles(insertResult.getCreatedResources());
@@ -178,7 +177,7 @@ public class AnnotationResourceService extends ResourceService {
     }
 
     /**
-     * Get the informations about a annotation
+     * Get the information about a annotation
      * @example
      * {
      * "metadata": { "pagination": null, "status": [], "datafiles": [] },

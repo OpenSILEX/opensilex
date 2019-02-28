@@ -17,8 +17,9 @@ import phis2ws.service.PropertiesFileManager;
 @Singleton
 public final class DocumentationAnnotation {
 
-    //Default page number is 0
+    // Default page number is 0
     public static final String PAGE = "Current page number";
+    
     /**
      * To be updated if the variable in service.properties is updated
      * @see service.properties
@@ -27,7 +28,7 @@ public final class DocumentationAnnotation {
 
     public static final String PAGE_SIZE_MONGO = "Number of elements per page (limited to 1000000)";
 
-    // user messages
+    // User messages
     public static final String ERROR_SEND_DATA = "Server error. Cannot send data.";
     public static final String ERROR_FETCH_DATA = "Server error. Cannot fetch data.";
     public static final String BAD_USER_INFORMATION = "Bad informations send by user";
@@ -116,12 +117,12 @@ public final class DocumentationAnnotation {
     
     public static final String CALL_DATATYPE_DEFINITION = "The data format supported by the call";
 
-    //Global examples
+    // Global examples
     public static final String EXAMPLE_DATETIME = "2017-06-15 10:51:00+0200";
     public static final String EXAMPLE_XSDDATETIME = "2017-06-15T10:51:00+0200";
     public static final String EXAMPLE_DATE = "2017-06-15";
 
-    //Specific examples
+    // Specific examples
     public static final String EXAMPLE_EXPERIMENT_URI = "http://phenome-fppn.fr/diaphen/DIA2012-1";
     public static final String EXAMPLE_EXPERIMENT_START_DATE = EXAMPLE_DATETIME;
     public static final String EXAMPLE_EXPERIMENT_END_DATE = EXAMPLE_DATETIME;

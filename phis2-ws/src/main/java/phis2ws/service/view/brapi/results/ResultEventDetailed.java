@@ -13,14 +13,14 @@ import phis2ws.service.view.brapi.Pagination;
 import phis2ws.service.view.manager.Result;
 
 /**
- * A class which represents the result part in the response form, 
- * adapted to the events
+ * A class which represents the result part in the response form, adapted to 
+ * detailed events
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
 public class ResultEventDetailed extends Result<EventDetailedDTO> {
     /**
-     * Constructor which calls the mother-class constructor 
-     * in the case of a list with only 1 element
+     * Constructor which calls the mother-class constructor in the case of a 
+     * list with only 1 element
      * @param events 
      */
     public ResultEventDetailed(ArrayList<EventDetailedDTO> events) {
@@ -28,8 +28,8 @@ public class ResultEventDetailed extends Result<EventDetailedDTO> {
     }
     
     /**
-     * Contructor which calls the mother-class constructor 
-     * in the case of a list with several elements
+     * Contructor which calls the mother-class constructor in the case of a list 
+     * with several elements
      * @param events
      * @param pagination
      * @param paginate 

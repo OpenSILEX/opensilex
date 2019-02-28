@@ -175,6 +175,8 @@ public class StudyDAO {
             ArrayList<String> seasons = new ArrayList();
             seasons.add(exp.getCampaign());
             study.setSeasons(seasons);
+            study.setCommonCropName(exp.getCropSpecies());
+            study.setDataLinks(new ArrayList());
         }
         //\SILEX : info      
         
@@ -200,6 +202,7 @@ public class StudyDAO {
             ResultSet queryResult = statement.executeQuery(query.toString());
             while (queryResult.next()) {
                 ContactBrapi contact = new ContactBrapi();
+                contact.setContactDbId(queryResult.getString("email"));
                 contact.setEmail(queryResult.getString("email"));
                 String fullName = queryResult.getString("first_name") + " " + queryResult.getString("family_name");
                 contact.setName(fullName);                

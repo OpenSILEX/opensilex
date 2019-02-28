@@ -35,8 +35,9 @@ import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
-import phis2ws.service.view.brapi.form.BrapiResponseForm;
+import phis2ws.service.view.brapi.form.BrapiMultiResponseForm;
 import phis2ws.service.resources.dto.trait.BrapiTraitDTO;
+import phis2ws.service.view.brapi.form.BrapiSingleResponseForm;
 import phis2ws.service.view.model.phis.Call;
 import phis2ws.service.view.model.phis.Trait;
 
@@ -68,7 +69,7 @@ public class TraitsResourceService implements BrapiCall {
         ArrayList<String> callMethods = new ArrayList<>();
         callMethods.add("GET");
         ArrayList<String> callVersions = new ArrayList<>();
-        callVersions.add("1.2");
+        callVersions.add("1.3");
         Call call1 = new Call("traits", calldatatypes, callMethods, callVersions);
         //\SILEX:info 
         
@@ -79,7 +80,7 @@ public class TraitsResourceService implements BrapiCall {
         ArrayList<String> callMethods2 = new ArrayList<>();
         callMethods2.add("GET");
         ArrayList<String> callVersions2 = new ArrayList<>();
-        callVersions2.add("1.2");
+        callVersions2.add("1.3");
         Call call2 = new Call("traits/{traitDbId}", calldatatypes2, callMethods2, callVersions2);
         //\SILEX:info 
         
@@ -111,7 +112,7 @@ public class TraitsResourceService implements BrapiCall {
             {
               "defaultValue": null,
               "description": "",
-              "name": "Leaf_Area_Index",
+              "traitName": "Leaf_Area_Index",
               "observationVariables": [
                 "http://www.phenome-fppn.fr/platform/id/variables/v001"
               ],
@@ -121,7 +122,7 @@ public class TraitsResourceService implements BrapiCall {
             {
               "defaultValue": null,
               "description": "",
-              "name": "NDVI",
+              "traitName": "NDVI",
               "observationVariables": [
                 "http://www.phenome-fppn.fr/platform/id/variables/v002"
               ],
@@ -178,7 +179,7 @@ public class TraitsResourceService implements BrapiCall {
           "data": {
             "defaultValue": null,
             "description": null,
-            "name": "myTrait",
+            "traitName": "myTrait",
             "observationVariables": null,
             "traitDbId": "http://www.phenome-fppn.fr/platform/id/traits/t003",
             "traitId": null
@@ -206,7 +207,7 @@ public class TraitsResourceService implements BrapiCall {
         @ApiParam(value = DocumentationAnnotation.TRAIT_URI_DEFINITION, required = true, example=DocumentationAnnotation.EXAMPLE_TRAIT_URI) @PathParam("traitDbId") @Required @URL String traitDbId
     ) throws SQLException {        
         TraitDaoSesame traitDAO = new TraitDaoSesame(traitDbId);           
-        return getTraitsData(traitDAO);
+        return getOneTraitData(traitDAO);
     }    
     
     /**
@@ -215,44 +216,66 @@ public class TraitsResourceService implements BrapiCall {
      * @param insertStatusList
      * @return the response "no result found" for the service
      */
-    private Response noResultFound(BrapiResponseForm getResponse, ArrayList<Status> insertStatusList) {
+    private Response noResultFound(BrapiMultiResponseForm getResponse, ArrayList<Status> insertStatusList) {
         insertStatusList.add(new Status("No result", StatusCodeMsg.INFO, "No result"));
         getResponse.getMetadata().setStatus(insertStatusList);
         return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
     }
-    
-    /**
-     * Search Traits corresponding to search params given by a user
-     * @param BrapiTraitDAO
-     * @return the traits available in the system
+        /**
+     * Return variable data for the service GET traits with a list of elements in the result
+     * @param traitDAO
+     * @return the response with the traits data list 
      */
     private Response getTraitsData(TraitDaoSesame traitDAO) {
         ArrayList<Status> statusList = new ArrayList<>();
-        ArrayList<Trait> traits = traitDAO.allPaginate();                
-        BrapiResponseForm getResponse;           
-                
-        if (traits == null) {
-            getResponse = new BrapiResponseForm(0, 0, traits, true);
+        ArrayList<BrapiTraitDTO> brapiTraits = getBrapiTraitsData(traitDAO);
+        BrapiMultiResponseForm getResponse;
+        if (!brapiTraits.isEmpty()) {
+            getResponse = new BrapiMultiResponseForm(traitDAO.getPageSize(), traitDAO.getPage(), brapiTraits, false);
+            getResponse.getMetadata().setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
+        } else {
+            getResponse = new BrapiMultiResponseForm(0, 0, brapiTraits, true);
             return noResultFound(getResponse, statusList);
-        } else if (!traits.isEmpty()) {
-            ArrayList<BrapiTraitDTO> brapiTraits= new ArrayList();
+        }
+    }
+    
+    /**
+     * Return trait data for the service  GET traits/traitDbId: only one element in the result
+     * @param traitDAO
+     * @return the response with one trait data
+     */
+    private Response getOneTraitData(TraitDaoSesame traitDAO) {
+        ArrayList<Status> statusList = new ArrayList<>();
+        ArrayList<BrapiTraitDTO> brapiTraits = getBrapiTraitsData(traitDAO);
+        BrapiSingleResponseForm getResponse;
+        if (!brapiTraits.isEmpty()){
+            BrapiTraitDTO trait = brapiTraits.get(0);
+            getResponse = new BrapiSingleResponseForm(trait);
+            getResponse.getMetadata().setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
+        } else {
+            BrapiMultiResponseForm getNoResponse = new BrapiMultiResponseForm(0, 0, brapiTraits, true);
+            return noResultFound(getNoResponse, statusList);
+        }
+    } 
+    
+    /**
+     * Get list of brapi traits from the TraitDAO corresponding to the user search query
+     * @param BrapiTraitDAO
+     * @return the traits available in the system
+     */
+    private ArrayList<BrapiTraitDTO> getBrapiTraitsData(TraitDaoSesame traitDAO) {
+        ArrayList<Trait> traits = traitDAO.allPaginate();  
+        ArrayList<BrapiTraitDTO> brapiTraits = new ArrayList();          
+                
+        if (!traits.isEmpty()) {
             for (Trait trait:traits) {
                 BrapiTraitDTO brapiTrait = new BrapiTraitDTO(trait);
                 brapiTrait.setObservationVariables(traitDAO.getVariableFromTrait(trait));
                 brapiTraits.add(brapiTrait);
             }
-            if (traits.size() == 1) {
-                getResponse = new BrapiResponseForm(brapiTraits.get(0));
-                getResponse.getMetadata().setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(getResponse).build();
-            } else {
-                getResponse = new BrapiResponseForm(traitDAO.getPageSize(), traitDAO.getPage(), brapiTraits, false);
-                getResponse.getMetadata().setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(getResponse).build();
-            }
-        } else {
-            getResponse = new BrapiResponseForm(0, 0, traits, true);
-            return noResultFound(getResponse, statusList);
         }
+        return brapiTraits;
     }
 }

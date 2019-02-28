@@ -295,8 +295,7 @@ public class UriGenerator {
      * generates a new agent uri. a agent uri follows the pattern :
      * <prefix>:id/agent/<unic_code>
      * <unic_code> = firstnames concat with lastnames in lowercase
-     * e.g. http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy
-     *
+     * @example http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy
      * @author Arnaud Charleroy
      * @param agentSuffixe the agent suffixe e.g. arnaud_charleroy
      * @return the new agent uri

@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                       BrapiResponseForm.java
+//                                       BrapiMultiResponseForm.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 25 sept. 2018
@@ -10,16 +10,14 @@ package phis2ws.service.view.brapi.form;
 import java.util.ArrayList;
 import phis2ws.service.view.brapi.BrapiMetadata;
 import phis2ws.service.view.manager.BrapiMultiResult;
-import phis2ws.service.view.manager.BrapiResult;
-import phis2ws.service.view.manager.BrapiSingleResult;
 
 /**
  * Allows the formating of the result of the request about any object T
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
-public class BrapiResponseForm<T> {
+public class BrapiMultiResponseForm<T> {
     protected BrapiMetadata metadata;
-    protected BrapiResult result;
+    protected BrapiMultiResult result;
     
     /**
      * Initialize metadata and result fields when there are several elements
@@ -74,49 +72,16 @@ public class BrapiResponseForm<T> {
         }
       }
      */
-    public BrapiResponseForm(int pageSize, int currentPage, ArrayList<T> data, boolean paginate) {
+    public BrapiMultiResponseForm(int pageSize, int currentPage, ArrayList<T> data, boolean paginate) {
         metadata = new BrapiMetadata(pageSize, currentPage, data.size());
         result = new BrapiMultiResult(data,  metadata.getPagination(), paginate);
-    }  
-
-    /**
-     * Initialize metadata and result fields when there is only one element
-     * In this case, the four fields of the pagination are equal to 0
-     * @param data the result of the request
-     * @example 
-     * {
-        "metadata": {
-          "pagination": {
-            "pageSize": 0,
-            "currentPage": 0,
-            "totalCount": 0,
-            "totalPages": 0
-          },
-          "status": [],
-          "datafiles": []
-        },
-        "result": {
-          "data": {
-            "defaultValue": null,
-            "description": null,
-            "name": "myTrait",
-            "observationVariables": null,
-            "traitDbId": "http://www.phenome-fppn.fr/platform/id/traits/t003",
-            "traitId": null
-          }
-        }
-      }
-     */
-    public BrapiResponseForm(T data) {
-        metadata = new BrapiMetadata(0, 0, 0);
-        result = new BrapiSingleResult(data);
     }  
 
     public BrapiMetadata getMetadata() {
         return metadata;
     }
 
-    public BrapiResult getResult() {
+    public BrapiMultiResult getResult() {
         return result;
     }        
 }

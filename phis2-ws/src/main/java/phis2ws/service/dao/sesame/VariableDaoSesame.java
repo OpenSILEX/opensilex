@@ -10,7 +10,6 @@ package phis2ws.service.dao.sesame;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -46,6 +45,10 @@ import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.brapi.Status;
+import phis2ws.service.view.model.phis.BrapiMethod;
+import phis2ws.service.view.model.phis.BrapiScale;
+import phis2ws.service.view.model.phis.BrapiVariable;
+import phis2ws.service.view.model.phis.BrapiVariableTrait;
 import phis2ws.service.view.model.phis.Method;
 import phis2ws.service.view.model.phis.OntologyReference;
 import phis2ws.service.view.model.phis.Trait;
@@ -729,4 +732,47 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
             return false;
         }
     }
+    
+    /**
+     * Get the list of brapi variables from the the DAO
+     * @return the list of brapi variables
+     */
+    public ArrayList<BrapiVariable> getBrapiVarData() {
+        ArrayList<Variable> variablesList = this.allPaginate();
+        ArrayList<BrapiVariable> varList = new ArrayList();
+        for (Variable var:variablesList) {
+            BrapiVariable brapiVar = new BrapiVariable();
+            brapiVar.setObservationVariableDbId(var.getUri());
+            brapiVar.setObservationVariableName(var.getLabel());
+            brapiVar.setContextOfUse(new ArrayList());
+            brapiVar.setSynonyms(new ArrayList());
+                        
+            //trait 
+            BrapiVariableTrait trait = new BrapiVariableTrait();
+            trait.setTraitDbId(var.getTrait().getUri());
+            trait.setTraitName(var.getTrait().getLabel());
+            trait.setDescription(var.getTrait().getComment());
+            trait.setAlternativeAbbreviations(new ArrayList());
+            trait.setSynonyms(new ArrayList());
+            brapiVar.setTrait(trait);
+            
+            //method
+            BrapiMethod method = new BrapiMethod();
+            method.setMethodDbId(var.getMethod().getUri());
+            method.setMethodName(var.getMethod().getLabel());
+            method.setDescription(var.getMethod().getComment());
+            brapiVar.setMethod(method);
+            
+            //scale
+            BrapiScale scale = new BrapiScale();
+            scale.setScaleDbid(var.getUnit().getUri());
+            scale.setScaleName(var.getUnit().getLabel());
+            scale.setDataType("Numerical");
+            brapiVar.setScale(scale);
+            
+            varList.add(brapiVar); 
+        }
+        return varList;        
+    }
+    
 }

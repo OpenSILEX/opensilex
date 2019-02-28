@@ -1,14 +1,10 @@
-//**********************************************************************************************
-//                                       DocumentationAnnotation.java 
-//
-// Author(s): Arnaud Charleroy, Morgane Vidal, Eloan LAGIER
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2016
+//******************************************************************************
+//                           DocumentationAnnotation.java 
+// SILEX-PHIS
+// Copyright © INRA 2016
 // Creation date: august 2016
 // Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, eloan.lagier@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  Janvier, 25 2018
-// Subject: A class which group documentation informations ( try message bundle for the next version)
-//***********************************************************************************************
+//******************************************************************************
 package phis2ws.service.documentation;
 
 import javax.inject.Singleton;
@@ -16,24 +12,23 @@ import phis2ws.service.PropertiesFileManager;
 
 /**
  * A class which group documentation informations
- *
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Singleton
 public final class DocumentationAnnotation {
 
-    //Default page number is 0
+    // Default page number is 0
     public static final String PAGE = "Current page number";
+    
     /**
      * To be updated if the variable in service.properties is updated
-     *
      * @see service.properties
      */
     public static final String PAGE_SIZE = "Number of elements per page (limited to 150000)";
 
     public static final String PAGE_SIZE_MONGO = "Number of elements per page (limited to 1000000)";
 
-    // user messages
+    // User messages
     public static final String ERROR_SEND_DATA = "Server error. Cannot send data.";
     public static final String ERROR_FETCH_DATA = "Server error. Cannot fetch data.";
     public static final String BAD_USER_INFORMATION = "Bad informations send by user";
@@ -43,18 +38,18 @@ public final class DocumentationAnnotation {
     public static final String USER_NOT_AUTHORIZED = "You aren't authorized to fetch the result of this ressource call";
 
     public static final String SWAGGER_DOCUMENTATION_HEADER
-            = "This page describes the methods allowed by this web service. <p style=\"color: red;\"> You must read the paragraph below before use it !</p>"
-            + "<br>"
-            + "<ol>"
-            + "<li>"
-            + "<b> 1. You must first retrieve an acces token using the \"token\" call (fill with your PHIS-SILEX username and password)</b> and after you will be able to use other service calls.</li>"
-            + "<li>"
-            + "<b> 2. You must fill the sessionId parameter</b> with the created access token on each call. <p style=\"color: red;\">This token is available during " + Integer.valueOf(PropertiesFileManager.getConfigFileProperty("service", "sessionTime")) + " seconds.</p> This time will be reload at each use in order to keep the token valid without retrieve a new one.</li>"
-            + "</ol>"
-            + "<br>"
-            + "<i>The response call <b>example values shown</b> in this api documentation represent the <b>data array</b> which is located <b>in the response result object</b> <p style=\"color: red;\">except for the token call.</p><i/><br>"
-            + "<b>The token also include the response object header. </b>"
-            + "For more information, the <b>Response object definition</b> is available at <b><a href=\"http://docs.brapi.apiary.io/#introduction/structure-of-the-response-object:\">Brapi response object</a></b>.";
+        = "This page describes the methods allowed by this web service. <p style=\"color: red;\"> You must read the paragraph below before use it !</p>"
+        + "<br>"
+        + "<ol>"
+        + "<li>"
+        + "<b> 1. You must first retrieve an acces token using the \"token\" call (fill with your PHIS-SILEX username and password)</b> and after you will be able to use other service calls.</li>"
+        + "<li>"
+        + "<b> 2. You must fill the sessionId parameter</b> with the created access token on each call. <p style=\"color: red;\">This token is available during " + Integer.valueOf(PropertiesFileManager.getConfigFileProperty("service", "sessionTime")) + " seconds.</p> This time will be reload at each use in order to keep the token valid without retrieve a new one.</li>"
+        + "</ol>"
+        + "<br>"
+        + "<i>The response call <b>example values shown</b> in this api documentation represent the <b>data array</b> which is located <b>in the response result object</b> <p style=\"color: red;\">except for the token call.</p><i/><br>"
+        + "<b>The token also include the response object header. </b>"
+        + "For more information, the <b>Response object definition</b> is available at <b><a href=\"http://docs.brapi.apiary.io/#introduction/structure-of-the-response-object:\">Brapi response object</a></b>.";
 
     public static final String ENVIRONMENT_POST_DEFINITION = "JSON format to insert environment";
     
@@ -122,12 +117,12 @@ public final class DocumentationAnnotation {
     
     public static final String CALL_DATATYPE_DEFINITION = "The data format supported by the call";
 
-    //Global examples
+    // Global examples
     public static final String EXAMPLE_DATETIME = "2017-06-15 10:51:00+0200";
     public static final String EXAMPLE_XSDDATETIME = "2017-06-15T10:51:00+0200";
     public static final String EXAMPLE_DATE = "2017-06-15";
 
-    //Specific examples
+    // Specific examples
     public static final String EXAMPLE_EXPERIMENT_URI = "http://phenome-fppn.fr/diaphen/DIA2012-1";
     public static final String EXAMPLE_EXPERIMENT_START_DATE = EXAMPLE_DATETIME;
     public static final String EXAMPLE_EXPERIMENT_END_DATE = EXAMPLE_DATETIME;
@@ -288,5 +283,4 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_INFRASTRUCTURE_LABEL = "EMPHASIS";
     
     public static final String EXAMPLE_LANGUAGE = "en";
-
 }

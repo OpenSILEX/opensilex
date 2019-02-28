@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                       Event.java
+//                              Event.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 12 nov. 2018
@@ -11,21 +11,30 @@ import java.util.ArrayList;
 import org.joda.time.DateTime;
 
 /**
- * Represents the Event model
+ * Represent the Event model
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
 public class Event extends RdfResourceDefinition {
     
-    // type eg. http://www.opensilex.org/vocabulary/oeev#MoveFrom
+    /**
+     * Type 
+     * @example http://www.opensilex.org/vocabulary/oeev#MoveFrom
+     */
     private String type;
     
-    // concerned items
+    /**
+     * Concerned items
+     */
     private ArrayList<ConcernedItem> concernedItems;
     
-    // dateTime 
+    /**
+     * DateTime
+     */
     private DateTime dateTime;
     
-    // annotations 
+    /**
+     * Annotations 
+     */
     private ArrayList<Annotation> annotations;
 
     public Event(String uri, String type, ArrayList<ConcernedItem> concernedItems, DateTime dateTime, ArrayList<Property> properties, ArrayList<Annotation> annotations) {

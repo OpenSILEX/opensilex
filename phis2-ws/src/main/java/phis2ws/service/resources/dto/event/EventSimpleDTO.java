@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import phis2ws.service.configuration.DateFormat;
-import phis2ws.service.resources.dto.AnnotationDTO;
 import phis2ws.service.resources.dto.ConcernedItemWithLabelsDTO;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyDTO;
@@ -20,11 +19,9 @@ import phis2ws.service.utils.dates.Dates;
 import phis2ws.service.view.model.phis.ConcernedItem;
 import phis2ws.service.view.model.phis.Event;
 import phis2ws.service.view.model.phis.Property;
-import phis2ws.service.view.model.phis.Annotation;
 
 /**
- * DTO representing an event
- * 
+ * DTO representing a event with the basic information
  * @author Andréas Garcia<andreas.garcia@inra.fr>
  */
 public class EventSimpleDTO extends AbstractVerifiedClass {

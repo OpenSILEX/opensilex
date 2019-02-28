@@ -5,7 +5,6 @@
 // Creation date: Aug 2016
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //***********************************************************************************************
-
 package phis2ws.service.dao.manager;
 
 import java.util.List;
@@ -61,12 +60,12 @@ public abstract class DAOSesame<T> {
     final static Logger LOGGER = LoggerFactory.getLogger(DAOSesame.class);
     protected static final String PROPERTY_FILENAME = "sesame_rdf_config";
     //SILEX:test
-    // Pour le soucis de pool de connexion plein
+    // For the full connection pool issue
     protected static final String SESAME_SERVER = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
     protected static final String REPOSITORY_ID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "repositoryID");
     //\SILEX:test
 
-    //used for logger
+    // used for logger
     protected static final String SPARQL_SELECT_QUERY = "SPARQL query : ";
     
     protected static final String COUNT_ELEMENT_QUERY = "count";
@@ -93,7 +92,7 @@ public abstract class DAOSesame<T> {
     
     protected final String DATETIMESTAMP_FORMAT_SPARQL = DateFormat.YMDTHMSZZ.toString();
     
-    //Triplestore relations
+    // Triplestore relations
     protected static final URINamespaces ONTOLOGIES = new URINamespaces();
 
     protected static Repository rep;
@@ -152,9 +151,8 @@ public abstract class DAOSesame<T> {
     }
 
     /**
-     * La page de l'api brapi commence à 0
-     *
-     * @return numéro de la page courante
+     * Brapi API page starts at 0
+     * @return current page number
      */
     public Integer getPage() {
         if (page == null || pageSize < 0) {
@@ -164,10 +162,8 @@ public abstract class DAOSesame<T> {
     }
 
     /**
-     * La page de l'api brapi pour pouvoir l'utiliser pour la pagination dans
-     * une base de données
-     *
-     * @return numéro de la page courante + 1
+     * Brapi page to be used for pagination in database
+     * @return current page number + 1
      */
     public Integer getPageForDBQuery() {
         if (page == null || pageSize < 0) {
@@ -177,8 +173,7 @@ public abstract class DAOSesame<T> {
     }
 
     /**
-     * Définit le paramètre page
-     *
+     * Page parameter
      * @param page
      */
     public void setPage(Integer page) {
@@ -189,8 +184,7 @@ public abstract class DAOSesame<T> {
     }
 
     /**
-     * Retourne le paramètre taille de la page
-     *
+     * Page size parameter
      * @return
      */
     public Integer getPageSize() {
@@ -201,8 +195,7 @@ public abstract class DAOSesame<T> {
     }
 
     /**
-     * Définit le paramètre taille de page
-     *
+     * Set page size parameter
      * @param pageSize
      */
     public void setPageSize(Integer pageSize) {
@@ -210,8 +203,7 @@ public abstract class DAOSesame<T> {
     }
 
     /**
-     * Méthode de test d'existence d'un sujet par triplet
-     *
+     * Existence test method of a subject by triplet
      * @param subject
      * @param predicate
      * @param object
@@ -272,8 +264,7 @@ public abstract class DAOSesame<T> {
     }
 
     /**
-     * Méthode de récupération d'élement d'existence par triplet
-     *
+     * Existence element recovery method by triplet
      * @param subject
      * @param predicate
      * @return
@@ -301,9 +292,7 @@ public abstract class DAOSesame<T> {
     }
 
     /**
-     * Fonction qui permet de créer la partie commune d'une requête à la fois
-     * pour lister les éléments et les récupérés
-     *
+     * Create the base of a query to list and recover elements
      * @return SPARQLQueryBuilder
      */
     abstract protected SPARQLQueryBuilder prepareSearchQuery();
@@ -368,15 +357,13 @@ public abstract class DAOSesame<T> {
     }
 
     /**
-     * Compte le nombre d'élement retournés par la requête
-     *
+     * Count the number of elements returned by the execution of a query
      * @return Integer
      */
     public abstract Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException;
 
     /**
-     *
-     * @return Les logs qui seront utilisés pour la traçabilité
+     * @return logs for traceability
      */
     protected String getTraceabilityLogs() {
         String log = "";
@@ -390,12 +377,11 @@ public abstract class DAOSesame<T> {
     }
 
     /**
-     * Définit un objet utilisateur à partir d'un identifiant
-     *
-     * @param id identifiant
+     * Define of user object from an id
+     * @param id
      */
     public void setUser(String id) {
-//        LOGGER.debug(JsonConverter.ConvertToJson(TokenManager.Instance().getSession(id).getUser()));
+        // LOGGER.debug(JsonConverter.ConvertToJson(TokenManager.Instance().getSession(id).getUser()));
         if (TokenManager.Instance().getSession(id).getUser() == null) {
             throw new WebApplicationException(Response.status(Response.Status.UNAUTHORIZED).build());
         } else {

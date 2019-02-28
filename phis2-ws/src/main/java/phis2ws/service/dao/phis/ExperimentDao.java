@@ -1,11 +1,10 @@
-//**********************************************************************************************
-//                                       ExperimentDao.java 
+//******************************************************************************
+//                            ExperimentDao.java 
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: January 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-//***********************************************************************************************
-
+//******************************************************************************
 package phis2ws.service.dao.phis;
 
 import java.sql.Connection;
@@ -44,6 +43,11 @@ import phis2ws.service.view.model.phis.Experiment;
 
 /**
  * DAO for the experiments in the relational database. It allows CRUD operations.
+ * @update [Andreas Garcia] 14 Feb. 2019: update the method that returns the 
+ * total number of experiment by making it return the last experiment URI 
+ * because the experiment URI generator now use the last inserted experiment
+ * number (instead of total number of experiment) to calculate a new 
+ * experiment's number
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
@@ -51,37 +55,70 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
     final static Logger LOGGER = LoggerFactory.getLogger(ExperimentDao.class);
     
     //Search parameters :
-    //The uri of an experiment.
-    //e.g. http://www.phenome-fppn.fr/diaphen/DIA2017-1
+     
+    /** 
+     * The uri of an experiment.
+     * @example http://www.phenome-fppn.fr/diaphen/DIA2017-1
+     */
     public String uri;
-    //The project uri related to an experiment.
+    
+    /**
+     * The project uri related to an experiment.
+     */
     public String projectUri;
-    //The start date of an experiment
-    //e.g. 2018-01-15
+    
+    /**
+     * The start date of an experiment
+     * @example 2018-01-15
+     */
     public String startDate;
-    //The end date of an experiment
-    //e.g. 2018-08-02
+    
+    /**
+     * The end date of an experiment
+     * @example 2018-08-02
+     */
     public String endDate;
-    //The field of an experiment
-    //e.g. field003
+    
+    /**
+     * The field of an experiment
+     * @example field003
+     */
     public String field;
-    //The campaign of an experiment
-    //e.g. 2017
+    
+    /**
+     * The campaign of an experiment
+     * @example 2017
+     */
     public String campaign;
-    //The place of an experiment
-    //e.g. Madone
+    
+    /**
+     * The place of an experiment
+     * @example Madone
+     */
     public String place;
-    //The alias of the experiment
-    //e.g. exp-16-03
+    
+    /**
+     * The alias of the experiment
+     * @example exp-16-03
+     */
     public String alias;
-    //The keywords of the experiment
-    //e.g. maize, phenotyping
+    
+    /**
+     * The keywords of the experiment
+     * @example maize, phenotyping
+     */
     public String keyword;
-    //The groups uris that can access an experiment
-    //e.g. http://www.phenome-fppn.fr/diaphen/DROPS,http://www.phenome-fppn.fr/diaphen/MISTEAGAMMA
+    
+    /**
+     * The groups uris that can access an experiment
+     * @example http://www.phenome-fppn.fr/diaphen/DROPS,http://www.phenome-fppn.fr/diaphen/MISTEAGAMMA
+     */
     public String groups;
-    //The crop species of an experiment
-    //e.g. Maize, Wheat
+    
+    /**
+     * The crop species of an experiment
+     * @example Maize, Wheat
+     */
     public String cropSpecies;
     
     public ExperimentDao() {
@@ -157,10 +194,9 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
     }
     
     /**
-     * Get the list of the experiments, with only the minimal informations 
+     * Get the list of the experiments, with only the minimal information 
      * required to generate the lists for 4P acquisition session files. 
-     * Returned informations for each experiment : 
-     *  alias, uri, species
+     * Returned informations for each experiment : alias, uri, species
      * @see AcquisitionSessionResourceService
      * @return the list of the experiments founded in the database
      */
@@ -224,7 +260,9 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
             statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
             SQLQueryBuilder query = new SQLQueryBuilder();
             
-            //Ajout des conditions dans la requête
+            Map<String, String> sqlFields = relationFieldsJavaSQLObject();
+           
+            // Add conditions in query
             query.appendFrom(table, tableAlias);
             addFilters(query);
             
@@ -256,7 +294,7 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
                 experiment.setGroupList(this.getExperimentGroups(experiment));
             }
             
-            //Get experiments variables
+            // Get experiments variables
             ExperimentDAOSesame experimentDAOSesame = new ExperimentDAOSesame();
             for (Experiment experiment : experiments) {
                 HashMap<String, String> variables = experimentDAOSesame.getVariables(experiment.getUri());
@@ -287,9 +325,11 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
     
     /**
      * 
-     * @param experiments ArrayList<Experiment> liste des expérimentations pour lesquels on veut aussi avoir la liste des projets
+     * @param experiments ArrayList<Experiment> list of experiments for which 
+     * the list of projects is also needed
      * @param statement Statement
-     * @return la liste envoyée en paramètre contenant en plus pour chaque expérimentation la liste de ses projets
+     * @return the list given in parameter with the project list for each
+     * experiment
      * @throws SQLException 
      */
     private ArrayList<Experiment> getExperimentsProjects(ArrayList<Experiment> experiments, Statement statement) throws SQLException {
@@ -312,8 +352,8 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
     
     /**
      * @param statement Statement
-     * @param experiments ArrayList<Experiment> liste des expérimentations pour lesquels on veut aussi avoir la liste des contacts
-     * @return la liste envoyée en paramètre contenant en plus pour chaque expérimentation la liste de ses contacts
+     * @param experiments ArrayList<Experiment> experiment list
+     * @return the experiment list with the contact list for each experiment
      */
     private ArrayList<Experiment> getExperimentsContacts(ArrayList<Experiment> experiments, Statement statement) throws SQLException {
         for (Experiment experiment : experiments) {
@@ -410,12 +450,12 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
 
     @Override
     protected Experiment compareAndMergeObjects(Experiment fromDB, Experiment object) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     protected SQLQueryBuilder prepareSearchQuery() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     private POSTResultsReturn checkAndInsertExperimentList(List<ExperimentPostDTO> newExperiments) throws SQLException, Exception {
@@ -440,32 +480,32 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
             PreparedStatement insertPreparedStatementAtExperimentUsers = null;
             
             final String insertGabExperiment = "INSERT INTO \"trial\""
-                                    + "(\"uri\", \"start_date\", \"end_date\", \"field\","
-                                    + "\"campaign\", \"place\", \"alias\", \"comment\", \"keywords\","
-                                    + " \"objective\", \"crop_species\")"
-                                    + " VALUES (?, to_date(?, 'YYYY-MM-DD'), to_date(?, 'YYYY-MM-DD'), ?, ?, ?, ?, ?, ?, ?, ?)";
+                + "(\"uri\", \"start_date\", \"end_date\", \"field\","
+                + "\"campaign\", \"place\", \"alias\", \"comment\", \"keywords\","
+                + " \"objective\", \"crop_species\")"
+                + " VALUES (?, to_date(?, 'YYYY-MM-DD'), to_date(?, 'YYYY-MM-DD'), ?, ?, ?, ?, ?, ?, ?, ?)";
             
             final String insertGabAtExperimentProject = "INSERT INTO \"at_trial_project\""
-                                    + "(\"project_uri\", \"trial_uri\")"
-                                    + " VALUES (?, ?)";
+                + "(\"project_uri\", \"trial_uri\")"
+                + " VALUES (?, ?)";
             
             final String insertGabAtExperimentGroup = "INSERT INTO \"at_group_trial\""
-                                    + "(\"group_uri\", \"trial_uri\")"
-                                    + " VALUES (?, ?)";
+                + "(\"group_uri\", \"trial_uri\")"
+                + " VALUES (?, ?)";
             final String insertGabAtExperimentUsers = "INSERT INTO \"at_trial_users\""
-                    + "(\"trial_uri\", \"users_email\", \"type\")"
-                    + " VALUES (?, ?, ?)";
+                + "(\"trial_uri\", \"users_email\", \"type\")"
+                + " VALUES (?, ?, ?)";
             
             Connection con = null;
             int inserted = 0;
             int exists = 0;
             
             try {
-                //batch
+                // batch
                 boolean insertionLeft = true;
                 int count = 0;
                 
-                //connexion + préparation de la transaction
+                // connection + transaction preparation
                 con = dataSource.getConnection();
                 con.setAutoCommit(false);
                 
@@ -492,7 +532,7 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
                         insertPreparedStatementExperiments.setString(10, experiment.getObjective());
                         insertPreparedStatementExperiments.setString(11, experiment.getCropSpecies());
                         
-                        //ajout dans les logs de qui a fait quoi (traçabilité)
+                        // Log operating user with its IP
                         String log = "";
                         if (remoteUserAdress != null) {
                             log += "IP Address " + remoteUserAdress + " - ";
@@ -501,32 +541,33 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
                             log += "User : " + user.getEmail() + " - ";
                         }
                        
+                        LOGGER.debug(log + " query : " + insertPreparedStatementExperiments.toString());
                         insertPreparedStatementExperiments.execute();
                         createdResourcesURIs.add(experiment.getUri());
                         
-                        //Ajout dans at_trial_project des projets auxquels l'essai appartient
+                        // Insert the trial project link
                         for (Project project : experiment.getProjects()) {
                             insertPreparedStatementAtExperimentProject.setString(1, project.getUri());
                             insertPreparedStatementAtExperimentProject.setString(2, experiment.getUri());
-                            LOGGER.debug(log + " quert : " + insertPreparedStatementAtExperimentProject.toString());
+                            LOGGER.debug(log + " query : " + insertPreparedStatementAtExperimentProject.toString());
                             insertPreparedStatementAtExperimentProject.execute();
                         }
                         
-                        //Ajout dans at_group_trial des groupes auxquels l'essai appartient
+                        // Insert the trial group link
                         for (Group group : experiment.getGroups()) {
                             insertPreparedStatementAtGroupExperiment.setString(1, group.getUri());
                             insertPreparedStatementAtGroupExperiment.setString(2, experiment.getUri());
-                            LOGGER.debug(log + " quert : " + insertPreparedStatementAtExperimentProject.toString());
+                            LOGGER.debug(log + " query : " + insertPreparedStatementAtExperimentProject.toString());
                             insertPreparedStatementAtGroupExperiment.execute();
                         }
                         
-                        //Ajout dans at_trial_users des contacts 
+                        // Insert link between the trial and the contact user
                         for (Contact contact : experiment.getContacts()) {
                             insertPreparedStatementAtExperimentUsers.setString(1, experiment.getUri());
                             insertPreparedStatementAtExperimentUsers.setString(2, contact.getEmail());
                             insertPreparedStatementAtExperimentUsers.setString(3, contact.getType());
                             insertPreparedStatementAtExperimentUsers.execute();
-                            LOGGER.debug(log + " quert : " + insertPreparedStatementAtExperimentUsers.toString());
+                            LOGGER.debug(log + " query : " + insertPreparedStatementAtExperimentUsers.toString());
                         }
                         
                         inserted++;
@@ -534,7 +575,7 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
                         exists++;
                     }
                     
-                    //Insertion par batch
+                    // Batch insertion
                     if (++count % batchSize == 0) {
                         insertPreparedStatementExperiments.executeBatch();
                         insertPreparedStatementAtExperimentProject.executeBatch();
@@ -553,19 +594,17 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
                 
                 con.commit(); //Envoi des données ds bd
                 
-////////////////////
-    //ATTENTION, vérifications à re regarder et re vérifier
-//////////////////
-                //Si data insérées et existantes
+// WARNING, checking to re-check
+                // If data inserted and existing
                 if (exists > 0 && inserted > 0) {
                     results = new POSTResultsReturn(resultState, insertionState, dataState);
                     insertStatusList.add(new Status("Already existing data", StatusCodeMsg.INFO, "All experiments already exist"));
                     results.setHttpStatus(Response.Status.OK);
                     results.statusList = insertStatusList;
                 } else {
-                    if (exists > 0) { //Si données existantes et aucunes insérées
+                    if (exists > 0) { // If existing data and non onserted
                         insertStatusList.add(new Status ("Already existing data", StatusCodeMsg.INFO, String.valueOf(exists) + " experiment already exists"));
-                    } else { //Si données qui n'existent pas et donc sont insérées
+                    } else { // If non existing data and inserted
                         insertStatusList.add(new Status("Data inserted", StatusCodeMsg.INFO, String.valueOf(inserted) + " experiments inserted"));
                     }
                 }
@@ -575,7 +614,7 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
             } catch (SQLException e) {
                 LOGGER.error(e.getMessage(), e);
                 
-                //Rollback
+                // Rollback
                 if (con != null) {
                     con.rollback();
                 }
@@ -614,8 +653,8 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
     }
     
     /**
-     * Vérifie tous les experimentations et les insère dans la BD Postgres
-     * @param newObjects liste des expérimentations
+     * Check experiments and store them
+     * @param newObjects experiment list
      * @return
      */
     public POSTResultsReturn checkAndInsertExperimentsList(List<ExperimentPostDTO> newObjects) {
@@ -634,13 +673,12 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
 
     @Override
     public POSTResultsReturn checkAndInsert(ExperimentDTO newObject) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }  
     
     /**
-     * 
      * @param experiment Experiment
-     * @return la liste des groupes ayant accès à l'expérimentation (lite des noms de groupes)
+     * @return the group list having access to the experiment (groups names list)
      * @throws java.sql.SQLException
      */
     public ArrayList<Group> getExperimentGroups(Experiment experiment) throws SQLException {
@@ -651,7 +689,7 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
         
         try {
             if (this.existInDB(experiment)) {
-                //Récupération des groupes dans les tables at_group_trial et group
+                // Get groups from at_group_trial and group tables 
                 SQLQueryBuilder query = new SQLQueryBuilder();
                 query.appendSelect("gp.uri, gp.level, gp.name");
                 query.appendFrom("at_group_trial", "gt");
@@ -690,7 +728,10 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
      * 
      * @param u User 
      * @param experiment Experiment
-     * @return true si l'utilisateur fait partie d'un des groupes ayant accès à l'experimentation, false sinon
+     * @return 
+     *  true if the user belongs to a group having access to the 
+     * experiment
+     *  false otherwise
      */
     public boolean canUserSeeExperiment(User u, Experiment experiment) {
         try {
@@ -720,9 +761,9 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
     /**
      * 
      * @param experiment
-     * @return boolean true si l'utilisateur peut modifier l'essai 
-     *                      (administrateur ou membre d'un groupe propriétaire de la donnée)
-     *                 false sinon
+     * @return boolean true if the user can modify the experiment (admin or 
+     * member of a data owner group)
+     *                 false otherwise
      * @throws SQLException 
      */
     private boolean canUserUpdateExperiment(Experiment experiment) throws SQLException {
@@ -751,8 +792,8 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
     
     /**
      * 
-     * @param updateExperiments List<ExperimentDTO> liste des expérimentations à modifier
-     * @return POSTResultReturn, le resultat des updates
+     * @param updateExperiments List<ExperimentDTO> experiments to modify
+     * @return POSTResultReturn, updates result
      */
     private POSTResultsReturn checkAndUpdateExperimentList(List<ExperimentDTO> updateExperiments) throws SQLException, Exception {
         //init result returned maps
@@ -764,8 +805,8 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
         
         String log = getTraceabilityLogs();
         
-        //1. On récupère la liste des expérimentations et on vérifie qu'ils existent bien en BD
-        //   et que l'utilisateur a bien le droit de les modifier 
+        //1. get experiments list and check that they exist in storage and that
+        //   the user has the right to modify them
         if (updateExperiments != null && !updateExperiments.isEmpty()) {
             for (ExperimentDTO experimentDTO : updateExperiments) {
                 Experiment experiment = experimentDTO.createObjectFromDTO();
@@ -778,7 +819,7 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
             }
         }
         
-        //2. Modification de la BD en fonction des données envoyées
+        //2. Storage modification accorgin to the data sent
         if (allExperimentsAlreadyInDB) {
             PreparedStatement updatePreparedStatementExperiment = null;
             PreparedStatement deletePreparedStatementProject = null;
@@ -790,10 +831,10 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
             Connection connection = null;
             
             final String updateExperiment = "UPDATE \"trial\" SET \"start_date\" = to_date(?, 'YYYY:MM:DD'), \"end_date\" = to_date(?, 'YYYY:MM:DD'),"
-                    + " \"field\" = ?,"
-                    + "\"place\" = ?, \"alias\" = ?, \"comment\" = ?, \"keywords\" = ?, \"objective\" = ?,"
-                    + "\"crop_species\" = ? "
-                    + "WHERE \"uri\" = ?";
+                + " \"field\" = ?,"
+                + "\"place\" = ?, \"alias\" = ?, \"comment\" = ?, \"keywords\" = ?, \"objective\" = ?,"
+                + "\"crop_species\" = ? "
+                + "WHERE \"uri\" = ?";
             final String deleteProject = "DELETE FROM \"at_trial_project\" WHERE \"trial_uri\" = ?";
             final String insertProject = "INSERT INTO \"at_trial_project\" (\"trial_uri\", \"project_uri\") VALUES (?, ?)";
             final String deleteGroup = "DELETE FROM \"at_group_trial\" WHERE \"trial_uri\" = ?";
@@ -806,7 +847,7 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
                 int count = 0;
                 boolean insertionLeft = true;
                 
-                //Connection + préparation de la transaction
+                //Connection + transaction preparation
                 connection = dataSource.getConnection();
                 connection.setAutoCommit(false);
                 
@@ -819,7 +860,7 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
                 insertPreparedStatementContact = connection.prepareStatement(insertContact);
                 
                 for (Experiment experiment : experiments) {
-                    //Update des données de la table trial
+                    //Update of experiments
                     updatePreparedStatementExperiment.setString(1, experiment.getStartDate());
                     updatePreparedStatementExperiment.setString(2, experiment.getEndDate());
                     updatePreparedStatementExperiment.setString(3, experiment.getField());
@@ -830,57 +871,56 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
                     updatePreparedStatementExperiment.setString(8, experiment.getObjective());
                     updatePreparedStatementExperiment.setString(9, experiment.getCropSpecies());
                     updatePreparedStatementExperiment.setString(10, experiment.getUri());
-                    LOGGER.debug(log + " quert : " + updatePreparedStatementExperiment.toString());
+                    LOGGER.debug(log + " query : " + updatePreparedStatementExperiment.toString());
                     updatePreparedStatementExperiment.execute();
                     
-                    
-                    //Delete des Projets
+                    //Delete of projects
                     deletePreparedStatementProject.setString(1, experiment.getUri());
                     deletePreparedStatementProject.execute();
-                    LOGGER.debug(log + " quert : " + deletePreparedStatementProject.toString());
+                    LOGGER.debug(log + " query : " + deletePreparedStatementProject.toString());
                     
-                    //Insert des projets
+                    //Insert of projects
                     if (experiment.getProjects() != null && !experiment.getProjects().isEmpty()) {
                         for (Project project : experiment.getProjects()) {
                             insertPreparedStatementProject.setString(1, experiment.getUri());
                             insertPreparedStatementProject.setString(2, project.getUri());
                             insertPreparedStatementProject.execute();
-                            LOGGER.debug(log + " quert : " + insertPreparedStatementProject);
+                            LOGGER.debug(log + " query : " + insertPreparedStatementProject);
                         }
                     }
                     
-                    //Delete des groups 
+                    //Delete of groups
                     deletePreparedStatementGroup.setString(1, experiment.getUri());
                     deletePreparedStatementGroup.execute();
-                    LOGGER.debug(log + " quert : " + deletePreparedStatementGroup.toString());
+                    LOGGER.debug(log + " query : " + deletePreparedStatementGroup.toString());
                     
-                    //Insert des groupes
+                    //Insert of groups
                     if (experiment.getGroups() != null && !experiment.getGroups().isEmpty()) {
                         for (Group group : experiment.getGroups()) {
                             insertPreparedStatementGroup.setString(1, experiment.getUri());
                             insertPreparedStatementGroup.setString(2, group.getUri());
                             insertPreparedStatementGroup.execute();
-                            LOGGER.debug(log + " quert : " + insertPreparedStatementGroup.toString());
+                            LOGGER.debug(log + " query : " + insertPreparedStatementGroup.toString());
                         }
                     }
                     
-                    //Delete des contacts
+                    //Delete of contacts
                     deletePreparedStatementContact.setString(1, experiment.getUri());
                     deletePreparedStatementContact.execute();
-                    LOGGER.debug(log + " quert : " + deletePreparedStatementContact.toString());
+                    LOGGER.debug(log + " query : " + deletePreparedStatementContact.toString());
                     
-                    //Insert des contacts
+                    //Insert of contacts
                     if (experiment.getContacts() != null && !experiment.getContacts().isEmpty()) {
                         for (Contact contact : experiment.getContacts()) {
                             insertPreparedStatementContact.setString(1, experiment.getUri());
                             insertPreparedStatementContact.setString(2, contact.getEmail());
                             insertPreparedStatementContact.setString(3, contact.getType());
                             insertPreparedStatementContact.execute();
-                            LOGGER.debug(log + " quert : " + insertPreparedStatementContact.toString());
+                            LOGGER.debug(log + " query : " + insertPreparedStatementContact.toString());
                         }
                     }
                     
-                    //Insertion par batch
+                    //Insertion by batch
                     if (++count % batchSize == 0) {
                         updatePreparedStatementExperiment.executeBatch();
                         deletePreparedStatementProject.executeBatch();
@@ -902,14 +942,14 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
                     insertPreparedStatementContact.executeBatch();
                 }
                 
-                connection.commit(); //Envoi des données à la BD
+                connection.commit(); // Send data to storage
                 
                 insertStatusList.add(new Status("Data updated", StatusCodeMsg.INFO, "experiments updated"));
                 results = new POSTResultsReturn(true, true, allExperimentsAlreadyInDB);
             } catch (SQLException e) {
                 LOGGER.error(e.getMessage(), e);
 
-                //Rollback
+                // Rollback
                 if (connection != null) {
                     connection.rollback();
                 }
@@ -1061,7 +1101,7 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
     
     /**
      * Update the list of variables linked to the given experiment. 
-     * /!\ Prerequisite : the information must have been checked before. 
+     * /!\ Prerequisite: the information must have been checked before. 
      * @see ExperimentDao#checkLinkedVariables(java.lang.String, java.util.List)
      * @see ExperimentDAOSesame#updateLinkedVariables(java.lang.String, java.util.List) 
      * @param experimentUri
@@ -1075,7 +1115,7 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
     
     /**
      * Update the list of sensors linked to the given experiment. 
-     * /!\ Prerequisite : the information must have been checked before. 
+     * /!\ Prerequisite: the information must have been checked before. 
      * @see ExperimentDao#checkLinkedSensors(java.lang.String, java.util.List)
      * @see ExperimentDAOSesame#updateLinkedSensors(java.lang.String, java.util.List)
      * @param experimentUri
@@ -1097,7 +1137,7 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
         POSTResultsReturn checkResult = checkLinkedVariables(experimentUri, variables);
         if (checkResult.getDataState()) {
              return updateLinkedVariables(experimentUri, variables);
-        } else { //Error in the data
+        } else { // Error in the data
             return checkResult;
         }
     }
@@ -1112,7 +1152,7 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
        POSTResultsReturn checkResult = checkLinkedSensors(experimentUri, sensors);
         if (checkResult.getDataState()) {
              return updateLinkedSensors(experimentUri, sensors);
-        } else { //Error in the data
+        } else { // Error in the data
             return checkResult;
         } 
     }
@@ -1123,17 +1163,17 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
     }
     
     /**
-     * Get the number of experiments existing in the database for the given campaign.
+     * Get the campaign last experiment URI
      * @example
      *  SELECT count(e.uri)
      *  FROM experiment e
      *  WHERE e.campaign="2019"
      * @param campaign
-     * @return the number of experiments for the given campaign
+     * @return the campaign last experiment URI
      */
-    public Integer getNumberOfExperimentsByCampaign(String campaign) {
+    public String getCampaignLastExperimentUri(String campaign) {
         SQLQueryBuilder query = new SQLQueryBuilder();
-        query.appendCount();
+        query.appendMax();
         query.appendDistinct();
         query.appendSelect(tableAlias + ".uri");
         query.appendFrom(table, tableAlias);
@@ -1146,12 +1186,13 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
         try {
             connection = dataSource.getConnection();
             statement = connection.createStatement();
+            LOGGER.debug("query: " + query.toString());
             resultSet = statement.executeQuery(query.toString());
 
             if (resultSet.next()) {
-                return resultSet.getInt(1);
+                return resultSet.getString(1);
             } else {
-                return 0;
+                return null;
             }
         } catch (SQLException e) {
             LOGGER.error(e.getMessage(), e);

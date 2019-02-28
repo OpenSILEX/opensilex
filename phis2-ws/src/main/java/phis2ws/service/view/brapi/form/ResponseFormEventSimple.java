@@ -14,7 +14,7 @@ import phis2ws.service.view.brapi.results.ResultEventSimple;
 import phis2ws.service.view.manager.ResultForm;
 
 /**
- * Do formatting of the result of a request of a Event
+ * Do formatting of the result of a request of a Event with basic information
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
 public class ResponseFormEventSimple extends ResultForm {

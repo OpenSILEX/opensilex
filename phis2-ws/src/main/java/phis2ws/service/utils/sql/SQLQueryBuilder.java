@@ -1,29 +1,27 @@
-//**********************************************************************************************
-//                                       SQLQueryBuilder.java 
-//
-// Author(s): Arnaud Charleroy, Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2016
+//******************************************************************************
+//                              SQLQueryBuilder.java 
+// SILEX-PHIS
+// Copyright © INRA 2016
 // Creation date: may 2016
-// Contact:arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  February, 2017
-// Subject: A class which permit to build a SQL query
-//***********************************************************************************************
+// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package phis2ws.service.utils.sql;
 
 import java.util.Iterator;
 import java.util.List;
 
 /**
- * Classe concrète qui permet de créer des requêtes de recherche en SQL
- *
- * @author Arnaud Charleroy, Morgane Vidal
+ * Provide SQL query building
+ * @update [Andréas Garcia] 28 Feb., 2019: Add max clause handling
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class SQLQueryBuilder {
 
     public static final String CONTAINS_OPERATOR = "CONTAINS_OPERATOR";
     
     private boolean count = false;
+    private boolean max = false;
     private boolean distinct = false;
     private String attributes = null;
     public String from;
@@ -32,7 +30,6 @@ public class SQLQueryBuilder {
     public String orderBy;
     public String limit;
     public String offset;
-//    public static JoinAttributes JoinAttributes = new JoinAttributes(;
 
     public SQLQueryBuilder() {
         where = "";
@@ -43,9 +40,6 @@ public class SQLQueryBuilder {
         offset = "";
     }
 
-//    public JoinAttributes getJoinAttributes(){
-//        return JoinAttributes;
-//    }
     public void appendOrderBy(String valuesList, String order) {
         if (valuesList != null) {
             orderBy += "\n" + valuesList + "\n";
@@ -57,6 +51,10 @@ public class SQLQueryBuilder {
 
     public void appendCount() {
         count = true;
+    }
+
+    public void appendMax() {
+        max = true;
     }
 
     public void appendDistinct() {
@@ -71,6 +69,10 @@ public class SQLQueryBuilder {
         count = false;
     }
 
+    public void removeMax() {
+        max = false;
+    }
+
     public void addAND() {
         where += " AND ";
     }
@@ -80,8 +82,7 @@ public class SQLQueryBuilder {
     }
 
     /**
-     * Ajout du sélect
-     *
+     * SELECT adding
      * @param values
      */
     public void appendSelect(String values) {
@@ -112,8 +113,7 @@ public class SQLQueryBuilder {
     }
 
     /**
-     * Ajout du from
-     *
+     * FROM adding
      * @param table
      * @param alias
      */
@@ -239,26 +239,27 @@ public void appendORWhereConditions(String attribute, String value, String opera
     }
     
     /**
-     * @action ajoute la condition where (or) si la valeur à tester n'est pas nulle
-     * @param attribute le nom de l'attribut qui sera testé
-     * @param value la valeur de l'attribut à tester
-     * @param operator l'opérateur de comparaison
+     * @action Add WHERE (OR) condition if the value to test is not null
+     * @param attribute attribute name to test
+     * @param value attribute value to test
+     * @param operator comparison operator
      * @param type
      * @param tableAlias
-     * @author Morgane Vidal, le 31 août 2017
+     * @author Morgane Vidal: 31 Aug., 2017
      */
     public void appendORWhereConditionIfNeeded(String attribute, String value, String operator, String  type, String tableAlias) {
         if (value != null) {
             appendORWhereConditions(attribute, value, operator, type, tableAlias);
         }
     }
+    
     /**
-     * @action ajoute la condition where (and) si la valeur à tester n'est pas nulle
-     * @param attribute le nom de l'attribut qui sera testé
-     * @param value la valeur de l'attribut à tester
-     * @param operator l'opérateur de comparaison
+     * @action Add WHERE (AND) cp,dition if the value to test is not null
+     * @param attribute attribute name to test
+     * @param value attribute value to test
+     * @param operator comparison operator
      * @param type
-     * @param tableAlias 
+     * @param tableAlias
      * @author Morgane Vidal, le 21 février 2017
      *
      */
@@ -269,9 +270,9 @@ public void appendORWhereConditions(String attribute, String value, String opera
     }
     
     /**
-     * ajoute un limit à la requête
-     * @author Morgane Vidal, 21 février 2017
-     * @param limit valeur de la limitation
+     * Add a LIMIT clause to the query
+     * @author Morgane Vidal, 21 Feb., 2017
+     * @param limit limit value
      */
     public void appendLimit(String limit) {
         this.limit += limit;
@@ -329,7 +330,10 @@ public void appendORWhereConditions(String attribute, String value, String opera
     public String toString() {
         String query = "";
         if (attributes != null && attributes.length() > 0) {
-            if (count) {
+            if (max) {
+                query += "SELECT max(" + attributes + ") ";
+            }
+            else if (count) {
                 if (distinct) {
                     query += "SELECT DISTINCT count(" + attributes + ") ";
                 } else {

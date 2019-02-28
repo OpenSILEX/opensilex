@@ -1,9 +1,9 @@
 //******************************************************************************
-//                                       Annotation.java
+//                            Annotation.java
 // SILEX PHIS
 // Copyright © INRA 2018
 // Creation date: 14 juin 2018
-// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr// Subject: Represents an annotation
+// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package phis2ws.service.view.model.phis;
 
@@ -11,14 +11,14 @@ import java.util.ArrayList;
 import org.joda.time.DateTime;
 
 /**
- * Represents an annotation
+ * Represent an annotation
  * @update [Andréas Garcia] 15 Feb., 2019: Improve coding style
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class Annotation {
 
     /**
-     * Uri of this annotation
+     * Uri of the annotation
      * @example http://www.phenome-fppn.fr/platform/id/annotation/8247af37-769c-495b-8e7e-78b1141176c2
      */
     private String uri;
@@ -30,25 +30,25 @@ public class Annotation {
     private DateTime created;
 
     /** 
-     * Creator of this annotations
+     * Creator of the annotations
      * @example http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy
      */
      private String creator;
 
     /** 
-     * Comments that describe this annotation
+     * Comments that describe the annotation
      * @example Ustilago maydis infection
      */
     private ArrayList<String> bodyValues;
 
     /**
-     * Motivation instance uri that describe the purpose of this annotation
+     * Motivation instance uri that describe the purpose of the annotation
      * @example http://www.w3.org/ns/oa#commenting
      */
     private String motivatedBy;
 
     /**
-     * uris that are annoted by this annotation
+     * Uris that are annoted by the annotation
      * @example http://www.phenome-fppn.fr/diaphen/2017/o1032481
      */
     private ArrayList<String> targets;

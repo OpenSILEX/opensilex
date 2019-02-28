@@ -43,6 +43,11 @@ import phis2ws.service.view.model.phis.Experiment;
 
 /**
  * DAO for the experiments in the relational database. It allows CRUD operations.
+ * @update [Andreas Garcia] 14 Feb. 2019: update the method that returns the 
+ * total number of experiment by making it return the last experiment URI 
+ * because the experiment URI generator now use the last inserted experiment
+ * number (instead of total number of experiment) to calculate a new 
+ * experiment's number
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
@@ -1152,17 +1157,17 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
     }
     
     /**
-     * Get the number of experiments existing in the database for the given campaign.
+     * Get the campaign last experiment URI
      * @example
      *  SELECT count(e.uri)
      *  FROM experiment e
      *  WHERE e.campaign="2019"
      * @param campaign
-     * @return the number of experiments for the given campaign
+     * @return the campaign last experiment URI
      */
-    public Integer getNumberOfExperimentsByCampaign(String campaign) {
+    public String getCampaignLastExperimentUri(String campaign) {
         SQLQueryBuilder query = new SQLQueryBuilder();
-        query.appendCount();
+        query.appendMax();
         query.appendDistinct();
         query.appendSelect(tableAlias + ".uri");
         query.appendFrom(table, tableAlias);
@@ -1175,12 +1180,13 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
         try {
             connection = dataSource.getConnection();
             statement = connection.createStatement();
+            LOGGER.debug("query: " + query.toString());
             resultSet = statement.executeQuery(query.toString());
 
             if (resultSet.next()) {
-                return resultSet.getInt(1);
+                return resultSet.getString(1);
             } else {
-                return 0;
+                return null;
             }
         } catch (SQLException e) {
             LOGGER.error(e.getMessage(), e);

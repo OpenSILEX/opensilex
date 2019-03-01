@@ -23,6 +23,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.glassfish.hk2.api.IterableProvider;
+import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
@@ -33,7 +34,7 @@ import phis2ws.service.view.model.phis.Call;
 
 @Api("/brapi/v1/calls")
 @Path("/brapi/v1/calls")
-
+@Service
 /**
  * Calls service
  * @see https://brapi.docs.apiary.io/#reference/calls/call-search

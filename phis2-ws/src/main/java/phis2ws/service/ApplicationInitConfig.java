@@ -77,13 +77,7 @@ public class ApplicationInitConfig extends ResourceConfig {
                 bind(SessionInjectResolver.class)
                         .to(new TypeLiteral<InjectionResolver<SessionInject>>() {
                         })
-                        .in(Singleton.class); 
-                //Brapi services injection
-                bind(CallsResourceService.class).to(BrapiCall.class);
-                bind(TokenResourceService.class).to(BrapiCall.class);
-                bind(StudyResourceService.class).to(BrapiCall.class);
-                bind(TraitsResourceService.class).to(BrapiCall.class);
-                bind(VariableResourceService.class).to(BrapiCall.class);
+                        .in(Singleton.class);
             }
         });
     }

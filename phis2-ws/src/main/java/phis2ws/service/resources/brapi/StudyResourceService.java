@@ -45,6 +45,10 @@ import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.BrapiMultiResponseForm;
 import phis2ws.service.view.brapi.form.BrapiSingleResponseForm;
+import phis2ws.service.view.model.phis.BrapiMethod;
+import phis2ws.service.view.model.phis.BrapiScale;
+import phis2ws.service.view.model.phis.BrapiVariable;
+import phis2ws.service.view.model.phis.BrapiVariableTrait;
 import phis2ws.service.view.model.phis.Call;
 import phis2ws.service.view.model.phis.Data;
 import phis2ws.service.view.model.phis.Dataset;
@@ -83,11 +87,12 @@ public class StudyResourceService implements BrapiCall{
         ArrayList<String> callVersions = new ArrayList<>();
         callVersions.add("1.3");
         Call call1 = new Call("studies/{studyDbId}", calldatatypes, callMethods, callVersions);
-        //Call GET Study/{stuDbId}
         Call call2 = new Call("studies/{studyDbId}/observations", calldatatypes, callMethods, callVersions);
+        Call call3 = new Call("studies/{studyDbId}/observationVariables", calldatatypes, callMethods, callVersions);
         //\SILEX:info        
         calls.add(call1);
         calls.add(call2);
+        calls.add(call3);
         
         return calls;
     }
@@ -170,7 +175,7 @@ public class StudyResourceService implements BrapiCall{
         
         return getStudyData(studyDAO);
         }
-
+    
     /**
      * Retrieve one study observations
      * @param studyDbId
@@ -253,6 +258,133 @@ public class StudyResourceService implements BrapiCall{
         
         return getStudyObservations(studyDAO, variableURIs, limit, page);
     }
+    /**
+     * Retrieve all observation variables measured in the study
+     * @param studyDbId
+     * @param limit
+     * @param page
+     * @return the study observations
+     * @example
+        {
+          "metadata": {
+            "pagination": {
+              "pageSize": 1,
+              "currentPage": 1,
+              "totalCount": 2,
+              "totalPages": 2
+            },
+            "status": null,
+            "datafiles": []
+          },
+          "result": {
+            "data": [
+              {
+                "ObservationVariableDbId": "http://www.phenome-fppn.fr/platform/id/variables/v004",
+                "ObservationVariableName": "ttt_mmm_uuu",
+                "ontologyReference": null,
+                "synonyms": [],
+                "contextOfUse": [],
+                "growthStage": null,
+                "status": null,
+                "xref": null,
+                "institution": null,
+                "scientist": null,
+                "submissionTimesTamp": null,
+                "language": null,
+                "crop": null,
+                "trait": {
+                  "traitDbId": "http://www.phenome-fppn.fr/platform/id/traits/t003",
+                  "traitName": "ttt",
+                  "class": null,
+                  "description": null,
+                  "synonyms": [],
+                  "mainAbbreviation": null,
+                  "alternativeAbbreviations": [],
+                  "entity": null,
+                  "attribute": null,
+                  "status": null,
+                  "xref": null,
+                  "ontologyReference": null
+                },
+                "method": {
+                  "methodDbId": "http://www.phenome-fppn.fr/platform/id/methods/m003",
+                  "methodName": "mmm",
+                  "class": null,
+                  "description": null,
+                  "formula": null,
+                  "ontologyReference": null,
+                  "reference": null
+                },
+                "scale": {
+                  "scaleDbid": "http://www.phenome-fppn.fr/platform/id/units/u004",
+                  "scaleName": "uuu",
+                  "dataType": "Numerical",
+                  "decimalPlaces": null,
+                  "ontologyReference": null,
+                  "xref": null,
+                  "validValues": null
+                },
+                "defaultValue": null,
+                "documentationURL": null
+              }
+            ]
+          }
+        }
+     */  
+    @GET
+    @Path("{studyDbId}/observationVariables")
+    @ApiOperation(value = "List all the observation variables measured in the study.", notes = "List all the observation variables measured in the study.")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "OK", response = StudyDetails.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
+    
+    @ApiImplicitParams({
+       @ApiImplicitParam(name = "Authorization", required = true,
+                         dataType = "string", paramType = "header",
+                         value = DocumentationAnnotation.ACCES_TOKEN,
+                         example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    
+    @Produces(MediaType.APPLICATION_JSON)   
+    
+    public Response getObservations (
+        @ApiParam(value = "studyDbId", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI ) @PathParam("studyDbId") @URL @Required String studyDbId,
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
+        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
+    ) throws SQLException {               
+        
+        StudyDAO studyDAO = new StudyDAO();
+        
+        if (studyDbId != null) {
+            studyDAO.studyDbId = studyDbId;
+        }      
+        
+        studyDAO.limit=1;
+        studyDAO.user = userSession.getUser();
+        ArrayList<Status> statusList = new ArrayList<>();  
+                
+        ArrayList<BrapiObservationDTO> observationsList = getObservationsList(studyDAO, new ArrayList());
+        ArrayList<String> variableURIs = new ArrayList();
+        ArrayList<BrapiVariable> obsVariablesList = new ArrayList();
+        for (BrapiObservationDTO obs:observationsList) {  
+            if (!variableURIs.contains(obs.getObservationVariableDbId())){
+                variableURIs.add(obs.getObservationVariableDbId());
+                VariableDaoSesame varDAO = new VariableDaoSesame();
+                varDAO.uri = obs.getObservationVariableDbId();
+                BrapiVariable obsVariable = varDAO.getBrapiVarData().get(0);
+                obsVariablesList.add(obsVariable);               
+            }            
+        }
+        if (observationsList.isEmpty()) {
+            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, obsVariablesList, true);
+            return noResultFound(getResponse, statusList);
+        } else {
+            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(limit, page, obsVariablesList, false);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
+        }      
+    }
     
     private Response noResultFound(BrapiMultiResponseForm getResponse, ArrayList<Status> insertStatusList) {
         insertStatusList.add(new Status("No result", StatusCodeMsg.INFO, "no result for this query"));
@@ -276,7 +408,7 @@ public class StudyResourceService implements BrapiCall{
         StudyDetails study = studyDAO.getStudyInfo();
         if (study.getStudyDbId() == null) {
             //quick fix to manage the case where the studyDbId doesn't exist in the base
-            ArrayList<StudyDetails> nostudy= new ArrayList();
+            ArrayList<StudyDetails> nostudy = new ArrayList();
             BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, nostudy, true);
             return noResultFound(getResponse, statusList);
         } else {
@@ -291,7 +423,19 @@ public class StudyResourceService implements BrapiCall{
      * @return observations list 
      */
     private Response getStudyObservations(StudyDAO studyDAO, List<String> variableURIs, int limit, int page) {
-        ArrayList<Status> statusList = new ArrayList<>(); 
+        ArrayList<Status> statusList = new ArrayList<>();         
+        ArrayList<BrapiObservationDTO> observations = getObservationsList(studyDAO,variableURIs);
+                
+        if (observations.isEmpty()) {
+            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, observations, true);
+            return noResultFound(getResponse, statusList);
+        } else {
+            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(limit, page, observations, false);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
+        }    
+    }
+    
+    private ArrayList<BrapiObservationDTO> getObservationsList(StudyDAO studyDAO, List<String> variableURIs) {
         DatasetDAOMongo datasetDAOMongo = new DatasetDAOMongo();
         ArrayList<BrapiObservationDTO> observations = new ArrayList();
         datasetDAOMongo.experiment = studyDAO.studyDbId; 
@@ -309,14 +453,7 @@ public class StudyResourceService implements BrapiCall{
                 observations.addAll(variableURIObservations);              
             }
         }     
-        
-        if (observations.isEmpty()) {
-            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, observations, true);
-            return noResultFound(getResponse, statusList);
-        } else {
-            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(limit, page, observations, false);
-            return Response.status(Response.Status.OK).entity(getResponse).build();
-        }    
+        return observations;
     }
     
     /**
@@ -348,4 +485,5 @@ public class StudyResourceService implements BrapiCall{
         } 
         return observations;
     }
+
 }

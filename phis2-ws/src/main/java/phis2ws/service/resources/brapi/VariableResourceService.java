@@ -39,10 +39,6 @@ import phis2ws.service.view.brapi.form.BrapiMultiResponseForm;
 import phis2ws.service.view.brapi.form.BrapiSingleResponseForm;
 import phis2ws.service.view.model.phis.BrapiVariable;
 import phis2ws.service.view.model.phis.Call;
-import phis2ws.service.view.model.phis.Variable;
-import phis2ws.service.view.model.phis.BrapiVariableTrait;
-import phis2ws.service.view.model.phis.BrapiMethod;
-import phis2ws.service.view.model.phis.BrapiScale;
 
 /**
  * Variable service
@@ -234,7 +230,7 @@ public class VariableResourceService implements BrapiCall {
      */
     private Response getVariablesData(VariableDaoSesame varDAO) {
         ArrayList<Status> statusList = new ArrayList<>();
-        ArrayList<BrapiVariable> brapiVariables = getBrapiVarData(varDAO);
+        ArrayList<BrapiVariable> brapiVariables = varDAO.getBrapiVarData();
         BrapiMultiResponseForm getResponse;
         if (!brapiVariables.isEmpty()) {
             getResponse = new BrapiMultiResponseForm(varDAO.getPageSize(), varDAO.getPage(), brapiVariables, false);
@@ -252,7 +248,7 @@ public class VariableResourceService implements BrapiCall {
      */
     private Response getOneVariableData(VariableDaoSesame varDAO) {
         ArrayList<Status> statusList = new ArrayList<>();
-        ArrayList<BrapiVariable> brapiVariables = getBrapiVarData(varDAO);
+        ArrayList<BrapiVariable> brapiVariables = varDAO.getBrapiVarData();
         BrapiSingleResponseForm getResponse;
         if (!brapiVariables.isEmpty()){
             BrapiVariable variable = brapiVariables.get(0);
@@ -263,49 +259,6 @@ public class VariableResourceService implements BrapiCall {
             BrapiMultiResponseForm getNoResponse = new BrapiMultiResponseForm(0, 0, brapiVariables, true);
             return noResultFound(getNoResponse, statusList);
         }
-    }    
-    
-    /**
-     * Get the list of brapi variables from the the DAO corresponding to the user search query
-     * @param varDAO
-     * @return the list of brapi variables
-     */
-    private ArrayList<BrapiVariable> getBrapiVarData(VariableDaoSesame varDAO) {
-        ArrayList<Variable> variablesList = varDAO.allPaginate();
-        ArrayList<BrapiVariable> varList = new ArrayList();
-        for (Variable var:variablesList) {
-            BrapiVariable brapiVar = new BrapiVariable();
-            brapiVar.setObservationVariableDbId(var.getUri());
-            brapiVar.setObservationVariableName(var.getLabel());
-            brapiVar.setContextOfUse(new ArrayList());
-            brapiVar.setSynonyms(new ArrayList());
-                        
-            //trait 
-            BrapiVariableTrait trait = new BrapiVariableTrait();
-            trait.setTraitDbId(var.getTrait().getUri());
-            trait.setTraitName(var.getTrait().getLabel());
-            trait.setDescription(var.getTrait().getComment());
-            trait.setAlternativeAbbreviations(new ArrayList());
-            trait.setSynonyms(new ArrayList());
-            brapiVar.setTrait(trait);
-            
-            //method
-            BrapiMethod method = new BrapiMethod();
-            method.setMethodDbId(var.getMethod().getUri());
-            method.setMethodName(var.getMethod().getLabel());
-            method.setDescription(var.getMethod().getComment());
-            brapiVar.setMethod(method);
-            
-            //scale
-            BrapiScale scale = new BrapiScale();
-            scale.setScaleDbid(var.getUnit().getUri());
-            scale.setScaleName(var.getUnit().getLabel());
-            scale.setDataType("Numerical");
-            brapiVar.setScale(scale);
-            
-            varList.add(brapiVar); 
-        }
-        return varList;        
-    }
+    }        
     
 }

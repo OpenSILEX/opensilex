@@ -61,42 +61,12 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(AnnotationDAOSesame.class);
 
-    /**
-     * Creation date of an annotation
-     * @example 2018-08-01 09:34:50.235Z
-     * @link https://www.w3.org/TR/annotation-vocab/#dcterms-created
-     * //SILEX:todo
-     * 2018-08-01 09:34:50.235Z format must be change to xsd:DateTime 2018-08-01T09:34:50.235Z
-     * //\SILEX:todo
-     */
-    
     public static final String CREATED = "created";
-    /**
-     * Comment that describe the annotation
-     * @example Ustilago maydis infection
-     * @link https://www.w3.org/TR/annotation-model/#string-body
-     * Represents the comment aka body value of an annotation
-     */
     public static final String BODY_VALUE = "bodyValue";
     public static final String BODY_VALUES = "bodyValues";
-    
-    /** 
-     * Creator of annotations
-     * @example http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy
-     */
     public static final String CREATOR = "creator";
-    
-    /** 
-     * Uri that are annoted by one or multiple annotations
-     * @example http://www.phenome-fppn.fr/diaphen/2017/o1032481
-     */
     public static final String TARGET = "target";
     public static final String TARGETS = "targets";
-    
-    /** 
-     * Motivation instance uri that describe the purpose of the annotation
-     * @example http://www.w3.org/ns/oa#commenting
-     */
     public static final String MOTIVATED_BY = "motivatedBy";
 
     public AnnotationDAOSesame() {
@@ -397,7 +367,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
 
     /**
      * Search all the annotations corresponding to the search params given by
-     * the user (uri, creator, motivatedBy, bodyValue)
+     * the user (URI, creator, motivatedBy, bodyValue)
      * @param searchUri
      * @param searchCreator
      * @param searchTarget
@@ -427,8 +397,11 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
 
     /**
      * Get a annotation result from a given resultAnnotationUri. Assume that the
-     * following attributes exist: uri, creator, creationDate, bodyValue, target
+     * following attributes exist: URI, creator, creationDate, bodyValue, target
      * @param result a list of annotation from a search query
+     * @param searchUri search URI
+     * @param searchCreator search creator
+     * @param searchMotivatedBy search motivated by
      * @return annotations with data extracted from the given bindingSets
      */
     private ArrayList<Annotation> getAnnotationsFromResult(TupleQueryResult result, String searchUri, String searchCreator, String searchMotivatedBy) {

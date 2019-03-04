@@ -185,7 +185,71 @@ public class EventResourceService  extends ResourceService {
         }
     }
     
-    
+    /**
+     * Get an event's details
+     * @example
+     * {
+     *   "metadata": {
+     *     "pagination": null,
+     *     "status": [],
+     *     "datafiles": []
+     *   },
+     *   "result": {
+     *     "data": [
+     *       {
+     *         "annotations": [
+     *           {
+     *             "uri": "http://www.opensilex.org/andreas-dev/id/annotation/c660dab5-9d68-4df3-9da1-882bfd224802",
+     *             "creationDate": "2019-02-27T14:11:04+01:00",
+     *             "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/admin_phis",
+     *             "motivatedBy": "http://www.w3.org/ns/oa#describing",
+     *             "comments": [
+     *               "e"
+     *             ],
+     *             "targets": [
+     *               "http://www.opensilex.org/id/event/12590c87-1c34-426b-a231-beb7acb33415"
+     *             ]
+     *           },
+     *           {
+     *             "uri": "http://www.opensilex.org/andreas-dev/id/annotation/80de8573-eca5-466f-93fe-b97c96185834",
+     *             "creationDate": "2019-02-18T14:05:29+01:00",
+     *             "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/admin_phis",
+     *             "motivatedBy": "http://www.w3.org/ns/oa#describing",
+     *             "comments": [
+     *               "vdvd"
+     *             ],
+     *             "targets": [
+     *               "http://www.opensilex.org/id/event/12590c87-1c34-426b-a231-beb7acb33415"
+     *             ]
+     *           }
+     *         ],
+     *         "uri": "http://www.opensilex.org/id/event/12590c87-1c34-426b-a231-beb7acb33415",
+     *         "type": "http://www.opensilex.org/vocabulary/oeev#PestAttack",
+     *         "concernedItems": [
+     *           {
+     *             "labels": [
+     *               "Parcelle Lavalette",
+     *               "Plot Lavalette"
+     *             ],
+     *             "uri": "http://www.opensilex.org/ues/2018/o18000124",
+     *             "typeURI": "http://www.opensilex.org/vocabulary/oeso#Plot"
+     *           }
+     *         ],
+     *         "date": "2017-09-08T12:00:00+01:00",
+     *         "properties": [
+     *           {
+     *             "rdfType": null,
+     *             "relation": "http://www.opensilex.org/vocabulary/oeev#hasPest",
+     *             "value": "http://aims.fao.org/aos/agrovoc/c_34724"
+     *           }
+     *         ]
+     *       }
+     *     ]
+     *   }
+     * }
+     * @param uri
+     * @return an event's details
+     */
     @GET
     @Path("{uri}")
     @ApiOperation(value = "Get an event's details corresponding to the search uri",

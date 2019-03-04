@@ -71,6 +71,9 @@ public class EventDAOSesame extends DAOSesame<Event> {
      *    FILTER ( (regex (str(?uri), "http://www.phenome-fppn.fr/id/event/5a1b3c0d-58af-4cfb-811e-e141b11453b1", "i"))
      *  }
      *  GROUP BY ?uri
+     * @param query
+     * @param searchUri
+     * @param inGroupBy
      * @return the value of the URI's value in the SELECT
      */
     private String prepareSearchQueryUri(SPARQLQueryBuilder query, String searchUri, boolean inGroupBy) {
@@ -94,6 +97,10 @@ public class EventDAOSesame extends DAOSesame<Event> {
      *    ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.opensilex.org/vocabulary/oeev#MoveFrom> . 
      *  }
      *  GROUP BY ?rdfType
+     * @param query
+     * @param uriSelectNameSparql
+     * @param searchType
+     * @param inGroupBy
      */
     private void prepareSearchQueryType(SPARQLQueryBuilder query, String uriSelectNameSparql, String searchType, boolean inGroupBy) {
         query.appendSelect(RDF_TYPE_SELECT_NAME_SPARQL);
@@ -118,6 +125,11 @@ public class EventDAOSesame extends DAOSesame<Event> {
      *    ?uri  <http://www.opensilex.org/vocabulary/oeev#concerns>  ?concernedItemUri  . 
      *    ?concernedItemUri  <http://www.w3.org/2000/01/rdf-schema#label>  ?concernedItemLabel  . 
      *  }
+     * @param query
+     * @param uriSelectNameSparql
+     * @param searchConcernedItemLabel
+     * @param searchConcernedItemUri
+     * @param inGroupBy
      */
     private void prepareSearchQueryConcernedItemFilter(SPARQLQueryBuilder query, String uriSelectNameSparql, String searchConcernedItemLabel, String searchConcernedItemUri) {
 
@@ -149,6 +161,11 @@ public class EventDAOSesame extends DAOSesame<Event> {
      *    BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str("2017-09-12T12:00:00+01:00")) as ?dateRangeEndDateTime) .
      *  }
      *  GROUP BY ?dateTimeStamp
+     * @param query
+     * @param uriSelectNameSparql
+     * @param searchDateTimeRangeStartString
+     * @param searchDateTimeRangeEndString
+     * @param inGroupBy
      */
     private void prepareSearchQueryDateTime(SPARQLQueryBuilder query, String uriSelectNameSparql, String searchDateTimeRangeStartString, String searchDateTimeRangeEndString, boolean inGroupBy) {  
         

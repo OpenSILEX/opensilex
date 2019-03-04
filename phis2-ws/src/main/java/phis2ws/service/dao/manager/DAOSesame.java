@@ -381,7 +381,6 @@ public abstract class DAOSesame<T> {
      * @param id
      */
     public void setUser(String id) {
-        // LOGGER.debug(JsonConverter.ConvertToJson(TokenManager.Instance().getSession(id).getUser()));
         if (TokenManager.Instance().getSession(id).getUser() == null) {
             throw new WebApplicationException(Response.status(Response.Status.UNAUTHORIZED).build());
         } else {

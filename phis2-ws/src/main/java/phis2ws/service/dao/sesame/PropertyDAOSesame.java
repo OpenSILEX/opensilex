@@ -4,7 +4,7 @@
 // Copyright © INRA 2018
 // Creation date: 29 may 2018
 // Contact: morgane.vidal@inra.fr vincent.migot@inra.fr anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Subject: access and manipulation of the properties of the ontology in the triplestore
+// Subject: access and manipulation of the properties of the ontology in the Triplestore
 //******************************************************************************
 package phis2ws.service.dao.sesame;
 
@@ -43,38 +43,37 @@ import phis2ws.service.view.model.phis.Property;
 //\SILEX:todo
 
 /**
- * CRUD methods for the properties stored in the triplestore (rdf4j)
+ * CRUD methods for the properties stored in the Triplestore
+ * @update [Andréas Garcia] 5 March, 2019: Move URI from the class attributes to 
+ * the parameters of the DAO functions
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class PropertyDAOSesame extends DAOSesame<Property> {
     final static Logger LOGGER = LoggerFactory.getLogger(PropertyDAOSesame.class);
-    
-    // This attribute is used to search all properties of the given uri
-    //private String uri;
         
     // This attribute is used to restrict available uri to a specific set of subclass
     private Oeso subClassOf;
 
-    //The following attributes are used to search properties in the triplestore
+    //The following attributes are used to search properties in the Triplestore
     //the property relation name. 
     //the relation term is used because it only represents the "vocabulary:property" 
     //and it does not represents everything around such as domain, range, etc. 
     //which is represented by the "Property" label
     private String relation;
     
-    //the domain label used to query triplestore
+    //the domain label used to query Triplestore
     private final String DOMAIN = "domain";
-    //the cardinality between a property and a concept, used to query the triplestore
+    //the cardinality between a property and a concept, used to query the Triplestore
     private final String CARDINALITY = "cardinality";
-    //the restriction between a property and a concept, used to query the triplestore
+    //the restriction between a property and a concept, used to query the Triplestore
     private final String RESTRICTION = "restriction";
-    //a blank node, used to query the triplestore
+    //a blank node, used to query the Triplestore
     private final String BLANCK_NODE = "_:x";
-    //a property, used to query the triplestore
+    //a property, used to query the Triplestore
     protected final String PROPERTY = "property";
-    //a count result, used to query the triplestore (count properties)
+    //a count result, used to query the Triplestore (count properties)
     private final String COUNT = "count";
-    //the relation, used to query the triplestore (cardinalities)
+    //the relation, used to query the Triplestore (cardinalities)
     protected final String RELATION = "relation";
     
     protected final String PROPERTY_TYPE = "propertyType";
@@ -84,15 +83,11 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     protected final String RELATION_PREF_LABEL = "relationPrefLabel";    
     protected final String PROPERTY_PREF_LABEL = "propertyPrefLabel";    
     protected final String PROPERTY_TYPE_PREF_LABEL = "propertyTypePrefLabel";   
-
-    public PropertyDAOSesame() {
-        super();
-    }
     
     /**
      * prepare the SPARQL query to get the list of properties and their relations
-     * to the given URI. If subClassOf is specified, the object corresponding to the URI must be
-     * a subclass of the given type.
+     * to the given URI. If subClassOf is specified, the object corresponding to 
+     * the URI must be a subclass of the given type.
      * @param searchUri
      * @return the built query
      * @example
@@ -120,8 +115,8 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
         return query;
     }
     
-     /**
-     * search all the properties corresponding to the given object URI
+    /**
+     * Search all the properties corresponding to the given object URI
      * @param uri
      * @return the list of the properties which match the given URI.
      */
@@ -162,7 +157,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     /**
      * Prepare the SPARQL query to get the domain of a relation
      * @return the built query
-     * e.g.
+     * @example
      * SELECT ?domain
      * WHERE {
      *      <http://www.opensilex.org/vocabulary/oeso#wavelength> rdfs:domain ?domain
@@ -181,7 +176,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
-     * Get in the triplestore the domain of the property if it exist
+     * Get in the Triplestore the domain of the property if it exists
      * @param relationUri
      * @return the domain of the property (attributes relation)
      */
@@ -201,7 +196,8 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
-     * Check if a given relation can be linked to a given rdfType.Check if there is a domain and if the rdfType corresponds to the domain.
+     * Check if a given relation can be linked to a given rdfType. 
+     * Check if there is a domain and if the rdfType corresponds to the domain.
      * /!\ The PropertyDAOSesame#relation must contain the relation which domain is checked
      * @param relationUri
      * @param rdfType the rdf type. e.g. http://www.opensilex.org/vocabulary/oeso#RadiometricTarget
@@ -226,7 +222,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
    
     /**
-     * Query to get cardinalities of a relation for a given type
+     * Query to get the cardinalities of a relation for a given type
      * @param rdfType
      * @return 
      */
@@ -254,7 +250,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      * Query to get the cardinalities required for each property for a given concept
      * @param concept
      * @return the query
-     * e.g. 
+     * @example 
      * SELECT ?relation ?cardinality ?restriction 
      * WHERE {
      *      _:x  rdf:type  owl:Restriction  . 
@@ -290,8 +286,8 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     
     /**
      * Get the cardinalities of a relation for each concerned concept
-     * @return the list of the cardinalities founded in the triplestore
-     * e.g of content : 
+     * @return the list of the cardinalities found in the Triplestore
+     * @example content : 
      * "owl:cardinality" : 1
      * other example of content : 
      * "owl:minCardinality" : 1
@@ -325,8 +321,8 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     /**
      * Get the cardinalities of each relations for a concept
      * @param concept
-     *  @return the list of the cardinalities founded in the triplestore
-     * e.g of content : 
+     * @return the list of the cardinalities found in the Triplestore
+     * @example of content: 
      * "vocabulary:attenuatorFilter" : ["owl:cardinality" : 1]
      * other example of content : 
      * "vocabulary:wavelength" : ["owl:minCardinality" : 1, "owl:maxCardinality" : 6]
@@ -364,10 +360,10 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
-     * SPARQL query to get the number of the property "relation" for the given object uri
+     * SPARQL query to get the number of the property "relation" for the given object URI
      * @param objectUri
      * @return the query
-     * e.g. 
+     * @example
      * SELECT DISTINCT (count(distinct ?property) as ?count) 
      * WHERE {
      *  <http://www.phenome-fppn.fr/diaphen/2018/s18523>  <http://www.opensilex.org/vocabulary/oeso#hasLens>  ?property  . 
@@ -529,7 +525,6 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      * ╠═════════════════════╬════════════╬═══════════════╬════════════════════════════╬═══════════════════════╬═════════════════╬════════════════════════════════╬════════════════╬═════════════════════════╣
      * ║ vocabulary:isPartOf ║            ║ is part of@en ║ http://.../m3p             ║                       ║ M3P             ║ vocabulary:LocalInfrastructure ║                ║ local infrastructure@en ║
      * ╚═════════════════════╩════════════╩═══════════════╩════════════════════════════╩═══════════════════════╩═════════════════╩════════════════════════════════╩════════════════╩═════════════════════════╝
-     * 
      * @param language specify in which language labels should be returned
      * @param relationsToIgnore some relations sometimes must not be considered as properties so we ignore them
      * @return the builded query
@@ -670,7 +665,6 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      /**
      * Search all the properties corresponding to the given object URI
      * and fill the RDF Resource definition object with the values and labels
-     * @param objectUri Object URI
      * @param definition The definition object which will be filled
      * @param language specify in which language labels should be returned. The 
      * language can be null

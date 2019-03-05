@@ -7,6 +7,7 @@
 package phis2ws.service.utils;
 
 import java.time.Instant;
+import java.util.Base64;
 import java.util.Calendar;
 import java.util.UUID;
 import org.apache.jena.sparql.AlreadyExists;
@@ -434,6 +435,10 @@ public class UriGenerator {
     }
 
 
+    private String generateDataUri(String additionalInformation) {
+        return Contexts.PLATFORM.toString() + Base64.getEncoder().encodeToString(additionalInformation.getBytes());
+    }
+    
     /**
      * generates the uri of a new instance of instanceType
      *
@@ -485,6 +490,8 @@ public class UriGenerator {
             return generateGroupUri(additionalInformation);
         } else if (instanceType.equals(Oeso.CONCEPT_PROVENANCE.toString())) {
             return generateProvenanceUri();
+        } else if (instanceType.equals(Oeso.CONCEPT_DATA.toString())) {
+            return generateDataUri(additionalInformation);
         }
 
         return null;

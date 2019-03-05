@@ -50,17 +50,17 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     final static Logger LOGGER = LoggerFactory.getLogger(PropertyDAOSesame.class);
     
     // This attribute is used to search all properties of the given uri
-    public String uri;
+    //private String uri;
         
     // This attribute is used to restrict available uri to a specific set of subclass
-    public Oeso subClassOf;
+    private Oeso subClassOf;
 
     //The following attributes are used to search properties in the triplestore
     //the property relation name. 
     //the relation term is used because it only represents the "vocabulary:property" 
     //and it does not represents everything around such as domain, range, etc. 
     //which is represented by the "Property" label
-    public String relation;
+    private String relation;
     
     //the domain label used to query triplestore
     private final String DOMAIN = "domain";
@@ -779,5 +779,26 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
         } else {
             return false;
         }
+    }
+
+    public String getRelation() {
+        return relation;
+    }
+
+    public void setRelation(String relation) {
+        this.relation = relation;
+    }
+
+    public Oeso getSubClassOf() {
+        return subClassOf;
+    }
+
+    public void setSubClassOf(Oeso subClassOf) {
+        this.subClassOf = subClassOf;
+    }
+    
+    @Override
+    protected SPARQLQueryBuilder prepareSearchQuery() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

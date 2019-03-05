@@ -349,4 +349,10 @@ public enum Oeso {
             return NAMESPACE.toString() + "status";
         }
     },
+    CONCEPT_DATA {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "data";
+        }
+    };
 }

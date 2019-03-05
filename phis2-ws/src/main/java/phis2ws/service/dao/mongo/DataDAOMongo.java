@@ -16,7 +16,6 @@ import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -28,8 +27,9 @@ import org.slf4j.LoggerFactory;
 import phis2ws.service.dao.manager.DAOMongo;
 import phis2ws.service.dao.sesame.VariableDaoSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.ontologies.Contexts;
+import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.utils.POSTResultsReturn;
+import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.Data;
 
@@ -93,17 +93,21 @@ public class DataDAOMongo extends DAOMongo<Data> {
         Document document = new Document();
 
         String key = data.getObjectUri() + data.getVariableUri() + data.getDate() + data.getProvenanceUri();
-        String uri =  Contexts.PLATFORM.toString() + Base64.getEncoder().encodeToString(key.getBytes());
+        try {
+            String uri = new UriGenerator().generateNewInstanceUri(Oeso.CONCEPT_DATA.toString(), null, key);
 
-        document.append(DB_FIELD_URI, uri);
-        document.append(DB_FIELD_OBJECT, data.getObjectUri());
-        document.append(DB_FIELD_VARIABLE, data.getVariableUri());
-        document.append(DB_FIELD_DATE, data.getDate());
-        document.append(DB_FIELD_PROVENANCE, data.getProvenanceUri());
-        document.append(DB_FIELD_VALUE, data.getValue());
+            document.append(DB_FIELD_URI, uri);
+            document.append(DB_FIELD_OBJECT, data.getObjectUri());
+            document.append(DB_FIELD_VARIABLE, data.getVariableUri());
+            document.append(DB_FIELD_DATE, data.getDate());
+            document.append(DB_FIELD_PROVENANCE, data.getProvenanceUri());
+            document.append(DB_FIELD_VALUE, data.getValue());
 
-        LOGGER.debug(document.toJson());
-
+            LOGGER.debug(document.toJson());
+        } catch (Exception e) {
+            LOGGER.error("Exception while generating uri, should never append", e);
+        }
+        
         return document;
     }
 

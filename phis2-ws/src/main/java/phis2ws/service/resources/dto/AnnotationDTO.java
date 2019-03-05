@@ -95,14 +95,7 @@ public class AnnotationDTO extends AbstractVerifiedClass {
 
     @Override
     public Annotation createObjectFromDTO() {
-        Annotation annotation = new Annotation();
-        annotation.setBodiesValue(comments);
-        DateTime currentTime = DateTime.now();
-        annotation.setCreated(currentTime);
-        annotation.setCreator(creator);
-        annotation.setTargets(targets);
-        annotation.setMotivatedBy(motivatedBy);
-        return annotation;
+        return new Annotation(null, DateTime.now(), creator, comments, motivatedBy, targets);
     }
 
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_ANNOTATION_MOTIVATEDBY, notes = "Need to be an URI (instance of oa:Motivation concept)")

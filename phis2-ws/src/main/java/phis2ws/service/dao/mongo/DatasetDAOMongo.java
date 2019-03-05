@@ -37,7 +37,7 @@ import phis2ws.service.dao.sesame.ScientificObjectDAOSesame;
 import phis2ws.service.dao.sesame.SensorDAOSesame;
 import phis2ws.service.dao.sesame.VariableDaoSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.resources.dto.DataDTO;
+import phis2ws.service.resources.dto.AgronomicalDataDTO;
 import phis2ws.service.resources.dto.DatasetDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
@@ -262,7 +262,7 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
         //check if data is valid
         for (DatasetDTO datasetDTO : datasetsDTO) {
             //if the datasetDTO follows the rules
-            for (DataDTO data : datasetDTO.getData()) {
+            for (AgronomicalDataDTO data : datasetDTO.getData()) {
                 //is agronomical object exist ?
                 ScientificObjectDAOSesame agronomicalObjectDao = new ScientificObjectDAOSesame();
                 if (!agronomicalObjectDao.existScientificObject(data.getAgronomicalObject())) {

@@ -46,6 +46,7 @@ public final class StatusCodeMsg {
     public static final String NO_RESULTS = "No results";
     public static final String POSTGRESQL_ERROR = "PostgresSQL Error";
     public static final String QUERY_ERROR = "Query error";
+    public static final String URI_TYPE_NOT_IN_DOMAIN_OF_RELATION_ERROR = "the type of the given URI is not in the domain of the relation";
     public static final String REQUEST_ERROR = "Request error";
     public static final String RESOURCES_CREATED = "Resources created";
     public static final String RESOURCES_UPDATED = "Resources updated";
@@ -53,6 +54,7 @@ public final class StatusCodeMsg {
     public static final String TIMEOUT = "Timeout";
     public static final String TRIPLESTOR_ACCESS_ERROR = "Triplestore access error";
     public static final String UNKNOWN_URI = "Unknown uri";
+    public static final String UNKNOWN_EVENT_URI = "Unknown event URI";
     public static final String WRONG_VALUE = "Wrong value";
     public static final String INVALID_INPUT_PARAMETERS = "Wrong format parameter(s)";
 }

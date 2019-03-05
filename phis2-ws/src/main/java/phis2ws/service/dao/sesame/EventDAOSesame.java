@@ -9,6 +9,16 @@ package phis2ws.service.dao.sesame;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.update.UpdateRequest;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
@@ -16,6 +26,7 @@ import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -23,20 +34,28 @@ import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.dao.manager.DAOSesame;
+import phis2ws.service.dao.phis.UserDaoPhisBrapi;
+import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.model.User;
+import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Oeev;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Time;
+import phis2ws.service.utils.POSTResultsReturn;
+import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.dates.Dates;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
+import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.Annotation;
 import phis2ws.service.view.model.phis.ConcernedItem;
 import phis2ws.service.view.model.phis.Event;
+import phis2ws.service.view.model.phis.Property;
 
 /**
- * Dao for Events
- * @update [Andreas Garcia] 14 Feb. 2019: Add event detail service
+ * DAO for Events
+ * @update [Andreas Garcia] 14 Feb., 2019: Add event detail service
+ * @update [Andreas Garcia] 5 March, 2019: Add event insertion
  * @author Andreas Garcia <andreas.garcia@inra.fr>
  */
 public class EventDAOSesame extends DAOSesame<Event> {
@@ -430,14 +449,188 @@ public class EventDAOSesame extends DAOSesame<Event> {
         return event;
     }
     
+    /**
+     * Generate an insert query for the given event
+     * @param event
+     * @return the query
+     * @example
+     */
+    private UpdateRequest prepareInsertQuery(Event event) {
+        UpdateBuilder spql = new UpdateBuilder();
+        
+        Node graph = NodeFactory.createURI(Contexts.EVENTS.toString());
+        Resource radiometricTargetUri = ResourceFactory.createResource(event.getUri());
+        Node eventConcept = NodeFactory.createURI(Oeev.CONCEPT_EVENT.toString());
+        
+        spql.addInsert(graph, radiometricTargetUri, RDF.type, eventConcept);
+        spql.addInsert(graph, radiometricTargetUri, RDFS.label, event.getLabel());
+        
+        for (Property property : event.getProperties()) {
+            if (property.getValue() != null) {
+                org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
+                
+                if (property.getRdfType() != null) {
+                    Node propertyValue = NodeFactory.createURI(property.getValue());
+                    spql.addInsert(graph, radiometricTargetUri, propertyRelation, propertyValue);
+                    spql.addInsert(graph, propertyValue, RDF.type, property.getRdfType());
+                } else {
+                    Literal propertyValue = ResourceFactory.createStringLiteral(property.getValue());
+                    spql.addInsert(graph, radiometricTargetUri, propertyRelation, propertyValue);
+                }
+            }
+        }
+        
+        UpdateRequest query = spql.buildRequest();
+        LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
+        
+        return query;
+    }
+    
+    /**
+     * Insert the given events in the storage 
+     * /!\ Prerequisite: data must have been checked before calling this method
+     * @see EventDAOSesame#check(java.util.List) 
+     * @param events
+     * @return the insertion result, with the error list or the URI of the 
+     *         events inserted
+     */
+    private POSTResultsReturn insert(List<Event> events) {
+        List<Status> status = new ArrayList<>();
+        List<String> createdResourcesUris = new ArrayList<>();
+        
+        POSTResultsReturn results;
+        boolean resultState = false;
+        boolean insert = true;
+        
+        UriGenerator uriGenerator = new UriGenerator();
+        
+        getConnection().begin();
+        for (Event event : events) {
+            try {
+                // Generate uri
+                event.setUri(uriGenerator.generateNewInstanceUri(Oeev.CONCEPT_EVENT.toString(), null, null));
+            } catch (Exception ex) { //In the case of an , no exception should be raised
+                insert = false;
+            }
+            // Insert event
+            UpdateRequest query = prepareInsertQuery(event);
+            
+            try {
+                Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
+                prepareUpdate.execute();
+
+                createdResourcesUris.add(event.getUri());
+            } catch (RepositoryException ex) {
+                    LOGGER.error("Error during commit or rolleback Triplestore statements: ", ex);
+            } catch (MalformedQueryException e) {
+                    LOGGER.error(e.getMessage(), e);
+                    insert = false;
+                    status.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.MALFORMED_CREATE_QUERY + " " + e.getMessage()));
+            }
+        }
+        
+        if (insert) {
+            resultState = true;
+            getConnection().commit();
+        } else {
+            getConnection().rollback();
+        }
+        
+        if (getConnection() != null) {
+            getConnection().close();
+        }
+        
+        results = new POSTResultsReturn(resultState, insert, true);
+        results.statusList = status;
+        results.setCreatedResources(createdResourcesUris);
+        if (resultState && !createdResourcesUris.isEmpty()) {
+            results.createdResources = createdResourcesUris;
+            results.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, createdResourcesUris.size() + " " + StatusCodeMsg.RESOURCES_CREATED));
+        }
+        
+        return results;
+    }
+    
+    /**
+     * Check and eventually insert events in the storage
+     * @param events
+     * @return the insertion result :
+     *           Error message if errors found in data
+     *           The list of the generated URIs events is inserted
+     */
+    public POSTResultsReturn checkAndInsert(List<Event> events) {
+        POSTResultsReturn checkResult = check(events);
+        if (checkResult.getDataState()) {
+            return insert(events);
+        } else { //errors found in data
+            return checkResult;
+        }
+    }
+    
+    private boolean checkIfEventUriIsValid(String uri) {
+        int pageSizeMaxValue = Integer.parseInt(PropertiesFileManager.getConfigFileProperty("service", "pageSizeMax"));
+        return !searchEvents(uri, null, null, null, null, null, 0, pageSizeMaxValue).isEmpty();
+    }
+    
+    /**
+     * Check the given list of events
+     * @param events
+     * @return the result with the list of the found errors (empty if no error)
+     */
+    public POSTResultsReturn check(List<Event> events) {
+        POSTResultsReturn checkResult;
+        List<Status> status = new ArrayList<>();
+        boolean dataIsValid = true;
+        
+        // 1. Check if user is admin
+        UserDaoPhisBrapi userDAO = new UserDaoPhisBrapi();
+        if (userDAO.isAdmin(user)) {
+            for (Event event : events) {
+                String eventUri = event.getUri();
+                if (eventUri != null) {
+                    // Check the event URI if given (in case of an update)
+                    if (!checkIfEventUriIsValid(eventUri)){
+                        dataIsValid = false;
+                        status.add(new Status(StatusCodeMsg.UNKNOWN_URI, StatusCodeMsg.ERR, 
+                                            StatusCodeMsg.UNKNOWN_EVENT_URI + " " + eventUri));
+                    }
+                }
+                
+                PropertyDAOSesame propertyDAO = new PropertyDAOSesame();
+                for (Property property : event.getProperties()) {
+                    // Check if the property exist
+                    if (existUri(property.getRelation())) {
+                        // Check the domain of the property
+                        if (!propertyDAO.isRelationDomainCompatibleWithRdfType(property.getRelation(), 
+                                Oeev.CONCEPT_EVENT.toString())) {
+                            dataIsValid = false;
+                            status.add(new Status(StatusCodeMsg.DATA_ERROR, 
+                                StatusCodeMsg.ERR, 
+                                StatusCodeMsg.URI_TYPE_NOT_IN_DOMAIN_OF_RELATION_ERROR + " " + property.getRelation()));
+                        }
+                    } else {
+                        dataIsValid = false;
+                        status.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, 
+                                            StatusCodeMsg.UNKNOWN_URI + " " + property.getRelation()));
+                    }
+                } 
+            }
+        } else {
+            dataIsValid = false;
+            status.add(new Status(StatusCodeMsg.ACCESS_DENIED, StatusCodeMsg.ERR, StatusCodeMsg.ADMINISTRATOR_ONLY));
+        }
+        
+        checkResult = new POSTResultsReturn(dataIsValid, null, dataIsValid);
+        checkResult.statusList = status;
+        return checkResult;   
+    }
     
     /**
      * Search event properties and set them to it
      * @param event 
      */
     private void searchEventPropertiesAndSetThemToIt(Event event) {
-
-        PropertyDAOSesame propertyDAO = new PropertyDAOSesame(event.getUri());
+        PropertyDAOSesame propertyDAO = new PropertyDAOSesame();
         propertyDAO.getAllPropertiesWithLabelsExceptThoseSpecified(
             event, null, new ArrayList() {
                 {

@@ -100,6 +100,8 @@ public final class DocumentationAnnotation {
     public static final String VECTOR_RDF_TYPE_DEFINITION = "A vector rdf type URI";
     
     public static final String RADIOMETRIC_TARGET_POST_DEFINITION = "JSON format of radiometric target data";
+    
+    public static final String EVENT_POST_DEFINITION = "JSON format of a list of events";
 
     public static final String ADMIN_ONLY_NOTES = "This can only be done by a PHIS-SILEX admin.";
     public static final String USER_ONLY_NOTES = "This can only be done by a PHIS-SILEX user.";
@@ -192,7 +194,7 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_DOCUMENT_CREATION_DATE = "2017-07-07";
     public static final String EXAMPLE_DOCUMENT_EXTENSION = "png";
     public static final String EXAMPLE_DOCUMENT_TITLE = "title";
-    public static final String EXAMPLE_DOCUMENT_CONCERNED_TYPE_URI = "http://www.opensilex.org/vocabulary/oeso#Experiment";
+    public static final String EXAMPLE_DOCUMENT_CONCERNED_ITEM_TYPE_URI = "http://www.opensilex.org/vocabulary/oeso#Experiment";
     public static final String EXAMPLE_DOCUMENT_STATUS = "linked";
 
     public static final String EXAMPLE_SENSOR_URI = "http://www.phenome-fppn.fr/diaphen/2018/s18001";
@@ -236,10 +238,12 @@ public final class DocumentationAnnotation {
     public static final String EVENT_URI_DEFINITION = "An event URI (Unique Resource Identifier)";
     public static final String EXAMPLE_EVENT_URI = "http://www.opensilex.org/id/event/12590c87-1c34-426b-a231-beb7acb33415";
     public static final String EXAMPLE_EVENT_TYPE = "http://www.opensilex.org/vocabulary/oeev#MoveFrom";
+    public static final String EXAMPLE_EVENT_DESCRIPTION = "The pest attack lasted 20 minutes";
     public static final String EXAMPLE_EVENT_CONCERNED_ITEM_URI = "http://www.phenome-fppn.fr/m3p/arch/2017/c17000242";
     public static final String EXAMPLE_EVENT_CONCERNED_ITEM_LABEL = "Plot Lavalette";
-    public static final String EXAMPLE_EVENT_START_DATE = "2017-09-08T12:00:00+01:00";
-    public static final String EXAMPLE_EVENT_END_DATE = "2019-10-08T12:00:00+01:00";
+    public static final String EXAMPLE_EVENT_DATE = "2017-09-08T12:00:00+01:00";
+    public static final String EXAMPLE_EVENT_SEARCH_START_DATE = "2017-09-08T12:00:00+01:00";
+    public static final String EXAMPLE_EVENT_SEARCH_END_DATE = "2019-10-08T12:00:00+01:00";
 
     public static final String EXAMPLE_VECTOR_URI = "http://www.phenome-fppn.fr/diaphen/2018/v1801";
     public static final String EXAMPLE_VECTOR_RDF_TYPE = "http://www.opensilex.org/vocabulary/oeso#UAV";

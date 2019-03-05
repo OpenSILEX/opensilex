@@ -48,7 +48,7 @@ public class ConcernItemDTO extends AbstractVerifiedClass {
 
     @URL
     @Required
-    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_DOCUMENT_CONCERNED_TYPE_URI)
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_DOCUMENT_CONCERNED_ITEM_TYPE_URI)
     public String getTypeURI() {
         return typeURI;
     }

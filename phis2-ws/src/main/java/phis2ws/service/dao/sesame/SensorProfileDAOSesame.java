@@ -118,8 +118,9 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
                         ArrayList<Ask> uriExistance = uriDaoSesame.askUriExistance();
                         if (uriExistance.get(0).getExist()) {
                             //3.2 check the domain of the property
-                            propertyDAO.relation = propertyDTO.getRelation();
-                            ArrayList<String> propertyDomains = propertyDAO.getPropertyDomain();
+                            String propertyRelationUri = propertyDTO.getRelation();
+                            propertyDAO.setRelation(propertyRelationUri);
+                            ArrayList<String> propertyDomains = propertyDAO.getPropertyDomain(propertyRelationUri);
                             
                             if (propertyDomains != null && propertyDomains.size() > 0) { //the property has a specific domain
                                 boolean domainOk = false;

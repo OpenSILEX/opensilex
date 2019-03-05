@@ -123,9 +123,7 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
      */
     protected boolean isPropertyDomainContainsRdfType(String property) {
         PropertyDAOSesame propertyDAO = new PropertyDAOSesame();
-        propertyDAO.relation = property;
-
-        ArrayList<String> propertyDomains = propertyDAO.getPropertyDomain();
+        ArrayList<String> propertyDomains = propertyDAO.getPropertyDomain(property);
 
         UriDaoSesame uriDao = new UriDaoSesame();
         for (String propertyDomain : propertyDomains) {

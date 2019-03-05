@@ -89,17 +89,13 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
         super();
     }
     
-    public PropertyDAOSesame(String uri) {
-        super();
-        this.uri = uri;
-    }
-    
     /**
-     * prepare the sparql query to get the list of properties and their relations
-     * to the given uri. If subClassOf is specified, the object corresponding to the uri must be
+     * prepare the SPARQL query to get the list of properties and their relations
+     * to the given URI. If subClassOf is specified, the object corresponding to the URI must be
      * a subclass of the given type.
-     * @return the builded query
-     * eg.
+     * @param searchUri
+     * @return the built query
+     * @example
      * SELECT DISTINCT  ?relation ?property 
      * WHERE {
      *   <http://www.phenome-fppn.fr/diaphen>  ?relation  ?property  . 
@@ -107,14 +103,13 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      *   ?rdfType  rdfs:subClassOf*  <http://www.opensilex.org/vocabulary/oeso#Infrastructure> . 
      * }
      */
-    @Override
-    protected SPARQLQueryBuilder prepareSearchQuery() {
+    protected SPARQLQueryBuilder prepareSearchQuery(String searchUri) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
 
         query.appendSelect("?" + RELATION + " ?" + PROPERTY);
-        query.appendTriplet("<" + uri + ">", "?" + RELATION, "?" + PROPERTY, null);
-        query.appendTriplet("<" + uri + ">", "<" + Rdf.RELATION_TYPE.toString() + ">", "?" + RDF_TYPE, null);
+        query.appendTriplet("<" + searchUri + ">", "?" + RELATION, "?" + PROPERTY, null);
+        query.appendTriplet("<" + searchUri + ">", "<" + Rdf.RELATION_TYPE.toString() + ">", "?" + RDF_TYPE, null);
         
         if (subClassOf != null) {
             query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", "<" + subClassOf + ">", null);
@@ -126,10 +121,11 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
      /**
-     * search all the properties corresponding to the given object uri
-     * @return the list of the properties which match the given uri.
+     * search all the properties corresponding to the given object URI
+     * @param uri
+     * @return the list of the properties which match the given URI.
      */
-    public ArrayList<RdfResourceDefinitionDTO> allPaginate() {        
+    public ArrayList<RdfResourceDefinitionDTO> allPaginate(String uri) {        
         SPARQLQueryBuilder query = prepareSearchQuery();
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         ArrayList<RdfResourceDefinitionDTO> propertiesContainer = new ArrayList<>();
@@ -164,18 +160,18 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
-     * Prepare the sparql query to get the domain of a relation
-     * @return the builded query
+     * Prepare the SPARQL query to get the domain of a relation
+     * @return the built query
      * e.g.
      * SELECT ?domain
      * WHERE {
      *      <http://www.opensilex.org/vocabulary/oeso#wavelength> rdfs:domain ?domain
      * }
      */
-    private SPARQLQueryBuilder prepareGetDomainQuery() {
+    private SPARQLQueryBuilder prepareGetDomainQuery(String relationUri) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendSelect("?" + DOMAIN);
-        query.appendTriplet(relation, 
+        query.appendTriplet(relationUri, 
                 "<" + Rdfs.RELATION_DOMAIN.toString() + "> "
                         + "/( <" + Owl.RELATION_UNION_OF.toString() + "> / <" + Rdf.RELATION_REST.toString() + ">*/ <" + Rdf.RELATION_FIRST.toString() + ">)*" , "?" + DOMAIN, null);
         
@@ -186,10 +182,11 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     
     /**
      * Get in the triplestore the domain of the property if it exist
+     * @param relationUri
      * @return the domain of the property (attributes relation)
      */
-    public ArrayList<String> getPropertyDomain() {
-        SPARQLQueryBuilder query = prepareGetDomainQuery();
+    public ArrayList<String> getPropertyDomain(String relationUri) {
+        SPARQLQueryBuilder query = prepareGetDomainQuery(relationUri);
         ArrayList<String> propertyDomains = new ArrayList<>();
         
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
@@ -204,15 +201,15 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
-     * Check if a given relation can be linked to a given rdfType. 
-     * Check if there is a domain and if the rdfType corresponds to the domain.
+     * Check if a given relation can be linked to a given rdfType.Check if there is a domain and if the rdfType corresponds to the domain.
      * /!\ The PropertyDAOSesame#relation must contain the relation which domain is checked
+     * @param relationUri
      * @param rdfType the rdf type. e.g. http://www.opensilex.org/vocabulary/oeso#RadiometricTarget
      * @return true if the given property can be linked to the given rdfType
      *         false if the given rdfType is not part of the domain of the property.
      */
-    public boolean isRelationDomainCompatibleWithRdfType(String rdfType) {
-        ArrayList<String> propertyDomains = getPropertyDomain();
+    public boolean isRelationDomainCompatibleWithRdfType(String relationUri, String rdfType) {
+        ArrayList<String> propertyDomains = getPropertyDomain(relationUri);
         UriDaoSesame uriDao = new UriDaoSesame();
         boolean domainOk = false;
         if (propertyDomains != null && propertyDomains.size() > 0) { //the property has a specific domain
@@ -233,12 +230,12 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      * @param rdfType
      * @return 
      */
-    private SPARQLQueryBuilder prepareGetCardinality() {
+    private SPARQLQueryBuilder prepareGetCardinality(String relationUri) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendSelect("?" + RDF_TYPE + " ?" + CARDINALITY + " ?" + RESTRICTION);
         
         query.appendTriplet(BLANCK_NODE, Rdf.RELATION_TYPE.toString(), Owl.CONCEPT_RESTRICTION.toString(), null);
-        query.appendTriplet(BLANCK_NODE, Owl.RELATION_ON_PROPERTY.toString(), relation, null);
+        query.appendTriplet(BLANCK_NODE, Owl.RELATION_ON_PROPERTY.toString(), relationUri, null);
         query.appendTriplet(BLANCK_NODE, "?" + RESTRICTION, "?_" + CARDINALITY, null);
         query.appendTriplet("?" + RDF_TYPE, Rdfs.RELATION_SUBCLASS_OF.toString(), "_:x", null);
         
@@ -300,8 +297,8 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      * "owl:minCardinality" : 1
      * "owl:maxCardinality" : 5
      */
-    public HashMap<String, Cardinality> getCardinalities() {
-        SPARQLQueryBuilder query = prepareGetCardinality();
+    public HashMap<String, Cardinality> getCardinalities(String relationUri) {
+        SPARQLQueryBuilder query = prepareGetCardinality(relationUri);
         HashMap<String, Cardinality> cardinalities = new HashMap<>();
         
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
@@ -376,13 +373,13 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      *  <http://www.phenome-fppn.fr/diaphen/2018/s18523>  <http://www.opensilex.org/vocabulary/oeso#hasLens>  ?property  . 
      * }
      */
-    private SPARQLQueryBuilder prepareGetProperties(String objectUri) {
+    private SPARQLQueryBuilder prepareGetProperties(String objectUri, String relationUri) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
         
         query.appendSelect("(count(distinct ?" + PROPERTY + ") as ?" + COUNT + ")");
         
-        query.appendTriplet("<" + objectUri + ">", "<" + relation + ">", "?" + PROPERTY, null);
+        query.appendTriplet("<" + objectUri + ">", "<" + relationUri + ">", "?" + PROPERTY, null);
         
         LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
         
@@ -415,7 +412,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      * @return 
      */
     private POSTResultsReturn checkPropertyCardinality(HashMap<String, Integer> numberOfRelations, HashMap<String, ArrayList<Cardinality>> expectedCardinalities) {
-        POSTResultsReturn check = null;
+        POSTResultsReturn check;
         boolean dataOk = true;
         List<Status> checkStatus = new ArrayList<>();
         if (expectedCardinalities != null) {
@@ -463,14 +460,14 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
-     * Check the cardinalities of properties for a given object uri
+     * Check the cardinalities of properties for a given object URI
      * @param properties
      * @param objectUri
      * @param objectRdfType
      * @return 
      */
     public POSTResultsReturn checkCardinalities(ArrayList<PropertyPostDTO> properties, String objectUri, String objectRdfType) {        
-        POSTResultsReturn check = null;
+        POSTResultsReturn check;
         //list of the returned results
         List<Status> checkStatus = new ArrayList<>();
         boolean dataOk = true;
@@ -487,7 +484,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
             //\SILEX:refactor
             int numberValues = 0;
             if (objectUri != null) {
-                SPARQLQueryBuilder query = prepareGetProperties(objectUri);
+                SPARQLQueryBuilder query = prepareGetProperties(objectUri, relation);
                 TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
                 try (TupleQueryResult result = tupleQuery.evaluate()) {
                     BindingSet bindingSet = result.next();
@@ -514,12 +511,11 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
-     * Prepare the sparql query to get the list of properties and their 
-     * relations to the given uri with labels (skos:prefered and rdfs:label). 
+     * Prepare the SPARQL query to get the list of properties and their 
+     * relations to the given URI with labels (skos:prefered and rdfs:label). 
      * If "subClassOf" property is defined, the request will also check
-     * if the current uri correspond to this ontology type
-     * 
-     * By example this request will return this kind of results for Phenorch infrastructure:
+     * if the current URI corresponds to this type of ontology 
+     * For example this request will return this kind of results for Phenoarch infrastructure:
      * ╔═════════════════════╦════════════╦═══════════════╦════════════════════════════╦═══════════════════════╦═════════════════╦════════════════════════════════╦════════════════╦═════════════════════════╗
      * ║ relation            ║ rPrefLabel ║ relationLabel ║ property                   ║ propertyPrefLabel     ║ propertyLabel   ║ propertyType                   ║ pTypePrefLabel ║ propertyTypeLabel       ║
      * ╠═════════════════════╬════════════╬═══════════════╬════════════════════════════╬═══════════════════════╬═════════════════╬════════════════════════════════╬════════════════╬═════════════════════════╣
@@ -573,7 +569,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      *     } 
      * }
      */
-    protected SPARQLQueryBuilder prepareSearchPropertiesQuery(String language, ArrayList<String> relationsToIgnore) {
+    protected SPARQLQueryBuilder prepareSearchPropertiesQuery(String objectUri, String language, ArrayList<String> relationsToIgnore) {
         
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
@@ -589,7 +585,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
         query.appendSelect("?" + PROPERTY_TYPE_LABEL);
         
         // 1. Select every relation and property linked to the given uri
-        String optional = "<" + uri + "> ?" + RELATION + " ?" + PROPERTY;
+        String optional = "<" + objectUri + "> ?" + RELATION + " ?" + PROPERTY;
         // 2. Select property label in the requested language if exists
         optional +=" OPTIONAL {";
         optional += "?" + PROPERTY + " <" + Rdfs.RELATION_LABEL + "> ?" + PROPERTY_LABEL;
@@ -641,7 +637,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
 
         // 8. If subClassOf is specified, add filter on uri rdf:type
         if (subClassOf != null) {
-            query.appendTriplet("<" + uri + ">", Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
+            query.appendTriplet("<" + objectUri + ">", Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
             query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", "<" + subClassOf + ">", null);
         }
         
@@ -672,39 +668,39 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
      /**
-     * Search all the properties corresponding to the given object uri
-     * and fill the RDF Resource defintion object with the values and labels
-     * 
+     * Search all the properties corresponding to the given object URI
+     * and fill the RDF Resource definition object with the values and labels
+     * @param objectUri Object URI
      * @param definition The definition object which will be filled
      * @param language specify in which language labels should be returned. The 
      * language can be null
      * @return true    if the definition object is correctly filled
-     *          false   if the uri doesn't exists
+     *          false   if the URI doesn't exists
      */
     public boolean getAllPropertiesWithLabels(RdfResourceDefinition definition, String language) {
         return getAllPropertiesWithLabelsExceptThoseSpecified(definition, language, null);
     }       
     
      /**
-     * Search all the properties corresponding to the given object uri
-     * and fill the RDF Resource defintion object with the values and labels
-     * 
+     * Search all the properties corresponding to the given object URI
+     * and fill the RDF Resource definition object with the values and labels
      * @param definition The definition object which will be filled
      * @param language specify in which language labels should be returned.
      * @param propertiesRelationsToIgnore some relations sometimes must not be 
      * considered as properties so we ignore them
      * @return true    if the definition object is correctly filled
-     *          false   if the uri doesn't exists
+     *          false   if the URI doesn't exist
      */
     public boolean getAllPropertiesWithLabelsExceptThoseSpecified(RdfResourceDefinition definition, String language, ArrayList<String> propertiesRelationsToIgnore) {
-        if (this.existUri(uri)) {
+        String objectUri = definition.getUri();
+        if (this.existUri(objectUri)) {
             /* Prepare and execute the query to retrieve all the relations, 
              properties and properties type with their labels for the given 
             uri and language*/
-            SPARQLQueryBuilder query = prepareSearchPropertiesQuery(language, propertiesRelationsToIgnore);
+            SPARQLQueryBuilder query = prepareSearchPropertiesQuery(objectUri, language, propertiesRelationsToIgnore);
             TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         
-            definition.setUri(uri);
+            definition.setUri(objectUri);
         
             try (TupleQueryResult result = tupleQuery.evaluate()) {
                 while (result.hasNext()) {

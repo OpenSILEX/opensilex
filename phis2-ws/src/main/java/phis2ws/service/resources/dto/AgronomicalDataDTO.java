@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                       DataDTO.java
+//                                       AgronomicalDataDTO.java
 //
 // Author(s): Morgane Vidal <morgane.vidal@inra.fr>
 // PHIS-SILEX version 1.0
@@ -24,7 +24,7 @@ import phis2ws.service.resources.validation.interfaces.URL;
  * corresponds to the submitted JSON for the data 
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class DataDTO extends AbstractVerifiedClass {
+public class AgronomicalDataDTO extends AbstractVerifiedClass {
     
     private String agronomicalObject;
     private String date;

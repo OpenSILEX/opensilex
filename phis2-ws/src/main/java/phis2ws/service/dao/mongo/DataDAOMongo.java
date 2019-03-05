@@ -12,11 +12,16 @@ import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
 import com.mongodb.client.ClientSession;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
+import com.mongodb.client.model.Sorts;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -25,6 +30,7 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.dao.manager.DAOMongo;
 import phis2ws.service.dao.sesame.VariableDaoSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
@@ -48,6 +54,14 @@ public class DataDAOMongo extends DAOMongo<Data> {
     private final static String DB_FIELD_PROVENANCE = "provenance";
     private final static String DB_FIELD_DATE = "date";
     private final static String DB_FIELD_VALUE = "value";
+    
+    public String variableUri;
+    public String startDate;
+    public String endDate;
+    public String objectUri;
+    public String provenanceUri;
+    public boolean dateSortAsc;
+    
 
     /**
      * Check the given list of data.
@@ -84,9 +98,6 @@ public class DataDAOMongo extends DAOMongo<Data> {
      * database.
      *
      * @param data
-     * @example { "sensor" : "http://www.phenome-fppn.fr/diaphen/2018/s18521",
-     * "variable" : "http://www.phenome-fppn.fr/id/variables/v001", "value" :
-     * 0.5, "date" : { "$date" : 1497516660000 } }
      * @return the document to insert, representing the given data
      * @throws ParseException
      */
@@ -217,7 +228,7 @@ public class DataDAOMongo extends DAOMongo<Data> {
                     status.add(new Status(
                             StatusCodeMsg.UNEXPECTED_ERROR,
                             StatusCodeMsg.ERR,
-                            StatusCodeMsg.DATA_REJECTED + " for the measure variable: " + dataToInsert.getKey() + " - " + ex.getMessage()
+                            StatusCodeMsg.DATA_REJECTED + " for the variable: " + dataToInsert.getKey() + " - " + ex.getMessage()
                     ));
                 }
             }
@@ -260,12 +271,108 @@ public class DataDAOMongo extends DAOMongo<Data> {
 
     @Override
     public ArrayList<Data> allPaginate() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        // Get the collection corresponding to variable uri
+        String variableCollection = this.getCollectionFromVariable(variableUri);
+        MongoCollection<Document> dataVariableCollection = database.getCollection(variableCollection);
+
+        // Get the filter query
+        BasicDBObject query = prepareSearchQuery();
+        
+        // Get paginated documents
+        FindIterable<Document> dataMongo = dataVariableCollection.find(query);
+        
+        //SILEX:info
+        //Measures are always sort by date, either ascending or descending depending on dateSortAsc parameter
+        //If dateSortAsc=true, sort by date ascending
+        //If dateSortAsc=false, sort by date descending
+        //\SILEX:info
+        if (dateSortAsc) {
+            dataMongo = dataMongo.sort(Sorts.ascending(DB_FIELD_DATE));
+        } else {
+            dataMongo = dataMongo.sort(Sorts.descending(DB_FIELD_DATE));
+        }
+        
+        // Define pagination for the request
+        dataMongo = dataMongo.skip(page * pageSize).limit(pageSize);
+
+        ArrayList<Data> dataList = new ArrayList<>();
+        
+        // For each document, create a data Instance and add it to the result list
+        try (MongoCursor<Document> measuresCursor = dataMongo.iterator()) {
+            while (measuresCursor.hasNext()) {
+                Document dataDocument = measuresCursor.next();
+                
+                // Create and define the data object
+                Data data = new Data();
+                data.setVariableUri(variableUri);
+                data.setDate(dataDocument.getDate(DB_FIELD_DATE));
+                data.setValue(dataDocument.get(DB_FIELD_VALUE));
+                data.setObjectUri(dataDocument.getString(DB_FIELD_OBJECT));
+                data.setProvenanceUri(dataDocument.getString(DB_FIELD_PROVENANCE));
+                
+                // Add data to the list
+                dataList.add(data);
+            }
+        }
+        
+        return dataList;
     }
 
     @Override
     protected BasicDBObject prepareSearchQuery() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        BasicDBObject query = new BasicDBObject();
+        
+        try {
+            SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
+
+            // Define date filter depending if start date and/or end date are defined
+            if (startDate != null) {
+                Date start = df.parse(startDate);
+
+                if (endDate != null) {
+                    // In case of start date AND end date defined
+                    Date end = df.parse(endDate);
+                    query.append(DB_FIELD_DATE, BasicDBObjectBuilder.start("$gte", start).add("$lte", end).get());
+                } else {
+                    // In case of start date ONLY is defined
+                    query.append(DB_FIELD_DATE, BasicDBObjectBuilder.start("$gte", start).get());
+                }
+            } else if (endDate != null) {
+                // In case of end date ONLY is defined
+                Date end = df.parse(endDate);
+                query.append(DB_FIELD_DATE, BasicDBObjectBuilder.start("$lte", end).get());
+            }
+        } catch (ParseException ex) {
+            LOGGER.error("Invalid date format", ex);
+        }
+        
+        // Add filter if an object uri is defined
+        if (objectUri != null) {
+            query.append(DB_FIELD_OBJECT, objectUri);
+        }
+
+        // Add filter if a provenance uri is defined
+        if (provenanceUri != null) {
+            query.append(DB_FIELD_PROVENANCE, provenanceUri);
+        }
+        
+        query.append(DB_FIELD_VARIABLE, variableUri);
+        
+        LOGGER.debug(getTraceabilityLogs() + " query : " + query.toString());
+        
+        return query;
+    }
+
+    public int count() {
+                // Get the collection corresponding to variable uri
+        String variableCollection = this.getCollectionFromVariable(variableUri);
+        MongoCollection<Document> dataVariableCollection = database.getCollection(variableCollection);
+
+        // Get the filter query
+        BasicDBObject query = prepareSearchQuery();
+        
+        // Return the document count
+        return (int)dataVariableCollection.countDocuments(query);
     }
 
     /**

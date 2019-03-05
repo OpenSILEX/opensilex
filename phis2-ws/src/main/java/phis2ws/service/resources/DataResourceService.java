@@ -19,21 +19,32 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import phis2ws.service.configuration.DateFormat;
+import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.mongo.DataDAOMongo;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
+import phis2ws.service.resources.dto.data.DataDTO;
 import phis2ws.service.resources.dto.data.DataPostDTO;
+import phis2ws.service.resources.validation.interfaces.Date;
+import phis2ws.service.resources.validation.interfaces.Required;
+import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
+import phis2ws.service.view.brapi.form.ResponseFormData;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
 import phis2ws.service.view.model.phis.Data;
 
@@ -111,8 +122,8 @@ public class DataResourceService extends ResourceService {
     
     /**
      * Generayes an data list from a given list of DataPostDTO.
-     * @param environmentDTOs
-     * @return the list of environments
+     * @param dataDTOs
+     * @return the list of data
      */
     private List<Data> dataDTOsToData(List<DataPostDTO> dataDTOs) throws ParseException {
         ArrayList<Data> dataList = new ArrayList<>();
@@ -123,4 +134,72 @@ public class DataResourceService extends ResourceService {
         
         return dataList;
     }
+
+    @GET
+    @ApiOperation(value = "Get data corresponding to the search parameters given.",
+                  notes = "Retrieve all data corresponding to the search parameters given.")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Retrieve all data", response = Data.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+    })
+    @ApiImplicitParams({@ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true, dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER, value = DocumentationAnnotation.ACCES_TOKEN, example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")})
+    @Produces(MediaType.APPLICATION_JSON)  
+    public Response getData(
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
+        @ApiParam(value = "Search by variable uri", example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI) @QueryParam("variable") @URL @Required String variable,
+        @ApiParam(value = "Search by minimal date", example = DocumentationAnnotation.EXAMPLE_XSDDATETIME) @QueryParam("startDate") @Date(DateFormat.YMDTHMSZ) String startDate,
+        @ApiParam(value = "Search by maximal date", example = DocumentationAnnotation.EXAMPLE_XSDDATETIME) @QueryParam("endDate") @Date(DateFormat.YMDTHMSZ) String endDate,
+        @ApiParam(value = "Search by object uri", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("object")  @URL String object,
+        @ApiParam(value = "Search by provenance uri", example = DocumentationAnnotation.EXAMPLE_PROVENANCE_URI) @QueryParam("provenance")  @URL String provenance,
+        @ApiParam(value = "Date search result order ('true' for ascending and 'false' for descending)", example = "true") @QueryParam("dateSortAsc") boolean dateSortAsc
+    ) {
+        // 1. Initialize dataDAO with parameters
+        DataDAOMongo dataDAO = new DataDAOMongo();
+        
+        dataDAO.variableUri = variable;
+
+        dataDAO.startDate = startDate;
+        dataDAO.endDate = endDate;
+        dataDAO.objectUri = object;
+        dataDAO.provenanceUri = provenance;
+        dataDAO.dateSortAsc = dateSortAsc;
+        
+        dataDAO.user = userSession.getUser();
+        dataDAO.setPage(page);
+        dataDAO.setPageSize(pageSize);
+        
+        // 2. Get data count
+        int totalCount = dataDAO.count();
+        
+        // 3. Get data page list
+        ArrayList<Data> dataList = dataDAO.allPaginate();
+        
+        // 4. Initialize return variables
+        ArrayList<DataDTO> list = new ArrayList<>();
+        ArrayList<Status> statusList = new ArrayList<>();
+        ResponseFormData getResponse;
+        
+        if (dataList == null) {
+            // Request failure
+            getResponse = new ResponseFormData(0, 0, list, true, 0);
+            return noResultFound(getResponse, statusList);
+        } else if (dataList.isEmpty()) {
+            // No results
+            getResponse = new ResponseFormData(0, 0, list, true, 0);
+            return noResultFound(getResponse, statusList);
+        } else {
+            // Convert all measures object to DTO's
+            dataList.forEach((data) -> {
+                list.add(new DataDTO(data));
+            });
+            
+            // Return list of DTO
+            getResponse = new ResponseFormData(dataDAO.getPageSize(), dataDAO.getPage(), list, true, totalCount);
+            getResponse.setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
+        }
+    }     
 }

@@ -30,7 +30,7 @@ public class DatasetDTO extends AbstractVerifiedClass {
     //of the dataset, the script which has generate the dataset and a description
     //of the generation (if possible)
     private ProvenanceDTO provenance;
-    private ArrayList<DataDTO> data;
+    private ArrayList<AgronomicalDataDTO> data;
     
     
 
@@ -39,7 +39,7 @@ public class DatasetDTO extends AbstractVerifiedClass {
        Dataset phenotypes = new Dataset();
        phenotypes.setVariableURI(variableUri);       
        phenotypes.setProvenance(provenance.createObjectFromDTO());
-       for (DataDTO d : data) {
+       for (AgronomicalDataDTO d : data) {
            phenotypes.addData(d.createObjectFromDTO());
        }
        
@@ -67,11 +67,11 @@ public class DatasetDTO extends AbstractVerifiedClass {
     }
     
     @Valid
-    public ArrayList<DataDTO> getData() {
+    public ArrayList<AgronomicalDataDTO> getData() {
         return data;
     }
 
-    public void setData(ArrayList<DataDTO> data) {
+    public void setData(ArrayList<AgronomicalDataDTO> data) {
         this.data = data;
     }
 }

@@ -357,23 +357,10 @@ public class ProjectDao extends DAOPhisBrapi<Project, ProjectDTO> {
             statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
             SQLQueryBuilder query = new SQLQueryBuilder();
             
-            Map<String, String> sqlFields = relationFieldsJavaSQLObject();
-            
-            //Ajout des conditions à la requête
+            //Add request filters
             query.appendFrom(table, tableAlias);
-            query.appendANDWhereConditionIfNeeded(sqlFields.get("uri"), uri, "ILIKE", null, tableAlias);
-            query.appendANDWhereConditionIfNeeded(sqlFields.get("name"), name, "ILIKE", null, tableAlias);
-            query.appendANDWhereConditionIfNeeded(sqlFields.get("acronyme"), acronyme, "ILIKE", null, tableAlias);
-            query.appendANDWhereConditionIfNeeded(sqlFields.get("subprojectType"), subprojectType, "ILIKE", null, tableAlias);
-            query.appendANDWhereConditionIfNeeded(sqlFields.get("financialSupport"), financialSupport, "ILIKE", null, tableAlias);
-            query.appendANDWhereConditionIfNeeded(sqlFields.get("financialName"), financialName, "ILIKE", null, tableAlias);
-            query.appendANDWhereConditionIfNeeded(sqlFields.get("dateStart"), dateStart, "ILIKE", null, tableAlias);
-            query.appendANDWhereConditionIfNeeded(sqlFields.get("dateEnd"), dateEnd, "ILIKE", null, tableAlias);
-            query.appendANDWhereConditionIfNeeded(sqlFields.get("keywords"), keywords, "ILIKE", null, tableAlias);
-            query.appendANDWhereConditionIfNeeded(sqlFields.get("description"), description, "ILIKE", null, tableAlias);
-            query.appendANDWhereConditionIfNeeded(sqlFields.get("objective"), objective, "ILIKE", null, tableAlias);
-            query.appendANDWhereConditionIfNeeded(sqlFields.get("parentProject"), parentProject, "ILIKE", null, tableAlias);
-            query.appendANDWhereConditionIfNeeded(sqlFields.get("website"), website, "ILIKE", null, tableAlias);
+            addFilters(query);
+            
             query.appendLimit(String.valueOf(pageSize));
             query.appendOffset(Integer.toString(this.getPage() * this.getPageSize()));
             
@@ -404,18 +391,39 @@ public class ProjectDao extends DAOPhisBrapi<Project, ProjectDTO> {
         return projects;
     }
 
+    /**
+     * Add filter for query project search
+     * @param query 
+     */
+    private void addFilters(SQLQueryBuilder query) {
+        Map<String, String> sqlFields = relationFieldsJavaSQLObject();
+                
+        query.appendANDWhereConditionIfNeeded(sqlFields.get("uri"), uri, "ILIKE", null, tableAlias);
+        query.appendANDWhereConditionIfNeeded(sqlFields.get("name"), name, SQLQueryBuilder.CONTAINS_OPERATOR, null, tableAlias);
+        query.appendANDWhereConditionIfNeeded(sqlFields.get("acronyme"), acronyme, SQLQueryBuilder.CONTAINS_OPERATOR, null, tableAlias);
+        query.appendANDWhereConditionIfNeeded(sqlFields.get("subprojectType"), subprojectType, SQLQueryBuilder.CONTAINS_OPERATOR, null, tableAlias);
+        query.appendANDWhereConditionIfNeeded(sqlFields.get("financialSupport"), financialSupport, SQLQueryBuilder.CONTAINS_OPERATOR, null, tableAlias);
+        query.appendANDWhereConditionIfNeeded(sqlFields.get("financialName"), financialName, SQLQueryBuilder.CONTAINS_OPERATOR, null, tableAlias);
+        query.appendANDWhereConditionIfNeeded(sqlFields.get("dateStart"), dateStart, ">=", null, tableAlias);
+        query.appendANDWhereConditionIfNeeded(sqlFields.get("dateEnd"), dateEnd, "<=", null, tableAlias);
+        query.appendANDWhereConditionIfNeeded(sqlFields.get("keywords"), keywords, SQLQueryBuilder.CONTAINS_OPERATOR, null, tableAlias);
+        query.appendANDWhereConditionIfNeeded(sqlFields.get("description"), description, SQLQueryBuilder.CONTAINS_OPERATOR, null, tableAlias);
+        query.appendANDWhereConditionIfNeeded(sqlFields.get("objective"), objective, SQLQueryBuilder.CONTAINS_OPERATOR, null, tableAlias);
+        query.appendANDWhereConditionIfNeeded(sqlFields.get("parentProject"), parentProject, SQLQueryBuilder.CONTAINS_OPERATOR, null, tableAlias);
+        query.appendANDWhereConditionIfNeeded(sqlFields.get("website"), website, "ILIKE", null, tableAlias);    
+    }
+    
     @Override
     public Integer count() {
         SQLQueryBuilder query = new SQLQueryBuilder();
         query.appendCount();
         query.appendDistinct();
         query.appendSelect(tableAlias + ".uri");
+        
+        //Add request filters
         query.appendFrom(table, tableAlias);
-        
-        if (uri != null) {
-            query.appendWhereConditions("uri", uri, "=", null, tableAlias);
-        }
-        
+        addFilters(query);
+            
         Connection connection = null;
         ResultSet resultSet = null;
         Statement statement = null;

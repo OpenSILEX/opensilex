@@ -53,6 +53,8 @@ public final class DocumentationAnnotation {
 
     public static final String ENVIRONMENT_POST_DEFINITION = "JSON format to insert environment";
     
+    public static final String DATA_POST_DEFINITION = "JSON format to insert data";
+    
     public static final String EXPERIMENT_URI_DEFINITION = "An experiment URI (Unique Resource Identifier)";
     public static final String EXPERIMENT_POST_DATA_DEFINITION = "JSON format of experiment data";
 

@@ -45,12 +45,9 @@ import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.BrapiMultiResponseForm;
 import phis2ws.service.view.brapi.form.BrapiSingleResponseForm;
-import phis2ws.service.view.model.phis.BrapiMethod;
-import phis2ws.service.view.model.phis.BrapiScale;
 import phis2ws.service.view.model.phis.BrapiVariable;
-import phis2ws.service.view.model.phis.BrapiVariableTrait;
 import phis2ws.service.view.model.phis.Call;
-import phis2ws.service.view.model.phis.Data;
+import phis2ws.service.view.model.phis.AgronomicalData;
 import phis2ws.service.view.model.phis.Dataset;
 import phis2ws.service.view.model.phis.ScientificObject;
 import phis2ws.service.view.model.phis.StudyDetails;
@@ -464,8 +461,8 @@ public class StudyResourceService implements BrapiCall{
     private ArrayList<BrapiObservationDTO> getObservationsFromDatasets(ArrayList<Dataset> datasets) {
         ArrayList<BrapiObservationDTO> observations = new ArrayList();
         for (Dataset dataset:datasets){
-            ArrayList<Data> dataList = dataset.getData();
-            for (Data data:dataList){
+            ArrayList<AgronomicalData> dataList = dataset.getData();
+            for (AgronomicalData data:dataList){
                 BrapiObservationDTO observation= new BrapiObservationDTO(dataset);
                 VariableDaoSesame variableDAO = new VariableDaoSesame();
                 variableDAO.uri = data.getVariable();

@@ -6,6 +6,7 @@
 //******************************************************************************
 package phis2ws.service.utils;
 
+import java.util.Base64;
 import java.util.Calendar;
 import java.util.UUID;
 import org.apache.jena.sparql.AlreadyExists;
@@ -425,6 +426,10 @@ public class UriGenerator {
     }
 
 
+    private String generateDataUri(String additionalInformation) {
+        return Contexts.PLATFORM.toString() + Base64.getEncoder().encodeToString(additionalInformation.getBytes());
+    }
+    
     /**
      * Generate the URI of a new instance of instanceType
      * @param instanceType the RDF type of the instance (a concept URI)
@@ -473,6 +478,8 @@ public class UriGenerator {
             return generateExperimentUri(year);
         } else if (instanceType.equals(Foaf.CONCEPT_GROUP.toString())) {
             return generateGroupUri(additionalInformation);
+        } else if (instanceType.equals(Oeso.CONCEPT_DATA.toString())) {
+            return generateDataUri(additionalInformation);
         }
 
         return null;

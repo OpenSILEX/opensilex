@@ -1,9 +1,10 @@
 //******************************************************************************
-//                                       PropertyDTO.java
+//                                PropertyDTO.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 10 sept, 2018
 // Contact: morgane.vidal@inra.fr, vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+
 //******************************************************************************
 package phis2ws.service.resources.dto.rdfResourceDefinition;
 
@@ -16,17 +17,27 @@ import phis2ws.service.view.model.phis.Property;
 
 /**
  * Represents the submitted JSON for a property
- *
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class PropertyDTO extends AbstractVerifiedClass {
 
-    //property type (e.g. http://www.opensilex.org/vocabulary/oeso#Variety)
-    //null if it is a string (so not an uri)
-    protected String rdfType;
-    //relation name (e.g. http://www.opensilex.org/vocabulary/oeso#hasVariety)
+    /**
+     * Property type
+     * null if it is a string (so not an URI)
+     * @example http://www.opensilex.org/vocabulary/oeso#Variety
+     */
+    protected String rdfType; 
+
+    /**
+     * Relation name
+     * @example http://www.opensilex.org/vocabulary/oeso#hasVariety)
+     */
     protected String relation;
-    //the value (e.g. http://www.phenome-fppn.fr/id/species/maize)
+
+    /**
+     * Value
+     * @example http://www.phenome-fppn.fr/id/species/maize
+     */
     protected String value;
 
     public PropertyDTO() {

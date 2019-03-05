@@ -601,12 +601,12 @@ public class EventDAOSesame extends DAOSesame<Event> {
                     // Check if the property exist
                     if (existUri(property.getRelation())) {
                         // Check the domain of the property
-                        if (!propertyDAO.isRelationDomainCompatibleWithRdfType(property.getRelation(), 
-                                Oeev.CONCEPT_EVENT.toString())) {
+                        String eventType = event.getType();
+                        if (!propertyDAO.isRelationDomainCompatibleWithRdfType(property.getRelation(), eventType)) {
                             dataIsValid = false;
                             status.add(new Status(StatusCodeMsg.DATA_ERROR, 
                                 StatusCodeMsg.ERR, 
-                                StatusCodeMsg.URI_TYPE_NOT_IN_DOMAIN_OF_RELATION_ERROR + " " + property.getRelation()));
+                                String.format(StatusCodeMsg.URI_TYPE_NOT_IN_DOMAIN_OF_RELATION, eventType, property.getRelation())));
                         }
                     } else {
                         dataIsValid = false;

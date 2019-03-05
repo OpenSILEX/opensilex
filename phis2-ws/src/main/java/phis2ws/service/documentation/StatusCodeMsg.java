@@ -46,7 +46,7 @@ public final class StatusCodeMsg {
     public static final String NO_RESULTS = "No results";
     public static final String POSTGRESQL_ERROR = "PostgresSQL Error";
     public static final String QUERY_ERROR = "Query error";
-    public static final String URI_TYPE_NOT_IN_DOMAIN_OF_RELATION_ERROR = "the type of the given URI is not in the domain of the relation";
+    public static final String URI_TYPE_NOT_IN_DOMAIN_OF_RELATION = "the type of the subject %s is not in the domain of the relation %s";
     public static final String REQUEST_ERROR = "Request error";
     public static final String RESOURCES_CREATED = "Resources created";
     public static final String RESOURCES_UPDATED = "Resources updated";

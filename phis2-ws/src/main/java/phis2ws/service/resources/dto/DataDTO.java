@@ -17,7 +17,7 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.resources.validation.interfaces.Date;
-import phis2ws.service.view.model.phis.Data;
+import phis2ws.service.view.model.phis.AgronomicalData;
 import phis2ws.service.resources.validation.interfaces.URL;
 
 /**
@@ -33,8 +33,8 @@ public class DataDTO extends AbstractVerifiedClass {
     private String incertitude;
 
     @Override
-    public Data createObjectFromDTO() {
-        Data data = new Data();
+    public AgronomicalData createObjectFromDTO() {
+        AgronomicalData data = new AgronomicalData();
         data.setAgronomicalObject(agronomicalObject);
         data.setDate(date);
         data.setValue(value);

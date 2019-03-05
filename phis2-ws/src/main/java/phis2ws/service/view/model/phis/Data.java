@@ -55,7 +55,7 @@ public class Data {
     public void setDate(Date date) {
         this.date = date;
     }
-    
+
     public Object getValue() {
         return value;
     }
@@ -79,6 +79,4 @@ public class Data {
     public void setUri(String uri) {
         this.uri = uri;
     }
-    
-    
 }

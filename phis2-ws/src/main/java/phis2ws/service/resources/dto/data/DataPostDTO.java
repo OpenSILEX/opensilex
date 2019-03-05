@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                       PhenotypePostDTO.java
+//                                       DataPostDTO.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 1 March 2018
@@ -20,7 +20,7 @@ import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.Data;
 
 /**
- * Represents the exchange format used to insert phenotypes in post service.
+ * Represents the exchange format used to insert data in post service.
  */
 public class DataPostDTO extends AbstractVerifiedClass {
     //The uri of the provenance from which data come.

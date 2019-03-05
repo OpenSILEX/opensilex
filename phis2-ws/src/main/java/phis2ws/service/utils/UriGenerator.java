@@ -9,6 +9,7 @@ package phis2ws.service.utils;
 import java.time.Instant;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.Base64;
 import java.util.Calendar;
 import java.util.UUID;
 import org.apache.commons.codec.binary.Base32;
@@ -437,6 +438,10 @@ public class UriGenerator {
     }
 
 
+    private String generateDataUri(String additionalInformation) {
+        return Contexts.PLATFORM.toString() + Base64.getEncoder().encodeToString(additionalInformation.getBytes());
+    }
+    
     /**
      * Generates a new data uri. A data uri follows the pattern :
      * hash/uuid

@@ -1,12 +1,11 @@
 //******************************************************************************
-//                                       UriGenerator.java
+//                            UriGenerator.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package phis2ws.service.utils;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.UUID;
 import org.apache.jena.sparql.AlreadyExists;
@@ -25,26 +24,26 @@ import phis2ws.service.dao.sesame.TraitDaoSesame;
 import phis2ws.service.dao.sesame.UnitDaoSesame;
 import phis2ws.service.dao.sesame.VariableDaoSesame;
 import phis2ws.service.dao.sesame.VectorDAOSesame;
-import phis2ws.service.model.User;
 import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Foaf;
 import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.view.model.phis.Group;
-import phis2ws.service.view.model.phis.Experiment;
 import phis2ws.service.view.model.phis.Project;
 
 /**
- * generate differents kinds of uris (vector, sensor, ...)
- *
+ * Generate different kinds of URIs (vector, sensor, ...)
+ * @update [Andreas Garcia] 14 Feb. 2019: use the last inserted experiment
+ * number instead of total number of experiment to calculate the number of a
+ * new experiment
  * @author Morgane Vidal <morgane.vidal@inra.fr>, Arnaud Charleroy <arnaud.charleory@inra.fr>
- * SILEX:todo : 
+ * SILEX:todo: 
  *       - Element: User agent uri
- *         Purpose : For now, generated user agent uris are not unic. 
+ *         Purpose: For now, generated user agent uris are not unic. 
  *         Numbers must be add at the end of user agent uri
  *         if two user agents have the same family name and first name.
- *         .e.g :
- *              - First user : Jean Dupont-Marie http://www.phenome-fppn.fr/diaphen/id/agent/jean_dupont-marie
- *              - Second user : Jean Dupont-Marie http://www.phenome-fppn.fr/diaphen/id/agent/jean_dupont-marie01
+ *         .e.g:
+ *              - First user: Jean Dupont-Marie http://www.phenome-fppn.fr/diaphen/id/agent/jean_dupont-marie
+ *              - Second user: Jean Dupont-Marie http://www.phenome-fppn.fr/diaphen/id/agent/jean_dupont-marie01
  * \SILEX:todo
  */
 public class UriGenerator {    
@@ -69,23 +68,25 @@ public class UriGenerator {
     private static final String PLATFORM_URI_ID_UNITS = PLATFORM_URI_ID + "units/";
     private static final String PLATFORM_URI_ID_VARIABLES = PLATFORM_URI_ID + "variables/";
     private static final String PLATFORM_URI_ID_VARIETY = PLATFORM_URI + "v/";
+    
+    private static final String EXPERIMENT_URI_SEPARATOR = "-";
 
 
     /**
-     * generates a new vector uri. a vector uri has the following form :
+     * Generate a new vector URI. a vector URI has the following pattern:
      * <prefix>:<year>/<unic_code>
      * <unic_code> = 1 letter type + 2 numbers year + auto incremented number
      * with 3 digits (per year)
      * @example http://www.phenome-fppn.fr/diaphen/2017/v1702
      * @param year the insertion year of the vector.
-     * @return the new vector uri
+     * @return the new vector URI
      */
     private String generateVectorUri(String year) {
         //1. get the actual number of vectors in the triplestor for the year
         VectorDAOSesame vectorDAO = new VectorDAOSesame();
         int lastVectorIdFromYear = vectorDAO.getLastIdFromYear(year);
 
-        //2. generates vectors uri
+        //2. generate vectors URI
         String numberOfVectors = Integer.toString(lastVectorIdFromYear + 1);
 
         String newVectorNumber;
@@ -100,21 +101,21 @@ public class UriGenerator {
     }
 
     /**
-     * generates a new sensor uri. a sensor uri has the following form :
+     * Generate a new sensor URI. A sensor URI has the following pattern:
      * <prefix>:<year>/<unic_code>
      * <unic_code> = 1 letter type + 2 numbers year + auto incremented number
      * with 2 digits (per year) the year corresponds to the year of insertion in
      * the triplestore
      * @example http://www.phenome-fppn.fr/diaphen/2017/s17002
      * @param year the insertion year of the sensor.
-     * @return the new sensor uri
+     * @return the new sensor URI
      */
     private String generateSensorUri(String year) {
-        //1. get the actual number of sensors in the triplestor for the year
+        //1. get the current number of sensors in the triplestor for the year
         SensorDAOSesame sensorDAO = new SensorDAOSesame();
         int lastSensorIdFromYear = sensorDAO.getLastIdFromYear(year);
 
-        //2. generates sensor uri
+        //2. generate sensor URI
         int sensorNumber = lastSensorIdFromYear + 1;
         String numberOfSensors = Integer.toString(sensorNumber);
         String newSensorNumber;
@@ -133,23 +134,23 @@ public class UriGenerator {
     }
 
     /**
-     * generates a new agronomical object uri. a sensor uri has the following
-     * form :
+     * Generate a new agronomical object URI. A sensor URI has the following
+     * form:
      * <prefix>:<year>/<unic_code>
      * <unic_code> = 1 letter type + 2 numbers year + auto incremented number
      * with 6 digits (per year) the year corresponds to the year of insertion in
      * the triplestore 
      * @example http://www.phenome-fppn.fr/diaphen/2017/o17000001
      * @param year the insertion year of the agronomical object.
-     * @return the new agronomical object uri
+     * @return the new agronomical object URI
      */
     private String generateAgronomicalObjectUri(String year) {
-        //1. get the higher number for the year 
+        //1. get the highest number for the year 
         //(i.e. the last inserted agronomical object for the year)
         ScientificObjectDAOSesame agronomicalObjectDAO = new ScientificObjectDAOSesame();
         int lastAgronomicalObjectIdFromYear = agronomicalObjectDAO.getLastScientificObjectIdFromYear(year);
 
-        //2. generates agronomical object uri
+        //2. generates agronomical object URI
         int agronomicalObjectNumber = lastAgronomicalObjectIdFromYear + 1;
         String agronomicalObjectId = Integer.toString(agronomicalObjectNumber);
 
@@ -161,19 +162,18 @@ public class UriGenerator {
     }
 
     /**
-     * generates a new variable uri. a variable uri follows the pattern :
+     * Generate a new variable URI. A variable URI follows the pattern:
      * <prefix>:id/variables/<unic_code>
      * <unic_code> = 1 letter type + auto incremented number with 3 digits e.g.
      * @example http://www.phenome-fppn.fr/diaphen/id/variables/v001
-     * @return the new variable uri
+     * @return the new variable URI
      */
     private String generateVariableUri() {
-        //1. get the higher variable id (i.e. the last 
-        //inserted variable)
+        //1. get the higher variable id (i.e. the last inserted variable)
         VariableDaoSesame variableDAO = new VariableDaoSesame();
         int lastVariableId = variableDAO.getLastId();
 
-        //2. generates variable uri
+        //2. generate variable URI
         int newVariableId = lastVariableId + 1;
         String variableId = Integer.toString(newVariableId);
 
@@ -185,19 +185,18 @@ public class UriGenerator {
     }
 
     /**
-     * generates a new trait uri. a trait uri follows the pattern :
+     * Generate a new trait URI. A trait URI follows the pattern:
      * <prefix>:id/traits/<unic_code>
      * <unic_code> = 1 letter type + auto incremented number with 3 digits e.g.
      * @example http://www.phenome-fppn.fr/diaphen/id/traits/t001
-     * @return the new trait uri
+     * @return the new trait URI
      */
     private String generateTraitUri() {
-        //1. get the higher trait id (i.e. the last 
-        //inserted trait)
+        //1. get the highest trait id (i.e. the last inserted trait)
         TraitDaoSesame traitDAO = new TraitDaoSesame();
         int lastTraitId = traitDAO.getLastId();
 
-        //2. generates trait uri
+        //2. generate trait URI
         int newTraitId = lastTraitId + 1;
         String traitId = Integer.toString(newTraitId);
 
@@ -209,19 +208,18 @@ public class UriGenerator {
     }
 
     /**
-     * generates a new method uri. a method uri follows the pattern :
+     * Generate a new method URI. A method URI follows the pattern:
      * <prefix>:id/methods/<unic_code>
      * <unic_code> = 1 letter type + auto incremented number with 3 digits e.g.
      * @example http://www.phenome-fppn.fr/diaphen/id/methods/m001
-     * @return the new method uri
+     * @return the new method URI
      */
     private String generateMethodUri() {
-        //1. get the higher method id (i.e. the last 
-        //inserted method)
+        //1. get the highest method id (i.e. the last inserted method)
         MethodDaoSesame methodDAO = new MethodDaoSesame();
         int lastMethodId = methodDAO.getLastId();
 
-        //2. generates method uri
+        //2. generate method URI
         int newMethodId = lastMethodId + 1;
         String methodId = Integer.toString(newMethodId);
 
@@ -233,19 +231,18 @@ public class UriGenerator {
     }
 
     /**
-     * generates a new unit uri. a unit uri follows the pattern :
+     * Generate a new unit URI. A unit URI follows the pattern:
      * <prefix>:id/units/<unic_code>
      * <unic_code> = 1 letter type + auto incremented number with 3 digits
      * @example http://www.phenome-fppn.fr/diaphen/id/units/m001
-     * @return the new unit uri
+     * @return the new unit URI
      */
     private String generateUnitUri() {
-        //1. get the higher unit id (i.e. the last 
-        //inserted unit)
+        //1. get the highest unit id (i.e. the last inserted unit)
         UnitDaoSesame unitDAO = new UnitDaoSesame();
         int lastUnitId = unitDAO.getLastId();
 
-        //2. generates unit uri
+        //2. generates unit URI
         int newUnitId = lastUnitId + 1;
         String unitId = Integer.toString(newUnitId);
 
@@ -257,19 +254,19 @@ public class UriGenerator {
     }
     
     /**
-     * Generates a new radiometric target uri. A radiometric target uri follows the pattern : 
+     * Generate a new radiometric target URI. A radiometric target URI follows the pattern: 
      * <prefix>:id/radiometricTargets/<unic_code>
      * <unic_code> = 2 letters type (rt) + auto incremented number with 3 digits
      * @example http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt001
-     * @return The new radiometric target uri
+     * @return The new radiometric target URI
      */
     private String generateRadiometricTargetUri() {
-        //1. Get the higher radiometric target id (i.e. the last inserted
+        //1. Get the highest radiometric target id (i.e. the last inserted
         //radiometric target)
         RadiometricTargetDAOSesame radiometricTargetDAO = new RadiometricTargetDAOSesame();
         int lastID = radiometricTargetDAO.getLastId();
         
-        //2. Generates radiometric target uri
+        //2. Generate radiometric target URI
         int newRadiometricTargetID = lastID + 1;
         String radiometricTargetID = Integer.toString(newRadiometricTargetID);
         
@@ -281,7 +278,7 @@ public class UriGenerator {
     }
 
     /**
-     * generates a new variety uri. a variety uri follows the pattern :
+     * Generate a new variety URI. A variety URI follows the pattern:
      * <prefix>:v/<varietynameinlowercase>
      * @example http://www.phenome-fppn.fr/diaphen/v/dkc4814
      * @param variety the variety name
@@ -292,13 +289,13 @@ public class UriGenerator {
     }
 
     /**
-     * generates a new agent uri. a agent uri follows the pattern :
+     * Generate a new agent uri. A agent URI follows the pattern:
      * <prefix>:id/agent/<unic_code>
      * <unic_code> = firstnames concat with lastnames in lowercase
      * @example http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy
      * @author Arnaud Charleroy
-     * @param agentSuffixe the agent suffixe e.g. arnaud_charleroy
-     * @return the new agent uri
+     * @param agentSuffixe the agent suffix e.g. arnaud_charleroy
+     * @return the new agent URI
      */
     private String generateAgentUri(String agentSuffixe) {
         // create URI
@@ -306,15 +303,14 @@ public class UriGenerator {
     }
 
     /**
-     * generates a new annotation uri. a unit annotation follows the pattern :
+     * Generate a new annotation URI. A unit annotation follows the pattern:
      * <prefix>:id/annotation/<unic_code>
      * <unic_code> = 1 letter type + java.util.UUID.randomUUID(); e.g.
      * http://www.phenome-fppn.fr/diaphen/id/annotation/e073961b-e766-4493-b98f-74a8b2846893
-     *
-     * @return the new annotation uri
+     * @return the new annotation URI
      */
     private String generateAnnotationUri() {
-        //1. check if uri already exist
+        //1. check if URI already exists
         AnnotationDAOSesame annotationDao = new AnnotationDAOSesame();
         String newAnnotationUri = PLATFORM_URI_ID_ANNOTATION + UUID.randomUUID();
         while (annotationDao.existUri(newAnnotationUri)) {
@@ -325,7 +321,7 @@ public class UriGenerator {
     }
 
     /**
-     * generates a new image uri. an image uri follows the pattern :
+     * Generate a new image uri. an image URI follows the pattern:
      * <prefix>:yyyy/<unic_code>
      * <unic_code> = 1 letter type (i) + 2 digits year + auto incremet with 10
      * digit
@@ -363,16 +359,16 @@ public class UriGenerator {
     }
     
     /**
-     * Generates a new project uri. A project uri follows the patter :
+     * Generates a new project uri. A project uri follows the patter:
      * <prefix>:<projectAcronyme>
      * @example http://www.opensilex.org/demo/PA
-     * @param projectAcronyme the project acronyme
-     * @return the new uri
+     * @param projectAcronyme the project acronym
+     * @return the new URI
      */
     private String generateProjectUri(String projectAcronyme) throws Exception {
-        //1. generates uri
+        //1. generates URI
         String projectUri = PLATFORM_URI + projectAcronyme;
-        //2. check if uri exist
+        //2. check if URI exists
         ProjectDao projectDAO = new ProjectDao();
         Project project = new Project(projectUri);
         if (projectDAO.existInDB(project)) {
@@ -383,31 +379,39 @@ public class UriGenerator {
     }
     
     /**
-     * Generates a new experiment uri. An experiment uri follows the pattern :
+     * Generate a new experiment URI. An experiment URI follows this pattern:
      * <prefix>:<unic_code>
      * <unic_code> = infrastructure code + 4 digits year + auto increment digit (per year)
      * @example http://www.opensilex.org/demo/DMO2019-1
-     * @param year the year of the campaign of the experiment
-     * @return the new uri
+     * @param campaign the year of the campaign of the experiment
+     * @return the new URI
      */
-    private String generateExperimentUri(String year) {
-        //1. Get the number of experiments for the given campaign year
-        ExperimentDao experimentDAO = new ExperimentDao();
-        int experimentsNb = experimentDAO.getNumberOfExperimentsByCampaign(year);
-        //2. Generates the uri of the experiment
-        return PLATFORM_URI + PLATFORM_CODE + year + "-" + experimentsNb;
+    private String generateExperimentUri(String campaign) {
+        //1. Get the campaign last experiment URI
+        String campaignLastExperimentUri = (new ExperimentDao()).getCampaignLastExperimentUri(campaign);
+        //2. Generate the URI of the experiment
+        int newExperimentNumber;
+        if (campaignLastExperimentUri == null) {
+            newExperimentNumber = 0;
+        }
+        else {
+            String[] uriSplitted = campaignLastExperimentUri.split(EXPERIMENT_URI_SEPARATOR);
+            int campaignLastExperimentNumber = Integer.parseInt(uriSplitted[uriSplitted.length - 1]);
+            newExperimentNumber = campaignLastExperimentNumber + 1;
+        }
+        return PLATFORM_URI + PLATFORM_CODE + campaign + EXPERIMENT_URI_SEPARATOR + newExperimentNumber;
     }
     
     /**
-     * Generates a new group uri. A group uri follows the pattern :
+     * Generate a new group URI. A group URI follows the pattern:
      * <prefix>:<groupName>
      * @example http://www.opensilex.org/demo/INRA-MISTEA.GAMMA
      * @param name the group name
-     * @return the new generated uri
+     * @return the new generated URI
      * @throws Exception 
      */
     private String generateGroupUri(String name) throws Exception {
-        //1. Generates URI
+        //1. Generate URI
         String groupUri = PLATFORM_URI + name;
         //2. Check if the generated URI already exists
         GroupDao groupDao = new GroupDao();
@@ -422,15 +426,14 @@ public class UriGenerator {
 
 
     /**
-     * generates the uri of a new instance of instanceType
-     *
-     * @param instanceType the rdf type of the instance. (a concept uri)
+     * Generate the URI of a new instance of instanceType
+     * @param instanceType the RDF type of the instance (a concept URI)
      * @param year year of the creation of the element. If it is null, it will
      * be the current year
-     * @param additionalInformation some additional informations used for some
-     * uri generators. (e.g. the variety name, or the last generated uri for the
+     * @param additionalInformation some additional information used for some
+     * URI generators. (e.g. the variety name, or the last generated URI for the
      * images)
-     * @return the generated uri
+     * @return the generated URI
      * @throws java.lang.Exception
      */
     public String generateNewInstanceUri(String instanceType, String year, String additionalInformation) throws Exception {

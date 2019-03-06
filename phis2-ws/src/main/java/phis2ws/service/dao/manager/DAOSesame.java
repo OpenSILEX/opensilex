@@ -18,6 +18,8 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.sparql.modify.request.UpdateDeleteWhere;
 import static org.apache.jena.sparql.vocabulary.VocabTestQuery.query;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -48,6 +50,7 @@ import phis2ws.service.view.brapi.form.ResponseFormPOST;
  * @update [Morgane Vidal] 04 Oct, 2018: Rename existObject to existUri and change the query of the method existUri.
  * @update [Andréas Garcia] 11 Jan, 2019: Add generic date time stamp comparison SparQL filter.
  * @update [Andréas Garcia] 5 March, 2019: Move date related functions in TimeDAOSesame.java
+ * @update [Andréas Garcia] 5 March, 2019: Add a generic function to get a string value from a binding set
  * @param <T>
  * @author Arnaud Charleroy
  */
@@ -395,5 +398,19 @@ public abstract class DAOSesame<T> {
         }
         
         return true;
+    }
+    
+    /**
+     * Get the value of a name in the SELECT statement from a binding set
+     * @param selectName 
+     * @param bindingSet 
+     * @return  the string value of the "selectName" variable in the binding set
+     */
+    protected String getStringValueOfSelectNameFromBindingSet(String selectName, BindingSet bindingSet) { 
+        Value selectedFieldValue = bindingSet.getValue(selectName);
+        if (selectedFieldValue != null) {
+            return selectedFieldValue.stringValue();
+        }
+        return null;
     }
 }

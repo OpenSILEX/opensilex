@@ -138,7 +138,26 @@ public class ProvenanceResourceService extends ResourceService {
      * @param jsonValueFilter
      * @return list of the provenances corresponding to the search params given
      * @example
-     * 
+     * {
+     *      "metadata": {
+     *          "pagination": null,
+     *          "status": [],
+     *          "datafiles": []
+     *      },
+     *      "result": {
+     *          "data": [
+     *              {
+     *                  "uri": "http://www.opensilex.org/opensilex/id/provenance/1551805521606",
+     *                  "label": "PROV2019-LEAF",
+     *                  "comment": "In this provenance we have count the number of leaf per plant",
+     *                  "metadata": {
+     *                      "SensingDevice": "http://www.opensilex.org/demo/s001",
+     *                      "Vector": "http://www.opensilex.org/demo/v001"
+     *                  }
+     *              }
+     *          ]
+     *      }
+     * }
      */
     @GET
     @ApiOperation(value = "Get all provenances corresponding to the search params given",

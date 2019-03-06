@@ -67,6 +67,14 @@ public class ProvenanceDAOMongo extends DAOMongo<Provenance> {
      * Generates the query to search provenances by uri, label, comment and additional json filters
      * @param searchProvenance
      * @param jsonValueFilter
+     * @example
+     * { 
+     *      "metadata.SensingDevice" : "http://www.opensilex.org/demo/s001", 
+     *      "metadata.Vector" : "http://www.opensilex.org/demo/v001", 
+     *      "uri" : "http://www.opensilex.org/opensilex/id/provenance/1551805521606", 
+     *      "label" : { "$regex" : "PROV2019-LEAF", "$options" : "" }, 
+     *      "comment" : { "$regex" : "plant", "$options" : "" } 
+     * }
      * @return the query
      */
     protected BasicDBObject searchQuery(Provenance searchProvenance, String jsonValueFilter) {

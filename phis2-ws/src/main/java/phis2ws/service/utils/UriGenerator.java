@@ -9,7 +9,6 @@ package phis2ws.service.utils;
 import java.time.Instant;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.util.Base64;
 import java.util.Calendar;
 import java.util.UUID;
 import org.apache.commons.codec.binary.Base32;
@@ -438,8 +437,21 @@ public class UriGenerator {
     }
 
 
-    private String generateDataUri(String additionalInformation) {
-        return Contexts.PLATFORM.toString() + Base64.getEncoder().encodeToString(additionalInformation.getBytes());
+    private String generateDataUri(String additionalInformation) throws Exception {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] encodedhash = digest.digest(additionalInformation.getBytes(StandardCharsets.UTF_8));
+        StringBuffer hexString = new StringBuffer();
+        for (int i = 0; i < encodedhash.length; i++) {
+            String hex = Integer.toHexString(0xff & encodedhash[i]);
+            if(hex.length() == 1) {
+                hexString.append('0');
+            }
+            hexString.append(hex);
+        }
+        
+        String uri = Contexts.PLATFORM.toString() + additionalInformation + "/" + UUID.randomUUID();
+        
+        return uri;
     }
     
     /**

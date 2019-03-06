@@ -239,22 +239,10 @@ public class AnnotationResourceService extends ResourceService {
         AnnotationDAOSesame annotationDAOSesame = new AnnotationDAOSesame(userSession.getUser());
 
         // Count all annotations for this specific request
-        Integer totalCount = annotationDAOSesame.count(
-            searchUri,
-            searchCreator,
-            searchTarget,
-            searchComment,
-            searchMotivatedBy);
+        Integer totalCount = annotationDAOSesame.count(searchUri, searchCreator, searchTarget, searchComment, searchMotivatedBy);
         
         // Retreive all annotations returned by the query
-        ArrayList<Annotation> annotations = annotationDAOSesame.searchAnnotations(
-            searchUri,
-            searchCreator,
-            searchTarget,
-            searchComment,
-            searchMotivatedBy,
-            searchPage,
-            searchPageSize);
+        ArrayList<Annotation> annotations = annotationDAOSesame.searchAnnotations(searchUri, searchCreator, searchTarget, searchComment, searchMotivatedBy, searchPage,searchPageSize);
         
         ArrayList<AnnotationDTO> annotationDTOs = new ArrayList();
 

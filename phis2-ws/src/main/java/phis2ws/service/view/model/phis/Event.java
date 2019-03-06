@@ -37,6 +37,14 @@ public class Event extends RdfResourceDefinition {
      */
     private ArrayList<Annotation> annotations;
 
+    /**
+     * @param uri
+     * @param type
+     * @param concernedItems
+     * @param dateTime
+     * @param properties
+     * @param annotations
+     */
     public Event(String uri, String type, ArrayList<ConcernedItem> concernedItems, DateTime dateTime, ArrayList<Property> properties, ArrayList<Annotation> annotations) {
         this.uri = uri;
         this.type = type;

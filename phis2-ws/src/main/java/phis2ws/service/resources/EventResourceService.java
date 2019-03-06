@@ -54,21 +54,6 @@ public class EventResourceService  extends ResourceService {
     final static Logger LOGGER = LoggerFactory.getLogger(EventResourceService.class);
     
     /**
-     * Generates an Event list from a given list of EventDTO
-     * @param event
-     * @return the list of events
-     */
-    private List<Event> eventDTOsToEvents(List<EventSimpleDTO> eventDTOs) {
-        ArrayList<Event> events = new ArrayList<>();
-        
-        eventDTOs.forEach(eventDTO -> {
-            events.add(eventDTO.createObjectFromDTO());
-        });
-        
-        return events;
-    }
-    
-    /**
      * Search all events
      * @example
      * {

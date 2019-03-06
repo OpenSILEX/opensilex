@@ -7,6 +7,7 @@
 package phis2ws.service.utils;
 
 import java.util.Base64;
+import java.time.Instant;
 import java.util.Calendar;
 import java.util.UUID;
 import org.apache.jena.sparql.AlreadyExists;
@@ -69,8 +70,8 @@ public class UriGenerator {
     private static final String PLATFORM_URI_ID_UNITS = PLATFORM_URI_ID + "units/";
     private static final String PLATFORM_URI_ID_VARIABLES = PLATFORM_URI_ID + "variables/";
     private static final String PLATFORM_URI_ID_VARIETY = PLATFORM_URI + "v/";
-    
     private static final String EXPERIMENT_URI_SEPARATOR = "-";
+    private static final String PLATFORM_URI_ID_PROVENANCE = PLATFORM_URI_ID + "provenance/";
 
 
     /**
@@ -424,6 +425,20 @@ public class UriGenerator {
         
         return groupUri;
     }
+    
+    /**
+     * Generates a new provenance uri. A provenance uri follows the pattern :
+     * <prefix>:id/provenance/<timestamp>
+     * @example http://www.opensilex.org/demo/id/provenance/019275849
+     * @return the new generated uri
+     * @throws Exception 
+     */
+    private String generateProvenanceUri() {
+        //Generates uri
+        Instant instant = Instant.now();
+        long timeStampMillis = instant.toEpochMilli();
+        return PLATFORM_URI_ID_PROVENANCE + Long.toString(timeStampMillis);
+    }
 
 
     private String generateDataUri(String additionalInformation) {
@@ -480,6 +495,8 @@ public class UriGenerator {
             return generateGroupUri(additionalInformation);
         } else if (instanceType.equals(Oeso.CONCEPT_DATA.toString())) {
             return generateDataUri(additionalInformation);
+        } else if (instanceType.equals(Oeso.CONCEPT_PROVENANCE.toString())) {
+            return generateProvenanceUri();
         }
 
         return null;

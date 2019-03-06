@@ -13,6 +13,9 @@ import java.util.Date;
  * This is the model for the phenotypes data
  */
 public class Data {
+    //The uri of the data.
+    //e.g. http://www.phenome-fppn.fr/mtp/2018/s18003
+    protected String uri;
     //The uri of the provenance from which data come.
     //e.g. http://www.phenome-fppn.fr/mtp/2018/s18003
     protected String provenanceUri;
@@ -68,4 +71,14 @@ public class Data {
     public void setProvenanceUri(String provenanceUri) {
         this.provenanceUri = provenanceUri;
     }
+
+    public String getUri() {
+        return uri;
+    }
+
+    public void setUri(String uri) {
+        this.uri = uri;
+    }
+    
+    
 }

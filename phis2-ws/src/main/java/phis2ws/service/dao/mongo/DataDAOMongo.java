@@ -8,6 +8,7 @@
 package phis2ws.service.dao.mongo;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
 import com.mongodb.client.ClientSession;
@@ -92,11 +93,18 @@ public class DataDAOMongo extends DAOMongo<Data> {
     private Document prepareInsertDataDocument(Data data) {
         Document document = new Document();
 
-        String key = data.getObjectUri() + data.getVariableUri() + data.getDate() + data.getProvenanceUri();
+        String key = data.getVariableUri() + data.getObjectUri() + data.getProvenanceUri() + data.getDate();
         try {
-            String uri = new UriGenerator().generateNewInstanceUri(Oeso.CONCEPT_DATA.toString(), null, key);
+            UriGenerator uriGenerator = new UriGenerator();
+            String uri = uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA.toString(), null, key);
 
-            document.append(DB_FIELD_URI, uri);
+            while (uriExists(data.getVariableUri(), uri)) {
+                uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA.toString(), null, key);
+            }
+            
+            data.setUri(uri);
+            
+            document.append(DB_FIELD_URI, data.getUri());
             document.append(DB_FIELD_OBJECT, data.getObjectUri());
             document.append(DB_FIELD_VARIABLE, data.getVariableUri());
             document.append(DB_FIELD_DATE, data.getDate());
@@ -157,6 +165,8 @@ public class DataDAOMongo extends DAOMongo<Data> {
                 dataByVariable = new ArrayList<>();
             }
 
+            createdResources.add(data.getUri());
+            
             dataByVariable.add(createData);
             dataListToInsertByVariable.put(data.getVariableUri(), dataByVariable);
         }
@@ -189,7 +199,6 @@ public class DataDAOMongo extends DAOMongo<Data> {
                         StatusCodeMsg.INFO,
                         StatusCodeMsg.DATA_INSERTED + " for the variable " + dataToInsert.getKey()
                 ));
-                createdResources.add(dataToInsert.getKey());
 
             } catch (MongoException ex) {
                 // Define that an error occurs
@@ -257,5 +266,20 @@ public class DataDAOMongo extends DAOMongo<Data> {
     @Override
     protected BasicDBObject prepareSearchQuery() {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    /**
+     * Return true if the given URI already exists in variable collection
+     * @param variableUri variable which will determine in which collection to look
+     * @param uri URI to check
+     * @return true if the URI exists and false otherwise
+     */
+    public boolean uriExists(String variableUri, String uri) {
+        String variableCollection = getCollectionFromVariable(variableUri);
+        
+        BasicDBObject query = new BasicDBObject();
+        query.append(DB_FIELD_URI, BasicDBObjectBuilder.start("$exists", true).get());
+        
+        return database.getCollection(variableCollection).countDocuments(query) > 0; 
     }
 }

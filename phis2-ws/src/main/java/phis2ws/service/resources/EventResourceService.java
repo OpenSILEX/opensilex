@@ -51,6 +51,7 @@ import phis2ws.service.view.brapi.form.AbstractResultForm;
 import phis2ws.service.view.brapi.form.ResponseFormEventDetailed;
 import phis2ws.service.view.brapi.form.ResponseFormEventSimple;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
+import phis2ws.service.view.model.phis.Annotation;
 import phis2ws.service.view.model.phis.Event;
 
 /**
@@ -113,14 +114,20 @@ public class EventResourceService  extends ResourceService {
      * @return  list of all events
      */
     @GET
-    @ApiOperation(value = "Get all events corresponding to the search parameters given.", notes = "Retrieve all events authorized for the user corresponding to the " + "search parameters given")
+    @ApiOperation(value = "Get all events corresponding to the search parameters given.", 
+            notes = "Retrieve all events authorized for the user corresponding to the " + "search parameters given")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Retrieve all events", response = Event.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({@ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true, dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER, value = DocumentationAnnotation.ACCES_TOKEN, example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")})
+    @ApiImplicitParams({@ApiImplicitParam(
+            name = GlobalWebserviceValues.AUTHORIZATION, 
+            required = true, dataType = GlobalWebserviceValues.DATA_TYPE_STRING, 
+            paramType = GlobalWebserviceValues.HEADER, 
+            value = DocumentationAnnotation.ACCES_TOKEN, 
+            example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")})
     @Produces(MediaType.APPLICATION_JSON)
     public Response getEventsBySearch(
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize, 
@@ -200,7 +207,7 @@ public class EventResourceService  extends ResourceService {
      *             "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/admin_phis",
      *             "motivatedBy": "http://www.w3.org/ns/oa#describing",
      *             "comments": [
-     *               "e"
+     *               "comment 1"
      *             ],
      *             "targets": [
      *               "http://www.opensilex.org/id/event/12590c87-1c34-426b-a231-beb7acb33415"
@@ -331,27 +338,31 @@ public class EventResourceService  extends ResourceService {
         if (eventsDtos != null && !eventsDtos.isEmpty()) {
             EventDAOSesame eventDao = new EventDAOSesame(userSession.getUser());
             
-             if (context.getRemoteAddr() != null) {
+            if (context.getRemoteAddr() != null) {
                 eventDao.remoteUserAdress = context.getRemoteAddr();
             }
             
             ArrayList<Event> events = new ArrayList<>();
-            for (EventPostDTO eventDto : eventsDtos) {
+            eventsDtos.forEach((eventDto) -> {
                 events.add(eventDto.createObjectFromDTO());
-            }
+            });
             POSTResultsReturn result = eventDao.checkAndInsert(events);
+            Response.Status httpStatus = result.getHttpStatus();
             
-            if (result.getHttpStatus().equals(Response.Status.CREATED)) {
+            if (httpStatus.equals(Response.Status.CREATED)) {
                 postResponse = new ResponseFormPOST(result.statusList);
                 postResponse.getMetadata().setDatafiles(result.getCreatedResources());
-            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                    || result.getHttpStatus().equals(Response.Status.OK)
-                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+            } else if (httpStatus.equals(Response.Status.BAD_REQUEST)
+                    || httpStatus.equals(Response.Status.OK)
+                    || httpStatus.equals(Response.Status.INTERNAL_SERVER_ERROR)) {
                 postResponse = new ResponseFormPOST(result.statusList);
             }
-            return Response.status(result.getHttpStatus()).entity(postResponse).build();
+            return Response.status(httpStatus).entity(postResponse).build();
         } else {
-            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty event to add"));
+            postResponse = new ResponseFormPOST(new Status(
+                    StatusCodeMsg.REQUEST_ERROR, 
+                    StatusCodeMsg.ERR, 
+                    StatusCodeMsg.EVENT_TO_ADD_IS_EMPTY));
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }

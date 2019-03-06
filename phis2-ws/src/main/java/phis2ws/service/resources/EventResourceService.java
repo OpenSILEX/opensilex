@@ -51,7 +51,6 @@ import phis2ws.service.view.brapi.form.AbstractResultForm;
 import phis2ws.service.view.brapi.form.ResponseFormEventDetailed;
 import phis2ws.service.view.brapi.form.ResponseFormEventSimple;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
-import phis2ws.service.view.model.phis.Annotation;
 import phis2ws.service.view.model.phis.Event;
 
 /**

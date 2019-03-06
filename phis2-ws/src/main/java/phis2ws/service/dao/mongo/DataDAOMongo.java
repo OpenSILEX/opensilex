@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.dao.manager.DAOMongo;
+import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.dao.sesame.VariableDaoSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.ontologies.Oeso;
@@ -78,13 +79,17 @@ public class DataDAOMongo extends DAOMongo<Data> {
         VariableDaoSesame variableDAO = new VariableDaoSesame();
 
         for (Data data : dataList) {
-            //2. Check if the variableUri exist and is a variable
+            //1. Check if the variableUri exist and is a variable
             if (!variableDAO.existAndIsVariable(data.getVariableUri())) {
                 dataOk = false;
                 checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR,
                         "Unknwon variable : " + data.getVariableUri()));
 
-                // TODO check data type depending of variable
+               
+            } else if (!variableDAO.existUri(data.getObjectUri())) {
+                dataOk = false;
+                checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR,
+                        "Unknwon object : " + data.getObjectUri()));
             }
         }
 

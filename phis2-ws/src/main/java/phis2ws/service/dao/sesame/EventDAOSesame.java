@@ -196,7 +196,13 @@ public class EventDAOSesame extends DAOSesame<Event> {
         query.appendTriplet(TIME_SELECT_NAME_SPARQL, Time.inXSDDateTimeStamp.toString(), DATETIMESTAMP_SELECT_NAME_SPARQL, null);
         
         if (searchDateTimeRangeStartString != null || searchDateTimeRangeEndString != null) {
-            filterSearchQueryWithDateRangeComparisonWithDateTimeStamp(query, DateFormat.YMDTHMSZZ.toString(), searchDateTimeRangeStartString, searchDateTimeRangeEndString, DATETIMESTAMP_SELECT_NAME_SPARQL);
+            TimeDAOSesame timeDao = new TimeDAOSesame(this.user);
+            timeDao.filterSearchQueryWithDateRangeComparisonWithDateTimeStamp(
+                    query, 
+                    DateFormat.YMDTHMSZZ.toString(), 
+                    searchDateTimeRangeStartString, 
+                    searchDateTimeRangeEndString, 
+                    DATETIMESTAMP_SELECT_NAME_SPARQL);
         }
     }
     

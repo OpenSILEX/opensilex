@@ -50,8 +50,9 @@ import phis2ws.service.view.brapi.form.ResponseFormPOST;
 
 /**
  * DAO class to query the triplestore 
- * @update [Morgane Vidal] 04 Oct, 2018 : Rename existObject to existUri and change the query of the method existUri.
- * @update [Andréas Garcia] 11 Jan, 2019 : Add generic date time stamp comparison SparQL filter.
+ * @update [Morgane Vidal] 04 Oct, 2018: Rename existObject to existUri and change the query of the method existUri.
+ * @update [Andréas Garcia] 11 Jan, 2019: Add generic date time stamp comparison SparQL filter.
+ * @update [Andréas Garcia] 5 March, 2019: Move date related functions in TimeDAOSesame.java
  * @param <T>
  * @author Arnaud Charleroy
  */
@@ -81,15 +82,6 @@ public abstract class DAOSesame<T> {
     protected static final String LABEL = "label";
     protected static final String COMMENT = "comment";
     
-    protected static final String DATETIME_SELECT_NAME = "dateTime";
-    protected static final String DATETIME_SELECT_NAME_SPARQL = "?" + DATETIME_SELECT_NAME;
-    
-    protected static final String DATE_RANGE_START_DATETIME_SELECT_NAME = "dateRangeStartDateTime";
-    protected static final String DATE_RANGE_START_DATETIME_SELECT_NAME_SPARQL = "?" + DATE_RANGE_START_DATETIME_SELECT_NAME;
-    
-    protected static final String DATE_RANGE_END_DATETIME_SELECT_NAME = "dateRangeEndDateTime";
-    protected static final String DATE_RANGE_END_DATETIME_SELECT_NAME_SPARQL = "?" + DATE_RANGE_END_DATETIME_SELECT_NAME;
-    
     protected final String DATETIMESTAMP_FORMAT_SPARQL = DateFormat.YMDTHMSZZ.toString();
     
     // Triplestore relations
@@ -103,8 +95,9 @@ public abstract class DAOSesame<T> {
     public User user;
     protected Integer page;
     protected Integer pageSize;
+    
     /**
-     * User ip adress
+     * User IP address
      */
     public String remoteUserAdress;
 
@@ -296,65 +289,6 @@ public abstract class DAOSesame<T> {
      * @return SPARQLQueryBuilder
      */
     abstract protected SPARQLQueryBuilder prepareSearchQuery();
-    
-    /** Add a filter to the search query comparing a SPARQL dateTimeStamp 
-     * variable to a date. 
-     * SPARQL dateTimeStamp dates have to be handled in a specific way as 
-     * the comparison operators (<, >, etc.) aren't available for dateTimeStamp
-     * objects.
-     * @see <a href="https://www.w3.org/TR/2013/REC-sparql11-query-20130321/#OperatorMapping">
-     * SparQL Operator Mapping
-     * </a>
-     * @param query
-     * @param filterDateString
-     * @param filterDateFormat
-     * @param filterDateSparqlVariable SPARQL variable (?abc format)
-     * @param comparisonSign e.g >, >=, <, <= 
-     * @param dateTimeStampToCompareSparqlVariable the SPARQL variable 
-     * (?abc format) of the dateTimeStamp to which the date has to be compared
-     * @example SparQL code added to the query :
-     *   BIND(xsd:dateTime(str("2017-09-10T12:00:00+01:00")) as ?dateRangeStartDateTime) .
-     *   FILTER ( (?dateRangeStartDateTime <= ?dateTime) ) 
-     */
-    protected void filterSearchQueryWithDateTimeStampComparison( SPARQLStringBuilder query, String filterDateString, String filterDateFormat, String filterDateSparqlVariable, String comparisonSign, String dateTimeStampToCompareSparqlVariable){
-        
-        DateTime filterDate = Dates.stringToDateTimeWithGivenPattern(filterDateString, filterDateFormat);
-        
-        String filterDateStringInSparqlDateTimeStampFormat = DateTimeFormat.forPattern(DATETIMESTAMP_FORMAT_SPARQL).print(filterDate);
-
-        query.appendToBody("\nBIND(<" + Xsd.FUNCTION_DATETIME.toString() + ">(str(\"" + filterDateStringInSparqlDateTimeStampFormat + "\")) as " + filterDateSparqlVariable + ") .");
-        
-        query.appendAndFilter(filterDateSparqlVariable + comparisonSign + dateTimeStampToCompareSparqlVariable);
-    }
-
-    /**
-     * Append a filter to select only the results whose datetime is 
-     * included in the date range in parameter
-     * @param query
-     * @param filterRangeDatesStringFormat
-     * @param filterRangeStartDateString
-     * @param filterRangeEndDateString
-     * @param dateTimeStampToCompareSparqleVariable the SPARQL variable (?abc 
-     * format) of the dateTimeStamp to compare to the range
-     * @example SparQL code added to the query :
-     *   BIND(xsd:dateTime(str(?dateTimeStamp)) as ?dateTime) .
-     *   BIND(xsd:dateTime(str("2017-09-10T12:00:00+01:00")) as ?dateRangeStartDateTime) .
-     *   BIND(xsd:dateTime(str("2017-09-12T12:00:00+01:00")) as ?dateRangeEndDateTime) .
-     *   FILTER ( (?dateRangeStartDateTime <= ?dateTime) && (?dateRangeEndDateTime >= ?dateTime) ) 
-     */
-    protected void filterSearchQueryWithDateRangeComparisonWithDateTimeStamp(SPARQLStringBuilder query, String filterRangeDatesStringFormat, String filterRangeStartDateString, String filterRangeEndDateString, String dateTimeStampToCompareSparqleVariable){
-        
-        query.appendToBody("\nBIND(<" + Xsd.FUNCTION_DATETIME.toString() 
-                + ">(str(" + dateTimeStampToCompareSparqleVariable 
-                + ")) as " + DATETIME_SELECT_NAME_SPARQL + ") .");
-        
-        if (filterRangeStartDateString != null){
-            filterSearchQueryWithDateTimeStampComparison(query, filterRangeStartDateString, filterRangeDatesStringFormat, DATE_RANGE_START_DATETIME_SELECT_NAME_SPARQL, " <= ", DATETIME_SELECT_NAME_SPARQL);
-        }
-        if (filterRangeEndDateString != null){
-            filterSearchQueryWithDateTimeStampComparison(query, filterRangeEndDateString, filterRangeDatesStringFormat, DATE_RANGE_END_DATETIME_SELECT_NAME_SPARQL, " >= ", DATETIME_SELECT_NAME_SPARQL);
-        }
-    }
 
     /**
      * Count the number of elements returned by the execution of a query

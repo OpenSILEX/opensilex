@@ -27,7 +27,7 @@ import phis2ws.service.view.model.phis.Annotation;
 public class AnnotationDTO extends AbstractVerifiedClass {
 
     /**
-     * Uri
+     * URI
      * @example http://www.phenome-fppn.fr/platform/id/annotation/8247af37-769c-495b-8e7e-78b1141176c2
      */
     @URL

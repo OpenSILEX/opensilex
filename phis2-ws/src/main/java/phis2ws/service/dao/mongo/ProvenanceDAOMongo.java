@@ -11,14 +11,18 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
 import com.mongodb.client.ClientSession;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import javax.ws.rs.core.Response;
+import org.bson.BSONObject;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.slf4j.Logger;
@@ -60,9 +64,62 @@ public class ProvenanceDAOMongo extends DAOMongo<Provenance> {
     }
     
     /**
+     * Generates the query to search provenances by uri, label, comment and additional json filters
+     * @param searchProvenance
+     * @param jsonValueFilter
+     * @return the query
+     */
+    protected BasicDBObject searchQuery(Provenance searchProvenance, String jsonValueFilter) {
+        BasicDBObject query = new BasicDBObject();
+        
+        if (jsonValueFilter != null) {
+            query.putAll((BSONObject) BasicDBObject.parse(jsonValueFilter));
+        }
+        
+        if (searchProvenance.getUri() != null) {
+            query.append(DB_FIELD_URI, searchProvenance.getUri());
+        }
+        
+        if (searchProvenance.getLabel() != null) {
+            query.append(DB_FIELD_LABEL, java.util.regex.Pattern.compile(searchProvenance.getLabel()));
+        }
+        
+        if (searchProvenance.getComment() != null) {
+            query.append(DB_FIELD_COMMENT, java.util.regex.Pattern.compile(searchProvenance.getComment()));
+        }
+        LOGGER.debug(query.toJson());
+        
+        return query;
+    }
+    
+    /**
+     * Count the number of results for the query
+     * @param searchProvenance
+     * @param jsonValueFilter
+     * @return the number of provenances corresponding to the search params
+     */
+    public int count(Provenance searchProvenance, String jsonValueFilter) {
+        MongoCollection<Document> provenanceCollection = database.getCollection(provenanceCollectionName);
+
+        // Get the filter query
+        BasicDBObject query = searchQuery(searchProvenance, jsonValueFilter);
+        
+        // Return the document count
+        return (int)provenanceCollection.countDocuments(query);
+    }
+    
+    /**
      * Generates the document to insert provenance.
      * @example
-     * 
+     * { 
+     *      "uri" : "http://www.opensilex.org/opensilex/id/provenance/1551877498746",
+     *      "label" : "PROV2019-LEAF",
+     *      "comment" : "In this provenance we have count the number of leaf per plant",
+     *      "metadata" : { 
+     *          "SensingDevice" : "http://www.opensilex.org/demo/s001",
+     *          "Vector" : "http://www.opensilex.org/demo/v001" 
+     *      }
+     * }
      * @param provenance
      * @return the document to insert
      */
@@ -173,5 +230,44 @@ public class ProvenanceDAOMongo extends DAOMongo<Provenance> {
         } catch (Exception ex) {
             return new POSTResultsReturn(false, Response.Status.INTERNAL_SERVER_ERROR, ex.toString());
         }
+    }
+    
+    /**
+     * 
+     * @param searchProvenance
+     * @param jsonValueFilter
+     * @return the list of the provenances corresponding to the given search params
+     */
+    public ArrayList<Provenance> getProvenances(Provenance searchProvenance, String jsonValueFilter) {
+        MongoCollection<Document> provenanceCollection = database.getCollection(provenanceCollectionName);
+        // Get the filter query
+        BasicDBObject query = searchQuery(searchProvenance, jsonValueFilter);
+        
+        // Get paginated documents
+        FindIterable<Document> provenancesMongo = provenanceCollection.find(query);
+        
+        // Define pagination for the request
+        provenancesMongo = provenancesMongo.skip(page * pageSize).limit(pageSize);
+
+        ArrayList<Provenance> provenances = new ArrayList<>();
+        
+        // For each document, create a Provenance instance and add it to the result list
+        try (MongoCursor<Document> provenancesCursor = provenancesMongo.iterator()) {
+            while (provenancesCursor.hasNext()) {
+                Document provenanceDocument = provenancesCursor.next();
+                
+                // Create and define the Provenance
+                Provenance provenance = new Provenance();
+                provenance.setUri(provenanceDocument.getString(DB_FIELD_URI));
+                provenance.setLabel(provenanceDocument.getString(DB_FIELD_LABEL));
+                provenance.setComment(provenanceDocument.getString(DB_FIELD_COMMENT));
+                provenance.setMetadata(provenanceDocument.get(DB_FIELD_METADATA));
+                
+                // Add the provenance to the list
+                provenances.add(provenance);
+            }
+        }
+        
+        return provenances;
     }
 }

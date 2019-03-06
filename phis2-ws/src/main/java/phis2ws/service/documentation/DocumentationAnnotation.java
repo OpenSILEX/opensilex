@@ -172,6 +172,8 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_PROVENANCE_COMMENT = "In this provenance we have count the number of leaf per plant";
     public static final String EXAMPLE_PROVENANCE_METADATA = "{ \"SensingDevice\" : \"http://www.opensilex.org/demo/s001\",\n" +
                                                                "\"Vector\" : \"http://www.opensilex.org/demo/v001\"}";
+    public static final String EXAMPLE_PROVENANCE_METADATA_FILTER = "{ \"metadata.SensingDevice\" : \"http://www.opensilex.org/demo/s001\",\n" +
+                                                               "\"metadata.Vector\" : \"http://www.opensilex.org/demo/v001\"}";
 
     public static final String EXAMPLE_GROUP_URI = "http://phenome-fppn.fr/mauguio/INRA-MISTEA-GAMMA";
     public static final String EXAMPLE_GROUP_NAME = "INRA-MISTEA-GAMMA";

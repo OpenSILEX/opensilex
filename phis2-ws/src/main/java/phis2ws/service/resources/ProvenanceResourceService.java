@@ -62,10 +62,19 @@ public class ProvenanceResourceService extends ResourceService {
     
     /**
      * Insert provenances.
-     * @example
-     * 
      * @param provenances
      * @param context
+     * @example 
+     * [
+     *  {
+     *      "label": "PROV2019-LEAF",
+     *      "comment": "In this provenance we have count the number of leaf per plant",
+     *      "metadata": { 
+     *          "SensingDevice" : "http://www.opensilex.org/demo/s001",
+     *          "Vector" : "http://www.opensilex.org/demo/v001"
+     *      }
+     *  }
+     * ]
      * @return the insertion result
      */
     @POST

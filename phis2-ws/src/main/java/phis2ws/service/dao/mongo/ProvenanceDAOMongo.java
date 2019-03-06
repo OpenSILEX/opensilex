@@ -62,7 +62,15 @@ public class ProvenanceDAOMongo extends DAOMongo<Provenance> {
     /**
      * Generates the document to insert provenance.
      * @example
-     * 
+     * { 
+     *      "uri" : "http://www.opensilex.org/opensilex/id/provenance/1551877498746",
+     *      "label" : "PROV2019-LEAF",
+     *      "comment" : "In this provenance we have count the number of leaf per plant",
+     *      "metadata" : { 
+     *          "SensingDevice" : "http://www.opensilex.org/demo/s001",
+     *          "Vector" : "http://www.opensilex.org/demo/v001" 
+     *      }
+     * }
      * @param provenance
      * @return the document to insert
      */

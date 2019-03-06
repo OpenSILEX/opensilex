@@ -6,10 +6,8 @@
 //******************************************************************************
 package phis2ws.service.utils;
 
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.UUID;
 import org.apache.jena.sparql.AlreadyExists;
 import phis2ws.service.PropertiesFileManager;

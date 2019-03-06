@@ -416,4 +416,19 @@ public class DataDAOMongo extends DAOMongo<Data> {
         
         return database.getCollection(variableCollection).countDocuments(query) > 0; 
     }
+
+    /**
+     * Return true if the given URI already exists in variable collection
+     * @param variableUri variable which will determine in which collection to look
+     * @param uri URI to check
+     * @return true if the URI exists and false otherwise
+     */
+    public boolean uriExists(String variableUri, String uri) {
+        String variableCollection = getCollectionFromVariable(variableUri);
+        
+        BasicDBObject query = new BasicDBObject();
+        query.append(DB_FIELD_URI, BasicDBObjectBuilder.start("$exists", true).get());
+        
+        return database.getCollection(variableCollection).countDocuments(query) > 0; 
+    }
 }

@@ -331,7 +331,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
      * (empty if no error found)
      */
     public POSTResultsReturn check(List<Annotation> annotations) {
-        POSTResultsReturn check = null;
+        POSTResultsReturn check;
         //list of the returned results
         List<Status> checkStatus = new ArrayList<>();
         boolean dataOk = true;

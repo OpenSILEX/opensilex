@@ -26,6 +26,7 @@ import phis2ws.service.dao.sesame.VariableDaoSesame;
 import phis2ws.service.dao.sesame.VectorDAOSesame;
 import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Foaf;
+import phis2ws.service.ontologies.Oeev;
 import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.view.model.phis.Group;
 import phis2ws.service.view.model.phis.Project;
@@ -321,7 +322,26 @@ public class UriGenerator {
     }
 
     /**
-     * Generate a new image uri. an image URI follows the pattern:
+     * Generate a new annotation URI. a unit annotation follows the pattern :
+     * <prefix>:id/annotation/<unic_code>
+     * <unic_code> = 1 letter type + java.util.UUID.randomUUID(); e.g.
+     * http://www.phenome-fppn.fr/diaphen/id/annotation/e073961b-e766-4493-b98f-74a8b2846893
+     *
+     * @return the new annotation uri
+     */
+    private String generateAnnotationUri() {
+        //1. check if uri already exist
+        AnnotationDAOSesame annotationDao = new AnnotationDAOSesame();
+        String newAnnotationUri = PLATFORM_URI_ID_ANNOTATION + UUID.randomUUID();
+        while (annotationDao.existUri(newAnnotationUri)) {
+            newAnnotationUri = PLATFORM_URI_ID_ANNOTATION + UUID.randomUUID();
+        }
+
+        return newAnnotationUri;
+    }
+
+    /**
+     * generates a new image uri. an image uri follows the pattern :
      * <prefix>:yyyy/<unic_code>
      * <unic_code> = 1 letter type (i) + 2 digits year + auto incremet with 10
      * digit
@@ -472,6 +492,8 @@ public class UriGenerator {
         } else if (instanceType.equals(Oeso.CONCEPT_EXPERIMENT.toString())) {
             return generateExperimentUri(year);
         } else if (instanceType.equals(Foaf.CONCEPT_GROUP.toString())) {
+            return generateGroupUri(additionalInformation);
+        } else if (instanceType.equals(Oeev.CONCEPT_EVENT.toString())) {
             return generateGroupUri(additionalInformation);
         }
 

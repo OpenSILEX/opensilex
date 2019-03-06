@@ -11,14 +11,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.update.UpdateRequest;
+import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
-import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
@@ -29,10 +30,13 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.DateFormat;
+import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.dao.phis.UserDaoPhisBrapi;
 import phis2ws.service.documentation.StatusCodeMsg;
@@ -462,14 +466,24 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * @example
      */
     private UpdateRequest prepareInsertQuery(Event event) {
-        UpdateBuilder spql = new UpdateBuilder();
+        UpdateBuilder updateBuilder = new UpdateBuilder();
         
         Node graph = NodeFactory.createURI(Contexts.EVENTS.toString());
-        Resource radiometricTargetUri = ResourceFactory.createResource(event.getUri());
+        Resource eventResource = ResourceFactory.createResource(event.getUri());
         Node eventConcept = NodeFactory.createURI(Oeev.CONCEPT_EVENT.toString());
         
-        spql.addInsert(graph, radiometricTargetUri, RDF.type, eventConcept);
-        spql.addInsert(graph, radiometricTargetUri, RDFS.label, event.getLabel());
+        updateBuilder.addInsert(graph, eventResource, RDF.type, eventConcept);
+        
+        TimeDAOSesame timeDao = new TimeDAOSesame(this.user);
+        timeDao.addInsertToUpdateBuilderWithInstant(
+                updateBuilder, 
+                graph, 
+                eventResource, 
+                event.getDateTime());
+        
+        DateTimeFormatter formatter = DateTimeFormat.forPattern(DateFormats.YMDTHMSZ_FORMAT);
+        Literal creationDate = ResourceFactory.createTypedLiteral(event.getDateTime().toString(formatter), XSDDatatype.XSDdateTime);
+        updateBuilder.addInsert(graph, eventResource, DCTerms.created, creationDate);
         
         for (Property property : event.getProperties()) {
             if (property.getValue() != null) {
@@ -477,16 +491,16 @@ public class EventDAOSesame extends DAOSesame<Event> {
                 
                 if (property.getRdfType() != null) {
                     Node propertyValue = NodeFactory.createURI(property.getValue());
-                    spql.addInsert(graph, radiometricTargetUri, propertyRelation, propertyValue);
-                    spql.addInsert(graph, propertyValue, RDF.type, property.getRdfType());
+                    updateBuilder.addInsert(graph, eventResource, propertyRelation, propertyValue);
+                    updateBuilder.addInsert(graph, propertyValue, RDF.type, property.getRdfType());
                 } else {
                     Literal propertyValue = ResourceFactory.createStringLiteral(property.getValue());
-                    spql.addInsert(graph, radiometricTargetUri, propertyRelation, propertyValue);
+                    updateBuilder.addInsert(graph, eventResource, propertyRelation, propertyValue);
                 }
             }
         }
         
-        UpdateRequest query = spql.buildRequest();
+        UpdateRequest query = updateBuilder.buildRequest();
         LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
         
         return query;
@@ -506,7 +520,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
         
         POSTResultsReturn results;
         boolean resultState = false;
-        boolean insert = true;
+        boolean eventsInserted = true;
         
         UriGenerator uriGenerator = new UriGenerator();
         
@@ -515,8 +529,9 @@ public class EventDAOSesame extends DAOSesame<Event> {
             try {
                 // Generate uri
                 event.setUri(uriGenerator.generateNewInstanceUri(Oeev.CONCEPT_EVENT.toString(), null, null));
-            } catch (Exception ex) { //In the case of an , no exception should be raised
-                insert = false;
+            } catch (Exception ex) {
+                LOGGER.error(ex.getMessage());
+                eventsInserted = false;
             }
             // Insert event
             UpdateRequest query = prepareInsertQuery(event);
@@ -527,15 +542,19 @@ public class EventDAOSesame extends DAOSesame<Event> {
 
                 createdResourcesUris.add(event.getUri());
             } catch (RepositoryException ex) {
-                    LOGGER.error("Error during commit or rolleback Triplestore statements: ", ex);
+                    LOGGER.error(
+                            StatusCodeMsg.ERROR_WHILE_COMMITTING_OR_ROLLING_BACK_TRIPLESTORE_STATEMENT, ex);
             } catch (MalformedQueryException e) {
                     LOGGER.error(e.getMessage(), e);
-                    insert = false;
-                    status.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.MALFORMED_CREATE_QUERY + " " + e.getMessage()));
+                    eventsInserted = false;
+                    status.add(new Status(
+                            StatusCodeMsg.QUERY_ERROR, 
+                            StatusCodeMsg.ERR, 
+                            StatusCodeMsg.MALFORMED_CREATE_QUERY + " " + e.getMessage()));
             }
         }
         
-        if (insert) {
+        if (eventsInserted) {
             resultState = true;
             getConnection().commit();
         } else {
@@ -546,7 +565,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
             getConnection().close();
         }
         
-        results = new POSTResultsReturn(resultState, insert, true);
+        results = new POSTResultsReturn(resultState, eventsInserted, true);
         results.statusList = status;
         results.setCreatedResources(createdResourcesUris);
         if (resultState && !createdResourcesUris.isEmpty()) {
@@ -568,14 +587,16 @@ public class EventDAOSesame extends DAOSesame<Event> {
         POSTResultsReturn checkResult = check(events);
         if (checkResult.getDataState()) {
             return insert(events);
-        } else { //errors found in data
+        } else {
             return checkResult;
         }
     }
     
     private boolean checkIfEventUriIsValid(String uri) {
-        int pageSizeMaxValue = Integer.parseInt(PropertiesFileManager.getConfigFileProperty("service", "pageSizeMax"));
-        return !searchEvents(uri, null, null, null, null, null, 0, pageSizeMaxValue).isEmpty();
+        int pageSizeMaxValue = Integer.parseInt(
+                PropertiesFileManager.getConfigFileProperty("service", "pageSizeMax"));
+        return !searchEvents(uri, null, null, null, null, null,
+                0, pageSizeMaxValue).isEmpty();
     }
     
     /**
@@ -597,8 +618,10 @@ public class EventDAOSesame extends DAOSesame<Event> {
                     // Check the event URI if given (in case of an update)
                     if (!checkIfEventUriIsValid(eventUri)){
                         dataIsValid = false;
-                        status.add(new Status(StatusCodeMsg.UNKNOWN_URI, StatusCodeMsg.ERR, 
-                                            StatusCodeMsg.UNKNOWN_EVENT_URI + " " + eventUri));
+                        status.add(new Status(
+                                StatusCodeMsg.UNKNOWN_URI, 
+                                StatusCodeMsg.ERR, 
+                                StatusCodeMsg.UNKNOWN_EVENT_URI + " " + eventUri));
                     }
                 }
                 
@@ -610,20 +633,26 @@ public class EventDAOSesame extends DAOSesame<Event> {
                         String eventType = event.getType();
                         if (!propertyDAO.isRelationDomainCompatibleWithRdfType(property.getRelation(), eventType)) {
                             dataIsValid = false;
-                            status.add(new Status(StatusCodeMsg.DATA_ERROR, 
+                            status.add(new Status(
+                                StatusCodeMsg.DATA_ERROR, 
                                 StatusCodeMsg.ERR, 
                                 String.format(StatusCodeMsg.URI_TYPE_NOT_IN_DOMAIN_OF_RELATION, eventType, property.getRelation())));
                         }
                     } else {
                         dataIsValid = false;
-                        status.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, 
-                                            StatusCodeMsg.UNKNOWN_URI + " " + property.getRelation()));
+                        status.add(new Status(
+                                StatusCodeMsg.DATA_ERROR, 
+                                StatusCodeMsg.ERR, 
+                                StatusCodeMsg.UNKNOWN_URI + " " + property.getRelation()));
                     }
                 } 
             }
         } else {
             dataIsValid = false;
-            status.add(new Status(StatusCodeMsg.ACCESS_DENIED, StatusCodeMsg.ERR, StatusCodeMsg.ADMINISTRATOR_ONLY));
+            status.add(new Status(
+                    StatusCodeMsg.ACCESS_DENIED, 
+                    StatusCodeMsg.ERR, 
+                    StatusCodeMsg.ADMINISTRATOR_ONLY));
         }
         
         checkResult = new POSTResultsReturn(dataIsValid, null, dataIsValid);
@@ -699,7 +728,13 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * }
      */
     private SPARQLQueryBuilder prepareCountQuery(String searchUri, String searchType, String searchConcernedItemLabel, String searchConcernedItemUri, String dateRangeStartString, String dateRangeEndString) {
-        SPARQLQueryBuilder query = this.prepareSearchQueryEvents(searchUri, searchType, searchConcernedItemLabel, searchConcernedItemUri, dateRangeStartString, dateRangeEndString);
+        SPARQLQueryBuilder query = this.prepareSearchQueryEvents(
+                searchUri, 
+                searchType, 
+                searchConcernedItemLabel, 
+                searchConcernedItemUri, 
+                dateRangeStartString, 
+                dateRangeEndString);
         query.clearSelect();
         query.clearLimit();
         query.clearOffset();
@@ -725,7 +760,13 @@ public class EventDAOSesame extends DAOSesame<Event> {
     public Integer count(String searchUri, String searchType, String searchConcernedItemLabel, String searchConcernedItemUri, String dateRangeStartString, String dateRangeEndString) 
             throws RepositoryException, MalformedQueryException, QueryEvaluationException {
         
-        SPARQLQueryBuilder countQuery = prepareCountQuery(searchUri, searchType, searchConcernedItemLabel, searchConcernedItemUri, dateRangeStartString, dateRangeEndString);
+        SPARQLQueryBuilder countQuery = prepareCountQuery(
+                searchUri, 
+                searchType, 
+                searchConcernedItemLabel, 
+                searchConcernedItemUri, 
+                dateRangeStartString, 
+                dateRangeEndString);
         
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, countQuery.toString());
         Integer count = 0;

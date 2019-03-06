@@ -25,7 +25,7 @@ public class Provenance {
     //Additional informations for the provenance. Its containt depends of the type of provenance. 
     //@example [ "SensingDevice" => "http://www.opensilex.org/demo/s001",
     //           "Vector" => "http://www.opensilex.org/demo/v001"]
-    protected HashMap<String, Object> metadata = new HashMap<>();
+    protected Object metadata = new HashMap<>();
 
     public String getUri() {
         return uri;
@@ -51,15 +51,11 @@ public class Provenance {
         this.comment = comment;
     }
 
-    public HashMap<String, Object> getMetadata() {
+    public Object getMetadata() {
         return metadata;
     }
 
-    public void setMetadata(HashMap<String, Object> metadata) {
+    public void setMetadata(Object metadata) {
         this.metadata = metadata;
-    }
-    
-    public void addMetadata(String key, String value) {
-        this.metadata.put(key, value);
     }
 }

@@ -100,9 +100,9 @@ public class AnnotationResourceService extends ResourceService {
             }
             
             ArrayList<Annotation> annotations = new ArrayList<>();
-            for (AnnotationDTO annotationDTO : annotationsDtos) {
+            annotationsDtos.forEach((annotationDTO) -> {
                 annotations.add(annotationDTO.createObjectFromDTO());
-            }
+            });
             POSTResultsReturn insertResult = annotationDAOSesame.checkAndInsert(annotations);
             
             // annotations inserted

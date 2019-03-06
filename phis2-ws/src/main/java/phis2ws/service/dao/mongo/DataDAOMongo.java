@@ -329,15 +329,13 @@ public class DataDAOMongo extends DAOMongo<Data> {
         BasicDBObject query = new BasicDBObject();
         
         try {
-            SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
-
             // Define date filter depending if start date and/or end date are defined
             if (startDate != null) {
-                Date start = df.parse(startDate);
+                Date start = DateFormat.parseDateOrDateTime(startDate, false);
 
                 if (endDate != null) {
                     // In case of start date AND end date defined
-                    Date end = df.parse(endDate);
+                    Date end = DateFormat.parseDateOrDateTime(endDate, true);
                     query.append(DB_FIELD_DATE, BasicDBObjectBuilder.start("$gte", start).add("$lte", end).get());
                 } else {
                     // In case of start date ONLY is defined
@@ -345,7 +343,7 @@ public class DataDAOMongo extends DAOMongo<Data> {
                 }
             } else if (endDate != null) {
                 // In case of end date ONLY is defined
-                Date end = df.parse(endDate);
+                Date end = DateFormat.parseDateOrDateTime(endDate, true);
                 query.append(DB_FIELD_DATE, BasicDBObjectBuilder.start("$lte", end).get());
             }
         } catch (ParseException ex) {

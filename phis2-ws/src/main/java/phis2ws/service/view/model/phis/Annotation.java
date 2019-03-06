@@ -58,6 +58,7 @@ public class Annotation {
         this.created = created;
         this.creator = creator;
         this.bodyValues = bodyValues;
+        this.motivatedBy = motivatedBy;
         this.targets = targets;
     }
 

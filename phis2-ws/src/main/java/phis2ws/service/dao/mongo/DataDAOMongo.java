@@ -34,7 +34,9 @@ import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.dao.manager.DAOMongo;
 import phis2ws.service.dao.sesame.VariableDaoSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
+import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.utils.POSTResultsReturn;
+import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.Data;
 
@@ -102,15 +104,29 @@ public class DataDAOMongo extends DAOMongo<Data> {
     private Document prepareInsertDataDocument(Data data) {
         Document document = new Document();
 
-        document.append(DB_FIELD_URI, data.getUri());
-        document.append(DB_FIELD_OBJECT, data.getObjectUri());
-        document.append(DB_FIELD_VARIABLE, data.getVariableUri());
-        document.append(DB_FIELD_DATE, data.getDate());
-        document.append(DB_FIELD_PROVENANCE, data.getProvenanceUri());
-        document.append(DB_FIELD_VALUE, data.getValue());
+        String key = data.getVariableUri() + data.getObjectUri() + data.getProvenanceUri() + data.getDate();
+        try {
+            UriGenerator uriGenerator = new UriGenerator();
+            String uri = uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA.toString(), null, key);
 
-        LOGGER.debug(document.toJson());
+            while (uriExists(data.getVariableUri(), uri)) {
+                uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA.toString(), null, key);
+            }
+            
+            data.setUri(uri);
+            
+            document.append(DB_FIELD_URI, data.getUri());
+            document.append(DB_FIELD_OBJECT, data.getObjectUri());
+            document.append(DB_FIELD_VARIABLE, data.getVariableUri());
+            document.append(DB_FIELD_DATE, data.getDate());
+            document.append(DB_FIELD_PROVENANCE, data.getProvenanceUri());
+            document.append(DB_FIELD_VALUE, data.getValue());
 
+            LOGGER.debug(document.toJson());
+        } catch (Exception e) {
+            LOGGER.error("Exception while generating uri, should never append", e);
+        }
+        
         return document;
     }
 
@@ -160,6 +176,8 @@ public class DataDAOMongo extends DAOMongo<Data> {
                 dataByVariable = new ArrayList<>();
             }
 
+            createdResources.add(data.getUri());
+            
             dataByVariable.add(createData);
             dataListToInsertByVariable.put(data.getVariableUri(), dataByVariable);
         }
@@ -192,7 +210,6 @@ public class DataDAOMongo extends DAOMongo<Data> {
                         StatusCodeMsg.INFO,
                         StatusCodeMsg.DATA_INSERTED + " for the variable " + dataToInsert.getKey()
                 ));
-                createdResources.add(dataToInsert.getKey());
 
             } catch (MongoException ex) {
                 // Define that an error occurs
@@ -356,5 +373,20 @@ public class DataDAOMongo extends DAOMongo<Data> {
         
         // Return the document count
         return (int)dataVariableCollection.countDocuments(query);
+    }
+
+    /**
+     * Return true if the given URI already exists in variable collection
+     * @param variableUri variable which will determine in which collection to look
+     * @param uri URI to check
+     * @return true if the URI exists and false otherwise
+     */
+    public boolean uriExists(String variableUri, String uri) {
+        String variableCollection = getCollectionFromVariable(variableUri);
+        
+        BasicDBObject query = new BasicDBObject();
+        query.append(DB_FIELD_URI, BasicDBObjectBuilder.start("$exists", true).get());
+        
+        return database.getCollection(variableCollection).countDocuments(query) > 0; 
     }
 }

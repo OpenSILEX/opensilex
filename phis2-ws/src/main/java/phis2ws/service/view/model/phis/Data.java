@@ -18,9 +18,9 @@ import phis2ws.service.utils.UriGenerator;
  * This is the model for the phenotypes data
  */
 public class Data {
-
-    private final static Logger LOGGER = LoggerFactory.getLogger(Data.class);
-    
+    //The uri of the data.
+    //e.g. http://www.phenome-fppn.fr/mtp/2018/s18003
+    protected String uri;
     //The uri of the provenance from which data come.
     //e.g. http://www.phenome-fppn.fr/mtp/2018/s18003
     protected String provenanceUri;
@@ -78,13 +78,10 @@ public class Data {
     }
 
     public String getUri() {
-        String key  = getObjectUri() + getVariableUri() + getDate() + getProvenanceUri();
-        
-        try {
-            return new UriGenerator().generateNewInstanceUri(Oeso.CONCEPT_DATA.toString(), null, key);
-        } catch (Exception e) {
-            LOGGER.error("Error while generating data URI, should never append", e);
-            return Base64.getEncoder().encodeToString(key.getBytes());
-        }
+        return uri;
+    }
+
+    public void setUri(String uri) {
+        this.uri = uri;
     }
 }

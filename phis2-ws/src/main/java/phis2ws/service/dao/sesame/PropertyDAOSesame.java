@@ -110,7 +110,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
             query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", "<" + subClassOf + ">", null);
         }
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        LOGGER.debug(SPARQL_QUERY + query.toString());
         
         return query;
     }
@@ -170,7 +170,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
                 "<" + Rdfs.RELATION_DOMAIN.toString() + "> "
                         + "/( <" + Owl.RELATION_UNION_OF.toString() + "> / <" + Rdf.RELATION_REST.toString() + ">*/ <" + Rdf.RELATION_FIRST.toString() + ">)*" , "?" + DOMAIN, null);
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
+        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
         
         return query;
     }
@@ -242,7 +242,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
                                     + "<" + Owl.RELATION_QUALIFIED_CARDINALITY.toString() + ">)");
         query.appendToBody("bind( xsd:integer(?_" + CARDINALITY + ") as ?" + CARDINALITY + ")");
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
     }
     
@@ -280,7 +280,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
                                     + "<" + Owl.RELATION_QUALIFIED_CARDINALITY.toString() + ">)");
         query.appendToBody("bind( xsd:integer(?_" + CARDINALITY + ") as ?" + CARDINALITY + ")");
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
     }
     
@@ -377,7 +377,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
         
         query.appendTriplet("<" + objectUri + ">", "<" + relationUri + ">", "?" + PROPERTY, null);
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
+        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
         
         return query;
     }
@@ -657,7 +657,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
             query.appendToBody(relationToIgnoreQuery);
         }
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        LOGGER.debug(SPARQL_QUERY + query.toString());
         
         return query;
     }

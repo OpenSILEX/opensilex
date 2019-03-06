@@ -250,7 +250,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
         query.appendLimit(getPageSize());
         query.appendOffset(getPage() * getPageSize());
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
     }
     
@@ -276,7 +276,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
         prepareSearchQueryConcernedItemFilter(query, uriSelectNameSparql, null, null); 
         prepareSearchQueryDateTime(query, uriSelectNameSparql, null, null, false); 
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
     }
     
@@ -313,7 +313,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
         
         query.appendSelectConcat(CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL, SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR, CONCERNED_ITEM_LABELS_SELECT_NAME_SPARQL);
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
     }
     
@@ -350,7 +350,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
         
         query.appendSelectConcat(CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL, SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR, CONCERNED_ITEM_LABELS_SELECT_NAME_SPARQL);
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
     }
     
@@ -468,18 +468,23 @@ public class EventDAOSesame extends DAOSesame<Event> {
     private UpdateRequest prepareInsertQuery(Event event) {
         UpdateBuilder updateBuilder = new UpdateBuilder();
         
+        // Event URI and simple attributes
         Node graph = NodeFactory.createURI(Contexts.EVENTS.toString());
         Resource eventResource = ResourceFactory.createResource(event.getUri());
         Node eventConcept = NodeFactory.createURI(Oeev.CONCEPT_EVENT.toString());
-        
         updateBuilder.addInsert(graph, eventResource, RDF.type, eventConcept);
         
+        // Event's Instant
         TimeDAOSesame timeDao = new TimeDAOSesame(this.user);
         timeDao.addInsertToUpdateBuilderWithInstant(
                 updateBuilder, 
                 graph, 
                 eventResource, 
                 event.getDateTime());
+        
+        // Event's Annotation
+        AnnotationDAOSesame annotationDao = new AnnotationDAOSesame(user);
+        annotationDao.checkAndInsert(event.getAnnotations());
         
         DateTimeFormatter formatter = DateTimeFormat.forPattern(DateFormats.YMDTHMSZ_FORMAT);
         Literal creationDate = ResourceFactory.createTypedLiteral(event.getDateTime().toString(formatter), XSDDatatype.XSDdateTime);
@@ -501,7 +506,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
         }
         
         UpdateRequest query = updateBuilder.buildRequest();
-        LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
+        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
         
         return query;
     }
@@ -740,7 +745,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
         query.clearOffset();
         query.clearGroupBy();
         query.appendSelect("(COUNT(DISTINCT " + URI_SELECT_NAME_SPARQL + ") AS " + "?" + COUNT_ELEMENT_QUERY + ")");
-        LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
+        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
         return query;
     }
 

@@ -62,7 +62,7 @@ public abstract class DAOSesame<T> {
     //\SILEX:test
 
     // used for logger
-    protected static final String SPARQL_SELECT_QUERY = "SPARQL query : ";
+    protected static final String SPARQL_QUERY = "SPARQL query: ";
     
     protected static final String COUNT_ELEMENT_QUERY = "count";
     
@@ -243,7 +243,7 @@ public abstract class DAOSesame<T> {
                         "    UNION\n" +
                         "    { ?s ?p ?r }\n");
             
-            LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+            LOGGER.debug(SPARQL_QUERY + query.toString());
             BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
             return booleanQuery.evaluate();
         } catch (Exception e) {
@@ -344,7 +344,7 @@ public abstract class DAOSesame<T> {
             spql.addInsert(graph, subjectUriNode, predicateUriNode, objectPropertyNode);
         });
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        LOGGER.debug(SPARQL_QUERY + query.toString());
         
         //Insert the properties in the triplestore
         Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, spql.buildRequest().toString());

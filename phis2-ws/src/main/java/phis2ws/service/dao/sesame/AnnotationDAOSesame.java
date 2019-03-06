@@ -140,7 +140,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
         }
         query.appendLimit(this.getPageSize());
         query.appendOffset(this.getPage() * this.getPageSize());
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
     }
 
@@ -191,7 +191,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
         query.clearOffset();
         query.clearGroupBy();
         query.appendSelect("(COUNT(DISTINCT ?" + URI + ") AS ?" + COUNT_ELEMENT_QUERY + ")");
-        LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
+        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
         return query;
     }
 

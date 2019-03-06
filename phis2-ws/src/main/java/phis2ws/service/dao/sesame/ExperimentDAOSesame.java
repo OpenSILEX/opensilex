@@ -227,7 +227,7 @@ public class ExperimentDAOSesame extends DAOSesame<Experiment> {
             });
 
             UpdateRequest updateRequest = updateBuilder.buildRequest();
-            LOGGER.debug(SPARQL_SELECT_QUERY + updateRequest.toString());
+            LOGGER.debug(SPARQL_QUERY + updateRequest.toString());
 
             //Insert the properties in the triplestore
             Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, updateRequest.toString());

@@ -100,7 +100,7 @@ public class TraitDaoSesame extends DAOSesame<Trait> {
             query.endBodyOptional();           
         }
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
     }
 
@@ -314,7 +314,7 @@ public class TraitDaoSesame extends DAOSesame<Trait> {
             }
         }
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
     }
     

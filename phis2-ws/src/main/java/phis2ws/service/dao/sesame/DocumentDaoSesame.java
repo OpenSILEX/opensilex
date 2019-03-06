@@ -501,7 +501,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         
         sparqlQuery.appendLimit(getPageSize());
         sparqlQuery.appendOffset(getPage() * getPageSize());
-        LOGGER.debug(SPARQL_SELECT_QUERY + sparqlQuery.toString());
+        LOGGER.debug(SPARQL_QUERY + sparqlQuery.toString());
         
        return sparqlQuery;
     }
@@ -528,7 +528,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         sparqlQuery.appendLimit(this.getPageSize());
         sparqlQuery.appendOffset(this.getPage() * this.getPageSize());
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + sparqlQuery.toString());
+        LOGGER.debug(SPARQL_QUERY + sparqlQuery.toString());
         
         return sparqlQuery;
     }
@@ -547,7 +547,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         sparqlQuery.appendTriplet(uriDocument, Oeso.RELATION_CONCERNS.toString(), "?" + CONCERNED_ITEM_URI, null);
         sparqlQuery.appendTriplet("?" + CONCERNED_ITEM_URI, Rdf.RELATION_TYPE.toString(), "?" + CONCERNED_ITEM_TYPE, null);
 
-        LOGGER.debug(SPARQL_SELECT_QUERY + sparqlQuery.toString());
+        LOGGER.debug(SPARQL_QUERY + sparqlQuery.toString());
 
         return sparqlQuery;
     }
@@ -582,7 +582,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         query.clearGroupBy();
         query.clearOrderBy();
         query.appendSelect("( COUNT( DISTINCT ?" + URI + " ) AS ?" + COUNT_ELEMENT_QUERY + " )");
-        LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
+        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
         return query;
     }
     

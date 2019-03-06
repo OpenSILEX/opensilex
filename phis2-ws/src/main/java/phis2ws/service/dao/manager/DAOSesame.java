@@ -49,8 +49,10 @@ import phis2ws.service.view.brapi.form.ResponseFormPOST;
  * DAO class to query the triplestore 
  * @update [Morgane Vidal] 04 Oct, 2018: Rename existObject to existUri and change the query of the method existUri.
  * @update [Andréas Garcia] 11 Jan, 2019: Add generic date time stamp comparison SparQL filter.
- * @update [Andréas Garcia] 5 March, 2019: Move date related functions in TimeDAOSesame.java
- * @update [Andréas Garcia] 5 March, 2019: Add a generic function to get a string value from a binding set
+ * @update [Andréas Garcia] 5 March, 2019: 
+ *   Move date related functions in TimeDAOSesame.java
+ *   Add a generic function to get a string value from a binding set
+ *   Add the max value of a page to get all results
  * @param <T>
  * @author Arnaud Charleroy
  */
@@ -58,6 +60,19 @@ public abstract class DAOSesame<T> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(DAOSesame.class);
     protected static final String PROPERTY_FILENAME = "sesame_rdf_config";
+    
+    /**
+     * Page size max value used to get the highest number of results of an 
+     * object when getting a list within a list (e.g to get all the concerned
+     * items of all the events)
+     * //SILEX:todo 
+     * Pagination should be handled in this case too (i.e when getting a list
+     * within a list)
+     * For the moment we use only one page by taking the max value
+     * //\SILEX:todo
+     */    
+    protected int pageSizeMaxValue = Integer.parseInt(PropertiesFileManager.getConfigFileProperty("service", "pageSizeMax"));
+    
     //SILEX:test
     // For the full connection pool issue
     protected static final String SESAME_SERVER = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");

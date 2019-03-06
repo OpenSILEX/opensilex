@@ -192,8 +192,8 @@ public class EventDAOSesame extends DAOSesame<Event> {
         if(inGroupBy){
             query.appendGroupBy(DATETIMESTAMP_SELECT_NAME_SPARQL);
         }
-        query.appendTriplet(uriSelectNameSparql, Time.RELATION_HAS_TIME.toString(), TIME_SELECT_NAME_SPARQL, null);
-        query.appendTriplet(TIME_SELECT_NAME_SPARQL, Time.RELATION_IN_XSD_DATETIMESTAMP.toString(), DATETIMESTAMP_SELECT_NAME_SPARQL, null);
+        query.appendTriplet(uriSelectNameSparql, Time.hasTime.toString(), TIME_SELECT_NAME_SPARQL, null);
+        query.appendTriplet(TIME_SELECT_NAME_SPARQL, Time.inXSDDateTimeStamp.toString(), DATETIMESTAMP_SELECT_NAME_SPARQL, null);
         
         if (searchDateTimeRangeStartString != null || searchDateTimeRangeEndString != null) {
             filterSearchQueryWithDateRangeComparisonWithDateTimeStamp(query, DateFormat.YMDTHMSZZ.toString(), searchDateTimeRangeStartString, searchDateTimeRangeEndString, DATETIMESTAMP_SELECT_NAME_SPARQL);
@@ -635,7 +635,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
             event, null, new ArrayList() {
                 {
                     add(Rdf.RELATION_TYPE.toString());
-                    add(Time.RELATION_HAS_TIME.toString());
+                    add(Time.hasTime.toString());
                     add(Oeev.RELATION_CONCERNS.toString());
                 }});
     }

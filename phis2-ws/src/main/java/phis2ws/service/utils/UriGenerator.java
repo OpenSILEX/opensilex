@@ -448,7 +448,7 @@ public class UriGenerator {
             hexString.append(hex);
         }
         
-        String uri = Contexts.PLATFORM.toString() + additionalInformation + "/" + UUID.randomUUID();
+        String uri = Contexts.PLATFORM.toString() + hexString + "/" + UUID.randomUUID();
         
         return uri;
     }

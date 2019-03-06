@@ -7,17 +7,29 @@
 //******************************************************************************
 package phis2ws.service.dao.sesame;
 
+import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.vocabulary.DCTerms;
+import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.model.User;
 import phis2ws.service.ontologies.Time;
 import phis2ws.service.ontologies.Xsd;
+import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.dates.Dates;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.utils.sparql.SPARQLStringBuilder;
@@ -118,6 +130,34 @@ public class TimeDAOSesame extends DAOSesame<Time> {
                     DATE_RANGE_END_DATETIME_SELECT_NAME_SPARQL, 
                     " >= ", 
                     DATETIME_SELECT_NAME_SPARQL);
+        }
+    }
+    
+    /**
+     * Insert an Instant linked to the given URI in the given graph with the 
+     * given date value
+     * @param updateBuilder
+     * @param graph
+     * @param resourceLinkedToInstant
+     * @param dateTime
+     */
+    public void addInsertToUpdateBuilderWithInstant(UpdateBuilder updateBuilder, Node graph, Resource resourceLinkedToInstant, DateTime dateTime) {
+        UriGenerator uriGenerator = new UriGenerator();
+        try {
+            // Add insert instant uri with type
+            String instantUri = uriGenerator.generateNewInstanceUri(Time.Instant.toString(), null, null);
+            Resource instantResource = ResourceFactory.createResource(instantUri);
+            updateBuilder.addInsert(graph, instantResource, RDF.type, Time.Instant);
+            
+            // Add date time stamp to instant
+            DateTimeFormatter formatter = DateTimeFormat.forPattern(DATETIMESTAMP_FORMAT_SPARQL);
+            Literal dateLiteral = ResourceFactory.createTypedLiteral(dateTime.toString(formatter), XSDDatatype.XSDdateTime);
+            updateBuilder.addInsert(graph, instantResource, Time.inXSDDateTimeStamp, dateLiteral);
+            
+            // Link resource to instant
+            updateBuilder.addInsert(graph, resourceLinkedToInstant, Time.hasTime, instantResource);
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage());
         }
     }
 

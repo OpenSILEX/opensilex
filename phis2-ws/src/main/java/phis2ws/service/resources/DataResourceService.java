@@ -137,7 +137,9 @@ public class DataResourceService extends ResourceService {
 
     @GET
     @ApiOperation(value = "Get data corresponding to the search parameters given.",
-                  notes = "Retrieve all data corresponding to the search parameters given.")
+                  notes = "Retrieve all data corresponding to the search parameters given,"
+                          + "<br/>Date parameters could be either a datetime like: " + DocumentationAnnotation.EXAMPLE_XSDDATETIME 
+                          + "<br/>or simply a date like: " + DocumentationAnnotation.EXAMPLE_DATE)
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Retrieve all data", response = Data.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),

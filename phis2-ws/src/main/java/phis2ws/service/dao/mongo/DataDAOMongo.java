@@ -305,6 +305,7 @@ public class DataDAOMongo extends DAOMongo<Data> {
                 // Create and define the data object
                 Data data = new Data();
                 data.setVariableUri(variableUri);
+                data.setUri(dataDocument.getString(DB_FIELD_URI));
                 data.setDate(dataDocument.getDate(DB_FIELD_DATE));
                 data.setValue(dataDocument.get(DB_FIELD_VALUE));
                 data.setObjectUri(dataDocument.getString(DB_FIELD_OBJECT));

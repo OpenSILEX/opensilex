@@ -7,14 +7,12 @@
 package phis2ws.service.utils;
 
 import java.nio.charset.StandardCharsets;
-import java.rmi.server.UID;
 import java.security.MessageDigest;
-import java.util.Base64;
 import java.util.Calendar;
 import java.util.UUID;
+import org.apache.commons.codec.binary.Base32;
 import org.apache.jena.sparql.AlreadyExists;
 import phis2ws.service.PropertiesFileManager;
-import phis2ws.service.dao.mongo.DataDAOMongo;
 import phis2ws.service.dao.mongo.ImageMetadataDaoMongo;
 import phis2ws.service.dao.phis.ExperimentDao;
 import phis2ws.service.dao.phis.GroupDao;
@@ -423,19 +421,28 @@ public class UriGenerator {
     }
 
 
+    /**
+     * Generates a new data uri. A data uri follows the pattern :
+     * hash/uuid
+     * @example http://www.opensilex.org/1e9eb2fbacc7222d3868ae96149a8a16b32b2a1870c67d753376381ebcbb5937/e78da502-ee3f-42d3-828e-aa8cab237f93
+     * @param additionalInformation the key of the data (string concatenation of URIs/date)
+     * @return the new generated uri
+     * @throws Exception 
+     */
     private String generateDataUri(String additionalInformation) throws Exception {
+        // Generate SHA-256 hash
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] encodedhash = digest.digest(additionalInformation.getBytes(StandardCharsets.UTF_8));
-        StringBuffer hexString = new StringBuffer();
-        for (int i = 0; i < encodedhash.length; i++) {
-            String hex = Integer.toHexString(0xff & encodedhash[i]);
-            if(hex.length() == 1) {
-                hexString.append('0');
-            }
-            hexString.append(hex);
-        }
         
-        String uri = Contexts.PLATFORM.toString() + hexString + "/" + UUID.randomUUID();
+        // Convert hash to base32 string in lower case string and remove = padding sign
+        Base32 base32 = new Base32();
+        String encodedString = base32.encodeAsString(encodedhash).replaceAll("=", "").toLowerCase();
+        
+        // Generate UUID without '-' sign
+        String randomId = UUID.randomUUID().toString().replaceAll("-", "");
+        
+        // Define data URI with key hash  and random id to prevent collision
+        String uri = Contexts.PLATFORM.toString() + "id/data/" + encodedString + randomId;
         
         return uri;
     }

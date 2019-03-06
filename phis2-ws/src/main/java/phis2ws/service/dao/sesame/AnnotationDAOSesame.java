@@ -202,7 +202,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
      * found in data the list of the generated uri of the annotations if the
      * insertion has been done
      */
-    public POSTResultsReturn checkAndInsert(List<AnnotationDTO> annotations) {
+    public POSTResultsReturn checkAndInsert(List<Annotation> annotations) {
         POSTResultsReturn checkResult = check(annotations);
         if (checkResult.getDataState()) {
             return insert(annotations);
@@ -213,11 +213,11 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
 
     /**
      * Insert the given annotations in the triplestore
-     * @param annotationsDTO
+     * @param annotations
      * @return the insertion resultAnnotationUri, with the errors list or the
-     * uri of the inserted annotations
+     * URI of the inserted annotations
      */
-    public POSTResultsReturn insert(List<AnnotationDTO> annotationsDTO) {
+    public POSTResultsReturn insert(List<Annotation> annotations) {
         List<Status> insertStatus = new ArrayList<>();
         List<String> createdResourcesUri = new ArrayList<>();
 
@@ -232,8 +232,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
         this.getConnection().begin();
         //\SILEX:test
 
-        for (AnnotationDTO annotationDTO : annotationsDTO) {
-            Annotation annotation = annotationDTO.createObjectFromDTO();
+        for (Annotation annotation : annotations) {
             try {
                 annotation.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_ANNOTATION.toString(), null, null));
             } catch (Exception ex) { //In the annotations case, no exception should be raised
@@ -331,7 +330,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
      * @return the resultAnnotationUri with the list of the errors found
      * (empty if no error found)
      */
-    public POSTResultsReturn check(List<AnnotationDTO> annotations) {
+    public POSTResultsReturn check(List<Annotation> annotations) {
         POSTResultsReturn check = null;
         //list of the returned results
         List<Status> checkStatus = new ArrayList<>();
@@ -341,7 +340,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
         UserDaoPhisBrapi userDao = new UserDaoPhisBrapi();
 
         //1. check data
-        for (AnnotationDTO annotation : annotations) {
+        for (Annotation annotation : annotations) {
             try {
                 //1.1 check motivation
                 if (!uriDao.existUri(annotation.getMotivatedBy())

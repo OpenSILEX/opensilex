@@ -57,7 +57,9 @@ public class Time {
     /** 
      * The namespace of the vocabulary as a resource 
      */
-    public static final Resource NAMESPACE = ResourceFactory.createResource(NAMESPACE_STRING);
+    public static final Resource NAMESPACE = MODEL.createResource(NAMESPACE_STRING);
+    
+    public static final Resource Instant = MODEL.createResource(NAMESPACE_STRING);
 
     public static final Property hasTime = MODEL.createProperty(NAMESPACE + "hasTime");
     public static final Property inXSDDateTimeStamp = MODEL.createProperty(NAMESPACE + "inXSDDateTimeStamp");

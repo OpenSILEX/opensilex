@@ -9,22 +9,48 @@ package phis2ws.service.dao.sesame;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.update.UpdateRequest;
+import org.apache.jena.vocabulary.DCTerms;
+import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import phis2ws.service.PropertiesFileManager;
+import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.dao.manager.DAOSesame;
+import phis2ws.service.dao.phis.UserDaoPhisBrapi;
+import static phis2ws.service.dao.sesame.EventDAOSesame.LOGGER;
+import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.model.User;
+import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Oeev;
+import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
+import phis2ws.service.utils.POSTResultsReturn;
+import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
+import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.ConcernedItem;
+import phis2ws.service.view.model.phis.Event;
+import phis2ws.service.view.model.phis.Property;
 
 /**
  * DAO for concerned items
@@ -57,14 +83,16 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
      *    ?concernedItemUri  <http://www.w3.org/2000/01/rdf-schema#label>  ?concernedItemLabel  . 
      *  }
      * @param query
-     * @param uriSelectNameSparql
+     * @param objectUriSelectNameSparql URI SparQL variable of the concerning object
      * @param searchConcernedItemLabel
      * @param searchConcernedItemUri
      */
-    public static void prepareSearchQueryConcernedItemSimpleFilter(SPARQLQueryBuilder query, String uriSelectNameSparql, String searchConcernedItemLabel, String searchConcernedItemUri) {
+    public static void prepareQueryWithConcernedItemFilters(SPARQLQueryBuilder query, String objectUriSelectNameSparql, String searchConcernedItemLabel, String searchConcernedItemUri) {
 
         if (searchConcernedItemLabel != null || searchConcernedItemUri != null) {
-            query.appendTriplet(uriSelectNameSparql, Oeev.RELATION_CONCERNS.toString(), CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, null);
+            if (objectUriSelectNameSparql != null) {
+                query.appendTriplet(objectUriSelectNameSparql, Oeev.RELATION_CONCERNS.toString(), CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, null);
+            }
             
             if (searchConcernedItemLabel != null) {
                 query.appendTriplet(CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, Rdfs.RELATION_LABEL.toString(), CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL, null);
@@ -79,7 +107,7 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
     }
     
     /**
-     * Prepare the query to search the concerned items of an event
+     * Prepare the query to search the concerned items of a object
      * @example
      * SELECT DISTINCT  ?concernedItemUri ?concernedItemType 
      * (GROUP_CONCAT(DISTINCT ?concernedItemLabel; SEPARATOR=",") AS ?concernedItemLabels) 
@@ -89,15 +117,20 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
      *   ?concernedItemUri  <http://www.w3.org/2000/01/rdf-schema#label>  ?concernedItemLabel  . 
      * }
      *  GROUP BY  ?concernedItemUri ?concernedItemType 
-     * @param eventUri
+     * @param objectUri
      * @return query
      */
-    protected static SPARQLQueryBuilder prepareConcernedItemsSearchQuery(String eventUri) {
+    protected static SPARQLQueryBuilder prepareConcernedItemsSearchQuery(String objectUri, String searchUri, String searchLabel) {
         
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
         
-        String uriSelectNameSparql = "<" + eventUri + ">";
+        String uriSelectNameSparql = null;
+        if (objectUri != null) {
+            uriSelectNameSparql = "<" + objectUri + ">";
+        }
+        
+        prepareQueryWithConcernedItemFilters(query, uriSelectNameSparql, searchUri, searchLabel);
         
         query.appendSelect(CONCERNED_ITEM_URI_SELECT_NAME_SPARQL);
         query.appendGroupBy(CONCERNED_ITEM_URI_SELECT_NAME_SPARQL);
@@ -132,13 +165,19 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
     }
     
     /**
-     * Search an object's concerned items
+     * Search an object's concerned items with filters
      * @param objectUri 
+     * @param searchUri 
+     * @param searchLabel 
      * @return  the object's concerned items
      */
-    public ArrayList<ConcernedItem> searchObjectConcernedItems(String objectUri) {
+    public ArrayList<ConcernedItem> searchConcernedItems(String objectUri, String searchUri, String searchLabel, int page, int pageSize) {
+        
+        setPage(page);
+        setPageSize(pageSize);
+        
         ArrayList<ConcernedItem> concernedItems = new ArrayList<>();
-        SPARQLQueryBuilder concernedItemsQuery = prepareConcernedItemsSearchQuery(objectUri);
+        SPARQLQueryBuilder concernedItemsQuery = prepareConcernedItemsSearchQuery(objectUri, searchUri, searchLabel);
         TupleQuery concernedItemsTupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, concernedItemsQuery.toString());
 
         try (TupleQueryResult concernedItemsTupleQueryResult = concernedItemsTupleQuery.evaluate()) {
@@ -149,6 +188,131 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
             }
         }
         return concernedItems;
+    }
+    
+    /**
+     * Generate an insert query for the given event
+     * @param objectUri the concerning object's URI
+     * @param concernedItem
+     * @param graphString
+     * @return the query
+     * @example
+     */
+    private UpdateRequest prepareInsertLinkQuery(String objectUri, ConcernedItem concernedItem, String graphString) {
+        UpdateBuilder updateBuilder = new UpdateBuilder();
+        
+        Node graph = NodeFactory.createURI(graphString);
+        Resource objectResource = ResourceFactory.createResource(objectUri);
+        Resource concernedItemResource = ResourceFactory.createResource(concernedItem.getUri());
+        updateBuilder.addInsert(graph, objectResource, Oeso.RELATION_CONCERNS.toString(), concernedItemResource);
+        
+        UpdateRequest query = updateBuilder.buildRequest();
+        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
+        
+        return query;
+    }
+    
+    /**
+     * Check the given list of concerned items
+     * @param concernedItems
+     * @return the result with the list of the found errors (empty if no error)
+     */
+    public POSTResultsReturn check(List<ConcernedItem> concernedItems) {
+        POSTResultsReturn checkResult;
+        List<Status> status = new ArrayList<>();
+        boolean dataIsValid = true;
+        
+        // 1. Check if user is admin
+        UserDaoPhisBrapi userDAO = new UserDaoPhisBrapi();
+        if (userDAO.isAdmin(user)) {
+            for (ConcernedItem concernedItem : concernedItems) {
+                String concernedItemUri = concernedItem.getUri();
+                if (concernedItemUri != null) {
+                    // Check the event URI if given (in case of an update)
+                    if (searchConcernedItems(null, concernedItemUri, null, 0, pageSizeMaxValue).isEmpty()){
+                        dataIsValid = false;
+                        status.add(new Status(
+                                StatusCodeMsg.UNKNOWN_URI, 
+                                StatusCodeMsg.ERR, 
+                                StatusCodeMsg.UNKNOWN_CONCERNED_ITEM_URI + " " + concernedItemUri));
+                    }
+                } 
+            }
+        } else {
+            dataIsValid = false;
+            status.add(new Status(
+                    StatusCodeMsg.ACCESS_DENIED, 
+                    StatusCodeMsg.ERR, 
+                    StatusCodeMsg.ADMINISTRATOR_ONLY));
+        }
+        
+        checkResult = new POSTResultsReturn(dataIsValid, null, dataIsValid);
+        checkResult.statusList = status;
+        return checkResult;   
+    }
+    
+    /**
+     * Insert the given concerned items in the storage 
+     * /!\ Prerequisite: data must have been checked before calling this method
+     * @see EventDAOSesame#check(java.util.List) 
+     * @param concernedItems
+     * @return the insertion result, with the error list or the URI of the 
+     *         events inserted
+     */
+    public POSTResultsReturn insertLinksWithObject(String objectUri, List<ConcernedItem> concernedItems, String graph) {
+        List<Status> status = new ArrayList<>();
+        List<String> createdResourcesUris = new ArrayList<>();
+        
+        POSTResultsReturn results;
+        boolean resultState = false;
+        boolean eventsInserted = true;
+        
+        UriGenerator uriGenerator = new UriGenerator();
+        
+        getConnection().begin();
+        for (ConcernedItem concernedItem : concernedItems) {
+            
+            // Insert link
+            UpdateRequest query = prepareInsertLinkQuery(objectUri, concernedItem, graph);
+            
+            try {
+                Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
+                prepareUpdate.execute();
+
+                createdResourcesUris.add(concernedItem.getUri());
+            } catch (RepositoryException ex) {
+                    LOGGER.error(
+                            StatusCodeMsg.ERROR_WHILE_COMMITTING_OR_ROLLING_BACK_TRIPLESTORE_STATEMENT, ex);
+            } catch (MalformedQueryException e) {
+                    LOGGER.error(e.getMessage(), e);
+                    eventsInserted = false;
+                    status.add(new Status(
+                            StatusCodeMsg.QUERY_ERROR, 
+                            StatusCodeMsg.ERR, 
+                            StatusCodeMsg.MALFORMED_CREATE_QUERY + " " + e.getMessage()));
+            }
+        }
+        
+        if (eventsInserted) {
+            resultState = true;
+            getConnection().commit();
+        } else {
+            getConnection().rollback();
+        }
+        
+        if (getConnection() != null) {
+            getConnection().close();
+        }
+        
+        results = new POSTResultsReturn(resultState, eventsInserted, true);
+        results.statusList = status;
+        results.setCreatedResources(createdResourcesUris);
+        if (resultState && !createdResourcesUris.isEmpty()) {
+            results.createdResources = createdResourcesUris;
+            results.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, createdResourcesUris.size() + " " + StatusCodeMsg.RESOURCES_CREATED));
+        }
+        
+        return results;
     }
 
     @Override

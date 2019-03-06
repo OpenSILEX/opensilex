@@ -50,6 +50,7 @@ import phis2ws.service.utils.dates.Dates;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.Annotation;
+import phis2ws.service.view.model.phis.ConcernedItem;
 import phis2ws.service.view.model.phis.Event;
 import phis2ws.service.view.model.phis.Property;
 
@@ -204,7 +205,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
         
         String uriSelectNameSparql = prepareSearchQueryUri(query, uri, true);
         prepareSearchQueryType(query, uriSelectNameSparql, type, true); 
-        ConcernedItemDAOSesame.prepareSearchQueryConcernedItemSimpleFilter(
+        ConcernedItemDAOSesame.prepareQueryWithConcernedItemFilters(
                 query, 
                 uriSelectNameSparql, 
                 searchConcernedItemLabel, 
@@ -237,7 +238,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
         
         String uriSelectNameSparql = prepareSearchQueryUri(query, searchUri, false);
         prepareSearchQueryType(query, uriSelectNameSparql, null, false);  
-        ConcernedItemDAOSesame.prepareSearchQueryConcernedItemSimpleFilter(query, uriSelectNameSparql, null, null); 
+        ConcernedItemDAOSesame.prepareQueryWithConcernedItemFilters(query, uriSelectNameSparql, null, null); 
         prepareSearchQueryDateTime(query, uriSelectNameSparql, null, null, false); 
         
         LOGGER.debug(SPARQL_QUERY + query.toString());
@@ -293,8 +294,8 @@ public class EventDAOSesame extends DAOSesame<Event> {
             while (eventsResult.hasNext()) {
                 Event event = getEventFromBindingSet(eventsResult.next());
                 searchEventPropertiesAndSetThemToIt(event);
-                ConcernedItemDAOSesame concernedItemDAOSesame = new ConcernedItemDAOSesame(user);
-                event.setConcernedItems(concernedItemDAOSesame.searchObjectConcernedItems(event.getUri()));
+                event.setConcernedItems((new ConcernedItemDAOSesame(user))
+                        .searchConcernedItems(event.getUri(), null, null, 0, pageSizeMaxValue));
                 events.add(event);
             }
         }
@@ -318,18 +319,13 @@ public class EventDAOSesame extends DAOSesame<Event> {
             if (eventsResult.hasNext()) {
                 event = getEventFromBindingSet(eventsResult.next());
                 searchEventPropertiesAndSetThemToIt(event);
-                ConcernedItemDAOSesame concernedItemDAOSesame = new ConcernedItemDAOSesame(user);
-                event.setConcernedItems(concernedItemDAOSesame.searchObjectConcernedItems(event.getUri()));
                 
-                //SILEX:todo think about pagination within a widget (like 
-                // the annotation one): what should be the best practice?
-                // For the moment we use only one page by taking the max value 
-                // of page size
+                event.setConcernedItems((new ConcernedItemDAOSesame(user))
+                        .searchConcernedItems(event.getUri(), null, null, 0, pageSizeMaxValue));
+                
                 AnnotationDAOSesame annotationDAO = new AnnotationDAOSesame(this.user);
-                int pageSizeMaxValue = Integer.parseInt(PropertiesFileManager.getConfigFileProperty("service", "pageSizeMax"));
                 ArrayList<Annotation> annotations = annotationDAO.searchAnnotations(null, null, event.getUri(), null, null, 0, pageSizeMaxValue);
                 event.setAnnotations(annotations);
-                //\SILEX:todo
             }
         }
         return event;
@@ -473,13 +469,6 @@ public class EventDAOSesame extends DAOSesame<Event> {
         }
     }
     
-    private boolean checkIfEventUriIsValid(String uri) {
-        int pageSizeMaxValue = Integer.parseInt(
-                PropertiesFileManager.getConfigFileProperty("service", "pageSizeMax"));
-        return !searchEvents(uri, null, null, null, null, null,
-                0, pageSizeMaxValue).isEmpty();
-    }
-    
     /**
      * Check the given list of events
      * @param events
@@ -497,7 +486,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
                 String eventUri = event.getUri();
                 if (eventUri != null) {
                     // Check the event URI if given (in case of an update)
-                    if (!checkIfEventUriIsValid(eventUri)){
+                    if (searchEvents(eventUri, null, null, null, null, null, 0, pageSizeMaxValue).isEmpty()){
                         dataIsValid = false;
                         status.add(new Status(
                                 StatusCodeMsg.UNKNOWN_URI, 

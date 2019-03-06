@@ -57,6 +57,7 @@ public final class StatusCodeMsg {
     public static final String TRIPLESTOR_ACCESS_ERROR = "Triplestore access error";
     public static final String UNKNOWN_URI = "Unknown uri";
     public static final String UNKNOWN_EVENT_URI = "Unknown event URI";
+    public static final String UNKNOWN_CONCERNED_ITEM_URI = "Unknown concerned item URI";
     public static final String WRONG_VALUE = "Wrong value";
     public static final String INVALID_INPUT_PARAMETERS = "Wrong format parameter(s)";
 }

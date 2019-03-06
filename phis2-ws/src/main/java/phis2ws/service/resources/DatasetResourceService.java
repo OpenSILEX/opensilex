@@ -47,7 +47,7 @@ import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
-import phis2ws.service.view.brapi.form.ResponseFormDataset;
+import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Dataset;
 
 /**
@@ -129,15 +129,15 @@ public class DatasetResourceService extends ResourceService {
     private Response getDatasetsData(DatasetDAOMongo datasetDAOMongo) {
         ArrayList<Dataset> datasets = new ArrayList<>();
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormDataset getResponse;
+        ResultForm<Dataset> getResponse;
         
         datasets = datasetDAOMongo.allPaginate();
         
         if (datasets == null) {
-            getResponse = new ResponseFormDataset(0, 0, datasets, true);
+            getResponse = new ResultForm<Dataset>(0, 0, datasets, true);
             return noResultFound(getResponse, statusList);
         } else if (!datasets.isEmpty()) {
-            getResponse = new ResponseFormDataset(datasetDAOMongo.getPageSize(), datasetDAOMongo.getPage(), datasets, false);
+            getResponse = new ResultForm<Dataset>(datasetDAOMongo.getPageSize(), datasetDAOMongo.getPage(), datasets, false);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {
@@ -145,7 +145,7 @@ public class DatasetResourceService extends ResourceService {
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         } else {
-            getResponse = new ResponseFormDataset(0, 0, datasets, true);
+            getResponse = new ResultForm<Dataset>(0, 0, datasets, true);
             return noResultFound(getResponse, statusList);
         }
     }

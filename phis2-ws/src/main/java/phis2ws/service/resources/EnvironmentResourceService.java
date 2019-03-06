@@ -43,8 +43,8 @@ import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
-import phis2ws.service.view.brapi.form.ResponseFormEnvironmentMeasure;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
+import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.EnvironmentMeasure;
 
 /**
@@ -223,15 +223,15 @@ public class EnvironmentResourceService extends ResourceService {
         // 4. Initialize return variables
         ArrayList<EnvironmentMeasureDTO> list = new ArrayList<>();
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormEnvironmentMeasure getResponse;
+        ResultForm<EnvironmentMeasureDTO> getResponse;
         
         if (measures == null) {
             // Request failure
-            getResponse = new ResponseFormEnvironmentMeasure(0, 0, list, true, 0);
+            getResponse = new ResultForm<EnvironmentMeasureDTO>(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         } else if (measures.isEmpty()) {
             // No results
-            getResponse = new ResponseFormEnvironmentMeasure(0, 0, list, true, 0);
+            getResponse = new ResultForm<EnvironmentMeasureDTO>(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         } else {
             // Convert all measures object to DTO's
@@ -240,7 +240,7 @@ public class EnvironmentResourceService extends ResourceService {
             });
             
             // Return list of DTO
-            getResponse = new ResponseFormEnvironmentMeasure(environmentDAO.getPageSize(), environmentDAO.getPage(), list, true, totalCount);
+            getResponse = new ResultForm<EnvironmentMeasureDTO>(environmentDAO.getPageSize(), environmentDAO.getPage(), list, true, totalCount);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }

@@ -35,16 +35,12 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.sesame.VectorDAOSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.VectorDTO;
 import phis2ws.service.resources.validation.interfaces.Date;
 import phis2ws.service.resources.validation.interfaces.Required;
@@ -54,7 +50,7 @@ import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
 import phis2ws.service.view.brapi.form.ResponseFormGET;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
-import phis2ws.service.view.brapi.form.ResponseFormVector;
+import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Vector;
 
 /**
@@ -72,7 +68,7 @@ public class VectorResourceService extends ResourceService {
     private Response getVectorsData(VectorDAOSesame vectorDAOSesame) {
         ArrayList<Vector> vectors;
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormVector getResponse;
+        ResultForm<Vector> getResponse;
         
         //1. Get number of vectors corresponding to the search params
         Integer totalCount = vectorDAOSesame.count();
@@ -81,13 +77,13 @@ public class VectorResourceService extends ResourceService {
         
         //3. Return the result
         if (vectors == null) { //Request error
-            getResponse = new ResponseFormVector(0, 0, vectors, true, 0);
+            getResponse = new  ResultForm<Vector>(0, 0, vectors, true, 0);
             return noResultFound(getResponse, statusList);
         } else if (vectors.isEmpty()) { //No result
-            getResponse = new ResponseFormVector(0, 0, vectors, true, 0);
+            getResponse = new  ResultForm<Vector>(0, 0, vectors, true, 0);
             return noResultFound(getResponse, statusList);
         } else { //Results founded. Return the results
-            getResponse = new ResponseFormVector(vectorDAOSesame.getPageSize(), vectorDAOSesame.getPage(), vectors, true, totalCount);
+            getResponse = new  ResultForm<Vector>(vectorDAOSesame.getPageSize(), vectorDAOSesame.getPage(), vectors, true, totalCount);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }

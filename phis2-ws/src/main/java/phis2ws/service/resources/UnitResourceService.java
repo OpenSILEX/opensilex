@@ -34,15 +34,11 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.sesame.UnitDaoSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.UnitDTO;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
@@ -51,7 +47,7 @@ import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
 import phis2ws.service.view.brapi.form.ResponseFormGET;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
-import phis2ws.service.view.brapi.form.ResponseFormUnit;
+import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Unit;
 
 @Api("/units")
@@ -160,15 +156,15 @@ public class UnitResourceService extends ResourceService {
     private Response getUnitsData(UnitDaoSesame unitDaoSesame) {
         ArrayList<Unit> units;
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormUnit getResponse;
+        ResultForm<Unit> getResponse;
         
         units = unitDaoSesame.allPaginate();
         
         if (units == null) {
-            getResponse = new ResponseFormUnit(0, 0, units, true);
+            getResponse = new ResultForm<Unit>(0, 0, units, true);
             return noResultFound(getResponse, statusList);
         } else if (!units.isEmpty()) {
-            getResponse = new ResponseFormUnit(unitDaoSesame.getPageSize(), unitDaoSesame.getPage(), units, false);
+            getResponse = new ResultForm<Unit>(unitDaoSesame.getPageSize(), unitDaoSesame.getPage(), units, false);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {
@@ -176,7 +172,7 @@ public class UnitResourceService extends ResourceService {
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         } else {
-            getResponse = new ResponseFormUnit(0, 0, units, true);
+            getResponse = new ResultForm<Unit>(0, 0, units, true);
             return noResultFound(getResponse, statusList);
         }
     }

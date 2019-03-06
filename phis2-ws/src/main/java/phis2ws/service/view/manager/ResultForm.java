@@ -11,6 +11,7 @@
 //***********************************************************************************************
 package phis2ws.service.view.manager;
 
+import java.util.ArrayList;
 import java.util.List;
 import phis2ws.service.view.brapi.Metadata;
 import phis2ws.service.view.brapi.Status;
@@ -26,11 +27,43 @@ import phis2ws.service.view.brapi.Status;
  * @see Result
  * @date 03/12/2015
  */
-public abstract class ResultForm<T> {
+public class ResultForm<T> {
 
     protected Metadata metadata;
     protected Result result;
 
+    /**
+     * Initialize fields metadata and result
+     * @param pageSize results per page
+     * @param currentPage current page
+     * @param list results list
+     * @param paginate 
+     */
+    public ResultForm(int pageSize, int currentPage, ArrayList<T> list, boolean paginate) {
+        metadata = new Metadata(pageSize, currentPage, list.size());
+        if (list.size() > 1) {
+            result = new Result<T>(list, metadata.getPagination(), paginate);
+        } else {
+            result = new Result<T>(list);
+        }
+    }
+    
+    /**
+     * Initialize fields metadata and result
+     * @param pageSize results per page
+     * @param currentPage current page
+     * @param list results list
+     * @param paginate 
+     * @param totalCount number of result
+     */
+    public ResultForm(int pageSize, int currentPage, ArrayList<T> list, boolean paginate, int totalCount) {
+        metadata = new Metadata(pageSize, currentPage, totalCount);
+        if (list.size() > 1) {
+            result = new Result<T>(list, metadata.getPagination(), paginate);
+        } else {
+            result = new Result<T>(list);
+        }
+    }
     /**
      * resultSize() - Récupère le nombre d'éléments de la liste data qui est
  un champ de result

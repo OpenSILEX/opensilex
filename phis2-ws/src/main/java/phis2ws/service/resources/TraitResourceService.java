@@ -47,7 +47,7 @@ import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
 import phis2ws.service.view.brapi.form.ResponseFormGET;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
-import phis2ws.service.view.brapi.form.ResponseFormTrait;
+import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Trait;
 
 @Api("/traits")
@@ -156,15 +156,15 @@ public class TraitResourceService extends ResourceService {
     private Response getTraitsData(TraitDaoSesame traitDaoSesame) {
         ArrayList<Trait> traits;
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormTrait getResponse;
+        ResultForm<Trait> getResponse;
         
         traits = traitDaoSesame.allPaginate();
         
         if (traits == null) {
-            getResponse = new ResponseFormTrait(0, 0, traits, true);
+            getResponse = new ResultForm<Trait>(0, 0, traits, true);
             return noResultFound(getResponse, statusList);
         } else if (!traits.isEmpty()) {
-            getResponse = new ResponseFormTrait(traitDaoSesame.getPageSize(), traitDaoSesame.getPage(), traits, false);
+            getResponse = new ResultForm<Trait>(traitDaoSesame.getPageSize(), traitDaoSesame.getPage(), traits, false);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {
@@ -172,7 +172,7 @@ public class TraitResourceService extends ResourceService {
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         } else {
-            getResponse = new ResponseFormTrait(0, 0, traits, true);
+            getResponse = new ResultForm<Trait>(0, 0, traits, true);
             return noResultFound(getResponse, statusList);
         }
     }

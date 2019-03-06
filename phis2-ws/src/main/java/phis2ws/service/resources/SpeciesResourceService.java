@@ -23,7 +23,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.sesame.SpeciesDAOSesame;
@@ -31,7 +30,7 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.species.SpeciesDTO;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
-import phis2ws.service.view.brapi.form.ResponseFormSpecies;
+import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Species;
 
 /**
@@ -133,17 +132,17 @@ public class SpeciesResourceService extends ResourceService {
         ArrayList<Species> searchResult = speciesDAO.searchWithFilter(filter, language);
         
         //4. Send result
-        ResponseFormSpecies getResponse;
+        ResultForm<SpeciesDTO> getResponse;
         ArrayList<Status> statusList = new ArrayList<>();
         ArrayList<SpeciesDTO> speciesToReturn = speciesToSpeciesDTO(searchResult);
         
         if (searchResult == null || speciesToReturn.isEmpty()) {
             //No result found
-            getResponse = new ResponseFormSpecies(0, 0, speciesToReturn, true, 0);
+            getResponse = new ResultForm<SpeciesDTO>(0, 0, speciesToReturn, true, 0);
             return noResultFound(getResponse, statusList);
         } else {
             //Return the result list
-            getResponse = new ResponseFormSpecies(pageSize, page, speciesToReturn, true, totalCount);
+            getResponse = new ResultForm<SpeciesDTO>(pageSize, page, speciesToReturn, true, totalCount);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }

@@ -33,10 +33,12 @@ import phis2ws.service.view.model.phis.Property;
  */
 public class EventPostDTO extends AbstractVerifiedClass {
     
-    private final String EVENT_POST_DEFAULT_ANNOTATION_MOTIVATION_INSTANCE = Oa.CONCEPT_MOTIVATION.toString() + '#' + Oa.INSTANCE_DESCRIBING.toString();
+    private final String EVENT_POST_DEFAULT_ANNOTATION_MOTIVATION_INSTANCE = 
+            Oa.CONCEPT_MOTIVATION.toString() + '#' + Oa.INSTANCE_DESCRIBING.toString();
     
     private String rdfType;
     private String description;
+    private String creator;
     private ArrayList<String> concernedItemsUris;
     private String date;
     private ArrayList<PropertyDTO> properties;
@@ -67,15 +69,28 @@ public class EventPostDTO extends AbstractVerifiedClass {
         ArrayList<String> annotationBodyValues = new ArrayList();
         annotationBodyValues.add(description);
         String annotationMotivation = EVENT_POST_DEFAULT_ANNOTATION_MOTIVATION_INSTANCE;
-        Annotation eventAnnotation = new Annotation(null, DateTime.now(), null, annotationBodyValues, annotationMotivation, null);
+        Annotation eventAnnotation = new Annotation(
+                null, 
+                DateTime.now(), 
+                creator, 
+                annotationBodyValues, 
+                annotationMotivation, 
+                null);
         
         ArrayList<Annotation> eventAnnotations = new ArrayList<>();
         eventAnnotations.add(eventAnnotation);
-        return new Event(null, this.rdfType, modelConcernedItems, dateTime, modelProperties, eventAnnotations);
+        
+        return new Event(
+                null, 
+                this.rdfType, 
+                modelConcernedItems, 
+                dateTime, 
+                modelProperties, 
+                eventAnnotations);
     }
 
     @URL
-    @Required
+    @NotNull
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EVENT_TYPE)
     public String getRdfType() {
         return rdfType;
@@ -96,7 +111,7 @@ public class EventPostDTO extends AbstractVerifiedClass {
         this.concernedItemsUris = concernedItemsUris;
     }
 
-    @Required
+    @NotNull
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EVENT_DATE)
     public String getDate() {
         return date;
@@ -106,8 +121,6 @@ public class EventPostDTO extends AbstractVerifiedClass {
         this.date = date;
     }
 
-    @NotEmpty
-    @NotNull
     @Valid
     public ArrayList<PropertyDTO> getProperties() {
         return properties;
@@ -124,5 +137,16 @@ public class EventPostDTO extends AbstractVerifiedClass {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    @URL
+    @NotNull
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_ANNOTATION_CREATOR)
+    public String getCreator() {
+        return creator;
+    }
+
+    public void setCreator(String creator) {
+        this.creator = creator;
     }
 }

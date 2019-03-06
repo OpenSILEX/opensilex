@@ -19,7 +19,7 @@ import phis2ws.service.utils.UriGenerator;
  */
 public class Data {
     //The uri of the data.
-    //e.g. http://www.phenome-fppn.fr/mtp/2018/s18003
+    //e.g. http://www.opensilex.org/1e9eb2fbacc7222d3868ae96149a8a16b32b2a1870c67d753376381ebcbb5937/e78da502-ee3f-42d3-828e-aa8cab237f93
     protected String uri;
     //The uri of the provenance from which data come.
     //e.g. http://www.phenome-fppn.fr/mtp/2018/s18003

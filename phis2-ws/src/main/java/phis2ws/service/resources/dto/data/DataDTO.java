@@ -16,7 +16,9 @@ import phis2ws.service.view.model.phis.Data;
  * Represents the exchange format used to get data from generic service.
  */
 public class DataDTO {
-
+    //The uri of the data.
+    //e.g. http://www.opensilex.org/1e9eb2fbacc7222d3868ae96149a8a16b32b2a1870c67d753376381ebcbb5937/e78da502-ee3f-42d3-828e-aa8cab237f93
+    protected String uri;
     //The uri of the provenance from which data come.
     //e.g. http://www.phenome-fppn.fr/mtp/2018/s18003
     protected String provenanceUri;
@@ -39,6 +41,8 @@ public class DataDTO {
         if (data.getDate() != null) {
             setDate(df.format(data.getDate()));
         }
+        
+        setUri(data.getUri());
         setProvenanceUri(data.getProvenanceUri());
         setVariableUri(data.getVariableUri());
         setObjectUri(data.getObjectUri());
@@ -90,5 +94,12 @@ public class DataDTO {
     public void setValue(Object value) {
         this.value = value;
     }
+    
+    public String getUri() {
+        return uri;
+    }
 
+    public void setUri(String uri) {
+        this.uri = uri;
+    }
 }

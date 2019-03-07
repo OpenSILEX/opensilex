@@ -105,6 +105,8 @@ public final class DocumentationAnnotation {
     public static final String VECTOR_RDF_TYPE_DEFINITION = "A vector rdf type URI";
     
     public static final String RADIOMETRIC_TARGET_POST_DEFINITION = "JSON format of radiometric target data";
+    
+    public static final String PROVENACE_POST_DEFINITION = "JSON format of provenance";
 
     public static final String ADMIN_ONLY_NOTES = "This can only be done by a PHIS-SILEX admin.";
     public static final String USER_ONLY_NOTES = "This can only be done by a PHIS-SILEX user.";
@@ -169,6 +171,12 @@ public final class DocumentationAnnotation {
 
     public static final String EXAMPLE_PROVENANCE_URI = "http://www.phenome-fppn.fr/mtp/2018/pv181515071552";
     public static final String EXAMPLE_PROVENANCE_DATE = EXAMPLE_DATE;
+    public static final String EXAMPLE_PROVENANCE_LABEL = "PROV2019-LEAF";
+    public static final String EXAMPLE_PROVENANCE_COMMENT = "In this provenance we have count the number of leaf per plant";
+    public static final String EXAMPLE_PROVENANCE_METADATA = "{ \"SensingDevice\" : \"http://www.opensilex.org/demo/s001\",\n" +
+                                                               "\"Vector\" : \"http://www.opensilex.org/demo/v001\"}";
+    public static final String EXAMPLE_PROVENANCE_METADATA_FILTER = "{ \"metadata.SensingDevice\" : \"http://www.opensilex.org/demo/s001\",\n" +
+                                                               "\"metadata.Vector\" : \"http://www.opensilex.org/demo/v001\"}";
 
     public static final String EXAMPLE_GROUP_URI = "http://phenome-fppn.fr/mauguio/INRA-MISTEA-GAMMA";
     public static final String EXAMPLE_GROUP_NAME = "INRA-MISTEA-GAMMA";

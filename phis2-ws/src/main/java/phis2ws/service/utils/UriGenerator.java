@@ -6,7 +6,7 @@
 //******************************************************************************
 package phis2ws.service.utils;
 
-import java.util.ArrayList;
+import java.time.Instant;
 import java.util.Calendar;
 import java.util.UUID;
 import org.apache.jena.sparql.AlreadyExists;
@@ -25,12 +25,10 @@ import phis2ws.service.dao.sesame.TraitDaoSesame;
 import phis2ws.service.dao.sesame.UnitDaoSesame;
 import phis2ws.service.dao.sesame.VariableDaoSesame;
 import phis2ws.service.dao.sesame.VectorDAOSesame;
-import phis2ws.service.model.User;
 import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Foaf;
 import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.view.model.phis.Group;
-import phis2ws.service.view.model.phis.Experiment;
 import phis2ws.service.view.model.phis.Project;
 
 /**
@@ -69,6 +67,7 @@ public class UriGenerator {
     private static final String PLATFORM_URI_ID_UNITS = PLATFORM_URI_ID + "units/";
     private static final String PLATFORM_URI_ID_VARIABLES = PLATFORM_URI_ID + "variables/";
     private static final String PLATFORM_URI_ID_VARIETY = PLATFORM_URI + "v/";
+    private static final String PLATFORM_URI_ID_PROVENANCE = PLATFORM_URI_ID + "provenance/";
 
 
     /**
@@ -419,6 +418,20 @@ public class UriGenerator {
         
         return groupUri;
     }
+    
+    /**
+     * Generates a new provenance uri. A provenance uri follows the pattern :
+     * <prefix>:id/provenance/<timestamp>
+     * @example http://www.opensilex.org/demo/id/provenance/019275849
+     * @return the new generated uri
+     * @throws Exception 
+     */
+    private String generateProvenanceUri() {
+        //Generates uri
+        Instant instant = Instant.now();
+        long timeStampMillis = instant.toEpochMilli();
+        return PLATFORM_URI_ID_PROVENANCE + Long.toString(timeStampMillis);
+    }
 
 
     /**
@@ -470,6 +483,8 @@ public class UriGenerator {
             return generateExperimentUri(year);
         } else if (instanceType.equals(Foaf.CONCEPT_GROUP.toString())) {
             return generateGroupUri(additionalInformation);
+        } else if (instanceType.equals(Oeso.CONCEPT_PROVENANCE.toString())) {
+            return generateProvenanceUri();
         }
 
         return null;

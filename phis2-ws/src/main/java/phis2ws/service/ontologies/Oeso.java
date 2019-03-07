@@ -88,6 +88,12 @@ public enum Oeso {
             return NAMESPACE.toString() + "Project";
         }
     },
+    CONCEPT_PROVENANCE {
+       @Override
+        public String toString() {
+            return NAMESPACE.toString() + "Provenance";
+        } 
+    },
     CONCEPT_RADIOMETRIC_TARGET {
         @Override
         public String toString() {

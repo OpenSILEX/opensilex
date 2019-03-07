@@ -19,6 +19,7 @@ import com.mongodb.client.model.Indexes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Pattern;
 import javax.ws.rs.core.Response;
 import org.bson.BSONObject;
 import org.bson.Document;
@@ -87,11 +88,11 @@ public class ProvenanceDAOMongo extends DAOMongo<Provenance> {
         }
         
         if (searchProvenance.getLabel() != null) {
-            query.append(DB_FIELD_LABEL, java.util.regex.Pattern.compile(searchProvenance.getLabel()));
+            query.append(DB_FIELD_LABEL, Pattern.compile(searchProvenance.getLabel(), Pattern.CASE_INSENSITIVE));
         }
         
         if (searchProvenance.getComment() != null) {
-            query.append(DB_FIELD_COMMENT, java.util.regex.Pattern.compile(searchProvenance.getComment()));
+            query.append(DB_FIELD_COMMENT, Pattern.compile(searchProvenance.getComment(), Pattern.CASE_INSENSITIVE));
         }
         LOGGER.debug(query.toJson());
         

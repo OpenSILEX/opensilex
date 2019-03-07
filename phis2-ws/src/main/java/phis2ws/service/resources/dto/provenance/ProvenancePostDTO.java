@@ -8,7 +8,6 @@
 package phis2ws.service.resources.dto.provenance;
 
 import io.swagger.annotations.ApiModelProperty;
-import java.util.HashMap;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.resources.validation.interfaces.Required;
@@ -29,7 +28,7 @@ public class ProvenancePostDTO extends AbstractVerifiedClass {
     //Additional informations for the provenance. Its containt depends of the type of provenance. 
     //@example [ "SensingDevice" => "http://www.opensilex.org/demo/s001",
     //           "Vector" => "http://www.opensilex.org/demo/v001"]
-    protected HashMap<String, Object> metadata;
+    protected Object metadata;
 
     @Override
     public Provenance createObjectFromDTO() {
@@ -61,11 +60,11 @@ public class ProvenancePostDTO extends AbstractVerifiedClass {
     }
 
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROVENANCE_METADATA)
-    public HashMap<String, Object> getMetadata() {
+    public Object getMetadata() {
         return metadata;
     }
 
-    public void setMetadata(HashMap<String, Object> metadata) {
+    public void setMetadata(Object metadata) {
         this.metadata = metadata;
     }
 }

@@ -11,15 +11,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
-import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.update.UpdateRequest;
-import org.apache.jena.vocabulary.DCTerms;
-import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -28,29 +24,20 @@ import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.PropertiesFileManager;
-import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.dao.phis.UserDaoPhisBrapi;
-import static phis2ws.service.dao.sesame.EventDAOSesame.LOGGER;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.model.User;
-import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Oeev;
 import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.utils.POSTResultsReturn;
-import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.ConcernedItem;
-import phis2ws.service.view.model.phis.Event;
-import phis2ws.service.view.model.phis.Property;
 
 /**
  * DAO for concerned items
@@ -87,19 +74,23 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
      * @param searchConcernedItemLabel
      * @param searchConcernedItemUri
      */
-    public static void prepareQueryWithConcernedItemFilters(SPARQLQueryBuilder query, String objectUriSelectNameSparql, String searchConcernedItemLabel, String searchConcernedItemUri) {
+    public static void prepareQueryWithConcernedItemFilters(SPARQLQueryBuilder query, String objectUriSelectNameSparql, String searchConcernedItemUri, String searchConcernedItemLabel) {
+        if (objectUriSelectNameSparql != null) {
+            query.appendTriplet(objectUriSelectNameSparql, Oeev.RELATION_CONCERNS.toString(), CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, null);
+        }
 
-        if (searchConcernedItemLabel != null || searchConcernedItemUri != null) {
-            if (objectUriSelectNameSparql != null) {
-                query.appendTriplet(objectUriSelectNameSparql, Oeev.RELATION_CONCERNS.toString(), CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, null);
-            }
-            
-            if (searchConcernedItemLabel != null) {
-                query.appendTriplet(CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, Rdfs.RELATION_LABEL.toString(), CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL, null);
-                
-                query.appendAndFilter("regex(" + CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL + ", \"" + searchConcernedItemLabel + "\", \"i\")");
-            }
-            
+        if (searchConcernedItemLabel != null) {
+            query.appendTriplet(CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, Rdfs.RELATION_LABEL.toString(), CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL, null);
+
+            query.appendAndFilter("regex(" + CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL + ", \"" + searchConcernedItemLabel + "\", \"i\")");
+        }
+
+        if (searchConcernedItemUri != null) {
+            query.appendAndFilter("regex (str(" + CONCERNED_ITEM_URI_SELECT_NAME_SPARQL + ")" + ", \"" + searchConcernedItemUri + "\", \"i\")");
+        }
+    }
+    
+    /**         
             if (searchConcernedItemUri != null) {
                 query.appendAndFilter("regex (str(" + CONCERNED_ITEM_URI_SELECT_NAME_SPARQL + ")" + ", \"" + searchConcernedItemUri + "\", \"i\")");
             }
@@ -108,6 +99,8 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
     
     /**
      * Prepare the query to search the concerned items of a object
+     * @param searchLabel
+     * @param searchUri
      * @example
      * SELECT DISTINCT  ?concernedItemUri ?concernedItemType 
      * (GROUP_CONCAT(DISTINCT ?concernedItemLabel; SEPARATOR=",") AS ?concernedItemLabels) 
@@ -134,7 +127,6 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
         
         query.appendSelect(CONCERNED_ITEM_URI_SELECT_NAME_SPARQL);
         query.appendGroupBy(CONCERNED_ITEM_URI_SELECT_NAME_SPARQL);
-        query.appendTriplet(uriSelectNameSparql, Oeev.RELATION_CONCERNS.toString(), CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, null);
         
         query.appendSelect(CONCERNED_ITEM_TYPE_SELECT_NAME_SPARQL);
         query.appendGroupBy(CONCERNED_ITEM_TYPE_SELECT_NAME_SPARQL);
@@ -169,10 +161,11 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
      * @param objectUri 
      * @param searchUri 
      * @param searchLabel 
+     * @param page 
+     * @param pageSize 
      * @return  the object's concerned items
      */
     public ArrayList<ConcernedItem> searchConcernedItems(String objectUri, String searchUri, String searchLabel, int page, int pageSize) {
-        
         setPage(page);
         setPageSize(pageSize);
         
@@ -184,28 +177,31 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
             ConcernedItem concernedItem;
             while(concernedItemsTupleQueryResult.hasNext()) {
                 concernedItem = getConcernedItemFromBindingSet(concernedItemsTupleQueryResult.next());
-                concernedItems.add(concernedItem);
+                if (concernedItem.getUri() != null) {
+                    concernedItems.add(concernedItem);
+                }
             }
         }
         return concernedItems;
     }
     
     /**
-     * Generate an insert query for the given event
+     * Generate an insert query for the links of the given concerned items
      * @param objectUri the concerning object's URI
      * @param concernedItem
      * @param graphString
      * @return the query
      * @example
      */
-    private UpdateRequest prepareInsertLinkQuery(String objectUri, ConcernedItem concernedItem, String graphString) {
+    private UpdateRequest prepareInsertLinkQuery(String objectUri, ArrayList<ConcernedItem> concernedItems, String graphString) {
         UpdateBuilder updateBuilder = new UpdateBuilder();
-        
         Node graph = NodeFactory.createURI(graphString);
-        Resource objectResource = ResourceFactory.createResource(objectUri);
-        Resource concernedItemResource = ResourceFactory.createResource(concernedItem.getUri());
-        updateBuilder.addInsert(graph, objectResource, Oeso.RELATION_CONCERNS.toString(), concernedItemResource);
-        
+        for (ConcernedItem concernedItem : concernedItems) {
+            Resource objectResource = ResourceFactory.createResource(objectUri);
+            Resource concernsProperty = ResourceFactory.createResource(Oeso.RELATION_CONCERNS.toString());
+            Resource concernedItemResource = ResourceFactory.createResource(concernedItem.getUri());
+            updateBuilder.addInsert(graph, objectResource, concernsProperty, concernedItemResource);
+        }
         UpdateRequest query = updateBuilder.buildRequest();
         LOGGER.debug(SPARQL_QUERY + " " + query.toString());
         
@@ -220,7 +216,6 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
     public POSTResultsReturn check(List<ConcernedItem> concernedItems) {
         POSTResultsReturn checkResult;
         List<Status> status = new ArrayList<>();
-        boolean dataIsValid = true;
         
         // 1. Check if user is admin
         UserDaoPhisBrapi userDAO = new UserDaoPhisBrapi();
@@ -230,7 +225,6 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
                 if (concernedItemUri != null) {
                     // Check the event URI if given (in case of an update)
                     if (searchConcernedItems(null, concernedItemUri, null, 0, pageSizeMaxValue).isEmpty()){
-                        dataIsValid = false;
                         status.add(new Status(
                                 StatusCodeMsg.UNKNOWN_URI, 
                                 StatusCodeMsg.ERR, 
@@ -239,61 +233,55 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
                 } 
             }
         } else {
-            dataIsValid = false;
             status.add(new Status(
                     StatusCodeMsg.ACCESS_DENIED, 
                     StatusCodeMsg.ERR, 
                     StatusCodeMsg.ADMINISTRATOR_ONLY));
         }
-        
+        boolean dataIsValid = status.isEmpty();
         checkResult = new POSTResultsReturn(dataIsValid, null, dataIsValid);
         checkResult.statusList = status;
         return checkResult;   
     }
     
     /**
-     * Insert the given concerned items in the storage 
+     * Insert the given concerned items in the storage. 
      * /!\ Prerequisite: data must have been checked before calling this method
+     * @param objectUri
+     * @param graph
      * @see EventDAOSesame#check(java.util.List) 
      * @param concernedItems
      * @return the insertion result, with the error list or the URI of the 
      *         events inserted
      */
-    public POSTResultsReturn insertLinksWithObject(String objectUri, List<ConcernedItem> concernedItems, String graph) {
+    public POSTResultsReturn insertLinksWithObject(String objectUri, ArrayList<ConcernedItem> concernedItems, String graph) {
         List<Status> status = new ArrayList<>();
         List<String> createdResourcesUris = new ArrayList<>();
         
         POSTResultsReturn results;
         boolean resultState = false;
-        boolean eventsInserted = true;
-        
-        UriGenerator uriGenerator = new UriGenerator();
+        boolean linksInserted = true;
         
         getConnection().begin();
-        for (ConcernedItem concernedItem : concernedItems) {
             
-            // Insert link
-            UpdateRequest query = prepareInsertLinkQuery(objectUri, concernedItem, graph);
+        // Insert links
+        UpdateRequest query = prepareInsertLinkQuery(objectUri, concernedItems, graph);
             
-            try {
-                Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
-                prepareUpdate.execute();
-
-                createdResourcesUris.add(concernedItem.getUri());
-            } catch (RepositoryException ex) {
-                    LOGGER.error(
-                            StatusCodeMsg.ERROR_WHILE_COMMITTING_OR_ROLLING_BACK_TRIPLESTORE_STATEMENT, ex);
-            } catch (MalformedQueryException e) {
-                    LOGGER.error(e.getMessage(), e);
-                    eventsInserted = false;
-                    status.add(new Status(
-                            StatusCodeMsg.QUERY_ERROR, 
-                            StatusCodeMsg.ERR, 
-                            StatusCodeMsg.MALFORMED_CREATE_QUERY + " " + e.getMessage()));
-            }
+        try {
+            Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
+            prepareUpdate.execute();
+        } catch (RepositoryException ex) {
+                LOGGER.error(StatusCodeMsg.ERROR_WHILE_COMMITTING_OR_ROLLING_BACK_TRIPLESTORE_STATEMENT, ex);
+        } catch (MalformedQueryException e) {
+                LOGGER.error(e.getMessage(), e);
+                linksInserted = false;
+                status.add(new Status(
+                        StatusCodeMsg.QUERY_ERROR, 
+                        StatusCodeMsg.ERR, 
+                        StatusCodeMsg.MALFORMED_CREATE_QUERY + " " + e.getMessage()));
         }
         
-        if (eventsInserted) {
+        if (linksInserted) {
             resultState = true;
             getConnection().commit();
         } else {
@@ -304,7 +292,7 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
             getConnection().close();
         }
         
-        results = new POSTResultsReturn(resultState, eventsInserted, true);
+        results = new POSTResultsReturn(resultState, linksInserted, true);
         results.statusList = status;
         results.setCreatedResources(createdResourcesUris);
         if (resultState && !createdResourcesUris.isEmpty()) {

@@ -9,15 +9,14 @@ package phis2ws.service.dao.sesame;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
-import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.update.UpdateRequest;
-import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
@@ -28,13 +27,9 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.DateFormat;
-import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.dao.phis.UserDaoPhisBrapi;
 import phis2ws.service.documentation.StatusCodeMsg;
@@ -50,7 +45,6 @@ import phis2ws.service.utils.dates.Dates;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.Annotation;
-import phis2ws.service.view.model.phis.ConcernedItem;
 import phis2ws.service.view.model.phis.Event;
 import phis2ws.service.view.model.phis.Property;
 
@@ -343,25 +337,27 @@ public class EventDAOSesame extends DAOSesame<Event> {
         // Event URI and simple attributes
         Node graph = NodeFactory.createURI(Contexts.EVENTS.toString());
         Resource eventResource = ResourceFactory.createResource(event.getUri());
-        Node eventConcept = NodeFactory.createURI(Oeev.CONCEPT_EVENT.toString());
-        updateBuilder.addInsert(graph, eventResource, RDF.type, eventConcept);
+        Node eventType = NodeFactory.createURI(event.getType());
+        updateBuilder.addInsert(graph, eventResource, RDF.type, eventType);
         
         // Event's Instant
         TimeDAOSesame timeDao = new TimeDAOSesame(this.user);
-        timeDao.addInsertToUpdateBuilderWithInstant(
-                updateBuilder, 
-                graph, 
-                eventResource, 
-                event.getDateTime());
+        try {
+            timeDao.addInsertToUpdateBuilderWithInstant(
+                    updateBuilder,
+                    graph,
+                    eventResource,
+                    event.getDateTime());
+        } catch (Exception ex) {
+            LOGGER.error(ex.getLocalizedMessage());
+        }
         
         // Event's Annotation
         AnnotationDAOSesame annotationDao = new AnnotationDAOSesame(user);
         annotationDao.checkAndInsert(event.getAnnotations());
         
-        DateTimeFormatter formatter = DateTimeFormat.forPattern(DateFormats.YMDTHMSZ_FORMAT);
-        Literal creationDate = ResourceFactory.createTypedLiteral(event.getDateTime().toString(formatter), XSDDatatype.XSDdateTime);
-        updateBuilder.addInsert(graph, eventResource, DCTerms.created, creationDate);
-        
+        PropertyDAOSesame propertyDao = new PropertyDAOSesame();
+        propertyDao.insertLinksBetweenObjectAndProperties(eventResource, event.getProperties(), Contexts.EVENTS.toString());
         for (Property property : event.getProperties()) {
             if (property.getValue() != null) {
                 org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
@@ -384,7 +380,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     }
     
     /**
-     * Insert the given events in the storage 
+     * Insert the given events in the storage.
      * /!\ Prerequisite: data must have been checked before calling this method
      * @see EventDAOSesame#check(java.util.List) 
      * @param events
@@ -400,27 +396,25 @@ public class EventDAOSesame extends DAOSesame<Event> {
         boolean eventsInserted = true;
         
         UriGenerator uriGenerator = new UriGenerator();
-        
         getConnection().begin();
         for (Event event : events) {
             try {
                 // Generate uri
                 event.setUri(uriGenerator.generateNewInstanceUri(Oeev.CONCEPT_EVENT.toString(), null, null));
-            } catch (Exception ex) {
-                LOGGER.error(ex.getMessage());
-                eventsInserted = false;
-            }
-            // Insert event
-            UpdateRequest query = prepareInsertQuery(event);
-            
-            try {
+                // Insert event
+                UpdateRequest query = prepareInsertQuery(event);
+
                 Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
                 prepareUpdate.execute();
-
                 createdResourcesUris.add(event.getUri());
+
+                // Insert concerned items links
+                ConcernedItemDAOSesame concernedItemDao = new ConcernedItemDAOSesame(user);
+                concernedItemDao.insertLinksWithObject(event.getUri(), event.getConcernedItems(), Contexts.EVENTS.toString());
+                
+                
             } catch (RepositoryException ex) {
-                    LOGGER.error(
-                            StatusCodeMsg.ERROR_WHILE_COMMITTING_OR_ROLLING_BACK_TRIPLESTORE_STATEMENT, ex);
+                    LOGGER.error(StatusCodeMsg.ERROR_WHILE_COMMITTING_OR_ROLLING_BACK_TRIPLESTORE_STATEMENT, ex);
             } catch (MalformedQueryException e) {
                     LOGGER.error(e.getMessage(), e);
                     eventsInserted = false;
@@ -428,6 +422,9 @@ public class EventDAOSesame extends DAOSesame<Event> {
                             StatusCodeMsg.QUERY_ERROR, 
                             StatusCodeMsg.ERR, 
                             StatusCodeMsg.MALFORMED_CREATE_QUERY + " " + e.getMessage()));
+            } catch (Exception ex) {
+                java.util.logging.Logger.getLogger(EventDAOSesame.class.getName()).log(Level.SEVERE, null, ex);
+                eventsInserted = false;
             }
         }
         
@@ -477,17 +474,16 @@ public class EventDAOSesame extends DAOSesame<Event> {
     public POSTResultsReturn check(List<Event> events) {
         POSTResultsReturn checkResult;
         List<Status> status = new ArrayList<>();
-        boolean dataIsValid = true;
         
         // 1. Check if user is admin
         UserDaoPhisBrapi userDAO = new UserDaoPhisBrapi();
         if (userDAO.isAdmin(user)) {
             for (Event event : events) {
                 String eventUri = event.getUri();
+                
+                // Check the event URI if given (in case of an update)
                 if (eventUri != null) {
-                    // Check the event URI if given (in case of an update)
                     if (searchEvents(eventUri, null, null, null, null, null, 0, pageSizeMaxValue).isEmpty()){
-                        dataIsValid = false;
                         status.add(new Status(
                                 StatusCodeMsg.UNKNOWN_URI, 
                                 StatusCodeMsg.ERR, 
@@ -495,36 +491,23 @@ public class EventDAOSesame extends DAOSesame<Event> {
                     }
                 }
                 
+                // Check concerned items
+                ConcernedItemDAOSesame concernedItemDAO = new ConcernedItemDAOSesame(user);
+                status.addAll(concernedItemDAO.check(event.getConcernedItems()).getStatusList());
+                
+                // Check properties
                 PropertyDAOSesame propertyDAO = new PropertyDAOSesame();
-                for (Property property : event.getProperties()) {
-                    // Check if the property exist
-                    if (existUri(property.getRelation())) {
-                        // Check the domain of the property
-                        String eventType = event.getType();
-                        if (!propertyDAO.isRelationDomainCompatibleWithRdfType(property.getRelation(), eventType)) {
-                            dataIsValid = false;
-                            status.add(new Status(
-                                StatusCodeMsg.DATA_ERROR, 
-                                StatusCodeMsg.ERR, 
-                                String.format(StatusCodeMsg.URI_TYPE_NOT_IN_DOMAIN_OF_RELATION, eventType, property.getRelation())));
-                        }
-                    } else {
-                        dataIsValid = false;
-                        status.add(new Status(
-                                StatusCodeMsg.DATA_ERROR, 
-                                StatusCodeMsg.ERR, 
-                                StatusCodeMsg.UNKNOWN_URI + " " + property.getRelation()));
-                    }
-                } 
+                POSTResultsReturn results = propertyDAO.checkExistenceAndDomain(event.getProperties(), event.getType());
+                status.addAll(results.getStatusList());
             }
         } else {
-            dataIsValid = false;
             status.add(new Status(
                     StatusCodeMsg.ACCESS_DENIED, 
                     StatusCodeMsg.ERR, 
                     StatusCodeMsg.ADMINISTRATOR_ONLY));
         }
         
+        boolean dataIsValid = status.isEmpty();
         checkResult = new POSTResultsReturn(dataIsValid, null, dataIsValid);
         checkResult.statusList = status;
         return checkResult;   

@@ -8,13 +8,12 @@
 package phis2ws.service.resources.dto.provenance;
 
 import io.swagger.annotations.ApiModelProperty;
-import java.util.HashMap;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.view.model.phis.provenance.Provenance;
 
 /**
- *
+ * Represents a provenance DTO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ProvenanceDTO extends AbstractVerifiedClass {

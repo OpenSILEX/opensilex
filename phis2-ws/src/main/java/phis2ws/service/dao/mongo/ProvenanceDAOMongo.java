@@ -17,10 +17,8 @@ import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
 import javax.ws.rs.core.Response;
 import org.bson.BSONObject;
 import org.bson.Document;
@@ -67,6 +65,14 @@ public class ProvenanceDAOMongo extends DAOMongo<Provenance> {
      * Generates the query to search provenances by uri, label, comment and additional json filters
      * @param searchProvenance
      * @param jsonValueFilter
+     * @example
+     * { 
+     *      "metadata.SensingDevice" : "http://www.opensilex.org/demo/s001", 
+     *      "metadata.Vector" : "http://www.opensilex.org/demo/v001", 
+     *      "uri" : "http://www.opensilex.org/opensilex/id/provenance/1551805521606", 
+     *      "label" : { "$regex" : "PROV2019-LEAF", "$options" : "" }, 
+     *      "comment" : { "$regex" : "plant", "$options" : "" } 
+     * }
      * @return the query
      */
     protected BasicDBObject searchQuery(Provenance searchProvenance, String jsonValueFilter) {
@@ -162,10 +168,7 @@ public class ProvenanceDAOMongo extends DAOMongo<Provenance> {
             provenancesDocuments.add(prepareInsertProvenanceDocument(provenance));
         }
         
-        
-        // Use of AtomicBoolean to use it inside the lambda loop (impossible with a standart boolean)
-        // @see: https://stackoverflow.com/questions/46713854/which-is-the-best-way-to-set-drop-boolean-flag-inside-lambda-function
-        AtomicBoolean hasError = new AtomicBoolean(false);
+        boolean hasError = false;
         MongoCollection<Document> provenanceCollection = database.getCollection(provenanceCollectionName);
         
         //2. Create index on the provenance uri
@@ -190,7 +193,7 @@ public class ProvenanceDAOMongo extends DAOMongo<Provenance> {
 
         } catch (MongoException ex) {
             // Define that an error occurs
-            hasError.set(true);
+            hasError = true;
             // Add the original exception message for debugging
             status.add(new Status(
                 StatusCodeMsg.UNEXPECTED_ERROR, 
@@ -200,10 +203,10 @@ public class ProvenanceDAOMongo extends DAOMongo<Provenance> {
         }
         
         //4. Prepare result to return
-        result = new POSTResultsReturn(hasError.get());
+        result = new POSTResultsReturn(hasError);
         result.statusList = status;
         
-        if (!hasError.get()) {
+        if (!hasError) {
             // If no errors commit transaction
             session.commitTransaction();
             result.setHttpStatus(Response.Status.CREATED);
@@ -233,7 +236,167 @@ public class ProvenanceDAOMongo extends DAOMongo<Provenance> {
     }
     
     /**
-     * 
+     * Checkt if the given provenance uri exist in the provenance collection
+     * @param uri
+     * @example 
+     * {"uri": "http://www.opensilex.org/demo/id/provenance/0193759540"}
+     * @return true if the provenance exist, 
+     *         false if it does not exist.
+     */
+    private boolean existProvenanceUri(String uri) {
+        MongoCollection<Document> provenanceCollection = database.getCollection(provenanceCollectionName);
+        
+        BasicDBObject query = prepareGetProvenanceByUri(uri);
+        int numberOfProvenancesCorresponding = (int)provenanceCollection.countDocuments(query);
+        
+        return numberOfProvenancesCorresponding > 0;
+    }
+    
+    /**
+     * Check the given provenance.
+     * @param provenances
+     * @return the check result with the founded errors
+     */
+    private POSTResultsReturn check(List<Provenance> provenances) {
+        POSTResultsReturn checkResult = new POSTResultsReturn();
+        List<Status> checkStatus = new ArrayList<>();
+        
+        boolean dataOk = true;
+        for (Provenance provenance : provenances) {
+            //Check if the provenance uri exist.
+            if (!existProvenanceUri(provenance.getUri())) {
+                dataOk = false;
+                checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
+                    "The given provenance uri (" + provenance.getUri()+ ") does not exist"));
+            }
+        }
+        checkResult = new POSTResultsReturn(dataOk, null, dataOk);
+        checkResult.statusList = checkStatus;
+        return checkResult;
+    }
+    
+    /**
+     * Generates the document to update provenance.
+     * @example
+     * { 
+     *      "uri" : "http://www.opensilex.org/opensilex/id/provenance/1551877498746",
+     *      "label" : "PROV2019-LEAF",
+     *      "comment" : "In this provenance we have count the number of leaf per plant",
+     *      "metadata" : { 
+     *          "SensingDevice" : "http://www.opensilex.org/demo/s001",
+     *          "Vector" : "http://www.opensilex.org/demo/v001" 
+     *      }
+     * }
+     * @param provenance
+     * @return the document to update
+     */
+    private Document prepareUpdateProvenanceDocument(Provenance provenance) {
+        Document provenanceDocument = new Document();
+        
+        provenanceDocument.put(DB_FIELD_URI, provenance.getUri());
+        provenanceDocument.put(DB_FIELD_LABEL, provenance.getLabel());
+        provenanceDocument.put(DB_FIELD_COMMENT, provenance.getComment());
+        provenanceDocument.put(DB_FIELD_METADATA, provenance.getMetadata());
+        
+        LOGGER.debug(provenanceDocument.toJson());
+        
+        return provenanceDocument;
+    }
+    
+    /**
+     * Generates the query to get a provenance by an uri.
+     * @param uri
+     * @example { "uri" : "http://www.opensilex.org/opensilex/id/provenance/1551805521606" }
+     * @return the query
+     */
+    private BasicDBObject prepareGetProvenanceByUri(String uri) {
+        BasicDBObject query = new BasicDBObject();
+        query.append(DB_FIELD_URI, uri);
+        
+        LOGGER.debug(query.toJson());
+        
+        return query;
+    }
+    
+    /**
+     * Update the given provenances.
+     * /!\ Prerequisite : data must have been checked before calling this method.
+     * @see ProvenanceDAOMongo#check(java.util.List)
+     * @param provenances the list of the provenances to update
+     * @return the update result with the list of all the updated provenances.
+     */
+    private POSTResultsReturn update(List<Provenance> provenances) throws Exception {
+        // Initialize transaction
+        MongoClient client = DAOMongo.getMongoClient();
+        ClientSession session = client.startSession();
+        session.startTransaction();
+        
+        POSTResultsReturn result = null;
+        List<Status> status = new ArrayList<>();
+        List<String> updatedResources = new ArrayList<>();
+        boolean error = false;
+        
+        collection = database.getCollection(provenanceCollectionName);
+        
+        //1. Update documents
+        for (Provenance provenance : provenances) {
+            try {
+                collection.replaceOne(prepareGetProvenanceByUri(provenance.getUri()), prepareUpdateProvenanceDocument(provenance));
+                updatedResources.add(provenance.getUri());
+            } catch (MongoException ex) {
+                LOGGER.debug("ERROR : " + ex.getMessage());
+                // Define that an error occurs
+                error = true;
+                // Add the original exception message for debugging
+                status.add(new Status(
+                    StatusCodeMsg.UNEXPECTED_ERROR, 
+                    StatusCodeMsg.ERR, 
+                    StatusCodeMsg.DATA_REJECTED + " - " + ex.getMessage()
+                ));
+            }
+        }
+        
+        //2. Prepare result to return
+        result = new POSTResultsReturn(error);
+        result.statusList = status;
+        
+        if (!error) {
+            // If no errors commit transaction
+            session.commitTransaction();
+            result.setHttpStatus(Response.Status.CREATED);
+            result.createdResources = updatedResources;
+        } else {
+            // If errors abort transaction
+            session.abortTransaction();
+            result.setHttpStatus(Response.Status.BAD_REQUEST);
+        }
+        
+        // Close transaction session
+        session.close();
+        return result;
+    }
+    
+    /**
+     * Check the given provenances data and update them.
+     * @param provenances
+     * @return the update result
+     */
+    public POSTResultsReturn checkAndUpdate(List<Provenance> provenances) {
+        try {
+            POSTResultsReturn checkResult = check(provenances);
+            if (checkResult.getDataState()) {
+                return update(provenances);
+            } else { //errors found in data
+                return checkResult;
+            }
+        } catch (Exception ex) {
+            LOGGER.debug("ERROR : " + ex.toString());
+            return new POSTResultsReturn(false, Response.Status.INTERNAL_SERVER_ERROR, ex.toString());
+        }
+    }
+    
+    /**
+     * Get the list of provenances corresponding to given search parameters.
      * @param searchProvenance
      * @param jsonValueFilter
      * @return the list of the provenances corresponding to the given search params

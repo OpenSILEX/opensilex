@@ -474,7 +474,17 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
         POSTResultsReturn checkResult;
         List<Status> status = new ArrayList<>();
         for (Property property : properties) {
-            // Check existance
+            // If URI, check value existence with type
+            if (property.getRdfType() != null) {
+                if (!exist(property.getValue(), RDF.type.getURI(), property.getRdfType())) {
+                    status.add(new Status(
+                        StatusCodeMsg.DATA_ERROR, 
+                        StatusCodeMsg.ERR, 
+                        String.format(StatusCodeMsg.UNKNOWN_URI_OF_TYPE, property.getValue(), property.getRdfType())));
+                }
+            }
+            
+            // Check relation existence
             if (existUri(property.getRelation())) {
                 // Check the domain
                 if (!isRelationDomainCompatibleWithRdfType(property.getRelation(), ownerType)) {
@@ -820,7 +830,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      * @return the query
      * @example
      */
-    private UpdateRequest prepareInsertLinksBetweenObjectAndPropertiesQuery(Resource objectResource, ArrayList<Property> properties, String graphString) {
+    private UpdateRequest prepareInsertLinksBetweenObjectAndPropertiesQuery(Resource objectResource, ArrayList<Property> properties, String graphString, boolean createProperties) {
         UpdateBuilder updateBuilder = new UpdateBuilder();
         Node graph = NodeFactory.createURI(graphString);
         for (Property property : properties) {
@@ -830,7 +840,10 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
                 if (property.getRdfType() != null) {
                     Node propertyValue = NodeFactory.createURI(property.getValue());
                     updateBuilder.addInsert(graph, objectResource, propertyRelation, propertyValue);
-                    updateBuilder.addInsert(graph, propertyValue, RDF.type, property.getRdfType());
+                    
+                    if (createProperties) {
+                        updateBuilder.addInsert(graph, propertyValue, RDF.type, property.getRdfType());
+                    }
                 } else {
                     Literal propertyValue = ResourceFactory.createStringLiteral(property.getValue());
                     updateBuilder.addInsert(graph, objectResource, propertyRelation, propertyValue);
@@ -853,7 +866,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      * @return the insertion result, with the error list or the URI of the 
      *         events inserted
      */
-    public POSTResultsReturn insertLinksBetweenObjectAndProperties(Resource objectResource, ArrayList<Property> properties, String graph) {
+    public POSTResultsReturn insertLinksBetweenObjectAndProperties(Resource objectResource, ArrayList<Property> properties, String graph, boolean createProperties) {
         List<Status> status = new ArrayList<>();
         List<String> createdResourcesUris = new ArrayList<>();
         
@@ -862,7 +875,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
         boolean linksInserted = true;
         
         getConnection().begin();
-        UpdateRequest query = prepareInsertLinksBetweenObjectAndPropertiesQuery(objectResource, properties, graph);
+        UpdateRequest query = prepareInsertLinksBetweenObjectAndPropertiesQuery(objectResource, properties, graph, createProperties);
 
         try {
             Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());

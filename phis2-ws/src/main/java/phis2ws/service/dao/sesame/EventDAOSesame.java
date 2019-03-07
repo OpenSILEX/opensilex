@@ -352,27 +352,6 @@ public class EventDAOSesame extends DAOSesame<Event> {
             LOGGER.error(ex.getLocalizedMessage());
         }
         
-        // Event's Annotation
-        AnnotationDAOSesame annotationDao = new AnnotationDAOSesame(user);
-        annotationDao.checkAndInsert(event.getAnnotations());
-        
-        PropertyDAOSesame propertyDao = new PropertyDAOSesame();
-        propertyDao.insertLinksBetweenObjectAndProperties(eventResource, event.getProperties(), Contexts.EVENTS.toString());
-        for (Property property : event.getProperties()) {
-            if (property.getValue() != null) {
-                org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
-                
-                if (property.getRdfType() != null) {
-                    Node propertyValue = NodeFactory.createURI(property.getValue());
-                    updateBuilder.addInsert(graph, eventResource, propertyRelation, propertyValue);
-                    updateBuilder.addInsert(graph, propertyValue, RDF.type, property.getRdfType());
-                } else {
-                    Literal propertyValue = ResourceFactory.createStringLiteral(property.getValue());
-                    updateBuilder.addInsert(graph, eventResource, propertyRelation, propertyValue);
-                }
-            }
-        }
-        
         UpdateRequest query = updateBuilder.buildRequest();
         LOGGER.debug(SPARQL_QUERY + " " + query.toString());
         
@@ -407,12 +386,20 @@ public class EventDAOSesame extends DAOSesame<Event> {
                 Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
                 prepareUpdate.execute();
                 createdResourcesUris.add(event.getUri());
+                
+                Resource eventResource = ResourceFactory.createResource(event.getUri());
 
                 // Insert concerned items links
                 ConcernedItemDAOSesame concernedItemDao = new ConcernedItemDAOSesame(user);
-                concernedItemDao.insertLinksWithObject(event.getUri(), event.getConcernedItems(), Contexts.EVENTS.toString());
-                
-                
+                concernedItemDao.insertLinksWithObject(eventResource, event.getConcernedItems(), Contexts.EVENTS.toString());
+        
+                // The annotation
+                AnnotationDAOSesame annotationDao = new AnnotationDAOSesame(user);
+                annotationDao.checkAndInsert(event.getAnnotations());
+
+                // The properties links
+                PropertyDAOSesame propertyDao = new PropertyDAOSesame();
+                propertyDao.insertLinksBetweenObjectAndProperties(eventResource, event.getProperties(), Contexts.EVENTS.toString(), false);
             } catch (RepositoryException ex) {
                     LOGGER.error(StatusCodeMsg.ERROR_WHILE_COMMITTING_OR_ROLLING_BACK_TRIPLESTORE_STATEMENT, ex);
             } catch (MalformedQueryException e) {

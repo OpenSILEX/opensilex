@@ -187,17 +187,16 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
     
     /**
      * Generate an insert query for the links of the given concerned items
-     * @param objectUri the concerning object's URI
+     * @param objectResource the concerning object's URI
      * @param concernedItem
      * @param graphString
      * @return the query
      * @example
      */
-    private UpdateRequest prepareInsertLinkQuery(String objectUri, ArrayList<ConcernedItem> concernedItems, String graphString) {
+    private UpdateRequest prepareInsertLinkQuery(Resource objectResource, ArrayList<ConcernedItem> concernedItems, String graphString) {
         UpdateBuilder updateBuilder = new UpdateBuilder();
         Node graph = NodeFactory.createURI(graphString);
         for (ConcernedItem concernedItem : concernedItems) {
-            Resource objectResource = ResourceFactory.createResource(objectUri);
             Resource concernsProperty = ResourceFactory.createResource(Oeso.RELATION_CONCERNS.toString());
             Resource concernedItemResource = ResourceFactory.createResource(concernedItem.getUri());
             updateBuilder.addInsert(graph, objectResource, concernsProperty, concernedItemResource);
@@ -247,14 +246,14 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
     /**
      * Insert the given concerned items in the storage. 
      * /!\ Prerequisite: data must have been checked before calling this method
-     * @param objectUri
+     * @param objectResource
      * @param graph
      * @see EventDAOSesame#check(java.util.List) 
      * @param concernedItems
      * @return the insertion result, with the error list or the URI of the 
      *         events inserted
      */
-    public POSTResultsReturn insertLinksWithObject(String objectUri, ArrayList<ConcernedItem> concernedItems, String graph) {
+    public POSTResultsReturn insertLinksWithObject(Resource objectResource, ArrayList<ConcernedItem> concernedItems, String graph) {
         List<Status> status = new ArrayList<>();
         List<String> createdResourcesUris = new ArrayList<>();
         
@@ -265,7 +264,7 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
         getConnection().begin();
             
         // Insert links
-        UpdateRequest query = prepareInsertLinkQuery(objectUri, concernedItems, graph);
+        UpdateRequest query = prepareInsertLinkQuery(objectResource, concernedItems, graph);
             
         try {
             Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());

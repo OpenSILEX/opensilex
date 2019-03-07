@@ -51,13 +51,6 @@
                 <target.war.name>openSilexTestAPI</target.war.name>
             </properties>
         </profile>
-        <profile>
-            <id>opensilex</id>
-            <properties>
-                <build.profile.id>opensilex</build.profile.id>
-                <target.war.name>openSilexAPI</target.war.name>
-            </properties>
-        </profile>        
     </profiles>
     
     <dependencies>
@@ -150,11 +143,6 @@
             <artifactId>jackson-jaxrs-json-provider</artifactId>
             <version>2.9.8</version>
         </dependency>
-<!--        <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-moxy</artifactId>
-            <version>2.25</version>
-        </dependency>-->
         <!-- LOGS -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
@@ -207,7 +195,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>2.9.8</version>
+            <version>2.9.0.pr1</version>
         </dependency>
         <dependency>
             <groupId>joda-time</groupId>

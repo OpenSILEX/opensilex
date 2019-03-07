@@ -19,7 +19,6 @@ import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import com.mongodb.client.model.Sorts;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -32,7 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.dao.manager.DAOMongo;
-import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.dao.sesame.VariableDaoSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.ontologies.Oeso;
@@ -43,6 +41,7 @@ import phis2ws.service.view.model.phis.Data;
 
 /**
  * Represents the MongoDB Data Access Object.
+ * @author Vincent Migot
  */
 public class DataDAOMongo extends DAOMongo<Data> {
 
@@ -115,7 +114,7 @@ public class DataDAOMongo extends DAOMongo<Data> {
             String uri = uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA.toString(), null, key);
 
             while (uriExists(data.getVariableUri(), uri)) {
-                uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA.toString(), null, key);
+                uri = uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA.toString(), null, key);
             }
             
             data.setUri(uri);
@@ -324,6 +323,20 @@ public class DataDAOMongo extends DAOMongo<Data> {
         return dataList;
     }
 
+    /**
+     * Prepare and return the data search query with the given parameters
+     * @return The data search query
+     * @example
+     *  {
+     *      "date": {
+     *          $gte: ISODate("2010-06-15T10:51:00+0200"),
+     *          $lt: ISODate("2018-06-15T10:51:00+0200")
+     *      },
+     *      "variable": "http://www.phenome-fppn.fr/diaphen/id/variable/v0000001",
+     *      "provenance": "http://www.phenome-fppn.fr/mtp/2018/pv181515071552",
+     *      "object": "http://www.phenome-fppn.fr/phenovia/2017/o1032481"
+     *  }
+     */
     @Override
     protected BasicDBObject prepareSearchQuery() {
         BasicDBObject query = new BasicDBObject();
@@ -367,6 +380,10 @@ public class DataDAOMongo extends DAOMongo<Data> {
         return query;
     }
 
+    /**
+     * Get data count according to the prepareSearchQuery
+     * @return the data count
+     */
     public int count() {
                 // Get the collection corresponding to variable uri
         String variableCollection = this.getCollectionFromVariable(variableUri);
@@ -389,7 +406,7 @@ public class DataDAOMongo extends DAOMongo<Data> {
         String variableCollection = getCollectionFromVariable(variableUri);
         
         BasicDBObject query = new BasicDBObject();
-        query.append(DB_FIELD_URI, BasicDBObjectBuilder.start("$exists", true).get());
+        query.append(DB_FIELD_URI, uri);
         
         return database.getCollection(variableCollection).countDocuments(query) > 0; 
     }

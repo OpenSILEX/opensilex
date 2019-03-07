@@ -1,10 +1,9 @@
 //******************************************************************************
-//                                       PropertyDAOSesame.java
+//                             PropertyDAOSesame.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 29 may 2018
-// Contact: morgane.vidal@inra.fr vincent.migot@inra.fr anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Subject: access and manipulation of the properties of the ontology in the Triplestore
+// Contact: morgane.vidal@inra.fr, vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package phis2ws.service.dao.sesame;
 
@@ -12,6 +11,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.update.UpdateRequest;
+import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
@@ -19,6 +27,7 @@ import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,7 +94,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     protected final String PROPERTY_TYPE_PREF_LABEL = "propertyTypePrefLabel";   
     
     /**
-     * prepare the SPARQL query to get the list of properties and their relations
+     * Prepare the SPARQL query to get the list of properties and their relations
      * to the given URI. If subClassOf is specified, the object corresponding to 
      * the URI must be a subclass of the given type.
      * @param searchUri
@@ -456,6 +465,38 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
+     * Check the existence and domain of the given list of properties
+     * @param properties
+     * @param ownerType
+     * @return the result with the list of the found errors (empty if no error)
+     */
+    public POSTResultsReturn checkExistenceAndDomain(ArrayList<Property> properties, String ownerType) {
+        POSTResultsReturn checkResult;
+        List<Status> status = new ArrayList<>();
+        for (Property property : properties) {
+            // Check existance
+            if (existUri(property.getRelation())) {
+                // Check the domain
+                if (!isRelationDomainCompatibleWithRdfType(property.getRelation(), ownerType)) {
+                    status.add(new Status(
+                        StatusCodeMsg.DATA_ERROR, 
+                        StatusCodeMsg.ERR, 
+                        String.format(StatusCodeMsg.URI_TYPE_NOT_IN_DOMAIN_OF_RELATION, ownerType, property.getRelation())));
+                }
+            } else {
+                status.add(new Status(
+                        StatusCodeMsg.DATA_ERROR, 
+                        StatusCodeMsg.ERR, 
+                        StatusCodeMsg.UNKNOWN_URI + " " + property.getRelation()));
+            }
+        } 
+        boolean dataIsValid = status.isEmpty();
+        checkResult = new POSTResultsReturn(dataIsValid, null, dataIsValid);
+        checkResult.statusList = status;
+        return checkResult;  
+    }
+    
+    /**
      * Check the cardinalities of properties for a given object URI
      * @param properties
      * @param objectUri
@@ -769,6 +810,94 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
         } else {
             return false;
         }
+    }
+    
+    /**
+     * Generate an insert query for the given properties
+     * @param objectUri the property owner's URI
+     * @param peoperty
+     * @param graphString
+     * @return the query
+     * @example
+     */
+    private UpdateRequest prepareInsertLinksBetweenObjectAndPropertiesQuery(Resource objectResource, ArrayList<Property> properties, String graphString) {
+        UpdateBuilder updateBuilder = new UpdateBuilder();
+        Node graph = NodeFactory.createURI(graphString);
+        for (Property property : properties) {
+            if (property.getValue() != null) {
+                org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
+
+                if (property.getRdfType() != null) {
+                    Node propertyValue = NodeFactory.createURI(property.getValue());
+                    updateBuilder.addInsert(graph, objectResource, propertyRelation, propertyValue);
+                    updateBuilder.addInsert(graph, propertyValue, RDF.type, property.getRdfType());
+                } else {
+                    Literal propertyValue = ResourceFactory.createStringLiteral(property.getValue());
+                    updateBuilder.addInsert(graph, objectResource, propertyRelation, propertyValue);
+                }
+            }
+        }
+        UpdateRequest query = updateBuilder.buildRequest();
+        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
+        
+        return query;
+    }
+    
+    /**
+     * Insert the given properties of the given object in the storage. 
+     * /!\ Prerequisite: data must have been checked before calling this method
+     * @param objectResource
+     * @param graph
+     * @see EventDAOSesame#check(java.util.List) 
+     * @param properties
+     * @return the insertion result, with the error list or the URI of the 
+     *         events inserted
+     */
+    public POSTResultsReturn insertLinksBetweenObjectAndProperties(Resource objectResource, ArrayList<Property> properties, String graph) {
+        List<Status> status = new ArrayList<>();
+        List<String> createdResourcesUris = new ArrayList<>();
+        
+        POSTResultsReturn results;
+        boolean resultState = false;
+        boolean linksInserted = true;
+        
+        getConnection().begin();
+        UpdateRequest query = prepareInsertLinksBetweenObjectAndPropertiesQuery(objectResource, properties, graph);
+
+        try {
+            Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
+            prepareUpdate.execute();
+        } catch (RepositoryException ex) {
+                LOGGER.error(StatusCodeMsg.ERROR_WHILE_COMMITTING_OR_ROLLING_BACK_TRIPLESTORE_STATEMENT, ex);
+        } catch (MalformedQueryException e) {
+                LOGGER.error(e.getMessage(), e);
+                linksInserted = false;
+                status.add(new Status(
+                        StatusCodeMsg.QUERY_ERROR, 
+                        StatusCodeMsg.ERR, 
+                        StatusCodeMsg.MALFORMED_CREATE_QUERY + " " + e.getMessage()));
+        }
+        
+        if (linksInserted) {
+            resultState = true;
+            getConnection().commit();
+        } else {
+            getConnection().rollback();
+        }
+        
+        if (getConnection() != null) {
+            getConnection().close();
+        }
+        
+        results = new POSTResultsReturn(resultState, linksInserted, true);
+        results.statusList = status;
+        results.setCreatedResources(createdResourcesUris);
+        if (resultState && !createdResourcesUris.isEmpty()) {
+            results.createdResources = createdResourcesUris;
+            results.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, createdResourcesUris.size() + " " + StatusCodeMsg.RESOURCES_CREATED));
+        }
+        
+        return results;
     }
 
     public String getRelation() {

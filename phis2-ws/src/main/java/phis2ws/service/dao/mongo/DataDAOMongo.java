@@ -115,7 +115,7 @@ public class DataDAOMongo extends DAOMongo<Data> {
             String uri = uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA.toString(), null, key);
 
             while (uriExists(data.getVariableUri(), uri)) {
-                uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA.toString(), null, key);
+                uri = uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA.toString(), null, key);
             }
             
             data.setUri(uri);
@@ -389,7 +389,7 @@ public class DataDAOMongo extends DAOMongo<Data> {
         String variableCollection = getCollectionFromVariable(variableUri);
         
         BasicDBObject query = new BasicDBObject();
-        query.append(DB_FIELD_URI, BasicDBObjectBuilder.start("$exists", true).get());
+        query.append(DB_FIELD_URI, uri);
         
         return database.getCollection(variableCollection).countDocuments(query) > 0; 
     }

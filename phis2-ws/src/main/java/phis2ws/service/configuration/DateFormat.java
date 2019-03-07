@@ -7,14 +7,13 @@
 //******************************************************************************
 package phis2ws.service.configuration;
 
-//SILEX:todo
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
+//SILEX:todo
 // Use this enum instead of the DateFormats class in all the application's code
 //\SILEX:todo
 

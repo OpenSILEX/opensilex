@@ -50,6 +50,7 @@ import phis2ws.service.view.model.phis.Data;
 
 /**
  * Data resource service
+ * @Author Vincent Migot
  */
 @Api("/data")
 @Path("/data")
@@ -121,7 +122,7 @@ public class DataResourceService extends ResourceService {
     }
     
     /**
-     * Generayes an data list from a given list of DataPostDTO.
+     * Generates an data list from a given list of DataPostDTO.
      * @param dataDTOs
      * @return the list of data
      */
@@ -135,6 +136,51 @@ public class DataResourceService extends ResourceService {
         return dataList;
     }
 
+    /**
+     * Service to get scientific data
+     * @param pageSize
+     * @param page
+     * @param variable
+     * @param startDate
+     * @param endDate
+     * @param object
+     * @param provenance
+     * @param dateSortAsc
+     * @return list of the data corresponding to the search params given
+     * @example
+     * {
+     *      "metadata": {
+     *          "pagination": {
+     *              "pageSize": 20,
+     *              "currentPage": 0,
+     *              "totalCount": 3,
+     *              "totalPages": 1
+     *          },
+     *          "status": [],
+     *          "datafiles": []
+     *      },
+     *      "result": {
+     *          "data": [
+     *               {
+     *                 "uri": "http://www.phenome-fppn.fr/diaphen/id/data/d2plf65my4rc2odiv2lbjgukc2zswkqyoddh25jtoy4b5pf3le3q4ec5c332f5cd44ce82977e404cebf83c",
+     *                 "provenanceUri": "http://www.phenome-fppn.fr/mtp/2018/pv181515071552",
+     *                 "objectUri": "http://www.phenome-fppn.fr/diaphen/2018/o18001199",
+     *                 "variableUri": "http://www.phenome-fppn.fr/diaphen/id/variables/v009",
+     *                 "date": "2017-06-15T00:00:00+0200",
+     *                 "value": 2.4
+     *               },
+     *               {
+     *                 "uri": "http://www.phenome-fppn.fr/diaphen/id/data/pttdrrqybxoyku4img323dyrhmpp267mhnpiw3vld2wm6tap3vwq93b344c429ec45bb9b185edfe5bc2b64",
+     *                 "provenanceUri": "http://www.phenome-fppn.fr/mtp/2018/pv181515071552",
+     *                 "objectUri": "http://www.phenome-fppn.fr/diaphen/2018/o18001199",
+     *                 "variableUri": "http://www.phenome-fppn.fr/diaphen/id/variables/v009",
+     *                 "date": "2017-06-16T00:00:00+0200",
+     *                 "value": "2017-06-15T00:00:00+0200"
+     *               }
+     *          ]
+     *      }
+     * }
+     */
     @GET
     @ApiOperation(value = "Get data corresponding to the search parameters given.",
                   notes = "Retrieve all data corresponding to the search parameters given,"

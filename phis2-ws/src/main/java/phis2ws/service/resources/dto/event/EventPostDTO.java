@@ -19,7 +19,6 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.ontologies.Oa;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyDTO;
-import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.utils.dates.Dates;
 import phis2ws.service.view.model.phis.Annotation;
@@ -33,8 +32,7 @@ import phis2ws.service.view.model.phis.Property;
  */
 public class EventPostDTO extends AbstractVerifiedClass {
     
-    private final String EVENT_POST_DEFAULT_ANNOTATION_MOTIVATION_INSTANCE = 
-            Oa.CONCEPT_MOTIVATION.toString() + '#' + Oa.INSTANCE_DESCRIBING.toString();
+    private final String EVENT_POST_DEFAULT_ANNOTATION_MOTIVATION_INSTANCE = Oa.INSTANCE_DESCRIBING.toString();
     
     private String rdfType;
     private String description;
@@ -69,24 +67,12 @@ public class EventPostDTO extends AbstractVerifiedClass {
         ArrayList<String> annotationBodyValues = new ArrayList();
         annotationBodyValues.add(description);
         String annotationMotivation = EVENT_POST_DEFAULT_ANNOTATION_MOTIVATION_INSTANCE;
-        Annotation eventAnnotation = new Annotation(
-                null, 
-                DateTime.now(), 
-                creator, 
-                annotationBodyValues, 
-                annotationMotivation, 
-                null);
+        Annotation eventAnnotation = new Annotation(null, DateTime.now(), creator, annotationBodyValues, annotationMotivation, null);
         
         ArrayList<Annotation> eventAnnotations = new ArrayList<>();
         eventAnnotations.add(eventAnnotation);
         
-        return new Event(
-                null, 
-                this.rdfType, 
-                modelConcernedItems, 
-                dateTime, 
-                modelProperties, 
-                eventAnnotations);
+        return new Event(null, this.rdfType, modelConcernedItems, dateTime, modelProperties, eventAnnotations);
     }
 
     @URL

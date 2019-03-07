@@ -372,7 +372,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
         
         POSTResultsReturn results;
         boolean resultState = false;
-        boolean eventsInserted = true;
+        boolean noInsertionError = true;
         
         UriGenerator uriGenerator = new UriGenerator();
         getConnection().begin();
@@ -394,28 +394,34 @@ public class EventDAOSesame extends DAOSesame<Event> {
                 concernedItemDao.insertLinksWithObject(eventResource, event.getConcernedItems(), Contexts.EVENTS.toString());
         
                 // The annotation
+                ArrayList<String> annotationTargets = new ArrayList<String>();
+                annotationTargets.add(event.getUri());
+                event.getAnnotations().forEach(annotation -> {
+                    annotation.setTargets(annotationTargets);
+                });
                 AnnotationDAOSesame annotationDao = new AnnotationDAOSesame(user);
-                annotationDao.checkAndInsert(event.getAnnotations());
+                annotationDao.insert(event.getAnnotations());
 
                 // The properties links
                 PropertyDAOSesame propertyDao = new PropertyDAOSesame();
                 propertyDao.insertLinksBetweenObjectAndProperties(eventResource, event.getProperties(), Contexts.EVENTS.toString(), false);
             } catch (RepositoryException ex) {
                     LOGGER.error(StatusCodeMsg.ERROR_WHILE_COMMITTING_OR_ROLLING_BACK_TRIPLESTORE_STATEMENT, ex);
+                    noInsertionError = false;
             } catch (MalformedQueryException e) {
                     LOGGER.error(e.getMessage(), e);
-                    eventsInserted = false;
+                    noInsertionError = false;
                     status.add(new Status(
                             StatusCodeMsg.QUERY_ERROR, 
                             StatusCodeMsg.ERR, 
                             StatusCodeMsg.MALFORMED_CREATE_QUERY + " " + e.getMessage()));
             } catch (Exception ex) {
                 java.util.logging.Logger.getLogger(EventDAOSesame.class.getName()).log(Level.SEVERE, null, ex);
-                eventsInserted = false;
+                noInsertionError = false;
             }
         }
         
-        if (eventsInserted) {
+        if (noInsertionError) {
             resultState = true;
             getConnection().commit();
         } else {
@@ -426,7 +432,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
             getConnection().close();
         }
         
-        results = new POSTResultsReturn(resultState, eventsInserted, true);
+        results = new POSTResultsReturn(resultState, noInsertionError, true);
         results.statusList = status;
         results.setCreatedResources(createdResourcesUris);
         if (resultState && !createdResourcesUris.isEmpty()) {

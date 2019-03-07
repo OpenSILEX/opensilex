@@ -41,7 +41,7 @@ public final class StatusCodeMsg {
     public static final String INFO = "Info";
     public static final String MALFORMED_CREATE_QUERY = "Malformed create query";
     public static final String MALFORMED_UPDATE_QUERY = "Malformed update query";
-    public static final String MALFORMED_URI = "Malformed uri";
+    public static final String MALFORMED_URI = "Malformed URI";
     public static final String MD5_ERROR = "md5 error";
     public static final String MISSING_FIELDS_LIST = "Missing Field(s) : ";
     public static final String MISSING_FIELDS = "Fields are missing in JSON Data";
@@ -50,13 +50,13 @@ public final class StatusCodeMsg {
     public static final String QUERY_ERROR = "Query error";
     public static final String URI_TYPE_NOT_IN_DOMAIN_OF_RELATION = "the type of the subject %s is not in the domain of the relation %s";
     public static final String REQUEST_ERROR = "Request error";
-    public static final String RESOURCES_CREATED = "Resources created";
-    public static final String RESOURCES_UPDATED = "Resources updated";
+    public static final String RESOURCES_CREATED = "Resource(s) created";
+    public static final String RESOURCES_UPDATED = "Resource(s) updated";
     public static final String SFTP_EXCEPTION = "sftp exception";
     public static final String TIMEOUT = "Timeout";
     public static final String TRIPLESTOR_ACCESS_ERROR = "Triplestore access error";
-    public static final String UNKNOWN_URI = "Unknown uri";
-    public static final String UNKNOWN_URI_OF_TYPE = "Unknown uri %s of type %s";
+    public static final String UNKNOWN_URI = "Unknown URI";
+    public static final String UNKNOWN_URI_OF_TYPE = "Unknown URI %s of type %s";
     public static final String UNKNOWN_EVENT_URI = "Unknown event URI";
     public static final String UNKNOWN_CONCERNED_ITEM_URI = "Unknown concerned item URI";
     public static final String WRONG_VALUE = "Wrong value";

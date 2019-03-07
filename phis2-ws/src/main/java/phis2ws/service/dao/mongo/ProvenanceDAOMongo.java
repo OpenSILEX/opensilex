@@ -345,7 +345,6 @@ public class ProvenanceDAOMongo extends DAOMongo<Provenance> {
                 collection.replaceOne(prepareGetProvenanceByUri(provenance.getUri()), prepareUpdateProvenanceDocument(provenance));
                 updatedResources.add(provenance.getUri());
             } catch (MongoException ex) {
-                LOGGER.debug("ERROR : " + ex.getMessage());
                 // Define that an error occurs
                 error = true;
                 // Add the original exception message for debugging
@@ -391,7 +390,6 @@ public class ProvenanceDAOMongo extends DAOMongo<Provenance> {
                 return checkResult;
             }
         } catch (Exception ex) {
-            LOGGER.debug("ERROR : " + ex.toString());
             return new POSTResultsReturn(false, Response.Status.INTERNAL_SERVER_ERROR, ex.toString());
         }
     }

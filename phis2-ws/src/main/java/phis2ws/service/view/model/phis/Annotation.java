@@ -52,6 +52,15 @@ public class Annotation {
      * @example http://www.phenome-fppn.fr/diaphen/2017/o1032481
      */
     private ArrayList<String> targets;
+    
+    public Annotation(String uri, DateTime created, String creator, ArrayList<String> bodyValues, String motivatedBy, ArrayList<String> targets) {
+        this.uri = uri;
+        this.created = created;
+        this.creator = creator;
+        this.bodyValues = bodyValues;
+        this.motivatedBy = motivatedBy;
+        this.targets = targets;
+    }
 
     public String getUri() {
         return uri;

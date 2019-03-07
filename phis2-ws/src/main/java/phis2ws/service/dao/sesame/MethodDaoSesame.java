@@ -97,7 +97,7 @@ public class MethodDaoSesame extends DAOSesame<Method> {
             query.endBodyOptional();
         }
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        LOGGER.debug(SPARQL_QUERY + query.toString());
 
         return query;
     }
@@ -332,7 +332,7 @@ public class MethodDaoSesame extends DAOSesame<Method> {
             }
         }
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
     }
     

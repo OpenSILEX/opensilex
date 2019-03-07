@@ -8,49 +8,56 @@
 package phis2ws.service.dao.sesame;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import org.eclipse.rdf4j.model.Value;
+import java.util.List;
+import java.util.logging.Level;
+import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.update.UpdateRequest;
+import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.dao.manager.DAOSesame;
+import phis2ws.service.dao.phis.UserDaoPhisBrapi;
+import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.model.User;
+import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Oeev;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Time;
+import phis2ws.service.utils.POSTResultsReturn;
+import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.dates.Dates;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
+import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.Annotation;
-import phis2ws.service.view.model.phis.ConcernedItem;
 import phis2ws.service.view.model.phis.Event;
 
 /**
- * Dao for Events
- * @update [Andreas Garcia] 14 Feb. 2019: Add event detail service
+ * DAO for Events
+ * @update [Andreas Garcia] 14 Feb., 2019: Add event detail service
+ * @update [Andreas Garcia] 5 March, 2019: Add events insertion service
+ * @update [Andréas Garcia] 5 March, 2019: Move the generic function to get a 
+ * string value from a binding set to DAOSesame
+ * @update [Andréas Garcia] 5 March, 2019: Move concerned items accesses
+ * handling into a new ConcernedItemDAOSesame class
  * @author Andreas Garcia <andreas.garcia@inra.fr>
  */
 public class EventDAOSesame extends DAOSesame<Event> {
     final static Logger LOGGER = LoggerFactory.getLogger(EventDAOSesame.class);
-    
-    // constants used for SPARQL names in the SELECT
-    private static final String CONCERNED_ITEM_URI_SELECT_NAME = "concernedItemUri";
-    private static final String CONCERNED_ITEM_URI_SELECT_NAME_SPARQL = "?" + CONCERNED_ITEM_URI_SELECT_NAME;
-    private static final String CONCERNED_ITEM_TYPE_SELECT_NAME = "concernedItemType";
-    private static final String CONCERNED_ITEM_TYPE_SELECT_NAME_SPARQL = "?" + CONCERNED_ITEM_TYPE_SELECT_NAME;
-    private static final String CONCERNED_ITEM_LABEL_SELECT_NAME = "concernedItemLabel";
-    private static final String CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL = "?" + CONCERNED_ITEM_LABEL_SELECT_NAME;
-    private static final String CONCERNED_ITEM_LABELS_SELECT_NAME = "concernedItemLabels";
-    private static final String CONCERNED_ITEM_LABELS_SELECT_NAME_SPARQL = "?" + CONCERNED_ITEM_LABELS_SELECT_NAME;
     
     private static final String TIME_SELECT_NAME = "time";
     private static final String TIME_SELECT_NAME_SPARQL = "?" + TIME_SELECT_NAME;
@@ -71,6 +78,9 @@ public class EventDAOSesame extends DAOSesame<Event> {
      *    FILTER ( (regex (str(?uri), "http://www.phenome-fppn.fr/id/event/5a1b3c0d-58af-4cfb-811e-e141b11453b1", "i"))
      *  }
      *  GROUP BY ?uri
+     * @param query
+     * @param searchUri
+     * @param inGroupBy
      * @return the value of the URI's value in the SELECT
      */
     private String prepareSearchQueryUri(SPARQLQueryBuilder query, String searchUri, boolean inGroupBy) {
@@ -94,6 +104,10 @@ public class EventDAOSesame extends DAOSesame<Event> {
      *    ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.opensilex.org/vocabulary/oeev#MoveFrom> . 
      *  }
      *  GROUP BY ?rdfType
+     * @param query
+     * @param uriSelectNameSparql
+     * @param searchType
+     * @param inGroupBy
      */
     private void prepareSearchQueryType(SPARQLQueryBuilder query, String uriSelectNameSparql, String searchType, boolean inGroupBy) {
         query.appendSelect(RDF_TYPE_SELECT_NAME_SPARQL);
@@ -104,36 +118,8 @@ public class EventDAOSesame extends DAOSesame<Event> {
         if (searchType != null) {
             query.appendTriplet(RDF_TYPE_SELECT_NAME_SPARQL, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", searchType, null);
         } else {
-            query.appendTriplet(RDF_TYPE_SELECT_NAME_SPARQL, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeev.CONCEPT_EVENT.toString(), null);
+            query.appendTriplet(RDF_TYPE_SELECT_NAME_SPARQL, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeev.Event.getURI(), null);
         }    
-    }
-    
-    /**
-     * Set a search query to applies the concerned items label filter. 
-     * This function DOES NOT make the query return the events concerned items 
-     * informations. This is eventually done by another query further in the 
-     * process.
-     * @example SparQL filter added:
-     *  WHERE {
-     *    ?uri  <http://www.opensilex.org/vocabulary/oeev#concerns>  ?concernedItemUri  . 
-     *    ?concernedItemUri  <http://www.w3.org/2000/01/rdf-schema#label>  ?concernedItemLabel  . 
-     *  }
-     */
-    private void prepareSearchQueryConcernedItemFilter(SPARQLQueryBuilder query, String uriSelectNameSparql, String searchConcernedItemLabel, String searchConcernedItemUri) {
-
-        if (searchConcernedItemLabel != null || searchConcernedItemUri != null) {
-            query.appendTriplet(uriSelectNameSparql, Oeev.RELATION_CONCERNS.toString(), CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, null);
-            
-            if (searchConcernedItemLabel != null) {
-                query.appendTriplet(CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, Rdfs.RELATION_LABEL.toString(), CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL, null);
-                
-                query.appendAndFilter("regex(" + CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL + ", \"" + searchConcernedItemLabel + "\", \"i\")");
-            }
-            
-            if (searchConcernedItemUri != null) {
-                query.appendAndFilter("regex (str(" + CONCERNED_ITEM_URI_SELECT_NAME_SPARQL + ")" + ", \"" + searchConcernedItemUri + "\", \"i\")");
-            }
-        }
     }
 
     /**
@@ -149,6 +135,11 @@ public class EventDAOSesame extends DAOSesame<Event> {
      *    BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str("2017-09-12T12:00:00+01:00")) as ?dateRangeEndDateTime) .
      *  }
      *  GROUP BY ?dateTimeStamp
+     * @param query
+     * @param uriSelectNameSparql
+     * @param searchDateTimeRangeStartString
+     * @param searchDateTimeRangeEndString
+     * @param inGroupBy
      */
     private void prepareSearchQueryDateTime(SPARQLQueryBuilder query, String uriSelectNameSparql, String searchDateTimeRangeStartString, String searchDateTimeRangeEndString, boolean inGroupBy) {  
         
@@ -156,16 +147,24 @@ public class EventDAOSesame extends DAOSesame<Event> {
         if(inGroupBy){
             query.appendGroupBy(DATETIMESTAMP_SELECT_NAME_SPARQL);
         }
-        query.appendTriplet(uriSelectNameSparql, Time.RELATION_HAS_TIME.toString(), TIME_SELECT_NAME_SPARQL, null);
-        query.appendTriplet(TIME_SELECT_NAME_SPARQL, Time.RELATION_IN_XSD_DATETIMESTAMP.toString(), DATETIMESTAMP_SELECT_NAME_SPARQL, null);
+        query.appendTriplet(uriSelectNameSparql, Time.hasTime.toString(), TIME_SELECT_NAME_SPARQL, null);
+        query.appendTriplet(TIME_SELECT_NAME_SPARQL, Time.inXSDDateTimeStamp.toString(), DATETIMESTAMP_SELECT_NAME_SPARQL, null);
         
         if (searchDateTimeRangeStartString != null || searchDateTimeRangeEndString != null) {
-            filterSearchQueryWithDateRangeComparisonWithDateTimeStamp(query, DateFormat.YMDTHMSZZ.toString(), searchDateTimeRangeStartString, searchDateTimeRangeEndString, DATETIMESTAMP_SELECT_NAME_SPARQL);
+            TimeDAOSesame timeDao = new TimeDAOSesame(this.user);
+            timeDao.filterSearchQueryWithDateRangeComparisonWithDateTimeStamp(
+                    query, 
+                    DateFormat.YMDTHMSZZ.toString(), 
+                    searchDateTimeRangeStartString, 
+                    searchDateTimeRangeEndString, 
+                    DATETIMESTAMP_SELECT_NAME_SPARQL);
         }
     }
     
     /**
      * Prepare the event search query
+     * @param uri
+     * @param type
      * @example
      * SELECT DISTINCT  ?uri ?rdfType ?dateTimeStamp 
      * WHERE {
@@ -197,14 +196,14 @@ public class EventDAOSesame extends DAOSesame<Event> {
         query.appendDistinct(Boolean.TRUE);
         
         String uriSelectNameSparql = prepareSearchQueryUri(query, uri, true);
-        prepareSearchQueryType(query, uriSelectNameSparql, type, true);  
-        prepareSearchQueryConcernedItemFilter(query, uriSelectNameSparql, searchConcernedItemLabel, searchConcernedItemUri); 
+        prepareSearchQueryType(query, uriSelectNameSparql, type, true); 
+        ConcernedItemDAOSesame.prepareQueryWithConcernedItemFilters(query, uriSelectNameSparql, Oeev.concerns.getURI(), searchConcernedItemLabel, searchConcernedItemUri); 
         prepareSearchQueryDateTime(query, uriSelectNameSparql, dateRangeStartString, dateRangeEndString, true); 
         
         query.appendLimit(getPageSize());
         query.appendOffset(getPage() * getPageSize());
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
     }
     
@@ -227,84 +226,10 @@ public class EventDAOSesame extends DAOSesame<Event> {
         
         String uriSelectNameSparql = prepareSearchQueryUri(query, searchUri, false);
         prepareSearchQueryType(query, uriSelectNameSparql, null, false);  
-        prepareSearchQueryConcernedItemFilter(query, uriSelectNameSparql, null, null); 
+        ConcernedItemDAOSesame.prepareQueryWithConcernedItemFilters(query, uriSelectNameSparql, Oeev.concerns.getURI(), null, null); 
         prepareSearchQueryDateTime(query, uriSelectNameSparql, null, null, false); 
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
-        return query;
-    }
-    
-    /**
-     * Prepare the query to search the concerned items of an event
-     * @example
-     * SELECT DISTINCT  ?concernedItemUri ?concernedItemType 
-     * (GROUP_CONCAT(DISTINCT ?concernedItemLabel; SEPARATOR=",") AS ?concernedItemLabels) 
-     * WHERE {
-     *   <http://opensilex.org/id/event/96e72788-6bdc-4f8e-abd1-ce9329371e8e>  <http://www.opensilex.org/vocabulary/oeev#concerns>  ?concernedItemUri  . 
-     *   ?concernedItemUri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?concernedItemType  . 
-     *   ?concernedItemUri  <http://www.w3.org/2000/01/rdf-schema#label>  ?concernedItemLabel  . 
-     * }
-     *  GROUP BY  ?concernedItemUri ?concernedItemType 
-     * @param eventUri
-     * @return query
-     */
-    protected SPARQLQueryBuilder prepareConcernedItemsSearchQuery(String eventUri) {
-        
-        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
-        query.appendDistinct(Boolean.TRUE);
-        
-        String uriSelectNameSparql = "<" + eventUri + ">";
-        
-        query.appendSelect(CONCERNED_ITEM_URI_SELECT_NAME_SPARQL);
-        query.appendGroupBy(CONCERNED_ITEM_URI_SELECT_NAME_SPARQL);
-        query.appendTriplet(uriSelectNameSparql, Oeev.RELATION_CONCERNS.toString(), CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, null);
-        
-        query.appendSelect(CONCERNED_ITEM_TYPE_SELECT_NAME_SPARQL);
-        query.appendGroupBy(CONCERNED_ITEM_TYPE_SELECT_NAME_SPARQL);
-        query.appendTriplet(CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, Rdf.RELATION_TYPE.toString(), CONCERNED_ITEM_TYPE_SELECT_NAME_SPARQL, null);
-         
-        query.appendTriplet(CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, Rdfs.RELATION_LABEL.toString(), CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL, null);
-        
-        query.appendSelectConcat(CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL, SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR, CONCERNED_ITEM_LABELS_SELECT_NAME_SPARQL);
-        
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
-        return query;
-    }
-    
-    /**
-     * Prepare the query to search the annotations of an event
-     * @example
-     * SELECT DISTINCT  ?concernedItemUri ?concernedItemType 
-     * (GROUP_CONCAT(DISTINCT ?concernedItemLabel; SEPARATOR=",") AS ?concernedItemLabels) 
-     * WHERE {
-     *   <http://opensilex.org/id/event/96e72788-6bdc-4f8e-abd1-ce9329371e8e>  <http://www.opensilex.org/vocabulary/oeev#concerns>  ?concernedItemUri  . 
-     *   ?concernedItemUri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?concernedItemType  . 
-     *   ?concernedItemUri  <http://www.w3.org/2000/01/rdf-schema#label>  ?concernedItemLabel  . 
-     * }
-     *  GROUP BY  ?concernedItemUri ?concernedItemType 
-     * @param eventUri
-     * @return query
-     */
-    protected SPARQLQueryBuilder prepareAnnotationsSearchQuery(String eventUri) {
-        
-        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
-        query.appendDistinct(Boolean.TRUE);
-        
-        String uriSelectNameSparql = "<" + eventUri + ">";
-        
-        query.appendSelect(CONCERNED_ITEM_URI_SELECT_NAME_SPARQL);
-        query.appendGroupBy(CONCERNED_ITEM_URI_SELECT_NAME_SPARQL);
-        query.appendTriplet(uriSelectNameSparql, Oeev.RELATION_CONCERNS.toString(), CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, null);
-        
-        query.appendSelect(CONCERNED_ITEM_TYPE_SELECT_NAME_SPARQL);
-        query.appendGroupBy(CONCERNED_ITEM_TYPE_SELECT_NAME_SPARQL);
-        query.appendTriplet(CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, Rdf.RELATION_TYPE.toString(), CONCERNED_ITEM_TYPE_SELECT_NAME_SPARQL, null);
-         
-        query.appendTriplet(CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, Rdfs.RELATION_LABEL.toString(), CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL, null);
-        
-        query.appendSelectConcat(CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL, SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR, CONCERNED_ITEM_LABELS_SELECT_NAME_SPARQL);
-        
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
     }
     
@@ -315,33 +240,17 @@ public class EventDAOSesame extends DAOSesame<Event> {
      */
     private Event getEventFromBindingSet(BindingSet bindingSet) {
           
-        String eventUri = getValueOfSelectNameFromBindingSet(URI, bindingSet);
+        String eventUri = getStringValueOfSelectNameFromBindingSet(URI, bindingSet);
                 
-        String eventType = getValueOfSelectNameFromBindingSet(RDF_TYPE, bindingSet);
+        String eventType = getStringValueOfSelectNameFromBindingSet(RDF_TYPE, bindingSet);
         
-        String eventDateTimeString = getValueOfSelectNameFromBindingSet(DATETIMESTAMP_SELECT_NAME, bindingSet);    
+        String eventDateTimeString = getStringValueOfSelectNameFromBindingSet(DATETIMESTAMP_SELECT_NAME, bindingSet);    
         DateTime eventDateTime = null;
         if (eventDateTimeString != null) {
             eventDateTime = Dates.stringToDateTimeWithGivenPattern(eventDateTimeString, DateFormat.YMDTHMSZZ.toString());
         }
         
         return new Event(eventUri, eventType, new ArrayList<>(), eventDateTime, new ArrayList<>(), null);
-    }
-    
-    /**
-     * Get a concerned item from a binding set
-     * @param bindingSet
-     * @return concerned item
-     */
-    private ConcernedItem getConcernedItemFromBindingSet(BindingSet bindingSet) {
-                
-        String concernedItemUri = getValueOfSelectNameFromBindingSet(CONCERNED_ITEM_URI_SELECT_NAME, bindingSet);
-        String concernedItemType = getValueOfSelectNameFromBindingSet(CONCERNED_ITEM_TYPE_SELECT_NAME, bindingSet);
-        
-        String concernedItemLabelsConcatenated = getValueOfSelectNameFromBindingSet(CONCERNED_ITEM_LABELS_SELECT_NAME, bindingSet);
-        ArrayList<String> concernedItemLabels = new ArrayList<>(Arrays.asList(concernedItemLabelsConcatenated.split(SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR)));
-
-        return new ConcernedItem(concernedItemUri, concernedItemType, concernedItemLabels);
     }
     
     /**
@@ -373,7 +282,8 @@ public class EventDAOSesame extends DAOSesame<Event> {
             while (eventsResult.hasNext()) {
                 Event event = getEventFromBindingSet(eventsResult.next());
                 searchEventPropertiesAndSetThemToIt(event);
-                searchEventConcernedItemsAndSetThemToIt(event);
+                ConcernedItemDAOSesame concernedItemDao = new ConcernedItemDAOSesame(user);
+                event.setConcernedItems(concernedItemDao.searchConcernedItems(event.getUri(), Oeev.concerns.getURI(), null, null, 0, pageSizeMaxValue));
                 events.add(event);
             }
         }
@@ -387,78 +297,222 @@ public class EventDAOSesame extends DAOSesame<Event> {
      */
     public Event searchEventDetailed(String searchUri) {
         
-        SPARQLQueryBuilder eventsQuery = prepareSearchQueryEventDetailed(searchUri);
+        SPARQLQueryBuilder eventDetailedQuery = prepareSearchQueryEventDetailed(searchUri);
         
         // get events from storage
-        TupleQuery eventsTupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, eventsQuery.toString());
+        TupleQuery eventsTupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, eventDetailedQuery.toString());
         
         Event event = null;
         try (TupleQueryResult eventsResult = eventsTupleQuery.evaluate()) {
             if (eventsResult.hasNext()) {
                 event = getEventFromBindingSet(eventsResult.next());
                 searchEventPropertiesAndSetThemToIt(event);
-                searchEventConcernedItemsAndSetThemToIt(event);
                 
-                //SILEX:todo think about pagination within a widget (like 
-                // the annotation one): what should be the best practice?
-                // For the moment we use only one page by taking the max value 
-                // of page size
+                ConcernedItemDAOSesame concernedItemDao = new ConcernedItemDAOSesame(user);
+                event.setConcernedItems(concernedItemDao.searchConcernedItems(event.getUri(), Oeev.concerns.getURI(), null, null, 0, pageSizeMaxValue));
+                
                 AnnotationDAOSesame annotationDAO = new AnnotationDAOSesame(this.user);
-                int pageSizeMaxValue = Integer.parseInt(PropertiesFileManager.getConfigFileProperty("service", "pageSizeMax"));
                 ArrayList<Annotation> annotations = annotationDAO.searchAnnotations(null, null, event.getUri(), null, null, 0, pageSizeMaxValue);
                 event.setAnnotations(annotations);
-                //\SILEX:todo
             }
         }
         return event;
     }
     
+    /**
+     * Generate an insert query for the given event
+     * @param event
+     * @return the query
+     * @example
+     */
+    private UpdateRequest prepareInsertQuery(Event event) {
+        UpdateBuilder updateBuilder = new UpdateBuilder();
+        
+        // Event URI and simple attributes
+        Node graph = NodeFactory.createURI(Contexts.EVENTS.toString());
+        Resource eventResource = ResourceFactory.createResource(event.getUri());
+        Node eventType = NodeFactory.createURI(event.getType());
+        updateBuilder.addInsert(graph, eventResource, RDF.type, eventType);
+        
+        // Event's Instant
+        TimeDAOSesame timeDao = new TimeDAOSesame(this.user);
+        try {
+            timeDao.addInsertToUpdateBuilderWithInstant(
+                    updateBuilder,
+                    graph,
+                    eventResource,
+                    event.getDateTime());
+        } catch (Exception ex) {
+            LOGGER.error(ex.getLocalizedMessage());
+        }
+        
+        UpdateRequest query = updateBuilder.buildRequest();
+        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
+        
+        return query;
+    }
+    
+    /**
+     * Insert the given events in the storage.
+     * /!\ Prerequisite: data must have been checked before calling this method
+     * @see EventDAOSesame#check(java.util.List) 
+     * @param events
+     * @return the insertion result, with the error list or the URI of the 
+     *         events inserted
+     */
+    private POSTResultsReturn insert(List<Event> events) {
+        List<Status> status = new ArrayList<>();
+        List<String> createdResourcesUris = new ArrayList<>();
+        
+        POSTResultsReturn results;
+        boolean resultState = false;
+        boolean noInsertionError = true;
+        
+        UriGenerator uriGenerator = new UriGenerator();
+        getConnection().begin();
+        for (Event event : events) {
+            try {
+                // Generate uri
+                event.setUri(uriGenerator.generateNewInstanceUri(Oeev.Event.getURI(), null, null));
+                // Insert event
+                UpdateRequest query = prepareInsertQuery(event);
+
+                Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
+                prepareUpdate.execute();
+                createdResourcesUris.add(event.getUri());
+                
+                Resource eventResource = ResourceFactory.createResource(event.getUri());
+
+                // Insert concerned items links
+                ConcernedItemDAOSesame concernedItemDao = new ConcernedItemDAOSesame(user);
+                concernedItemDao.insertLinksWithObject(Contexts.EVENTS.toString(), eventResource, Oeev.concerns.getURI(), event.getConcernedItems());
+        
+                // The annotation
+                ArrayList<String> annotationTargets = new ArrayList<>();
+                annotationTargets.add(event.getUri());
+                event.getAnnotations().forEach(annotation -> {
+                    annotation.setTargets(annotationTargets);
+                });
+                AnnotationDAOSesame annotationDao = new AnnotationDAOSesame(user);
+                annotationDao.insert(event.getAnnotations());
+
+                // The properties links
+                PropertyDAOSesame propertyDao = new PropertyDAOSesame();
+                propertyDao.insertLinksBetweenObjectAndProperties(eventResource, event.getProperties(), Contexts.EVENTS.toString(), false);
+            } catch (RepositoryException ex) {
+                    LOGGER.error(StatusCodeMsg.ERROR_WHILE_COMMITTING_OR_ROLLING_BACK_TRIPLESTORE_STATEMENT, ex);
+                    noInsertionError = false;
+            } catch (MalformedQueryException e) {
+                    LOGGER.error(e.getMessage(), e);
+                    noInsertionError = false;
+                    status.add(new Status(
+                            StatusCodeMsg.QUERY_ERROR, 
+                            StatusCodeMsg.ERR, 
+                            StatusCodeMsg.MALFORMED_CREATE_QUERY + " " + e.getMessage()));
+            } catch (Exception ex) {
+                java.util.logging.Logger.getLogger(EventDAOSesame.class.getName()).log(Level.SEVERE, null, ex);
+                noInsertionError = false;
+            }
+        }
+        
+        if (noInsertionError) {
+            resultState = true;
+            getConnection().commit();
+        } else {
+            getConnection().rollback();
+        }
+        
+        if (getConnection() != null) {
+            getConnection().close();
+        }
+        
+        results = new POSTResultsReturn(resultState, noInsertionError, true);
+        results.statusList = status;
+        results.setCreatedResources(createdResourcesUris);
+        if (resultState && !createdResourcesUris.isEmpty()) {
+            results.createdResources = createdResourcesUris;
+            results.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, createdResourcesUris.size() + " " + StatusCodeMsg.RESOURCES_CREATED));
+        }
+        
+        return results;
+    }
+    
+    /**
+     * Check and eventually insert events in the storage
+     * @param events
+     * @return the insertion result :
+     *           Error message if errors found in data
+     *           The list of the generated URIs events is inserted
+     */
+    public POSTResultsReturn checkAndInsert(List<Event> events) {
+        POSTResultsReturn checkResult = check(events);
+        if (checkResult.getDataState()) {
+            return insert(events);
+        } else {
+            return checkResult;
+        }
+    }
+    
+    /**
+     * Check the given list of events
+     * @param events
+     * @return the result with the list of the found errors (empty if no error)
+     */
+    public POSTResultsReturn check(List<Event> events) {
+        POSTResultsReturn checkResult;
+        List<Status> status = new ArrayList<>();
+        
+        // 1. Check if user is admin
+        UserDaoPhisBrapi userDAO = new UserDaoPhisBrapi();
+        if (userDAO.isAdmin(user)) {
+            for (Event event : events) {
+                String eventUri = event.getUri();
+                
+                // Check the event URI if given (in case of an update)
+                if (eventUri != null) {
+                    if (searchEvents(eventUri, null, null, null, null, null, 0, pageSizeMaxValue).isEmpty()){
+                        status.add(new Status(
+                                StatusCodeMsg.UNKNOWN_URI, 
+                                StatusCodeMsg.ERR, 
+                                StatusCodeMsg.UNKNOWN_EVENT_URI + " " + eventUri));
+                    }
+                }
+                
+                // Check concerned items
+                ConcernedItemDAOSesame concernedItemDAO = new ConcernedItemDAOSesame(user);
+                status.addAll(concernedItemDAO.check(Oeev.concerns.getURI(), event.getConcernedItems()).getStatusList());
+                
+                // Check properties
+                PropertyDAOSesame propertyDAO = new PropertyDAOSesame();
+                POSTResultsReturn results = propertyDAO.checkExistenceRangeDomain(event.getProperties(), event.getType());
+                status.addAll(results.getStatusList());
+            }
+        } else {
+            status.add(new Status(
+                    StatusCodeMsg.ACCESS_DENIED, 
+                    StatusCodeMsg.ERR, 
+                    StatusCodeMsg.ADMINISTRATOR_ONLY));
+        }
+        
+        boolean dataIsValid = status.isEmpty();
+        checkResult = new POSTResultsReturn(dataIsValid, null, dataIsValid);
+        checkResult.statusList = status;
+        return checkResult;   
+    }
     
     /**
      * Search event properties and set them to it
      * @param event 
      */
     private void searchEventPropertiesAndSetThemToIt(Event event) {
-
-        PropertyDAOSesame propertyDAO = new PropertyDAOSesame(event.getUri());
+        PropertyDAOSesame propertyDAO = new PropertyDAOSesame();
         propertyDAO.getAllPropertiesWithLabelsExceptThoseSpecified(
             event, null, new ArrayList() {
                 {
                     add(Rdf.RELATION_TYPE.toString());
-                    add(Time.RELATION_HAS_TIME.toString());
-                    add(Oeev.RELATION_CONCERNS.toString());
+                    add(Time.hasTime.getURI());
+                    add(Oeev.concerns.getURI());
                 }});
-    }
-    
-    /**
-     * Search event concerned items and set them to it
-     * @param event 
-     */
-    private void searchEventConcernedItemsAndSetThemToIt(Event event) {
-                
-        SPARQLQueryBuilder concernedItemsQuery = prepareConcernedItemsSearchQuery(event.getUri());
-        TupleQuery concernedItemsTupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, concernedItemsQuery.toString());
-
-        try (TupleQueryResult concernedItemsTupleQueryResult = concernedItemsTupleQuery.evaluate()) {
-            ConcernedItem concernedItem;
-            while(concernedItemsTupleQueryResult.hasNext()) {
-                concernedItem = getConcernedItemFromBindingSet(concernedItemsTupleQueryResult.next());
-                event.addConcernedItem(concernedItem);
-            }
-        }
-    }
-    
-    /**
-     * Get the value of a name in the SELECT statement from a binding set
-     * @param selectName 
-     * @param bindingSet 
-     */
-    private String getValueOfSelectNameFromBindingSet(String selectName, BindingSet bindingSet) { 
-        Value selectedFieldValue = bindingSet.getValue(selectName);
-        if (selectedFieldValue != null) {
-            return selectedFieldValue.stringValue();
-        }
-        return null;
     }
 
     /**
@@ -483,13 +537,19 @@ public class EventDAOSesame extends DAOSesame<Event> {
      * }
      */
     private SPARQLQueryBuilder prepareCountQuery(String searchUri, String searchType, String searchConcernedItemLabel, String searchConcernedItemUri, String dateRangeStartString, String dateRangeEndString) {
-        SPARQLQueryBuilder query = this.prepareSearchQueryEvents(searchUri, searchType, searchConcernedItemLabel, searchConcernedItemUri, dateRangeStartString, dateRangeEndString);
+        SPARQLQueryBuilder query = this.prepareSearchQueryEvents(
+                searchUri, 
+                searchType, 
+                searchConcernedItemLabel, 
+                searchConcernedItemUri, 
+                dateRangeStartString, 
+                dateRangeEndString);
         query.clearSelect();
         query.clearLimit();
         query.clearOffset();
         query.clearGroupBy();
         query.appendSelect("(COUNT(DISTINCT " + URI_SELECT_NAME_SPARQL + ") AS " + "?" + COUNT_ELEMENT_QUERY + ")");
-        LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
+        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
         return query;
     }
 
@@ -509,7 +569,13 @@ public class EventDAOSesame extends DAOSesame<Event> {
     public Integer count(String searchUri, String searchType, String searchConcernedItemLabel, String searchConcernedItemUri, String dateRangeStartString, String dateRangeEndString) 
             throws RepositoryException, MalformedQueryException, QueryEvaluationException {
         
-        SPARQLQueryBuilder countQuery = prepareCountQuery(searchUri, searchType, searchConcernedItemLabel, searchConcernedItemUri, dateRangeStartString, dateRangeEndString);
+        SPARQLQueryBuilder countQuery = prepareCountQuery(
+                searchUri, 
+                searchType, 
+                searchConcernedItemLabel, 
+                searchConcernedItemUri, 
+                dateRangeStartString, 
+                dateRangeEndString);
         
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, countQuery.toString());
         Integer count = 0;

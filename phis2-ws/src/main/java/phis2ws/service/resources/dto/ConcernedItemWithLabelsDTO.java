@@ -7,7 +7,10 @@
 //******************************************************************************
 package phis2ws.service.resources.dto;
 
+import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
+import phis2ws.service.documentation.DocumentationAnnotation;
+import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.view.model.phis.ConcernedItem;
 
 /**
@@ -16,7 +19,9 @@ import phis2ws.service.view.model.phis.ConcernedItem;
  */
 public class ConcernedItemWithLabelsDTO extends ConcernItemDTO {
     
-    // labels
+    /**
+     * Labels
+     */
     protected ArrayList<String> labels = new ArrayList();
 
     public ConcernedItemWithLabelsDTO(ConcernedItem concernedItem) {
@@ -31,7 +36,9 @@ public class ConcernedItemWithLabelsDTO extends ConcernItemDTO {
         concernedItem.setLabels(labels);
         return concernedItem;
     }
-
+    
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI)
+    @Required
     public ArrayList<String> getLabels() {
         return labels;
     }

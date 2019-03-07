@@ -68,7 +68,7 @@ public class AnnotationResourceService extends ResourceService {
      *     ]
      *   }
      * ]
-     * @param annotations annotations list to save.
+     * @param annotationsDtos annotations list to save.
      * @param context
      * @return
      */
@@ -88,18 +88,23 @@ public class AnnotationResourceService extends ResourceService {
             example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     public Response postAnnotations(
-        @ApiParam(value = DocumentationAnnotation.ANNOTATION_POST_DATA_DEFINITION) @Valid ArrayList<AnnotationDTO> annotations,
+        @ApiParam(value = DocumentationAnnotation.ANNOTATION_POST_DATA_DEFINITION) @Valid ArrayList<AnnotationDTO> annotationsDtos,
         @Context HttpServletRequest context) {
 
         AbstractResultForm postResponse = null;
         //If there are at least one list of annotations
-        if (annotations != null && !annotations.isEmpty()) {
+        if (annotationsDtos != null && !annotationsDtos.isEmpty()) {
             AnnotationDAOSesame annotationDAOSesame = new AnnotationDAOSesame(userSession.getUser());
             if (context.getRemoteAddr() != null) {
                 annotationDAOSesame.remoteUserAdress = context.getRemoteAddr();
             }
-
+            
+            ArrayList<Annotation> annotations = new ArrayList<>();
+            annotationsDtos.forEach((annotationDTO) -> {
+                annotations.add(annotationDTO.createObjectFromDTO());
+            });
             POSTResultsReturn insertResult = annotationDAOSesame.checkAndInsert(annotations);
+            
             // annotations inserted
             if (insertResult.getHttpStatus().equals(Response.Status.CREATED)) {
                 postResponse = new ResponseFormPOST(insertResult.statusList);

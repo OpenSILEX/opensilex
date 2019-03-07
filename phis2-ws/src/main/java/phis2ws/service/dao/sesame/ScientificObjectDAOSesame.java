@@ -114,7 +114,7 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
         queryLastScientificObjectURi.appendOrderBy("desc(?" + URI + ")");
         queryLastScientificObjectURi.appendLimit(1);
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + queryLastScientificObjectURi.toString());
+        LOGGER.debug(SPARQL_QUERY + queryLastScientificObjectURi.toString());
         return queryLastScientificObjectURi;
     }
     
@@ -172,7 +172,7 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
         query.appendAsk("");
         query.appendToBody("?x <" + Rdfs.RELATION_LABEL.toString() + "> \"" + alias + "\"");
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
     }
         
@@ -351,7 +351,7 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
             try {
                 this.getConnection().begin();
                 Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spql.buildRequest().toString());
-                LOGGER.debug(getTraceabilityLogs() + SPARQL_SELECT_QUERY + prepareUpdate.toString());
+                LOGGER.debug(getTraceabilityLogs() + SPARQL_QUERY + prepareUpdate.toString());
                 prepareUpdate.execute();
                 createdResourcesURIList.add(scientificObject.getUri());
                
@@ -426,7 +426,7 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
         sparqlQuery.appendToBody("?" + PROPERTY +" <" + Rdf.RELATION_TYPE.toString() + "> ?" + PROPERTY_TYPE);
         sparqlQuery.endBodyOptional();
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + sparqlQuery.toString());
+        LOGGER.debug(SPARQL_QUERY + sparqlQuery.toString());
 
         return sparqlQuery;
     }
@@ -447,7 +447,7 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
         sparqlQuery.appendTriplet(objectURI, GeoSPARQL.RELATION_CONTAINS_MULTIPLE.toString(), "?" + CHILD, null);
         sparqlQuery.appendTriplet("?" + CHILD, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + sparqlQuery.toString());
+        LOGGER.debug(SPARQL_QUERY + sparqlQuery.toString());
 
         return sparqlQuery;
     }
@@ -465,7 +465,7 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
         sparqlQuery.appendTriplet(objectURI, GeoSPARQL.RELATION_CONTAINS.toString(), "?" + CHILD, null);
         sparqlQuery.appendTriplet("?" + CHILD, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + sparqlQuery.toString());
+        LOGGER.debug(SPARQL_QUERY + sparqlQuery.toString());
 
         return sparqlQuery;
     }
@@ -760,7 +760,7 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
         sparqlQuery.appendSelect(" ?" + RELATION + " ?" + PROPERTY);
         sparqlQuery.appendTriplet(scientificObjectURI, "?" + RELATION, "?" + PROPERTY, null);
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + sparqlQuery.toString());
+        LOGGER.debug(SPARQL_QUERY + sparqlQuery.toString());
         
         return sparqlQuery;
     }
@@ -794,7 +794,7 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
         query.appendTriplet("<" + uri + ">", Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
         query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString(), null);
 
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
     }
 }

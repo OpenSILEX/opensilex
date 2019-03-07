@@ -20,11 +20,16 @@ public enum Rdfs {
             return "http://www.w3.org/2000/01/rdf-schema#";
         }
     },
-    
     RELATION_DOMAIN {
         @Override
         public String toString() {
             return NAMESPACE.toString() + "domain";
+        }
+    },
+    RELATION_RANGE {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "range";
         }
     },
     RELATION_COMMENT {

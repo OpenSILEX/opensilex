@@ -26,10 +26,18 @@ public enum Oa {
             return NAMESPACE.toString() + "Annotation";
         }
     },
+    
     CONCEPT_MOTIVATION {
         @Override
         public String toString() {
             return NAMESPACE.toString() + "Motivation";
+        }
+    },
+    
+    INSTANCE_DESCRIBING {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "describing";
         }
     },
     

@@ -66,7 +66,7 @@ public class SpeciesDAOSesame extends DAOSesame<Species> {
         query.clearOffset();
         query.clearGroupBy();
         query.appendSelect("(COUNT(DISTINCT ?" + URI + ") as ?" + COUNT_ELEMENT_QUERY + ")");
-        LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
+        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
         return query;
     }
 
@@ -136,7 +136,7 @@ public class SpeciesDAOSesame extends DAOSesame<Species> {
 
         query.appendLimit(this.getPageSize());
         query.appendOffset(this.getPage() * this.getPageSize());
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        LOGGER.debug(SPARQL_QUERY + query.toString());
         
         return query;
     }

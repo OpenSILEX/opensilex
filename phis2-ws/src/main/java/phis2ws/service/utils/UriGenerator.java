@@ -20,9 +20,11 @@ import phis2ws.service.dao.phis.GroupDao;
 import phis2ws.service.dao.phis.ProjectDao;
 import phis2ws.service.dao.sesame.ScientificObjectDAOSesame;
 import phis2ws.service.dao.sesame.AnnotationDAOSesame;
+import phis2ws.service.dao.sesame.EventDAOSesame;
 import phis2ws.service.dao.sesame.MethodDaoSesame;
 import phis2ws.service.dao.sesame.RadiometricTargetDAOSesame;
 import phis2ws.service.dao.sesame.SensorDAOSesame;
+import phis2ws.service.dao.sesame.TimeDAOSesame;
 import phis2ws.service.dao.sesame.UriDaoSesame;
 import phis2ws.service.dao.sesame.TraitDaoSesame;
 import phis2ws.service.dao.sesame.UnitDaoSesame;
@@ -30,7 +32,9 @@ import phis2ws.service.dao.sesame.VariableDaoSesame;
 import phis2ws.service.dao.sesame.VectorDAOSesame;
 import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Foaf;
+import phis2ws.service.ontologies.Oeev;
 import phis2ws.service.ontologies.Oeso;
+import phis2ws.service.ontologies.Time;
 import phis2ws.service.view.model.phis.Group;
 import phis2ws.service.view.model.phis.Project;
 
@@ -66,6 +70,8 @@ public class UriGenerator {
     private static final String PLATFORM_URI_ID = PLATFORM_URI + "id/";
     private static final String PLATFORM_URI_ID_AGENT = PLATFORM_URI_ID + "agent/";
     private static final String PLATFORM_URI_ID_ANNOTATION = PLATFORM_URI_ID + "annotation/";
+    private static final String PLATFORM_URI_ID_EVENT = PLATFORM_URI_ID + "event/";
+    private static final String PLATFORM_URI_ID_INSTANT = PLATFORM_URI_ID + "instant/";
     private static final String PLATFORM_URI_ID_METHOD = PLATFORM_URI_ID + "methods/";
     private static final String PLATFORM_URI_ID_RADIOMETRIC_TARGET = PLATFORM_URI_ID + "radiometricTargets/";
     private static final String PLATFORM_URI_ID_TRAITS = PLATFORM_URI_ID + "traits/";
@@ -309,8 +315,8 @@ public class UriGenerator {
     /**
      * Generate a new annotation URI. A unit annotation follows the pattern:
      * <prefix>:id/annotation/<unic_code>
-     * <unic_code> = 1 letter type + java.util.UUID.randomUUID(); e.g.
-     * http://www.phenome-fppn.fr/diaphen/id/annotation/e073961b-e766-4493-b98f-74a8b2846893
+     * <unic_code> = 1 letter type + java.util.UUID.randomUUID(); 
+     * @example http://www.phenome-fppn.fr/diaphen/id/annotation/e073961b-e766-4493-b98f-74a8b2846893
      * @return the new annotation URI
      */
     private String generateAnnotationUri() {
@@ -325,7 +331,43 @@ public class UriGenerator {
     }
 
     /**
-     * Generate a new image uri. an image URI follows the pattern:
+     * Generate a new event URI. an event URI follows the pattern:
+     * <prefix>:id/event/<unic_code>
+     * <unic_code> = java.util.UUID.randomUUID();
+     * @example http://www.phenome-fppn.fr/diaphen/id/event/e073961b-e766-4493-b98f-74a8b2846893
+     * @return the new event URI
+     */
+    private String generateEventUri() {
+        // To check if URI already exists
+        EventDAOSesame eventDao = new EventDAOSesame(null);
+        String newEventUri = PLATFORM_URI_ID_EVENT + UUID.randomUUID();
+        while (eventDao.existUri(newEventUri)) {
+            newEventUri = PLATFORM_URI_ID_EVENT + UUID.randomUUID();
+        }
+
+        return newEventUri;
+    }
+
+    /**
+     * Generate a new Instant URI. The URI follows the pattern:
+     * <prefix>:id/instant/<unic_code>
+     * <unic_code> = java.util.UUID.randomUUID();
+     * @example http://www.phenome-fppn.fr/diaphen/id/instant/e073961b-e766-4493-b98f-74a8b2846893
+     * @return the new URI
+     */
+    private String generateInstantUri() {
+        // To check if the URI already exists
+        TimeDAOSesame timeDao = new TimeDAOSesame(null);
+        String newInstantUri = PLATFORM_URI_ID_INSTANT + UUID.randomUUID();
+        while (timeDao.existUri(newInstantUri)) {
+            newInstantUri = PLATFORM_URI_ID_INSTANT + UUID.randomUUID();
+        }
+
+        return newInstantUri;
+    }
+
+    /**
+     * generates a new image uri. an image uri follows the pattern :
      * <prefix>:yyyy/<unic_code>
      * <unic_code> = 1 letter type (i) + 2 digits year + auto incremet with 10
      * digit
@@ -517,6 +559,10 @@ public class UriGenerator {
             return generateExperimentUri(year);
         } else if (instanceType.equals(Foaf.CONCEPT_GROUP.toString())) {
             return generateGroupUri(additionalInformation);
+        } else if (uriDaoSesame.isSubClassOf(instanceType, Oeev.Event.getURI())) {
+            return generateEventUri();
+        } else if (instanceType.equals(Time.Instant.toString())) {
+            return generateInstantUri();
         } else if (instanceType.equals(Oeso.CONCEPT_DATA.toString())) {
             return generateDataUri(additionalInformation);
         } else if (instanceType.equals(Oeso.CONCEPT_PROVENANCE.toString())) {

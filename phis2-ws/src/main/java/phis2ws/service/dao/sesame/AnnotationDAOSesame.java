@@ -61,42 +61,12 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(AnnotationDAOSesame.class);
 
-    /**
-     * Creation date of an annotation
-     * @example 2018-08-01 09:34:50.235Z
-     * @link https://www.w3.org/TR/annotation-vocab/#dcterms-created
-     * //SILEX:todo
-     * 2018-08-01 09:34:50.235Z format must be change to xsd:DateTime 2018-08-01T09:34:50.235Z
-     * //\SILEX:todo
-     */
-    
     public static final String CREATED = "created";
-    /**
-     * Comment that describe the annotation
-     * @example Ustilago maydis infection
-     * @link https://www.w3.org/TR/annotation-model/#string-body
-     * Represents the comment aka body value of an annotation
-     */
     public static final String BODY_VALUE = "bodyValue";
     public static final String BODY_VALUES = "bodyValues";
-    
-    /** 
-     * Creator of annotations
-     * @example http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy
-     */
     public static final String CREATOR = "creator";
-    
-    /** 
-     * Uri that are annoted by one or multiple annotations
-     * @example http://www.phenome-fppn.fr/diaphen/2017/o1032481
-     */
     public static final String TARGET = "target";
     public static final String TARGETS = "targets";
-    
-    /** 
-     * Motivation instance uri that describe the purpose of the annotation
-     * @example http://www.w3.org/ns/oa#commenting
-     */
     public static final String MOTIVATED_BY = "motivatedBy";
 
     public AnnotationDAOSesame() {
@@ -170,7 +140,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
         }
         query.appendLimit(this.getPageSize());
         query.appendOffset(this.getPage() * this.getPageSize());
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
     }
 
@@ -221,7 +191,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
         query.clearOffset();
         query.clearGroupBy();
         query.appendSelect("(COUNT(DISTINCT ?" + URI + ") AS ?" + COUNT_ELEMENT_QUERY + ")");
-        LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
+        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
         return query;
     }
 
@@ -232,7 +202,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
      * found in data the list of the generated uri of the annotations if the
      * insertion has been done
      */
-    public POSTResultsReturn checkAndInsert(List<AnnotationDTO> annotations) {
+    public POSTResultsReturn checkAndInsert(List<Annotation> annotations) {
         POSTResultsReturn checkResult = check(annotations);
         if (checkResult.getDataState()) {
             return insert(annotations);
@@ -243,11 +213,11 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
 
     /**
      * Insert the given annotations in the triplestore
-     * @param annotationsDTO
+     * @param annotations
      * @return the insertion resultAnnotationUri, with the errors list or the
-     * uri of the inserted annotations
+     * URI of the inserted annotations
      */
-    public POSTResultsReturn insert(List<AnnotationDTO> annotationsDTO) {
+    public POSTResultsReturn insert(List<Annotation> annotations) {
         List<Status> insertStatus = new ArrayList<>();
         List<String> createdResourcesUri = new ArrayList<>();
 
@@ -262,8 +232,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
         this.getConnection().begin();
         //\SILEX:test
 
-        for (AnnotationDTO annotationDTO : annotationsDTO) {
-            Annotation annotation = annotationDTO.createObjectFromDTO();
+        for (Annotation annotation : annotations) {
             try {
                 annotation.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_ANNOTATION.toString(), null, null));
             } catch (Exception ex) { //In the annotations case, no exception should be raised
@@ -361,8 +330,8 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
      * @return the resultAnnotationUri with the list of the errors found
      * (empty if no error found)
      */
-    public POSTResultsReturn check(List<AnnotationDTO> annotations) {
-        POSTResultsReturn check = null;
+    public POSTResultsReturn check(List<Annotation> annotations) {
+        POSTResultsReturn check;
         //list of the returned results
         List<Status> checkStatus = new ArrayList<>();
         boolean dataOk = true;
@@ -371,7 +340,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
         UserDaoPhisBrapi userDao = new UserDaoPhisBrapi();
 
         //1. check data
-        for (AnnotationDTO annotation : annotations) {
+        for (Annotation annotation : annotations) {
             try {
                 //1.1 check motivation
                 if (!uriDao.existUri(annotation.getMotivatedBy())
@@ -397,7 +366,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
 
     /**
      * Search all the annotations corresponding to the search params given by
-     * the user (uri, creator, motivatedBy, bodyValue)
+     * the user (URI, creator, motivatedBy, bodyValue)
      * @param searchUri
      * @param searchCreator
      * @param searchTarget
@@ -427,24 +396,27 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
 
     /**
      * Get a annotation result from a given resultAnnotationUri. Assume that the
-     * following attributes exist: uri, creator, creationDate, bodyValue, target
+     * following attributes exist: URI, creator, creationDate, bodyValue, target
      * @param result a list of annotation from a search query
+     * @param searchUri search URI
+     * @param searchCreator search creator
+     * @param searchMotivatedBy search motivated by
      * @return annotations with data extracted from the given bindingSets
      */
     private ArrayList<Annotation> getAnnotationsFromResult(TupleQueryResult result, String searchUri, String searchCreator, String searchMotivatedBy) {
         ArrayList<Annotation> annotations = new ArrayList<>();
         UriDaoSesame uriDao = new UriDaoSesame();
         while (result.hasNext()) {
-            Annotation annotation = new Annotation();
             BindingSet bindingSet = result.next();
        
+            String annotationUri = null;
             if (searchUri != null) {
                 if(uriDao.existUri(searchUri)){
-                    annotation.setUri(searchUri);
+                    annotationUri = searchUri;
                 }
             } else {
                 if(bindingSet.getValue(URI) != null){
-                    annotation.setUri(bindingSet.getValue(URI).stringValue());
+                    annotationUri = bindingSet.getValue(URI).stringValue();
                 }
             }
             //SILEX:info
@@ -453,49 +425,42 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
             // Uri Created Creator MotivatedBy Targets	BodyValues
             //                                 ""       ""
             //\SILEX:info
-            if (annotation.getUri() != null) {
+            if (annotationUri != null) {
+                
+                DateTime annotationCreated;
                 // creationDate date
                 String creationDate = bindingSet.getValue(CREATED).stringValue();
-                DateTime stringToDateTime = Dates.stringToDateTimeWithGivenPattern(creationDate, DateFormats.YMDTHMSZ_FORMAT);
-                annotation.setCreated(stringToDateTime);
+                annotationCreated = Dates.stringToDateTimeWithGivenPattern(creationDate, DateFormats.YMDTHMSZ_FORMAT);
 
+                String annotationCreator;
                 if (searchCreator != null) {
-                    annotation.setCreator(searchCreator);
+                    annotationCreator = searchCreator;
                 } else {
-                    annotation.setCreator(bindingSet.getValue(CREATOR).stringValue());
+                    annotationCreator = bindingSet.getValue(CREATOR).stringValue();
                 }
 
+                ArrayList<String> annotationBodyValues = null;
                 if (bindingSet.getValue(BODY_VALUES) != null) {
                     //SILEX:info
                     // concat query return a list with comma separated value in one column
                     //\SILEX:info
-                    ArrayList<String> bodies = new ArrayList<>(Arrays.asList(bindingSet.getValue(BODY_VALUES).stringValue().split(SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR)));
-                    if (annotation.getBodiesValue() != null
-                            && !annotation.getBodiesValue().isEmpty()) {
-                        annotation.setBodiesValue(bodies);
-                    } else {
-                        annotation.setBodiesValue(bodies);
-                    }
+                    annotationBodyValues = new ArrayList<>(Arrays.asList(bindingSet.getValue(BODY_VALUES).stringValue().split(SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR)));
                 }
 
+                String annotationMotivation;
                 if (searchMotivatedBy != null) {
-                    annotation.setMotivatedBy(searchMotivatedBy);
+                    annotationMotivation = searchMotivatedBy;
                 } else {
-                    annotation.setMotivatedBy(bindingSet.getValue(MOTIVATED_BY).stringValue());
+                    annotationMotivation = bindingSet.getValue(MOTIVATED_BY).stringValue();
                 }
 
                 //SILEX:info
                 // concat query return a list with comma separated value in one column.
                 // An annotation has a least one target.
                 //\SILEX:info
-                ArrayList<String> targets = new ArrayList<>(Arrays.asList(bindingSet.getValue(TARGETS).stringValue().split(SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR)));
-                if (annotation.getTargets() != null
-                        && !annotation.getTargets().isEmpty()) {
-                    annotation.setTargets(targets);
-                } else {
-                    annotation.setTargets(targets);
-                }
-                annotations.add(annotation);
+                ArrayList<String> annotationTargets = new ArrayList<>(Arrays.asList(bindingSet.getValue(TARGETS).stringValue().split(SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR)));
+
+                annotations.add(new Annotation(annotationUri, annotationCreated, annotationCreator, annotationBodyValues, annotationMotivation, annotationTargets));
             }
         }
         return annotations;

@@ -73,7 +73,7 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
         query.appendTriplet("<" + uri + ">", Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
         query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_SENSING_DEVICE.toString(), null);
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        LOGGER.debug(SPARQL_QUERY + query.toString());
         
         return query;
     }
@@ -118,8 +118,9 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
                         ArrayList<Ask> uriExistance = uriDaoSesame.askUriExistance();
                         if (uriExistance.get(0).getExist()) {
                             //3.2 check the domain of the property
-                            propertyDAO.relation = propertyDTO.getRelation();
-                            ArrayList<String> propertyDomains = propertyDAO.getPropertyDomain();
+                            String propertyRelationUri = propertyDTO.getRelation();
+                            propertyDAO.setRelation(propertyRelationUri);
+                            ArrayList<String> propertyDomains = propertyDAO.getPropertyDomain(propertyRelationUri);
                             
                             if (propertyDomains != null && propertyDomains.size() > 0) { //the property has a specific domain
                                 boolean domainOk = false;
@@ -198,7 +199,7 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
         }
         
         UpdateRequest query = spql.buildRequest();
-        LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
+        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
         
         return query;
     }

@@ -72,6 +72,8 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     
     //the domain label used to query Triplestore
     private final String DOMAIN = "domain";
+    //the range label used to query Triplestore
+    private final String RANGE = "range";
     //the cardinality between a property and a concept, used to query the Triplestore
     private final String CARDINALITY = "cardinality";
     //the restriction between a property and a concept, used to query the Triplestore
@@ -185,6 +187,27 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
+     * Prepare the SPARQL query to get the domain of a relation
+     * @return the built query
+     * @example
+     * SELECT ?domain
+     * WHERE {
+     *      <http://www.opensilex.org/vocabulary/oeso#wavelength> rdfs:domain ?domain
+     * }
+     */
+    private SPARQLQueryBuilder prepareGetRangeQuery(String relationUri) {
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        query.appendSelect("?" + RANGE);
+        query.appendTriplet(relationUri, 
+                "<" + Rdfs.RELATION_RANGE.toString() + "> "
+                        + "/( <" + Owl.RELATION_UNION_OF.toString() + "> / <" + Rdf.RELATION_REST.toString() + ">*/ <" + Rdf.RELATION_FIRST.toString() + ">)*" , "?" + RANGE, null);
+        
+        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
+        
+        return query;
+    }
+    
+    /**
      * Get in the Triplestore the domain of the property if it exists
      * @param relationUri
      * @return the domain of the property (attributes relation)
@@ -202,6 +225,26 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
         }
         
         return propertyDomains;
+    }
+    
+    /**
+     * Get in the Triplestore the domain of the property if it exists
+     * @param relationUri
+     * @return the domain of the property (attributes relation)
+     */
+    public ArrayList<String> getPropertyRange(String relationUri) {
+        SPARQLQueryBuilder query = prepareGetRangeQuery(relationUri);
+        ArrayList<String> propertyRangeList = new ArrayList<>();
+        
+        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
+            while (result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                propertyRangeList.add(bindingSet.getValue(RANGE).toString());
+            }
+        }
+        
+        return propertyRangeList;
     }
     
     /**
@@ -228,6 +271,40 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
         }
         
         return domainOk;
+    }
+    
+    /**
+     * Check if a given relation can be linked to a given rdfType. 
+     * Check if there is a domain and if the rdfType corresponds to the domain.
+     * /!\ The PropertyDAOSesame#relation must contain the relation which domain is checked
+     * @param relationUri
+     * @param rdfType the rdf type. e.g. http://www.opensilex.org/vocabulary/oeso#RadiometricTarget
+     * @return true if the given property can be linked to the given rdfType
+     *         false if the given rdfType is not part of the domain of the property.
+     */
+    public boolean isRelationRangeCompatibleWithRdfType(String relationUri, String rdfType) {
+        ArrayList<String> propertyRangeList = getPropertyRange(relationUri);
+        UriDaoSesame uriDao = new UriDaoSesame();
+        boolean isRdfTypeCompatible = false;
+        
+        // if the property has a specific range
+        if (propertyRangeList != null && propertyRangeList.size() > 0) {
+            if (rdfType == null) {
+                // the value to test has no type (e.g a literal)
+                isRdfTypeCompatible = false;
+            }
+            else {
+                for (String propertyRange : propertyRangeList) {
+                    if (uriDao.isSubClassOf(rdfType, propertyRange)) {
+                        isRdfTypeCompatible = true;
+                    }
+                }
+            }
+        } else { // if the property has no specific range
+            isRdfTypeCompatible = true;
+        }
+        
+        return isRdfTypeCompatible;
     }
    
     /**
@@ -470,7 +547,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
      * @param ownerType
      * @return the result with the list of the found errors (empty if no error)
      */
-    public POSTResultsReturn checkExistenceAndDomain(ArrayList<Property> properties, String ownerType) {
+    public POSTResultsReturn checkExistenceRangeDomain(ArrayList<Property> properties, String ownerType) {
         POSTResultsReturn checkResult;
         List<Status> status = new ArrayList<>();
         for (Property property : properties) {
@@ -486,12 +563,19 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
             
             // Check relation existence
             if (existUri(property.getRelation())) {
-                // Check the domain
+                // Check domain
                 if (!isRelationDomainCompatibleWithRdfType(property.getRelation(), ownerType)) {
                     status.add(new Status(
                         StatusCodeMsg.DATA_ERROR, 
                         StatusCodeMsg.ERR, 
                         String.format(StatusCodeMsg.URI_TYPE_NOT_IN_DOMAIN_OF_RELATION, ownerType, property.getRelation())));
+                }
+                // Check range
+                if (!isRelationRangeCompatibleWithRdfType(property.getRelation(), property.getRdfType())) {
+                    status.add(new Status(
+                        StatusCodeMsg.DATA_ERROR, 
+                        StatusCodeMsg.ERR, 
+                        String.format(StatusCodeMsg.VALUE_TYPE_URI_NOT_IN_RANGE_OF_RELATION, property.getRdfType(), property.getValue(), property.getRelation())));
                 }
             } else {
                 status.add(new Status(

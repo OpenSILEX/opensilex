@@ -13,7 +13,6 @@ import java.util.logging.Level;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.update.UpdateRequest;
@@ -36,7 +35,6 @@ import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.model.User;
 import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Oeev;
-import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Time;
@@ -47,7 +45,6 @@ import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.Annotation;
 import phis2ws.service.view.model.phis.Event;
-import phis2ws.service.view.model.phis.Property;
 
 /**
  * DAO for Events
@@ -487,7 +484,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
                 
                 // Check properties
                 PropertyDAOSesame propertyDAO = new PropertyDAOSesame();
-                POSTResultsReturn results = propertyDAO.checkExistenceAndDomain(event.getProperties(), event.getType());
+                POSTResultsReturn results = propertyDAO.checkExistenceRangeDomain(event.getProperties(), event.getType());
                 status.addAll(results.getStatusList());
             }
         } else {

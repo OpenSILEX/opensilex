@@ -30,8 +30,6 @@ import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.dao.phis.UserDaoPhisBrapi;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.model.User;
-import phis2ws.service.ontologies.Oeev;
-import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.utils.POSTResultsReturn;
@@ -72,11 +70,14 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
      * @param query
      * @param objectUriSelectNameSparql URI SparQL variable of the concerning object
      * @param searchConcernedItemLabel
+     * @param concernsRelationUri since "concerns" can designate various
+     * relations in various vocabularies (e.g OESO or OEEV), the URI of the 
+     * relation has to be 
      * @param searchConcernedItemUri
      */
-    public static void prepareQueryWithConcernedItemFilters(SPARQLQueryBuilder query, String objectUriSelectNameSparql, String searchConcernedItemUri, String searchConcernedItemLabel) {
+    public static void prepareQueryWithConcernedItemFilters(SPARQLQueryBuilder query, String objectUriSelectNameSparql, String concernsRelationUri, String searchConcernedItemUri, String searchConcernedItemLabel) {
         if (objectUriSelectNameSparql != null) {
-            query.appendTriplet(objectUriSelectNameSparql, Oeev.RELATION_CONCERNS.toString(), CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, null);
+            query.appendTriplet(objectUriSelectNameSparql, concernsRelationUri, CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, null);
         }
 
         if (searchConcernedItemLabel != null) {
@@ -101,6 +102,9 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
      * Prepare the query to search the concerned items of a object
      * @param searchLabel
      * @param searchUri
+     * @param concernsRelationUri since "concerns" can designate various
+     * relations in various vocabularies (e.g OESO or OEEV), the URI of the 
+     * relation has to be 
      * @example
      * SELECT DISTINCT  ?concernedItemUri ?concernedItemType 
      * (GROUP_CONCAT(DISTINCT ?concernedItemLabel; SEPARATOR=",") AS ?concernedItemLabels) 
@@ -113,7 +117,7 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
      * @param objectUri
      * @return query
      */
-    protected static SPARQLQueryBuilder prepareConcernedItemsSearchQuery(String objectUri, String searchUri, String searchLabel) {
+    protected static SPARQLQueryBuilder prepareConcernedItemsSearchQuery(String objectUri, String concernsRelationUri, String searchUri, String searchLabel) {
         
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
@@ -123,7 +127,7 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
             uriSelectNameSparql = "<" + objectUri + ">";
         }
         
-        prepareQueryWithConcernedItemFilters(query, uriSelectNameSparql, searchUri, searchLabel);
+        prepareQueryWithConcernedItemFilters(query, uriSelectNameSparql, concernsRelationUri, searchUri, searchLabel);
         
         query.appendSelect(CONCERNED_ITEM_URI_SELECT_NAME_SPARQL);
         query.appendGroupBy(CONCERNED_ITEM_URI_SELECT_NAME_SPARQL);
@@ -141,36 +145,23 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
     }
     
     /**
-     * Get a concerned item from a binding set
-     * @param bindingSet
-     * @return concerned item
-     */
-    private ConcernedItem getConcernedItemFromBindingSet(BindingSet bindingSet) {
-                
-        String concernedItemUri = getStringValueOfSelectNameFromBindingSet(CONCERNED_ITEM_URI_SELECT_NAME, bindingSet);
-        String concernedItemType = getStringValueOfSelectNameFromBindingSet(CONCERNED_ITEM_TYPE_SELECT_NAME, bindingSet);
-        
-        String concernedItemLabelsConcatenated = getStringValueOfSelectNameFromBindingSet(CONCERNED_ITEM_LABELS_SELECT_NAME, bindingSet);
-        ArrayList<String> concernedItemLabels = new ArrayList<>(Arrays.asList(concernedItemLabelsConcatenated.split(SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR)));
-
-        return new ConcernedItem(concernedItemUri, concernedItemType, concernedItemLabels);
-    }
-    
-    /**
      * Search an object's concerned items with filters
      * @param objectUri 
+     * @param concernsRelationUri since "concerns" can designate various
+     * relations in various vocabularies (e.g OESO or OEEV), the URI of the 
+     * relation has to be 
      * @param searchUri 
      * @param searchLabel 
      * @param page 
      * @param pageSize 
      * @return  the object's concerned items
      */
-    public ArrayList<ConcernedItem> searchConcernedItems(String objectUri, String searchUri, String searchLabel, int page, int pageSize) {
+    public ArrayList<ConcernedItem> searchConcernedItems(String objectUri, String concernsRelationUri, String searchUri, String searchLabel, int page, int pageSize) {
         setPage(page);
         setPageSize(pageSize);
         
         ArrayList<ConcernedItem> concernedItems = new ArrayList<>();
-        SPARQLQueryBuilder concernedItemsQuery = prepareConcernedItemsSearchQuery(objectUri, searchUri, searchLabel);
+        SPARQLQueryBuilder concernedItemsQuery = prepareConcernedItemsSearchQuery(objectUri, concernsRelationUri, searchUri, searchLabel);
         TupleQuery concernedItemsTupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, concernedItemsQuery.toString());
 
         try (TupleQueryResult concernedItemsTupleQueryResult = concernedItemsTupleQuery.evaluate()) {
@@ -187,19 +178,22 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
     
     /**
      * Generate an insert query for the links of the given concerned items
-     * @param objectResource the concerning object's URI
-     * @param concernedItem
      * @param graphString
+     * @param objectResource the concerning object's URI
+     * @param concernsRelationUri since "concerns" can designate various
+     * relations in various vocabularies (e.g OESO or OEEV), the URI of the 
+     * relation has to be 
+     * @param concernedItem
      * @return the query
      * @example
      */
-    private UpdateRequest prepareInsertLinkQuery(Resource objectResource, ArrayList<ConcernedItem> concernedItems, String graphString) {
+    private UpdateRequest prepareInsertLinkQuery(String graphString, Resource objectResource, String concernsRelationUri, ArrayList<ConcernedItem> concernedItems) {
         UpdateBuilder updateBuilder = new UpdateBuilder();
         Node graph = NodeFactory.createURI(graphString);
+        Resource concernsRelation = ResourceFactory.createResource(concernsRelationUri);
         for (ConcernedItem concernedItem : concernedItems) {
-            Resource concernsProperty = ResourceFactory.createResource(Oeso.RELATION_CONCERNS.toString());
             Resource concernedItemResource = ResourceFactory.createResource(concernedItem.getUri());
-            updateBuilder.addInsert(graph, objectResource, concernsProperty, concernedItemResource);
+            updateBuilder.addInsert(graph, objectResource, concernsRelation, concernedItemResource);
         }
         UpdateRequest query = updateBuilder.buildRequest();
         LOGGER.debug(SPARQL_QUERY + " " + query.toString());
@@ -209,21 +203,25 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
     
     /**
      * Check the given list of concerned items
+     * @param concernsRelationUri since "concerns" can designate various
+     * relations in various vocabularies (e.g OESO or OEEV), the URI of the 
+     * relation has to be 
      * @param concernedItems
      * @return the result with the list of the found errors (empty if no error)
      */
-    public POSTResultsReturn check(List<ConcernedItem> concernedItems) {
+    public POSTResultsReturn check(String concernsRelationUri, List<ConcernedItem> concernedItems) {
         POSTResultsReturn checkResult;
         List<Status> status = new ArrayList<>();
         
-        // 1. Check if user is admin
+        // Check if user is admin
         UserDaoPhisBrapi userDAO = new UserDaoPhisBrapi();
         if (userDAO.isAdmin(user)) {
             for (ConcernedItem concernedItem : concernedItems) {
                 String concernedItemUri = concernedItem.getUri();
                 if (concernedItemUri != null) {
                     // Check the event URI if given (in case of an update)
-                    if (searchConcernedItems(null, concernedItemUri, null, 0, pageSizeMaxValue).isEmpty()){
+                    
+                    if (searchConcernedItems(null, concernsRelationUri, concernedItemUri, null, 0, pageSizeMaxValue).isEmpty()){
                         status.add(new Status(
                                 StatusCodeMsg.UNKNOWN_URI, 
                                 StatusCodeMsg.ERR, 
@@ -246,14 +244,17 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
     /**
      * Insert the given concerned items in the storage. 
      * /!\ Prerequisite: data must have been checked before calling this method
+     * @see EventDAOSesame#check(java.util.List)
+     * @param graph 
      * @param objectResource
-     * @param graph
-     * @see EventDAOSesame#check(java.util.List) 
+     * @param concernsRelationUri since "concerns" can designate various
+     * relations in various vocabularies (e.g OESO or OEEV), the URI of the 
+     * relation has to be 
      * @param concernedItems
      * @return the insertion result, with the error list or the URI of the 
      *         events inserted
      */
-    public POSTResultsReturn insertLinksWithObject(Resource objectResource, ArrayList<ConcernedItem> concernedItems, String graph) {
+    public POSTResultsReturn insertLinksWithObject(String graph, Resource objectResource, String concernsRelationUri, ArrayList<ConcernedItem> concernedItems) {
         List<Status> status = new ArrayList<>();
         List<String> createdResourcesUris = new ArrayList<>();
         
@@ -264,7 +265,7 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
         getConnection().begin();
             
         // Insert links
-        UpdateRequest query = prepareInsertLinkQuery(objectResource, concernedItems, graph);
+        UpdateRequest query = prepareInsertLinkQuery(graph, objectResource, concernsRelationUri, concernedItems);
             
         try {
             Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
@@ -300,6 +301,22 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
         }
         
         return results;
+    }
+    
+    /**
+     * Get a concerned item from a binding set
+     * @param bindingSet
+     * @return concerned item
+     */
+    private ConcernedItem getConcernedItemFromBindingSet(BindingSet bindingSet) {
+                
+        String concernedItemUri = getStringValueOfSelectNameFromBindingSet(CONCERNED_ITEM_URI_SELECT_NAME, bindingSet);
+        String concernedItemType = getStringValueOfSelectNameFromBindingSet(CONCERNED_ITEM_TYPE_SELECT_NAME, bindingSet);
+        
+        String concernedItemLabelsConcatenated = getStringValueOfSelectNameFromBindingSet(CONCERNED_ITEM_LABELS_SELECT_NAME, bindingSet);
+        ArrayList<String> concernedItemLabels = new ArrayList<>(Arrays.asList(concernedItemLabelsConcatenated.split(SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR)));
+
+        return new ConcernedItem(concernedItemUri, concernedItemType, concernedItemLabels);
     }
 
     @Override

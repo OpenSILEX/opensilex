@@ -36,6 +36,7 @@ import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.model.User;
 import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Oeev;
+import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Time;
@@ -120,7 +121,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
         if (searchType != null) {
             query.appendTriplet(RDF_TYPE_SELECT_NAME_SPARQL, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", searchType, null);
         } else {
-            query.appendTriplet(RDF_TYPE_SELECT_NAME_SPARQL, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeev.CONCEPT_EVENT.toString(), null);
+            query.appendTriplet(RDF_TYPE_SELECT_NAME_SPARQL, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeev.Event.getURI(), null);
         }    
     }
 
@@ -199,11 +200,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
         
         String uriSelectNameSparql = prepareSearchQueryUri(query, uri, true);
         prepareSearchQueryType(query, uriSelectNameSparql, type, true); 
-        ConcernedItemDAOSesame.prepareQueryWithConcernedItemFilters(
-                query, 
-                uriSelectNameSparql, 
-                searchConcernedItemLabel, 
-                searchConcernedItemUri); 
+        ConcernedItemDAOSesame.prepareQueryWithConcernedItemFilters(query, uriSelectNameSparql, Oeev.concerns.getURI(), searchConcernedItemLabel, searchConcernedItemUri); 
         prepareSearchQueryDateTime(query, uriSelectNameSparql, dateRangeStartString, dateRangeEndString, true); 
         
         query.appendLimit(getPageSize());
@@ -232,7 +229,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
         
         String uriSelectNameSparql = prepareSearchQueryUri(query, searchUri, false);
         prepareSearchQueryType(query, uriSelectNameSparql, null, false);  
-        ConcernedItemDAOSesame.prepareQueryWithConcernedItemFilters(query, uriSelectNameSparql, null, null); 
+        ConcernedItemDAOSesame.prepareQueryWithConcernedItemFilters(query, uriSelectNameSparql, Oeev.concerns.getURI(), null, null); 
         prepareSearchQueryDateTime(query, uriSelectNameSparql, null, null, false); 
         
         LOGGER.debug(SPARQL_QUERY + query.toString());
@@ -288,8 +285,8 @@ public class EventDAOSesame extends DAOSesame<Event> {
             while (eventsResult.hasNext()) {
                 Event event = getEventFromBindingSet(eventsResult.next());
                 searchEventPropertiesAndSetThemToIt(event);
-                event.setConcernedItems((new ConcernedItemDAOSesame(user))
-                        .searchConcernedItems(event.getUri(), null, null, 0, pageSizeMaxValue));
+                ConcernedItemDAOSesame concernedItemDao = new ConcernedItemDAOSesame(user);
+                event.setConcernedItems(concernedItemDao.searchConcernedItems(event.getUri(), Oeev.concerns.getURI(), null, null, 0, pageSizeMaxValue));
                 events.add(event);
             }
         }
@@ -314,8 +311,8 @@ public class EventDAOSesame extends DAOSesame<Event> {
                 event = getEventFromBindingSet(eventsResult.next());
                 searchEventPropertiesAndSetThemToIt(event);
                 
-                event.setConcernedItems((new ConcernedItemDAOSesame(user))
-                        .searchConcernedItems(event.getUri(), null, null, 0, pageSizeMaxValue));
+                ConcernedItemDAOSesame concernedItemDao = new ConcernedItemDAOSesame(user);
+                event.setConcernedItems(concernedItemDao.searchConcernedItems(event.getUri(), Oeev.concerns.getURI(), null, null, 0, pageSizeMaxValue));
                 
                 AnnotationDAOSesame annotationDAO = new AnnotationDAOSesame(this.user);
                 ArrayList<Annotation> annotations = annotationDAO.searchAnnotations(null, null, event.getUri(), null, null, 0, pageSizeMaxValue);
@@ -379,7 +376,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
         for (Event event : events) {
             try {
                 // Generate uri
-                event.setUri(uriGenerator.generateNewInstanceUri(Oeev.CONCEPT_EVENT.toString(), null, null));
+                event.setUri(uriGenerator.generateNewInstanceUri(Oeev.Event.getURI(), null, null));
                 // Insert event
                 UpdateRequest query = prepareInsertQuery(event);
 
@@ -391,10 +388,10 @@ public class EventDAOSesame extends DAOSesame<Event> {
 
                 // Insert concerned items links
                 ConcernedItemDAOSesame concernedItemDao = new ConcernedItemDAOSesame(user);
-                concernedItemDao.insertLinksWithObject(eventResource, event.getConcernedItems(), Contexts.EVENTS.toString());
+                concernedItemDao.insertLinksWithObject(Contexts.EVENTS.toString(), eventResource, Oeev.concerns.getURI(), event.getConcernedItems());
         
                 // The annotation
-                ArrayList<String> annotationTargets = new ArrayList<String>();
+                ArrayList<String> annotationTargets = new ArrayList<>();
                 annotationTargets.add(event.getUri());
                 event.getAnnotations().forEach(annotation -> {
                     annotation.setTargets(annotationTargets);
@@ -486,7 +483,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
                 
                 // Check concerned items
                 ConcernedItemDAOSesame concernedItemDAO = new ConcernedItemDAOSesame(user);
-                status.addAll(concernedItemDAO.check(event.getConcernedItems()).getStatusList());
+                status.addAll(concernedItemDAO.check(Oeev.concerns.getURI(), event.getConcernedItems()).getStatusList());
                 
                 // Check properties
                 PropertyDAOSesame propertyDAO = new PropertyDAOSesame();
@@ -516,8 +513,8 @@ public class EventDAOSesame extends DAOSesame<Event> {
             event, null, new ArrayList() {
                 {
                     add(Rdf.RELATION_TYPE.toString());
-                    add(Time.hasTime.toString());
-                    add(Oeev.RELATION_CONCERNS.toString());
+                    add(Time.hasTime.getURI());
+                    add(Oeev.concerns.getURI());
                 }});
     }
 

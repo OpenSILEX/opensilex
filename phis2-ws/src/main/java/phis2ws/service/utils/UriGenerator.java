@@ -515,7 +515,7 @@ public class UriGenerator {
             return generateExperimentUri(year);
         } else if (instanceType.equals(Foaf.CONCEPT_GROUP.toString())) {
             return generateGroupUri(additionalInformation);
-        } else if (uriDaoSesame.isSubClassOf(instanceType, Oeev.CONCEPT_EVENT.toString())) {
+        } else if (uriDaoSesame.isSubClassOf(instanceType, Oeev.Event.getURI())) {
             return generateEventUri();
         } else if (instanceType.equals(Time.Instant.toString())) {
             return generateInstantUri();

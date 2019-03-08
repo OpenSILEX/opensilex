@@ -94,7 +94,7 @@ public class DataDAOMongo extends DAOMongo<Data> {
             if (!provenanceDAO.existProvenanceUri(data.getProvenanceUri())) {
                 dataOk = false;
                 checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
-                    "The given provenance uri (" + data.getProvenanceUri()+ ") does not exist"));
+                    "Unknwon provenance : " + data.getProvenanceUri()));
             }
         }
 

@@ -5,7 +5,6 @@
 // Creation date: 5 March, 2019
 // Contact: andreas.garcia@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-
 package phis2ws.service.resources.dto.event;
 
 import io.swagger.annotations.ApiModelProperty;

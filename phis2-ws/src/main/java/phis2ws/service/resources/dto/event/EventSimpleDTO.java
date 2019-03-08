@@ -32,9 +32,16 @@ public class EventSimpleDTO extends AbstractVerifiedClass {
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EVENT_URI)
     private String uri;
     
+    /**
+     * //SILEX:info
+     * "type" can not be used as a field name in DTOs due to XML interpretation
+     * issues.
+     * @see https://stackoverflow.com/questions/33104232/eclipselink-missing-class-for-indicator-field-value-of-typ
+     * //\
+     */
     @URL
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EVENT_TYPE)
-    private String type;
+    private String rdfType;
     
     protected ArrayList<ConcernedItemWithLabelsDTO> concernedItems = new ArrayList<>();
     
@@ -49,7 +56,7 @@ public class EventSimpleDTO extends AbstractVerifiedClass {
      */
     public EventSimpleDTO(Event event) {
         this.uri = event.getUri();
-        this.type = event.getType();
+        this.rdfType = event.getType();
         event.getConcernedItems().forEach((concernedItem) -> {
             this.concernedItems.add(new ConcernedItemWithLabelsDTO(concernedItem));
         });
@@ -87,7 +94,7 @@ public class EventSimpleDTO extends AbstractVerifiedClass {
         
         DateTime dateTime = Dates.stringToDateTimeWithGivenPattern(this.date, DateFormat.YMDTHMSZZ.toString());
         
-        return new Event(this.uri, this.type, modelConcernedItems, dateTime, modelProperties, null);
+        return new Event(this.uri, this.rdfType, modelConcernedItems, dateTime, modelProperties, null);
     }
 
     public String getUri() {
@@ -98,12 +105,12 @@ public class EventSimpleDTO extends AbstractVerifiedClass {
         this.uri = uri;
     }
 
-    public String getType() {
-        return type;
+    public String getRdfType() {
+        return rdfType;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setRdfType(String type) {
+        this.rdfType = type;
     }
 
     public ArrayList<ConcernedItemWithLabelsDTO> getConcernedItems() {

@@ -5,7 +5,6 @@
 // Creation date: 13 nov. 2018
 // Contact: andreas.garcia@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-
 package phis2ws.service.resources;
 
 import io.swagger.annotations.Api;

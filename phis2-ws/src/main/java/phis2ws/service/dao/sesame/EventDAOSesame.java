@@ -494,7 +494,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
                 }
                 
                 // Check concerned items
-                status.addAll(concernedItemDAO.check(Oeev.concerns.getURI(), event.getConcernedItems()).getStatusList());
+                status.addAll(concernedItemDAO.check(event.getConcernedItems()).getStatusList());
                 
                 // Check properties
                 ArrayList<Property> properties = event.getProperties();

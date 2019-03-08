@@ -104,6 +104,7 @@ public class EventPostDTO extends AbstractVerifiedClass {
     }
 
     @Valid
+    @NotNull
     public ArrayList<PropertyDTO> getProperties() {
         return properties;
     }

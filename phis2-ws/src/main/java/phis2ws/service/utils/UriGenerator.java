@@ -78,8 +78,9 @@ public class UriGenerator {
     private static final String PLATFORM_URI_ID_UNITS = PLATFORM_URI_ID + "units/";
     private static final String PLATFORM_URI_ID_VARIABLES = PLATFORM_URI_ID + "variables/";
     private static final String PLATFORM_URI_ID_VARIETY = PLATFORM_URI + "v/";
-    private static final String EXPERIMENT_URI_SEPARATOR = "-";
     private static final String PLATFORM_URI_ID_PROVENANCE = PLATFORM_URI_ID + "provenance/";
+    
+    private static final String EXPERIMENT_URI_SEPARATOR = "-";
 
 
     /**
@@ -559,16 +560,14 @@ public class UriGenerator {
             return generateExperimentUri(year);
         } else if (instanceType.equals(Foaf.CONCEPT_GROUP.toString())) {
             return generateGroupUri(additionalInformation);
-        } else if (uriDaoSesame.isSubClassOf(instanceType, Oeev.Event.getURI())) {
-            return generateEventUri();
-        } else if (instanceType.equals(Time.Instant.toString())) {
-            return generateInstantUri();
-        } else if (instanceType.equals(Oeso.CONCEPT_DATA.toString())) {
-            return generateDataUri(additionalInformation);
         } else if (instanceType.equals(Oeso.CONCEPT_PROVENANCE.toString())) {
             return generateProvenanceUri();
         } else if (instanceType.equals(Oeso.CONCEPT_DATA.toString())) {
             return generateDataUri(additionalInformation);
+        } else if (uriDaoSesame.isSubClassOf(instanceType, Oeev.Event.getURI())) {
+            return generateEventUri();
+        } else if (instanceType.equals(Time.Instant.toString())) {
+            return generateInstantUri();
         }
 
         return null;

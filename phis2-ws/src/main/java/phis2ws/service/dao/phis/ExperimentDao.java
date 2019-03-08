@@ -260,8 +260,6 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
             statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
             SQLQueryBuilder query = new SQLQueryBuilder();
             
-            Map<String, String> sqlFields = relationFieldsJavaSQLObject();
-           
             // Add conditions in query
             query.appendFrom(table, tableAlias);
             addFilters(query);

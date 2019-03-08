@@ -45,6 +45,7 @@ import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.Annotation;
 import phis2ws.service.view.model.phis.Event;
+import phis2ws.service.view.model.phis.Property;
 
 /**
  * DAO for Events
@@ -368,6 +369,10 @@ public class EventDAOSesame extends DAOSesame<Event> {
         boolean resultState = false;
         boolean noInsertionError = true;
         
+        ConcernedItemDAOSesame concernedItemDao = new ConcernedItemDAOSesame(user);
+        AnnotationDAOSesame annotationDao = new AnnotationDAOSesame(user);
+        PropertyDAOSesame propertyDao = new PropertyDAOSesame();
+        
         UriGenerator uriGenerator = new UriGenerator();
         getConnection().begin();
         for (Event event : events) {
@@ -384,7 +389,6 @@ public class EventDAOSesame extends DAOSesame<Event> {
                 Resource eventResource = ResourceFactory.createResource(event.getUri());
 
                 // Insert concerned items links
-                ConcernedItemDAOSesame concernedItemDao = new ConcernedItemDAOSesame(user);
                 concernedItemDao.insertLinksWithObject(Contexts.EVENTS.toString(), eventResource, Oeev.concerns.getURI(), event.getConcernedItems());
         
                 // The annotation
@@ -393,12 +397,13 @@ public class EventDAOSesame extends DAOSesame<Event> {
                 event.getAnnotations().forEach(annotation -> {
                     annotation.setTargets(annotationTargets);
                 });
-                AnnotationDAOSesame annotationDao = new AnnotationDAOSesame(user);
                 annotationDao.insert(event.getAnnotations());
 
                 // The properties links
-                PropertyDAOSesame propertyDao = new PropertyDAOSesame();
-                propertyDao.insertLinksBetweenObjectAndProperties(eventResource, event.getProperties(), Contexts.EVENTS.toString(), false);
+                ArrayList<Property> properties = event.getProperties();
+                if (!properties.isEmpty()) {
+                    propertyDao.insertLinksBetweenObjectAndProperties(eventResource, properties, Contexts.EVENTS.toString(), false);
+                }
             } catch (RepositoryException ex) {
                     LOGGER.error(StatusCodeMsg.ERROR_WHILE_COMMITTING_OR_ROLLING_BACK_TRIPLESTORE_STATEMENT, ex);
                     noInsertionError = false;
@@ -410,7 +415,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
                             StatusCodeMsg.ERR, 
                             StatusCodeMsg.MALFORMED_CREATE_QUERY + " " + e.getMessage()));
             } catch (Exception ex) {
-                java.util.logging.Logger.getLogger(EventDAOSesame.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.error(ex.getMessage());
                 noInsertionError = false;
             }
         }
@@ -465,6 +470,8 @@ public class EventDAOSesame extends DAOSesame<Event> {
         // 1. Check if user is admin
         UserDaoPhisBrapi userDAO = new UserDaoPhisBrapi();
         if (userDAO.isAdmin(user)) {
+            ConcernedItemDAOSesame concernedItemDAO = new ConcernedItemDAOSesame(user);
+            PropertyDAOSesame propertyDAO = new PropertyDAOSesame();
             for (Event event : events) {
                 String eventUri = event.getUri();
                 
@@ -479,13 +486,14 @@ public class EventDAOSesame extends DAOSesame<Event> {
                 }
                 
                 // Check concerned items
-                ConcernedItemDAOSesame concernedItemDAO = new ConcernedItemDAOSesame(user);
                 status.addAll(concernedItemDAO.check(Oeev.concerns.getURI(), event.getConcernedItems()).getStatusList());
                 
                 // Check properties
-                PropertyDAOSesame propertyDAO = new PropertyDAOSesame();
-                POSTResultsReturn results = propertyDAO.checkExistenceRangeDomain(event.getProperties(), event.getType());
-                status.addAll(results.getStatusList());
+                ArrayList<Property> properties = event.getProperties();
+                if (!properties.isEmpty()) {
+                    POSTResultsReturn results = propertyDAO.checkExistenceRangeDomain(properties, event.getType());
+                    status.addAll(results.getStatusList());
+                }
             }
         } else {
             status.add(new Status(

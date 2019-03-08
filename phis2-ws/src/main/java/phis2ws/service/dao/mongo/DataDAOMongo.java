@@ -76,6 +76,7 @@ public class DataDAOMongo extends DAOMongo<Data> {
         boolean dataOk = true;
 
         VariableDaoSesame variableDAO = new VariableDaoSesame();
+        ProvenanceDAOMongo provenanceDAO = new ProvenanceDAOMongo();
 
         for (Data data : dataList) {
             //1. Check if the variableUri exist and is a variable
@@ -83,12 +84,17 @@ public class DataDAOMongo extends DAOMongo<Data> {
                 dataOk = false;
                 checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR,
                         "Unknwon variable : " + data.getVariableUri()));
-
-               
+            //2. Check if the object uri exist
             } else if (!variableDAO.existUri(data.getObjectUri())) {
                 dataOk = false;
                 checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR,
                         "Unknwon object : " + data.getObjectUri()));
+            }
+            //3. Check if the provenance uri exist and is a provenance
+            if (!provenanceDAO.existProvenanceUri(data.getProvenanceUri())) {
+                dataOk = false;
+                checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
+                    "Unknwon provenance : " + data.getProvenanceUri()));
             }
         }
 

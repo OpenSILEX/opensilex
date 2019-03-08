@@ -244,7 +244,7 @@ public class ProvenanceDAOMongo extends DAOMongo<Provenance> {
      * @return true if the provenance exist, 
      *         false if it does not exist.
      */
-    private boolean existProvenanceUri(String uri) {
+    public boolean existProvenanceUri(String uri) {
         MongoCollection<Document> provenanceCollection = database.getCollection(provenanceCollectionName);
         
         BasicDBObject query = prepareGetProvenanceByUri(uri);

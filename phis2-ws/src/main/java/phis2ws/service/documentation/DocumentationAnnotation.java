@@ -249,6 +249,7 @@ public final class DocumentationAnnotation {
             
     public static final String EVENT_URI_DEFINITION = "An event URI (Unique Resource Identifier)";
     public static final String EXAMPLE_EVENT_URI = "http://www.opensilex.org/id/event/12590c87-1c34-426b-a231-beb7acb33415";
+
     public static final String EXAMPLE_EVENT_TYPE = "http://www.opensilex.org/vocabulary/oeev#MoveFrom";
     public static final String EXAMPLE_EVENT_DESCRIPTION = "The pest attack lasted 20 minutes";
     public static final String EXAMPLE_EVENT_CONCERNED_ITEM_URI = "http://www.phenome-fppn.fr/m3p/arch/2017/c17000242";

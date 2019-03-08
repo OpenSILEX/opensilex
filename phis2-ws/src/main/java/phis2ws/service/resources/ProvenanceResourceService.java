@@ -23,6 +23,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
@@ -53,15 +54,29 @@ import phis2ws.service.view.model.phis.provenance.Provenance;
 public class ProvenanceResourceService extends ResourceService {
     
     /**
-     * Generates a RadiometricTarget list from a given list of RadiometricTargetPostDTO
+     * Generates a Provenance list from a given list of ProvenancePostDTO
      * @param provenanceDTOs
-     * @return the list of radiometric targets
+     * @return the list of provenances
      */
     private List<Provenance> provenancePostDTOsToprovenances(List<ProvenancePostDTO> provenanceDTOs) {
         ArrayList<Provenance> provenances = new ArrayList<>();
         
         for (ProvenancePostDTO provenancePostDTO : provenanceDTOs) {
             provenances.add(provenancePostDTO.createObjectFromDTO());
+        }
+        
+        return provenances;
+    }
+    /**
+     * Generates a Provenance list from a given list of ProvenanceDTO
+     * @param provenanceDTOs
+     * @return the list of provenances
+     */
+    private List<Provenance> provenanceDTOsToprovenances(List<ProvenanceDTO> provenanceDTOs) {
+        ArrayList<Provenance> provenances = new ArrayList<>();
+        
+        for (ProvenanceDTO provenanceDTO : provenanceDTOs) {
+            provenances.add(provenanceDTO.createObjectFromDTO());
         }
         
         return provenances;
@@ -126,6 +141,62 @@ public class ProvenanceResourceService extends ResourceService {
             postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty provenances(s) to add"));
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
+    }
+    
+    /**
+     * Update the given provenances.
+     * @param provenances
+     * @param context
+     * @example
+     * [
+     *  {
+     *      "uri": "http://www.opensilex.org/opensilex/id/provenance/1551805521606",
+     *      "label": "PROV2019-EAR",
+     *      "comment": "In this provenance we have count the number of leaf per plant",
+     *      "metadata": { 
+     *                      "SensingDevice" : "http://www.opensilex.org/demo/s001",
+     *                      "Vector" : "http://www.opensilex.org/demo/v001"
+     *                  }
+     *  }
+     * ]
+     * @return the query result
+     */
+    @PUT
+    @ApiOperation(value = "Update provenance")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Update provenance(s) updated", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 404, message = "Update provenance(s) not found"),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response put(
+        @ApiParam(value = DocumentationAnnotation.PROVENACE_POST_DEFINITION) @Valid ArrayList<ProvenanceDTO> provenances,
+        @Context HttpServletRequest context) {
+        AbstractResultForm putResponse = null;
+
+        ProvenanceDAOMongo provenanceDAO = new ProvenanceDAOMongo();
+
+        provenanceDAO.user = userSession.getUser();
+
+        POSTResultsReturn result = provenanceDAO.checkAndUpdate(provenanceDTOsToprovenances(provenances));
+
+        if (result.getHttpStatus().equals(Response.Status.OK)
+                || result.getHttpStatus().equals(Response.Status.CREATED)) {
+            putResponse = new ResponseFormPOST(result.statusList);
+            putResponse.getMetadata().setDatafiles(result.createdResources);
+        } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                || result.getHttpStatus().equals(Response.Status.OK)
+                || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+            putResponse = new ResponseFormPOST(result.statusList);
+        }
+        return Response.status(result.getHttpStatus()).entity(putResponse).build();
     }
     
     /**

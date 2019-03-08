@@ -77,7 +77,7 @@ public class ProvenanceDTO extends AbstractVerifiedClass {
         this.comment = comment;
     }
 
-    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROVENANCE_METADATA_FILTER)
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROVENANCE_METADATA)
     public Object getMetadata() {
         return metadata;
     }

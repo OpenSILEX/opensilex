@@ -37,7 +37,8 @@ import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
-import phis2ws.service.resources.dto.AnnotationDTO;
+import phis2ws.service.resources.dto.annotation.AnnotationDTO;
+import phis2ws.service.resources.dto.annotation.AnnotationPostDTO;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.form.ResponseFormAnnotation;
 import phis2ws.service.view.brapi.form.ResponseFormGET;
@@ -88,7 +89,7 @@ public class AnnotationResourceService extends ResourceService {
             example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     public Response postAnnotations(
-        @ApiParam(value = DocumentationAnnotation.ANNOTATION_POST_DATA_DEFINITION) @Valid ArrayList<AnnotationDTO> annotationsDtos,
+        @ApiParam(value = DocumentationAnnotation.ANNOTATION_POST_DATA_DEFINITION) @Valid ArrayList<AnnotationPostDTO> annotationsDtos,
         @Context HttpServletRequest context) {
 
         AbstractResultForm postResponse = null;

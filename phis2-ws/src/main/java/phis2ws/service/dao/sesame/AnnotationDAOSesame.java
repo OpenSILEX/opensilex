@@ -43,7 +43,6 @@ import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Oa;
 import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
-import phis2ws.service.resources.dto.AnnotationDTO;
 import phis2ws.service.utils.JsonConverter;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.UriGenerator;
@@ -301,9 +300,9 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
         /**
          * @link https://www.w3.org/TR/annotation-model/#bodies-and-targets
          */
-        if (annotation.getBodiesValue() != null && !annotation.getBodiesValue().isEmpty()) {
+        if (annotation.getBodyValues() != null && !annotation.getBodyValues().isEmpty()) {
             Property relationBodyValue = ResourceFactory.createProperty(Oa.RELATION_BODY_VALUE.toString());
-            for (String annotbodyValue : annotation.getBodiesValue()) {
+            for (String annotbodyValue : annotation.getBodyValues()) {
                  spql.addInsert(graph, annotationUri, relationBodyValue, annotbodyValue);
             }
         }

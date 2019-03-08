@@ -86,7 +86,7 @@ public class Annotation {
         this.creator = creator;
     }
 
-    public ArrayList<String> getBodiesValue() {
+    public ArrayList<String> getBodyValues() {
         return bodyValues;
     }
 

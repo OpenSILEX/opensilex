@@ -202,7 +202,7 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
     }
     
     /**
-     * Check the given list of concerned items
+     * Check the existence of the given list of concerned items
      * @param concernedItems
      * @return the result with the list of the found errors (empty if no error)
      */

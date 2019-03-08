@@ -485,6 +485,14 @@ public class EventDAOSesame extends DAOSesame<Event> {
                     }
                 }
                 
+                // Check Type
+                if (!existUri(event.getType())) {
+                    status.add(new Status(
+                            StatusCodeMsg.UNKNOWN_URI, 
+                            StatusCodeMsg.ERR, 
+                            StatusCodeMsg.UNKNOWN_TYPE + " " + event.getType()));
+                }
+                
                 // Check concerned items
                 status.addAll(concernedItemDAO.check(Oeev.concerns.getURI(), event.getConcernedItems()).getStatusList());
                 

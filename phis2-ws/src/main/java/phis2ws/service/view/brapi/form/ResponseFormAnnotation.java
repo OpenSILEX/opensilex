@@ -8,7 +8,7 @@
 package phis2ws.service.view.brapi.form;
 
 import java.util.ArrayList;
-import phis2ws.service.resources.dto.AnnotationDTO;
+import phis2ws.service.resources.dto.annotation.AnnotationDTO;
 import phis2ws.service.view.brapi.Metadata;
 import phis2ws.service.view.brapi.results.ResultAnnotation;
 import phis2ws.service.view.manager.ResultForm;

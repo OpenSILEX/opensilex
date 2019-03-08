@@ -1,58 +1,38 @@
 //******************************************************************************
-//                          AnnotationDTO.java
+//                          AnnotationPostDTO.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 14 June 2018
+// Creation date: 06 March, 2019
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package phis2ws.service.resources.dto;
+package phis2ws.service.resources.dto.annotation;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
-import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.Annotation;
 
 /**
- * Represents the JSON submitted by the client for the annotation POST service
+ * DTO representing an annotation for a POST
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
-public class AnnotationDTO extends AbstractVerifiedClass {
-
-    /**
-     * URI
-     * @example http://www.phenome-fppn.fr/platform/id/annotation/8247af37-769c-495b-8e7e-78b1141176c2
-     */
-    @URL
-    private String uri;
+public class AnnotationPostDTO extends AbstractVerifiedClass {
 
     /** 
-     * Creation date string format yyyy-MM-ddTHH:mm:ssZ
-     * @example 2018-06-25T15:13:59+0200
-     */
-    private String creationDate;
-
-    /** 
-     * Uri that represents the author 
+     * URI that represents the author 
      * @example http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy
      */
-    @URL
-    @Required
     private String creator;
 
     /** 
      * Motivation instance uri that describe the purpose of this annotation 
      * @example http://www.w3.org/ns/oa#commenting
      */ 
-    @URL
-    @Required
     private String motivatedBy;
 
     /**
@@ -66,29 +46,15 @@ public class AnnotationDTO extends AbstractVerifiedClass {
      * @example http://www.phenome-fppn.fr/diaphen/2017/o1032481
      * @link https://www.w3.org/TR/annotation-model/#cardinality-of-bodies-and-targets
      */
-    @URL
-    @NotEmpty
-    @NotNull
     private ArrayList<String> targets;
     
     /**
      * Constructor to create a DTO from an annotation model
      * @param annotation 
      */
-    public AnnotationDTO(Annotation annotation) {
-        this.uri = annotation.getUri();
-        
-        DateTime annotationCreated = annotation.getCreated();
-        if (annotationCreated != null){
-            this.creationDate = DateTimeFormat
-                    .forPattern(DateFormat.YMDTHMSZZ.toString())
-                    .print(annotationCreated);
-        }
-        else{
-            this.creationDate = null;
-        }
+    public AnnotationPostDTO(Annotation annotation) {        
         this.creator = annotation.getCreator();
-        this.comments = annotation.getBodiesValue();
+        this.comments = annotation.getBodyValues();
         this.motivatedBy = annotation.getMotivatedBy();
         this.targets = annotation.getTargets();
     }
@@ -98,7 +64,9 @@ public class AnnotationDTO extends AbstractVerifiedClass {
         return new Annotation(null, DateTime.now(), creator, comments, motivatedBy, targets);
     }
 
-    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_ANNOTATION_MOTIVATEDBY, notes = "Need to be an URI (instance of oa:Motivation concept)")
+    @URL
+    @NotNull
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_ANNOTATION_MOTIVATEDBY)
     public String getMotivatedBy() {
         return motivatedBy;
     }
@@ -107,7 +75,9 @@ public class AnnotationDTO extends AbstractVerifiedClass {
         this.motivatedBy = motivatedBy;
     }
 
-    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_ANNOTATION_CREATOR, notes = "Need to be an URI")
+    @URL
+    @NotNull
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_ANNOTATION_CREATOR)
     public String getCreator() {
         return creator;
     }
@@ -125,28 +95,14 @@ public class AnnotationDTO extends AbstractVerifiedClass {
         this.comments = comments;
     }
 
+    @URL
+    @NotEmpty
+    @NotNull
     @ApiModelProperty(notes = "Need to be an array of URI")
     public ArrayList<String> getTargets() {
         return targets;
     }
-
     public void setTargets(ArrayList<String> targets) {
         this.targets = targets;
-    }
-
-    public String getUri() {
-        return uri;
-    }
-
-    public void setUri(String uri) {
-        this.uri = uri;
-    }
-
-    public String getCreated() {
-        return creationDate;
-    }
-
-    public void setCreated(String created) {
-        this.creationDate = created;
     }
 }

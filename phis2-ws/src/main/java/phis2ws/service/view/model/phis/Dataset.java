@@ -22,7 +22,7 @@ public class Dataset {
     private String variableURI;
     private String experiment;
     private Provenance provenance;
-    private ArrayList<Data> data = new ArrayList<>();
+    private ArrayList<AgronomicalData> data = new ArrayList<>();
     
     public Dataset() {
         
@@ -44,15 +44,15 @@ public class Dataset {
         this.provenance = provenance;
     }
 
-    public ArrayList<Data> getData() {
+    public ArrayList<AgronomicalData> getData() {
         return data;
     }
 
-    public void setData(ArrayList<Data> data) {
+    public void setData(ArrayList<AgronomicalData> data) {
         this.data = data;
     }
     
-    public void addData(Data d) {
+    public void addData(AgronomicalData d) {
         data.add(d);
     }
 

@@ -33,21 +33,20 @@ import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.dao.manager.DAOMongo;
-import phis2ws.service.dao.phis.ScientificObjectDAO;
 import phis2ws.service.dao.sesame.ScientificObjectDAOSesame;
 import phis2ws.service.dao.sesame.SensorDAOSesame;
 import phis2ws.service.dao.sesame.VariableDaoSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.resources.dto.DataDTO;
+import phis2ws.service.resources.dto.AgronomicalDataDTO;
 import phis2ws.service.resources.dto.DatasetDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.ScientificObject;
-import phis2ws.service.view.model.phis.Data;
+import phis2ws.service.view.model.phis.AgronomicalData;
 import phis2ws.service.view.model.phis.Dataset;
 
 /**
- * Represents the MongoDB Data Access Object for the datasets
+ * Represents the MongoDB AgronomicalData Access Object for the datasets
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class DatasetDAOMongo extends DAOMongo<Dataset> {
@@ -217,7 +216,7 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
             while (datasetCursor.hasNext()) {
                 Document datasetDocument = datasetCursor.next();
                 
-                Data data = new Data();
+                AgronomicalData data = new AgronomicalData();
                 data.setAgronomicalObject(datasetDocument.getString(DB_FIELD_AGRONOMICAL_OBJECT));
                 data.setDate(new SimpleDateFormat(DateFormats.YMD_FORMAT).format(datasetDocument.getDate(DB_FIELD_DATE)));
                 data.setValue(Double.toString(datasetDocument.getDouble(DB_FIELD_VALUE)));
@@ -263,7 +262,7 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
         //check if data is valid
         for (DatasetDTO datasetDTO : datasetsDTO) {
             //if the datasetDTO follows the rules
-            for (DataDTO data : datasetDTO.getData()) {
+            for (AgronomicalDataDTO data : datasetDTO.getData()) {
                 //is agronomical object exist ?
                 ScientificObjectDAOSesame agronomicalObjectDao = new ScientificObjectDAOSesame();
                 if (!agronomicalObjectDao.existScientificObject(data.getAgronomicalObject())) {
@@ -338,8 +337,8 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
                 createdProvenances.add(dataset.getProvenance().getUri());
                 
                 ArrayList<Document> dataToInsert = new ArrayList<>();
-                //2. Data insertion
-                for (Data data : dataset.getData()) {
+                //2. AgronomicalData insertion
+                for (AgronomicalData data : dataset.getData()) {
                     Document d = new Document();
                     Date date = df.parse(data.getDate());
                     

@@ -12,7 +12,7 @@
 package phis2ws.service.view.model.phis;
 
 import java.util.ArrayList;
-import phis2ws.service.resources.dto.ConcernItemDTO;
+import phis2ws.service.resources.dto.ConcernedItemDTO;
 
 /**
  * @update [Andréas Garcia] 15 Jan. 2019 : Replace "concern" occurences by "concernedItem"
@@ -26,7 +26,7 @@ public class Document {
     private String creationDate;
     private String format;
     private String comment;
-    private ArrayList<ConcernItemDTO> concernedItems = new ArrayList<>();
+    private ArrayList<ConcernedItemDTO> concernedItems = new ArrayList<>();
     private String status;
 
     public String getUri() {
@@ -85,15 +85,15 @@ public class Document {
         this.format = format;
     }
 
-    public ArrayList<ConcernItemDTO> getConcernedItems() {
+    public ArrayList<ConcernedItemDTO> getConcernedItems() {
         return concernedItems;
     }
 
-    public void setConcernedItems(ArrayList<ConcernItemDTO> concernedItems) {
+    public void setConcernedItems(ArrayList<ConcernedItemDTO> concernedItems) {
         this.concernedItems = concernedItems;
     }
     
-    public void addConcernedItem(ConcernItemDTO concernedItem) {
+    public void addConcernedItem(ConcernedItemDTO concernedItem) {
         this.concernedItems.add(concernedItem);
     }
 

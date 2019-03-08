@@ -17,7 +17,7 @@ import phis2ws.service.view.model.phis.ConcernedItem;
  * DTO of a concerned item with labels
  * @author andreas
  */
-public class ConcernedItemWithLabelsDTO extends ConcernItemDTO {
+public class ConcernedItemWithLabelsDTO extends ConcernedItemDTO {
     
     /**
      * Labels

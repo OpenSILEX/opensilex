@@ -43,7 +43,7 @@ import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Oeso;
-import phis2ws.service.resources.dto.ConcernItemDTO;
+import phis2ws.service.resources.dto.ConcernedItemDTO;
 import phis2ws.service.resources.dto.DocumentMetadataDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.ResourcesUtils;
@@ -225,7 +225,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         }
 
         if (!(documentMetadata.getConcernedItems() == null) && !documentMetadata.getConcernedItems().isEmpty()) {
-            for (ConcernItemDTO concernedItemDTO : documentMetadata.getConcernedItems()) {
+            for (ConcernedItemDTO concernedItemDTO : documentMetadata.getConcernedItems()) {
                 Node concernedItemUri = NodeFactory.createURI(concernedItemDTO.getUri());
                 Node concernedItemType = NodeFactory.createURI(concernedItemDTO.getTypeURI());
                 Property relationConcerns = ResourceFactory.createProperty(Oeso.RELATION_CONCERNS.toString());
@@ -268,7 +268,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
             spql.addDelete(graph, documentUri, RDFS.comment, document.getComment());
         }
 
-        for (ConcernItemDTO concernedItem : document.getConcernedItems()) {
+        for (ConcernedItemDTO concernedItem : document.getConcernedItems()) {
             Node concernedItemUri = NodeFactory.createURI(concernedItem.getUri());
             Property relationConcern = ResourceFactory.createProperty(Oeso.RELATION_CONCERNS.toString());
             spql.addDelete(graph, documentUri, relationConcern, concernedItemUri);
@@ -618,7 +618,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
             return true;
         } else {
             ExperimentDao experimentDao = new ExperimentDao();
-            for (ConcernItemDTO concernedItem : document.getConcernedItems()) {
+            for (ConcernedItemDTO concernedItem : document.getConcernedItems()) {
                 if (concernedItem.getTypeURI().equals(Oeso.CONCEPT_EXPERIMENT.toString())) {
                     Experiment experiment = new Experiment(concernedItem.getUri());
                     
@@ -714,7 +714,7 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
                     while (resultConcernedItem.hasNext()) {
                         BindingSet bindingSetConcernedItem = resultConcernedItem.next();
                         if (bindingSetConcernedItem.getValue(CONCERNED_ITEM_URI) != null) {
-                            ConcernItemDTO concernedItem = new ConcernItemDTO();
+                            ConcernedItemDTO concernedItem = new ConcernedItemDTO();
                             concernedItem.setTypeURI(bindingSetConcernedItem.getValue(CONCERNED_ITEM_TYPE).stringValue());
                             concernedItem.setUri(bindingSetConcernedItem.getValue(CONCERNED_ITEM_URI).stringValue());
                             document.addConcernedItem(concernedItem);

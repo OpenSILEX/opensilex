@@ -56,6 +56,7 @@ public final class StatusCodeMsg {
     public static final String TIMEOUT = "Timeout";
     public static final String TRIPLESTOR_ACCESS_ERROR = "Triplestore access error";
     public static final String UNKNOWN_URI = "Unknown URI";
+    public static final String UNKNOWN_TYPE = "Unknown type %s";
     public static final String UNKNOWN_URI_OF_TYPE = "Unknown URI %s of type %s";
     public static final String UNKNOWN_EVENT_URI = "Unknown event URI";
     public static final String UNKNOWN_CONCERNED_ITEM_URI = "Unknown concerned item URI";

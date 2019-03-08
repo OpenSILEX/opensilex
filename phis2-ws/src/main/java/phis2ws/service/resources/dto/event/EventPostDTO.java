@@ -10,7 +10,6 @@ package phis2ws.service.resources.dto.event;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import org.joda.time.DateTime;
 import phis2ws.service.configuration.DateFormat;
@@ -18,6 +17,7 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.ontologies.Oa;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyDTO;
+import phis2ws.service.resources.validation.interfaces.Date;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.utils.dates.Dates;
 import phis2ws.service.view.model.phis.Annotation;
@@ -75,7 +75,6 @@ public class EventPostDTO extends AbstractVerifiedClass {
     }
 
     @URL
-    @NotNull
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EVENT_TYPE)
     public String getRdfType() {
         return rdfType;
@@ -85,9 +84,7 @@ public class EventPostDTO extends AbstractVerifiedClass {
         this.rdfType = rdfType;
     }
 
-    @NotEmpty
-    @NotNull
-    @Valid
+    @URL
     public ArrayList<String> getConcernedItemsUris() {
         return concernedItemsUris;
     }
@@ -96,7 +93,7 @@ public class EventPostDTO extends AbstractVerifiedClass {
         this.concernedItemsUris = concernedItemsUris;
     }
 
-    @NotNull
+    @Date(DateFormat.YMDTHMSZZ)
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EVENT_DATE)
     public String getDate() {
         return date;

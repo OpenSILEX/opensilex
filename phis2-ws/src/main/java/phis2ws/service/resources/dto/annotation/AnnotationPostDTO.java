@@ -39,7 +39,7 @@ public class AnnotationPostDTO extends AbstractVerifiedClass {
      * Represents annotation body values
      * @link https://www.w3.org/TR/annotation-model/#cardinality-of-bodies-and-targets
      */
-    private ArrayList<String> comments;
+    private ArrayList<String> bodyValues;
 
     /**
      * Uris concerned by this annotation 
@@ -54,14 +54,14 @@ public class AnnotationPostDTO extends AbstractVerifiedClass {
      */
     public AnnotationPostDTO(Annotation annotation) {        
         this.creator = annotation.getCreator();
-        this.comments = annotation.getBodyValues();
+        this.bodyValues = annotation.getBodyValues();
         this.motivatedBy = annotation.getMotivatedBy();
         this.targets = annotation.getTargets();
     }
 
     @Override
     public Annotation createObjectFromDTO() {
-        return new Annotation(null, DateTime.now(), creator, comments, motivatedBy, targets);
+        return new Annotation(null, DateTime.now(), creator, bodyValues, motivatedBy, targets);
     }
 
     @URL
@@ -87,12 +87,12 @@ public class AnnotationPostDTO extends AbstractVerifiedClass {
     }
 
     @ApiModelProperty(notes = "Need to be an array of text")
-    public ArrayList<String> getComments() {
-        return comments;
+    public ArrayList<String> getBodyValues() {
+        return bodyValues;
     }
 
-    public void setComments(ArrayList<String> comments) {
-        this.comments = comments;
+    public void setBodyValues(ArrayList<String> bodyValues) {
+        this.bodyValues = bodyValues;
     }
 
     @URL

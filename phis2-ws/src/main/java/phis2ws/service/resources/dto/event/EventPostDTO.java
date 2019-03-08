@@ -10,6 +10,7 @@ package phis2ws.service.resources.dto.event;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import org.joda.time.DateTime;
 import phis2ws.service.configuration.DateFormat;
@@ -85,6 +86,7 @@ public class EventPostDTO extends AbstractVerifiedClass {
     }
 
     @URL
+    @NotEmpty
     public ArrayList<String> getConcernedItemsUris() {
         return concernedItemsUris;
     }
@@ -104,6 +106,7 @@ public class EventPostDTO extends AbstractVerifiedClass {
     }
 
     @Valid
+    @NotNull
     public ArrayList<PropertyDTO> getProperties() {
         return properties;
     }

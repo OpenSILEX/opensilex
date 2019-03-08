@@ -202,39 +202,28 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
     }
     
     /**
-     * Check the given list of concerned items
-     * @param concernsRelationUri since "concerns" can designate various
-     * relations in various vocabularies (e.g OESO or OEEV), the URI of the 
-     * relation has to be 
+     * Check the existence of the given list of concerned items
      * @param concernedItems
      * @return the result with the list of the found errors (empty if no error)
      */
-    public POSTResultsReturn check(String concernsRelationUri, List<ConcernedItem> concernedItems) {
+    public POSTResultsReturn check(List<ConcernedItem> concernedItems) {
         POSTResultsReturn checkResult;
         List<Status> status = new ArrayList<>();
         
-        // Check if user is admin
-        UserDaoPhisBrapi userDAO = new UserDaoPhisBrapi();
-        if (userDAO.isAdmin(user)) {
-            for (ConcernedItem concernedItem : concernedItems) {
-                String concernedItemUri = concernedItem.getUri();
-                if (concernedItemUri != null) {
-                    // Check the event URI if given (in case of an update)
-                    
-                    if (searchConcernedItems(null, concernsRelationUri, concernedItemUri, null, 0, pageSizeMaxValue).isEmpty()){
-                        status.add(new Status(
-                                StatusCodeMsg.UNKNOWN_URI, 
-                                StatusCodeMsg.ERR, 
-                                StatusCodeMsg.UNKNOWN_CONCERNED_ITEM_URI + " " + concernedItemUri));
-                    }
-                } 
-            }
-        } else {
-            status.add(new Status(
-                    StatusCodeMsg.ACCESS_DENIED, 
-                    StatusCodeMsg.ERR, 
-                    StatusCodeMsg.ADMINISTRATOR_ONLY));
+        for (ConcernedItem concernedItem : concernedItems) {
+            String concernedItemUri = concernedItem.getUri();
+            if (concernedItemUri != null) {
+
+                // Check the URI if given (in case of an update)
+                if (!existUri(concernedItem.getUri())){
+                    status.add(new Status(
+                            StatusCodeMsg.UNKNOWN_URI, 
+                            StatusCodeMsg.ERR, 
+                            String.format(StatusCodeMsg.UNKNOWN_CONCERNED_ITEM_URI, concernedItemUri)));
+                }
+            } 
         }
+            
         boolean dataIsValid = status.isEmpty();
         checkResult = new POSTResultsReturn(dataIsValid, null, dataIsValid);
         checkResult.statusList = status;

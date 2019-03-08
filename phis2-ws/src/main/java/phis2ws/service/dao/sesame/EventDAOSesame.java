@@ -9,7 +9,6 @@ package phis2ws.service.dao.sesame;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -51,10 +50,9 @@ import phis2ws.service.view.model.phis.Property;
  * DAO for Events
  * @update [Andreas Garcia] 14 Feb., 2019: Add event detail service
  * @update [Andreas Garcia] 5 March, 2019: Add events insertion service
- * @update [Andréas Garcia] 5 March, 2019: Move the generic function to get a 
- * string value from a binding set to DAOSesame
- * @update [Andréas Garcia] 5 March, 2019: Move concerned items accesses
- * handling into a new ConcernedItemDAOSesame class
+ * @update [Andréas Garcia] 5 March, 2019: 
+ *      Move the generic function to get a string value from a binding set to DAOSesame
+ *      Move concerned items accesses handling into a new ConcernedItemDAOSesame class
  * @author Andreas Garcia <andreas.garcia@inra.fr>
  */
 public class EventDAOSesame extends DAOSesame<Event> {
@@ -472,6 +470,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
         if (userDAO.isAdmin(user)) {
             ConcernedItemDAOSesame concernedItemDAO = new ConcernedItemDAOSesame(user);
             PropertyDAOSesame propertyDAO = new PropertyDAOSesame();
+            AnnotationDAOSesame annotationDao = new AnnotationDAOSesame();
             for (Event event : events) {
                 String eventUri = event.getUri();
                 
@@ -498,10 +497,12 @@ public class EventDAOSesame extends DAOSesame<Event> {
                 
                 // Check properties
                 ArrayList<Property> properties = event.getProperties();
-                if (!properties.isEmpty()) {
-                    POSTResultsReturn results = propertyDAO.checkExistenceRangeDomain(properties, event.getType());
-                    status.addAll(results.getStatusList());
-                }
+                POSTResultsReturn propertiesResult = propertyDAO.checkExistenceRangeDomain(properties, event.getType());
+                status.addAll(propertiesResult.getStatusList());
+                
+                // Check annotations
+                POSTResultsReturn annotationsResult = annotationDao.check(event.getAnnotations());
+                status.addAll(annotationsResult.getStatusList());
             }
         } else {
             status.add(new Status(

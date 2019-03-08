@@ -6,9 +6,9 @@
 //******************************************************************************
 package phis2ws.service.utils;
 
+import java.time.Instant;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.time.Instant;
 import java.util.Calendar;
 import java.util.UUID;
 import org.apache.commons.codec.binary.Base32;
@@ -567,6 +567,8 @@ public class UriGenerator {
             return generateDataUri(additionalInformation);
         } else if (instanceType.equals(Oeso.CONCEPT_PROVENANCE.toString())) {
             return generateProvenanceUri();
+        } else if (instanceType.equals(Oeso.CONCEPT_DATA.toString())) {
+            return generateDataUri(additionalInformation);
         }
 
         return null;

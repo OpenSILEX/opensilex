@@ -123,7 +123,7 @@ public class AnnotationResourceService extends ResourceService {
     }
 
     /**
-     * Search annotations by uri, creator, comment, date of creation, target
+     * Search annotations by URI, creator, comment, date of creation, target
      * @example { 
      * "metadata": { 
      *      "pagination": { 
@@ -152,13 +152,13 @@ public class AnnotationResourceService extends ResourceService {
      * @param comment
      * @param target
      * @param motivatedBy
-     * @return list of the annotation corresponding to the search params given
+     * @return the annotations corresponding to the search parameters given
      */
     @GET
     @ApiOperation(value = "Get all annotations corresponding to the search params given",
             notes = "Retrieve all annotations authorized for the user corresponding to the searched params given")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve all annotations", response = Annotation.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Retrieve all annotations", response = AnnotationDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
@@ -202,14 +202,14 @@ public class AnnotationResourceService extends ResourceService {
      * @param uri
      * @param pageSize
      * @param page
-     * @return the informations about the annotation if it exists
+     * @return the information about the annotation if it exists
      */
     @GET
     @Path("{uri}")
     @ApiOperation(value = "Get a annotation",
             notes = "Retrieve a annotation. Need URL encoded annotation URI")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve a annotation", response = Annotation.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Retrieve a annotation", response = AnnotationDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
@@ -239,28 +239,16 @@ public class AnnotationResourceService extends ResourceService {
      * @param annotationDAOSesame
      * @return the annotations corresponding to the search
      */
-    private Response getAnnotations(String searchUri, String searchCreator, String searchTarget, String searchComment, String searchMotivatedBy, int searchPage, int searchPageSize) {
+    private Response getAnnotations(String uri, String creator, String target, String comment, String motivatedBy, int page, int pageSize) {
         ArrayList<Status> statusList = new ArrayList<>();
         ResponseFormAnnotation getResponse;
         AnnotationDAOSesame annotationDAOSesame = new AnnotationDAOSesame(userSession.getUser());
 
         // Count all annotations for this specific request
-        Integer totalCount = annotationDAOSesame.count(
-            searchUri,
-            searchCreator,
-            searchTarget,
-            searchComment,
-            searchMotivatedBy);
+        Integer totalCount = annotationDAOSesame.count(uri, creator, target, comment, motivatedBy);
         
         // Retreive all annotations returned by the query
-        ArrayList<Annotation> annotations = annotationDAOSesame.searchAnnotations(
-            searchUri,
-            searchCreator,
-            searchTarget,
-            searchComment,
-            searchMotivatedBy,
-            searchPage,
-            searchPageSize);
+        ArrayList<Annotation> annotations = annotationDAOSesame.searchAnnotations(uri, creator, target, comment, motivatedBy, page, pageSize);
         
         ArrayList<AnnotationDTO> annotationDTOs = new ArrayList();
 

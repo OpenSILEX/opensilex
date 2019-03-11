@@ -326,6 +326,12 @@ public class DataResourceService extends ResourceService {
         }
     }
     
+    /**
+     * Return the content of the file corresponding to the uri given.
+     * @param fileUri
+     * @param response
+     * @return 
+     */
     @GET
     @Path("file/{fileUri}")
     @ApiOperation(value = "Get data file")
@@ -371,7 +377,7 @@ public class DataResourceService extends ResourceService {
     @Path("file/{fileUri}/description")
     @ApiOperation(value = "Get data file description")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve file", response = FileDescriptionDTO.class),
+        @ApiResponse(code = 200, message = "Retrieve file description", response = FileDescriptionDTO.class),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 404, message = DocumentationAnnotation.FILE_NOT_FOUND),
@@ -403,10 +409,10 @@ public class DataResourceService extends ResourceService {
     
     
     @GET
-    @Path("file/descriptions")
-    @ApiOperation(value = "Get data file descriptions")
+    @Path("file/search")
+    @ApiOperation(value = "Retrieve data file descriptions")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve file descriptions", response = FileDescription.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Retrieve file descriptions", response = FileDescriptionDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
@@ -418,7 +424,7 @@ public class DataResourceService extends ResourceService {
                           example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_JSON)  
-    public Response getDataFileDescriptions(
+    public Response getDataFileDescriptionsBySearch(
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
         @ApiParam(value = "Search by rdf type uri", example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI, required=true) @QueryParam("rdfType") @URL @Required String rdfType,

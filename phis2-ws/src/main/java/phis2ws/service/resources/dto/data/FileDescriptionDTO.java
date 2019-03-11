@@ -7,22 +7,12 @@
 //******************************************************************************
 package phis2ws.service.resources.dto.data;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import javax.validation.Valid;
 import phis2ws.service.configuration.DateFormat;
-import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.ConcernItemDTO;
-import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
-import phis2ws.service.resources.validation.interfaces.Date;
-import phis2ws.service.resources.validation.interfaces.Required;
-import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.ConcernedItem;
 import phis2ws.service.view.model.phis.FileDescription;
 

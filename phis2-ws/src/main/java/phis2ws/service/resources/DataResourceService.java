@@ -14,12 +14,14 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import java.io.File;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -30,14 +32,18 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.mongo.DataDAOMongo;
+import phis2ws.service.dao.mongo.DataFileDAOMongo;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.data.DataDTO;
 import phis2ws.service.resources.dto.data.DataPostDTO;
+import phis2ws.service.resources.dto.data.FileDescriptionPostDTO;
 import phis2ws.service.resources.validation.interfaces.Date;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
@@ -47,6 +53,7 @@ import phis2ws.service.view.brapi.form.AbstractResultForm;
 import phis2ws.service.view.brapi.form.ResponseFormData;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
 import phis2ws.service.view.model.phis.Data;
+import phis2ws.service.view.model.phis.FileDescription;
 
 /**
  * Data resource service
@@ -130,7 +137,7 @@ public class DataResourceService extends ResourceService {
         ArrayList<Data> dataList = new ArrayList<>();
         
         for (DataPostDTO dataDTO : dataDTOs) {
-            dataList.add(dataDTO.createObjectFromDTOWithException());            
+            dataList.add(dataDTO.createObjectFromDTO());            
         }
         
         return dataList;
@@ -192,7 +199,12 @@ public class DataResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({@ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true, dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER, value = DocumentationAnnotation.ACCES_TOKEN, example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")})
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "Authorization", required = true,
+                          dataType = "string", paramType = "header",
+                          value = DocumentationAnnotation.ACCES_TOKEN,
+                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
     @Produces(MediaType.APPLICATION_JSON)  
     public Response getData(
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
@@ -250,4 +262,60 @@ public class DataResourceService extends ResourceService {
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }
     }     
+    
+    /**
+     * Save data file with its metadata and use MULTIPART_FORM_DATA for it
+     * fileContentDisposition parameter is automatically created from submited file
+     * No example could be provided for this kind of MediaType
+     * @param descriptionDto
+     * @param file
+     * @param fileContentDisposition
+     * @return the insertion result. 
+     */
+    @POST
+    @Path("file")
+    @ApiOperation(value = "Post data file")
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "Data file and metadata saved", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)})
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "Authorization", required = true,
+                          dataType = "string", paramType = "header",
+                          value = DocumentationAnnotation.ACCES_TOKEN,
+                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response postDataFile(
+        @ApiParam(value = "File description with metadata", required = true) @NotNull @Valid @FormDataParam("description") FileDescriptionPostDTO descriptionDto,
+        @ApiParam(value = "Data file", required = true) @NotNull @FormDataParam("file") File file,
+        @FormDataParam("file") FormDataContentDisposition fileContentDisposition
+    ) {
+        
+        DataFileDAOMongo dataFileDaoMongo = new DataFileDAOMongo();
+        AbstractResultForm postResponse = null;
+        try {
+            FileDescription description = descriptionDto.createObjectFromDTO();
+            description.setFilename(fileContentDisposition.getFileName());
+            POSTResultsReturn result = dataFileDaoMongo.checkAndInsert(
+                description,
+                file
+            );
+
+            if (result.getHttpStatus().equals(Response.Status.CREATED)) {
+                postResponse = new ResponseFormPOST(result.statusList);
+                postResponse.getMetadata().setDatafiles(result.getCreatedResources());
+            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                        || result.getHttpStatus().equals(Response.Status.OK)
+                        || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                postResponse = new ResponseFormPOST(result.statusList);
+            }
+
+            return Response.status(result.getHttpStatus()).entity(postResponse).build();
+        } catch (ParseException e) {
+            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
+            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+        }
+    }
 }

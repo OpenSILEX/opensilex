@@ -39,24 +39,6 @@ public class DataPostDTO extends AbstractVerifiedClass {
     //e.g. 1.2
     protected Object value;
     
-    public Data createObjectFromDTOWithException() throws ParseException {
-        Data data = new Data();
-        data.setObjectUri(objectUri);
-        data.setVariableUri(variableUri);
-        data.setProvenanceUri(provenanceUri);
-        
-        SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
-        data.setDate(df.parse(date));
-        
-        try {
-            data.setValue(df.parse(value.toString()));
-        } catch (ParseException ex) {
-            data.setValue(value);
-        }
-        
-        return data;
-    }
-
     @URL
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SENSOR_URI)
@@ -112,7 +94,22 @@ public class DataPostDTO extends AbstractVerifiedClass {
     }
 
     @Override
-    public Object createObjectFromDTO() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Data createObjectFromDTO() throws ParseException {
+        Data data = new Data();
+        
+        data.setObjectUri(objectUri);
+        data.setVariableUri(variableUri);
+        data.setProvenanceUri(provenanceUri);
+        
+        SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
+        data.setDate(df.parse(date));
+        
+        try {
+            data.setValue(df.parse(value.toString()));
+        } catch (ParseException ex) {
+            data.setValue(value);
+        }
+        
+        return data;
     }
 }

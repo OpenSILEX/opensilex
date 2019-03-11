@@ -8,7 +8,7 @@
 package phis2ws.service.view.brapi.results;
 
 import java.util.ArrayList;
-import phis2ws.service.resources.dto.AnnotationDTO;
+import phis2ws.service.resources.dto.annotation.AnnotationDTO;
 import phis2ws.service.view.brapi.Pagination;
 import phis2ws.service.view.manager.Result;
 

@@ -34,7 +34,7 @@ public class DocumentMetadataDTO extends AbstractVerifiedClass {
     private String creationDate;
     private String extension;
     private String comment;
-    private List<ConcernItemDTO> concernedItems; // Liste des éléments auxquels le doc est lié
+    private List<ConcernedItemDTO> concernedItems; // Liste des éléments auxquels le doc est lié
     private String status; // Status du document (linked / unlinked). Linked quand l'objet auquel il est
                            // lié existe réellement, unlinked quand il ne l'est pas encore  
     
@@ -113,11 +113,11 @@ public class DocumentMetadataDTO extends AbstractVerifiedClass {
     }
     
     @Valid
-    public List<ConcernItemDTO> getConcernedItems() {
+    public List<ConcernedItemDTO> getConcernedItems() {
         return concernedItems;
     }
 
-    public void setConcernedItems(List<ConcernItemDTO> concernedItems) {
+    public void setConcernedItems(List<ConcernedItemDTO> concernedItems) {
         this.concernedItems = concernedItems;
     }
     

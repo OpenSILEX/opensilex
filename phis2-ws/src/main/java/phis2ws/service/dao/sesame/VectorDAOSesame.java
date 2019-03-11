@@ -93,7 +93,7 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
         queryNumberVectors.appendTriplet("?rdfType", "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", "<" + Oeso.CONCEPT_VECTOR.toString() + ">", null);
         queryNumberVectors.appendFilter("REGEX(STR(?vector), \".*/" + year + "/.*\")");
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + queryNumberVectors.toString());
+        LOGGER.debug(SPARQL_QUERY + queryNumberVectors.toString());
         return queryNumberVectors;
     }
     
@@ -219,7 +219,7 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
         query.appendLimit(this.getPageSize());
         query.appendOffset(this.getPage()* this.getPageSize());
 
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
     }
 
@@ -254,7 +254,7 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
         query.clearOffset();
         query.clearGroupBy();
         query.appendSelect("(COUNT(DISTINCT ?" + URI + ") AS ?" + COUNT_ELEMENT_QUERY + ")");
-        LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
+        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
         return query;
     }
     
@@ -297,7 +297,7 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
         query.clearGroupBy();
         query.clearOrderBy();
         query.appendSelect("(COUNT(DISTINCT ?" + URI + ") AS ?" + COUNT_ELEMENT_QUERY + ")");
-        LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
+        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
         return query;
     }
     

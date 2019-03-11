@@ -22,7 +22,7 @@ import phis2ws.service.resources.validation.interfaces.URL;
  * corresponds to the submitted JSON for the objects concerned (by an annotation for example)
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class ConcernItemDTO extends AbstractVerifiedClass {
+public class ConcernedItemDTO extends AbstractVerifiedClass {
     protected String uri;
     protected String typeURI;
 

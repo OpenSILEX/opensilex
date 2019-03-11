@@ -248,7 +248,7 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
         //2. save each group of triplets
         for (Map.Entry<String,ArrayList<TripletDTO>> triplets : tripletsByGraph.entrySet()) {
             UpdateRequest insertInGivenGraph = prepareInsertQuery(triplets.getValue(), triplets.getKey());
-            LOGGER.debug(SPARQL_SELECT_QUERY + insertInGivenGraph.toString());
+            LOGGER.debug(SPARQL_QUERY + insertInGivenGraph.toString());
             Update prepareInsertInGivenGraph = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, insertInGivenGraph.toString());
             prepareInsertInGivenGraph.execute();
         }
@@ -304,7 +304,7 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
 
             //Register triplet in the triplestore, in the graph created at the request reception
             UpdateRequest insertQuery = prepareInsertQuery(tripletsGroup, graphUri);
-            LOGGER.debug(SPARQL_SELECT_QUERY + insertQuery.toString());
+            LOGGER.debug(SPARQL_QUERY + insertQuery.toString());
             Update prepareInsert = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, insertQuery.toString());
             prepareInsert.execute();
 

@@ -7,10 +7,12 @@
 //******************************************************************************
 package phis2ws.service.resources.dto.event;
 
+import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import phis2ws.service.configuration.DateFormat;
+import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.ConcernedItemWithLabelsDTO;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyDTO;
@@ -27,12 +29,25 @@ import phis2ws.service.view.model.phis.Property;
 public class EventSimpleDTO extends AbstractVerifiedClass {
     
     @URL
-    private final String uri;
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EVENT_URI)
+    private String uri;
     
+    /**
+     * //SILEX:info
+     * "type" can not be used as a field name in DTOs due to XML interpretation
+     * issues.
+     * @see https://stackoverflow.com/questions/33104232/eclipselink-missing-class-for-indicator-field-value-of-typ
+     * //\
+     */
     @URL
-    private final String type;
-    private final ArrayList<ConcernedItemWithLabelsDTO> concernedItems = new ArrayList<>();
-    private final String date;
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EVENT_TYPE)
+    private String rdfType;
+    
+    protected ArrayList<ConcernedItemWithLabelsDTO> concernedItems = new ArrayList<>();
+    
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EVENT_DATE)
+    private String date;
+    
     protected ArrayList<PropertyDTO> properties = new ArrayList<>();
     
     /**
@@ -41,7 +56,7 @@ public class EventSimpleDTO extends AbstractVerifiedClass {
      */
     public EventSimpleDTO(Event event) {
         this.uri = event.getUri();
-        this.type = event.getType();
+        this.rdfType = event.getType();
         event.getConcernedItems().forEach((concernedItem) -> {
             this.concernedItems.add(new ConcernedItemWithLabelsDTO(concernedItem));
         });
@@ -79,6 +94,46 @@ public class EventSimpleDTO extends AbstractVerifiedClass {
         
         DateTime dateTime = Dates.stringToDateTimeWithGivenPattern(this.date, DateFormat.YMDTHMSZZ.toString());
         
-        return new Event(this.uri, this.type, modelConcernedItems, dateTime, modelProperties, null);
+        return new Event(this.uri, this.rdfType, modelConcernedItems, dateTime, modelProperties, null);
+    }
+
+    public String getUri() {
+        return uri;
+    }
+
+    public void setUri(String uri) {
+        this.uri = uri;
+    }
+
+    public String getRdfType() {
+        return rdfType;
+    }
+
+    public void setRdfType(String type) {
+        this.rdfType = type;
+    }
+
+    public ArrayList<ConcernedItemWithLabelsDTO> getConcernedItems() {
+        return concernedItems;
+    }
+
+    public void setConcernedItems(ArrayList<ConcernedItemWithLabelsDTO> concernedItems) {
+        this.concernedItems = concernedItems;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public ArrayList<PropertyDTO> getProperties() {
+        return properties;
+    }
+
+    public void setProperties(ArrayList<PropertyDTO> properties) {
+        this.properties = properties;
     }
 }

@@ -156,7 +156,7 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
         query.appendLimit(getPageSize());
         query.appendOffset(getPage() * getPageSize());
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
     }
     
@@ -248,7 +248,7 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
         query.clearOffset();
         query.clearGroupBy();
         query.appendSelect("(COUNT(DISTINCT ?" + URI + ") AS ?" + COUNT_ELEMENT_QUERY + ")");
-        LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
+        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
         return query;
     }
     
@@ -471,7 +471,7 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
             }
         }
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
     }
     

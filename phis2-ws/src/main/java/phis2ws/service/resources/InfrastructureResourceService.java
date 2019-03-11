@@ -1,10 +1,9 @@
 //******************************************************************************
-//                                       InfrastructureResourceService.java
+//                        InfrastructureResourceService.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 5 sept. 2018
 // Contact: vincent.migot@inra.fr anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Subject: represnet infrastructures API
 //******************************************************************************
 package phis2ws.service.resources;
 
@@ -25,7 +24,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.sesame.InfrastructureDAOSesame;
@@ -230,8 +228,7 @@ public class InfrastructureResourceService extends ResourceService {
         // 1. Initialize propertyDAO with parameters
         PropertyDAOSesame propertyDAO = new PropertyDAOSesame();
         
-        propertyDAO.uri = uri;
-        propertyDAO.subClassOf = Oeso.CONCEPT_INFRASTRUCTURE;
+        propertyDAO.setSubClassOf(Oeso.CONCEPT_INFRASTRUCTURE);
         
         if (language == null) {
             language = DEFAULT_LANGUAGE;

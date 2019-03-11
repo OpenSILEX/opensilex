@@ -10,20 +10,29 @@ package phis2ws.service.dao.mongo;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.SftpException;
 import com.mongodb.BasicDBObject;
+import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
 import com.mongodb.client.ClientSession;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.Sorts;
 import java.io.File;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Date;
 import java.util.List;
 import javax.ws.rs.core.Response;
+import org.bson.BSONObject;
 import org.bson.Document;
+//import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
+import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.dao.manager.DAOMongo;
 import phis2ws.service.dao.sesame.ScientificObjectDAOSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
@@ -42,25 +51,109 @@ import phis2ws.service.view.model.phis.FileDescription;
 public class DataFileDAOMongo extends DAOMongo<FileDescription> {
     
     private final static Logger LOGGER = LoggerFactory.getLogger(DataFileDAOMongo.class);
-    
+     
     private final static String DB_FIELD_URI = "uri";
-    private final static String DB_FIELD_RDF_TYPE = "rdfType";
-    private final static String DB_FIELD_FILE_NAME = "fileName";
-    private final static String DB_FIELD_CONCERNED_ITEMS = "concernedItems";
     private final static String DB_FIELD_DATE = "date";
-    private final static String DB_FIELD_PROVENANCE = "provenance";
-    private final static String DB_FIELD_METADATA = "metadata";
+    private final static String DB_FIELD_PROVENANCE = "provenanceUri";
+    private final static String DB_FIELD_RDF_TYPE = "rdfType";
+    
+    public String rdfType;
+    public String startDate;
+    public String endDate;
+    public String provenanceUri;
+    public String jsonValueFilter;
+    public boolean dateSortAsc;
 
     @Override
     protected BasicDBObject prepareSearchQuery() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        BasicDBObject query = new BasicDBObject();
+        
+        try {
+            // Define date filter depending if start date and/or end date are defined
+            if (startDate != null) {
+                Date start = DateFormat.parseDateOrDateTime(startDate, false);
+
+                if (endDate != null) {
+                    // In case of start date AND end date defined
+                    Date end = DateFormat.parseDateOrDateTime(endDate, true);
+                    query.append(DB_FIELD_DATE, BasicDBObjectBuilder.start("$gte", start).add("$lte", end).get());
+                } else {
+                    // In case of start date ONLY is defined
+                    query.append(DB_FIELD_DATE, BasicDBObjectBuilder.start("$gte", start).get());
+                }
+            } else if (endDate != null) {
+                // In case of end date ONLY is defined
+                Date end = DateFormat.parseDateOrDateTime(endDate, true);
+                query.append(DB_FIELD_DATE, BasicDBObjectBuilder.start("$lte", end).get());
+            }
+        } catch (ParseException ex) {
+            LOGGER.error("Invalid date format", ex);
+        }
+        
+        // Add filter if a provenance uri is defined
+        if (provenanceUri != null) {
+            query.append(DB_FIELD_PROVENANCE, provenanceUri);
+        }
+        
+        query.append(DB_FIELD_RDF_TYPE, rdfType);
+        
+        if (jsonValueFilter != null) {
+            query.putAll((BSONObject) BasicDBObject.parse(jsonValueFilter));
+        }
+        
+        LOGGER.debug(getTraceabilityLogs() + " query : " + query.toString());
+        
+        return query;
     }
 
     @Override
     public ArrayList<FileDescription> allPaginate() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+         // Get the collection corresponding to rdf type uri
+        String typeCollection = this.getCollectionFromFileType(rdfType);
+        MongoCollection<FileDescription> dataVariableCollection = database.getCollection(typeCollection, FileDescription.class);
+
+        // Get the filter query
+        BasicDBObject query = prepareSearchQuery();
+        
+        // Get paginated documents
+        FindIterable<FileDescription> fileDescription = dataVariableCollection.find(query);
+        
+        //SILEX:info
+        // Results are always sort by date, either ascending or descending depending on dateSortAsc parameter
+        //If dateSortAsc=true, sort by date ascending
+        //If dateSortAsc=false, sort by date descending
+        //\SILEX:info
+        if (dateSortAsc) {
+            fileDescription = fileDescription.sort(Sorts.ascending(DB_FIELD_DATE));
+        } else {
+            fileDescription = fileDescription.sort(Sorts.descending(DB_FIELD_DATE));
+        }
+        
+        // Define pagination for the request
+        fileDescription = fileDescription.skip(page * pageSize).limit(pageSize);
+        ArrayList<FileDescription> dataList = new ArrayList<>();
+        
+        // For each document, create a data Instance and add it to the result list
+        try (MongoCursor<FileDescription> cursor = fileDescription.iterator()) {
+            while (cursor.hasNext()) {
+                dataList.add(cursor.next());
+            }
+        }
+        
+        return dataList;
     }
 
+    public long count() {
+        String typeCollection = this.getCollectionFromFileType(rdfType);
+        MongoCollection<Document> dataVariableCollection = database.getCollection(typeCollection);
+
+        // Get the filter query
+        BasicDBObject query = prepareSearchQuery();
+        
+        // Return the document count
+        return dataVariableCollection.countDocuments(query);
+    }
+    
     /**
      * Check and insert data file and its metadata
      * @param fileDescription
@@ -144,30 +237,41 @@ public class DataFileDAOMongo extends DAOMongo<FileDescription> {
         //   Mongo won't create index if it already exists
         IndexOptions indexOptions = new IndexOptions().unique(true);
         String fileCollectionName = getCollectionFromFileType(fileDescription.getRdfType());
-        MongoCollection<Document> fileDescriptionCollection = database.getCollection(fileCollectionName);
+        MongoCollection<FileDescription> fileDescriptionCollection = database.getCollection(fileCollectionName, FileDescription.class);
         fileDescriptionCollection.createIndex(new BasicDBObject(DB_FIELD_URI, 1), indexOptions);
         
         boolean hasError = false;
             
         FileUploader uploader = new FileUploader();
         try {
+            final String fileServerDirectory = PropertiesFileManager.getConfigFileProperty("service", "uploadFileServerDirectory") 
+                      + "/dataFiles/"
+                      + fileCollectionName + "/";
+            
+            UriGenerator uriGenerator = new UriGenerator();
+            
+            String key = fileDescription.getFilename() + fileDescription.getDate();
+            String uri = uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);
+            while (uriExists(fileDescription.getRdfType(), uri)) {
+                uri = uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);
+            }
+            
+            fileDescription.setUri(uri);
+            
+            final String filename =  Base64.getEncoder().encodeToString(fileDescription.getUri().getBytes());
+            fileDescription.setPath(fileServerDirectory + filename);
+            
             //3. Insert metadata first
-            Document dataToInsert = prepareInsertFileDescriptionDocument(fileDescription);
-            fileDescriptionCollection.insertOne(session, dataToInsert);
+            fileDescriptionCollection.insertOne(session, fileDescription);
 
             //4. Copy file to directory
-            final String filename =  Base64.getEncoder().encodeToString(fileDescription.getUri().getBytes());
-            final String fileServerDirectory = PropertiesFileManager.getConfigFileProperty("service", "uploadFileServerDirectory") 
-                        + "/dataFiles/"
-                        + fileCollectionName + "/";
-            
             uploader.createNestedDirectories(fileServerDirectory);
             
             ChannelSftp channel = uploader.getChannelSftp();
             channel.stat(fileServerDirectory);
             channel.cd(fileServerDirectory);
         
-            if (uploader.fileTransfer(file, fileServerDirectory + filename)) { 
+            if (uploader.fileTransfer(file, fileDescription.getPath())) { 
                 status.add(new Status(
                     StatusCodeMsg.RESOURCES_CREATED,
                     StatusCodeMsg.INFO,
@@ -211,6 +315,13 @@ public class DataFileDAOMongo extends DAOMongo<FileDescription> {
                     "An error occurred during file upload, try to submit it again: " + ex.getMessage()
             ));
             hasError = true;
+        } catch (Exception ex) {
+            status.add(new Status(
+                    StatusCodeMsg.UNEXPECTED_ERROR,
+                    StatusCodeMsg.ERR,
+                    "Unexpected exception, try to submit it again: " + ex.getMessage()
+            ));
+            hasError = true;
         } finally {
             uploader.closeConnection();
         }
@@ -245,42 +356,7 @@ public class DataFileDAOMongo extends DAOMongo<FileDescription> {
         return split[split.length - 1];
     }
 
-    /**
-     * Prepare mongodb document to insert from filedescription
-     * @param fileDescription
-     * @return 
-     */
-    private Document prepareInsertFileDescriptionDocument(FileDescription fileDescription) {
-        Document document = new Document();
-
-        try {
-            UriGenerator uriGenerator = new UriGenerator();
-            
-            String key = fileDescription.getFilename() + fileDescription.getDate();
-            String uri = uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA_FILE.toString(), null, key);
-            while (uriExists(fileDescription.getRdfType(), uri)) {
-                uri = uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA_FILE.toString(), null, key);
-            }
-            
-            fileDescription.setUri(uri);
-            
-            document.append(DB_FIELD_URI, fileDescription.getUri());
-            document.append(DB_FIELD_FILE_NAME, fileDescription.getFilename());
-            document.append(DB_FIELD_RDF_TYPE, fileDescription.getRdfType());
-            document.append(DB_FIELD_CONCERNED_ITEMS, fileDescription.getConcernedItems());
-            document.append(DB_FIELD_DATE, fileDescription.getDate());
-            document.append(DB_FIELD_PROVENANCE, fileDescription.getProvenanceUri());
-            document.append(DB_FIELD_METADATA, fileDescription.getMetadata());
-
-            LOGGER.debug(document.toJson());
-        } catch (Exception e) {
-            LOGGER.error("Exception while generating uri, should never append", e);
-        }
-        
-        return document;
-    }
-
-    /**
+        /**
      * Return true if the given URI already exists in variable collection
      * @param variableUri variable which will determine in which collection to look
      * @param uri URI to check
@@ -293,5 +369,19 @@ public class DataFileDAOMongo extends DAOMongo<FileDescription> {
         query.append(DB_FIELD_URI, uri);
         
         return database.getCollection(variableCollection).countDocuments(query) > 0; 
+    }
+
+    public FileDescription findFileDescriptionByUri(String fileUri) {
+        BasicDBObject query = new BasicDBObject();
+        query.append(DB_FIELD_URI, fileUri);
+         
+        String[] uriParts = fileUri.split("/");
+        String collection = uriParts[uriParts.length - 2];
+        MongoCollection<FileDescription> datafileCollection = database.getCollection(collection, FileDescription.class);
+
+        // Get paginated documents
+        FindIterable<FileDescription> dataMongo = datafileCollection.find(query).limit(1);
+        
+        return dataMongo.first();
     }
 }

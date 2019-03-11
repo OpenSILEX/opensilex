@@ -15,10 +15,13 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -27,6 +30,7 @@ import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
@@ -43,6 +47,7 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.data.DataDTO;
 import phis2ws.service.resources.dto.data.DataPostDTO;
+import phis2ws.service.resources.dto.data.FileDescriptionDTO;
 import phis2ws.service.resources.dto.data.FileDescriptionPostDTO;
 import phis2ws.service.resources.validation.interfaces.Date;
 import phis2ws.service.resources.validation.interfaces.Required;
@@ -51,6 +56,7 @@ import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
 import phis2ws.service.view.brapi.form.ResponseFormData;
+import phis2ws.service.view.brapi.form.ResponseFormFileDescription;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
 import phis2ws.service.view.model.phis.Data;
 import phis2ws.service.view.model.phis.FileDescription;
@@ -209,7 +215,7 @@ public class DataResourceService extends ResourceService {
     public Response getData(
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
-        @ApiParam(value = "Search by variable uri", example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI) @QueryParam("variable") @URL @Required String variable,
+        @ApiParam(value = "Search by variable uri", example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI, required=true) @QueryParam("variable") @URL @Required String variable,
         @ApiParam(value = "Search by minimal date", example = DocumentationAnnotation.EXAMPLE_XSDDATETIME) @QueryParam("startDate") @Date({DateFormat.YMDTHMSZ, DateFormat.YMD}) String startDate,
         @ApiParam(value = "Search by maximal date", example = DocumentationAnnotation.EXAMPLE_XSDDATETIME) @QueryParam("endDate") @Date({DateFormat.YMDTHMSZ, DateFormat.YMD}) String endDate,
         @ApiParam(value = "Search by object uri", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("object")  @URL String object,
@@ -287,6 +293,7 @@ public class DataResourceService extends ResourceService {
                           example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)  
     public Response postDataFile(
         @ApiParam(value = "File description with metadata", required = true) @NotNull @Valid @FormDataParam("description") FileDescriptionPostDTO descriptionDto,
         @ApiParam(value = "Data file", required = true) @NotNull @FormDataParam("file") File file,
@@ -317,5 +324,154 @@ public class DataResourceService extends ResourceService {
             postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
+    }
+    
+    @GET
+    @Path("file/{fileUri}")
+    @ApiOperation(value = "Get data file")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Retrieve file"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 404, message = DocumentationAnnotation.FILE_NOT_FOUND),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "Authorization", required = true,
+                          dataType = "string", paramType = "header",
+                          value = DocumentationAnnotation.ACCES_TOKEN,
+                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)  
+    public Response getDataFile(
+        @ApiParam(value = "Search by fileUri", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI ) @PathParam("fileUri") @URL @Required String fileUri,
+            @Context HttpServletResponse response
+    ) {
+        
+        DataFileDAOMongo dataFileDaoMongo = new DataFileDAOMongo();
+        
+        FileDescription description = dataFileDaoMongo.findFileDescriptionByUri(fileUri);
+        
+        if (description == null) {
+            return Response.status(404).build();
+        }
+        
+        try {
+            FileInputStream stream = new FileInputStream(new File(description.getPath()));
+            
+            return Response.ok(stream, MediaType.APPLICATION_OCTET_STREAM)
+                .header("Content-Disposition", "attachment; filename=\"" + description.getFilename() + "\"" ) //optional
+                .build();
+        } catch (FileNotFoundException ex) {
+            return Response.status(404).build();
+        }
+    }
+    
+    @GET
+    @Path("file/{fileUri}/description")
+    @ApiOperation(value = "Get data file description")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Retrieve file", response = FileDescriptionDTO.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 404, message = DocumentationAnnotation.FILE_NOT_FOUND),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "Authorization", required = true,
+                          dataType = "string", paramType = "header",
+                          value = DocumentationAnnotation.ACCES_TOKEN,
+                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Produces(MediaType.APPLICATION_JSON)  
+    public Response getDataFileDescription(
+        @ApiParam(value = "Search by fileUri", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI ) @PathParam("fileUri") @URL @Required String fileUri,
+            @Context HttpServletResponse response
+    ) {
+        
+        DataFileDAOMongo dataFileDaoMongo = new DataFileDAOMongo();
+        
+        FileDescription description = dataFileDaoMongo.findFileDescriptionByUri(fileUri);
+        
+        if (description == null) {
+            return Response.status(404).build();
+        }
+        
+        return Response.status(Response.Status.OK).entity(new FileDescriptionDTO(description)).build();
+    }
+    
+    
+    
+    @GET
+    @Path("file/descriptions")
+    @ApiOperation(value = "Get data file descriptions")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Retrieve file descriptions", response = FileDescription.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "Authorization", required = true,
+                          dataType = "string", paramType = "header",
+                          value = DocumentationAnnotation.ACCES_TOKEN,
+                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Produces(MediaType.APPLICATION_JSON)  
+    public Response getDataFileDescriptions(
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
+        @ApiParam(value = "Search by rdf type uri", example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI, required=true) @QueryParam("rdfType") @URL @Required String rdfType,
+        @ApiParam(value = "Search by minimal date", example = DocumentationAnnotation.EXAMPLE_XSDDATETIME) @QueryParam("startDate") @Date({DateFormat.YMDTHMSZ, DateFormat.YMD}) String startDate,
+        @ApiParam(value = "Search by maximal date", example = DocumentationAnnotation.EXAMPLE_XSDDATETIME) @QueryParam("endDate") @Date({DateFormat.YMDTHMSZ, DateFormat.YMD}) String endDate,
+        @ApiParam(value = "Search by provenance uri", example = DocumentationAnnotation.EXAMPLE_PROVENANCE_URI) @QueryParam("provenance")  @URL String provenance,
+        @ApiParam(value = "Search by json filter", example = DocumentationAnnotation.EXAMPLE_PROVENANCE_METADATA) @QueryParam("jsonValueFilter") String jsonValueFilter,
+        @ApiParam(value = "Date search result order ('true' for ascending and 'false' for descending)", example = "true") @QueryParam("dateSortAsc") boolean dateSortAsc
+    ) {
+        
+        DataFileDAOMongo dataFileDaoMongo = new DataFileDAOMongo();
+        
+        dataFileDaoMongo.rdfType = rdfType;
+        dataFileDaoMongo.startDate = startDate;
+        dataFileDaoMongo.endDate = endDate;
+        dataFileDaoMongo.provenanceUri = provenance;
+        dataFileDaoMongo.jsonValueFilter = jsonValueFilter;
+        dataFileDaoMongo.dateSortAsc = dateSortAsc;
+        
+        dataFileDaoMongo.user = userSession.getUser();
+        dataFileDaoMongo.setPage(page);
+        dataFileDaoMongo.setPageSize(pageSize);
+        
+        // 2. Get data count
+        long totalCount = dataFileDaoMongo.count();
+        
+        // 3. Get data page list
+        ArrayList<FileDescription> dataList = dataFileDaoMongo.allPaginate();
+        
+        // 4. Initialize return variables
+        ArrayList<FileDescriptionDTO> list = new ArrayList<>();
+        ArrayList<Status> statusList = new ArrayList<>();
+        ResponseFormFileDescription getResponse;
+        
+        if (dataList == null) {
+            // Request failure
+            getResponse = new ResponseFormFileDescription(0, 0, list, true, 0);
+            return noResultFound(getResponse, statusList);
+        } else if (dataList.isEmpty()) {
+            // No results
+            getResponse = new ResponseFormFileDescription(0, 0, list, true, 0);
+            return noResultFound(getResponse, statusList);
+        } else {
+            // Convert all measures object to DTO's
+            dataList.forEach((data) -> {
+                list.add(new FileDescriptionDTO(data));
+            });
+            
+            // Return list of DTO
+            getResponse = new ResponseFormFileDescription(dataFileDaoMongo.getPageSize(), dataFileDaoMongo.getPage(), list, true, (int)totalCount);
+            getResponse.setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
+        }
+
     }
 }

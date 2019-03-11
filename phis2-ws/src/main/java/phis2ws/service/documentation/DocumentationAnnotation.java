@@ -41,7 +41,8 @@ public final class DocumentationAnnotation {
     public static final String SQL_ERROR_FETCH_DATA = "SQL Error can't fetch results";
     public static final String NO_RESULTS = "No data found";
     public static final String USER_NOT_AUTHORIZED = "You aren't authorized to fetch the result of this ressource call";
-
+    public static final String FILE_NOT_FOUND = "File not found";
+    
     public static final String SWAGGER_DOCUMENTATION_HEADER
             = "This page describes the methods allowed by this web service. <p style=\"color: red;\"> You must read the paragraph below before use it !</p>"
             + "<br>"

@@ -459,9 +459,9 @@ public class UriGenerator {
      * @return the new generated uri
      * @throws Exception 
      */
-    private String generateDataFileUri(String additionalInformation) throws Exception {
+    private String generateDataFileUri(String collection, String key) throws Exception {
         // Define data URI with key hash  and random id to prevent collision
-        String uri = Contexts.PLATFORM.toString() + "id/dataFile/" + getUniqueHash(additionalInformation);
+        String uri = Contexts.PLATFORM.toString() + "id/dataFile/" + collection + "/" + getUniqueHash(key);
         
         return uri;
     }
@@ -535,7 +535,7 @@ public class UriGenerator {
         } else if (instanceType.equals(Oeso.CONCEPT_DATA.toString())) {
             return generateDataUri(additionalInformation);
         } else if (instanceType.equals(Oeso.CONCEPT_DATA_FILE.toString())) {
-            return generateDataFileUri(additionalInformation);
+            return generateDataFileUri(year, additionalInformation);
         }
 
         return null;

@@ -27,7 +27,6 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.dao.manager.DAOSesame;
-import phis2ws.service.dao.phis.UserDaoPhisBrapi;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.model.User;
 import phis2ws.service.ontologies.Rdf;
@@ -134,9 +133,21 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
         
         query.appendSelect(CONCERNED_ITEM_TYPE_SELECT_NAME_SPARQL);
         query.appendGroupBy(CONCERNED_ITEM_TYPE_SELECT_NAME_SPARQL);
+        
+        //\SILEX:todo 
+        // concerned items' labels and type are made optional FOR THE MOMENT
+        // because various objects (like experiments, users, groups etc.) are 
+        // stored in the triplestore and PostgreSQL. Types and labels are
+        // currently stored in PostgreSQL and therefore are inaccessible
+        // with a query on the triplestore.
+        // Solutions possible:
+        //     - short term: query PostgreSQL to get these properties
+        //     - migrate these properties into the triplestore
+        ///SILEX:todo
+        query.beginBodyOptional();
         query.appendTriplet(CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, Rdf.RELATION_TYPE.toString(), CONCERNED_ITEM_TYPE_SELECT_NAME_SPARQL, null);
-         
         query.appendTriplet(CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, Rdfs.RELATION_LABEL.toString(), CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL, null);
+        query.endBodyOptional();
         
         query.appendSelectConcat(CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL, SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR, CONCERNED_ITEM_LABELS_SELECT_NAME_SPARQL);
         

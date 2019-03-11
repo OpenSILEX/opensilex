@@ -60,6 +60,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(AnnotationDAOSesame.class);
 
+    // constants used for SPARQL names in the SELECT
     public static final String CREATED = "created";
     public static final String BODY_VALUE = "bodyValue";
     public static final String BODY_VALUES = "bodyValues";

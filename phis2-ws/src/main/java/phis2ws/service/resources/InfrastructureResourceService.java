@@ -245,6 +245,7 @@ public class InfrastructureResourceService extends ResourceService {
         
         // Get all properties in the given language and fill them in infrastructure object
         Infrastructure infrastructure = new Infrastructure();
+        infrastructure.setUri(uri);
         if (propertyDAO.getAllPropertiesWithLabels(infrastructure, language)) {
             // Convert the infrastructure to an InfrastructureDTO
             list.add(new InfrastructureDTO(infrastructure));

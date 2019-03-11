@@ -23,6 +23,8 @@ import javax.ws.rs.core.Response;
 import org.glassfish.hk2.api.InjectionResolver;
 import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.jackson.JacksonFeature;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,9 +67,13 @@ public class ApplicationInitConfig extends ResourceConfig {
        
         beanConfig.setResourcePackage("phis2ws.service.resources");
         beanConfig.setScan(true);
+        
+        register(MultiPartFeature.class);
+        register(JacksonFeature.class);
+        
         // Annotation SessionInject pour obtenir la session en cours et l'utilisateur
         // Liaison entre le createur d'objet a partir de la requete du client et l'application
-//         @see https://jersey.java.net/documentation/latest/ioc.html
+        // @see https://jersey.java.net/documentation/latest/ioc.html
         register(new AbstractBinder() {
             @Override
             protected void configure() {

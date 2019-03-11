@@ -63,7 +63,7 @@
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver</artifactId>
-            <version>3.9.0</version>
+            <version>3.10.1</version>
             <type>jar</type>
         </dependency>
         <dependency>
@@ -115,27 +115,42 @@
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-server</artifactId>
-            <version>2.25</version>
+            <version>2.28</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.inject</groupId>
+            <artifactId>jersey-hk2</artifactId>
+            <version>2.28</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-client</artifactId>
-            <version>2.25</version>
+            <version>2.28</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-common</artifactId>
-            <version>2.25</version>
+            <version>2.28</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
             <artifactId>jersey-container-servlet</artifactId>
-            <version>2.25</version>
+            <version>2.28</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-multipart</artifactId>
+            <version>2.28</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jackson</artifactId>
+            <version>2.28</version>
         </dependency>
         <dependency>
             <groupId>io.swagger</groupId>
             <artifactId>swagger-jersey2-jaxrs</artifactId>
-            <version>1.5.13</version>
+            <version>1.5.22</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.jaxrs/jackson-jaxrs-json-provider -->
         <dependency>
@@ -195,7 +210,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>2.9.0.pr1</version>
+            <version>2.9.8</version>
         </dependency>
         <dependency>
             <groupId>joda-time</groupId>
@@ -243,7 +258,7 @@
         <dependency>
             <groupId>org.glassfish.jersey.ext</groupId>
             <artifactId>jersey-bean-validation</artifactId>
-            <version>2.25</version>
+            <version>2.28</version>
         </dependency>
         <!-- Java 11 compatibility (@see https://blog.codefx.org/java/java-11-migration-guide/) -->
         <dependency>
@@ -284,19 +299,19 @@
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.2</version>
                 <executions>
-                     <execution>
-                         <goals>
-                             <goal>prepare-agent</goal>
-                         </goals>
-                     </execution>
-                     <execution>
-                         <id>report</id>
-                         <phase>prepare-package</phase>
-                         <goals>
-                             <goal>report</goal>
-                         </goals>
-                     </execution>
-                 </executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

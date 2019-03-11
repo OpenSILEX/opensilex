@@ -9,6 +9,7 @@ package phis2ws.service.utils;
 import java.time.Instant;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.UUID;
 import org.apache.commons.codec.binary.Base32;
@@ -438,17 +439,37 @@ public class UriGenerator {
 
 
     /**
-     * Generates a new data uri. A data uri follows the pattern :
-     * hash/uuid
-     * @example http://www.opensilex.org/1e9eb2fbacc7222d3868ae96149a8a16b32b2a1870c67d753376381ebcbb5937/e78da502-ee3f-42d3-828e-aa8cab237f93
-     * @param additionalInformation the key of the data (string concatenation of URIs/date)
+     * Generates a new data uri.
+     * @example http://www.opensilex.org/id/data/1e9eb2fbacc7222d3868ae96149a8a16b32b2a1870c67d753376381ebcbb5937e78da502ee3f42d3828eaa8cab237f93
+     * @param additionalInformation the key of the data
      * @return the new generated uri
      * @throws Exception 
      */
     private String generateDataUri(String additionalInformation) throws Exception {
+        // Define data URI with key hash  and random id to prevent collision
+        String uri = Contexts.PLATFORM.toString() + "id/data/" + getUniqueHash(additionalInformation);
+        
+        return uri;
+    }
+    
+    /**
+     * Generates a new data file uri.
+     * @example http://www.opensilex.org/id/dataFile/1e9eb2fbacc7222d3868ae96149a8a16b32b2a1870c67d753376381ebcbb5937e78da502ee3f42d3828eaa8cab237f93
+     * @param additionalInformation the key of the data file
+     * @return the new generated uri
+     * @throws Exception 
+     */
+    private String generateDataFileUri(String additionalInformation) throws Exception {
+        // Define data URI with key hash  and random id to prevent collision
+        String uri = Contexts.PLATFORM.toString() + "id/dataFile/" + getUniqueHash(additionalInformation);
+        
+        return uri;
+    }
+    
+    private String getUniqueHash(String key) throws NoSuchAlgorithmException {
         // Generate SHA-256 hash
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] encodedhash = digest.digest(additionalInformation.getBytes(StandardCharsets.UTF_8));
+        byte[] encodedhash = digest.digest(key.getBytes(StandardCharsets.UTF_8));
         
         // Convert hash to base32 string in lower case string and remove = padding sign
         Base32 base32 = new Base32();
@@ -457,12 +478,9 @@ public class UriGenerator {
         // Generate UUID without '-' sign
         String randomId = UUID.randomUUID().toString().replaceAll("-", "");
         
-        // Define data URI with key hash  and random id to prevent collision
-        String uri = Contexts.PLATFORM.toString() + "id/data/" + encodedString + randomId;
-        
-        return uri;
+        return encodedString + randomId;
     }
-    
+
     /**
      * generates the uri of a new instance of instanceType
      *
@@ -516,6 +534,8 @@ public class UriGenerator {
             return generateProvenanceUri();
         } else if (instanceType.equals(Oeso.CONCEPT_DATA.toString())) {
             return generateDataUri(additionalInformation);
+        } else if (instanceType.equals(Oeso.CONCEPT_DATA_FILE.toString())) {
+            return generateDataFileUri(additionalInformation);
         }
 
         return null;

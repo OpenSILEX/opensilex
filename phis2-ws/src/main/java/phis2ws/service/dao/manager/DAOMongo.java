@@ -19,6 +19,11 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.gridfs.GridFS;
 import java.util.ArrayList;
 import org.bson.Document;
+import org.bson.codecs.configuration.CodecProvider;
+import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
+import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
+import org.bson.codecs.configuration.CodecRegistry;
+import org.bson.codecs.pojo.PojoCodecProvider;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.model.User;
@@ -65,7 +70,12 @@ public abstract class DAOMongo<T> {
      * @see service.properties file
      */
     public DAOMongo() {
-        this.setDatabase(MONGO_CLIENT.getDatabase(PropertiesFileManager.getConfigFileProperty("mongodb_nosql_config", "db")));
+        // Add feature to automatically serialize/deserialize class object in mongodb
+        // @see http://mongodb.github.io/mongo-java-driver/3.10/bson/pojos/
+        CodecProvider pojoCodecProvider = PojoCodecProvider.builder().automatic(true).build();
+        CodecRegistry pojoCodecRegistry = fromRegistries(MongoClient.getDefaultCodecRegistry(), fromProviders(pojoCodecProvider));
+        
+        this.setDatabase(MONGO_CLIENT.getDatabase(PropertiesFileManager.getConfigFileProperty("mongodb_nosql_config", "db")).withCodecRegistry(pojoCodecRegistry));
     }
 
     public static MongoClient getMongoClient() {

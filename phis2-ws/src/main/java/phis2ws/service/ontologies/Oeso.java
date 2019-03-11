@@ -358,7 +358,13 @@ public enum Oeso {
     CONCEPT_DATA {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "data";
+            return NAMESPACE.toString() + "Data";
+        }
+    },
+    CONCEPT_DATA_FILE {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "DataFile";
         }
     };
 }

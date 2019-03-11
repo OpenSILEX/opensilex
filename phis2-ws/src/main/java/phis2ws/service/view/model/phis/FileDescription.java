@@ -21,6 +21,8 @@ public class FileDescription {
     
     String filename;
     
+    String path;
+        
     String rdfType;
     
     Date date;
@@ -39,6 +41,15 @@ public class FileDescription {
         this.uri = uri;
     }
 
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    
     public String getFilename() {
         return filename;
     }

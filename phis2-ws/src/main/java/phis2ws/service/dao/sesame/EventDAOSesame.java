@@ -196,7 +196,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
         
         String uriSelectNameSparql = prepareSearchQueryUri(query, uri, true);
         prepareSearchQueryType(query, uriSelectNameSparql, type, true); 
-        ConcernedItemDAOSesame.prepareQueryWithConcernedItemFilters(query, uriSelectNameSparql, Oeev.concerns.getURI(), searchConcernedItemLabel, searchConcernedItemUri); 
+        ConcernedItemDAOSesame.prepareQueryWithConcernedItemFilters(query, uriSelectNameSparql, Oeev.concerns.getURI(), searchConcernedItemUri, searchConcernedItemLabel); 
         prepareSearchQueryDateTime(query, uriSelectNameSparql, dateRangeStartString, dateRangeEndString, true); 
         
         query.appendLimit(getPageSize());

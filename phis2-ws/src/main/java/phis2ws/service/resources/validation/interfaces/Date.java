@@ -37,5 +37,5 @@ public @interface Date {
  
     Class<? extends Payload>[] payload() default {};
     
-    DateFormat value() default DateFormat.YMDHMSZ;
+    DateFormat[] value() default DateFormat.YMDHMSZ;
 }

@@ -413,7 +413,6 @@ public class EventDAOSesame extends DAOSesame<Event> {
         return event;
     }
     
-    
     /**
      * Search event properties and set them to it
      * @param event 

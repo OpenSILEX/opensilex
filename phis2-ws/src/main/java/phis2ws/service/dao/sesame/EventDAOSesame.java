@@ -69,7 +69,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     }
     
     /**
-     * Set a search query to select an URI and add a filter according to it 
+     * Sets a search query to select an URI and adds a filter according to it 
      * if necessary
      * @example SparQL filter added:
      *  SELECT DISTINCT  ?uri
@@ -85,7 +85,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     private String prepareSearchQueryUri(SPARQLQueryBuilder query, String searchUri, boolean inGroupBy) {
         query.appendSelect(URI_SELECT_NAME_SPARQL);
         
-        if(inGroupBy){
+        if (inGroupBy) {
             query.appendGroupBy(URI_SELECT_NAME_SPARQL);
         }
         if (searchUri != null) {
@@ -95,7 +95,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     }
     
     /**
-     * Set a search query to select a type and to filter according to it 
+     * Sets a search query to select a type and to filter according to it 
      * if necessary
      * @example SparQL filter added:
      *  SELECT DISTINCT ?rdfType
@@ -122,7 +122,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     }
 
     /**
-     * Set a search query to select a datetime from an instant and to filter 
+     * Sets a search query to select a datetime from an instant and to filter 
      * according to it if necessary
      * @example SparQL filter added:
      *  SELECT DISTINCT ?dateTimeStamp
@@ -143,7 +143,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     private void prepareSearchQueryDateTime(SPARQLQueryBuilder query, String uriSelectNameSparql, String searchDateTimeRangeStartString, String searchDateTimeRangeEndString, boolean inGroupBy) {  
         
         query.appendSelect(DATETIMESTAMP_SELECT_NAME_SPARQL);
-        if(inGroupBy){
+        if (inGroupBy) {
             query.appendGroupBy(DATETIMESTAMP_SELECT_NAME_SPARQL);
         }
         query.appendTriplet(uriSelectNameSparql, Time.hasTime.toString(), TIME_SELECT_NAME_SPARQL, null);
@@ -161,7 +161,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     }
     
     /**
-     * Prepare the event search query
+     * Prepares the event search query
      * @param uri
      * @param type
      * @example
@@ -207,7 +207,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     }
     
     /**
-     * Prepare the event search query
+     * Prepares the event search query
      * @example
      * SELECT  ?uri ?rdfType ?dateTimeStamp 
      * WHERE {
@@ -233,7 +233,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     }
     
     /**
-     * Get an event from a given binding set.
+     * Gets an event from a given binding set.
      * @param bindingSet a binding set, result from a search query
      * @return an event target with data extracted from the given binding set
      */
@@ -253,7 +253,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     }
     
     /**
-     * Search events stored
+     * Searches events stored
      * @param searchUri
      * @param searchType
      * @param searchConcernedItemLabel
@@ -290,7 +290,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     }
     
     /**
-     * Search an event detailed
+     * Searches an event detailed
      * @param searchUri
      * @return events
      */
@@ -319,7 +319,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     }
     
     /**
-     * Generate an insert query for the given event
+     * Generates an insert query for the given event
      * @param event
      * @return the query
      * @example
@@ -352,7 +352,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     }
     
     /**
-     * Insert the given events in the storage.
+     * Inserts the given events in the storage.
      * /!\ Prerequisite: data must have been checked before calling this method
      * @see EventDAOSesame#check(java.util.List) 
      * @param events
@@ -441,7 +441,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     }
     
     /**
-     * Check and eventually insert events in the storage
+     * Checks and eventually inserts events in the storage
      * @param events
      * @return the insertion result :
      *           Error message if errors found in data
@@ -457,7 +457,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     }
     
     /**
-     * Check the given list of events
+     * Checks the given list of events
      * @param events
      * @return the result with the list of the found errors (empty if no error)
      */
@@ -518,7 +518,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     }
     
     /**
-     * Search event properties and set them to it
+     * Searches event properties and set them to it
      * @param event 
      */
     private void searchEventPropertiesAndSetThemToIt(Event event) {
@@ -533,7 +533,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     }
 
     /**
-     * Generate a query to count the results of the research with the 
+     * Generates a query to count the results of the research with the 
      * searched parameters. 
      * @example 
      * SELECT DISTINCT  (COUNT(DISTINCT ?uri) AS ?count) 
@@ -571,7 +571,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     }
 
     /**
-     * Count the total number of events filtered with the search fields
+     * Counts the total number of events filtered with the search fields
      * @param searchUri
      * @param searchType
      * @param searchConcernedItemLabel

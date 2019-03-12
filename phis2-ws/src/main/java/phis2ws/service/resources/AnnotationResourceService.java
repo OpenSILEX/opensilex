@@ -55,7 +55,7 @@ import phis2ws.service.view.model.phis.Annotation;
 @Path("/annotations")
 public class AnnotationResourceService extends ResourceService {
     /**
-     * Insert given annotations in the triplestore
+     * Inserts the given annotations in the triplestore
      * @example
      * [
      *   {
@@ -123,7 +123,7 @@ public class AnnotationResourceService extends ResourceService {
     }
 
     /**
-     * Search annotations by URI, creator, comment, date of creation, target
+     * Searches annotations by URI, creator, comment, date of creation, target
      * @example { 
      * "metadata": { 
      *      "pagination": { 
@@ -149,7 +149,7 @@ public class AnnotationResourceService extends ResourceService {
      * @param page
      * @param uri
      * @param creator
-     * @param comment
+     * @param bodyValue
      * @param target
      * @param motivatedBy
      * @return the annotations corresponding to the search parameters given
@@ -176,14 +176,14 @@ public class AnnotationResourceService extends ResourceService {
             @ApiParam(value = "Search by annotation uri", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_URI) @QueryParam("uri") @URL String uri,
             @ApiParam(value = "Search by creator", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_CREATOR) @QueryParam("creator") @URL String creator,
             @ApiParam(value = "Search by target", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_URI) @QueryParam("target") @URL String target,
-            @ApiParam(value = "Search by comment", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_COMMENT) @QueryParam("comment") String comment,
-            @ApiParam(value = "Search by motivation", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_MOTIVATEDBY) @QueryParam("motivatedBy") @URL String motivatedBy) {
+            @ApiParam(value = "Search by comment", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_BODY_VALUE) @QueryParam("description") String bodyValue,
+            @ApiParam(value = "Search by motivation", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_MOTIVATED_BY) @QueryParam("motivatedBy") @URL String motivatedBy) {
 
-        return getAnnotations(uri, creator, target, comment, motivatedBy, page, pageSize);
+        return getAnnotations(uri, creator, target, bodyValue, motivatedBy, page, pageSize);
     }
 
     /**
-     * Get the information about a annotation
+     * Gets the information about an annotation
      * @example
      * {
      * "metadata": { "pagination": null, "status": [], "datafiles": [] },
@@ -235,20 +235,20 @@ public class AnnotationResourceService extends ResourceService {
     }
 
     /**
-     * Search annotations corresponding to search parameters given by a user
+     * Searches annotations corresponding to search parameters given by the user
      * @param annotationDAOSesame
      * @return the annotations corresponding to the search
      */
-    private Response getAnnotations(String uri, String creator, String target, String comment, String motivatedBy, int page, int pageSize) {
+    private Response getAnnotations(String uri, String creator, String target, String bodyValue, String motivatedBy, int page, int pageSize) {
         ArrayList<Status> statusList = new ArrayList<>();
         ResponseFormAnnotation getResponse;
         AnnotationDAOSesame annotationDAOSesame = new AnnotationDAOSesame(userSession.getUser());
 
         // Count all annotations for this specific request
-        Integer totalCount = annotationDAOSesame.count(uri, creator, target, comment, motivatedBy);
+        Integer totalCount = annotationDAOSesame.count(uri, creator, target, bodyValue, motivatedBy);
         
         // Retreive all annotations returned by the query
-        ArrayList<Annotation> annotations = annotationDAOSesame.searchAnnotations(uri, creator, target, comment, motivatedBy, page, pageSize);
+        ArrayList<Annotation> annotations = annotationDAOSesame.searchAnnotations(uri, creator, target, bodyValue, motivatedBy, page, pageSize);
         
         ArrayList<AnnotationDTO> annotationDTOs = new ArrayList();
 

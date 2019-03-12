@@ -206,8 +206,8 @@ public class DataResourceService extends ResourceService {
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                          dataType = "string", paramType = "header",
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                          dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
                           value = DocumentationAnnotation.ACCES_TOKEN,
                           example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
@@ -272,7 +272,7 @@ public class DataResourceService extends ResourceService {
     /**
      * Save data file with its metadata and use MULTIPART_FORM_DATA for it
      * fileContentDisposition parameter is automatically created from submited file
-     * No example could be provided for this kind of MediaType
+     * No example could be provided for this kind of MediaType 
      * @param descriptionDto
      * @param file
      * @param fileContentDisposition
@@ -287,8 +287,8 @@ public class DataResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)})
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                          dataType = "string", paramType = "header",
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                          dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
                           value = DocumentationAnnotation.ACCES_TOKEN,
                           example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
@@ -328,6 +328,7 @@ public class DataResourceService extends ResourceService {
     
     /**
      * Return the content of the file corresponding to the uri given.
+     * No authentication on this service because image file must be accessible directly
      * @param fileUri
      * @param response
      * @return The file content or null with a 404 status if it doesn't exists
@@ -368,10 +369,25 @@ public class DataResourceService extends ResourceService {
     }
     
     /**
-     * This service return the descriptino of a file correponding to the uri given
+     * This service return the description of a file correponding to the uri given
      * @param fileUri
      * @param response
-     * @return 
+     * @return the file description
+     * @example 
+     * {
+     *    "uri": "http://www.phenome-fppn.fr/diaphen/id/dataFile/RGBImage/55fjbbmtmr4m3kkizslzaddfkdt2ranum3ikz6cdiajqzfdc7yqa31d87b83efac4c358ceb5b0da6ed27ff",
+     *    "rdfType": "http://www.opensilex.org/vocabulary/oeso#RGBImage",
+     *    "date": "2017-06-15T10:51:00+0200",
+     *    "concernedItems": [{
+     *      "uri": "http://www.phenome-fppn.fr/diaphen/2018/o18001199",
+     *      "typeURI": "http://www.opensilex.org/vocabulary/oeso#Plot"
+     *    }],
+     *    "provenanceUri": "http://www.phenome-fppn.fr/diaphen/id/provenance/1552405256945",
+     *    "metadata": {
+     *      "sensor": "http://www.phenome-fppn.fr/diaphen/2018/s18035",
+     *      "position": "1"
+     *    }
+     * }
      */
     @GET
     @Path("file/{fileUri}/description")
@@ -384,8 +400,8 @@ public class DataResourceService extends ResourceService {
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                          dataType = "string", paramType = "header",
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                          dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
                           value = DocumentationAnnotation.ACCES_TOKEN,
                           example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
@@ -418,7 +434,22 @@ public class DataResourceService extends ResourceService {
      * @param concernedItems
      * @param jsonValueFilter
      * @param dateSortAsc
-     * @return 
+     * @return List of file description
+    * @example 
+     * [{
+     *    "uri": "http://www.phenome-fppn.fr/diaphen/id/dataFile/RGBImage/55fjbbmtmr4m3kkizslzaddfkdt2ranum3ikz6cdiajqzfdc7yqa31d87b83efac4c358ceb5b0da6ed27ff",
+     *    "rdfType": "http://www.opensilex.org/vocabulary/oeso#RGBImage",
+     *    "date": "2017-06-15T10:51:00+0200",
+     *    "concernedItems": [{
+     *      "uri": "http://www.phenome-fppn.fr/diaphen/2018/o18001199",
+     *      "typeURI": "http://www.opensilex.org/vocabulary/oeso#Plot"
+     *    }],
+     *    "provenanceUri": "http://www.phenome-fppn.fr/diaphen/id/provenance/1552405256945",
+     *    "metadata": {
+     *      "sensor": "http://www.phenome-fppn.fr/diaphen/2018/s18035",
+     *      "position": "1"
+     *    }
+     * }]
      */
     @GET
     @Path("file/search")
@@ -430,8 +461,8 @@ public class DataResourceService extends ResourceService {
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                          dataType = "string", paramType = "header",
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                          dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
                           value = DocumentationAnnotation.ACCES_TOKEN,
                           example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
@@ -451,23 +482,31 @@ public class DataResourceService extends ResourceService {
         DataFileDAOMongo dataFileDaoMongo = new DataFileDAOMongo();
         
         // 1. Set all varaibles corresponding to the search
-        dataFileDaoMongo.rdfType = rdfType;
-        dataFileDaoMongo.startDate = startDate;
-        dataFileDaoMongo.endDate = endDate;
-        dataFileDaoMongo.provenanceUri = provenance;
-        dataFileDaoMongo.jsonValueFilter = jsonValueFilter;
-        dataFileDaoMongo.dateSortAsc = dateSortAsc;
-        dataFileDaoMongo.concernedItems = concernedItems;
-        
         dataFileDaoMongo.user = userSession.getUser();
         dataFileDaoMongo.setPage(page);
         dataFileDaoMongo.setPageSize(pageSize);
         
         // 2. Get data count
-        long totalCount = dataFileDaoMongo.count();
+        long totalCount = dataFileDaoMongo.count(
+            rdfType,
+            startDate,
+            endDate,
+            provenance,
+            jsonValueFilter,
+            concernedItems,
+            dateSortAsc
+        );
         
         // 3. Get data page list
-        ArrayList<FileDescription> dataList = dataFileDaoMongo.allPaginate();
+        ArrayList<FileDescription> dataList = dataFileDaoMongo.search(
+            rdfType,
+            startDate,
+            endDate,
+            provenance,
+            jsonValueFilter,
+            concernedItems,
+            dateSortAsc
+        );
         
         // 4. Initialize return variables
         ArrayList<FileDescriptionDTO> list = new ArrayList<>();

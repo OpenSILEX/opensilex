@@ -11,14 +11,14 @@ import java.util.ArrayList;
 import org.joda.time.DateTime;
 
 /**
- * Represent an annotation
+ * Represents an annotation
  * @update [Andréas Garcia] 15 Feb., 2019: Improve coding style
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class Annotation {
 
     /**
-     * Uri of the annotation
+     * URI of the annotation
      * @example http://www.phenome-fppn.fr/platform/id/annotation/8247af37-769c-495b-8e7e-78b1141176c2
      */
     private String uri;
@@ -36,19 +36,19 @@ public class Annotation {
      private String creator;
 
     /** 
-     * Comments that describe the annotation
+     * Text that describes the annotation
      * @example Ustilago maydis infection
      */
     private ArrayList<String> bodyValues;
 
     /**
-     * Motivation instance uri that describe the purpose of the annotation
+     * Motivation instance URI that describes the purpose of the annotation
      * @example http://www.w3.org/ns/oa#commenting
      */
     private String motivatedBy;
 
     /**
-     * Uris that are annoted by the annotation
+     * URIs that are the objects of the annotation
      * @example http://www.phenome-fppn.fr/diaphen/2017/o1032481
      */
     private ArrayList<String> targets;

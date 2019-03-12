@@ -284,8 +284,8 @@ public final class DocumentationAnnotation {
   
     public static final String EXAMPLE_ANNOTATION_URI = "http://www.phenome-fppn.fr/platform/id/annotation/8247af37-769c-495b-8e7e-78b1141176c2";
     public static final String EXAMPLE_ANNOTATION_TARGET = "http://www.phenome-fppn.fr/diaphen/id/variable/v0000001";
-    public static final String EXAMPLE_ANNOTATION_MOTIVATEDBY = "http://www.w3.org/ns/oa#commenting";
-    public static final String EXAMPLE_ANNOTATION_COMMENT = "Ustilago maydis infection";
+    public static final String EXAMPLE_ANNOTATION_MOTIVATED_BY = "http://www.w3.org/ns/oa#commenting";
+    public static final String EXAMPLE_ANNOTATION_BODY_VALUE = "Ustilago maydis infection";
     public static final String EXAMPLE_ANNOTATION_CREATOR = "http://www.phenome-fppn.fr/diaphen/id/agent/marie_dupond";
   
     public static final String EXAMPLE_EXPERIMENT_CROP_SPECIES = "maize";

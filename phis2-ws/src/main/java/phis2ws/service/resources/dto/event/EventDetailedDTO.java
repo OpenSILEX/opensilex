@@ -12,7 +12,7 @@ import phis2ws.service.resources.dto.annotation.AnnotationDTO;
 import phis2ws.service.view.model.phis.Event;
 
 /**
- * DTO representing an event
+ * DTO representing an event detailed
  * @author Andréas Garcia<andreas.garcia@inra.fr>
  */
 public class EventDetailedDTO extends EventSimpleDTO {

@@ -47,7 +47,7 @@ import phis2ws.service.view.model.phis.FileDescription;
 
 /**
  * Represents the MongoDB Data File Access Object.
- * @author vincent
+ * @author Vincent Migot
  */
 public class DataFileDAOMongo extends DAOMongo<FileDescription> {
     
@@ -59,23 +59,15 @@ public class DataFileDAOMongo extends DAOMongo<FileDescription> {
     private final static String DB_FIELD_RDF_TYPE = "rdfType";
     private final static String DB_FIELD_CONCERNED_ITEM_URI = "concernedItems.uri";
     
-    // Rdf type of the data file to search
-    public String rdfType;
-    // Minimum date of the data file to search
-    public String startDate;
-    // Maximum date of the data file to search
-    public String endDate;
-    // Provenance uri of the data file to search
-    public String provenanceUri;
-    // Arbitrary json filter in mongodb format to filter base on metadata
-    public String jsonValueFilter;
-    // Date ordering of the search results
-    public boolean dateSortAsc;
-    // List of concerned items of which data file to search must belong
-    public List<String> concernedItems;
-
     /**
      * Prepare and return the data file description search query with the given parameters
+     * @param rdfType
+     * @param startDate
+     * @param endDate
+     * @param provenanceUri
+     * @param jsonValueFilter
+     * @param concernedItems
+     * @param dateSortAsc
      * @return The data file description search query
      * @example
      *  {
@@ -87,8 +79,15 @@ public class DataFileDAOMongo extends DAOMongo<FileDescription> {
      *      "provenance": "http://www.phenome-fppn.fr/mtp/2018/pv181515071552"
      *  }
      */
-    @Override
-    protected BasicDBObject prepareSearchQuery() {
+    protected BasicDBObject prepareSearchQuery(
+        String rdfType,
+        String startDate,
+        String endDate,
+        String provenanceUri,
+        String jsonValueFilter,
+        List<String> concernedItems,
+        boolean dateSortAsc
+    ) {
         BasicDBObject query = new BasicDBObject();
         
         try {
@@ -136,14 +135,40 @@ public class DataFileDAOMongo extends DAOMongo<FileDescription> {
         return query;
     }
 
-    @Override
-    public ArrayList<FileDescription> allPaginate() {
+    /**
+     * Search all data files descriptinos corresponding to the search params
+     * @param rdfType
+     * @param startDate
+     * @param endDate
+     * @param provenanceUri
+     * @param jsonValueFilter
+     * @param concernedItems
+     * @param dateSortAsc
+     * @return 
+     */
+    public ArrayList<FileDescription> search(
+        String rdfType,
+        String startDate,
+        String endDate,
+        String provenanceUri,
+        String jsonValueFilter,
+        List<String> concernedItems,
+        boolean dateSortAsc    
+    ) {
          // Get the collection corresponding to rdf type uri
         String typeCollection = this.getCollectionFromFileType(rdfType);
         MongoCollection<FileDescription> dataVariableCollection = database.getCollection(typeCollection, FileDescription.class);
 
         // Get the filter query
-        BasicDBObject query = prepareSearchQuery();
+        BasicDBObject query = prepareSearchQuery(
+            rdfType,
+            startDate,
+            endDate,
+            provenanceUri,
+            jsonValueFilter,
+            concernedItems,
+            dateSortAsc                
+        );
         
         // Get paginated documents
         FindIterable<FileDescription> fileDescription = dataVariableCollection.find(query);
@@ -174,15 +199,38 @@ public class DataFileDAOMongo extends DAOMongo<FileDescription> {
     }
 
     /**
-     * Get data count according to the prepareSearchQuery
+     * Get data count according to the params given
+     * @param rdfType
+     * @param startDate
+     * @param endDate
+     * @param provenanceUri
+     * @param jsonValueFilter
+     * @param concernedItems
+     * @param dateSortAsc
      * @return the data count
      */
-    public long count() {
+    public long count(
+        String rdfType,
+        String startDate,
+        String endDate,
+        String provenanceUri,
+        String jsonValueFilter,
+        List<String> concernedItems,
+        boolean dateSortAsc   
+    ) {
         String typeCollection = this.getCollectionFromFileType(rdfType);
         MongoCollection<Document> dataVariableCollection = database.getCollection(typeCollection);
 
         // Get the filter query
-        BasicDBObject query = prepareSearchQuery();
+        BasicDBObject query = prepareSearchQuery(
+            rdfType,
+            startDate,
+            endDate,
+            provenanceUri,
+            jsonValueFilter,
+            concernedItems,
+            dateSortAsc     
+        );
         
         // Return the document count
         return dataVariableCollection.countDocuments(query);
@@ -380,15 +428,16 @@ public class DataFileDAOMongo extends DAOMongo<FileDescription> {
 
     /**
      * Return collection name from file rdt type uri
+     * @example http://www.opensilex.org/vocabulary/oeso#HemisphericalImage -> HemisphericalImage
      * @param rdfType
-     * @return 
+     * @return The name of the collection
      */
     private String getCollectionFromFileType(String rdfType) {
         String[] split = rdfType.split("#");
         return split[split.length - 1];
     }
 
-        /**
+      /**
      * Return true if the given URI already exists in variable collection
      * @param variableUri variable which will determine in which collection to look
      * @param uri URI to check
@@ -420,5 +469,15 @@ public class DataFileDAOMongo extends DAOMongo<FileDescription> {
         FindIterable<FileDescription> dataMongo = datafileCollection.find(query).limit(1);
         
         return dataMongo.first();
+    }
+
+    @Override
+    protected BasicDBObject prepareSearchQuery() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ArrayList<FileDescription> allPaginate() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

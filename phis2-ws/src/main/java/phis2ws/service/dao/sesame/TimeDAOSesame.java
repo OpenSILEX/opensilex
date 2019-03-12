@@ -7,15 +7,12 @@
 //******************************************************************************
 package phis2ws.service.dao.sesame;
 
-import java.util.logging.Level;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
-import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -25,7 +22,6 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.dao.manager.DAOSesame;
 import phis2ws.service.model.User;
 import phis2ws.service.ontologies.Time;
@@ -65,7 +61,7 @@ public class TimeDAOSesame extends DAOSesame<Time> {
     }
     
     /** 
-     * Add a filter to the search query comparing a SPARQL dateTimeStamp 
+     * Adds a filter to the search query comparing a SPARQL dateTimeStamp 
      * variable to a date. 
      * SPARQL dateTimeStamp dates have to be handled in a specific way as 
      * the comparison operators (<, >, etc.) aren't available for dateTimeStamp
@@ -96,7 +92,7 @@ public class TimeDAOSesame extends DAOSesame<Time> {
     }
 
     /**
-     * Append a filter to select only the results whose datetime is 
+     * Appends a filter to select only the results whose datetime is 
      * included in the date range in parameter
      * @param query
      * @param filterRangeDatesStringFormat
@@ -135,7 +131,7 @@ public class TimeDAOSesame extends DAOSesame<Time> {
     }
     
     /**
-     * Insert an Instant linked to the given URI in the given graph with the 
+     * Inserts an Instant linked to the given URI in the given graph with the 
      * given date value
      * @param updateBuilder
      * @param graph
@@ -161,11 +157,11 @@ public class TimeDAOSesame extends DAOSesame<Time> {
 
     @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

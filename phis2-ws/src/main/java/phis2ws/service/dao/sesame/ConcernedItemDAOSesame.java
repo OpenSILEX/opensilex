@@ -58,7 +58,7 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
     }
     
     /**
-     * Set a search query to applies the concerned items label filter. 
+     * Sets a search query to applies the concerned items label filter. 
      * This function DOES NOT make the query return concerned items.
      * The filter concerns the concerned items URI and labels
      * @example SparQL filter added:
@@ -98,7 +98,7 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
     }
     
     /**
-     * Prepare the query to search the concerned items of a object
+     * Prepares the query to search the concerned items of a object
      * @param searchLabel
      * @param searchUri
      * @param concernsRelationUri since "concerns" can designate various
@@ -109,10 +109,13 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
      * (GROUP_CONCAT(DISTINCT ?concernedItemLabel; SEPARATOR=",") AS ?concernedItemLabels) 
      * WHERE {
      *   <http://opensilex.org/id/event/96e72788-6bdc-4f8e-abd1-ce9329371e8e>  <http://www.opensilex.org/vocabulary/oeev#concerns>  ?concernedItemUri  . 
-     *   ?concernedItemUri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?concernedItemType  . 
-     *   ?concernedItemUri  <http://www.w3.org/2000/01/rdf-schema#label>  ?concernedItemLabel  . 
+     *   
+     *   OPTIONAL {
+     *     ?concernedItemUri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?concernedItemType  . 
+     *     ?concernedItemUri  <http://www.w3.org/2000/01/rdf-schema#label>  ?concernedItemLabel  . 
+     *   }
      * }
-     *  GROUP BY  ?concernedItemUri ?concernedItemType 
+     * GROUP BY  ?concernedItemUri ?concernedItemType 
      * @param objectUri
      * @return query
      */
@@ -156,7 +159,7 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
     }
     
     /**
-     * Search an object's concerned items with filters
+     * Searches an object's concerned items with filters
      * @param objectUri 
      * @param concernsRelationUri since "concerns" can designate various
      * relations in various vocabularies (e.g OESO or OEEV), the URI of the 
@@ -188,7 +191,7 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
     }
     
     /**
-     * Generate an insert query for the links of the given concerned items
+     * Generates an insert query for the links of the given concerned items
      * @param graphString
      * @param objectResource the concerning object's URI
      * @param concernsRelationUri since "concerns" can designate various
@@ -213,7 +216,7 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
     }
     
     /**
-     * Check the existence of the given list of concerned items
+     * Checks the existence of the given list of concerned items
      * @param concernedItems
      * @return the result with the list of the found errors (empty if no error)
      */
@@ -242,7 +245,7 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
     }
     
     /**
-     * Insert the given concerned items in the storage. 
+     * Inserts the given concerned items in the storage. 
      * /!\ Prerequisite: data must have been checked before calling this method
      * @see EventDAOSesame#check(java.util.List)
      * @param graph 
@@ -304,7 +307,7 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
     }
     
     /**
-     * Get a concerned item from a binding set
+     * Gets a concerned item from a binding set
      * @param bindingSet
      * @return concerned item
      */

@@ -27,7 +27,7 @@ import phis2ws.service.view.model.phis.Event;
 import phis2ws.service.view.model.phis.Property;
 
 /**
- * DTO representing a event with the basic information
+ * DTO representing a event with the information needed to create one
  * @author Andréas Garcia<andreas.garcia@inra.fr>
  */
 public class EventPostDTO extends AbstractVerifiedClass {
@@ -46,7 +46,7 @@ public class EventPostDTO extends AbstractVerifiedClass {
     }
 
     /**
-     * Generate an event model from de DTO
+     * Generates an event model from de DTO
      * @return the Event model
      */
     @Override

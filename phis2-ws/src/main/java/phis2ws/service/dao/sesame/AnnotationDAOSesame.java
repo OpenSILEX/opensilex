@@ -83,7 +83,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
      * @param uri
      * @param creator
      * @param target
-     * @param comment
+     * @param bodyValue
      * @param motivatedBy
      * @example
      * SELECT DISTINCT ?uri 
@@ -95,7 +95,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
      * LIMIT 20
      * @return query generated with the searched parameter above
      */
-    protected SPARQLQueryBuilder prepareSearchQuery(String uri, String creator, String target, String comment, String motivatedBy) {
+    protected SPARQLQueryBuilder prepareSearchQuery(String uri, String creator, String target, String bodyValue, String motivatedBy) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
 
         String annotationUri;
@@ -135,8 +135,8 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
 
         query.appendSelectConcat("?" + BODY_VALUE, SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR, "?" + BODY_VALUES);
         query.appendTriplet(annotationUri, Oa.RELATION_BODY_VALUE.toString(), "?" + BODY_VALUE, null);
-        if (comment != null) {
-            query.appendFilter("regex(STR(?" + BODY_VALUE + "), '" + comment + "', 'i')");
+        if (bodyValue != null) {
+            query.appendFilter("regex(STR(?" + BODY_VALUE + "), '" + bodyValue + "', 'i')");
         }
         query.appendLimit(this.getPageSize());
         query.appendOffset(this.getPage() * this.getPageSize());
@@ -148,13 +148,13 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
      * @param searchUri
      * @param searchCreator
      * @param searchTarget
-     * @param searchComment
+     * @param searchBodyValue
      * @param searchMotivatedBy
      * @return number of total annotation returned with the search field
      */
-    public Integer count(String searchUri, String searchCreator, String searchTarget, String searchComment, String searchMotivatedBy) 
+    public Integer count(String searchUri, String searchCreator, String searchTarget, String searchBodyValue, String searchMotivatedBy) 
             throws RepositoryException, MalformedQueryException, QueryEvaluationException {
-        SPARQLQueryBuilder prepareCount = prepareCount(searchUri, searchCreator, searchTarget, searchComment, searchMotivatedBy);
+        SPARQLQueryBuilder prepareCount = prepareCount(searchUri, searchCreator, searchTarget, searchBodyValue, searchMotivatedBy);
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
         Integer count = 0;
         try (TupleQueryResult result = tupleQuery.evaluate()) {
@@ -184,8 +184,8 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
      * }
      * @return query generated with the searched parameters
      */
-    private SPARQLQueryBuilder prepareCount(String searchUri, String searchCreator, String searchTarget, String searchComment, String searchMotivatedBy) {
-        SPARQLQueryBuilder query = this.prepareSearchQuery(searchUri, searchCreator, searchTarget, searchComment, searchMotivatedBy);
+    private SPARQLQueryBuilder prepareCount(String searchUri, String searchCreator, String searchTarget, String searchBodyValue, String searchMotivatedBy) {
+        SPARQLQueryBuilder query = this.prepareSearchQuery(searchUri, searchCreator, searchTarget, searchBodyValue, searchMotivatedBy);
         query.clearSelect();
         query.clearLimit();
         query.clearOffset();
@@ -199,7 +199,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
      * Check and insert the given annotations in the triplestore
      * @param annotations
      * @return the insertion resultAnnotationUri. Message error if errors
-     * found in data the list of the generated uri of the annotations if the
+     * found in data the list of the generated URI of the annotations if the
      * insertion has been done
      */
     public POSTResultsReturn checkAndInsert(List<Annotation> annotations) {
@@ -228,7 +228,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
         UriGenerator uriGenerator = new UriGenerator();
 
         //SILEX:test
-        //Triplestore connection has to be checked (this is kind of an hot fix)
+        //Triplestore connection has to be checked (this is kind of a hot fix)
         this.getConnection().begin();
         //\SILEX:test
 
@@ -365,24 +365,24 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
     }
 
     /**
-     * Search all the annotations corresponding to the search params given by
+     * Search all the annotations corresponding to the search parameters given by
      * the user (URI, creator, motivatedBy, bodyValue)
      * @param searchUri
      * @param searchCreator
      * @param searchTarget
      * @param searchPage
-     * @param searchComment
+     * @param searchBodyValue
      * @param searchMotivatedBy
      * @param searchPageSize
-     * @return the list of the annotations which match the given search params
-     * (uri, creator, motivatedBy, bodyValue).
+     * @return the list of the annotations which match the given search parameters
+     * (URI, creator, motivatedBy, bodyValue).
      */
-    public ArrayList<Annotation> searchAnnotations(String searchUri, String searchCreator, String searchTarget, String searchComment, String searchMotivatedBy, int searchPage, int searchPageSize) {
+    public ArrayList<Annotation> searchAnnotations(String searchUri, String searchCreator, String searchTarget, String searchBodyValue, String searchMotivatedBy, int searchPage, int searchPageSize) {
         setPage(searchPage);
         setPageSize(searchPageSize);
 
         // retreve uri list
-        SPARQLQueryBuilder query = prepareSearchQuery(searchUri, searchCreator, searchTarget, searchComment, searchMotivatedBy);
+        SPARQLQueryBuilder query = prepareSearchQuery(searchUri, searchCreator, searchTarget, searchBodyValue, searchMotivatedBy);
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         ArrayList<Annotation> annotations;
         // Retreive all informations

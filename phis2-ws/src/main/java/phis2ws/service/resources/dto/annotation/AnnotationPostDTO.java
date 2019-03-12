@@ -30,19 +30,19 @@ public class AnnotationPostDTO extends AbstractVerifiedClass {
     private String creator;
 
     /** 
-     * Motivation instance uri that describe the purpose of this annotation 
+     * Motivation instance URI that describe the purpose of this annotation 
      * @example http://www.w3.org/ns/oa#commenting
      */ 
     private String motivatedBy;
 
     /**
-     * Represents annotation body values
+     * Represents the annotation's body values
      * @link https://www.w3.org/TR/annotation-model/#cardinality-of-bodies-and-targets
      */
     private ArrayList<String> bodyValues;
 
     /**
-     * Uris concerned by this annotation 
+     * URIs concerned by this annotation 
      * @example http://www.phenome-fppn.fr/diaphen/2017/o1032481
      * @link https://www.w3.org/TR/annotation-model/#cardinality-of-bodies-and-targets
      */
@@ -66,7 +66,7 @@ public class AnnotationPostDTO extends AbstractVerifiedClass {
 
     @URL
     @NotNull
-    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_ANNOTATION_MOTIVATEDBY)
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_ANNOTATION_MOTIVATED_BY)
     public String getMotivatedBy() {
         return motivatedBy;
     }

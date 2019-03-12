@@ -439,7 +439,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
             BindingSet bindingSet = result.next();
        
             if (searchUri != null) {
-                if(uriDao.existUri(searchUri)){
+                if (uriDao.existUri(searchUri)) {
                     annotation.setUri(searchUri);
                 }
             } else {

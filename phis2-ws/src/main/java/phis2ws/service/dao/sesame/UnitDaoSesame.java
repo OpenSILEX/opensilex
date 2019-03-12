@@ -95,7 +95,7 @@ public class UnitDaoSesame extends DAOSesame<Unit> {
             query.endBodyOptional();
         }
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
     }
 
@@ -325,7 +325,7 @@ public class UnitDaoSesame extends DAOSesame<Unit> {
             }
         }
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
     }
     

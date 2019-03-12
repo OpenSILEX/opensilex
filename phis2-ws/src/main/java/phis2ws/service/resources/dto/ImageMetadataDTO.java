@@ -25,7 +25,7 @@ import phis2ws.service.view.model.phis.ImageMetadata;
 public class ImageMetadataDTO extends AbstractVerifiedClass {
     
     private String rdfType;
-    private List<ConcernItemDTO> concernedItems;
+    private List<ConcernedItemDTO> concernedItems;
     private ShootingConfigurationDTO configuration;
     private FileInformationDTO fileInfo;
 
@@ -33,7 +33,7 @@ public class ImageMetadataDTO extends AbstractVerifiedClass {
     public ImageMetadata createObjectFromDTO() {
        ImageMetadata imageMetadata = new ImageMetadata();
        imageMetadata.setRdfType(rdfType);
-       for (ConcernItemDTO concernedItemDTO : concernedItems) {
+       for (ConcernedItemDTO concernedItemDTO : concernedItems) {
            imageMetadata.addConcernedItem(concernedItemDTO.createObjectFromDTO());
        }
        
@@ -55,11 +55,11 @@ public class ImageMetadataDTO extends AbstractVerifiedClass {
     }
     
     @Valid
-    public List<ConcernItemDTO> getConcernedItems() {
+    public List<ConcernedItemDTO> getConcernedItems() {
         return concernedItems;
     }
 
-    public void setConcernedItems(List<ConcernItemDTO> concernedItems) {
+    public void setConcernedItems(List<ConcernedItemDTO> concernedItems) {
         this.concernedItems = concernedItems;
     }
 

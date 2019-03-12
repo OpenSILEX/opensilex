@@ -18,6 +18,8 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.sparql.modify.request.UpdateDeleteWhere;
 import static org.apache.jena.sparql.vocabulary.VocabTestQuery.query;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -30,8 +32,6 @@ import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
@@ -41,17 +41,18 @@ import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.URINamespaces;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.model.User;
-import phis2ws.service.ontologies.Xsd;
-import phis2ws.service.utils.dates.Dates;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
-import phis2ws.service.utils.sparql.SPARQLStringBuilder;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
 
 /**
  * DAO class to query the triplestore 
- * @update [Morgane Vidal] 04 Oct, 2018 : Rename existObject to existUri and change the query of the method existUri.
- * @update [Andréas Garcia] 11 Jan, 2019 : Add generic date time stamp comparison SparQL filter.
+ * @update [Morgane Vidal] 04 Oct, 2018: Rename existObject to existUri and change the query of the method existUri.
+ * @update [Andréas Garcia] 11 Jan, 2019: Add generic date time stamp comparison SparQL filter.
+ * @update [Andréas Garcia] 5 March, 2019: 
+ *   Move date related functions in TimeDAOSesame.java
+ *   Add a generic function to get a string value from a binding set
+ *   Add the max value of a page to get all results
  * @param <T>
  * @author Arnaud Charleroy
  */
@@ -59,6 +60,19 @@ public abstract class DAOSesame<T> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(DAOSesame.class);
     protected static final String PROPERTY_FILENAME = "sesame_rdf_config";
+    
+    /**
+     * Page size max value used to get the highest number of results of an 
+     * object when getting a list within a list (e.g to get all the concerned
+     * items of all the events)
+     * //SILEX:todo 
+     * Pagination should be handled in this case too (i.e when getting a list
+     * within a list)
+     * For the moment we use only one page by taking the max value
+     * //\SILEX:todo
+     */    
+    protected int pageSizeMaxValue = Integer.parseInt(PropertiesFileManager.getConfigFileProperty("service", "pageSizeMax"));
+    
     //SILEX:test
     // For the full connection pool issue
     protected static final String SESAME_SERVER = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
@@ -66,7 +80,7 @@ public abstract class DAOSesame<T> {
     //\SILEX:test
 
     // used for logger
-    protected static final String SPARQL_SELECT_QUERY = "SPARQL query : ";
+    protected static final String SPARQL_QUERY = "SPARQL query: ";
     
     protected static final String COUNT_ELEMENT_QUERY = "count";
     
@@ -81,15 +95,6 @@ public abstract class DAOSesame<T> {
     protected static final String LABEL = "label";
     protected static final String COMMENT = "comment";
     
-    protected static final String DATETIME_SELECT_NAME = "dateTime";
-    protected static final String DATETIME_SELECT_NAME_SPARQL = "?" + DATETIME_SELECT_NAME;
-    
-    protected static final String DATE_RANGE_START_DATETIME_SELECT_NAME = "dateRangeStartDateTime";
-    protected static final String DATE_RANGE_START_DATETIME_SELECT_NAME_SPARQL = "?" + DATE_RANGE_START_DATETIME_SELECT_NAME;
-    
-    protected static final String DATE_RANGE_END_DATETIME_SELECT_NAME = "dateRangeEndDateTime";
-    protected static final String DATE_RANGE_END_DATETIME_SELECT_NAME_SPARQL = "?" + DATE_RANGE_END_DATETIME_SELECT_NAME;
-    
     protected final String DATETIMESTAMP_FORMAT_SPARQL = DateFormat.YMDTHMSZZ.toString();
     
     // Triplestore relations
@@ -103,8 +108,9 @@ public abstract class DAOSesame<T> {
     public User user;
     protected Integer page;
     protected Integer pageSize;
+    
     /**
-     * User ip adress
+     * User IP address
      */
     public String remoteUserAdress;
 
@@ -255,7 +261,7 @@ public abstract class DAOSesame<T> {
                         "    UNION\n" +
                         "    { ?s ?p ?r }\n");
             
-            LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+            LOGGER.debug(SPARQL_QUERY + query.toString());
             BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
             return booleanQuery.evaluate();
         } catch (Exception e) {
@@ -296,65 +302,6 @@ public abstract class DAOSesame<T> {
      * @return SPARQLQueryBuilder
      */
     abstract protected SPARQLQueryBuilder prepareSearchQuery();
-    
-    /** Add a filter to the search query comparing a SPARQL dateTimeStamp 
-     * variable to a date. 
-     * SPARQL dateTimeStamp dates have to be handled in a specific way as 
-     * the comparison operators (<, >, etc.) aren't available for dateTimeStamp
-     * objects.
-     * @see <a href="https://www.w3.org/TR/2013/REC-sparql11-query-20130321/#OperatorMapping">
-     * SparQL Operator Mapping
-     * </a>
-     * @param query
-     * @param filterDateString
-     * @param filterDateFormat
-     * @param filterDateSparqlVariable SPARQL variable (?abc format)
-     * @param comparisonSign e.g >, >=, <, <= 
-     * @param dateTimeStampToCompareSparqlVariable the SPARQL variable 
-     * (?abc format) of the dateTimeStamp to which the date has to be compared
-     * @example SparQL code added to the query :
-     *   BIND(xsd:dateTime(str("2017-09-10T12:00:00+01:00")) as ?dateRangeStartDateTime) .
-     *   FILTER ( (?dateRangeStartDateTime <= ?dateTime) ) 
-     */
-    protected void filterSearchQueryWithDateTimeStampComparison( SPARQLStringBuilder query, String filterDateString, String filterDateFormat, String filterDateSparqlVariable, String comparisonSign, String dateTimeStampToCompareSparqlVariable){
-        
-        DateTime filterDate = Dates.stringToDateTimeWithGivenPattern(filterDateString, filterDateFormat);
-        
-        String filterDateStringInSparqlDateTimeStampFormat = DateTimeFormat.forPattern(DATETIMESTAMP_FORMAT_SPARQL).print(filterDate);
-
-        query.appendToBody("\nBIND(<" + Xsd.FUNCTION_DATETIME.toString() + ">(str(\"" + filterDateStringInSparqlDateTimeStampFormat + "\")) as " + filterDateSparqlVariable + ") .");
-        
-        query.appendAndFilter(filterDateSparqlVariable + comparisonSign + dateTimeStampToCompareSparqlVariable);
-    }
-
-    /**
-     * Append a filter to select only the results whose datetime is 
-     * included in the date range in parameter
-     * @param query
-     * @param filterRangeDatesStringFormat
-     * @param filterRangeStartDateString
-     * @param filterRangeEndDateString
-     * @param dateTimeStampToCompareSparqleVariable the SPARQL variable (?abc 
-     * format) of the dateTimeStamp to compare to the range
-     * @example SparQL code added to the query :
-     *   BIND(xsd:dateTime(str(?dateTimeStamp)) as ?dateTime) .
-     *   BIND(xsd:dateTime(str("2017-09-10T12:00:00+01:00")) as ?dateRangeStartDateTime) .
-     *   BIND(xsd:dateTime(str("2017-09-12T12:00:00+01:00")) as ?dateRangeEndDateTime) .
-     *   FILTER ( (?dateRangeStartDateTime <= ?dateTime) && (?dateRangeEndDateTime >= ?dateTime) ) 
-     */
-    protected void filterSearchQueryWithDateRangeComparisonWithDateTimeStamp(SPARQLStringBuilder query, String filterRangeDatesStringFormat, String filterRangeStartDateString, String filterRangeEndDateString, String dateTimeStampToCompareSparqleVariable){
-        
-        query.appendToBody("\nBIND(<" + Xsd.FUNCTION_DATETIME.toString() 
-                + ">(str(" + dateTimeStampToCompareSparqleVariable 
-                + ")) as " + DATETIME_SELECT_NAME_SPARQL + ") .");
-        
-        if (filterRangeStartDateString != null){
-            filterSearchQueryWithDateTimeStampComparison(query, filterRangeStartDateString, filterRangeDatesStringFormat, DATE_RANGE_START_DATETIME_SELECT_NAME_SPARQL, " <= ", DATETIME_SELECT_NAME_SPARQL);
-        }
-        if (filterRangeEndDateString != null){
-            filterSearchQueryWithDateTimeStampComparison(query, filterRangeEndDateString, filterRangeDatesStringFormat, DATE_RANGE_END_DATETIME_SELECT_NAME_SPARQL, " >= ", DATETIME_SELECT_NAME_SPARQL);
-        }
-    }
 
     /**
      * Count the number of elements returned by the execution of a query
@@ -381,7 +328,6 @@ public abstract class DAOSesame<T> {
      * @param id
      */
     public void setUser(String id) {
-        // LOGGER.debug(JsonConverter.ConvertToJson(TokenManager.Instance().getSession(id).getUser()));
         if (TokenManager.Instance().getSession(id).getUser() == null) {
             throw new WebApplicationException(Response.status(Response.Status.UNAUTHORIZED).build());
         } else {
@@ -416,7 +362,7 @@ public abstract class DAOSesame<T> {
             spql.addInsert(graph, subjectUriNode, predicateUriNode, objectPropertyNode);
         });
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        LOGGER.debug(SPARQL_QUERY + query.toString());
         
         //Insert the properties in the triplestore
         Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, spql.buildRequest().toString());
@@ -467,5 +413,19 @@ public abstract class DAOSesame<T> {
         }
         
         return true;
+    }
+    
+    /**
+     * Get the value of a name in the SELECT statement from a binding set
+     * @param selectName 
+     * @param bindingSet 
+     * @return  the string value of the "selectName" variable in the binding set
+     */
+    protected String getStringValueOfSelectNameFromBindingSet(String selectName, BindingSet bindingSet) { 
+        Value selectedFieldValue = bindingSet.getValue(selectName);
+        if (selectedFieldValue != null) {
+            return selectedFieldValue.stringValue();
+        }
+        return null;
     }
 }

@@ -8,7 +8,7 @@
 package phis2ws.service.resources.dto.event;
 
 import java.util.ArrayList;
-import phis2ws.service.resources.dto.AnnotationDTO;
+import phis2ws.service.resources.dto.annotation.AnnotationDTO;
 import phis2ws.service.view.model.phis.Event;
 
 /**

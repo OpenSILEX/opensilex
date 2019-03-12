@@ -27,6 +27,11 @@ import phis2ws.service.view.brapi.form.ResponseFormGET;
  */
 @Provider
 public class PageSizeMaxRequestFilter implements ContainerRequestFilter {
+    
+    /**
+     * To set the page size max constant only once during the first use of the 
+     * filter, a boolean is used
+     */
     public static boolean PAGE_SIZE_MAX_HAS_BEEN_SET_UP = false;
     public static int PAGE_SIZE_MAX;
     
@@ -56,6 +61,9 @@ public class PageSizeMaxRequestFilter implements ContainerRequestFilter {
         }
     }
     
+    /**
+     * Set the page size max value from the configuration file
+     */
     private void setPageSizeMaxFromConfigFile() {        
         PAGE_SIZE_MAX = Integer.parseInt(PropertiesFileManager.getConfigFileProperty("service", "pageSizeMax"));
         PAGE_SIZE_MAX_HAS_BEEN_SET_UP = true;

@@ -57,7 +57,7 @@ public class DataFileDAOMongo extends DAOMongo<FileDescription> {
     private final static String DB_FIELD_DATE = "date";
     private final static String DB_FIELD_PROVENANCE = "provenanceUri";
     private final static String DB_FIELD_RDF_TYPE = "rdfType";
-    private final static String DB_FIELD_CONCERNED_ITEM = "concernedItems";
+    private final static String DB_FIELD_CONCERNED_ITEM_URI = "concernedItems.uri";
     
     // Rdf type of the data file to search
     public String rdfType;
@@ -122,7 +122,7 @@ public class DataFileDAOMongo extends DAOMongo<FileDescription> {
             BasicDBList concernedItemsIds = new BasicDBList();
             concernedItemsIds.addAll(concernedItems);
             DBObject inFilter = new BasicDBObject("$in", concernedItemsIds);
-            query.append(DB_FIELD_CONCERNED_ITEM, inFilter);
+            query.append(DB_FIELD_CONCERNED_ITEM_URI, inFilter);
         }
         
         query.append(DB_FIELD_RDF_TYPE, rdfType);

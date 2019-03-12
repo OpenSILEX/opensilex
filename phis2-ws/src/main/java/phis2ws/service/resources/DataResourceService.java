@@ -342,12 +342,6 @@ public class DataResourceService extends ResourceService {
         @ApiResponse(code = 404, message = DocumentationAnnotation.FILE_NOT_FOUND),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                          dataType = "string", paramType = "header",
-                          value = DocumentationAnnotation.ACCES_TOKEN,
-                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
     @Produces(MediaType.APPLICATION_OCTET_STREAM)  
     public Response getDataFile(
         @ApiParam(value = "Search by fileUri", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI ) @PathParam("fileUri") @URL @Required String fileUri,

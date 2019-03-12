@@ -76,7 +76,7 @@ public class EventDAOSesame extends DAOSesame<Event> {
     private String prepareSearchQueryUri(SPARQLQueryBuilder query, String searchUri, boolean inGroupBy) {
         query.appendSelect(URI_SELECT_NAME_SPARQL);
         
-        if(inGroupBy){
+        if (inGroupBy) {
             query.appendGroupBy(URI_SELECT_NAME_SPARQL);
         }
         if (searchUri != null) {

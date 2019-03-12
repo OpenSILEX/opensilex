@@ -47,7 +47,7 @@ import phis2ws.service.view.model.phis.FileDescription;
 
 /**
  * Represents the MongoDB Data File Access Object.
- * @author vincent
+ * @author Vincent Migot
  */
 public class DataFileDAOMongo extends DAOMongo<FileDescription> {
     

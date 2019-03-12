@@ -70,6 +70,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
      * //\SILEX:todo
      */
     public static final String CREATED = "created";
+
     /**
      * Comment that describe the annotation
      * @example Ustilago maydis infection

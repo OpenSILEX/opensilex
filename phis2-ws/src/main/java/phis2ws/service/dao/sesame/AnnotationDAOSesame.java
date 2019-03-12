@@ -69,7 +69,6 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
      * 2018-08-01 09:34:50.235Z format must be change to xsd:DateTime 2018-08-01T09:34:50.235Z
      * //\SILEX:todo
      */
-    
     public static final String CREATED = "created";
     /**
      * Comment that describe the annotation

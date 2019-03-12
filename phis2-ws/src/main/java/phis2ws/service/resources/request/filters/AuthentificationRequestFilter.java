@@ -6,6 +6,8 @@ import java.util.regex.Pattern;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.ResourceInfo;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -16,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import phis2ws.service.authentication.TokenManager;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.documentation.StatusCodeMsg;
+import phis2ws.service.resources.DataResourceService;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.ResponseFormGET;
 
@@ -32,6 +35,9 @@ public class AuthentificationRequestFilter implements ContainerRequestFilter {
 
     final static Logger LOGGER = LoggerFactory.getLogger(AuthentificationRequestFilter.class);
 
+    @Context
+    private ResourceInfo resourceInfo;
+        
     /**
      * Filtre le token de session
      *
@@ -46,12 +52,17 @@ public class AuthentificationRequestFilter implements ContainerRequestFilter {
                         new Status("You cannot access this resource.", StatusCodeMsg.ERR,
                                 "Invalid token")))
                 .type(MediaType.APPLICATION_JSON).build();
-
+        
+        
         final UriInfo uriInfo = requestContext.getUriInfo();
         final String resourcePath = uriInfo.getPath();
 //        logger.debug(resourcePath);
         // Swagger.json and token authorized
-        if (resourcePath != null && !resourcePath.contains("token") && !resourcePath.contains("calls") && !resourcePath.contains("swagger.json")) {
+        if (resourcePath != null 
+                && !resourcePath.contains("token") 
+                && !resourcePath.contains("calls") 
+                && !resourcePath.contains("swagger.json")
+                && !(resourceInfo.getResourceClass() == DataResourceService.class && resourceInfo.getResourceMethod().getName().equals("getDataFile"))) {
             //Get request headers
             final MultivaluedMap<String, String> headers = requestContext.getHeaders();
             if (headers != null && !headers.containsKey(GlobalWebserviceValues.AUTHORIZATION_PROPERTY)) {

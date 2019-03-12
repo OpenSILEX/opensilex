@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
+ * This model represent the description metadata of a data file
  * @author Vincent Migot
  */
 public class FileDescription {

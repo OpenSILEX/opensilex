@@ -18,22 +18,36 @@ import phis2ws.service.view.model.phis.FileDescription;
 
 /**
  * This class describe FileDescription Metadata
- * @author vincent
+ * @author Vincent Migot
  */
 public class FileDescriptionDTO {
-    
+
+    //The uri of the data file.
+    //e.g. http://www.phenome-fppn.fr/diaphen/id/dataFile/RGBImage/55fjbbmtmr4m3kkizslzaddfkdt2ranum3ikz6cdiajqzfdc7yqa31d87b83efac4c358ceb5b0da6ed27ff
     String uri;
-    
+    //Rdf type of the data file
+    //e.g. http://www.opensilex.org/vocabulary/oeso#HemisphericalImage
     String rdfType;
-    
+    //The date corresponding to the given value. The format should be yyyy-MM-ddTHH:mm:ssZ
+    //e.g. 2018-06-25T15:13:59+0200    
     String date;
-    
+    //A List of concerned items related to the data file
     List<ConcernItemDTO> concernedItems;
-    
+    //The uri of the provenance from which data file come.
+    //e.g. http://www.phenome-fppn.fr/diaphen/id/provenance/1552404943020
     String provenanceUri;
-    
+    //Additional informations for the file description. Its containt depends of the type of file. 
+    //e.g. 
+    // {
+    //   "SensingDevice" => "http://www.opensilex.org/demo/s001",
+    //   "Vector" => "http://www.opensilex.org/demo/v001"
+    // }
     Map<String, Object> metadata;
 
+    /**
+     * Constructor of the DTO from a FileDescription model
+     * @param description 
+     */
     public FileDescriptionDTO(FileDescription description) {
         SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
         

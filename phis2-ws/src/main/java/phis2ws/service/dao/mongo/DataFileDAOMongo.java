@@ -388,7 +388,7 @@ public class DataFileDAOMongo extends DAOMongo<FileDescription> {
         return split[split.length - 1];
     }
 
-        /**
+      /**
      * Return true if the given URI already exists in variable collection
      * @param variableUri variable which will determine in which collection to look
      * @param uri URI to check

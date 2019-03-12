@@ -13,7 +13,7 @@ import java.util.Map;
 
 /**
  *
- * @author vincent
+ * @author Vincent Migot
  */
 public class FileDescription {
 

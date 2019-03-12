@@ -330,7 +330,7 @@ public class DataResourceService extends ResourceService {
      * Return the content of the file corresponding to the uri given.
      * @param fileUri
      * @param response
-     * @return 
+     * @return The file content or null with a 404 status if it doesn't exists
      */
     @GET
     @Path("file/{fileUri}")
@@ -373,6 +373,12 @@ public class DataResourceService extends ResourceService {
         }
     }
     
+    /**
+     * This service return the descriptino of a file correponding to the uri given
+     * @param fileUri
+     * @param response
+     * @return 
+     */
     @GET
     @Path("file/{fileUri}/description")
     @ApiOperation(value = "Get data file description")
@@ -407,10 +413,22 @@ public class DataResourceService extends ResourceService {
     }
     
     
-    
+    /**
+     * This service search for file descriptions according to the search parameters given.
+     * @param pageSize
+     * @param page
+     * @param rdfType
+     * @param startDate
+     * @param endDate
+     * @param provenance
+     * @param concernedItems
+     * @param jsonValueFilter
+     * @param dateSortAsc
+     * @return 
+     */
     @GET
     @Path("file/search")
-    @ApiOperation(value = "Retrieve data file descriptions")
+    @ApiOperation(value = "Retrieve data file descriptions corresponding to the search parameters given.")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Retrieve file descriptions", response = FileDescriptionDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
@@ -431,18 +449,21 @@ public class DataResourceService extends ResourceService {
         @ApiParam(value = "Search by minimal date", example = DocumentationAnnotation.EXAMPLE_XSDDATETIME) @QueryParam("startDate") @Date({DateFormat.YMDTHMSZ, DateFormat.YMD}) String startDate,
         @ApiParam(value = "Search by maximal date", example = DocumentationAnnotation.EXAMPLE_XSDDATETIME) @QueryParam("endDate") @Date({DateFormat.YMDTHMSZ, DateFormat.YMD}) String endDate,
         @ApiParam(value = "Search by provenance uri", example = DocumentationAnnotation.EXAMPLE_PROVENANCE_URI) @QueryParam("provenance")  @URL String provenance,
+        @ApiParam(value = "Search by concerned items uri", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_URI) @QueryParam("concernedItems")  @URL List<String> concernedItems,
         @ApiParam(value = "Search by json filter", example = DocumentationAnnotation.EXAMPLE_PROVENANCE_METADATA) @QueryParam("jsonValueFilter") String jsonValueFilter,
         @ApiParam(value = "Date search result order ('true' for ascending and 'false' for descending)", example = "true") @QueryParam("dateSortAsc") boolean dateSortAsc
     ) {
         
         DataFileDAOMongo dataFileDaoMongo = new DataFileDAOMongo();
         
+        // 1. Set all varaibles corresponding to the search
         dataFileDaoMongo.rdfType = rdfType;
         dataFileDaoMongo.startDate = startDate;
         dataFileDaoMongo.endDate = endDate;
         dataFileDaoMongo.provenanceUri = provenance;
         dataFileDaoMongo.jsonValueFilter = jsonValueFilter;
         dataFileDaoMongo.dateSortAsc = dateSortAsc;
+        dataFileDaoMongo.concernedItems = concernedItems;
         
         dataFileDaoMongo.user = userSession.getUser();
         dataFileDaoMongo.setPage(page);

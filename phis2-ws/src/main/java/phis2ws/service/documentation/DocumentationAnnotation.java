@@ -53,6 +53,8 @@ public final class DocumentationAnnotation {
 
     public static final String ENVIRONMENT_POST_DEFINITION = "JSON format to insert environment";
     
+    public static final String DATA_POST_DEFINITION = "JSON format to insert data";
+    
     public static final String EXPERIMENT_URI_DEFINITION = "An experiment URI (Unique Resource Identifier)";
     public static final String EXPERIMENT_POST_DATA_DEFINITION = "JSON format of experiment data";
 
@@ -100,6 +102,8 @@ public final class DocumentationAnnotation {
     public static final String VECTOR_RDF_TYPE_DEFINITION = "A vector rdf type URI";
     
     public static final String RADIOMETRIC_TARGET_POST_DEFINITION = "JSON format of radiometric target data";
+    
+    public static final String PROVENACE_POST_DEFINITION = "JSON format of provenance";
 
     public static final String ADMIN_ONLY_NOTES = "This can only be done by a PHIS-SILEX admin.";
     public static final String USER_ONLY_NOTES = "This can only be done by a PHIS-SILEX user.";
@@ -164,6 +168,12 @@ public final class DocumentationAnnotation {
 
     public static final String EXAMPLE_PROVENANCE_URI = "http://www.phenome-fppn.fr/mtp/2018/pv181515071552";
     public static final String EXAMPLE_PROVENANCE_DATE = EXAMPLE_DATE;
+    public static final String EXAMPLE_PROVENANCE_LABEL = "PROV2019-LEAF";
+    public static final String EXAMPLE_PROVENANCE_COMMENT = "In this provenance we have count the number of leaf per plant";
+    public static final String EXAMPLE_PROVENANCE_METADATA = "{ \"SensingDevice\" : \"http://www.opensilex.org/demo/s001\",\n" +
+                                                               "\"Vector\" : \"http://www.opensilex.org/demo/v001\"}";
+    public static final String EXAMPLE_PROVENANCE_METADATA_FILTER = "{ \"metadata.SensingDevice\" : \"http://www.opensilex.org/demo/s001\",\n" +
+                                                               "\"metadata.Vector\" : \"http://www.opensilex.org/demo/v001\"}";
 
     public static final String EXAMPLE_GROUP_URI = "http://phenome-fppn.fr/mauguio/INRA-MISTEA-GAMMA";
     public static final String EXAMPLE_GROUP_NAME = "INRA-MISTEA-GAMMA";
@@ -233,8 +243,10 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_VARIABLE_URI = "http://www.phenome-fppn.fr/diaphen/id/variable/v0000001";
     public static final String EXAMPLE_VARIABLE_LABEL = "LAI";
 
+    public static final String EXAMPLE_DATA_URI = "http://www.opensilex.org/1e9eb2fbacc7222d3868ae96149a8a16b32b2a1870c67d753376381ebcbb5937/e78da502-ee3f-42d3-828e-aa8cab237f93";
+            
     public static final String EVENT_URI_DEFINITION = "An event URI (Unique Resource Identifier)";
-    public static final String EXAMPLE_EVENT_URI = "http://www.opensilex.org/id/event/12590c87-1c34-426b-a231-beb7acb33415";
+    public static final String EXAMPLE_EVENT_URI = "http://www.phenome-fppn.fr/id/event/96e72788-6bdc-4f8e-abd1-ce9329371e8e";
     public static final String EXAMPLE_EVENT_TYPE = "http://www.opensilex.org/vocabulary/oeev#MoveFrom";
     public static final String EXAMPLE_EVENT_CONCERNED_ITEM_URI = "http://www.phenome-fppn.fr/m3p/arch/2017/c17000242";
     public static final String EXAMPLE_EVENT_CONCERNED_ITEM_LABEL = "Plot Lavalette";

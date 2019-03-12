@@ -23,7 +23,7 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import phis2ws.service.view.model.phis.Data;
+import phis2ws.service.view.model.phis.AgronomicalData;
 import phis2ws.service.view.model.phis.Dataset;
 
 /**
@@ -47,7 +47,7 @@ public class DatasetsSerializer implements JsonSerializer<Dataset> {
     @Override
     public JsonElement serialize(Dataset src, Type typeOfSrc, JsonSerializationContext context) {
         Map<String, JsonArray> phenotypesDataToReturn = new HashMap<>();
-        for (Data d : src.getData()) {
+        for (AgronomicalData d : src.getData()) {
             if (phenotypesDataToReturn.containsKey(d.getAgronomicalObject())) {
                 JsonObject agronomicalObjectData = new JsonObject();
                  if (src.getVariableURI() != null) {

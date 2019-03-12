@@ -1,18 +1,21 @@
 //******************************************************************************
-//                          Data.java
+//                                       DataDTO.java
 // SILEX-PHIS
-// Copyright © INRA 2019
-// Creation date: 1 March 2019
-// Contact: vincent.migotl@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Copyright © INRA 2018
+// Creation date: 1 March 2018
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package phis2ws.service.view.model.phis;
+package phis2ws.service.resources.dto.data;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import phis2ws.service.configuration.DateFormat;
+import phis2ws.service.view.model.phis.Data;
 
 /**
- * This is the model for the phenotypes data
+ * Represents the exchange format used to get data from generic service.
  */
-public class Data {
+public class DataDTO {
     //The uri of the data.
     //e.g. http://www.opensilex.org/1e9eb2fbacc7222d3868ae96149a8a16b32b2a1870c67d753376381ebcbb5937/e78da502-ee3f-42d3-828e-aa8cab237f93
     protected String uri;
@@ -27,10 +30,38 @@ public class Data {
     protected String variableUri;
     //The date corresponding to the given value. The format should be yyyy-MM-ddTHH:mm:ssZ
     //e.g. 2018-06-25T15:13:59+0200
-    protected Date date;
-    //The measured value.
+    protected String date;
+    //The data value.
     //e.g. 1.2
     protected Object value;
+
+    public DataDTO(Data data) {
+        SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
+        
+        if (data.getDate() != null) {
+            setDate(df.format(data.getDate()));
+        }
+        
+        setUri(data.getUri());
+        setProvenanceUri(data.getProvenanceUri());
+        setVariableUri(data.getVariableUri());
+        setObjectUri(data.getObjectUri());
+        
+        Object dataValue = data.getValue();
+        if (dataValue != null && dataValue instanceof Date) {
+            setValue(df.format(dataValue));
+        } else {
+            setValue(dataValue);
+        }
+    }
+
+    public String getProvenanceUri() {
+        return provenanceUri;
+    }
+
+    public void setProvenanceUri(String provenanceUri) {
+        this.provenanceUri = provenanceUri;
+    }
 
     public String getObjectUri() {
         return objectUri;
@@ -48,11 +79,11 @@ public class Data {
         this.variableUri = variableUri;
     }
 
-    public Date getDate() {
+    public String getDate() {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(String date) {
         this.date = date;
     }
 
@@ -63,15 +94,7 @@ public class Data {
     public void setValue(Object value) {
         this.value = value;
     }
-
-    public String getProvenanceUri() {
-        return provenanceUri;
-    }
-
-    public void setProvenanceUri(String provenanceUri) {
-        this.provenanceUri = provenanceUri;
-    }
-
+    
     public String getUri() {
         return uri;
     }

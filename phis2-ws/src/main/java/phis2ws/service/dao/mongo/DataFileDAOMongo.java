@@ -9,8 +9,10 @@ package phis2ws.service.dao.mongo;
 
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.SftpException;
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
+import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
 import com.mongodb.client.ClientSession;
@@ -28,7 +30,6 @@ import java.util.List;
 import javax.ws.rs.core.Response;
 import org.bson.BSONObject;
 import org.bson.Document;
-//import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
@@ -45,7 +46,7 @@ import phis2ws.service.view.model.phis.ConcernedItem;
 import phis2ws.service.view.model.phis.FileDescription;
 
 /**
- *
+ * Represents the MongoDB Data File Access Object.
  * @author vincent
  */
 public class DataFileDAOMongo extends DAOMongo<FileDescription> {
@@ -56,14 +57,36 @@ public class DataFileDAOMongo extends DAOMongo<FileDescription> {
     private final static String DB_FIELD_DATE = "date";
     private final static String DB_FIELD_PROVENANCE = "provenanceUri";
     private final static String DB_FIELD_RDF_TYPE = "rdfType";
+    private final static String DB_FIELD_CONCERNED_ITEM = "concernedItems";
     
+    // Rdf type of the data file to search
     public String rdfType;
+    // Minimum date of the data file to search
     public String startDate;
+    // Maximum date of the data file to search
     public String endDate;
+    // Provenance uri of the data file to search
     public String provenanceUri;
+    // Arbitrary json filter in mongodb format to filter base on metadata
     public String jsonValueFilter;
+    // Date ordering of the search results
     public boolean dateSortAsc;
+    // List of concerned items of which data file to search must belong
+    public List<String> concernedItems;
 
+    /**
+     * Prepare and return the data file description search query with the given parameters
+     * @return The data file description search query
+     * @example
+     *  {
+     *      "date": {
+     *          $gte: ISODate("2010-06-15T10:51:00+0200"),
+     *          $lt: ISODate("2018-06-15T10:51:00+0200")
+     *      },
+     *      "rdfType": "http://www.phenome-fppn.fr/diaphen/id/variable/v0000001",
+     *      "provenance": "http://www.phenome-fppn.fr/mtp/2018/pv181515071552"
+     *  }
+     */
     @Override
     protected BasicDBObject prepareSearchQuery() {
         BasicDBObject query = new BasicDBObject();
@@ -93,6 +116,13 @@ public class DataFileDAOMongo extends DAOMongo<FileDescription> {
         // Add filter if a provenance uri is defined
         if (provenanceUri != null) {
             query.append(DB_FIELD_PROVENANCE, provenanceUri);
+        }
+        
+        if (concernedItems != null && concernedItems.size() > 0) {
+            BasicDBList concernedItemsIds = new BasicDBList();
+            concernedItemsIds.addAll(concernedItems);
+            DBObject inFilter = new BasicDBObject("$in", concernedItemsIds);
+            query.append(DB_FIELD_CONCERNED_ITEM, inFilter);
         }
         
         query.append(DB_FIELD_RDF_TYPE, rdfType);
@@ -143,6 +173,10 @@ public class DataFileDAOMongo extends DAOMongo<FileDescription> {
         return dataList;
     }
 
+    /**
+     * Get data count according to the prepareSearchQuery
+     * @return the data count
+     */
     public long count() {
         String typeCollection = this.getCollectionFromFileType(rdfType);
         MongoCollection<Document> dataVariableCollection = database.getCollection(typeCollection);
@@ -172,7 +206,6 @@ public class DataFileDAOMongo extends DAOMongo<FileDescription> {
     
     /**
      * Check the given data file description.
-     *
      * @param fileDescription
      * @return the check result with the founded errors
      */
@@ -219,7 +252,6 @@ public class DataFileDAOMongo extends DAOMongo<FileDescription> {
     
     /**
      * Insert the given data in the mongodb database
-     *
      * @param dataList
      * @return the insertion result
      */
@@ -371,6 +403,11 @@ public class DataFileDAOMongo extends DAOMongo<FileDescription> {
         return database.getCollection(variableCollection).countDocuments(query) > 0; 
     }
 
+    /**
+     * Get file description corresponding to the given URI
+     * @param fileUri
+     * @return The file description or null if it doesn't exists
+     */
     public FileDescription findFileDescriptionByUri(String fileUri) {
         BasicDBObject query = new BasicDBObject();
         query.append(DB_FIELD_URI, fileUri);

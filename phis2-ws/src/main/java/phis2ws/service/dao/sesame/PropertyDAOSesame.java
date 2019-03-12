@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -96,7 +95,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     protected final String PROPERTY_TYPE_PREF_LABEL = "propertyTypePrefLabel";   
     
     /**
-     * Prepare the SPARQL query to get the list of properties and their relations
+     * Prepares the SPARQL query to get the list of properties and their relations
      * to the given URI. If subClassOf is specified, the object corresponding to 
      * the URI must be a subclass of the given type.
      * @param searchUri
@@ -127,11 +126,11 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
-     * Search all the properties corresponding to the given object URI
+     * Searches all the properties corresponding to the given object URI
      * @param uri
      * @return the list of the properties which match the given URI.
      */
-    public ArrayList<RdfResourceDefinitionDTO> allPaginate(String uri) {        
+    public ArrayList<RdfResourceDefinitionDTO> searchProperties(String uri) {        
         SPARQLQueryBuilder query = prepareSearchQuery();
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         ArrayList<RdfResourceDefinitionDTO> propertiesContainer = new ArrayList<>();
@@ -166,7 +165,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
-     * Prepare the SPARQL query to get the domain of a relation
+     * Prepares the SPARQL query to get the domain of a relation
      * @return the built query
      * @example
      * SELECT ?domain
@@ -187,7 +186,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
-     * Prepare the SPARQL query to get the domain of a relation
+     * Prepares the SPARQL query to get the domain of a relation
      * @return the built query
      * @example
      * SELECT ?domain
@@ -208,7 +207,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
-     * Get in the Triplestore the domain of the property if it exists
+     * Gets in the Triplestore the domain of the property if it exists
      * @param relationUri
      * @return the domain of the property (attributes relation)
      */
@@ -228,7 +227,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
-     * Get in the Triplestore the domain of the property if it exists
+     * Gets in the Triplestore the domain of the property if it exists
      * @param relationUri
      * @return the domain of the property (attributes relation)
      */
@@ -248,7 +247,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
-     * Check if a given relation can be linked to a given rdfType. 
+     * Checks if a given relation can be linked to a given rdfType. 
      * Check if there is a domain and if the rdfType corresponds to the domain.
      * /!\ The PropertyDAOSesame#relation must contain the relation which domain is checked
      * @param relationUri
@@ -274,8 +273,8 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
-     * Check if a given relation can be linked to a given rdfType. 
-     * Check if there is a domain and if the rdfType corresponds to the domain.
+     * Checks if a given relation can be linked to a given rdfType. 
+     * Checks if there is a domain and if the rdfType corresponds to the domain.
      * /!\ The PropertyDAOSesame#relation must contain the relation which domain is checked
      * @param relationUri
      * @param rdfType the rdf type. e.g. http://www.opensilex.org/vocabulary/oeso#RadiometricTarget
@@ -371,7 +370,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
-     * Get the cardinalities of a relation for each concerned concept
+     * Gets the cardinalities of a relation for each concerned concept
      * @return the list of the cardinalities found in the Triplestore
      * @example content : 
      * "owl:cardinality" : 1
@@ -405,7 +404,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
-     * Get the cardinalities of each relations for a concept
+     * Gets the cardinalities of each relations for a concept
      * @param concept
      * @return the list of the cardinalities found in the Triplestore
      * @example of content: 
@@ -469,7 +468,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
-     * Order the given properties by relation
+     * Sorts the given properties by relation
      * @param properties
      * @return the ordered list
      */
@@ -488,7 +487,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
-     * Check the cardinalities for a list of properties, for a concept
+     * Checks the cardinalities for a list of properties, for a concept
      * @param numberOfRelations
      * @param expectedCardinalities
      * @return 
@@ -542,7 +541,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
-     * Check the existence and domain of the given list of properties
+     * Checks the existence and domain of the given list of properties
      * @param properties
      * @param ownerType
      * @return the result with the list of the found errors (empty if no error)
@@ -591,7 +590,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
-     * Check the cardinalities of properties for a given object URI
+     * Checks the cardinalities of properties for a given object URI
      * @param properties
      * @param objectUri
      * @param objectRdfType
@@ -642,7 +641,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
-     * Prepare the SPARQL query to get the list of properties and their 
+     * Prepares the SPARQL query to get the list of properties and their 
      * relations to the given URI with labels (skos:prefered and rdfs:label). 
      * If "subClassOf" property is defined, the request will also check
      * if the current URI corresponds to this type of ontology 
@@ -798,7 +797,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
      /**
-     * Search all the properties corresponding to the given object URI
+     * Searches all the properties corresponding to the given object URI
      * and fill the RDF Resource definition object with the values and labels
      * @param definition The definition object which will be filled
      * @param language specify in which language labels should be returned. The 
@@ -811,7 +810,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }       
     
      /**
-     * Search all the properties corresponding to the given object URI
+     * Searches all the properties corresponding to the given object URI
      * and fill the RDF Resource definition object with the values and labels
      * @param definition The definition object which will be filled
      * @param language specify in which language labels should be returned.
@@ -907,7 +906,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
-     * Generate an insert query for the given properties
+     * Generates an insert query for the given properties
      * @param objectUri the property owner's URI
      * @param peoperty
      * @param graphString
@@ -941,7 +940,7 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
     
     /**
-     * Insert the given properties of the given object in the storage. 
+     * Inserts the given properties of the given object in the storage. 
      * /!\ Prerequisite: data must have been checked before calling this method
      * @param objectResource
      * @param graph

@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                       ResultAnnotation.java
+//                             ResultAnnotation.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 21 juin 2018
@@ -13,7 +13,7 @@ import phis2ws.service.view.brapi.Pagination;
 import phis2ws.service.view.manager.Result;
 
 /**
- * A class which represents the result part in the response form, adapted to the annotation
+ * Represents the result part in the response form, adapted to the annotation
  * @update [Andréas Garcia] 15 Feb 2019: Use AnnotationDTO instead of Model
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */

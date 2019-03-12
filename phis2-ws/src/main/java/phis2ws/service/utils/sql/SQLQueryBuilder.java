@@ -11,7 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Provide SQL query building
+ * Provides SQL query building
  * @update [Andréas Garcia] 28 Feb., 2019: Add max clause handling
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
@@ -270,7 +270,7 @@ public void appendORWhereConditions(String attribute, String value, String opera
     }
     
     /**
-     * Add a LIMIT clause to the query
+     * Adds a LIMIT clause to the query
      * @author Morgane Vidal, 21 Feb., 2017
      * @param limit limit value
      */

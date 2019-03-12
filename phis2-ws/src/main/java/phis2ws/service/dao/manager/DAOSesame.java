@@ -1,10 +1,10 @@
-//**********************************************************************************************
+//******************************************************************************
 //                              DAOSesame.java 
 // SILEX-PHIS
 // Copyright © INRA 2016
 // Creation date: Aug 2016
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-//***********************************************************************************************
+//******************************************************************************
 package phis2ws.service.dao.manager;
 
 import java.util.List;
@@ -52,7 +52,7 @@ import phis2ws.service.view.brapi.form.ResponseFormPOST;
  * @update [Andréas Garcia] 5 March, 2019: 
  *   Move date related functions in TimeDAOSesame.java
  *   Add a generic function to get a string value from a binding set
- *   Add the max value of a page to get all results
+ *   Add the max value of a page (to get all results of a service)
  * @param <T>
  * @author Arnaud Charleroy
  */

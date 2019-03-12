@@ -303,6 +303,24 @@ public class EventResourceService  extends ResourceService {
      * Service to insert events
      * @example
      * {
+     *  [
+     *   {
+     *     "rdfType": "http://www.opensilex.org/vocabulary/oeev#MoveFrom",
+     *     "description": "The pest attack lasted 20 minutes",
+     *     "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/marie_dupond",
+     *     "concernedItemsUris": [
+     *       "string"
+     *     ],
+     *     "date": "2017-09-08T12:00:00+01:00",
+     *     "properties": [
+     *       {
+     *         "rdfType": "http://xmlns.com/foaf/0.1/Agent",
+     *         "relation": "http://www.phenome-fppn.fr/vocabulary/2018#hasContact",
+     *         "value": "http://www.phenome-fppn.fr/diaphen/id/agent/marie_dupond"
+     *       }
+     *     ]
+     *   }
+     *  ]
      * }
      * @param eventsDtos
      * @param context

@@ -14,12 +14,12 @@ import phis2ws.service.view.brapi.results.ResultEventDetailed;
 import phis2ws.service.view.manager.ResultForm;
 
 /**
- * Do formatting of the result of a request of a detailed event 
+ * Does formatting of the result of a request of a detailed event 
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
 public class ResponseFormEventDetailed extends ResultForm {
     /**
-     * Initialize fields metadata and result
+     * Initializes the metadata and result fields
      * @param pageSize results per page
      * @param currentPage current page
      * @param list results list
@@ -35,7 +35,7 @@ public class ResponseFormEventDetailed extends ResultForm {
     }
     
     /**
-     * Initialize fields metadata and result
+     * Initializes the metadata and result fields 
      * @param pageSize results per page
      * @param currentPage current page
      * @param list results list

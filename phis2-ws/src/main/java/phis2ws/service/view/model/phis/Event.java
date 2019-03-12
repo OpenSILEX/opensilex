@@ -1,5 +1,5 @@
 //******************************************************************************
-//                              Event.java
+//                                Event.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 12 nov. 2018
@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import org.joda.time.DateTime;
 
 /**
- * Represent the Event model
+ * Represents the Event model
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
 public class Event extends RdfResourceDefinition {

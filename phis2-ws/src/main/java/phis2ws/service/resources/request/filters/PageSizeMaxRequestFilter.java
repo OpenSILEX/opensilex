@@ -22,7 +22,7 @@ import phis2ws.service.view.brapi.form.ResponseFormGET;
 /**
  * Filter for the pageSize max.
  * @update [Morgane Vidal] 03 December, 2018: simplify the pageSize query filter
- * @update [Andréas Garcia] 28 Feb., 2019: get page size limit from config file
+ * @update [Andréas Garcia] 28 Feb., 2019: get page size limit from configuration file
  * @author Arnaud Charleroy
  */
 @Provider
@@ -36,7 +36,7 @@ public class PageSizeMaxRequestFilter implements ContainerRequestFilter {
     public static int PAGE_SIZE_MAX;
     
     /**
-     * Filter the pageSize parameter
+     * Filters the pageSize parameter
      * @param requestContext
      */
     @Override
@@ -62,7 +62,7 @@ public class PageSizeMaxRequestFilter implements ContainerRequestFilter {
     }
     
     /**
-     * Set the page size max value from the configuration file
+     * Sets the page size max value from the configuration file
      */
     private void setPageSizeMaxFromConfigFile() {        
         PAGE_SIZE_MAX = Integer.parseInt(PropertiesFileManager.getConfigFileProperty("service", "pageSizeMax"));

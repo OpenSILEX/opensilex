@@ -67,7 +67,6 @@ import phis2ws.service.view.model.phis.Variable;
  */
 public class StudyResourceService implements BrapiCall {
     
-    final static Logger LOGGER = LoggerFactory.getLogger(StudyResourceService.class);  
     
      /**
      * Overriding BrapiCall method

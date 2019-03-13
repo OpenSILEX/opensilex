@@ -150,6 +150,5 @@ public class BrapiObservationDTO {
     public void setValue(String value) {
         this.value = value;
     }  
-    
 }
     

@@ -65,7 +65,7 @@ import phis2ws.service.view.model.phis.Variable;
  * GET Studies/{studyDbId}/observations
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
-public class StudyResourceService implements BrapiCall{
+public class StudyResourceService implements BrapiCall {
     
     final static Logger LOGGER = LoggerFactory.getLogger(StudyResourceService.class);  
     

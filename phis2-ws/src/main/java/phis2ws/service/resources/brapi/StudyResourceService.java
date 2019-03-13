@@ -156,7 +156,6 @@ public class StudyResourceService implements BrapiCall {
                          value = DocumentationAnnotation.ACCES_TOKEN,
                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
-    
     @Produces(MediaType.APPLICATION_JSON)   
     
     public Response getStudyDetails (

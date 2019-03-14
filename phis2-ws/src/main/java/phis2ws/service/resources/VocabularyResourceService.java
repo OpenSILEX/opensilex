@@ -35,8 +35,7 @@ import phis2ws.service.resources.dto.PropertyVocabularyDTO;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
-import phis2ws.service.view.brapi.form.ResponseFormVocabularyNamespace;
-import phis2ws.service.view.brapi.form.ResponseFormVocabularyProperty;
+import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Namespace;
 import phis2ws.service.view.model.phis.Property;
 
@@ -59,18 +58,18 @@ public class VocabularyResourceService extends ResourceService {
     private Response getRdfsData(VocabularyDAOSesame vocabularyDAO) {
         ArrayList<PropertyVocabularyDTO> properties;
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormVocabularyProperty getResponse;
+        ResultForm<PropertyVocabularyDTO> getResponse;
 
         properties = vocabularyDAO.allPaginateRdfsProperties();
 
         if (properties == null) {
-            getResponse = new ResponseFormVocabularyProperty(0, 0, properties, true);
+            getResponse = new ResultForm<PropertyVocabularyDTO>(0, 0, properties, true);
             return noResultFound(getResponse, statusList);
         } else if (properties.isEmpty()) {
-            getResponse = new ResponseFormVocabularyProperty(0, 0, properties, true);
+            getResponse = new ResultForm<PropertyVocabularyDTO>(0, 0, properties, true);
             return noResultFound(getResponse, statusList);
         } else {
-            getResponse = new ResponseFormVocabularyProperty(vocabularyDAO.getPageSize(), vocabularyDAO.getPage(), properties, false);
+            getResponse = new ResultForm<PropertyVocabularyDTO>(vocabularyDAO.getPageSize(), vocabularyDAO.getPage(), properties, false);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {
@@ -160,18 +159,18 @@ public class VocabularyResourceService extends ResourceService {
     private Response getContactProperties(VocabularyDAOSesame vocabularyDAO) {
         ArrayList<PropertyVocabularyDTO> properties;
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormVocabularyProperty getResponse;
+        ResultForm<PropertyVocabularyDTO> getResponse;
 
         properties = vocabularyDAO.allPaginateContactProperties();
 
         if (properties == null) {
-            getResponse = new ResponseFormVocabularyProperty(0, 0, properties, true);
+            getResponse = new ResultForm<PropertyVocabularyDTO>(0, 0, properties, true);
             return noResultFound(getResponse, statusList);
         } else if (properties.isEmpty()) {
-            getResponse = new ResponseFormVocabularyProperty(0, 0, properties, true);
+            getResponse = new ResultForm<PropertyVocabularyDTO>(0, 0, properties, true);
             return noResultFound(getResponse, statusList);
         } else {
-            getResponse = new ResponseFormVocabularyProperty(vocabularyDAO.getPageSize(), vocabularyDAO.getPage(), properties, false);
+            getResponse = new ResultForm<PropertyVocabularyDTO>(vocabularyDAO.getPageSize(), vocabularyDAO.getPage(), properties, false);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {
@@ -254,18 +253,18 @@ public class VocabularyResourceService extends ResourceService {
     private Response getDeviceProperties(VocabularyDAOSesame vocabularyDAO) {
         ArrayList<PropertyVocabularyDTO> properties;
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormVocabularyProperty getResponse;
+        ResultForm<PropertyVocabularyDTO> getResponse;
 
         properties = vocabularyDAO.allPaginateDeviceProperties();
 
         if (properties == null) {
-            getResponse = new ResponseFormVocabularyProperty(0, 0, properties, true);
+            getResponse = new ResultForm<PropertyVocabularyDTO>(0, 0, properties, true);
             return noResultFound(getResponse, statusList);
         } else if (properties.isEmpty()) {
-            getResponse = new ResponseFormVocabularyProperty(0, 0, properties, true);
+            getResponse = new ResultForm<PropertyVocabularyDTO>(0, 0, properties, true);
             return noResultFound(getResponse, statusList);
         } else {
-            getResponse = new ResponseFormVocabularyProperty(vocabularyDAO.getPageSize(), vocabularyDAO.getPage(), properties, false);
+            getResponse = new ResultForm<PropertyVocabularyDTO>(vocabularyDAO.getPageSize(), vocabularyDAO.getPage(), properties, false);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {
@@ -428,18 +427,18 @@ public class VocabularyResourceService extends ResourceService {
     private Response getNamespaces(VocabularyDAOSesame vocabularyDAO) {
         ArrayList<Namespace> namespaces;
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormVocabularyNamespace getResponse;
+        ResultForm<Namespace> getResponse;
 
         namespaces = vocabularyDAO.allNamespacesProperties();
 
         if (namespaces == null) {
-            getResponse = new ResponseFormVocabularyNamespace(0, 0, namespaces, true);
+            getResponse = new ResultForm<Namespace> (0, 0, namespaces, true);
             return noResultFound(getResponse, statusList);
         } else if (namespaces.isEmpty()) {
-            getResponse = new ResponseFormVocabularyNamespace(0, 0, namespaces, true);
+            getResponse = new ResultForm<Namespace> (0, 0, namespaces, true);
             return noResultFound(getResponse, statusList);
         } else {
-            getResponse = new ResponseFormVocabularyNamespace(vocabularyDAO.getPageSize(), vocabularyDAO.getPage(), namespaces, false);
+            getResponse = new ResultForm<Namespace> (vocabularyDAO.getPageSize(), vocabularyDAO.getPage(), namespaces, false);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {

@@ -7,7 +7,12 @@
 //******************************************************************************
 package phis2ws.service.view.model.phis;
 
+import java.util.Base64;
 import java.util.Date;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import phis2ws.service.ontologies.Oeso;
+import phis2ws.service.utils.UriGenerator;
 
 /**
  * This is the model for the phenotypes data

@@ -10,9 +10,9 @@ package phis2ws.service.dao.mongo;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.SftpException;
 import com.mongodb.BasicDBList;
+import com.mongodb.DBObject;
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
-import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
 import com.mongodb.client.ClientSession;
@@ -30,6 +30,7 @@ import java.util.List;
 import javax.ws.rs.core.Response;
 import org.bson.BSONObject;
 import org.bson.Document;
+//import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
@@ -254,6 +255,7 @@ public class DataFileDAOMongo extends DAOMongo<FileDescription> {
     
     /**
      * Check the given data file description.
+     *
      * @param fileDescription
      * @return the check result with the founded errors
      */
@@ -300,6 +302,7 @@ public class DataFileDAOMongo extends DAOMongo<FileDescription> {
     
     /**
      * Insert the given data in the mongodb database
+     *
      * @param dataList
      * @return the insertion result
      */
@@ -437,7 +440,7 @@ public class DataFileDAOMongo extends DAOMongo<FileDescription> {
         return split[split.length - 1];
     }
 
-      /**
+    /**
      * Return true if the given URI already exists in variable collection
      * @param variableUri variable which will determine in which collection to look
      * @param uri URI to check

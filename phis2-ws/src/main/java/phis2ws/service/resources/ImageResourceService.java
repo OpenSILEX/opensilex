@@ -68,8 +68,8 @@ import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
-import phis2ws.service.view.brapi.form.ResponseFormImageMetadata;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
+import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.ImageMetadata;
 
 /**
@@ -349,15 +349,15 @@ public class ImageResourceService extends ResourceService {
     private Response getImagesData(ImageMetadataDaoMongo imageMetadataDaoMongo) {
         ArrayList<ImageMetadata> imagesMetadata;
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormImageMetadata getResponse;
+        ResultForm<ImageMetadata> getResponse;
         
         imagesMetadata = imageMetadataDaoMongo.allPaginate();
         
         if (imagesMetadata == null) {
-            getResponse = new ResponseFormImageMetadata(0, 0, imagesMetadata, true);
+            getResponse = new ResultForm<ImageMetadata>(0, 0, imagesMetadata, true);
             return noResultFound(getResponse, statusList);
         } else if (!imagesMetadata.isEmpty()) {
-            getResponse = new ResponseFormImageMetadata(imageMetadataDaoMongo.getPageSize(), imageMetadataDaoMongo.getPage(), imagesMetadata, false);
+            getResponse = new ResultForm<ImageMetadata>(imageMetadataDaoMongo.getPageSize(), imageMetadataDaoMongo.getPage(), imagesMetadata, false);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {
@@ -365,7 +365,7 @@ public class ImageResourceService extends ResourceService {
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         } else {
-            getResponse = new ResponseFormImageMetadata(0, 0, imagesMetadata, true);
+            getResponse = new ResultForm<ImageMetadata>(0, 0, imagesMetadata, true);
             return noResultFound(getResponse, statusList);
         }
     }

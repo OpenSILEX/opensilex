@@ -19,6 +19,7 @@ import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import com.mongodb.client.model.Sorts;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -33,9 +34,7 @@ import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.dao.manager.DAOMongo;
 import phis2ws.service.dao.sesame.VariableDaoSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.utils.POSTResultsReturn;
-import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.Data;
 
@@ -114,29 +113,15 @@ public class DataDAOMongo extends DAOMongo<Data> {
     private Document prepareInsertDataDocument(Data data) {
         Document document = new Document();
 
-        String key = data.getVariableUri() + data.getObjectUri() + data.getProvenanceUri() + data.getDate();
-        try {
-            UriGenerator uriGenerator = new UriGenerator();
-            String uri = uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA.toString(), null, key);
+        document.append(DB_FIELD_URI, data.getUri());
+        document.append(DB_FIELD_OBJECT, data.getObjectUri());
+        document.append(DB_FIELD_VARIABLE, data.getVariableUri());
+        document.append(DB_FIELD_DATE, data.getDate());
+        document.append(DB_FIELD_PROVENANCE, data.getProvenanceUri());
+        document.append(DB_FIELD_VALUE, data.getValue());
 
-            while (uriExists(data.getVariableUri(), uri)) {
-                uri = uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA.toString(), null, key);
-            }
-            
-            data.setUri(uri);
-            
-            document.append(DB_FIELD_URI, data.getUri());
-            document.append(DB_FIELD_OBJECT, data.getObjectUri());
-            document.append(DB_FIELD_VARIABLE, data.getVariableUri());
-            document.append(DB_FIELD_DATE, data.getDate());
-            document.append(DB_FIELD_PROVENANCE, data.getProvenanceUri());
-            document.append(DB_FIELD_VALUE, data.getValue());
+        LOGGER.debug(document.toJson());
 
-            LOGGER.debug(document.toJson());
-        } catch (Exception e) {
-            LOGGER.error("Exception while generating uri, should never append", e);
-        }
-        
         return document;
     }
 

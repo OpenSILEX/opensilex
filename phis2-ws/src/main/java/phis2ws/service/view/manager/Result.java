@@ -19,7 +19,7 @@ import java.util.ArrayList;
  * @see https://brapi.docs.apiary.io
  * @date 14/12/2015
  */
-public abstract class Result<T> {
+public class Result<T> {
 
     ArrayList<T> data;
 

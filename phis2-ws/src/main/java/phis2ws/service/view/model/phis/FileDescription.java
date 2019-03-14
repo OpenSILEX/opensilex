@@ -3,7 +3,7 @@
 // SILEX-PHIS
 // Copyright © INRA 2019
 // Creation date: 7 mars 2019
-// Contact: Expression userEmail is undefined on line 6, column 15 in file:///home/vincent/opensilex/phis-ws/phis2-ws/licenseheader.txt., anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package phis2ws.service.view.model.phis;
 
@@ -49,7 +49,6 @@ public class FileDescription {
         this.path = path;
     }
 
-    
     public String getFilename() {
         return filename;
     }
@@ -97,7 +96,4 @@ public class FileDescription {
     public void setMetadata(Map<String, Object> metadata) {
         this.metadata = metadata;
     }
-    
-    
-    
 }

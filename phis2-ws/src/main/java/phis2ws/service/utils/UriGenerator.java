@@ -10,6 +10,7 @@ import java.time.Instant;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.Calendar;
 import java.util.UUID;
 import org.apache.commons.codec.binary.Base32;
@@ -511,7 +512,6 @@ public class UriGenerator {
     private String generateDataFileUri(String collection, String key) throws Exception {
         // Define data URI with key hash  and random id to prevent collision
         String uri = Contexts.PLATFORM.toString() + "id/dataFile/" + collection + "/" + getUniqueHash(key);
-        
         return uri;
     }
     

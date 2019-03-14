@@ -31,16 +31,12 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.sesame.PropertyDAOSesame;
 import phis2ws.service.dao.sesame.RadiometricTargetDAOSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.dto.radiometricTargets.RadiometricTargetDTO;
 import phis2ws.service.resources.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
 import phis2ws.service.resources.dto.radiometricTargets.RadiometricTargetPostDTO;
@@ -50,7 +46,6 @@ import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
-import phis2ws.service.view.brapi.form.ResponseFormRdfResourceDefinition;
 import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.RadiometricTarget;
 
@@ -276,15 +271,15 @@ public class RadiometricTargetResourceService extends ResourceService {
         // 4. Initialize return variables
         ArrayList<RdfResourceDefinitionDTO> list = new ArrayList<>();
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormRdfResourceDefinition getResponse;
+        ResultForm<RdfResourceDefinitionDTO> getResponse;
         
         if (radiometricTargets == null) {
             // Request failure
-            getResponse = new ResponseFormRdfResourceDefinition(0, 0, list, true, 0);
+            getResponse = new ResultForm<RdfResourceDefinitionDTO>(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         } else if (radiometricTargets.isEmpty()) {
             // No results
-            getResponse = new ResponseFormRdfResourceDefinition(0, 0, list, true, 0);
+            getResponse = new ResultForm<RdfResourceDefinitionDTO>(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         } else {
             // Convert all RadiometricTarget object to DTO's
@@ -293,7 +288,7 @@ public class RadiometricTargetResourceService extends ResourceService {
             });
             
             // Return list of DTO
-            getResponse = new ResponseFormRdfResourceDefinition(radiometricTargetDAO.getPageSize(), radiometricTargetDAO.getPage(), list, true, totalCount);
+            getResponse = new ResultForm<RdfResourceDefinitionDTO>(radiometricTargetDAO.getPageSize(), radiometricTargetDAO.getPage(), list, true, totalCount);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }
@@ -368,7 +363,7 @@ public class RadiometricTargetResourceService extends ResourceService {
         
         // 2. Initialize result variable
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormRdfResourceDefinition getResponse;
+        ResultForm<RdfResourceDefinitionDTO> getResponse;
         ArrayList<RdfResourceDefinitionDTO> list = new ArrayList<>();
         
         // Get all properties in the given language and fill them in RadiometricTarget object
@@ -379,12 +374,12 @@ public class RadiometricTargetResourceService extends ResourceService {
             list.add(new RadiometricTargetDTO(radiometricTarget));
             
             // Return it
-            getResponse = new ResponseFormRdfResourceDefinition(propertyDAO.getPageSize(), propertyDAO.getPage(), list, true, list.size());
+            getResponse = new ResultForm<RdfResourceDefinitionDTO>(propertyDAO.getPageSize(), propertyDAO.getPage(), list, true, list.size());
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         } else {
             // No result found
-            getResponse = new ResponseFormRdfResourceDefinition(0, 0, list, true, 0);
+            getResponse = new ResultForm<RdfResourceDefinitionDTO>(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         }
     }

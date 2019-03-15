@@ -238,12 +238,19 @@ public class EventResourceService  extends ResourceService {
     public Response getEventDetailed(
         @ApiParam(value = DocumentationAnnotation.EVENT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_EVENT_URI) @PathParam("uri") @URL @Required String uri) {
         
-        return getEvents(uri, null, null, null, null, null, 0, 0);
+        return getEvents(uri, null, null, null, null, null, 0, 1);
     }
     
     /**
      * Get events
      * @param uri
+     * @param type
+     * @param concernedItemLabel
+     * @param concernedItemUri
+     * @param startDate
+     * @param endDate
+     * @param page
+     * @param pageSize
      * @return an event's details
      */
     private Response getEvents(String uri, String type, String concernedItemLabel, String concernedItemUri, String startDate, String endDate, int page, int pageSize) {

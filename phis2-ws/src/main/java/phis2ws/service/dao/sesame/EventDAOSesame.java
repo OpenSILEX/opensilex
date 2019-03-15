@@ -42,7 +42,6 @@ import phis2ws.service.utils.UriGenerator;
 import phis2ws.service.utils.dates.Dates;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.brapi.Status;
-import phis2ws.service.view.model.phis.Annotation;
 import phis2ws.service.view.model.phis.Event;
 import phis2ws.service.view.model.phis.Property;
 

@@ -240,30 +240,30 @@ public class EventResourceService  extends ResourceService {
                 page, 
                 pageSize);
         
-        // 2. Analyse result
-        ArrayList<EventDTO> eventDTOs = new ArrayList();
+        // 3. Initialize return variables
+        ArrayList<RdfResourceDefinitionDTO> list = new ArrayList<>();
         ArrayList<Status> statusList = new ArrayList<>();
-        ResultForm<EventDTO> responseForm;
+        ResultForm<RdfResourceDefinitionDTO> getResponse;
         
-        if (event == null) { // Request failure
-            responseForm = new ResultForm<EventDTO>(0, 0, eventDTOs, true, 0);
-            return noResultFound(responseForm, statusList);
+        if (events == null) { // Request failure
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
+            return noResultFound(getResponse, statusList);
         } else if (events.isEmpty()) { // No result
-            responseForm = new ResponseFormEventSimple(0, 0, eventDTOs, true, 0);
-            return noResultFound(responseForm, statusList);
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
+            return noResultFound(getResponse, statusList);
         } else { // Results
             
             // Generate DTOs
             events.forEach((event) -> {
-                eventDTOs.add(new EventDTO(event));
+                list.add(new EventDTO(event));
             });
             
-            responseForm = new ResultForm<EventDTO>(0, 0, eventDTOs, true, 0);
-            if (responseForm.getResult().dataSize() == 0) {
-                return noResultFound(responseForm, statusList);
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
+            if (getResponse.getResult().dataSize() == 0) {
+                return noResultFound(getResponse, statusList);
             } else {
-                responseForm.setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(responseForm).build();
+                getResponse.setStatus(statusList);
+                return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         }
     }

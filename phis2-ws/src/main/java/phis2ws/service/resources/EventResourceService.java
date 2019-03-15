@@ -34,12 +34,14 @@ import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
+import phis2ws.service.dao.sesame.AnnotationDAOSesame;
 import phis2ws.service.dao.sesame.EventDAOSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
+import phis2ws.service.resources.dto.annotation.AnnotationDTO;
 import phis2ws.service.resources.dto.event.EventDetailedDTO;
 import phis2ws.service.resources.dto.event.EventPostDTO;
-import phis2ws.service.resources.dto.event.EventSimpleDTO;
+import phis2ws.service.resources.dto.event.EventDTO;
 import phis2ws.service.resources.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
 import phis2ws.service.resources.validation.interfaces.Date;
 import phis2ws.service.resources.validation.interfaces.Required;
@@ -150,7 +152,7 @@ public class EventResourceService  extends ResourceService {
                 pageSize);
         
         // 2. Analyse result
-        ArrayList<EventSimpleDTO> eventDTOs = new ArrayList();
+        ArrayList<EventDTO> eventDTOs = new ArrayList();
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<EventSimpleDTO> responseForm;
         
@@ -164,7 +166,7 @@ public class EventResourceService  extends ResourceService {
             
             // Generate DTOs
             events.forEach((event) -> {
-                eventDTOs.add(new EventSimpleDTO(event));
+                eventDTOs.add(new EventDTO(event));
             });
             
             // Return DTOs
@@ -295,6 +297,69 @@ public class EventResourceService  extends ResourceService {
                 responseForm.setStatus(statusList);
                 return Response.status(Response.Status.OK).entity(responseForm).build();
             }
+        }
+    }
+    
+    /**
+     * Get an event's annotations
+     * @param pageSize
+     * @param page
+     * @example
+     * {
+     *   
+     * }
+     * @param uri
+     * @return an event's annotations
+     */
+    @GET
+    @Path("{uri}/annotations")
+    @ApiOperation(value = "Get an event's annotations",
+                  notes = "Get an event's annotations")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Get an event's annotations", response = RdfResourceDefinitionDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+            dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+            value = DocumentationAnnotation.ACCES_TOKEN,
+            example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getEventAnnotations(
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
+        @ApiParam(value = DocumentationAnnotation.EVENT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_EVENT_URI) @PathParam("uri") @URL @Required String uri) {
+        
+        ArrayList<Status> statusList = new ArrayList<>();
+        ResponseFormAnnotation getResponse;
+        
+        AnnotationDAOSesame annotationDAOSesame = new AnnotationDAOSesame(userSession.getUser());
+
+        // Count all annotations for this specific request
+        Integer totalCount = annotationDAOSesame.count(null, null, uri, null, null);
+        
+        // Retreive all annotations returned by the query
+        ArrayList<Annotation> annotations = annotationDAOSesame.searchAnnotations(null, null, uri, null, null, page, pageSize);
+        
+        ArrayList<AnnotationDTO> annotationDTOs = new ArrayList();
+
+        if (annotations == null) {
+            getResponse = new ResponseFormAnnotation(0, 0, annotationDTOs, true);
+            return noResultFound(getResponse, statusList);
+        } else if (annotations.isEmpty()) {
+            getResponse = new ResponseFormAnnotation(0, 0, annotationDTOs, true);
+            return noResultFound(getResponse, statusList);
+        } else {
+            // Generate DTOs
+            annotations.forEach((annotation) -> {
+                annotationDTOs.add(new AnnotationDTO(annotation));
+            });
+            getResponse = new ResponseFormAnnotation(annotationDAOSesame.getPageSize(), annotationDAOSesame.getPage(), annotationDTOs, true, totalCount);
+            getResponse.setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
         }
     }
         

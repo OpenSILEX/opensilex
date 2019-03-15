@@ -34,7 +34,7 @@ import phis2ws.service.dao.sesame.ImageMetadataDaoSesame;
 import phis2ws.service.dao.sesame.SensorDAOSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.ontologies.Contexts;
-import phis2ws.service.resources.dto.ConcernItemDTO;
+import phis2ws.service.resources.dto.ConcernedItemDTO;
 import phis2ws.service.resources.dto.ImageMetadataDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
@@ -224,7 +224,7 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
             }
 
             //2. Check if the concerned items exist in the triplestore
-            for (ConcernItemDTO concernedItem : imageMetadata.getConcernedItems()) {
+            for (ConcernedItemDTO concernedItem : imageMetadata.getConcernedItems()) {
                 if (!imageMetadataDaoSesame.existUri(concernedItem.getUri())) {
                     dataOk = false;
                     checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Unknown concerned item given : " + concernedItem.getUri()));

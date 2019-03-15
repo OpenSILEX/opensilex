@@ -16,5 +16,5 @@ package phis2ws.service.resources.dto.manager;
  */
 public interface VerifiedClassInterface<T> {
     
-    public T createObjectFromDTO();
+    public T createObjectFromDTO() throws Exception;
 }

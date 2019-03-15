@@ -88,6 +88,12 @@ public enum Oeso {
             return NAMESPACE.toString() + "Project";
         }
     },
+    CONCEPT_PROVENANCE {
+       @Override
+        public String toString() {
+            return NAMESPACE.toString() + "Provenance";
+        } 
+    },
     CONCEPT_RADIOMETRIC_TARGET {
         @Override
         public String toString() {
@@ -349,4 +355,16 @@ public enum Oeso {
             return NAMESPACE.toString() + "status";
         }
     },
+    CONCEPT_DATA {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "Data";
+        }
+    },
+    CONCEPT_DATA_FILE {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "DataFile";
+        }
+    };
 }

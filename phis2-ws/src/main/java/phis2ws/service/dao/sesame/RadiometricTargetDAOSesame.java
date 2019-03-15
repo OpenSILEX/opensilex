@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                       RadiometricTargetDAOSesame.java
+//                       RadiometricTargetDAOSesame.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 4 sept. 2018
@@ -10,7 +10,6 @@ package phis2ws.service.dao.sesame;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -90,7 +89,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
         query.appendLimit(this.getPageSize());
         query.appendOffset(this.getPage() * this.getPageSize());
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
     }
     
@@ -153,7 +152,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
         query.clearOffset();
         query.clearGroupBy();
         query.appendSelect("(COUNT(DISTINCT ?" + URI + ") AS ?" + COUNT_ELEMENT_QUERY + ")");
-        LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
+        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
         return query;
     }
     
@@ -212,8 +211,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
                     //2.1 check if the property exist
                     if (existUri(property.getRelation())) {
                         //2.2 check the domain of the property
-                        propertyDAO.relation = property.getRelation();
-                        if (!propertyDAO.isRelationDomainCompatibleWithRdfType(Oeso.CONCEPT_RADIOMETRIC_TARGET.toString())) {
+                        if (!propertyDAO.isRelationDomainCompatibleWithRdfType(property.getRelation(), Oeso.CONCEPT_RADIOMETRIC_TARGET.toString())) {
                             validData = false;
                             status.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, 
                                             "the type of the given uri is not in the domain of the relation " + property.getRelation()));
@@ -281,7 +279,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
         }
         
         UpdateRequest query = spql.buildRequest();
-        LOGGER.debug(SPARQL_SELECT_QUERY + " " + query.toString());
+        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
         
         return query;
     }
@@ -427,8 +425,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
      * @return the Radiometric Target informations
      */
     public RadiometricTarget getRadiometricTarget(String radiometricTargetUri) {
-        PropertyDAOSesame propertyDAOSesame = 
-                new PropertyDAOSesame(radiometricTargetUri);
+        PropertyDAOSesame propertyDAOSesame = new PropertyDAOSesame();
         RadiometricTarget radiometricTarget = new RadiometricTarget();
         propertyDAOSesame.getAllPropertiesWithLabels(radiometricTarget, null);
         return radiometricTarget;
@@ -605,7 +602,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
         query.appendOrderBy("DESC(?" + URI + ")");
         query.appendLimit(1);
         
-        LOGGER.debug(SPARQL_SELECT_QUERY + query.toString());
+        LOGGER.debug(SPARQL_QUERY + query.toString());
         
         return query;
     }

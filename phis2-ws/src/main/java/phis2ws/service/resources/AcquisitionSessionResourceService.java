@@ -29,6 +29,7 @@ import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.sesame.AcquisitionSessionDAOSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.acquisitionSession.MetadataFileDTO;
+import phis2ws.service.resources.dto.acquisitionSession.MetadataFileUAVDTO;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
@@ -118,7 +119,7 @@ public class AcquisitionSessionResourceService extends ResourceService {
     @ApiOperation(value = "Get the metadata for the acquisition session file",
             notes = "Retrieve the metadata for the acquisition session file. Need URL encoded of the vector type of the acquisition session (uav or drone)")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve a annotation", response = MetadataFileDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Retrieve a annotation", response = MetadataFileUAVDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)

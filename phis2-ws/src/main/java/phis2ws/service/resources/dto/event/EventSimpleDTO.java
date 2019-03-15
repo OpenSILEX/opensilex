@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                 EventDTO.java
+//                         EventSimpleDTO.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 13 nov. 2018
@@ -7,38 +7,56 @@
 //******************************************************************************
 package phis2ws.service.resources.dto.event;
 
+import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import phis2ws.service.configuration.DateFormat;
+import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.ConcernedItemWithLabelsDTO;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyDTO;
+import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.utils.dates.Dates;
 import phis2ws.service.view.model.phis.ConcernedItem;
 import phis2ws.service.view.model.phis.Event;
 import phis2ws.service.view.model.phis.Property;
 
 /**
- * DTO representing an event
- * 
+ * DTO representing a event with the basic information
  * @author Andréas Garcia<andreas.garcia@inra.fr>
  */
-public class EventDTO extends AbstractVerifiedClass {
+public class EventSimpleDTO extends AbstractVerifiedClass {
     
-    private final String uri;
-    private final String type;
-    private final ArrayList<ConcernedItemWithLabelsDTO> concernedItems = new ArrayList<>();
-    private final String date;
+    @URL
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EVENT_URI)
+    private String uri;
+    
+    /**
+     * //SILEX:info
+     * "type" can not be used as a field name in DTOs due to XML interpretation
+     * issues.
+     * @see https://stackoverflow.com/questions/33104232/eclipselink-missing-class-for-indicator-field-value-of-typ
+     * //\
+     */
+    @URL
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EVENT_TYPE)
+    private String rdfType;
+    
+    protected ArrayList<ConcernedItemWithLabelsDTO> concernedItems = new ArrayList<>();
+    
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EVENT_DATE)
+    private String date;
+    
     protected ArrayList<PropertyDTO> properties = new ArrayList<>();
     
     /**
      * Constructor to create a DTO from an Event model
      * @param event 
      */
-    public EventDTO(Event event) {
+    public EventSimpleDTO(Event event) {
         this.uri = event.getUri();
-        this.type = event.getType();
+        this.rdfType = event.getType();
         event.getConcernedItems().forEach((concernedItem) -> {
             this.concernedItems.add(new ConcernedItemWithLabelsDTO(concernedItem));
         });
@@ -76,6 +94,46 @@ public class EventDTO extends AbstractVerifiedClass {
         
         DateTime dateTime = Dates.stringToDateTimeWithGivenPattern(this.date, DateFormat.YMDTHMSZZ.toString());
         
-        return new Event(this.uri, this.type, modelConcernedItems, dateTime, modelProperties);
+        return new Event(this.uri, this.rdfType, modelConcernedItems, dateTime, modelProperties, null);
+    }
+
+    public String getUri() {
+        return uri;
+    }
+
+    public void setUri(String uri) {
+        this.uri = uri;
+    }
+
+    public String getRdfType() {
+        return rdfType;
+    }
+
+    public void setRdfType(String type) {
+        this.rdfType = type;
+    }
+
+    public ArrayList<ConcernedItemWithLabelsDTO> getConcernedItems() {
+        return concernedItems;
+    }
+
+    public void setConcernedItems(ArrayList<ConcernedItemWithLabelsDTO> concernedItems) {
+        this.concernedItems = concernedItems;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public ArrayList<PropertyDTO> getProperties() {
+        return properties;
+    }
+
+    public void setProperties(ArrayList<PropertyDTO> properties) {
+        this.properties = properties;
     }
 }

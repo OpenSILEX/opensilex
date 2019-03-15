@@ -1,14 +1,10 @@
-//**********************************************************************************************
-//                                       DocumentationAnnotation.java 
-//
-// Author(s): Arnaud Charleroy, Morgane Vidal, Eloan LAGIER
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2016
+//******************************************************************************
+//                           DocumentationAnnotation.java 
+// SILEX-PHIS
+// Copyright © INRA 2016
 // Creation date: august 2016
 // Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, eloan.lagier@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  Janvier, 25 2018
-// Subject: A class which group documentation informations ( try message bundle for the next version)
-//***********************************************************************************************
+//******************************************************************************
 package phis2ws.service.documentation;
 
 import javax.inject.Singleton;
@@ -16,24 +12,23 @@ import phis2ws.service.PropertiesFileManager;
 
 /**
  * A class which group documentation informations
- *
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Singleton
 public final class DocumentationAnnotation {
 
-    //Default page number is 0
+    // Default page number is 0
     public static final String PAGE = "Current page number";
+    
     /**
      * To be updated if the variable in service.properties is updated
-     *
      * @see service.properties
      */
     public static final String PAGE_SIZE = "Number of elements per page (limited to 150000)";
 
     public static final String PAGE_SIZE_MONGO = "Number of elements per page (limited to 1000000)";
 
-    // user messages
+    // User messages
     public static final String ERROR_SEND_DATA = "Server error. Cannot send data.";
     public static final String ERROR_FETCH_DATA = "Server error. Cannot fetch data.";
     public static final String BAD_USER_INFORMATION = "Bad informations send by user";
@@ -41,22 +36,25 @@ public final class DocumentationAnnotation {
     public static final String SQL_ERROR_FETCH_DATA = "SQL Error can't fetch results";
     public static final String NO_RESULTS = "No data found";
     public static final String USER_NOT_AUTHORIZED = "You aren't authorized to fetch the result of this ressource call";
-
+    public static final String FILE_NOT_FOUND = "File not found";
+    
     public static final String SWAGGER_DOCUMENTATION_HEADER
-            = "This page describes the methods allowed by this web service. <p style=\"color: red;\"> You must read the paragraph below before use it !</p>"
-            + "<br>"
-            + "<ol>"
-            + "<li>"
-            + "<b> 1. You must first retrieve an acces token using the \"token\" call (fill with your PHIS-SILEX username and password)</b> and after you will be able to use other service calls.</li>"
-            + "<li>"
-            + "<b> 2. You must fill the sessionId parameter</b> with the created access token on each call. <p style=\"color: red;\">This token is available during " + Integer.valueOf(PropertiesFileManager.getConfigFileProperty("service", "sessionTime")) + " seconds.</p> This time will be reload at each use in order to keep the token valid without retrieve a new one.</li>"
-            + "</ol>"
-            + "<br>"
-            + "<i>The response call <b>example values shown</b> in this api documentation represent the <b>data array</b> which is located <b>in the response result object</b> <p style=\"color: red;\">except for the token call.</p><i/><br>"
-            + "<b>The token also include the response object header. </b>"
-            + "For more information, the <b>Response object definition</b> is available at <b><a href=\"http://docs.brapi.apiary.io/#introduction/structure-of-the-response-object:\">Brapi response object</a></b>.";
+        = "This page describes the methods allowed by this web service. <p style=\"color: red;\"> You must read the paragraph below before use it !</p>"
+        + "<br>"
+        + "<ol>"
+        + "<li>"
+        + "<b> 1. You must first retrieve an acces token using the \"token\" call (fill with your PHIS-SILEX username and password)</b> and after you will be able to use other service calls.</li>"
+        + "<li>"
+        + "<b> 2. You must fill the sessionId parameter</b> with the created access token on each call. <p style=\"color: red;\">This token is available during " + Integer.valueOf(PropertiesFileManager.getConfigFileProperty("service", "sessionTime")) + " seconds.</p> This time will be reload at each use in order to keep the token valid without retrieve a new one.</li>"
+        + "</ol>"
+        + "<br>"
+        + "<i>The response call <b>example values shown</b> in this api documentation represent the <b>data array</b> which is located <b>in the response result object</b> <p style=\"color: red;\">except for the token call.</p><i/><br>"
+        + "<b>The token also include the response object header. </b>"
+        + "For more information, the <b>Response object definition</b> is available at <b><a href=\"http://docs.brapi.apiary.io/#introduction/structure-of-the-response-object:\">Brapi response object</a></b>.";
 
     public static final String ENVIRONMENT_POST_DEFINITION = "JSON format to insert environment";
+    
+    public static final String DATA_POST_DEFINITION = "JSON format to insert data";
     
     public static final String EXPERIMENT_URI_DEFINITION = "An experiment URI (Unique Resource Identifier)";
     public static final String EXPERIMENT_POST_DATA_DEFINITION = "JSON format of experiment data";
@@ -105,6 +103,10 @@ public final class DocumentationAnnotation {
     public static final String VECTOR_RDF_TYPE_DEFINITION = "A vector rdf type URI";
     
     public static final String RADIOMETRIC_TARGET_POST_DEFINITION = "JSON format of radiometric target data";
+    
+    public static final String PROVENACE_POST_DEFINITION = "JSON format of provenance";
+    
+    public static final String EVENT_POST_DEFINITION = "JSON format of a list of events";
 
     public static final String ADMIN_ONLY_NOTES = "This can only be done by a PHIS-SILEX admin.";
     public static final String USER_ONLY_NOTES = "This can only be done by a PHIS-SILEX user.";
@@ -122,12 +124,12 @@ public final class DocumentationAnnotation {
     
     public static final String CALL_DATATYPE_DEFINITION = "The data format supported by the call";
 
-    //Global examples
+    // Global examples
     public static final String EXAMPLE_DATETIME = "2017-06-15 10:51:00+0200";
     public static final String EXAMPLE_XSDDATETIME = "2017-06-15T10:51:00+0200";
     public static final String EXAMPLE_DATE = "2017-06-15";
 
-    //Specific examples
+    // Specific examples
     public static final String EXAMPLE_EXPERIMENT_URI = "http://phenome-fppn.fr/diaphen/DIA2012-1";
     public static final String EXAMPLE_EXPERIMENT_START_DATE = EXAMPLE_DATETIME;
     public static final String EXAMPLE_EXPERIMENT_END_DATE = EXAMPLE_DATETIME;
@@ -169,6 +171,12 @@ public final class DocumentationAnnotation {
 
     public static final String EXAMPLE_PROVENANCE_URI = "http://www.phenome-fppn.fr/mtp/2018/pv181515071552";
     public static final String EXAMPLE_PROVENANCE_DATE = EXAMPLE_DATE;
+    public static final String EXAMPLE_PROVENANCE_LABEL = "PROV2019-LEAF";
+    public static final String EXAMPLE_PROVENANCE_COMMENT = "In this provenance we have count the number of leaf per plant";
+    public static final String EXAMPLE_PROVENANCE_METADATA = "{ \"SensingDevice\" : \"http://www.opensilex.org/demo/s001\",\n" +
+                                                               "\"Vector\" : \"http://www.opensilex.org/demo/v001\"}";
+    public static final String EXAMPLE_PROVENANCE_METADATA_FILTER = "{ \"metadata.SensingDevice\" : \"http://www.opensilex.org/demo/s001\",\n" +
+                                                               "\"metadata.Vector\" : \"http://www.opensilex.org/demo/v001\"}";
 
     public static final String EXAMPLE_GROUP_URI = "http://phenome-fppn.fr/mauguio/INRA-MISTEA-GAMMA";
     public static final String EXAMPLE_GROUP_NAME = "INRA-MISTEA-GAMMA";
@@ -197,7 +205,7 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_DOCUMENT_CREATION_DATE = "2017-07-07";
     public static final String EXAMPLE_DOCUMENT_EXTENSION = "png";
     public static final String EXAMPLE_DOCUMENT_TITLE = "title";
-    public static final String EXAMPLE_DOCUMENT_CONCERNED_TYPE_URI = "http://www.opensilex.org/vocabulary/oeso#Experiment";
+    public static final String EXAMPLE_DOCUMENT_CONCERNED_ITEM_TYPE_URI = "http://www.opensilex.org/vocabulary/oeso#Experiment";
     public static final String EXAMPLE_DOCUMENT_STATUS = "linked";
 
     public static final String EXAMPLE_SENSOR_URI = "http://www.phenome-fppn.fr/diaphen/2018/s18001";
@@ -238,12 +246,17 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_VARIABLE_URI = "http://www.phenome-fppn.fr/diaphen/id/variable/v0000001";
     public static final String EXAMPLE_VARIABLE_LABEL = "LAI";
 
-    public static final String EXAMPLE_EVENT_URI = "http://www.phenome-fppn.fr/id/event/96e72788-6bdc-4f8e-abd1-ce9329371e8e";
+    public static final String EXAMPLE_DATA_URI = "http://www.opensilex.org/1e9eb2fbacc7222d3868ae96149a8a16b32b2a1870c67d753376381ebcbb5937/e78da502-ee3f-42d3-828e-aa8cab237f93";
+            
+    public static final String EVENT_URI_DEFINITION = "An event URI (Unique Resource Identifier)";
+    public static final String EXAMPLE_EVENT_URI = "http://www.opensilex.org/id/event/12590c87-1c34-426b-a231-beb7acb33415";
     public static final String EXAMPLE_EVENT_TYPE = "http://www.opensilex.org/vocabulary/oeev#MoveFrom";
+    public static final String EXAMPLE_EVENT_DESCRIPTION = "The pest attack lasted 20 minutes";
     public static final String EXAMPLE_EVENT_CONCERNED_ITEM_URI = "http://www.phenome-fppn.fr/m3p/arch/2017/c17000242";
     public static final String EXAMPLE_EVENT_CONCERNED_ITEM_LABEL = "Plot Lavalette";
-    public static final String EXAMPLE_EVENT_START_DATE = "2017-09-08T12:00:00+01:00";
-    public static final String EXAMPLE_EVENT_END_DATE = "2019-10-08T12:00:00+01:00";
+    public static final String EXAMPLE_EVENT_DATE = "2017-09-08T12:00:00+01:00";
+    public static final String EXAMPLE_EVENT_SEARCH_START_DATE = "2017-09-08T12:00:00+01:00";
+    public static final String EXAMPLE_EVENT_SEARCH_END_DATE = "2019-10-08T12:00:00+01:00";
 
     public static final String EXAMPLE_VECTOR_URI = "http://www.phenome-fppn.fr/diaphen/2018/v1801";
     public static final String EXAMPLE_VECTOR_RDF_TYPE = "http://www.opensilex.org/vocabulary/oeso#UAV";
@@ -273,8 +286,8 @@ public final class DocumentationAnnotation {
   
     public static final String EXAMPLE_ANNOTATION_URI = "http://www.phenome-fppn.fr/platform/id/annotation/8247af37-769c-495b-8e7e-78b1141176c2";
     public static final String EXAMPLE_ANNOTATION_TARGET = "http://www.phenome-fppn.fr/diaphen/id/variable/v0000001";
-    public static final String EXAMPLE_ANNOTATION_MOTIVATEDBY = "http://www.w3.org/ns/oa#commenting";
-    public static final String EXAMPLE_ANNOTATION_COMMENT = "Ustilago maydis infection";
+    public static final String EXAMPLE_ANNOTATION_MOTIVATED_BY = "http://www.w3.org/ns/oa#commenting";
+    public static final String EXAMPLE_ANNOTATION_BODY_VALUE = "Ustilago maydis infection";
     public static final String EXAMPLE_ANNOTATION_CREATOR = "http://www.phenome-fppn.fr/diaphen/id/agent/marie_dupond";
   
     public static final String EXAMPLE_EXPERIMENT_CROP_SPECIES = "maize";
@@ -287,5 +300,4 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_INFRASTRUCTURE_LABEL = "EMPHASIS";
     
     public static final String EXAMPLE_LANGUAGE = "en";
-
 }

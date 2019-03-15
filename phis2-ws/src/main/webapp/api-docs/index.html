@@ -146,9 +146,48 @@
                         }
                         
                          // Modif AC masquer les mots de passe
-                setTimeout(function (){
-                    $("[name='password']").prop("type", "password");
-                },2000);
+                        setTimeout(function (){
+                            $("[name='password']").prop("type", "password");
+                        },2000);
+                        
+                        // Swagger UI Hack for file metadata example
+                        var metadataInput = $("#data_postDataFile_content .operation-params tr:first input");
+                        var metadataAreaAttributes = {
+                            "class": "body-textarea required"
+                        };
+                        var metadataAreaValue = "";
+                        $.each(metadataInput.get(0).attributes, function(index, data) {
+                            if (data.nodeName != "class" && data.nodeName != "type" && data.nodeName != "value") {
+                                metadataAreaAttributes[data.nodeName] = data.value;
+                            } else if (data.nodeName == "value") {
+                                metadataAreaValue = data.value;
+                            }
+                        });
+                        metadataInput.replaceWith($("<textarea>" + metadataAreaValue + "</textarea>", metadataAreaAttributes));
+                        
+                        var metadataExample = $("#data_postDataFile_content .operation-params tr:first td:last");
+                        var fileDescriptionExample = '{\n'
+                                +'  "rdfType": "http://www.opensilex.org/vocabulary/oeso#HemisphericalImage",\n'
+                                + '  "date": "2017-06-15T10:51:00+0200",\n'
+                                + '  "provenanceUri": "http://www.phenome-fppn.fr/mtp/2018/pv181515071552",\n'
+                                + '  "concernedItems": [{\n'
+                                + '    "uri": "http://www.phenome-fppn.fr/phenovia/2017/o1032481",\n'
+                                + '    "typeURI": "http://www.opensilex.org/vocabulary/oeso#Plot"\n'
+                                + '  }],\n'
+                                + '  "metadata": {\n'
+                                + '    "sensorUri": "http://www.phenome-fppn.fr/diaphen/2018/s18001"\n'
+                                + '  }\n'
+                                + '}';
+                        
+                        metadataExample.addClass("model-signature");
+                        metadataExample.html('<pre>' + fileDescriptionExample + '</pre>');
+                        
+                        metadataExample.click(function() {
+                            var textArea = $("#data_postDataFile_content .operation-params tr:first textarea");
+                            if (textArea.val() == "") {
+                                textArea.val(fileDescriptionExample);
+                            }
+                        })
                     },
                     onFailure: function (data) {
                         log("Unable to Load SwaggerUI");

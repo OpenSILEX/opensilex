@@ -73,8 +73,8 @@ public class AnnotationsSerializer implements JsonSerializer<Annotation> {
         annotationJson.add(CREATED_LABEL, new JsonPrimitive(created.toString(formatter)));
         
         JsonArray bodyJsonArray = new JsonArray();
-        if(src.getBodiesValue() != null && !src.getBodiesValue().isEmpty()){
-            for (String body : src.getBodiesValue()) {
+        if(src.getBodyValues() != null && !src.getBodyValues().isEmpty()){
+            for (String body : src.getBodyValues()) {
                 bodyJsonArray.add(body);
             }
         }

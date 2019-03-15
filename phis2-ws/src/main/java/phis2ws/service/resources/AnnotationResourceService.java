@@ -239,7 +239,7 @@ public class AnnotationResourceService extends ResourceService {
      * @param annotationDAOSesame
      * @return the annotations corresponding to the search
      */
-    private Response getAnnotations(String uri, String creator, String target, String bodyValue, String motivatedBy, int page, int pageSize) {
+    public Response getAnnotations(String uri, String creator, String target, String bodyValue, String motivatedBy, int page, int pageSize) {
         ArrayList<Status> statusList = new ArrayList<>();
         ResponseFormAnnotation getResponse;
         AnnotationDAOSesame annotationDAOSesame = new AnnotationDAOSesame(userSession.getUser());

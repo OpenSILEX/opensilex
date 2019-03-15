@@ -209,7 +209,7 @@ public class EventResourceService  extends ResourceService {
             example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getEventDetailed(
+    public Response getEvent(
         @ApiParam(value = DocumentationAnnotation.EVENT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_EVENT_URI) @PathParam("uri") @URL @Required String uri) {
         
         return getEvents(uri, null, null, null, null, null, 0, 1);
@@ -322,7 +322,9 @@ public class EventResourceService  extends ResourceService {
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
         @ApiParam(value = DocumentationAnnotation.EVENT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_EVENT_URI) @PathParam("uri") @URL @Required String uri) {
         
-        return (new AnnotationResourceService()).getAnnotations(null, null, uri, null, null, page, pageSize);
+        AnnotationResourceService annotationResourceService = new AnnotationResourceService();
+        annotationResourceService.userSession = userSession;
+        return annotationResourceService.getAnnotations(null, null, uri, null, null, page, pageSize);
     }
         
     /**

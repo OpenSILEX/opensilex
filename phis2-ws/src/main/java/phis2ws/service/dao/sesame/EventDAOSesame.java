@@ -290,35 +290,6 @@ public class EventDAOSesame extends DAOSesame<Event> {
     }
     
     /**
-     * Searches an event detailed
-     * @param searchUri
-     * @return events
-     */
-    public Event searchEventDetailed(String searchUri) {
-        
-        SPARQLQueryBuilder eventDetailedQuery = prepareSearchQueryEventDetailed(searchUri);
-        
-        // get events from storage
-        TupleQuery eventsTupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, eventDetailedQuery.toString());
-        
-        Event event = null;
-        try (TupleQueryResult eventsResult = eventsTupleQuery.evaluate()) {
-            if (eventsResult.hasNext()) {
-                event = getEventFromBindingSet(eventsResult.next());
-                searchEventPropertiesAndSetThemToIt(event);
-                
-                ConcernedItemDAOSesame concernedItemDao = new ConcernedItemDAOSesame(user);
-                event.setConcernedItems(concernedItemDao.searchConcernedItems(event.getUri(), Oeev.concerns.getURI(), null, null, 0, pageSizeMaxValue));
-                
-                AnnotationDAOSesame annotationDAO = new AnnotationDAOSesame(this.user);
-                ArrayList<Annotation> annotations = annotationDAO.searchAnnotations(null, null, event.getUri(), null, null, 0, pageSizeMaxValue);
-                event.setAnnotations(annotations);
-            }
-        }
-        return event;
-    }
-    
-    /**
      * Generates an insert query for the given event
      * @param event
      * @return the query

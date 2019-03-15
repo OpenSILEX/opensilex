@@ -54,8 +54,9 @@ import phis2ws.service.view.model.phis.Event;
 
 /**
  * Service to handle events
- * @update [Andréas Garcia] 14 Feb., 2019: Add event detail service
- * @update [Andréas Garcia] 5 March, 2019: Add event POST service
+ * @update [Andréas Garcia] 14 Feb., 2019: Add GET detail service
+ * @update [Andréas Garcia] 5 March, 2019: Add POST service
+ * @update [Andréas Garcia] 15 March, 2019: Add GET  {uri}/annotations service
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
 @Api("/events")
@@ -139,8 +140,7 @@ public class EventResourceService  extends ResourceService {
     ) {
         EventDAOSesame eventDAO = new EventDAOSesame(userSession.getUser());
         
-        // 1. Search events with parameters
-        ArrayList<Event> events = eventDAO.searchEvents(
+        return getEvents(
                 uri,
                 type,
                 concernedItemLabel, 
@@ -149,41 +149,6 @@ public class EventResourceService  extends ResourceService {
                 endDate, 
                 page, 
                 pageSize);
-        
-        // 2. Analyse result
-        ArrayList<EventDTO> eventDTOs = new ArrayList();
-        ArrayList<Status> statusList = new ArrayList<>();
-        ResultForm<EventDTO> responseForm;
-        
-        if (events == null) { // Request failure
-            responseForm = new ResultForm<EventDTO>(0, 0, eventDTOs, true, 0);
-            return noResultFound(responseForm, statusList);
-        } else if (events.isEmpty()) { // No result
-            responseForm = new ResultForm<EventDTO>(0, 0, eventDTOs, true, 0);
-            return noResultFound(responseForm, statusList);
-        } else { // Results
-            
-            // Generate DTOs
-            events.forEach((event) -> {
-                eventDTOs.add(new EventDTO(event));
-            });
-            
-            // Return DTOs
-            int resultsCount = eventDAO.count(
-                uri,
-                type,
-                concernedItemLabel, 
-                concernedItemUri, 
-                startDate, 
-                endDate);
-            responseForm = new ResultForm<EventDTO>(eventDAO.getPageSize(), eventDAO.getPage(), eventDTOs, true, resultsCount);
-            if (responseForm.getResult().dataSize() == 0) {
-                return noResultFound(responseForm, statusList);
-            } else {
-                responseForm.setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(responseForm).build();
-            }
-        }
     }
     
     /**
@@ -271,10 +236,35 @@ public class EventResourceService  extends ResourceService {
     public Response getEventDetailed(
         @ApiParam(value = DocumentationAnnotation.EVENT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_EVENT_URI) @PathParam("uri") @URL @Required String uri) {
         
+        return getEvents(uri, null, null, null, null, null, 0, 1);
+    }
+    
+    /**
+     * Get events
+     * @param uri
+     * @param type
+     * @param concernedItemLabel
+     * @param concernedItemUri
+     * @param startDate
+     * @param endDate
+     * @param page
+     * @param pageSize
+     * @return an event's details
+     */
+    private Response getEvents(String uri, String type, String concernedItemLabel, String concernedItemUri, String startDate, String endDate, int page, int pageSize) {
+        
         EventDAOSesame eventDAO = new EventDAOSesame(userSession.getUser());
         
-        // 1. Search an event's details with its URI
-        Event event = eventDAO.searchEventDetailed(uri);
+        // 1. Search events with parameters
+        ArrayList<Event> events = eventDAO.searchEvents(
+                uri,
+                type,
+                concernedItemLabel, 
+                concernedItemUri, 
+                startDate, 
+                endDate, 
+                page, 
+                pageSize);
         
         // 2. Analyse result
         ArrayList<EventDTO> eventDTOs = new ArrayList();
@@ -284,10 +274,15 @@ public class EventResourceService  extends ResourceService {
         if (event == null) { // Request failure
             responseForm = new ResultForm<EventDTO>(0, 0, eventDTOs, true, 0);
             return noResultFound(responseForm, statusList);
+        } else if (events.isEmpty()) { // No result
+            responseForm = new ResponseFormEventSimple(0, 0, eventDTOs, true, 0);
+            return noResultFound(responseForm, statusList);
         } else { // Results
             
-            // Generate DTO
-            eventDTOs.add(new EventDTO(event));
+            // Generate DTOs
+            events.forEach((event) -> {
+                eventDTOs.add(new EventDTO(event));
+            });
             
             responseForm = new ResultForm<EventDTO>(0, 0, eventDTOs, true, 0);
             if (responseForm.getResult().dataSize() == 0) {
@@ -305,7 +300,16 @@ public class EventResourceService  extends ResourceService {
      * @param page
      * @example
      * {
-     *   
+     *   "uri": "http://www.opensilex.org/andreas-dev/id/annotation/896325c3-85f7-4ad3-bf96-34ba497108c3",
+     *   "creationDate": "2019-03-11T09:40:03+01:00",
+     *   "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/admin_phis",
+     *   "motivatedBy": "http://www.w3.org/ns/oa#describing",
+     *   "bodyValues": [
+     *     "fth"
+     *   ],
+     *   "targets": [
+     *     "http://www.opensilex.org/andreas-dev/id/event/c8e0173b-ce8a-4190-ad0b-f30ac07d4edd"
+     *   ]
      * }
      * @param uri
      * @return an event's annotations

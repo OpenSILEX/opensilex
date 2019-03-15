@@ -39,7 +39,6 @@ import phis2ws.service.dao.sesame.EventDAOSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.annotation.AnnotationDTO;
-import phis2ws.service.resources.dto.event.EventDetailedDTO;
 import phis2ws.service.resources.dto.event.EventPostDTO;
 import phis2ws.service.resources.dto.event.EventDTO;
 import phis2ws.service.resources.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
@@ -154,13 +153,13 @@ public class EventResourceService  extends ResourceService {
         // 2. Analyse result
         ArrayList<EventDTO> eventDTOs = new ArrayList();
         ArrayList<Status> statusList = new ArrayList<>();
-        ResultForm<EventSimpleDTO> responseForm;
+        ResultForm<EventDTO> responseForm;
         
         if (events == null) { // Request failure
-            responseForm = new ResultForm<EventSimpleDTO>(0, 0, eventDTOs, true, 0);
+            responseForm = new ResultForm<EventDTO>(0, 0, eventDTOs, true, 0);
             return noResultFound(responseForm, statusList);
         } else if (events.isEmpty()) { // No result
-            responseForm = new ResultForm<EventSimpleDTO>(0, 0, eventDTOs, true, 0);
+            responseForm = new ResultForm<EventDTO>(0, 0, eventDTOs, true, 0);
             return noResultFound(responseForm, statusList);
         } else { // Results
             
@@ -177,7 +176,7 @@ public class EventResourceService  extends ResourceService {
                 concernedItemUri, 
                 startDate, 
                 endDate);
-            responseForm = new ResultForm<EventSimpleDTO>(eventDAO.getPageSize(), eventDAO.getPage(), eventDTOs, true, resultsCount);
+            responseForm = new ResultForm<EventDTO>(eventDAO.getPageSize(), eventDAO.getPage(), eventDTOs, true, resultsCount);
             if (responseForm.getResult().dataSize() == 0) {
                 return noResultFound(responseForm, statusList);
             } else {
@@ -278,19 +277,19 @@ public class EventResourceService  extends ResourceService {
         Event event = eventDAO.searchEventDetailed(uri);
         
         // 2. Analyse result
-        ArrayList<EventDetailedDTO> eventDTOs = new ArrayList();
+        ArrayList<EventDTO> eventDTOs = new ArrayList();
         ArrayList<Status> statusList = new ArrayList<>();
-        ResultForm<EventDetailedDTO> responseForm;
+        ResultForm<EventDTO> responseForm;
         
         if (event == null) { // Request failure
-            responseForm = new ResultForm<EventDetailedDTO>(0, 0, eventDTOs, true, 0);
+            responseForm = new ResultForm<EventDTO>(0, 0, eventDTOs, true, 0);
             return noResultFound(responseForm, statusList);
         } else { // Results
             
             // Generate DTO
-            eventDTOs.add(new EventDetailedDTO(event));
+            eventDTOs.add(new EventDTO(event));
             
-            responseForm = new ResultForm<EventDetailedDTO>(0, 0, eventDTOs, true, 0);
+            responseForm = new ResultForm<EventDTO>(0, 0, eventDTOs, true, 0);
             if (responseForm.getResult().dataSize() == 0) {
                 return noResultFound(responseForm, statusList);
             } else {

@@ -26,7 +26,7 @@ import phis2ws.service.view.model.phis.Property;
  * DTO representing a event with the basic information
  * @author Andréas Garcia<andreas.garcia@inra.fr>
  */
-public class EventSimpleDTO extends AbstractVerifiedClass {
+public class EventDTO extends AbstractVerifiedClass {
     
     @URL
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EVENT_URI)
@@ -54,7 +54,7 @@ public class EventSimpleDTO extends AbstractVerifiedClass {
      * Constructor to create a DTO from an Event model
      * @param event 
      */
-    public EventSimpleDTO(Event event) {
+    public EventDTO(Event event) {
         this.uri = event.getUri();
         this.rdfType = event.getType();
         event.getConcernedItems().forEach((concernedItem) -> {

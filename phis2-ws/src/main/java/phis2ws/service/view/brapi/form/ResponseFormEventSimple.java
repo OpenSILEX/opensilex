@@ -8,7 +8,7 @@
 package phis2ws.service.view.brapi.form;
 
 import java.util.ArrayList;
-import phis2ws.service.resources.dto.event.EventSimpleDTO;
+import phis2ws.service.resources.dto.event.EventDTO;
 import phis2ws.service.view.brapi.Metadata;
 import phis2ws.service.view.brapi.results.ResultEventSimple;
 import phis2ws.service.view.manager.ResultForm;
@@ -25,7 +25,7 @@ public class ResponseFormEventSimple extends ResultForm {
      * @param list results list
      * @param paginate 
      */
-    public ResponseFormEventSimple(int pageSize, int currentPage, ArrayList<EventSimpleDTO> list, boolean paginate) {
+    public ResponseFormEventSimple(int pageSize, int currentPage, ArrayList<EventDTO> list, boolean paginate) {
         metadata = new Metadata(pageSize, currentPage, list.size());
         if (list.size() > 1) {
             result = new ResultEventSimple(list, metadata.getPagination(), paginate);
@@ -42,7 +42,7 @@ public class ResponseFormEventSimple extends ResultForm {
      * @param paginate 
      * @param totalCount number of result
      */
-    public ResponseFormEventSimple(int pageSize, int currentPage, ArrayList<EventSimpleDTO> list, boolean paginate, int totalCount) {
+    public ResponseFormEventSimple(int pageSize, int currentPage, ArrayList<EventDTO> list, boolean paginate, int totalCount) {
         metadata = new Metadata(pageSize, currentPage, totalCount);
         if (list.size() > 1) {
             result = new ResultEventSimple(list, metadata.getPagination(), paginate);

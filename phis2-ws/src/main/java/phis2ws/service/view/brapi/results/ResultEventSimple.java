@@ -8,7 +8,7 @@
 package phis2ws.service.view.brapi.results;
 
 import java.util.ArrayList;
-import phis2ws.service.resources.dto.event.EventSimpleDTO;
+import phis2ws.service.resources.dto.event.EventDTO;
 import phis2ws.service.view.brapi.Pagination;
 import phis2ws.service.view.manager.Result;
 
@@ -17,13 +17,13 @@ import phis2ws.service.view.manager.Result;
  * events with basic information
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
-public class ResultEventSimple extends Result<EventSimpleDTO> {
+public class ResultEventSimple extends Result<EventDTO> {
     /**
      * Constructor which calls the mother-class constructor in the case of a 
      * list with only 1 element
      * @param events 
      */
-    public ResultEventSimple(ArrayList<EventSimpleDTO> events) {
+    public ResultEventSimple(ArrayList<EventDTO> events) {
         super(events);
     }
     
@@ -34,7 +34,7 @@ public class ResultEventSimple extends Result<EventSimpleDTO> {
      * @param pagination
      * @param paginate 
      */
-    public ResultEventSimple(ArrayList<EventSimpleDTO> events, Pagination pagination, boolean paginate) {
+    public ResultEventSimple(ArrayList<EventDTO> events, Pagination pagination, boolean paginate) {
         super(events, pagination, paginate);
     }
 }

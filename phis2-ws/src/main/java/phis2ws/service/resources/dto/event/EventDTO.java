@@ -16,6 +16,7 @@ import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.ConcernedItemWithLabelsDTO;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyDTO;
+import phis2ws.service.resources.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.utils.dates.Dates;
 import phis2ws.service.view.model.phis.ConcernedItem;
@@ -26,11 +27,7 @@ import phis2ws.service.view.model.phis.Property;
  * DTO representing a event with the basic information
  * @author Andréas Garcia<andreas.garcia@inra.fr>
  */
-public class EventDTO extends AbstractVerifiedClass {
-    
-    @URL
-    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EVENT_URI)
-    private String uri;
+public class EventDTO extends RdfResourceDefinitionDTO {
     
     /**
      * //SILEX:info
@@ -47,8 +44,6 @@ public class EventDTO extends AbstractVerifiedClass {
     
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EVENT_DATE)
     private String date;
-    
-    protected ArrayList<PropertyDTO> properties = new ArrayList<>();
     
     /**
      * Constructor to create a DTO from an Event model
@@ -97,14 +92,6 @@ public class EventDTO extends AbstractVerifiedClass {
         return new Event(this.uri, this.rdfType, modelConcernedItems, dateTime, modelProperties, null);
     }
 
-    public String getUri() {
-        return uri;
-    }
-
-    public void setUri(String uri) {
-        this.uri = uri;
-    }
-
     public String getRdfType() {
         return rdfType;
     }
@@ -127,13 +114,5 @@ public class EventDTO extends AbstractVerifiedClass {
 
     public void setDate(String date) {
         this.date = date;
-    }
-
-    public ArrayList<PropertyDTO> getProperties() {
-        return properties;
-    }
-
-    public void setProperties(ArrayList<PropertyDTO> properties) {
-        this.properties = properties;
     }
 }

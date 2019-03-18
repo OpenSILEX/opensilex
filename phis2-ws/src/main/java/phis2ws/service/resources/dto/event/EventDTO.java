@@ -14,7 +14,6 @@ import org.joda.time.format.DateTimeFormat;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.ConcernedItemWithLabelsDTO;
-import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyDTO;
 import phis2ws.service.resources.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
 import phis2ws.service.resources.validation.interfaces.URL;

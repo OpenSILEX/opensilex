@@ -114,7 +114,7 @@ public class EventResourceService  extends ResourceService {
     @ApiOperation(value = "Get all events corresponding to the search parameters given.", 
             notes = "Retrieve all events authorized for the user corresponding to the " + "search parameters given")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve all events", response = Event.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Retrieve all events", response = EventDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
@@ -191,7 +191,7 @@ public class EventResourceService  extends ResourceService {
     @ApiOperation(value = "Get the event corresponding to the search uri",
                   notes = "Get the event corresponding to the search uri")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Get an event", response = RdfResourceDefinitionDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Get an event", response = EventDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)

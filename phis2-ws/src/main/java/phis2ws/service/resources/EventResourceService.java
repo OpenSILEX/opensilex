@@ -197,8 +197,10 @@ public class EventResourceService  extends ResourceService {
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-            dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, 
+            required = true,
+            dataType = GlobalWebserviceValues.DATA_TYPE_STRING, 
+            paramType = GlobalWebserviceValues.HEADER,
             value = DocumentationAnnotation.ACCES_TOKEN,
             example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })

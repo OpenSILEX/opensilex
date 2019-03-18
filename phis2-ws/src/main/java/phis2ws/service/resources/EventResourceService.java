@@ -34,11 +34,9 @@ import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.sesame.AnnotationDAOSesame;
 import phis2ws.service.dao.sesame.EventDAOSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.resources.dto.annotation.AnnotationDTO;
 import phis2ws.service.resources.dto.event.EventPostDTO;
 import phis2ws.service.resources.dto.event.EventDTO;
 import phis2ws.service.resources.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
@@ -48,10 +46,8 @@ import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
-import phis2ws.service.view.brapi.form.ResponseFormAnnotation;
 import phis2ws.service.view.brapi.form.ResponseFormEventSimple;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
-import phis2ws.service.view.model.phis.Annotation;
 import phis2ws.service.view.model.phis.Event;
 
 /**

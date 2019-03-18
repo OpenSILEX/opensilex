@@ -255,6 +255,9 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_EVENT_DATE = "2017-09-08T12:00:00+01:00";
     public static final String EXAMPLE_EVENT_SEARCH_START_DATE = "2017-09-08T12:00:00+01:00";
     public static final String EXAMPLE_EVENT_SEARCH_END_DATE = "2019-10-08T12:00:00+01:00";
+    public static final String EXAMPLE_EVENT_PROPERTY_RDF_TYPE = "http://www.opensilex.org/vocabulary/oeev#Pest";
+    public static final String EXAMPLE_EVENT_PROPERTY_RELATION = "http://www.opensilex.org/vocabulary/oeev#hasPest";
+    public static final String EXAMPLE_EVENT_PROPERTY_VALUE = "http://www.opensilex.org/phenome-fppn/id/pest/10ecffd9-d828-456c-8638-d0524567b8de";
 
     public static final String EXAMPLE_VECTOR_URI = "http://www.phenome-fppn.fr/diaphen/2018/v1801";
     public static final String EXAMPLE_VECTOR_RDF_TYPE = "http://www.opensilex.org/vocabulary/oeso#UAV";

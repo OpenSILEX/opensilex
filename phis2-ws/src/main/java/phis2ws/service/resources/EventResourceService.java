@@ -34,11 +34,9 @@ import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.sesame.AnnotationDAOSesame;
 import phis2ws.service.dao.sesame.EventDAOSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.resources.dto.annotation.AnnotationDTO;
 import phis2ws.service.resources.dto.event.EventPostDTO;
 import phis2ws.service.resources.dto.event.EventDTO;
 import phis2ws.service.resources.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
@@ -110,13 +108,13 @@ public class EventResourceService  extends ResourceService {
      * @param concernedItemLabel
      * @param startDate
      * @param endDate
-     * @return  list of all the events filterd
+     * @return  list of all the events filtered
      */
     @GET
     @ApiOperation(value = "Get all events corresponding to the search parameters given.", 
             notes = "Retrieve all events authorized for the user corresponding to the " + "search parameters given")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve all events", response = Event.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Retrieve all events", response = EventDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
@@ -137,9 +135,7 @@ public class EventResourceService  extends ResourceService {
         @ApiParam(value = "Search by concerned item label", example = DocumentationAnnotation.EXAMPLE_EVENT_CONCERNED_ITEM_LABEL) @QueryParam("concernedItemLabel") String concernedItemLabel, 
         @ApiParam(value = "Search by date - start of the range", example = DocumentationAnnotation.EXAMPLE_EVENT_SEARCH_START_DATE) @QueryParam("startDate") @Date(DateFormat.YMDTHMSZZ) String startDate, 
         @ApiParam(value = "Search by date - end of the range", example = DocumentationAnnotation.EXAMPLE_EVENT_SEARCH_END_DATE) @QueryParam("endDate") @Date(DateFormat.YMDTHMSZZ) String endDate
-    ) {
-        EventDAOSesame eventDAO = new EventDAOSesame(userSession.getUser());
-        
+    ) {        
         return getEvents(
                 uri,
                 type,
@@ -195,14 +191,16 @@ public class EventResourceService  extends ResourceService {
     @ApiOperation(value = "Get the event corresponding to the search uri",
                   notes = "Get the event corresponding to the search uri")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Get an event", response = RdfResourceDefinitionDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Get an event", response = EventDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-            dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, 
+            required = true,
+            dataType = GlobalWebserviceValues.DATA_TYPE_STRING, 
+            paramType = GlobalWebserviceValues.HEADER,
             value = DocumentationAnnotation.ACCES_TOKEN,
             example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })

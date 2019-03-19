@@ -54,7 +54,7 @@ import phis2ws.service.view.model.phis.Event;
  * Service to handle events
  * @update [Andréas Garcia] 14 Feb., 2019: Add GET detail service
  * @update [Andréas Garcia] 5 March, 2019: Add POST service
- * @update [Andréas Garcia] 15 March, 2019: Add GET  {uri}/annotations service
+ * @update [Andréas Garcia] 15 March, 2019: Add GET {uri}/annotations service
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
 @Api("/events")
@@ -63,7 +63,7 @@ public class EventResourceService  extends ResourceService {
     final static Logger LOGGER = LoggerFactory.getLogger(EventResourceService.class);
     
     /**
-     * Search all events with filters
+     * Searches events with filters
      * @example
      * {
      *  {
@@ -148,7 +148,7 @@ public class EventResourceService  extends ResourceService {
     }
     
     /**
-     * Get an event
+     * Gets an event
      * @example
      * {
      *   "metadata": {
@@ -212,7 +212,7 @@ public class EventResourceService  extends ResourceService {
     }
     
     /**
-     * Get events
+     * Gets events
      * @param uri
      * @param type
      * @param concernedItemLabel
@@ -275,7 +275,7 @@ public class EventResourceService  extends ResourceService {
     }
     
     /**
-     * Get an event's annotations
+     * Gets an event's annotations
      * @param pageSize
      * @param page
      * @example

@@ -35,12 +35,6 @@ import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionFactory;
 import phis2ws.service.injection.SessionInject;
 import phis2ws.service.injection.SessionInjectResolver;
-import phis2ws.service.resources.brapi.BrapiCall;
-import phis2ws.service.resources.brapi.CallsResourceService;
-import phis2ws.service.resources.brapi.StudyResourceService;
-import phis2ws.service.resources.brapi.TokenResourceService;
-import phis2ws.service.resources.brapi.VariableResourceService;
-import phis2ws.service.resources.brapi.TraitsResourceService;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
 

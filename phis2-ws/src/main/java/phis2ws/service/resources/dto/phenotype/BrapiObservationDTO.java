@@ -7,6 +7,7 @@
 //******************************************************************************
 package phis2ws.service.resources.dto.phenotype;
 
+import java.util.Date;
 import phis2ws.service.view.model.phis.Dataset;
 
 /**
@@ -18,7 +19,7 @@ public class BrapiObservationDTO {
     private String germplasmName;
     private String observationDbId;
     private String observationLevel;
-    private String observationTimeStamp;
+    private Date observationTimeStamp;
     private String observationUnitDbId;
     private String observationUnitName;
     private String observationVariableDbId;
@@ -30,7 +31,7 @@ public class BrapiObservationDTO {
     //\SILEX
     private String studyDbId;
     private String uploadedBy;
-    private String value;
+    private Object value;
 
     public BrapiObservationDTO() {
     }
@@ -71,11 +72,11 @@ public class BrapiObservationDTO {
         this.observationLevel = observationLevel;
     }
 
-    public String getObservationTimeStamp() {
+    public Date getObservationTimeStamp() {
         return observationTimeStamp;
     }
 
-    public void setObservationTimeStamp(String observationTimeStamp) {
+    public void setObservationTimeStamp(Date observationTimeStamp) {
         this.observationTimeStamp = observationTimeStamp;
     }
 
@@ -143,11 +144,11 @@ public class BrapiObservationDTO {
         this.uploadedBy = uploadedBy;
     }
 
-    public String getValue() {
+    public Object getValue() {
         return value;
     }
 
-    public void setValue(String value) {
+    public void setValue(Object value) {
         this.value = value;
     }  
 }

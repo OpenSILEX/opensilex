@@ -27,12 +27,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.mongo.DatasetDAOMongo;
+import phis2ws.service.dao.mongo.DataDAOMongo;
 import phis2ws.service.dao.phis.StudyDAO;
 import phis2ws.service.dao.sesame.ScientificObjectDAOSesame;
 import phis2ws.service.dao.sesame.VariableDaoSesame;
@@ -45,13 +43,9 @@ import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.BrapiMultiResponseForm;
 import phis2ws.service.view.brapi.form.BrapiSingleResponseForm;
-import phis2ws.service.view.model.phis.BrapiMethod;
-import phis2ws.service.view.model.phis.BrapiScale;
 import phis2ws.service.view.model.phis.BrapiVariable;
-import phis2ws.service.view.model.phis.BrapiVariableTrait;
 import phis2ws.service.view.model.phis.Call;
 import phis2ws.service.view.model.phis.Data;
-import phis2ws.service.view.model.phis.Dataset;
 import phis2ws.service.view.model.phis.ScientificObject;
 import phis2ws.service.view.model.phis.StudyDetails;
 import phis2ws.service.view.model.phis.Variable;
@@ -362,7 +356,7 @@ public class StudyResourceService implements BrapiCall {
         studyDAO.user = userSession.getUser();
         ArrayList<Status> statusList = new ArrayList<>();  
                 
-        ArrayList<BrapiObservationDTO> observationsList = getObservationsList(studyDAO, new ArrayList());
+        ArrayList<BrapiObservationDTO> observationsList = getObservationsList(studyDAO, new ArrayList(),limit, page);
         ArrayList<String> variableURIs = new ArrayList();
         ArrayList<BrapiVariable> obsVariablesList = new ArrayList();
         for (BrapiObservationDTO obs:observationsList) {  
@@ -421,7 +415,7 @@ public class StudyResourceService implements BrapiCall {
      */
     private Response getStudyObservations(StudyDAO studyDAO, List<String> variableURIs, int limit, int page) {
         ArrayList<Status> statusList = new ArrayList<>();         
-        ArrayList<BrapiObservationDTO> observations = getObservationsList(studyDAO,variableURIs);
+        ArrayList<BrapiObservationDTO> observations = getObservationsList(studyDAO,variableURIs,limit, page);
                 
         if (observations.isEmpty()) {
             BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, observations, true);
@@ -432,55 +426,64 @@ public class StudyResourceService implements BrapiCall {
         }    
     }
     
-    private ArrayList<BrapiObservationDTO> getObservationsList(StudyDAO studyDAO, List<String> variableURIs) {
-        DatasetDAOMongo datasetDAOMongo = new DatasetDAOMongo();
-        ArrayList<BrapiObservationDTO> observations = new ArrayList();
-        datasetDAOMongo.experiment = studyDAO.studyDbId; 
+    private ArrayList<BrapiObservationDTO> getObservationsList(StudyDAO studyDAO, List<String> variableURIs,int limit, int page) {
         
-        if (variableURIs.isEmpty()) {        
-            ArrayList<Dataset> datasets = datasetDAOMongo.allPaginate();
-            observations = getObservationsFromDatasets(datasets);
-        } else {
+        ArrayList<BrapiObservationDTO> observations = new ArrayList();  
+        ScientificObjectDAOSesame objectDAO = new ScientificObjectDAOSesame();
+        objectDAO.experiment = studyDAO.studyDbId;  
+        ArrayList<ScientificObject> objectsList = objectDAO.allPaginate();
+        ArrayList<Variable> variablesList = new ArrayList();
+        
+        if (variableURIs.isEmpty()) {  
+            VariableDaoSesame variableDaoSesame = new VariableDaoSesame();
+            variablesList = variableDaoSesame.allPaginate();
+
+        } else {            
             //in case a variable uri is duplicated, we keep distinct uris
             List<String> uniqueVariableURIs= variableURIs.stream().distinct().collect(Collectors.toList());
-            for (String variableURI:uniqueVariableURIs) { 
-                datasetDAOMongo.variable = variableURI;
-                ArrayList<Dataset> datasets = datasetDAOMongo.allPaginate();
-                ArrayList<BrapiObservationDTO> variableURIObservations = getObservationsFromDatasets(datasets);
-                observations.addAll(variableURIObservations);              
+            for (String variableURI:uniqueVariableURIs) {
+                VariableDaoSesame variableDAO = new VariableDaoSesame();
+                variableDAO.uri = variableURI;
+                Variable variable = variableDAO.allPaginate().get(0);
+                variablesList.add(variable);
+            }                
+        }
+
+        for (Variable variable:variablesList) {
+            DataDAOMongo dataDAOMongo = new DataDAOMongo();
+            dataDAOMongo.page = page;
+            dataDAOMongo.pageSize = limit;
+            dataDAOMongo.variableUri = variable.getUri();
+            ArrayList<BrapiObservationDTO> observationsPerVariable = new ArrayList();
+            for (ScientificObject object:objectsList) {            
+                dataDAOMongo.objectUri = object.getUri();
+                ArrayList<Data> dataList = dataDAOMongo.allPaginate();
+                ArrayList<BrapiObservationDTO> observationsPerVariableAndObject = getObservationsFromData(dataList,variable,object);
+                observationsPerVariable.addAll(observationsPerVariableAndObject);            
             }
-        }     
+            observations.addAll(observationsPerVariable);
+        }
+     
         return observations;
     }
     
-    /**
-     * Create observations with datasets attributes
-     * @param ArrayList<Dataset> datasets
-     * @return observations list 
-     */
-    private ArrayList<BrapiObservationDTO> getObservationsFromDatasets(ArrayList<Dataset> datasets) {
+    private ArrayList<BrapiObservationDTO> getObservationsFromData(ArrayList<Data> dataList, Variable variable, ScientificObject object) {
         ArrayList<BrapiObservationDTO> observations = new ArrayList();
-        for (Dataset dataset:datasets){
-            ArrayList<Data> dataList = dataset.getData();
-            for (Data data:dataList){
-                BrapiObservationDTO observation= new BrapiObservationDTO(dataset);
-                VariableDaoSesame variableDAO = new VariableDaoSesame();
-                variableDAO.uri = data.getVariable();
-                ArrayList<Variable> variables = variableDAO.allPaginate();
-                observation.setObservationVariableDbId(data.getVariable());
-                observation.setObservationVariableName(variables.get(0).getLabel());
-                observation.setObservationTimeStamp(data.getDate());
-                observation.setValue(data.getValue());
-                ScientificObjectDAOSesame scientificObjectDAO = new ScientificObjectDAOSesame();
-                scientificObjectDAO.uri = data.getAgronomicalObject();
-                ArrayList<ScientificObject> scientificObjects = scientificObjectDAO.allPaginate();
-                observation.setObservationUnitDbId(data.getAgronomicalObject());
-                observation.setObservationUnitName(scientificObjects.get(0).getAlias());
-                observation.setObservationLevel(scientificObjects.get(0).getRdfType());
-                observations.add(observation);
-            }
-        } 
+        
+        for (Data data:dataList){            
+            BrapiObservationDTO observation= new BrapiObservationDTO();
+            observation.setObservationUnitDbId(object.getUri());
+            observation.setObservationUnitName(object.getAlias());
+            observation.setObservationLevel(object.getRdfType());
+            observation.setStudyDbId(object.getExperiment());
+            observation.setObservationVariableDbId(variable.getUri());
+            observation.setObservationVariableName(variable.getLabel());    
+            observation.setObservationTimeStamp(data.getDate());
+            observation.setValue(data.getValue());          
+            observations.add(observation);
+        }
+       
         return observations;
     }
-
+    
 }

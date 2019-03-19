@@ -239,9 +239,9 @@ public class EventResourceService  extends ResourceService {
                 pageSize);
         
         // 3. Initialize return variables
-        ArrayList<RdfResourceDefinitionDTO> list = new ArrayList<>();
+        ArrayList<EventDTO> list = new ArrayList<>();
         ArrayList<Status> statusList = new ArrayList<>();
-        ResultForm<RdfResourceDefinitionDTO> getResponse;
+        ResultForm<EventDTO> getResponse;
         
         if (events == null) { // Request failure
             getResponse = new ResultForm<>(0, 0, list, true, 0);

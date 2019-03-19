@@ -47,7 +47,7 @@ public class EventDTO extends AbstractVerifiedClass {
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EVENT_DATE)
     private String date;
     
-    protected ArrayList<EventPropertyDTO> properties = new ArrayList<>();
+    protected ArrayList<PropertyDTO> properties = new ArrayList<>();
     
     /**
      * Constructor from an Event model
@@ -70,7 +70,7 @@ public class EventDTO extends AbstractVerifiedClass {
             this.date = null;
         }
         event.getProperties().forEach((property) -> {
-            properties.add(new EventPropertyDTO(property));
+            properties.add(new PropertyDTO(property));
         });
     }
 
@@ -128,11 +128,11 @@ public class EventDTO extends AbstractVerifiedClass {
         this.date = date;
     }
 
-    public ArrayList<EventPropertyDTO> getProperties() {
+    public ArrayList<PropertyDTO> getProperties() {
         return properties;
     }
 
-    public void setProperties(ArrayList<EventPropertyDTO> properties) {
+    public void setProperties(ArrayList<PropertyDTO> properties) {
         this.properties = properties;
     }
 }

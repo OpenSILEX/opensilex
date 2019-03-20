@@ -3,10 +3,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.mycompany</groupId>
-    <artifactId>phis2ws</artifactId>
+    <artifactId>opensilex</artifactId>
     <version>v0.1</version>
     <packaging>war</packaging>
-    <name>phis2ws</name>
+    <name>opensilex</name>
 
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>

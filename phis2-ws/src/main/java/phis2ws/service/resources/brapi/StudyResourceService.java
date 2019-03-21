@@ -37,7 +37,7 @@ import phis2ws.service.dao.sesame.VariableDaoSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
-import phis2ws.service.resources.dto.phenotype.BrapiObservationDTO;
+import phis2ws.service.resources.dto.data.BrapiObservationDTO;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
@@ -356,7 +356,7 @@ public class StudyResourceService implements BrapiCall {
         studyDAO.user = userSession.getUser();
         ArrayList<Status> statusList = new ArrayList<>();  
                 
-        ArrayList<BrapiObservationDTO> observationsList = getObservationsList(studyDAO, new ArrayList(),limit, page);
+        ArrayList<BrapiObservationDTO> observationsList = getObservationsList(studyDAO, new ArrayList());
         ArrayList<String> variableURIs = new ArrayList();
         ArrayList<BrapiVariable> obsVariablesList = new ArrayList();
         for (BrapiObservationDTO obs:observationsList) {  
@@ -409,13 +409,16 @@ public class StudyResourceService implements BrapiCall {
     }
     
     /**
-     * Retrieve the observations corresponding to the user query (parameters: one specific study and eventually some variables)
-     * @param ArrayList<Dataset> datasets
+     * Retrieve the response with observations corresponding to the user query (parameters: one specific study and eventually some variables)
+     * @param studyDAO the study for which we want to retrieve the linked observations
+     * @param variableURIs to filter the observations on a list of variableURIs defined by the user
+     * @param limit pagesize
+     * @param page the page number
      * @return observations list 
      */
     private Response getStudyObservations(StudyDAO studyDAO, List<String> variableURIs, int limit, int page) {
         ArrayList<Status> statusList = new ArrayList<>();         
-        ArrayList<BrapiObservationDTO> observations = getObservationsList(studyDAO,variableURIs,limit, page);
+        ArrayList<BrapiObservationDTO> observations = getObservationsList(studyDAO,variableURIs);
                 
         if (observations.isEmpty()) {
             BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, observations, true);
@@ -426,7 +429,15 @@ public class StudyResourceService implements BrapiCall {
         }    
     }
     
-    private ArrayList<BrapiObservationDTO> getObservationsList(StudyDAO studyDAO, List<String> variableURIs,int limit, int page) {
+    /**
+     * Retrieve the observations list corresponding to the user query
+     * @param studyDAO the study for which we want to retrieve the linked observations
+     * @param variableURIs to filter the observations on a list of variableURIs defined by the user
+     * @param limit pagesize
+     * @param page the page number
+     * @return observations list 
+     */
+    private ArrayList<BrapiObservationDTO> getObservationsList(StudyDAO studyDAO, List<String> variableURIs) {
         
         ArrayList<BrapiObservationDTO> observations = new ArrayList();  
         ScientificObjectDAOSesame objectDAO = new ScientificObjectDAOSesame();
@@ -436,7 +447,8 @@ public class StudyResourceService implements BrapiCall {
         
         if (variableURIs.isEmpty()) {  
             VariableDaoSesame variableDaoSesame = new VariableDaoSesame();
-            variablesList = variableDaoSesame.allPaginate();
+            //if variableURIs is empty, we look for all variables observations
+            variablesList = variableDaoSesame.allPaginate(); 
 
         } else {            
             //in case a variable uri is duplicated, we keep distinct uris
@@ -451,8 +463,6 @@ public class StudyResourceService implements BrapiCall {
 
         for (Variable variable:variablesList) {
             DataDAOMongo dataDAOMongo = new DataDAOMongo();
-            dataDAOMongo.page = page;
-            dataDAOMongo.pageSize = limit;
             dataDAOMongo.variableUri = variable.getUri();
             ArrayList<BrapiObservationDTO> observationsPerVariable = new ArrayList();
             for (ScientificObject object:objectsList) {            
@@ -466,7 +476,13 @@ public class StudyResourceService implements BrapiCall {
      
         return observations;
     }
-    
+    /**
+     * Fill the observations attributes with Data, Variable and ScientificObject attributes
+     * @param dataList list of data corresponding to the variable and the scientificObject
+     * @param variable variable linked to the dataList
+     * @param object scientific object linked to the dataList
+     * @return observations list 
+     */
     private ArrayList<BrapiObservationDTO> getObservationsFromData(ArrayList<Data> dataList, Variable variable, ScientificObject object) {
         ArrayList<BrapiObservationDTO> observations = new ArrayList();
         
@@ -474,12 +490,13 @@ public class StudyResourceService implements BrapiCall {
             BrapiObservationDTO observation= new BrapiObservationDTO();
             observation.setObservationUnitDbId(object.getUri());
             observation.setObservationUnitName(object.getAlias());
-            observation.setObservationLevel(object.getRdfType());
+            observation.setObservationLevel(object.getRdfType());            
             observation.setStudyDbId(object.getExperiment());
             observation.setObservationVariableDbId(variable.getUri());
             observation.setObservationVariableName(variable.getLabel());    
+            observation.setObservationDbId(data.getUri());
             observation.setObservationTimeStamp(data.getDate());
-            observation.setValue(data.getValue());          
+            observation.setValue(data.getValue());
             observations.add(observation);
         }
        

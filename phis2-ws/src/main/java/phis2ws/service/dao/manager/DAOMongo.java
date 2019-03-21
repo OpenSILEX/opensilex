@@ -47,8 +47,8 @@ public abstract class DAOMongo<T> {
     protected MongoCollection<Document> collection;
 
     public User user;
-    public Integer page;
-    public Integer pageSize;
+    protected Integer page;
+    protected Integer pageSize;
     /**
      * User ip adress
      */

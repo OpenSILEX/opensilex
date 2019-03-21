@@ -5,7 +5,7 @@
 // Creation date: 11 févr. 2019
 // Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package phis2ws.service.resources.dto.phenotype;
+package phis2ws.service.resources.dto.data;
 
 import java.util.Date;
 import phis2ws.service.view.model.phis.Dataset;
@@ -15,22 +15,35 @@ import phis2ws.service.view.model.phis.Dataset;
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class BrapiObservationDTO {
+    //The ID which uniquely identifies a germplasm 
     private String germplasmDbId;
+    //Name of the germplasm
     private String germplasmName;
-    private String observationDbId;
+    //The ID which uniquely identifies an observation
+    private String observationDbId; 
+    //The level of an observation unit. ex. \"plot\", \"plant\
     private String observationLevel;
+    //The date and time  when this observation was made
     private Date observationTimeStamp;
+    //The ID which uniquely identifies an observation unit = scientific object
     private String observationUnitDbId;
+    //A human readable name for an observation unit
     private String observationUnitName;
+    //The ID which uniquely identifies an observation variable
     private String observationVariableDbId;
+    //A human readable name for an observation variable
     private String observationVariableName;
+    //The name or identifier of the entity which collected the observation
     private String operator;
     //SILEX:todo
     // create a class season with season, seasonDbId, year
     private String season; 
     //\SILEX
+    //The ID which uniquely identifies a study within the given database server
     private String studyDbId;
+    //The name or id of the user who uploaded the observation to the database system
     private String uploadedBy;
+    //The value of the data collected as an observation
     private Object value;
 
     public BrapiObservationDTO() {

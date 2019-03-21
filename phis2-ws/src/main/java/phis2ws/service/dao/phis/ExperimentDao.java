@@ -604,6 +604,13 @@ public class ExperimentDao extends DAOPhisBrapi<Experiment, ExperimentDTO> {
                         insertStatusList.add(new Status ("Already existing data", StatusCodeMsg.INFO, String.valueOf(exists) + " experiment already exists"));
                     } else { // If non existing data and inserted
                         insertStatusList.add(new Status("Data inserted", StatusCodeMsg.INFO, String.valueOf(inserted) + " experiments inserted"));
+                        //Add the experiments in the triplestore
+                        ExperimentDAOSesame experimentDAOSesame = new ExperimentDAOSesame();
+                        POSTResultsReturn insertTriplestore = experimentDAOSesame.insertExperiments(experiments);
+                        if (!insertTriplestore.getDataState()) { //An error occurred
+                            insertStatusList.addAll(insertTriplestore.getStatusList());
+                            insertionState = false;
+                        }
                     }
                 }
                 results = new POSTResultsReturn(resultState, insertionState, dataState);

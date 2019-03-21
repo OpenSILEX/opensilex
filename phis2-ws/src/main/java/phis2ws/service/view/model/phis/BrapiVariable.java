@@ -17,9 +17,9 @@ import org.joda.time.DateTime;
  */
 public class BrapiVariable {
     //The id of the variable in the triplestore e.g. http://www.phenome-fppn.fr/platform/id/variables/v001
-    private String ObservationVariableDbId;
+    private String observationVariableDbId;
     //The label of the variable in the triplestore e.g. "Leaf-Area_Index_m2.m2"   
-    private String ObservationVariableName;
+    private String observationVariableName;
     //SILEX:todo
     //class ontologyReference and get info
     private String ontologyReference;

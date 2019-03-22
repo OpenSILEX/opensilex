@@ -48,7 +48,7 @@
             <id>test</id>
             <properties>
                 <build.profile.id>test</build.profile.id>
-                <target.war.name>${project.artifactId}</target.war.name>
+                <target.war.name>openSilexTestAPI</target.war.name>
             </properties>
         </profile>
     </profiles>
@@ -260,17 +260,17 @@
             <artifactId>jersey-bean-validation</artifactId>
             <version>2.28</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-querybuilder</artifactId>
+            <version>3.9.0</version>
+        </dependency>
         <!-- Java 11 compatibility (@see https://blog.codefx.org/java/java-11-migration-guide/) -->
         <dependency>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
             <version>2.3.1</version>
         </dependency>        
-        <dependency>
-            <groupId>org.apache.jena</groupId>
-            <artifactId>jena-querybuilder</artifactId>
-            <version>3.9.0</version>
-        </dependency>
     </dependencies>
 
     <build>

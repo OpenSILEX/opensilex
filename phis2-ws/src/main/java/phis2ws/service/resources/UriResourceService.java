@@ -28,20 +28,14 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.sesame.UriDaoSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
-import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.injection.SessionInject;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
-import phis2ws.service.view.brapi.form.ResponseFormAsk;
-import phis2ws.service.view.brapi.form.ResponseFormUri;
+import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Ask;
 import phis2ws.service.view.model.phis.Uri;
 
@@ -473,14 +467,14 @@ public class UriResourceService extends ResourceService {
     private Response getInstancesData(UriDaoSesame uriDaoSesame) {
         ArrayList<Uri> uris;
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormUri getResponse;
+        ResultForm<Uri> getResponse;
 
         uris = uriDaoSesame.instancesPaginate();
         if (uris == null) { //no result found
-            getResponse = new ResponseFormUri(0, 0, uris, true);
+            getResponse = new ResultForm<Uri>(0, 0, uris, true);
             return noResultFound(getResponse, statusList);
         } else if (!uris.isEmpty()) { //result founded
-            getResponse = new ResponseFormUri(uriDaoSesame.getPageSize(), uriDaoSesame.getPage(), uris, false);
+            getResponse = new ResultForm<Uri>(uriDaoSesame.getPageSize(), uriDaoSesame.getPage(), uris, false);
             if (getResponse.getResult().dataSize() == 0) { //no result found
                 return noResultFound(getResponse, statusList);
             } else { //return instances metadata
@@ -488,7 +482,7 @@ public class UriResourceService extends ResourceService {
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         } else { //no result found
-            getResponse = new ResponseFormUri(0, 0, uris, true);
+            getResponse = new ResultForm<Uri>(0, 0, uris, true);
             return noResultFound(getResponse, statusList);
         }
     }
@@ -502,14 +496,14 @@ public class UriResourceService extends ResourceService {
      */
     private Response existData(UriDaoSesame uriDaoSesame) {
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormAsk getResponse;
+        ResultForm<Ask> getResponse;
         ArrayList<Ask> ask = uriDaoSesame.askUriExistance();
         
         if (ask == null) {//no result found
-            getResponse = new ResponseFormAsk(0, 0, ask, true);
+            getResponse = new ResultForm<Ask>(0, 0, ask, true);
             return noResultFound(getResponse, statusList);
         } else if (!ask.isEmpty()) {// result founded
-            getResponse = new ResponseFormAsk(uriDaoSesame.getPageSize(), uriDaoSesame.getPage(), ask, false);
+            getResponse = new ResultForm<Ask>(uriDaoSesame.getPageSize(), uriDaoSesame.getPage(), ask, false);
             if (getResponse.getResult().dataSize() == 0) { //no result 
                 return noResultFound(getResponse, statusList);
             } else { // return ask metadata
@@ -517,7 +511,7 @@ public class UriResourceService extends ResourceService {
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         } else { //no result found
-            getResponse = new ResponseFormAsk(0, 0, ask, true);
+            getResponse = new ResultForm<Ask>(0, 0, ask, true);
             return noResultFound(getResponse, statusList);
         }
     }
@@ -531,15 +525,15 @@ public class UriResourceService extends ResourceService {
     private Response getUriMetadata(UriDaoSesame uriDaoSesame) {
         ArrayList<Uri> uris;
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormUri getResponse;
+        ResultForm<Uri> getResponse;
 
         uris = uriDaoSesame.allPaginate();
 
         if (uris == null) { //no result found
-            getResponse = new ResponseFormUri(0, 0, uris, true);
+            getResponse = new ResultForm<Uri>(0, 0, uris, true);
             return noResultFound(getResponse, statusList);
         } else if (!uris.isEmpty()) { //concepts founded
-            getResponse = new ResponseFormUri(uriDaoSesame.getPageSize(), uriDaoSesame.getPage(), uris, false);
+            getResponse = new ResultForm<Uri>(uriDaoSesame.getPageSize(), uriDaoSesame.getPage(), uris, false);
             if (getResponse.getResult().dataSize() == 0) { // no result found
                 return noResultFound(getResponse, statusList);
             } else { //return concepts metadata
@@ -547,7 +541,7 @@ public class UriResourceService extends ResourceService {
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         } else { //no result found
-            getResponse = new ResponseFormUri(0, 0, uris, true);
+            getResponse = new ResultForm<Uri>(0, 0, uris, true);
             return noResultFound(getResponse, statusList);
         }
     }
@@ -560,14 +554,14 @@ public class UriResourceService extends ResourceService {
     private Response getLabelMetaData(UriDaoSesame uriDaoSesame) {
         ArrayList<Uri> uris;
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormUri getResponse;
+        ResultForm<Uri> getResponse;
 
         uris = uriDaoSesame.labelsPaginate();
         if (uris == null) {
-            getResponse = new ResponseFormUri(0, 0, uris, true);
+            getResponse = new ResultForm<Uri>(0, 0, uris, true);
             return noResultFound(getResponse, statusList);
         } else if (!uris.isEmpty()) {
-            getResponse = new ResponseFormUri(uriDaoSesame.getPageSize(), uriDaoSesame.getPage(), uris, false);
+            getResponse = new ResultForm<Uri>(uriDaoSesame.getPageSize(), uriDaoSesame.getPage(), uris, false);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {
@@ -575,7 +569,7 @@ public class UriResourceService extends ResourceService {
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         } else {
-            getResponse = new ResponseFormUri(0, 0, uris, true);
+            getResponse = new ResultForm<Uri>(0, 0, uris, true);
             return noResultFound(getResponse, statusList);
 
         }
@@ -590,14 +584,14 @@ public class UriResourceService extends ResourceService {
     private Response getAncestorsMetaData(UriDaoSesame uriDaoSesame) {
         ArrayList<Uri> concepts;
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormUri getResponse;
+        ResultForm<Uri> getResponse;
 
         concepts = uriDaoSesame.ancestorsAllPaginate();
         if (concepts == null) { //no result found
-            getResponse = new ResponseFormUri(0, 0, concepts, true);
+            getResponse = new ResultForm<Uri>(0, 0, concepts, true);
             return noResultFound(getResponse, statusList);
         } else if (!concepts.isEmpty()) { //result founded
-            getResponse = new ResponseFormUri(uriDaoSesame.getPageSize(), uriDaoSesame.getPage(), concepts, false);
+            getResponse = new ResultForm<Uri>(uriDaoSesame.getPageSize(), uriDaoSesame.getPage(), concepts, false);
             if (getResponse.getResult().dataSize() == 0) { //no result found
                 return noResultFound(getResponse, statusList);
             } else { //return concepts metadata
@@ -605,7 +599,7 @@ public class UriResourceService extends ResourceService {
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         } else { // no result found
-            getResponse = new ResponseFormUri(0, 0, concepts, true);
+            getResponse = new ResultForm<Uri>(0, 0, concepts, true);
             return noResultFound(getResponse, statusList);
         }
     }
@@ -619,14 +613,14 @@ public class UriResourceService extends ResourceService {
     private Response getSiblingsMetaData(UriDaoSesame uriDaoSesame) {
         ArrayList<Uri> concepts;
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormUri getResponse;
+        ResultForm<Uri> getResponse;
 
         concepts = uriDaoSesame.siblingsAllPaginate();
         if (concepts == null) { //no result found
-            getResponse = new ResponseFormUri(0, 0, concepts, true);
+            getResponse = new ResultForm<Uri>(0, 0, concepts, true);
             return noResultFound(getResponse, statusList);
         } else if (!concepts.isEmpty()) { //result founded
-            getResponse = new ResponseFormUri(uriDaoSesame.getPageSize(), uriDaoSesame.getPage(), concepts, false);
+            getResponse = new ResultForm<Uri>(uriDaoSesame.getPageSize(), uriDaoSesame.getPage(), concepts, false);
             if (getResponse.getResult().dataSize() == 0) { //no result founded
                 return noResultFound(getResponse, statusList);
             } else { //return concepts metadata
@@ -635,7 +629,7 @@ public class UriResourceService extends ResourceService {
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         } else { //no result found
-            getResponse = new ResponseFormUri(0, 0, concepts, true);
+            getResponse = new ResultForm<Uri>(0, 0, concepts, true);
             return noResultFound(getResponse, statusList);
         }
     }
@@ -649,14 +643,14 @@ public class UriResourceService extends ResourceService {
     private Response getDescendantsMetaData(UriDaoSesame uriDaoSesame) {
         ArrayList<Uri> concepts;
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormUri getResponse;
+        ResultForm<Uri> getResponse;
 
         concepts = uriDaoSesame.descendantsAllPaginate();
         if (concepts == null) { //no result found
-            getResponse = new ResponseFormUri(0, 0, concepts, true);
+            getResponse = new ResultForm<Uri>(0, 0, concepts, true);
             return noResultFound(getResponse, statusList);
         } else if (!concepts.isEmpty()) { //concept founded 
-            getResponse = new ResponseFormUri(uriDaoSesame.getPageSize(), uriDaoSesame.getPage(), concepts, false);
+            getResponse = new ResultForm<Uri>(uriDaoSesame.getPageSize(), uriDaoSesame.getPage(), concepts, false);
             if (getResponse.getResult().dataSize() == 0) { // no result found
                 return noResultFound(getResponse, statusList);
             } else {//return concepts metadata
@@ -664,7 +658,7 @@ public class UriResourceService extends ResourceService {
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         } else { // no result found
-            getResponse = new ResponseFormUri(0, 0, concepts, true);
+            getResponse = new ResultForm<Uri>(0, 0, concepts, true);
             return noResultFound(getResponse, statusList);
         }
     }
@@ -678,14 +672,14 @@ public class UriResourceService extends ResourceService {
     private Response getUriType(UriDaoSesame uriDaoSesame) {
         ArrayList<Uri> uris;
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormUri getResponse;
+        ResultForm<Uri> getResponse;
         uris = uriDaoSesame.getAskTypeAnswer();
         
         if (uris == null) {//no result found
-            getResponse = new ResponseFormUri(0, 0, uris, true);
+            getResponse = new ResultForm<Uri>(0, 0, uris, true);
             return noResultFound(getResponse, statusList);
         } else if (!uris.isEmpty()) { //result founded
-            getResponse = new ResponseFormUri(uriDaoSesame.getPageSize(), uriDaoSesame.getPage(), uris, false);
+            getResponse = new ResultForm<Uri>(uriDaoSesame.getPageSize(), uriDaoSesame.getPage(), uris, false);
             if (getResponse.getResult().dataSize() == 0) {//no result found
                 return noResultFound(getResponse, statusList);
             } else { //return meta data
@@ -693,7 +687,7 @@ public class UriResourceService extends ResourceService {
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         } else {//no result found
-            getResponse = new ResponseFormUri(0, 0, uris, true);
+            getResponse = new ResultForm<Uri>(0, 0, uris, true);
             return noResultFound(getResponse, statusList);
         }
     }

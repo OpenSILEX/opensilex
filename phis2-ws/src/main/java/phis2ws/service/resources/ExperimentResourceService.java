@@ -50,7 +50,7 @@ import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
 import phis2ws.service.view.brapi.form.ResponseFormGET;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
-import phis2ws.service.view.brapi.form.ResponseFormExperiment;
+import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Experiment;
 
 /**
@@ -70,6 +70,7 @@ public class ExperimentResourceService extends ResourceService {
      * @param uri
      * @param limit
      * @param page
+     * @param projectUri
      * @param startDate
      * @param endDate
      * @param field
@@ -459,23 +460,23 @@ public class ExperimentResourceService extends ResourceService {
     private Response getExperimentsData(ExperimentDao experimentDao) {
         ArrayList<Experiment> experiments = new ArrayList<>();
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormExperiment getResponse;
+        ResultForm<Experiment> getResponse;
         Integer experimentsCount = experimentDao.count();
 
         if (experimentsCount != null && experimentsCount == 0) {
-            getResponse = new ResponseFormExperiment(experimentDao.getPageSize(), experimentDao.getPage(), experiments, true, experimentsCount);
+            getResponse = new ResultForm<Experiment>(experimentDao.getPageSize(), experimentDao.getPage(), experiments, true, experimentsCount);
             return noResultFound(getResponse, statusList);
         } else {
             experiments = experimentDao.allPaginate();
             
             if (experiments == null || experimentsCount == null) { //sql error
-                getResponse = new ResponseFormExperiment(0, 0, experiments, true, experimentsCount);
+                getResponse = new ResultForm<Experiment>(0, 0, experiments, true, experimentsCount);
                 return sqlError(getResponse, statusList);
             } else if (experiments.isEmpty()) { // no result found
-                getResponse = new ResponseFormExperiment(experimentDao.getPageSize(), experimentDao.getPage(), experiments, false, experimentsCount);
+                getResponse = new ResultForm<Experiment>(experimentDao.getPageSize(), experimentDao.getPage(), experiments, false, experimentsCount);
                 return noResultFound(getResponse, statusList);
             } else { //results founded
-                getResponse = new ResponseFormExperiment(experimentDao.getPageSize(), experimentDao.getPage(), experiments, true, experimentsCount);
+                getResponse = new ResultForm<Experiment>(experimentDao.getPageSize(), experimentDao.getPage(), experiments, true, experimentsCount);
                 getResponse.setStatus(statusList);
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }

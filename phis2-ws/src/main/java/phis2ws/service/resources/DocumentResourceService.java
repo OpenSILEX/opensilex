@@ -74,12 +74,11 @@ import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.ResourcesUtils;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
-import phis2ws.service.view.brapi.form.ResponseFormDocumentMetadata;
-import phis2ws.service.view.brapi.form.ResponseFormDocumentType;
 import phis2ws.service.view.brapi.form.ResponseFormGET;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
 import phis2ws.service.view.model.phis.Document;
 import phis2ws.service.resources.validation.interfaces.SortingValue;
+import phis2ws.service.view.manager.ResultForm;
 
 /**
  * Represents the documents service.
@@ -346,7 +345,7 @@ public class DocumentResourceService extends ResourceService {
             if (documentCategories.isEmpty()) {
                 return Response.status(Response.Status.NOT_FOUND).entity(new ResponseFormGET()).build();
             }
-            return Response.status(Response.Status.OK).entity(new ResponseFormDocumentType(limit, page, documentCategories, false)).build();
+            return Response.status(Response.Status.OK).entity(new ResultForm<String>(limit, page, documentCategories, false)).build();
         } catch (RepositoryException | MalformedQueryException | QueryEvaluationException ex) {
             errorStatus = new Status("Error", StatusCodeMsg.ERR, ex.getMessage());
         }
@@ -535,7 +534,7 @@ public class DocumentResourceService extends ResourceService {
     private Response getDocumentsMetadata(DocumentDaoSesame documentDao) {
         ArrayList<Document> documentsMetadata;
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormDocumentMetadata getResponse;
+        ResultForm<Document> getResponse;
         
         documentDao.user = userSession.getUser();
         // Count all documents for this specific request
@@ -544,10 +543,10 @@ public class DocumentResourceService extends ResourceService {
         documentsMetadata = documentDao.allPaginate();
         
         if (documentsMetadata == null) {
-            getResponse = new ResponseFormDocumentMetadata(0, 0, documentsMetadata, true);
+            getResponse = new ResultForm<Document>(0, 0, documentsMetadata, true);
             return noResultFound(getResponse, statusList);
         } else if (!documentsMetadata.isEmpty()) {
-            getResponse = new ResponseFormDocumentMetadata(documentDao.getPageSize(), documentDao.getPage(), documentsMetadata, true, totalCount);
+            getResponse = new ResultForm<Document>(documentDao.getPageSize(), documentDao.getPage(), documentsMetadata, true, totalCount);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {
@@ -555,7 +554,7 @@ public class DocumentResourceService extends ResourceService {
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         } else {
-            getResponse = new ResponseFormDocumentMetadata(0, 0, documentsMetadata, true);
+            getResponse = new ResultForm<Document>(0, 0, documentsMetadata, true);
             return noResultFound(getResponse, statusList);
         }
     }

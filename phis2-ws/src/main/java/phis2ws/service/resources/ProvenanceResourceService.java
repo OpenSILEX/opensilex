@@ -42,7 +42,7 @@ import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
-import phis2ws.service.view.brapi.form.ResponseFormProvenance;
+import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.provenance.Provenance;
 
 /**
@@ -274,15 +274,15 @@ public class ProvenanceResourceService extends ResourceService {
         // 4. Initialize returned provenances
         ArrayList<ProvenanceDTO> list = new ArrayList<>();
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormProvenance getResponse;
+        ResultForm<ProvenanceDTO> getResponse;
         
         if (measures == null) {
             // Request failure
-            getResponse = new ResponseFormProvenance(0, 0, list, true, 0);
+            getResponse = new ResultForm<ProvenanceDTO>(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         } else if (measures.isEmpty()) {
             // No results
-            getResponse = new ResponseFormProvenance(0, 0, list, true, 0);
+            getResponse = new ResultForm<ProvenanceDTO>(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         } else {
             // Convert all provenances object to DTO's
@@ -291,7 +291,7 @@ public class ProvenanceResourceService extends ResourceService {
             });
             
             // Return list of DTO
-            getResponse = new ResponseFormProvenance(provenanceDAO.getPageSize(), provenanceDAO.getPage(), list, true, totalCount);
+            getResponse = new ResultForm<ProvenanceDTO>(provenanceDAO.getPageSize(), provenanceDAO.getPage(), list, true, totalCount);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }

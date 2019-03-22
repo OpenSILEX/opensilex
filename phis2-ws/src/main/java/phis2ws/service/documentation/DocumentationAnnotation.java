@@ -104,9 +104,9 @@ public final class DocumentationAnnotation {
     
     public static final String RADIOMETRIC_TARGET_POST_DEFINITION = "JSON format of radiometric target data";
     
-    public static final String PROVENACE_POST_DEFINITION = "JSON format of provenance";
-    
     public static final String EVENT_POST_DEFINITION = "JSON format of a list of events";
+    
+    public static final String PROVENACE_POST_DEFINITION = "JSON format of provenance";
 
     public static final String ADMIN_ONLY_NOTES = "This can only be done by a PHIS-SILEX admin.";
     public static final String USER_ONLY_NOTES = "This can only be done by a PHIS-SILEX user.";
@@ -246,8 +246,6 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_VARIABLE_URI = "http://www.phenome-fppn.fr/diaphen/id/variable/v0000001";
     public static final String EXAMPLE_VARIABLE_LABEL = "LAI";
 
-    public static final String EXAMPLE_DATA_URI = "http://www.opensilex.org/1e9eb2fbacc7222d3868ae96149a8a16b32b2a1870c67d753376381ebcbb5937/e78da502-ee3f-42d3-828e-aa8cab237f93";
-            
     public static final String EVENT_URI_DEFINITION = "An event URI (Unique Resource Identifier)";
     public static final String EXAMPLE_EVENT_URI = "http://www.opensilex.org/id/event/12590c87-1c34-426b-a231-beb7acb33415";
     public static final String EXAMPLE_EVENT_TYPE = "http://www.opensilex.org/vocabulary/oeev#MoveFrom";
@@ -257,6 +255,9 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_EVENT_DATE = "2017-09-08T12:00:00+01:00";
     public static final String EXAMPLE_EVENT_SEARCH_START_DATE = "2017-09-08T12:00:00+01:00";
     public static final String EXAMPLE_EVENT_SEARCH_END_DATE = "2019-10-08T12:00:00+01:00";
+    public static final String EXAMPLE_EVENT_PROPERTY_RDF_TYPE = "http://www.opensilex.org/vocabulary/oeev#Pest";
+    public static final String EXAMPLE_EVENT_PROPERTY_RELATION = "http://www.opensilex.org/vocabulary/oeev#hasPest";
+    public static final String EXAMPLE_EVENT_PROPERTY_VALUE = "http://www.opensilex.org/phenome-fppn/id/pest/10ecffd9-d828-456c-8638-d0524567b8de";
 
     public static final String EXAMPLE_VECTOR_URI = "http://www.phenome-fppn.fr/diaphen/2018/v1801";
     public static final String EXAMPLE_VECTOR_RDF_TYPE = "http://www.opensilex.org/vocabulary/oeso#UAV";

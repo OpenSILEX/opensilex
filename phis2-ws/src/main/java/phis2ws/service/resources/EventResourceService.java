@@ -37,9 +37,8 @@ import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.sesame.EventDAOSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.resources.dto.event.EventDetailedDTO;
 import phis2ws.service.resources.dto.event.EventPostDTO;
-import phis2ws.service.resources.dto.event.EventSimpleDTO;
+import phis2ws.service.resources.dto.event.EventDTO;
 import phis2ws.service.resources.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
 import phis2ws.service.resources.validation.interfaces.Date;
 import phis2ws.service.resources.validation.interfaces.Required;
@@ -47,15 +46,15 @@ import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
-import phis2ws.service.view.brapi.form.ResponseFormEventDetailed;
-import phis2ws.service.view.brapi.form.ResponseFormEventSimple;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
+import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Event;
 
 /**
  * Service to handle events
- * @update [Andréas Garcia] 14 Feb., 2019: Add event detail service
- * @update [Andréas Garcia] 5 March, 2019: Add event POST service
+ * @update [Andréas Garcia] 14 Feb., 2019: Add GET detail service
+ * @update [Andréas Garcia] 5 March, 2019: Add POST service
+ * @update [Andréas Garcia] 15 March, 2019: Add GET  {uri}/annotations service
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
 @Api("/events")
@@ -64,7 +63,7 @@ public class EventResourceService  extends ResourceService {
     final static Logger LOGGER = LoggerFactory.getLogger(EventResourceService.class);
     
     /**
-     * Search all events
+     * Search all events with filters
      * @example
      * {
      *  {
@@ -109,13 +108,13 @@ public class EventResourceService  extends ResourceService {
      * @param concernedItemLabel
      * @param startDate
      * @param endDate
-     * @return  list of all events
+     * @return  list of all the events filtered
      */
     @GET
     @ApiOperation(value = "Get all events corresponding to the search parameters given.", 
             notes = "Retrieve all events authorized for the user corresponding to the " + "search parameters given")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve all events", response = Event.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Retrieve all events", response = EventDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
@@ -136,11 +135,8 @@ public class EventResourceService  extends ResourceService {
         @ApiParam(value = "Search by concerned item label", example = DocumentationAnnotation.EXAMPLE_EVENT_CONCERNED_ITEM_LABEL) @QueryParam("concernedItemLabel") String concernedItemLabel, 
         @ApiParam(value = "Search by date - start of the range", example = DocumentationAnnotation.EXAMPLE_EVENT_SEARCH_START_DATE) @QueryParam("startDate") @Date(DateFormat.YMDTHMSZZ) String startDate, 
         @ApiParam(value = "Search by date - end of the range", example = DocumentationAnnotation.EXAMPLE_EVENT_SEARCH_END_DATE) @QueryParam("endDate") @Date(DateFormat.YMDTHMSZZ) String endDate
-    ) {
-        EventDAOSesame eventDAO = new EventDAOSesame(userSession.getUser());
-        
-        // 1. Search events with parameters
-        ArrayList<Event> events = eventDAO.searchEvents(
+    ) {        
+        return getEvents(
                 uri,
                 type,
                 concernedItemLabel, 
@@ -149,45 +145,10 @@ public class EventResourceService  extends ResourceService {
                 endDate, 
                 page, 
                 pageSize);
-        
-        // 2. Analyse result
-        ArrayList<EventSimpleDTO> eventDTOs = new ArrayList();
-        ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormEventSimple responseForm;
-        
-        if (events == null) { // Request failure
-            responseForm = new ResponseFormEventSimple(0, 0, eventDTOs, true, 0);
-            return noResultFound(responseForm, statusList);
-        } else if (events.isEmpty()) { // No result
-            responseForm = new ResponseFormEventSimple(0, 0, eventDTOs, true, 0);
-            return noResultFound(responseForm, statusList);
-        } else { // Results
-            
-            // Generate DTOs
-            events.forEach((event) -> {
-                eventDTOs.add(new EventSimpleDTO(event));
-            });
-            
-            // Return DTOs
-            int resultsCount = eventDAO.count(
-                uri,
-                type,
-                concernedItemLabel, 
-                concernedItemUri, 
-                startDate, 
-                endDate);
-            responseForm = new ResponseFormEventSimple(eventDAO.getPageSize(), eventDAO.getPage(), eventDTOs, true, resultsCount);
-            if (responseForm.getResult().dataSize() == 0) {
-                return noResultFound(responseForm, statusList);
-            } else {
-                responseForm.setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(responseForm).build();
-            }
-        }
     }
     
     /**
-     * Get an event's details
+     * Get an event
      * @example
      * {
      *   "metadata": {
@@ -198,32 +159,6 @@ public class EventResourceService  extends ResourceService {
      *   "result": {
      *     "data": [
      *       {
-     *         "annotations": [
-     *           {
-     *             "uri": "http://www.opensilex.org/andreas-dev/id/annotation/c660dab5-9d68-4df3-9da1-882bfd224802",
-     *             "creationDate": "2019-02-27T14:11:04+01:00",
-     *             "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/admin_phis",
-     *             "motivatedBy": "http://www.w3.org/ns/oa#describing",
-     *             "comments": [
-     *               "comment 1"
-     *             ],
-     *             "targets": [
-     *               "http://www.opensilex.org/id/event/12590c87-1c34-426b-a231-beb7acb33415"
-     *             ]
-     *           },
-     *           {
-     *             "uri": "http://www.opensilex.org/andreas-dev/id/annotation/80de8573-eca5-466f-93fe-b97c96185834",
-     *             "creationDate": "2019-02-18T14:05:29+01:00",
-     *             "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/admin_phis",
-     *             "motivatedBy": "http://www.w3.org/ns/oa#describing",
-     *             "comments": [
-     *               "vdvd"
-     *             ],
-     *             "targets": [
-     *               "http://www.opensilex.org/id/event/12590c87-1c34-426b-a231-beb7acb33415"
-     *             ]
-     *           }
-     *         ],
      *         "uri": "http://www.opensilex.org/id/event/12590c87-1c34-426b-a231-beb7acb33415",
      *         "type": "http://www.opensilex.org/vocabulary/oeev#PestAttack",
      *         "concernedItems": [
@@ -249,14 +184,116 @@ public class EventResourceService  extends ResourceService {
      *   }
      * }
      * @param uri
-     * @return an event's details
+     * @return an event
      */
     @GET
     @Path("{uri}")
-    @ApiOperation(value = "Get an event's details corresponding to the search uri",
-                  notes = "Get an event's details corresponding to the search uri authorized for the user corresponding to the search uri")
+    @ApiOperation(value = "Get the event corresponding to the search uri",
+                  notes = "Get the event corresponding to the search uri")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Get an event's details", response = RdfResourceDefinitionDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Get an event", response = EventDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, 
+            required = true,
+            dataType = GlobalWebserviceValues.DATA_TYPE_STRING, 
+            paramType = GlobalWebserviceValues.HEADER,
+            value = DocumentationAnnotation.ACCES_TOKEN,
+            example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getEvent(
+        @ApiParam(value = DocumentationAnnotation.EVENT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_EVENT_URI) @PathParam("uri") @URL @Required String uri) {
+        
+        return getEvents(uri, null, null, null, null, null, 0, 1);
+    }
+    
+    /**
+     * Get events
+     * @param uri
+     * @param type
+     * @param concernedItemLabel
+     * @param concernedItemUri
+     * @param startDate
+     * @param endDate
+     * @param page
+     * @param pageSize
+     * @return events
+     */
+    public Response getEvents(String uri, String type, String concernedItemLabel, String concernedItemUri, String startDate, String endDate, int page, int pageSize) {
+        
+        EventDAOSesame eventDAO = new EventDAOSesame(userSession.getUser());
+        
+        // 1. Search events with parameters
+        ArrayList<Event> events = eventDAO.searchEvents(
+                uri,
+                type,
+                concernedItemLabel, 
+                concernedItemUri, 
+                startDate, 
+                endDate, 
+                page, 
+                pageSize);
+        
+        // 3. Initialize return variables
+        ArrayList<EventDTO> list = new ArrayList<>();
+        ArrayList<Status> statusList = new ArrayList<>();
+        ResultForm<EventDTO> getResponse;
+        
+        if (events == null) { // Request failure
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
+            return noResultFound(getResponse, statusList);
+        } else if (events.isEmpty()) { // No result
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
+            return noResultFound(getResponse, statusList);
+        } else { // Results
+            
+            // Generate DTOs
+            events.forEach((event) -> {
+                list.add(new EventDTO(event));
+            });
+            
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
+            if (getResponse.getResult().dataSize() == 0) {
+                return noResultFound(getResponse, statusList);
+            } else {
+                getResponse.setStatus(statusList);
+                return Response.status(Response.Status.OK).entity(getResponse).build();
+            }
+        }
+    }
+    
+    /**
+     * Get an event's annotations
+     * @param pageSize
+     * @param page
+     * @example
+     * [  
+     *   {
+     *     "uri": "http://www.opensilex.org/phenome-fppn/id/annotation/896325c3-85f7-4ad3-bf96-34ba497108c3",
+     *     "creationDate": "2019-03-11T09:40:03+01:00",
+     *     "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/admin_phis",
+     *     "motivatedBy": "http://www.w3.org/ns/oa#describing",
+     *     "bodyValues": [
+     *       "fth"
+     *     ],
+     *     "targets": [
+     *       "http://www.opensilex.org/phenome-fppn/id/event/c8e0173b-ce8a-4190-ad0b-f30ac07d4edd"
+     *     ]
+     *   }
+     * ]
+     * @param uri
+     * @return an event's annotations
+     */
+    @GET
+    @Path("{uri}/annotations")
+    @ApiOperation(value = "Get an event's annotations",
+                  notes = "Get an event's annotations")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Get an event's annotations", response = RdfResourceDefinitionDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
@@ -268,35 +305,14 @@ public class EventResourceService  extends ResourceService {
             example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getEventDetailed(
+    public Response getEventAnnotations(
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
         @ApiParam(value = DocumentationAnnotation.EVENT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_EVENT_URI) @PathParam("uri") @URL @Required String uri) {
         
-        EventDAOSesame eventDAO = new EventDAOSesame(userSession.getUser());
-        
-        // 1. Search an event's details with its URI
-        Event event = eventDAO.searchEventDetailed(uri);
-        
-        // 2. Analyse result
-        ArrayList<EventDetailedDTO> eventDTOs = new ArrayList();
-        ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormEventDetailed responseForm;
-        
-        if (event == null) { // Request failure
-            responseForm = new ResponseFormEventDetailed(0, 0, eventDTOs, true, 0);
-            return noResultFound(responseForm, statusList);
-        } else { // Results
-            
-            // Generate DTO
-            eventDTOs.add(new EventDetailedDTO(event));
-            
-            responseForm = new ResponseFormEventDetailed(0, 0, eventDTOs, true, 0);
-            if (responseForm.getResult().dataSize() == 0) {
-                return noResultFound(responseForm, statusList);
-            } else {
-                responseForm.setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(responseForm).build();
-            }
-        }
+        AnnotationResourceService annotationResourceService = new AnnotationResourceService();
+        annotationResourceService.userSession = userSession;
+        return annotationResourceService.getAnnotations(null, null, uri, null, null, page, pageSize);
     }
         
     /**

@@ -40,8 +40,8 @@ import phis2ws.service.view.brapi.form.ResponseFormPOST;
 import phis2ws.service.resources.dto.annotation.AnnotationDTO;
 import phis2ws.service.resources.dto.annotation.AnnotationPostDTO;
 import phis2ws.service.resources.validation.interfaces.URL;
-import phis2ws.service.view.brapi.form.ResponseFormAnnotation;
 import phis2ws.service.view.brapi.form.ResponseFormGET;
+import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Annotation;
 
 /**
@@ -235,13 +235,19 @@ public class AnnotationResourceService extends ResourceService {
     }
 
     /**
-     * Searches annotations corresponding to search parameters given by the user
-     * @param annotationDAOSesame
+     * Searches annotations corresponding to search parameters
+     * @param uri
+     * @param creator
+     * @param target
+     * @param bodyValue
+     * @param motivatedBy
+     * @param page
+     * @param pageSize
      * @return the annotations corresponding to the search
      */
-    private Response getAnnotations(String uri, String creator, String target, String bodyValue, String motivatedBy, int page, int pageSize) {
+    public Response getAnnotations(String uri, String creator, String target, String bodyValue, String motivatedBy, int page, int pageSize) {
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormAnnotation getResponse;
+        ResultForm<AnnotationDTO> getResponse;
         AnnotationDAOSesame annotationDAOSesame = new AnnotationDAOSesame(userSession.getUser());
 
         // Count all annotations for this specific request
@@ -253,17 +259,17 @@ public class AnnotationResourceService extends ResourceService {
         ArrayList<AnnotationDTO> annotationDTOs = new ArrayList();
 
         if (annotations == null) {
-            getResponse = new ResponseFormAnnotation(0, 0, annotationDTOs, true);
+            getResponse = new ResultForm<AnnotationDTO>(0, 0, annotationDTOs, true);
             return noResultFound(getResponse, statusList);
         } else if (annotations.isEmpty()) {
-            getResponse = new ResponseFormAnnotation(0, 0, annotationDTOs, true);
+            getResponse = new ResultForm<AnnotationDTO>(0, 0, annotationDTOs, true);
             return noResultFound(getResponse, statusList);
         } else {
             // Generate DTOs
             annotations.forEach((annotation) -> {
                 annotationDTOs.add(new AnnotationDTO(annotation));
             });
-            getResponse = new ResponseFormAnnotation(annotationDAOSesame.getPageSize(), annotationDAOSesame.getPage(), annotationDTOs, true, totalCount);
+            getResponse = new ResultForm<AnnotationDTO>(annotationDAOSesame.getPageSize(), annotationDAOSesame.getPage(), annotationDTOs, true, totalCount);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }

@@ -302,6 +302,7 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
             //Propriétés associées à l'AO
             for (Property property : scientificObject.getProperties()) {
                 if (property.getRdfType() != null && !property.getRdfType().equals("")) {//Propriété typée
+
                     if (property.getRdfType().equals(Oeso.CONCEPT_VARIETY.toString())) {
                         
                         String propertyURI;
@@ -330,7 +331,6 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
 
                     spql.addInsert(graph, scientificObjectUri, propertyRelation, propertyLiteral);         
                 }
-                
             }
             
             if (scientificObject.getUriExperiment() != null) {

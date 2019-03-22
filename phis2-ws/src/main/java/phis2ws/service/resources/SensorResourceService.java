@@ -52,8 +52,7 @@ import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
 import phis2ws.service.view.brapi.form.ResponseFormGET;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
-import phis2ws.service.view.brapi.form.ResponseFormSensor;
-import phis2ws.service.view.brapi.form.ResponseFormSensorProfile;
+import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Sensor;
 
 /**
@@ -71,7 +70,7 @@ public class SensorResourceService extends ResourceService {
     private Response getSensorsData(SensorDAOSesame sensorDAOSesame) {
         ArrayList<Sensor> sensors;
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormSensor getResponse;
+        ResultForm<Sensor> getResponse;
         
         //1. count
         Integer totalCount = sensorDAOSesame.count();
@@ -79,13 +78,13 @@ public class SensorResourceService extends ResourceService {
         sensors = sensorDAOSesame.allPaginate();
         
         if (sensors == null) {
-            getResponse = new ResponseFormSensor(0, 0, sensors, true);
+            getResponse = new ResultForm<Sensor>(0, 0, sensors, true);
             return noResultFound(getResponse, statusList);
         } else if (sensors.isEmpty()) {
-            getResponse = new ResponseFormSensor(0, 0, sensors, true);
+            getResponse = new ResultForm<Sensor>(0, 0, sensors, true);
             return noResultFound(getResponse, statusList);
         } else {
-            getResponse = new ResponseFormSensor(sensorDAOSesame.getPageSize(), sensorDAOSesame.getPage(), sensors, true, totalCount);
+            getResponse = new ResultForm<Sensor>(sensorDAOSesame.getPageSize(), sensorDAOSesame.getPage(), sensors, true, totalCount);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {
@@ -103,18 +102,18 @@ public class SensorResourceService extends ResourceService {
     private Response getSensorProfileData(SensorProfileDAOSesame sensorDAOSesame) {
         ArrayList<SensorProfileDTO> sensorsProfiles;
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormSensorProfile getResponse;
+        ResultForm<SensorProfileDTO> getResponse;
         
         sensorsProfiles = sensorDAOSesame.allPaginate();
         
         if (sensorsProfiles == null) {
-            getResponse = new ResponseFormSensorProfile(0, 0, sensorsProfiles, true);
+            getResponse = new ResultForm<SensorProfileDTO>(0, 0, sensorsProfiles, true);
             return noResultFound(getResponse, statusList);
         } else if (sensorsProfiles.isEmpty()) {
-            getResponse = new ResponseFormSensorProfile(0, 0, sensorsProfiles, true);
+            getResponse = new ResultForm<SensorProfileDTO>(0, 0, sensorsProfiles, true);
             return noResultFound(getResponse, statusList);
         } else {
-            getResponse = new ResponseFormSensorProfile(sensorDAOSesame.getPageSize(), sensorDAOSesame.getPage(), sensorsProfiles, false);
+            getResponse = new ResultForm<SensorProfileDTO>(sensorDAOSesame.getPageSize(), sensorDAOSesame.getPage(), sensorsProfiles, false);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {

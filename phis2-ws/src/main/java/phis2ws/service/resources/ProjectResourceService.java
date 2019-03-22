@@ -50,7 +50,7 @@ import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
 import phis2ws.service.view.brapi.form.ResponseFormGET;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
-import phis2ws.service.view.brapi.form.ResponseFormProject;
+import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Project;
 
 @Api("/projects")
@@ -302,23 +302,23 @@ public class ProjectResourceService extends ResourceService {
     private Response getProjectsData(ProjectDao projectDao) {
         ArrayList<Project> projects = new ArrayList<>();
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormProject getResponse;
+        ResultForm<Project> getResponse;
         Integer projectsCount = projectDao.count();
         
         if (projectsCount != null && projectsCount == 0) {
-            getResponse = new ResponseFormProject(projectDao.getPageSize(), projectDao.getPage(), projects, true, projectsCount);
+            getResponse = new ResultForm<Project>(projectDao.getPageSize(), projectDao.getPage(), projects, true, projectsCount);
             return noResultFound(getResponse, statusList);
         } else {
             projects = projectDao.allPaginate();
             
             if (projects == null || projectsCount == null) { //sql error
-                getResponse = new ResponseFormProject(0, 0, projects, true, projectsCount);
+                getResponse = new ResultForm<Project>(0, 0, projects, true, projectsCount);
                 return sqlError(getResponse, statusList);
             } else if (projects.isEmpty()) { // no result found
-                getResponse = new ResponseFormProject(projectDao.getPageSize(), projectDao.getPage(), projects, false, projectsCount);
+                getResponse = new ResultForm<Project>(projectDao.getPageSize(), projectDao.getPage(), projects, false, projectsCount);
                 return noResultFound(getResponse, statusList);
             } else { //results founded
-                getResponse = new ResponseFormProject(projectDao.getPageSize(), projectDao.getPage(), projects, true, projectsCount);
+                getResponse = new ResultForm<Project>(projectDao.getPageSize(), projectDao.getPage(), projects, true, projectsCount);
                 getResponse.setStatus(statusList);
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }

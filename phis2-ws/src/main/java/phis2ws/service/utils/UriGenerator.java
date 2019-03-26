@@ -441,7 +441,7 @@ public class UriGenerator {
         //2. Generate the URI of the experiment
         int newExperimentNumber;
         if (campaignLastExperimentUri == null) {
-            newExperimentNumber = 0;
+            newExperimentNumber = 1;
         }
         else {
             String[] uriSplitted = campaignLastExperimentUri.split(EXPERIMENT_URI_SEPARATOR);

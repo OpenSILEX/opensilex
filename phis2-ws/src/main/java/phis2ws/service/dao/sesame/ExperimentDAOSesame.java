@@ -11,13 +11,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
-import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.update.UpdateRequest;
+import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -322,5 +322,94 @@ public class ExperimentDAOSesame extends DAOSesame<Experiment> {
         result.statusList = updateStatus;
         result.createdResources.add(experimentUri); 
         return result; 
+    }
+    
+    /**
+     * Insert the experiment
+     * SILEX:warning
+     * In this first version, the experiments are created in the PostgreSQL database. 
+     * The only information added in the triplestore is the uri of the experiment and its type.
+     * \SILEX:warning
+     * @example
+     * INSERT DATA {
+     *      GRAPH <http://www.opensilex.org/opensilex/DMOcampaign-1> {
+     *          <http://www.opensilex.org/opensilex/DMOcampaign-1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.opensilex.org/vocabulary/oeso#Experiment> .
+     *      }
+     *  }
+     * @param experiment
+     * @return the query
+     */
+    private UpdateRequest prepareInsertQuery(Experiment experiment) {
+        UpdateBuilder spql = new UpdateBuilder();
+        
+        Node graph = NodeFactory.createURI(experiment.getUri());
+        Resource experimentUri = ResourceFactory.createResource(experiment.getUri());
+        Node experimentConcept = NodeFactory.createURI(Oeso.CONCEPT_EXPERIMENT.toString());
+        
+        spql.addInsert(graph, experimentUri, RDF.type, experimentConcept);
+        
+        UpdateRequest query = spql.buildRequest();
+        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
+        
+        return query;
+    }
+    
+    /**
+     * Insert the given experiments in the triplestore.
+     * SILEX:warning
+     * In this first version, the experiments are created in the PostgreSQL database. 
+     * We assume that the givent experiments does not exist in the triplestore 
+     * (the existance of the URI is done by ExperimentDao#checkAndInsertExperimentList)
+     * \SILEX:warning
+     * @param newExperiments
+     * @return the insertion result with the list of the errors or the list of the URIs of the inserted experiments.
+     */
+    public POSTResultsReturn insertExperiments(List<Experiment> newExperiments) {
+        List<Status> status = new ArrayList<>();
+        List<String> createdResourcesUris = new ArrayList<>();
+        
+        POSTResultsReturn results;
+        boolean resultState = false;
+        boolean insert = true;
+        
+        getConnection().begin();
+        for (Experiment experiment : newExperiments) {
+            //Insert experiment
+            UpdateRequest query = prepareInsertQuery(experiment);
+            
+            try {
+                Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
+                prepareUpdate.execute();
+
+                createdResourcesUris.add(experiment.getUri());
+            } catch (RepositoryException ex) {
+                    LOGGER.error("Error during commit or rolleback Triplestore statements: ", ex);
+            } catch (MalformedQueryException e) {
+                    LOGGER.error(e.getMessage(), e);
+                    insert = false;
+                    status.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.MALFORMED_CREATE_QUERY + " " + e.getMessage()));
+            }
+        }
+        
+        if (insert) {
+            resultState = true;
+            getConnection().commit();
+        } else {
+            getConnection().rollback();
+        }
+        
+        if (getConnection() != null) {
+            getConnection().close();
+        }
+        
+        results = new POSTResultsReturn(resultState, insert, true);
+        results.statusList = status;
+        results.setCreatedResources(createdResourcesUris);
+        if (resultState && !createdResourcesUris.isEmpty()) {
+            results.createdResources = createdResourcesUris;
+            results.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, createdResourcesUris.size() + " " + StatusCodeMsg.RESOURCES_CREATED));
+        }
+        
+        return results;
     }
 }

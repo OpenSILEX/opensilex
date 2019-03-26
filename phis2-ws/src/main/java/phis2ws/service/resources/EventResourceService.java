@@ -46,8 +46,8 @@ import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
-import phis2ws.service.view.brapi.form.ResponseFormEventSimple;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
+import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Event;
 
 /**
@@ -241,13 +241,13 @@ public class EventResourceService  extends ResourceService {
         // 2. Analyse result
         ArrayList<EventDTO> eventDTOs = new ArrayList();
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormEventSimple responseForm;
+        ResultForm<EventDTO> responseForm;
         
         if (events == null) { // Request failure
-            responseForm = new ResponseFormEventSimple(0, 0, eventDTOs, true, 0);
+            responseForm = new ResultForm<>(0, 0, eventDTOs, true, 0);
             return noResultFound(responseForm, statusList);
         } else if (events.isEmpty()) { // No result
-            responseForm = new ResponseFormEventSimple(0, 0, eventDTOs, true, 0);
+            responseForm = new ResultForm(0, 0, eventDTOs, true, 0);
             return noResultFound(responseForm, statusList);
         } else { // Results
             
@@ -256,15 +256,7 @@ public class EventResourceService  extends ResourceService {
                 eventDTOs.add(new EventDTO(event));
             });
             
-            // Return DTOs
-            int resultsCount = eventDAO.count(
-                uri,
-                type,
-                concernedItemLabel, 
-                concernedItemUri, 
-                startDate, 
-                endDate);
-            responseForm = new ResponseFormEventSimple(eventDAO.getPageSize(), eventDAO.getPage(), eventDTOs, true, resultsCount);
+            responseForm = new ResultForm<>(0, 0, eventDTOs, true, 0);
             if (responseForm.getResult().dataSize() == 0) {
                 return noResultFound(responseForm, statusList);
             } else {

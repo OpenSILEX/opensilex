@@ -33,7 +33,7 @@ import phis2ws.service.resources.dto.acquisitionSession.MetadataFileUAVDTO;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
-import phis2ws.service.view.brapi.form.ResponseFormMetadataFile;
+import phis2ws.service.view.manager.ResultForm;
 
 /**
  * Acquisition session service.
@@ -51,7 +51,7 @@ public class AcquisitionSessionResourceService extends ResourceService {
     private Response getAcquisitionSessionMetadataFile(AcquisitionSessionDAOSesame acquisitionSessionDAOSesame) {       
         ArrayList<MetadataFileDTO> fileMetadata;
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormMetadataFile getResponse;
+        ResultForm<MetadataFileDTO> getResponse;
         
         //Retrieve file format.
         fileMetadata = acquisitionSessionDAOSesame.allPaginateFileMetadata();
@@ -59,16 +59,16 @@ public class AcquisitionSessionResourceService extends ResourceService {
         Integer count = acquisitionSessionDAOSesame.countFileMetadataRows();
         
         if (fileMetadata == null) {
-            getResponse = new ResponseFormMetadataFile(0, 0, new ArrayList<>(), true);
+            getResponse = new ResultForm<MetadataFileDTO>(0, 0, new ArrayList<>(), true);
             return noResultFound(getResponse, statusList);
         } else if (fileMetadata.isEmpty()) {
-            getResponse = new ResponseFormMetadataFile(0, 0, fileMetadata, true);
+            getResponse = new ResultForm<MetadataFileDTO>(0, 0, fileMetadata, true);
             return noResultFound(getResponse, statusList);
         } else {
             //SILEX:info
             //In this service, the total count is equals to the number of rows
             //\SILEX:info
-            getResponse = new ResponseFormMetadataFile(acquisitionSessionDAOSesame.getPageSize(), acquisitionSessionDAOSesame.getPage(), fileMetadata, true, count);
+            getResponse = new ResultForm<MetadataFileDTO>(acquisitionSessionDAOSesame.getPageSize(), acquisitionSessionDAOSesame.getPage(), fileMetadata, true, count);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }

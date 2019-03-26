@@ -44,8 +44,8 @@ import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
-import phis2ws.service.view.brapi.form.ResponseFormScientificObject;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
+import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.ScientificObject;
 
 /**
@@ -139,15 +139,15 @@ public class ScientificObjectResourceService extends ResourceService {
     private Response getScientificObjectsData(ScientificObjectDAOSesame scientificObjectDaoSesame) {
         ArrayList<ScientificObject> scientificObjects;
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormScientificObject getResponse;
+        ResultForm<ScientificObject> getResponse;
         
         scientificObjects = scientificObjectDaoSesame.allPaginate();
         
         if (scientificObjects == null) {
-            getResponse = new ResponseFormScientificObject(0, 0, scientificObjects, true);
+            getResponse = new ResultForm<ScientificObject>(0, 0, scientificObjects, true);
             return noResultFound(getResponse, statusList);
         } else if (!scientificObjects.isEmpty()) {
-            getResponse = new ResponseFormScientificObject(scientificObjectDaoSesame.getPageSize(), scientificObjectDaoSesame.getPage(), scientificObjects, false);
+            getResponse = new ResultForm<ScientificObject>(scientificObjectDaoSesame.getPageSize(), scientificObjectDaoSesame.getPage(), scientificObjects, false);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {
@@ -155,7 +155,7 @@ public class ScientificObjectResourceService extends ResourceService {
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         } else {
-            getResponse = new ResponseFormScientificObject(0, 0, scientificObjects, true);
+            getResponse = new ResultForm<ScientificObject>(0, 0, scientificObjects, true);
             return noResultFound(getResponse, statusList);
         }
     }

@@ -35,7 +35,7 @@ import phis2ws.service.resources.dto.rdfResourceDefinition.RdfResourceDefinition
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.brapi.Status;
-import phis2ws.service.view.brapi.form.ResponseFormRdfResourceDefinition;
+import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Infrastructure;
 
 /**
@@ -134,15 +134,15 @@ public class InfrastructureResourceService extends ResourceService {
         // 4. Initialize return variables
         ArrayList<Status> statusList = new ArrayList<>();
         ArrayList<RdfResourceDefinitionDTO> list = new ArrayList<>();
-        ResponseFormRdfResourceDefinition getResponse;
+        ResultForm<RdfResourceDefinitionDTO> getResponse;
         
         if (infrastructures == null) {
             // Request failure
-            getResponse = new ResponseFormRdfResourceDefinition(0, 0, list, true, 0);
+            getResponse = new ResultForm<RdfResourceDefinitionDTO>(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         } else if (infrastructures.isEmpty()) {
             // No results
-            getResponse = new ResponseFormRdfResourceDefinition(0, 0, list, true, 0);
+            getResponse = new ResultForm<RdfResourceDefinitionDTO>(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         } else {
             // Convert all Infrastructure object to DTO's
@@ -151,7 +151,7 @@ public class InfrastructureResourceService extends ResourceService {
             });
             
             // Return list of DTO
-            getResponse = new ResponseFormRdfResourceDefinition(infrastructureDAO.getPageSize(), infrastructureDAO.getPage(), list, true, totalCount);
+            getResponse = new ResultForm<RdfResourceDefinitionDTO>(infrastructureDAO.getPageSize(), infrastructureDAO.getPage(), list, true, totalCount);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }
@@ -240,7 +240,7 @@ public class InfrastructureResourceService extends ResourceService {
         
         // 2. Initialize result variable
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormRdfResourceDefinition getResponse;
+        ResultForm<RdfResourceDefinitionDTO> getResponse;
         ArrayList<RdfResourceDefinitionDTO> list = new ArrayList<>();
         
         // Get all properties in the given language and fill them in infrastructure object
@@ -251,12 +251,12 @@ public class InfrastructureResourceService extends ResourceService {
             list.add(new InfrastructureDTO(infrastructure));
             
             // Return it
-            getResponse = new ResponseFormRdfResourceDefinition(propertyDAO.getPageSize(), propertyDAO.getPage(), list, true, list.size());
+            getResponse = new ResultForm<RdfResourceDefinitionDTO>(propertyDAO.getPageSize(), propertyDAO.getPage(), list, true, list.size());
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         } else {
             // No result found
-            getResponse = new ResponseFormRdfResourceDefinition(0, 0, list, true, 0);
+            getResponse = new ResultForm<RdfResourceDefinitionDTO>(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         }
     }

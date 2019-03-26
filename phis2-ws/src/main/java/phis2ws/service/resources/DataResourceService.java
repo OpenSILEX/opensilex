@@ -55,9 +55,8 @@ import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
-import phis2ws.service.view.brapi.form.ResponseFormData;
-import phis2ws.service.view.brapi.form.ResponseFormFileDescription;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
+import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Data;
 import phis2ws.service.view.model.phis.FileDescription;
 
@@ -246,15 +245,15 @@ public class DataResourceService extends ResourceService {
         // 4. Initialize return variables
         ArrayList<DataDTO> list = new ArrayList<>();
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormData getResponse;
+        ResultForm<DataDTO> getResponse;
         
         if (dataList == null) {
             // Request failure
-            getResponse = new ResponseFormData(0, 0, list, true, 0);
+            getResponse = new ResultForm<DataDTO>(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         } else if (dataList.isEmpty()) {
             // No results
-            getResponse = new ResponseFormData(0, 0, list, true, 0);
+            getResponse = new ResultForm<DataDTO>(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         } else {
             // Convert all measures object to DTO's
@@ -263,7 +262,7 @@ public class DataResourceService extends ResourceService {
             });
             
             // Return list of DTO
-            getResponse = new ResponseFormData(dataDAO.getPageSize(), dataDAO.getPage(), list, true, totalCount);
+            getResponse = new ResultForm<DataDTO>(dataDAO.getPageSize(), dataDAO.getPage(), list, true, totalCount);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }
@@ -511,15 +510,15 @@ public class DataResourceService extends ResourceService {
         // 4. Initialize return variables
         ArrayList<FileDescriptionDTO> list = new ArrayList<>();
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormFileDescription getResponse;
+        ResultForm<FileDescriptionDTO> getResponse;
         
         if (dataList == null) {
             // Request failure
-            getResponse = new ResponseFormFileDescription(0, 0, list, true, 0);
+            getResponse = new ResultForm<FileDescriptionDTO>(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         } else if (dataList.isEmpty()) {
             // No results
-            getResponse = new ResponseFormFileDescription(0, 0, list, true, 0);
+            getResponse = new ResultForm<FileDescriptionDTO>(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         } else {
             // Convert all measures object to DTO's
@@ -528,7 +527,7 @@ public class DataResourceService extends ResourceService {
             });
             
             // Return list of DTO
-            getResponse = new ResponseFormFileDescription(dataFileDaoMongo.getPageSize(), dataFileDaoMongo.getPage(), list, true, (int)totalCount);
+            getResponse = new ResultForm<FileDescriptionDTO>(dataFileDaoMongo.getPageSize(), dataFileDaoMongo.getPage(), list, true, (int)totalCount);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }

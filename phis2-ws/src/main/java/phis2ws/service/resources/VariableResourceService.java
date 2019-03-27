@@ -194,6 +194,7 @@ public class VariableResourceService extends ResourceService {
      * @param uri
      * @param label
      * @param trait
+     * @param traitSKosReference
      * @param method
      * @param unit
      * @return
@@ -220,6 +221,7 @@ public class VariableResourceService extends ResourceService {
         @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI) @QueryParam("uri") @URL String uri,
         @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_VARIABLE_LABEL) @QueryParam("label") String label,
         @ApiParam(value = "Search by trait", example = DocumentationAnnotation.EXAMPLE_TRAIT_URI) @QueryParam("trait") @URL String trait,
+        @ApiParam(value = "Search by skos trait reference", example = DocumentationAnnotation.EXAMPLE_SKOS_REFERECENCE_URI) @QueryParam("traitSKosReference") @URL String traitSKosReference,
         @ApiParam(value = "Search by method", example = DocumentationAnnotation.EXAMPLE_METHOD_URI) @QueryParam("method") @URL String method,
         @ApiParam(value = "Search by unit", example = DocumentationAnnotation.EXAMPLE_UNIT_URI) @QueryParam("unit") @URL String unit
     ) {
@@ -233,6 +235,9 @@ public class VariableResourceService extends ResourceService {
         }
         if (trait != null) {
             variableDaoSesame.trait = trait;
+        }
+        if (traitSKosReference != null) {
+            variableDaoSesame.traitSKosReference = traitSKosReference;
         }
         if (method != null) {
             variableDaoSesame.method = method;

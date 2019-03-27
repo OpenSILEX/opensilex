@@ -52,7 +52,8 @@ import phis2ws.service.view.model.phis.Property;
  *      Add events insertion service
  *      Move the generic function to get a string value from a binding set to DAOSesame
  *      Move concerned items accesses handling into a new ConcernedItemDAOSesame class
- * @update [Andreas Garcia] 19 March, 2019: remove annotations handling
+ * @update [Andreas Garcia] 19 March, 2019: remove annotations handling when
+ * getting events from storage
  * @author Andreas Garcia <andreas.garcia@inra.fr>
  */
 public class EventDAOSesame extends DAOSesame<Event> {

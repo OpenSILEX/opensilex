@@ -247,15 +247,14 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
     /**
      * Inserts the given concerned items in the storage. 
      * /!\ Prerequisite: data must have been checked before calling this method
-     * @see EventDAOSesame#check(java.util.List)
      * @param graph 
      * @param objectResource
      * @param concernsRelationUri since "concerns" can designate various
      * relations in various vocabularies (e.g OESO or OEEV), the URI of the 
-     * relation has to be 
+     * relation has to be specified
      * @param concernedItems
      * @return the insertion result, with the error list or the URI of the 
-     *         events inserted
+     * concerned item link inserted
      */
     public POSTResultsReturn insertLinksWithObject(String graph, Resource objectResource, String concernsRelationUri, ArrayList<ConcernedItem> concernedItems) {
         List<Status> status = new ArrayList<>();

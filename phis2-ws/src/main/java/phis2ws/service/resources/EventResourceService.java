@@ -266,21 +266,21 @@ public class EventResourceService  extends ResourceService {
         ResultForm<EventDTO> responseForm;
         
         if (events == null) { // Request failure
-            responseForm = new ResultForm<>(0, 0, eventDTOs, true, 0);
+            responseForm = new ResultForm<>(0, 0, list, true, 0);
             return noResultFound(responseForm, statusList);
         } else if (events.isEmpty()) { // No result
-            responseForm = new ResultForm(0, 0, eventDTOs, true, 0);
+            responseForm = new ResultForm(0, 0, list, true, 0);
             return noResultFound(responseForm, statusList);
         } else { // Results
             
-            eventDTOs.add(new EventDTO(events.get(0)));
+            list.add(new EventDTO(events.get(0)));
             
-            responseForm = new ResultForm<>(0, 0, eventDTOs, true, 0);
+            responseForm = new ResultForm<>(0, 0, list, true, 0);
             if (responseForm.getResult().dataSize() == 0) {
                 return noResultFound(responseForm, statusList);
             } else {
-                getResponse.setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(getResponse).build();
+                responseForm.setStatus(statusList);
+                return Response.status(Response.Status.OK).entity(responseForm).build();
             }
         }
     }

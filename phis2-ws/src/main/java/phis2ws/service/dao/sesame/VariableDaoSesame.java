@@ -71,6 +71,7 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
     public String label;
     public String comment;
     public ArrayList<OntologyReference> ontologiesReferences = new ArrayList<>();
+    public String traitSKosReference;
 
     public VariableDaoSesame() {
         
@@ -138,6 +139,14 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
             query.appendSelect(" ?trait");
             query.appendTriplet(variableURI, Oeso.RELATION_HAS_TRAIT.toString(), "?trait", null);
         }
+        
+        if (traitSKosReference != null){
+            if( trait != null) {
+                query.appendTriplet(trait, Skos.RELATION_EXACT_MATCH.toString(), traitSKosReference, null);
+            } else {
+                query.appendTriplet("?trait", Skos.RELATION_EXACT_MATCH.toString(), traitSKosReference, null);
+            }
+        } 
         
         if (method != null) {
             query.appendTriplet(variableURI, Oeso.RELATION_HAS_METHOD.toString(), method, null);

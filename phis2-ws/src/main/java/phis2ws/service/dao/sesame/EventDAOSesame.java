@@ -48,10 +48,11 @@ import phis2ws.service.view.model.phis.Property;
 /**
  * DAO for Events
  * @update [Andreas Garcia] 14 Feb., 2019: Add event detail service
- * @update [Andreas Garcia] 5 March, 2019: Add events insertion service
- * @update [Andréas Garcia] 5 March, 2019: 
+ * @update [Andreas Garcia] 5 March, 2019: 
+ *      Add events insertion service
  *      Move the generic function to get a string value from a binding set to DAOSesame
  *      Move concerned items accesses handling into a new ConcernedItemDAOSesame class
+ * @update [Andreas Garcia] 19 March, 2019: remove annotations handling
  * @author Andreas Garcia <andreas.garcia@inra.fr>
  */
 public class EventDAOSesame extends DAOSesame<Event> {

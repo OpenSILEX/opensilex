@@ -142,10 +142,14 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
         
         if (traitSKosReference != null){
             if( trait != null) {
-                query.appendTriplet(trait, Skos.RELATION_EXACT_MATCH.toString(), traitSKosReference, null);
+                query.appendTriplet(trait, "?skosRelation", traitSKosReference, null);
             } else {
-                query.appendTriplet("?trait", Skos.RELATION_EXACT_MATCH.toString(), traitSKosReference, null);
+                query.appendTriplet("?trait", "?skosRelation", traitSKosReference, null);
             }
+            query.appendFilter("?skosRelation IN(<" + Skos.RELATION_CLOSE_MATCH.toString() + ">, <"
+                                               + Skos.RELATION_EXACT_MATCH.toString() + ">, <"
+                                               + Skos.RELATION_NARROWER.toString() + ">, <"
+                                               + Skos.RELATION_BROADER.toString() + ">)");
         } 
         
         if (method != null) {

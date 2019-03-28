@@ -21,6 +21,9 @@ public class EnvironmentMeasureDTO {
     //The uri of the sensor which has provide the measured value.
     //e.g. http://www.phenome-fppn.fr/mtp/2018/s18003
     protected String sensorUri;
+    //The URI of the variable corresponding to the value.
+    //@example http://www.opensilex.org/demo/id/variables/v004
+    protected String variableUri;
     //The date corresponding to the given value. The format should be yyyy-MM-ddTHH:mm:ssZ
     //e.g. 2018-06-25T15:13:59+0200
     protected String date;
@@ -35,6 +38,7 @@ public class EnvironmentMeasureDTO {
         }
         
         setSensorUri(measure.getSensorUri());
+        setVariableUri(measure.getVariableUri());
         setValue(measure.getValue());
     }
 
@@ -61,5 +65,12 @@ public class EnvironmentMeasureDTO {
     public void setValue(BigDecimal value) {
         this.value = value;
     }
-  
+
+    public String getVariableUri() {
+        return variableUri;
+    }
+
+    public void setVariableUri(String variableUri) {
+        this.variableUri = variableUri;
+    }
 }

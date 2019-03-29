@@ -1,13 +1,10 @@
 //**********************************************************************************************
-//                               ScientificObjectDaoSesame.java 
+//                               ScientificObjectDAOSesame.java 
 //
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
+// SILEX-PHIS
+// Copyright © INRA 2018
 // Creation date: august 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  September, 6 2017
-// Subject: A specific DAO to retreive data on scientific objects
 //***********************************************************************************************
 
 package phis2ws.service.dao.sesame;
@@ -59,7 +56,11 @@ import phis2ws.service.view.model.phis.ScientificObject;
 import phis2ws.service.view.model.phis.Property;
 import phis2ws.service.view.model.phis.Uri;
 
-
+/**
+ * Allows CRUD methods of scientific objects in the triplestore.
+ * @update [Morgane Vidal] 29 March, 2019: add update scientific objects and refactor to the new DAO conception.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(ScientificObjectDAOSesame.class);
@@ -80,11 +81,11 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
     }
     
     /**
-     * generates a query to get the last scientific object uri from the given year
+     * Generates a query to get the last scientific object uri from the given year
      * @param year 
-     * @return the query to get the uri of the last inserted scientific object 
-     *         for the given year
-     * e.g
+     * @return The query to get the uri of the last inserted scientific object 
+     *         for the given year.
+     * @example
      * SELECT ?uri WHERE {
      *      ?uri  rdf:type  ?type  . 
      *      ?type  rdfs:subClassOf*  <http://www.opensilex.org/vocabulary/oeso#ScientificObject> . 
@@ -107,17 +108,16 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
     }
     
     /**
-     * get the last scientific object id for the given year. 
-     * e.g : for http://www.phenome-fppn.fr/diaphen/
-     * @param year the year of the wanted scientific object number.
-     * @return the id of the last scientific object inserted in the triplestore for the given year
+     * Get the last scientific object id for the given year. 
+     * @param year The year of the wanted scientific object number.
+     * @return The ID of the last scientific object inserted in the triplestore for the given year.
      */
     public int getLastScientificObjectIdFromYear(String year) {
         SPARQLQueryBuilder lastScientificObjectUriFromYearQuery = prepareGetLastScientificObjectUriFromYear(year);
         
         this.getConnection().begin();
 
-        //get last scientificObject uri inserted during the given year
+        //Get the URI of the last scientific object inserted during the given year.
         TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, lastScientificObjectUriFromYearQuery.toString());
         TupleQueryResult result = tupleQuery.evaluate();
 
@@ -146,8 +146,8 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
     }
     
     /**
-     * generates the sparql ask query to know if a given alias is already 
-     * existing in a given context
+     * Generates the sparql ask query to know if a given alias is already 
+     * existing in a given context.
      * @param alias
      * @param context
      * @return the query
@@ -165,7 +165,7 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
     }
         
     /**
-     * Check if the scientific objects are accurates
+     * Check if the scientific objects are accurates.
      * @param ScientificObjectsDTO
      * @return
      * @throws RepositoryException 
@@ -173,7 +173,7 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
     public POSTResultsReturn check(List<ScientificObjectPostDTO> ScientificObjectsDTO) throws RepositoryException {
         //Expected results
         POSTResultsReturn scientificObjectsCheck = null;
-        //returned status list
+        //Returned status list
         List<Status> checkStatusList = new ArrayList<>();
         
         boolean dataOk = true;
@@ -186,10 +186,10 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
                 checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Wrong scientific object type value. See ontology"));
             }
             
-            //check if the uri of the isPartOf object exists
+            //Check if the uri of the isPartOf object exists
             if (scientificObject.getIsPartOf() != null) {
                 if (existUri(scientificObject.getIsPartOf())) {
-                    //1. get isPartOf object type
+                    //1. Get isPartOf object type
                     uriDao.uri = scientificObject.getIsPartOf();
                     ArrayList<Uri> typesResult = uriDao.getAskTypeAnswer();
                     if (!uriDao.isSubClassOf(typesResult.get(0).getRdfType(), Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString())) {
@@ -202,13 +202,13 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
                 }
             }
 
-            //check properties
+            //Check properties
             boolean missingAlias = true;
             for (PropertyPostDTO property : scientificObject.getProperties()) {
-                //check alias
+                //Check alias
                 if (property.getRelation().equals(Rdfs.RELATION_LABEL.toString())) {
                     missingAlias = false;
-                    //check unique alias in the experiment
+                    //Check unique alias in the experiment
                     if (scientificObject.getExperiment() != null) {
                         SPARQLQueryBuilder query = askExistAliasInContext(property.getValue(), scientificObject.getExperiment());
                         BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
@@ -221,7 +221,7 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
                     }
                 }                
                 
-                //check if property exists in the ontology Vocabulary --> see how to check rdfs                
+                //Check if property exists in the ontology Vocabulary --> see how to check rdfs                
                 if (existUri(property.getRelation()) == false) {
                     dataOk = false;
                     checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "the property relation " + property.getRelation() + " doesn't exist in the ontology"));
@@ -239,10 +239,11 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
     }
     
     /**
-     * insère les données dans le triplestore. 
-     * On suppose que la vérification de leur intégrité a été fait auparavent via l'appel à la méthode check()
+     * Insert the given scientific objects in the triplestore.
+     * /!\ Prerequisite : data must have been checked before.
+     * @see ScientificObjectDAOSesame#check(java.util.List)
      * @param scientificObjects
-     * @return 
+     * @return The insertion result.
      */
     public POSTResultsReturn insert(List<ScientificObjectPostDTO> scientificObjects) {
         List<Status> insertStatusList = new ArrayList<>();
@@ -250,8 +251,8 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
         
         POSTResultsReturn results;
         
-        boolean resultState = false; //Pour savoir si les données sont bonnes et ont bien été insérées
-        boolean annotationInsert = true; // Si l'insertion a bien été effectuée
+        boolean resultState = false; // To know if the data are ok and have been inserted.
+        boolean annotationInsert = true; // True if the insertion have been done.
         
         final Iterator<ScientificObjectPostDTO> iteratorScientificObjects = scientificObjects.iterator();
         
@@ -262,9 +263,9 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
             ScientificObject scientificObject = scientificObjectDTO.createObjectFromDTO();
             
             try {
-                //1. generates scientific object uri
+                //1. Generates scientific object URI.
                 scientificObject.setUri(uriGenerator.generateNewInstanceUri(scientificObject.getRdfType(), scientificObjectDTO.getYear(), null));
-            } catch (Exception ex) { //In the scientific object case, no exception should be raised
+            } catch (Exception ex) { // In the scientific object case, no exception should be raised
                 annotationInsert = false;
             }
             
@@ -278,7 +279,7 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
             if (scientificObject.getUriExperiment() != null) {
                 graph = NodeFactory.createURI(scientificObject.getUriExperiment());
                 
-                //Add participates in (scientific object participates in experiment)
+                // Add participates in (scientific object participates in experiment)
                 Node participatesIn = NodeFactory.createURI(Oeso.RELATION_PARTICIPATES_IN.toString());
                 spql.addInsert(graph, scientificObjectUri, participatesIn, graph);
             } else {
@@ -287,9 +288,9 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
             
             spql.addInsert(graph, scientificObjectUri, RDF.type, scientificObjectType);
             
-            //Propriétés associées à l'AO
+            // Properties associated to the scientific object
             for (Property property : scientificObject.getProperties()) {
-                if (property.getRdfType() != null && !property.getRdfType().equals("")) {//Propriété typée
+                if (property.getRdfType() != null && !property.getRdfType().equals("")) {//Typed properties
                     if (property.getRdfType().equals(Oeso.CONCEPT_VARIETY.toString())) {
                         
                         String propertyURI;
@@ -347,7 +348,7 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
                     resultState = true;
                     this.getConnection().commit();
                 } else {
-                    // retour en arrière sur la transaction
+                    // Rollback on the transaction.
                     this.getConnection().rollback();
                 }
 //                this.getConnection().close();
@@ -378,22 +379,22 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
     }
     
     /**
-     * vérifie les données et les insère dans le triplestore
+     * Check the given scientific objects and insert them in the triplestore.
      * @param scientificObjectsDTO
      * @return 
      */
     public POSTResultsReturn checkAndInsert(List<ScientificObjectPostDTO> scientificObjectsDTO) {
         POSTResultsReturn checkResult = check(scientificObjectsDTO);
-        if (checkResult.statusList.size() > 0) { //Les données ne sont pas bonnes
+        if (checkResult.statusList.size() > 0) { // Errors founded in the given scientific objects.
             return checkResult;
-        } else { //Si les données sont bonnes
+        } else { // No error founded, we can insert them.
             return insert(scientificObjectsDTO);
         }
     }
     
 
     /**
-     * 
+     * Generates the query to get the list of scientific objects which participates in a given experiment.
      * @param experimentURI
      * @return the query enabling to retrieve the list of scientific objects participating in the experiment and the objects propertiesT
      * SILEX:TODO 
@@ -420,10 +421,9 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
     }
     
     /**
-     * 
+     * Generates a query to get all the scientific objects contained in a given scientific object (geo:contains).
      * @param objectURI
-     * @return la requête permettant d'avoir tous les éléments contenus (geo:contains) dans objectURI.
-     *         la requête permet d'avoir la liste de tous les descendants
+     * @return the generated query.
      */
     private SPARQLQueryBuilder prepareSearchChildrenWithContains(String objectURI, String objectType) {
         SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
@@ -441,9 +441,9 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
     }
     
     /**
-     * 
+     * Generates the query to get the first scientific objects contained by a given scientific object (geo:contains).
      * @param objectURI
-     * @return La liste des premiers enfants de l'entités (relation geo:contains)
+     * @return The generated query.
      */
     private SPARQLQueryBuilder prepareSearchFirstChildrenWithContains(String objectURI) {
         SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
@@ -708,7 +708,24 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
             return null;
         }
     }
-    
+    /**
+     * Generates a query to search scientific objects by the given search params.
+     * @param uri
+     * @param rdfType
+     * @param experiment
+     * @param alias
+     * @example 
+     *      SELECT DISTINCT   ?uri ?experiment  ?alias  ?rdfType  ?relation ?property WHERE {
+     *           ?uri  <http://www.w3.org/2000/01/rdf-schema#label>  ?alias  . 
+     *           ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
+     *           ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.opensilex.org/vocabulary/oeso#ScientificObject> . 
+     *           ?uri  ?relation  ?property  . 
+     *              OPTIONAL {
+     *                  ?uri <http://www.opensilex.org/vocabulary/oeso#participatesIn> ?experiment 
+     *              } 
+     *      }
+     * @return the generated query
+     */
     protected SPARQLQueryBuilder prepareSearchQuery(String uri, String rdfType, String experiment, String alias) {
         SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
         

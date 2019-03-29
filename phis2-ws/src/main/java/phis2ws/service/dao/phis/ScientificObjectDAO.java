@@ -26,13 +26,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.dao.manager.DAOPhisBrapi;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.resources.dto.ScientificObjectDTO;
+import phis2ws.service.resources.dto.scientificObject.ScientificObjectPostDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.sql.SQLQueryBuilder;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.ScientificObject;
 
-public class ScientificObjectDAO extends DAOPhisBrapi<ScientificObject, ScientificObjectDTO> {
+public class ScientificObjectDAO extends DAOPhisBrapi<ScientificObject, ScientificObjectPostDTO> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(ScientificObjectDAO.class);
     
@@ -53,7 +53,7 @@ public class ScientificObjectDAO extends DAOPhisBrapi<ScientificObject, Scientif
     }
 
     @Override
-    public POSTResultsReturn checkAndInsert(ScientificObjectDTO newObject) {
+    public POSTResultsReturn checkAndInsert(ScientificObjectPostDTO newObject) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
@@ -174,7 +174,7 @@ public class ScientificObjectDAO extends DAOPhisBrapi<ScientificObject, Scientif
     }
 
     @Override
-    public POSTResultsReturn checkAndUpdateList(List<ScientificObjectDTO> newObjects) {
+    public POSTResultsReturn checkAndUpdateList(List<ScientificObjectPostDTO> newObjects) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -316,7 +316,7 @@ public class ScientificObjectDAO extends DAOPhisBrapi<ScientificObject, Scientif
     }
 
     @Override
-    public POSTResultsReturn checkAndInsertList(List<ScientificObjectDTO> newObjects) {
+    public POSTResultsReturn checkAndInsertList(List<ScientificObjectPostDTO> newObjects) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

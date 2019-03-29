@@ -26,7 +26,9 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
@@ -39,7 +41,9 @@ import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.sesame.ScientificObjectDAOSesame;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.resources.dto.ScientificObjectDTO;
+import phis2ws.service.resources.dto.scientificObject.ScientificObjectPostDTO;
+import phis2ws.service.resources.dto.scientificObject.ScientificObjectPutDTO;
+import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
@@ -95,7 +99,7 @@ public class ScientificObjectResourceService extends ResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postScientificObject(
-            @ApiParam(value = DocumentationAnnotation.SCIENTIFIC_OBJECT_POST_DATA_DEFINITION, required = true) @Valid ArrayList<ScientificObjectDTO> scientificObjectsDTO,
+            @ApiParam(value = DocumentationAnnotation.SCIENTIFIC_OBJECT_POST_DATA_DEFINITION, required = true) @Valid ArrayList<ScientificObjectPostDTO> scientificObjectsDTO,
             @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         //if there is at least one scientific object
@@ -131,33 +135,32 @@ public class ScientificObjectResourceService extends ResourceService {
         }
     }
     
-    /**
-     * Collect data corresponding to the user query (scientific objects research)
-     * @param scientificObjectDaoSesame
-     * @return the response for the user. Contains the list of scientific objects
-     */
-    private Response getScientificObjectsData(ScientificObjectDAOSesame scientificObjectDaoSesame) {
-        ArrayList<ScientificObject> scientificObjects;
-        ArrayList<Status> statusList = new ArrayList<>();
-        ResultForm<ScientificObject> getResponse;
+    @PUT
+    @Path("{uri}/{experiment}")
+    @ApiOperation(value = "Put scientific object(s) in the given experiment",
+                  notes = "Update scientific object(s) in the database.")
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "Scientific object(s) updated", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
+    })
+    @ApiImplicitParams({
+       @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                         dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                         value = DocumentationAnnotation.ACCES_TOKEN,
+                         example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response put(
+            @ApiParam(value = DocumentationAnnotation.SCIENTIFIC_OBJECT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_URI) @PathParam("uri") @Required @URL String uri,
+            @ApiParam(value = DocumentationAnnotation.EXPERIMENT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI) @PathParam("experiment") @Required @URL String experiment,
+            @ApiParam(value = DocumentationAnnotation.SCIENTIFIC_OBJECT_POST_DATA_DEFINITION, required = true) @Valid ArrayList<ScientificObjectPutDTO> scientificObjectsDTO,
+            @Context HttpServletRequest context) {
+        ScientificObjectDAOSesame scientificObjectDAO = new ScientificObjectDAOSesame();
         
-        scientificObjects = scientificObjectDaoSesame.allPaginate();
-        
-        if (scientificObjects == null) {
-            getResponse = new ResultForm<ScientificObject>(0, 0, scientificObjects, true);
-            return noResultFound(getResponse, statusList);
-        } else if (!scientificObjects.isEmpty()) {
-            getResponse = new ResultForm<ScientificObject>(scientificObjectDaoSesame.getPageSize(), scientificObjectDaoSesame.getPage(), scientificObjects, false);
-            if (getResponse.getResult().dataSize() == 0) {
-                return noResultFound(getResponse, statusList);
-            } else {
-                getResponse.setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(getResponse).build();
-            }
-        } else {
-            getResponse = new ResultForm<ScientificObject>(0, 0, scientificObjects, true);
-            return noResultFound(getResponse, statusList);
-        }
+        return null;
     }
     
     @GET
@@ -177,32 +180,38 @@ public class ScientificObjectResourceService extends ResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getScientificObjectsBySearch(
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
         @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_URI) @QueryParam("uri") @URL String uri,
         @ApiParam(value = "Search by experiment URI", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI) @QueryParam("experiment") @URL String experimentURI,
         @ApiParam(value = "Search by alias", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_ALIAS) @QueryParam("alias") String alias,
         @ApiParam(value = "Search by rdfType", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_TYPE) @QueryParam("rdfType") @URL String rdfType
     ) {
+        ArrayList<ScientificObject> scientificObjects;
+        ArrayList<Status> statusList = new ArrayList<>();
+        ResultForm<ScientificObject> getResponse;
+        
         ScientificObjectDAOSesame scientificObjectDaoSesame = new ScientificObjectDAOSesame();
-        
-        if (uri != null) {
-            scientificObjectDaoSesame.uri = uri;
-        }
-        if (experimentURI != null) {
-            scientificObjectDaoSesame.experiment = experimentURI;
-        }
-        if (alias != null) {
-            scientificObjectDaoSesame.alias = alias;
-        }
-        if (rdfType != null) {
-            scientificObjectDaoSesame.rdfType = rdfType;
-        }
-        
         scientificObjectDaoSesame.user = userSession.getUser();
         scientificObjectDaoSesame.setPage(page);
-        scientificObjectDaoSesame.setPageSize(limit);
+        scientificObjectDaoSesame.setPageSize(pageSize);
         
-        return getScientificObjectsData(scientificObjectDaoSesame);
+        scientificObjects = scientificObjectDaoSesame.find(uri, rdfType, experimentURI, alias);
+        
+        if (scientificObjects == null) {
+            getResponse = new ResultForm<>(0, 0, scientificObjects, true);
+            return noResultFound(getResponse, statusList);
+        } else if (!scientificObjects.isEmpty()) {
+            getResponse = new ResultForm<>(scientificObjectDaoSesame.getPageSize(), scientificObjectDaoSesame.getPage(), scientificObjects, false);
+            if (getResponse.getResult().dataSize() == 0) {
+                return noResultFound(getResponse, statusList);
+            } else {
+                getResponse.setStatus(statusList);
+                return Response.status(Response.Status.OK).entity(getResponse).build();
+            }
+        } else {
+            getResponse = new ResultForm<>(0, 0, scientificObjects, true);
+            return noResultFound(getResponse, statusList);
+        }
     }
 }

@@ -47,7 +47,7 @@ import phis2ws.service.ontologies.GeoSPARQL;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Oeso;
-import phis2ws.service.resources.dto.ScientificObjectDTO;
+import phis2ws.service.resources.dto.scientificObject.ScientificObjectPostDTO;
 import phis2ws.service.resources.dto.LayerDTO;
 import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyPostDTO;
 import phis2ws.service.utils.POSTResultsReturn;
@@ -65,20 +65,8 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
     final static Logger LOGGER = LoggerFactory.getLogger(ScientificObjectDAOSesame.class);
     
     //The following attributes are used to search scientific objects in the triplestore
-    //uri of the scientific object
-    public String uri;
-    
-    //type of the scientific object
-    public String rdfType;
-    
-    //experiment of the scientific object
-    public String experiment;
     private final String EXPERIMENT = "experiment";
-    
-    //alias of the scientific object
-    public String alias;
     private final String ALIAS = "alias";
-    
     private final String PROPERTY = "property";
     private final String PROPERTY_RELATION = "propertyRelation";
     private final String PROPERTY_TYPE = "propertyType";
@@ -182,14 +170,14 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
      * @return
      * @throws RepositoryException 
      */
-    public POSTResultsReturn check(List<ScientificObjectDTO> ScientificObjectsDTO) throws RepositoryException {
+    public POSTResultsReturn check(List<ScientificObjectPostDTO> ScientificObjectsDTO) throws RepositoryException {
         //Expected results
         POSTResultsReturn scientificObjectsCheck = null;
         //returned status list
         List<Status> checkStatusList = new ArrayList<>();
         
         boolean dataOk = true;
-        for (ScientificObjectDTO scientificObject : ScientificObjectsDTO) {
+        for (ScientificObjectPostDTO scientificObject : ScientificObjectsDTO) {
             //Check if the types are present in the ontology
             UriDaoSesame uriDao = new UriDaoSesame();
 
@@ -256,7 +244,7 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
      * @param scientificObjects
      * @return 
      */
-    public POSTResultsReturn insert(List<ScientificObjectDTO> scientificObjects) {
+    public POSTResultsReturn insert(List<ScientificObjectPostDTO> scientificObjects) {
         List<Status> insertStatusList = new ArrayList<>();
         List<String> createdResourcesURIList = new ArrayList<>(); 
         
@@ -265,12 +253,12 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
         boolean resultState = false; //Pour savoir si les données sont bonnes et ont bien été insérées
         boolean annotationInsert = true; // Si l'insertion a bien été effectuée
         
-        final Iterator<ScientificObjectDTO> iteratorScientificObjects = scientificObjects.iterator();
+        final Iterator<ScientificObjectPostDTO> iteratorScientificObjects = scientificObjects.iterator();
         
         UriGenerator uriGenerator = new UriGenerator();
         
         while (iteratorScientificObjects.hasNext() && annotationInsert) {
-            ScientificObjectDTO scientificObjectDTO = iteratorScientificObjects.next();
+            ScientificObjectPostDTO scientificObjectDTO = iteratorScientificObjects.next();
             ScientificObject scientificObject = scientificObjectDTO.createObjectFromDTO();
             
             try {
@@ -394,7 +382,7 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
      * @param scientificObjectsDTO
      * @return 
      */
-    public POSTResultsReturn checkAndInsert(List<ScientificObjectDTO> scientificObjectsDTO) {
+    public POSTResultsReturn checkAndInsert(List<ScientificObjectPostDTO> scientificObjectsDTO) {
         POSTResultsReturn checkResult = check(scientificObjectsDTO);
         if (checkResult.statusList.size() > 0) { //Les données ne sont pas bonnes
             return checkResult;
@@ -619,12 +607,16 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
     }
     
     /**
-     * 
+     * Find scientific objects by the given list of search params
+     * @param uri
+     * @param rdfType
+     * @param experiment
+     * @param alias
      * @return scientific objects list, result of the user query, empty if no result
      */
-    public ArrayList<ScientificObject> allPaginate() {
+    public ArrayList<ScientificObject> find(String uri, String rdfType, String experiment, String alias) {
         try {
-            SPARQLQueryBuilder sparqlQuery = prepareSearchQuery();
+            SPARQLQueryBuilder sparqlQuery = prepareSearchQuery(uri, rdfType, experiment, alias);
             //SILEX:test
             //Pour les soucis de pool de connexion
             rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID); //Stockage triplestore Sesame
@@ -717,11 +709,7 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
         }
     }
     
-    @Override
-    protected SPARQLQueryBuilder prepareSearchQuery() {
-        //SILEX:INFO
-        //- il faudra ajouter les propriétés de l'objet
-        //\SILEX:INFO
+    protected SPARQLQueryBuilder prepareSearchQuery(String uri, String rdfType, String experiment, String alias) {
         SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
         
         sparqlQuery.appendDistinct(true);
@@ -796,5 +784,10 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
 
         LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
+    }
+
+    @Override
+    protected SPARQLQueryBuilder prepareSearchQuery() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

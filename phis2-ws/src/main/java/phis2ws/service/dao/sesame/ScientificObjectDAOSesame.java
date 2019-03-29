@@ -717,7 +717,6 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
         }
     }
     
-    @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
         //SILEX:INFO
         //- il faudra ajouter les propriétés de l'objet
@@ -764,11 +763,6 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
         
         return sparqlQuery;
     }
-
-    @Override
-    public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
     
     /**
      * checks if the scientific object exists
@@ -796,5 +790,30 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
 
         LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
+    }
+
+    @Override
+    public List create(List objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List update(List objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Object find(Object object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Object findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

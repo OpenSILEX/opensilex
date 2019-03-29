@@ -1,12 +1,10 @@
-//**********************************************************************************************
-//                                       ImageMetadataDaoSesame.java
-// PHIS-SILEX
+//******************************************************************************
+//                           ImageMetadataDaoSesame.java
+// SILEX-PHIS
 // Copyright © INRA 2017
 // Creation date: Dec., 11 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  Dec., 11 2017
-// Subject: A Dao specific to insert image metadata in mongodb
-//***********************************************************************************************
+//******************************************************************************
 package phis2ws.service.dao.mongo;
 
 import com.mongodb.BasicDBList;
@@ -164,7 +162,6 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
         return concernedItemsToReturn;
     }
 
-    @Override
     public ArrayList<ImageMetadata> allPaginate() {
         BasicDBObject searchQuery = prepareSearchQuery();
        
@@ -347,5 +344,30 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
        result.createdResources = createdResourcesUris;
        
        return result;
+    }
+
+    @Override
+    public List create(List objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List update(List objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Object find(Object object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Object findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

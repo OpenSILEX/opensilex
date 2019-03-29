@@ -1,67 +1,57 @@
-//**********************************************************************************************
-//                                       DAO.java 
-//
-// Author(s): Arnaud Charleroy
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2016
+//******************************************************************************
+//                                 DAO.java 
+// SILEX-PHIS
+// Copyright © INRA 2016
 // Creation date: august 2016
 // Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  October, 2016
-// Subject: A list of reusable functions for all DAO inherit class
-//***********************************************************************************************
+//******************************************************************************
 package phis2ws.service.dao.manager;
 
+import java.util.List;
+
 /**
- * Représente les fonctions de bases pour tout DAO
- *
+ * DAO mother class
  * @author Arnaud Charleroy
  * @param <T>
  */
 public abstract class DAO<T> {
 
     /**
-     * Méthode de création
-     *
-     * @param obj
-     * @return boolean
+     * Creates in the storage the list of objects given
+     * @param objects
+     * @return the given list with the generated IDs 
      * @throws java.lang.Exception
      */
-    public abstract Boolean create(T obj) throws Exception;
+    public abstract List<T> create(List<T> objects) throws Exception;
 
     /**
-     * Méthode pour effacer
-     *
-     * @param obj
-     * @return boolean
+     * Deletes in the storage the list of objects given
+     * @param objects
      * @throws java.lang.Exception
      */
-    public abstract boolean delete(T obj) throws Exception;
+    public abstract void delete(List<T> objects) throws Exception;
 
     /**
-     * Méthode de mise à jour
-     *
-     * @param obj
-     * @return boolean
+     * Updates in the storage the list of objects given
+     * @param objects
+     * @return the given list with the data updated
      * @throws java.lang.Exception
      */
-    public abstract boolean update(T obj) throws Exception;
+    public abstract List<T> update(List<T> objects) throws Exception;
 
     /**
-     * Méthode de recherche des informations
-     *
-     * @param obj
-     * @return T
+     * Finds in the storage the object given
+     * @param object
+     * @return the object found
      * @throws java.lang.Exception
      */
-    public abstract T find(T obj) throws Exception;
+    public abstract T find(T object) throws Exception;
 
     /**
-     * Méthode de test d'existence
-     *
-     * @param obj
-     * @return T
+     * Finds in the storage the objects with the ID given
+     * @param id
+     * @return the object found
      * @throws java.lang.Exception
      */
-    public abstract boolean existInDB(T obj) throws Exception;
-
+    public abstract T findById(String id) throws Exception;
 }

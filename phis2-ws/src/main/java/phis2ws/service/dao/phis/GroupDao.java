@@ -1,14 +1,10 @@
-//**********************************************************************************************
-//                                       GroupDao.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
+//******************************************************************************
+//                                   GroupDao.java 
+// SILEX-PHIS
 // Copyright © - INRA - 2017
 // Creation date: April 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  April, 2017
-// Subject: A Dao specific to retrieve group data
-//***********************************************************************************************
+//******************************************************************************
 package phis2ws.service.dao.phis;
 
 import java.sql.Connection;
@@ -22,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import javax.ws.rs.core.Response;
-import org.apache.jena.shared.AlreadyExistsException;
 import org.apache.jena.sparql.AlreadyExists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +34,10 @@ import phis2ws.service.utils.sql.SQLQueryBuilder;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.Group;
 
+/**
+ * DAO for groups
+ * @author andreas
+ */
 public class GroupDao extends DAOPhisBrapi<Group, GroupDTO> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(GroupDao.class);
@@ -569,6 +568,26 @@ public class GroupDao extends DAOPhisBrapi<Group, GroupDTO> {
 
     @Override
     public POSTResultsReturn checkAndInsertList(List<GroupDTO> newObjects) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<Group> create(List<Group> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List<Group> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<Group> update(List<Group> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Group findById(String id) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

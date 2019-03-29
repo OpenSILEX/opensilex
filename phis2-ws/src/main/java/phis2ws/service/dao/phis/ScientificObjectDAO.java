@@ -1,14 +1,10 @@
-//**********************************************************************************************
-//                                       ScientificObjectDao.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
+//******************************************************************************
+//                             ScientificObjectDao.java 
+// SILEX-PHIS
 // Copyright © - INRA - 2017
 // Creation date: July 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  August 28, 2017
-// Subject: A DAO specific to retrieve scientific object data
-//***********************************************************************************************
+//******************************************************************************
 package phis2ws.service.dao.phis;
 
 import java.sql.Connection;
@@ -32,8 +28,11 @@ import phis2ws.service.utils.sql.SQLQueryBuilder;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.model.phis.ScientificObject;
 
-public class ScientificObjectDAO extends DAOPhisBrapi<ScientificObject, ScientificObjectPostDTO> {
-    
+/**
+ * DAO for scientific objects
+ * @author andreas
+ */
+public class ScientificObjectDAO extends DAOPhisBrapi<ScientificObject, ScientificObjectPostDTO> {    
     final static Logger LOGGER = LoggerFactory.getLogger(ScientificObjectDAO.class);
     
     public String uri;
@@ -317,6 +316,26 @@ public class ScientificObjectDAO extends DAOPhisBrapi<ScientificObject, Scientif
 
     @Override
     public POSTResultsReturn checkAndInsertList(List<ScientificObjectPostDTO> newObjects) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<ScientificObject> create(List<ScientificObject> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List<ScientificObject> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<ScientificObject> update(List<ScientificObject> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ScientificObject findById(String id) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

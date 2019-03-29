@@ -47,16 +47,6 @@ import phis2ws.service.view.model.phis.Experiment;
 public class ExperimentDAOSesame extends DAOSesame<Experiment> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(ExperimentDAOSesame.class);
-
-    @Override
-    protected SPARQLQueryBuilder prepareSearchQuery() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
     
     /**
      * Prepare the SPARQL query to return all variables measured by an experiment.
@@ -411,5 +401,30 @@ public class ExperimentDAOSesame extends DAOSesame<Experiment> {
         }
         
         return results;
+    }
+
+    @Override
+    public List create(List objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List update(List objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Object find(Object object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Object findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

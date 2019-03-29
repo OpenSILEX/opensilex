@@ -708,6 +708,7 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
             return null;
         }
     }
+
     /**
      * Generates a query to search scientific objects by the given search params.
      * @param uri
@@ -726,7 +727,7 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
      *      }
      * @return the generated query
      */
-    protected SPARQLQueryBuilder prepareSearchQuery(String uri, String rdfType, String experiment, String alias) {
+    protected SPARQLQueryBuilder prepareSearchQuery(String uri, String rdfType, String experiment, String alias) {    
         SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
         
         sparqlQuery.appendDistinct(true);
@@ -769,11 +770,6 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
         
         return sparqlQuery;
     }
-
-    @Override
-    public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
     
     /**
      * checks if the scientific object exists
@@ -804,7 +800,27 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
     }
 
     @Override
-    protected SPARQLQueryBuilder prepareSearchQuery() {
+    public List create(List objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List update(List objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Object find(Object object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Object findById(String id) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

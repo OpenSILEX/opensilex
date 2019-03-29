@@ -63,7 +63,6 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
     private final String RELATION = "relation";
     private final String PROPERTY = "property";
     
-    @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
@@ -76,11 +75,6 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
         LOGGER.debug(SPARQL_QUERY + query.toString());
         
         return query;
-    }
-
-    @Override
-    public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
     /**
@@ -308,5 +302,30 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
         }
         
         return sensorsProfiles;
+    }
+
+    @Override
+    public List create(List objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List update(List objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Object find(Object object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Object findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

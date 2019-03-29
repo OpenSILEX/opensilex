@@ -9,6 +9,7 @@
 package phis2ws.service.dao.sesame;
 
 import java.util.ArrayList;
+import java.util.List;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -61,7 +62,6 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
      * }
      * @return the query to execute.
      */
-    @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
 
@@ -120,7 +120,6 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
      * Get count of elements matching current prepared query
      * @return query total result count
      */
-    @Override
     public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
         SPARQLQueryBuilder prepareCount = prepareCount();
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
@@ -211,5 +210,30 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
         }
 
         return infrastructure;
+    }
+
+    @Override
+    public List create(List objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List update(List objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Object find(Object object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Object findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

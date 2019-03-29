@@ -405,7 +405,6 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
      * OFFSET 0 
      * @return the query
      */
-    @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
        SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
        sparqlQuery.appendDistinct(true);
@@ -590,7 +589,6 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
      * @return number of total annotation returned with the search fields
      * @inheritdoc
      */
-    @Override
     public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
         SPARQLQueryBuilder prepareCount = prepareCount();
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
@@ -821,5 +819,30 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
         postResult = this.checkAndUpdateDocumentsMetadataList(objectsToUpdate);
         
         return postResult;
+    }
+
+    @Override
+    public List create(List objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List update(List objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Object find(Object object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Object findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

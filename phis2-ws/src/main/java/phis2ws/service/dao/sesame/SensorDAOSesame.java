@@ -141,9 +141,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
      * generates a search query (search by uri, type, label, brand, variable,
      * inServiceDate, dateOfPurchase, dateOfLastCalibration)
      * @return the query to execute.
-     * e.g.
      */
-    @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
@@ -275,7 +273,6 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
      * @return The number of sensors 
      * @inheritdoc
      */
-    @Override
     public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
         SPARQLQueryBuilder prepareCount = prepareCount();
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
@@ -692,7 +689,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
      * @param sensors 
      * @return the updated result
      */
-    private POSTResultsReturn update(List<SensorDTO> sensors) {
+    private POSTResultsReturn updateAndReturnPOSTResultsReturn(List<SensorDTO> sensors) {
         List<Status> updateStatus = new ArrayList<>();
         List<String> updatedResourcesUri = new ArrayList<>();
         POSTResultsReturn results;
@@ -758,7 +755,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
     /**
      * check and update the given sensors in the triplestore
      * @see SensorDAOSesame#check(java.util.List)
-     * @see SensorDAOSesame#update(java.util.List)
+     * @see SensorDAOSesame#updateAndReturnPOSTResultsReturn(java.util.List)
      * @param sensors
      * @return the update result. Message error if errors founded in data,
      *         the list of the updated sensors's uri if they has been updated correctly
@@ -766,7 +763,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
     public POSTResultsReturn checkAndUpdate(List<SensorDTO> sensors) {
         POSTResultsReturn checkResult = check(sensors);
         if (checkResult.getDataState()) {
-            return update(sensors);
+            return updateAndReturnPOSTResultsReturn(sensors);
         } else { //errors founded in data
             return checkResult;
         }
@@ -995,5 +992,30 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
             }
         }
         return variables;
+    }
+
+    @Override
+    public List create(List objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Object find(Object object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Object findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List update(List objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -394,17 +394,17 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
     }
 
     @Override
-    public List create(List objects) throws Exception {
+    public List<Dataset> create(List<Dataset> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List objects) throws Exception {
+    public void delete(List<Dataset> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List update(List objects) throws Exception {
+    public List<Dataset> update(List<Dataset> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

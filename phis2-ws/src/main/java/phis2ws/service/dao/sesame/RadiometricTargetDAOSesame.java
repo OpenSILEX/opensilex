@@ -636,12 +636,17 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
     }
 
     @Override
-    public List create(List objects) throws Exception {
+    public List<RadiometricTarget> create(List<RadiometricTarget> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List objects) throws Exception {
+    public void delete(List<RadiometricTarget> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<RadiometricTarget> update(List<RadiometricTarget> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -652,11 +657,6 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
 
     @Override
     public RadiometricTarget findById(String id) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public List update(List objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

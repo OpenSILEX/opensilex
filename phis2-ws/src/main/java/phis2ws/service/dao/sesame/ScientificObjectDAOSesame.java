@@ -793,17 +793,17 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
     }
 
     @Override
-    public List create(List objects) throws Exception {
+    public List<ScientificObject> create(List<ScientificObject> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List objects) throws Exception {
+    public void delete(List<ScientificObject> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List update(List objects) throws Exception {
+    public List<ScientificObject> update(List<ScientificObject> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

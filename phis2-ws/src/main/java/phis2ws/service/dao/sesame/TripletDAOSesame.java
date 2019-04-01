@@ -389,17 +389,17 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
     }
 
     @Override
-    public List create(List objects) throws Exception {
+    public List<Triplet> create(List<Triplet> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List objects) throws Exception {
+    public void delete(List<Triplet> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List update(List objects) throws Exception {
+    public List<Triplet> update(List<Triplet> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

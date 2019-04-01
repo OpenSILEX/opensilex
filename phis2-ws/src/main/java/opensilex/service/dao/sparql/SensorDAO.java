@@ -995,12 +995,17 @@ public class SensorDAO extends SparqlDAO<Sensor> {
     }
 
     @Override
-    public List create(List objects) throws Exception {
+    public List<Sensor> create(List<Sensor> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List objects) throws Exception {
+    public void delete(List<Sensor> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<Sensor> update(List<Sensor> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -1011,11 +1016,6 @@ public class SensorDAO extends SparqlDAO<Sensor> {
 
     @Override
     public Sensor findById(String id) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public List update(List objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

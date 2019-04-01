@@ -157,17 +157,17 @@ public class TimeDAO extends SparqlDAO<Time> {
     }
 
     @Override
-    public List create(List objects) throws Exception {
+    public List<Time> create(List<Time> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List objects) throws Exception {
+    public void delete(List<Time> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List update(List objects) throws Exception {
+    public List<Time> update(List<Time> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

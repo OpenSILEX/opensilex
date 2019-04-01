@@ -38,6 +38,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+<<<<<<< HEAD:phis2-ws/src/main/java/opensilex/service/resources/DataResourceService.java
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
@@ -59,6 +60,29 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.view.manager.ResultForm;
 import opensilex.service.view.model.Data;
 import opensilex.service.view.model.FileDescription;
+=======
+import phis2ws.service.configuration.DateFormat;
+import phis2ws.service.configuration.DefaultBrapiPaginationValues;
+import phis2ws.service.configuration.GlobalWebserviceValues;
+import phis2ws.service.dao.mongo.DataDAO;
+import phis2ws.service.dao.mongo.FileDescriptionDAO;
+import phis2ws.service.documentation.DocumentationAnnotation;
+import phis2ws.service.documentation.StatusCodeMsg;
+import phis2ws.service.resources.dto.data.DataDTO;
+import phis2ws.service.resources.dto.data.DataPostDTO;
+import phis2ws.service.resources.dto.data.FileDescriptionDTO;
+import phis2ws.service.resources.dto.data.FileDescriptionPostDTO;
+import phis2ws.service.resources.validation.interfaces.Date;
+import phis2ws.service.resources.validation.interfaces.Required;
+import phis2ws.service.resources.validation.interfaces.URL;
+import phis2ws.service.utils.POSTResultsReturn;
+import phis2ws.service.view.brapi.Status;
+import phis2ws.service.view.brapi.form.AbstractResultForm;
+import phis2ws.service.view.brapi.form.ResponseFormPOST;
+import phis2ws.service.view.manager.ResultForm;
+import phis2ws.service.view.model.phis.Data;
+import phis2ws.service.view.model.phis.FileDescription;
+>>>>>>> renaming-and-removing-factory:phis2-ws/src/main/java/phis2ws/service/resources/DataResourceService.java
 
 /**
  * Data resource service
@@ -299,12 +323,12 @@ public class DataResourceService extends ResourceService {
         @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) {
         
-        DataFileDAO dataFileDaoMongo = new DataFileDAO();
+        FileDescriptionDAO fileDescriptionDao = new FileDescriptionDAO();
         AbstractResultForm postResponse = null;
         try {
             FileDescription description = descriptionDto.createObjectFromDTO();
             description.setFilename(fileContentDisposition.getFileName());
-            POSTResultsReturn result = dataFileDaoMongo.checkAndInsert(
+            POSTResultsReturn result = fileDescriptionDao.checkAndInsert(
                 description,
                 file
             );
@@ -348,7 +372,7 @@ public class DataResourceService extends ResourceService {
             @Context HttpServletResponse response
     ) {
         
-        DataFileDAO dataFileDaoMongo = new DataFileDAO();
+        FileDescriptionDAO dataFileDaoMongo = new FileDescriptionDAO();
         
         FileDescription description = dataFileDaoMongo.findFileDescriptionByUri(fileUri);
         
@@ -410,7 +434,7 @@ public class DataResourceService extends ResourceService {
             @Context HttpServletResponse response
     ) {
         
-        DataFileDAO dataFileDaoMongo = new DataFileDAO();
+        FileDescriptionDAO dataFileDaoMongo = new FileDescriptionDAO();
         
         FileDescription description = dataFileDaoMongo.findFileDescriptionByUri(fileUri);
         
@@ -478,7 +502,7 @@ public class DataResourceService extends ResourceService {
         @ApiParam(value = "Date search result order ('true' for ascending and 'false' for descending)", example = "true") @QueryParam("dateSortAsc") boolean dateSortAsc
     ) {
         
-        DataFileDAO dataFileDaoMongo = new DataFileDAO();
+        FileDescriptionDAO dataFileDaoMongo = new FileDescriptionDAO();
         
         // 1. Set all varaibles corresponding to the search
         dataFileDaoMongo.user = userSession.getUser();

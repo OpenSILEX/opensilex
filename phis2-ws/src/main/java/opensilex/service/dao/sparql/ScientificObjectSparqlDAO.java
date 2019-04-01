@@ -39,6 +39,7 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+<<<<<<< HEAD:phis2-ws/src/main/java/opensilex/service/dao/sparql/ScientificObjectSparqlDAO.java
 import opensilex.service.dao.SparqlDAO;
 import opensilex.service.dao.phis.ScientificObjectDAO;
 import opensilex.service.documentation.StatusCodeMsg;
@@ -58,6 +59,27 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.view.model.ScientificObject;
 import opensilex.service.view.model.Property;
 import opensilex.service.view.model.Uri;
+=======
+import phis2ws.service.dao.manager.SparqlDAO;
+import phis2ws.service.dao.phis.ScientificObjectSQLDAO;
+import phis2ws.service.documentation.StatusCodeMsg;
+import phis2ws.service.ontologies.Contexts;
+import phis2ws.service.ontologies.GeoSPARQL;
+import phis2ws.service.ontologies.Rdf;
+import phis2ws.service.ontologies.Rdfs;
+import phis2ws.service.ontologies.Oeso;
+import phis2ws.service.resources.dto.ScientificObjectDTO;
+import phis2ws.service.resources.dto.LayerDTO;
+import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyPostDTO;
+import phis2ws.service.utils.POSTResultsReturn;
+import phis2ws.service.utils.ResourcesUtils;
+import phis2ws.service.utils.UriGenerator;
+import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
+import phis2ws.service.view.brapi.Status;
+import phis2ws.service.view.model.phis.ScientificObject;
+import phis2ws.service.view.model.phis.Property;
+import phis2ws.service.view.model.phis.Uri;
+>>>>>>> renaming-and-removing-factory:phis2-ws/src/main/java/phis2ws/service/dao/sesame/ScientificObjectSparqlDAO.java
 
 
 public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
@@ -372,7 +394,7 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
             } 
             
             //3. insert in postgresql
-            ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO();
+            ScientificObjectSQLDAO scientificObjectDAO = new ScientificObjectSQLDAO();
             ArrayList<ScientificObject> aos = new ArrayList<>();
             aos.add(scientificObject);
             POSTResultsReturn postgreInsertionResult = scientificObjectDAO.checkAndInsertListAO(aos);
@@ -692,7 +714,7 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
             });
             
             //Get geometries in relational database
-            ScientificObjectDAO scientificObjectDao = new ScientificObjectDAO();
+            ScientificObjectSQLDAO scientificObjectDao = new ScientificObjectSQLDAO();
             HashMap<String, String> geometries = scientificObjectDao.getGeometries(scientificObjectsUris);
             
             scientificObjects.forEach((scientificObject) -> {
@@ -793,17 +815,17 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
     }
 
     @Override
-    public List create(List objects) throws Exception {
+    public List<ScientificObject> create(List<ScientificObject> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List objects) throws Exception {
+    public void delete(List<ScientificObject> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List update(List objects) throws Exception {
+    public List<ScientificObject> update(List<ScientificObject> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

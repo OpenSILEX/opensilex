@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+<<<<<<< HEAD:phis2-ws/src/main/java/opensilex/service/dao/phis/StudyDAO.java
 import opensilex.service.utils.sql.SQLQueryBuilder;
 import opensilex.service.model.User;
 import opensilex.service.utils.sql.JoinAttributes;
@@ -33,13 +34,23 @@ import opensilex.service.view.model.Experiment;
 import opensilex.service.view.model.ContactBrapi;
 import opensilex.service.dao.ExperimentMongoDAO;
 import opensilex.service.view.model.StudyDetails;
+=======
+import phis2ws.service.dao.manager.DAO;
+import phis2ws.service.utils.sql.SQLQueryBuilder;
+import phis2ws.service.model.User;
+import phis2ws.service.utils.sql.JoinAttributes;
+import phis2ws.service.view.model.phis.Experiment;
+import phis2ws.service.view.model.phis.ContactBrapi;
+import phis2ws.service.dao.phis.ExperimentMongoDAO;
+import phis2ws.service.view.model.phis.StudyDetails;
+>>>>>>> renaming-and-removing-factory:phis2-ws/src/main/java/phis2ws/service/dao/phis/StudyDAO.java
 
 /**
  * Get Experiments filtered by StudiesSearchResourceService fields and add 
  * required attributes to get brapi studies
  * @author Alice Boizet
  */
-public class StudyDAO {
+public class StudyDAO extends DAO<StudyDetails>{
     final static Logger LOGGER = LoggerFactory.getLogger(StudyDAO.class);
     public String studyType; 
     public String trialDbId;
@@ -243,5 +254,30 @@ public class StudyDAO {
             }            
         }
         return study;        
+    }
+
+    @Override
+    public List<StudyDetails> create(List<StudyDetails> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List<StudyDetails> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<StudyDetails> update(List<StudyDetails> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public StudyDetails find(StudyDetails object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public StudyDetails findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

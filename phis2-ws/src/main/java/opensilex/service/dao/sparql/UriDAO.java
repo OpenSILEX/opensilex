@@ -697,17 +697,17 @@ public class UriDAO extends SparqlDAO<Uri> {
     }
 
     @Override
-    public List create(List objects) throws Exception {
+    public List<Uri> create(List<Uri> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List objects) throws Exception {
+    public void delete(List<Uri> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List update(List objects) throws Exception {
+    public List<Uri> update(List<Uri> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

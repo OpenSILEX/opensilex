@@ -233,17 +233,17 @@ public class VocabularyDAO extends SparqlDAO<Object> {
     }
 
     @Override
-    public List create(List objects) throws Exception {
+    public List<Object> create(List<Object> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List objects) throws Exception {
+    public void delete(List<Object> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List update(List objects) throws Exception {
+    public List<Object> update(List<Object> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

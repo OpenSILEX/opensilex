@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+<<<<<<< HEAD:phis2-ws/src/main/java/opensilex/service/dao/phis/LayerDAO.java
 import opensilex.service.PropertiesFileManager;
 import opensilex.service.dao.sparql.ScientificObjectSparqlDAO;
 import opensilex.service.documentation.StatusCodeMsg;
@@ -41,9 +42,23 @@ import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.model.ScientificObject;
 import opensilex.service.view.model.Property;
+=======
+import phis2ws.service.PropertiesFileManager;
+import phis2ws.service.dao.manager.DAO;
+import phis2ws.service.dao.sesame.ScientificObjectSparqlDAO;
+import phis2ws.service.documentation.StatusCodeMsg;
+import phis2ws.service.ontologies.Rdf;
+import phis2ws.service.ontologies.Oeso;
+import phis2ws.service.ontologies.Rdfs;
+import phis2ws.service.resources.dto.LayerDTO;
+import phis2ws.service.utils.POSTResultsReturn;
+import phis2ws.service.view.brapi.Status;
+import phis2ws.service.view.model.phis.ScientificObject;
+import phis2ws.service.view.model.phis.Property;
+>>>>>>> renaming-and-removing-factory:phis2-ws/src/main/java/phis2ws/service/dao/phis/LayerDAO.java
 
 
-public class LayerDAO {
+public class LayerDAO extends DAO<LayerDTO>{
     
     /**
      * @param objectURI URI de l'objet auquel la couche correspond
@@ -74,10 +89,10 @@ public class LayerDAO {
      * @param layerDTO 
      */
       public void searchAndUpdateChildren(LayerDTO layerDTO) throws SQLException {
-        ScientificObjectSparqlDAO agronomicalObjectDaoSesame = new ScientificObjectSparqlDAO();
-        ScientificObjectDAO agronomicalObject = new ScientificObjectDAO();
+        ScientificObjectSparqlDAO agronomicalObjectDao = new ScientificObjectSparqlDAO();
+        ScientificObjectSQLDAO agronomicalObject = new ScientificObjectSQLDAO();
         
-        HashMap<String, ScientificObject> childrendAgronomicalObjectDaoSesame = agronomicalObjectDaoSesame.searchChildren(layerDTO);
+        HashMap<String, ScientificObject> childrendAgronomicalObjectDaoSesame = agronomicalObjectDao.searchChildren(layerDTO);
         
         ArrayList<String> childrenURIs = new ArrayList<>(childrendAgronomicalObjectDaoSesame.keySet());
         HashMap<String,String> childrenAgronomicalObjectsGeometries = agronomicalObject.getGeometries(childrenURIs);
@@ -222,5 +237,30 @@ public class LayerDAO {
         createLayerFile = new POSTResultsReturn(createLayerFileOk, createLayerFileOk, createLayerFileOk);
         createLayerFile.statusList = createStatusList;
         return createLayerFile;
+    }
+
+    @Override
+    public List<LayerDTO> create(List<LayerDTO> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List<LayerDTO> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<LayerDTO> update(List<LayerDTO> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public LayerDTO find(LayerDTO object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public LayerDTO findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

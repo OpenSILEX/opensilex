@@ -30,7 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.authentication.Session;
 import opensilex.service.authentication.TokenManager;
-import opensilex.service.dao.phis.SessionDAO;
+import opensilex.service.dao.SessionDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.injection.SessionFactory;
 import opensilex.service.injection.SessionInject;

@@ -13,7 +13,7 @@ import java.util.List;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.dao.MongoDAO;
+import opensilex.service.dao.manager.MongoDAO;
 import opensilex.service.view.model.FileInformations;
 
 /**

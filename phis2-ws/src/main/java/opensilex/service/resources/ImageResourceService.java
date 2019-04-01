@@ -55,7 +55,7 @@ import opensilex.service.PropertiesFileManager;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
-import opensilex.service.dao.ImageMetadataDAO;
+import opensilex.service.dao.ImageMetadataMongoDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.ontologies.Oeso;
@@ -136,7 +136,7 @@ public class ImageResourceService extends ResourceService {
             @ApiParam(value = "JSON Image metadata", required = true) @Valid List<ImageMetadataDTO> imagesMetadata) {
         AbstractResultForm postResponse;
         if (imagesMetadata != null && !imagesMetadata.isEmpty()) {
-            ImageMetadataDAO imageDaoMongo = new ImageMetadataDAO();
+            ImageMetadataMongoDAO imageDaoMongo = new ImageMetadataMongoDAO();
             imageDaoMongo.user = userSession.getUser();
             
             final POSTResultsReturn checkImageMetadata = imageDaoMongo.check(imagesMetadata); 
@@ -320,7 +320,7 @@ public class ImageResourceService extends ResourceService {
         
         WAITING_METADATA_INFORMATION.get(imageUri).getFileInformations().setServerFilePath(webAccessImagesDirectory + "/" + serverFileName);
         
-        ImageMetadataDAO imageMetadataDaoMongo = new ImageMetadataDAO();
+        ImageMetadataMongoDAO imageMetadataDaoMongo = new ImageMetadataMongoDAO();
         imageMetadataDaoMongo.user = userSession.getUser();
         
         final POSTResultsReturn insertMetadata = imageMetadataDaoMongo.insert(Arrays.asList(WAITING_METADATA_INFORMATION.get(imageUri)));
@@ -346,7 +346,7 @@ public class ImageResourceService extends ResourceService {
      * @param imageMetadataDaoMongo
      * @return the images corresponding to the search
      */
-    private Response getImagesData(ImageMetadataDAO imageMetadataDaoMongo) {
+    private Response getImagesData(ImageMetadataMongoDAO imageMetadataDaoMongo) {
         ArrayList<ImageMetadata> imagesMetadata;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<ImageMetadata> getResponse;
@@ -431,7 +431,7 @@ public class ImageResourceService extends ResourceService {
         @ApiParam(value = "Search by interval - end date", example = DocumentationAnnotation.EXAMPLE_IMAGE_DATE) @QueryParam("endDate") @opensilex.service.resources.validation.interfaces.Date(DateFormat.YMDHMSZ) String endDate,
         @ApiParam(value = "Search by sensor", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("sensor") @URL String sensor) {
         
-        ImageMetadataDAO imageMetadataDaoMongo = new ImageMetadataDAO();
+        ImageMetadataMongoDAO imageMetadataDaoMongo = new ImageMetadataMongoDAO();
         
         if (uri != null) {
             imageMetadataDaoMongo.uri = uri;

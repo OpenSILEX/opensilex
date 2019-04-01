@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
-import opensilex.service.dao.sparql.EventDAO;
+import opensilex.service.dao.EventDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.resources.dto.event.EventDetailedDTO;

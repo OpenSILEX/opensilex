@@ -52,7 +52,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.PropertiesFileManager;
 import opensilex.service.authentication.Session;
-import opensilex.service.dao.phis.UserDAO;
+import opensilex.service.dao.UserDAO;
 import opensilex.service.authentication.TokenManager;
 import opensilex.service.authentication.TokenResponseStructure;
 import opensilex.service.documentation.StatusCodeMsg;

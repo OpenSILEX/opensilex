@@ -26,7 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.authentication.Session;
 import opensilex.service.configuration.GlobalWebserviceValues;
-import opensilex.service.dao.phis.StudyDAO;
+import opensilex.service.dao.StudyDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.injection.SessionInject;

@@ -5,7 +5,7 @@
 // Creation date: august 2016
 // Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package opensilex.service.dao.manager;
+package phis2ws.service.dao.manager;
 
 import com.nimbusds.jwt.JWTClaimsSet;
 import java.lang.reflect.Field;
@@ -34,21 +34,21 @@ import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.postgis.Geometry;
-import opensilex.service.authentication.TokenManager;
-import opensilex.service.configuration.DefaultBrapiPaginationValues;
-import opensilex.service.dao.datasource.DataSourceDAOPhisBrapi;
-import opensilex.service.model.User;
-import opensilex.service.utils.JsonConverter;
-import opensilex.service.utils.sql.SQLQueryBuilder;
+import phis2ws.service.authentication.TokenManager;
+import phis2ws.service.configuration.DefaultBrapiPaginationValues;
+import phis2ws.service.dao.datasource.PostgreSQLDataSource;
+import phis2ws.service.model.User;
+import phis2ws.service.utils.JsonConverter;
+import phis2ws.service.utils.sql.SQLQueryBuilder;
 
 /**
  * DAO for relational database querying
  * @author Arnaud Charleroy
  * @param <T>
  */
-public abstract class PostrgreSQLDAO<T> extends DAO<T> {
+public abstract class PostgreSQLDAO<T> extends DAO<T> {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(PostrgreSQLDAO.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(PostgreSQLDAO.class);
     protected final static String DUPLICATE_KEY_ERROR_POSTGRE = "23505";
 
     static final Map<String, DataSource> JWT_ISSUER_DATASOURCE;
@@ -58,8 +58,8 @@ public abstract class PostrgreSQLDAO<T> extends DAO<T> {
     // to manage multiple database switch 
     static {
         Map<String, DataSource> tmpMap = new HashMap<>();
-        tmpMap.put(PhisDAO.PHIS_MODEL_DB_LOCATION, DataSourceDAOPhisBrapi.getInstance());
-        tmpMap.put(PhisDAO.GNPIS_MODEL_DB_LOCATION, DataSourceDAOPhisBrapi.getInstance());
+        tmpMap.put(PhisDAO.PHIS_MODEL_DB_LOCATION, PostgreSQLDataSource.getInstance());
+        tmpMap.put(PhisDAO.GNPIS_MODEL_DB_LOCATION, PostgreSQLDataSource.getInstance());
         JWT_ISSUER_DATASOURCE = Collections.unmodifiableMap(tmpMap);
     }
 
@@ -582,7 +582,7 @@ public abstract class PostrgreSQLDAO<T> extends DAO<T> {
         } catch (SecurityException | IllegalArgumentException | IllegalAccessException ex) {
             LOGGER.error(ex.getMessage(), ex);
         } catch (SQLException ex) {
-            java.util.logging.Logger.getLogger(PostrgreSQLDAO.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(PostgreSQLDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return preparedStatement;
     }

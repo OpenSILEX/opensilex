@@ -38,7 +38,7 @@ import javax.ws.rs.core.Response;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
-import opensilex.service.dao.sesame.VectorDAO;
+import opensilex.service.dao.sparql.VectorDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.resources.dto.VectorDTO;

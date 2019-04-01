@@ -22,7 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
 import opensilex.service.PropertiesFileManager;
-import opensilex.service.dao.manager.MongoDAO;
+import opensilex.service.dao.MongoDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.view.brapi.Status;

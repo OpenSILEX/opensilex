@@ -21,7 +21,7 @@ import javax.ws.rs.core.Response;
 import org.apache.jena.sparql.AlreadyExists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.dao.manager.PhisDAO;
+import opensilex.service.dao.PhisDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.ontologies.Oeso;
 import opensilex.service.resources.dto.projects.ProjectDTO;

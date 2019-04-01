@@ -22,7 +22,7 @@ import java.util.logging.Level;
 import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.dao.manager.PhisDAO;
+import opensilex.service.dao.PhisDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.ontologies.Foaf;
 import opensilex.service.resources.dto.UserDTO;

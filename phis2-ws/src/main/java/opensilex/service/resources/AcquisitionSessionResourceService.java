@@ -26,7 +26,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
-import opensilex.service.dao.sesame.AcquisitionSessionDAO;
+import opensilex.service.dao.sparql.AcquisitionSessionDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.resources.dto.acquisitionSession.MetadataFileDTO;
 import opensilex.service.resources.dto.acquisitionSession.MetadataFileUAVDTO;

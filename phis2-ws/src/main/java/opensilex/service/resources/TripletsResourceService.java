@@ -32,7 +32,7 @@ import opensilex.service.PropertiesFileManager;
 import opensilex.service.authentication.Session;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.phis.UserDAO;
-import opensilex.service.dao.sesame.TripletDAO;
+import opensilex.service.dao.sparql.TripletDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.injection.SessionInject;

@@ -21,11 +21,10 @@ import javax.ws.rs.core.Response;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.dao.manager.PhisDAO;
 import opensilex.service.dao.phis.UserDAO;
-import opensilex.service.dao.sesame.ExperimentSparqlDAO;
-import opensilex.service.dao.sesame.SensorDAO;
-import opensilex.service.dao.sesame.VariableDAO;
+import opensilex.service.dao.sparql.ExperimentSparqlDAO;
+import opensilex.service.dao.sparql.SensorDAO;
+import opensilex.service.dao.sparql.VariableDAO;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.User;

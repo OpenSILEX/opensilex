@@ -31,7 +31,7 @@ import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.PropertiesFileManager;
-import opensilex.service.dao.sesame.ScientificObjectSparqlDAO;
+import opensilex.service.dao.sparql.ScientificObjectSparqlDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.ontologies.Rdf;
 import opensilex.service.ontologies.Oeso;

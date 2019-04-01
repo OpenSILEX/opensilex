@@ -29,7 +29,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
-import opensilex.service.dao.sesame.VocabularyDAO;
+import opensilex.service.dao.sparql.VocabularyDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.resources.dto.PropertyVocabularyDTO;
 import opensilex.service.resources.validation.interfaces.Required;

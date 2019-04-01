@@ -20,7 +20,7 @@ import phis2ws.service.utils.POSTResultsReturn;
  * @param <T> Classe représentant l'objet
  * @param <D> Classe représentant l'objet à enregistrer en BD
  */
-public abstract class PhisDAO<T, D> extends PostrgreSQLDAO<T> {
+public abstract class PhisDAO<T, D> extends PostgreSQLDAO<T> {
 
     public PhisDAO() {
         if (dataSource == null) {

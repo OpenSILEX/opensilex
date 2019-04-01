@@ -46,9 +46,9 @@ import phis2ws.service.utils.sql.SQLQueryBuilder;
  * @author Arnaud Charleroy
  * @param <T>
  */
-public abstract class PostrgreSQLDAO<T> extends DAO<T> {
+public abstract class PostgreSQLDAO<T> extends DAO<T> {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(PostrgreSQLDAO.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(PostgreSQLDAO.class);
     protected final static String DUPLICATE_KEY_ERROR_POSTGRE = "23505";
 
     static final Map<String, DataSource> JWT_ISSUER_DATASOURCE;
@@ -58,8 +58,8 @@ public abstract class PostrgreSQLDAO<T> extends DAO<T> {
     // to manage multiple database switch 
     static {
         Map<String, DataSource> tmpMap = new HashMap<>();
-        tmpMap.put(PhisDAO.PHIS_MODEL_DB_LOCATION, DataSource.getInstance());
-        tmpMap.put(PhisDAO.GNPIS_MODEL_DB_LOCATION, DataSource.getInstance());
+        tmpMap.put(PhisDAO.PHIS_MODEL_DB_LOCATION, PostgreSQLDataSource.getInstance());
+        tmpMap.put(PhisDAO.GNPIS_MODEL_DB_LOCATION, PostgreSQLDataSource.getInstance());
         JWT_ISSUER_DATASOURCE = Collections.unmodifiableMap(tmpMap);
     }
 
@@ -582,7 +582,7 @@ public abstract class PostrgreSQLDAO<T> extends DAO<T> {
         } catch (SecurityException | IllegalArgumentException | IllegalAccessException ex) {
             LOGGER.error(ex.getMessage(), ex);
         } catch (SQLException ex) {
-            java.util.logging.Logger.getLogger(PostrgreSQLDAO.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(PostgreSQLDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return preparedStatement;
     }

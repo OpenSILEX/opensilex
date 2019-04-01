@@ -36,12 +36,12 @@ import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.postgis.Geometry;
-import phis2ws.service.authentication.TokenManager;
-import phis2ws.service.configuration.DefaultBrapiPaginationValues;
-import phis2ws.service.dao.datasource.PostgreSQLDataSource;
-import phis2ws.service.model.User;
-import phis2ws.service.utils.JsonConverter;
-import phis2ws.service.utils.sql.SQLQueryBuilder;
+import opensilex.service.authentication.TokenManager;
+import opensilex.service.configuration.DefaultBrapiPaginationValues;
+import opensilex.service.datasource.PostgreSQLDataSource;
+import opensilex.service.model.User;
+import opensilex.service.utils.JsonConverter;
+import opensilex.service.utils.sql.SQLQueryBuilder;
 
 /**
  * DAO for relational database querying

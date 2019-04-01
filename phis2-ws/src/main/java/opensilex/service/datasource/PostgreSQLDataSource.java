@@ -15,7 +15,7 @@ import java.sql.Connection;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import org.apache.tomcat.jdbc.pool.PoolProperties;
-import static phis2ws.service.PropertiesFileManager.getSQLPoolDataSourceProperties;
+import static opensilex.service.PropertiesFileManager.getSQLPoolDataSourceProperties;
 
 /**
  * Source de données qui gère un ensemble de connexion pour la base de données

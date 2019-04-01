@@ -8,7 +8,7 @@
 package opensilex.service.dao;
 
 import java.util.List;
-import opensilex.service.dao.datasource.DataSourceDAOPhisBrapi;
+import opensilex.service.datasource.PostgreSQLDataSource;
 import opensilex.service.utils.POSTResultsReturn;
 
 /**
@@ -24,7 +24,7 @@ public abstract class PhisDAO<T, D> extends PostgreSQLDAO<T> {
 
     public PhisDAO() {
         if (dataSource == null) {
-            dataSource = DataSourceDAOPhisBrapi.getInstance();
+            dataSource = PostgreSQLDataSource.getInstance();
         }
     }
     

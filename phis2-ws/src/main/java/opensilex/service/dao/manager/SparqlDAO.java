@@ -7,7 +7,6 @@
 //******************************************************************************
 package opensilex.service.dao.manager;
 
-import opensilex.service.dao.manager.DAO;
 import java.util.List;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;

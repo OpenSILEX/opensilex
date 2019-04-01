@@ -53,9 +53,9 @@ public class ApplicationInitConfig extends ResourceConfig {
     
     public ApplicationInitConfig() {
         packages("io.swagger.jaxrs.listing;"
-                + "phis2ws.service.resources;"
-                + "phis2ws.service.json;"
-                + "phis2ws.service.resources.request.filters");
+                + "opensilex.service.resources;"
+                + "opensilex.service.json;"
+                + "opensilex.service.resources.request.filters");
         
         //Swagger
         BeanConfig beanConfig = new BeanConfig();
@@ -65,7 +65,7 @@ public class ApplicationInitConfig extends ResourceConfig {
         beanConfig.setHost(PropertiesFileManager.getConfigFileProperty("service", "host"));
         beanConfig.setBasePath(PropertiesFileManager.getConfigFileProperty("service", "basePath"));
        
-        beanConfig.setResourcePackage("phis2ws.service.resources");
+        beanConfig.setResourcePackage("opensilex.service.resources");
         beanConfig.setScan(true);
         
         register(MultiPartFeature.class);

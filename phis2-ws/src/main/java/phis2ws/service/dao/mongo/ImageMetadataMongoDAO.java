@@ -5,7 +5,7 @@
 // Creation date: Dec., 11 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package opensilex.service.dao;
+package phis2ws.service.dao.mongo;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -25,27 +25,27 @@ import javax.ws.rs.core.Response;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.PropertiesFileManager;
-import opensilex.service.configuration.DateFormats;
-import opensilex.service.dao.MongoDAO;
-import opensilex.service.dao.sparql.SensorDAO;
-import opensilex.service.documentation.StatusCodeMsg;
-import opensilex.service.ontologies.Contexts;
-import opensilex.service.resources.dto.ConcernedItemDTO;
-import opensilex.service.resources.dto.ImageMetadataDTO;
-import opensilex.service.utils.POSTResultsReturn;
-import opensilex.service.view.brapi.Status;
-import opensilex.service.view.model.phis.ConcernedItem;
-import opensilex.service.view.model.phis.ImageMetadata;
+import phis2ws.service.PropertiesFileManager;
+import phis2ws.service.configuration.DateFormats;
+import phis2ws.service.dao.manager.MongoDAO;
+import phis2ws.service.dao.sesame.SensorDAO;
+import phis2ws.service.documentation.StatusCodeMsg;
+import phis2ws.service.ontologies.Contexts;
+import phis2ws.service.resources.dto.ConcernedItemDTO;
+import phis2ws.service.resources.dto.ImageMetadataDTO;
+import phis2ws.service.utils.POSTResultsReturn;
+import phis2ws.service.view.brapi.Status;
+import phis2ws.service.view.model.phis.ConcernedItem;
+import phis2ws.service.view.model.phis.ImageMetadata;
 
 /**
  * Represents the MongoDB Data Access Object for the images metadata
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  * @update [Andréas Garcia] Jan., 2019 : modify "concern(s)" occurences into "concernedItem(s)" in Java variables and MongoDB fields
  */
-public class ImageMetadataDAO extends MongoDAO<ImageMetadata> {
+public class ImageMetadataMongoDAO extends MongoDAO<ImageMetadata> {
 
-    final static Logger LOGGER = LoggerFactory.getLogger(ImageMetadataDAO.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(ImageMetadataMongoDAO.class);
     public String uri;
     public String rdfType;
     //Start date of the wanted images
@@ -73,7 +73,7 @@ public class ImageMetadataDAO extends MongoDAO<ImageMetadata> {
         //Represents the mongodb documents label for the storage
     final static String DB_FIELDS_STORAGE = "storage";
     
-    public ImageMetadataDAO() {
+    public ImageMetadataMongoDAO() {
         super();
     }
     
@@ -133,7 +133,7 @@ public class ImageMetadataDAO extends MongoDAO<ImageMetadata> {
                query.append(DB_FIELDS_SHOOTING_CONFIGURATION + "." + ShootingConfigurationDAO.DB_FIELDS_DATE, 
                        BasicDBObjectBuilder.start(MONGO_GTE, start).add(MONGO_LTE, end).get());
            } catch (ParseException ex) {
-               java.util.logging.Logger.getLogger(ImageMetadataDAO.class.getName()).log(Level.SEVERE, null, ex);
+               java.util.logging.Logger.getLogger(ImageMetadataMongoDAO.class.getName()).log(Level.SEVERE, null, ex);
            }
        }
        if (sensor != null) {
@@ -213,7 +213,7 @@ public class ImageMetadataDAO extends MongoDAO<ImageMetadata> {
         
         for (ImageMetadataDTO imageMetadata : imagesMetadata) {
             //1. Check if the image type exist
-            opensilex.service.dao.sparql.ImageMetadataDAO imageMetadataDaoSesame = new opensilex.service.dao.sparql.ImageMetadataDAO();
+            phis2ws.service.dao.sesame.ImageMetadataSparqlDAO imageMetadataDaoSesame = new phis2ws.service.dao.sesame.ImageMetadataSparqlDAO();
             if (!imageMetadataDaoSesame.existUri(imageMetadata.getRdfType())) {
                 dataOk = false;
                 checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Wrong image type given : " + imageMetadata.getRdfType()));

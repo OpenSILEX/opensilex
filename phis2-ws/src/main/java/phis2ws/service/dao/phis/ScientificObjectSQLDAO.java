@@ -32,9 +32,9 @@ import phis2ws.service.view.model.phis.ScientificObject;
  * DAO for scientific objects
  * @author andreas
  */
-public class ScientificObjectDAO extends PhisDAO<ScientificObject, ScientificObjectDTO> {
+public class ScientificObjectSQLDAO extends PhisDAO<ScientificObject, ScientificObjectDTO> {
     
-    final static Logger LOGGER = LoggerFactory.getLogger(ScientificObjectDAO.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(ScientificObjectSQLDAO.class);
     
     public String uri;
     private final String URI = "uri";
@@ -46,7 +46,7 @@ public class ScientificObjectDAO extends PhisDAO<ScientificObject, ScientificObj
     public String namedGraph;
     private final String NAMED_GRAPH = "named_graph";
     
-    public ScientificObjectDAO() {
+    public ScientificObjectSQLDAO() {
         super();
         setTable("agronomical_object");
         setTableAlias("ao");
@@ -275,7 +275,7 @@ public class ScientificObjectDAO extends PhisDAO<ScientificObject, ScientificObj
 
             return geometries;                
         } catch (SQLException ex) {
-            java.util.logging.Logger.getLogger(ScientificObjectDAO.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ScientificObjectSQLDAO.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         } finally {
             if (statement != null) {
@@ -310,7 +310,7 @@ public class ScientificObjectDAO extends PhisDAO<ScientificObject, ScientificObj
             
             return toReturn;
         } catch (SQLException ex) {
-            java.util.logging.Logger.getLogger(ScientificObjectDAO.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ScientificObjectSQLDAO.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         }  
     }

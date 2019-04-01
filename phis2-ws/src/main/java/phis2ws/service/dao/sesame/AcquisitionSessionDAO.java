@@ -35,7 +35,7 @@ import phis2ws.service.view.model.phis.Vector;
  * @update [Arnaud Charleroy] 10 September, 2018 : minor fix on vector data gathering
  * @author Morgane Vidal <morgane.vidal@inra.fr>, Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
-public class AcquisitionSessionDAO extends SparqlDAO<Object> {
+public class AcquisitionSessionDAO extends SparqlDAO<MetadataFileDTO> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(AcquisitionSessionDAO.class);
     
@@ -49,13 +49,13 @@ public class AcquisitionSessionDAO extends SparqlDAO<Object> {
      * @return The number of rows
      */
     public Integer countFileMetadataRows() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
-        UriDAO uriDaoSesame = new UriDAO();
+        UriDAO uriDao = new UriDAO();
         //size of the higher list to generate all the FileMetadataDTO
         ArrayList<Integer> sizes = new ArrayList<>();
         
         //if the vector is an uav or a field robot, it has specific file metadata
-        if (uriDaoSesame.isSubClassOf(vectorRdfType, Oeso.CONCEPT_FIELD_ROBOT.toString())
-                || uriDaoSesame.isSubClassOf(vectorRdfType, Oeso.CONCEPT_UAV.toString())) {
+        if (uriDao.isSubClassOf(vectorRdfType, Oeso.CONCEPT_FIELD_ROBOT.toString())
+                || uriDao.isSubClassOf(vectorRdfType, Oeso.CONCEPT_UAV.toString())) {
             //Common metadata
             //1. get the number of group plots (just the experiments in this version)
             ExperimentMongoDAO experimentDAO = new ExperimentMongoDAO();
@@ -69,7 +69,7 @@ public class AcquisitionSessionDAO extends SparqlDAO<Object> {
             sizes.add(1);
             
             //uav
-            if (uriDaoSesame.isSubClassOf(vectorRdfType, Oeso.CONCEPT_UAV.toString())) {
+            if (uriDao.isSubClassOf(vectorRdfType, Oeso.CONCEPT_UAV.toString())) {
                 //3. get the number of cameras
                 SensorDAO sensorDAO = new SensorDAO();
                 sensorDAO.rdfType = Oeso.CONCEPT_CAMERA.toString();
@@ -97,7 +97,7 @@ public class AcquisitionSessionDAO extends SparqlDAO<Object> {
      */
     private ArrayList<MetadataFileDTO> getFileMetadata() {
         ArrayList<MetadataFileDTO> fileMetadataList = new ArrayList<>();
-        UriDAO uriDaoSesame = new UriDAO();
+        UriDAO uriDao = new UriDAO();
         //size of the higher list to generate all the FileMetadataDTO
         ArrayList<Integer> sizes = new ArrayList<>();
         
@@ -110,8 +110,8 @@ public class AcquisitionSessionDAO extends SparqlDAO<Object> {
         ArrayList<RadiometricTarget> radiometricTargets = new ArrayList<>();
         
         //if the vector is an uav or a field robot, it has specific file metadata
-        if (uriDaoSesame.isSubClassOf(vectorRdfType, Oeso.CONCEPT_FIELD_ROBOT.toString())
-                || uriDaoSesame.isSubClassOf(vectorRdfType, Oeso.CONCEPT_UAV.toString())) {
+        if (uriDao.isSubClassOf(vectorRdfType, Oeso.CONCEPT_FIELD_ROBOT.toString())
+                || uriDao.isSubClassOf(vectorRdfType, Oeso.CONCEPT_UAV.toString())) {
             //Common metadata
             //1. get the group plot list with the alias, uri and species (just the experiments in this version)
             ExperimentMongoDAO experimentDAO = new ExperimentMongoDAO();
@@ -131,7 +131,7 @@ public class AcquisitionSessionDAO extends SparqlDAO<Object> {
             installations.add(Oeso.PLATFORM_URI.toString());
             
             //Metadata for the uav
-            if (uriDaoSesame.isSubClassOf(vectorRdfType, Oeso.CONCEPT_UAV.toString())) {
+            if (uriDao.isSubClassOf(vectorRdfType, Oeso.CONCEPT_UAV.toString())) {
                 //3. get the camera list
                 SensorDAO sensorDAO = new SensorDAO();
                 sensorDAO.setPage(page);
@@ -158,7 +158,7 @@ public class AcquisitionSessionDAO extends SparqlDAO<Object> {
         //generates the file metadata list
         int maxListSize = Collections.max(sizes);
         //field robot metadata
-        if (uriDaoSesame.isSubClassOf(vectorRdfType, Oeso.CONCEPT_FIELD_ROBOT.toString())) {
+        if (uriDao.isSubClassOf(vectorRdfType, Oeso.CONCEPT_FIELD_ROBOT.toString())) {
             for (int i = 0; i < maxListSize; i++) {
                 MetadataFilePhenomobileDTO fileMetadata = new MetadataFilePhenomobileDTO();
                 
@@ -175,7 +175,7 @@ public class AcquisitionSessionDAO extends SparqlDAO<Object> {
                 
                 fileMetadataList.add(fileMetadata);
             }
-        } else if (uriDaoSesame.isSubClassOf(vectorRdfType, Oeso.CONCEPT_UAV.toString())) {
+        } else if (uriDao.isSubClassOf(vectorRdfType, Oeso.CONCEPT_UAV.toString())) {
             //uav metadata
             for (int i = 0; i < maxListSize; i++) {
                 MetadataFileUAVDTO fileMetadata = new MetadataFileUAVDTO();
@@ -236,27 +236,27 @@ public class AcquisitionSessionDAO extends SparqlDAO<Object> {
     }
 
     @Override
-    public List create(List objects) throws Exception {
+    public List<MetadataFileDTO> create(List<MetadataFileDTO> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List objects) throws Exception {
+    public void delete(List<MetadataFileDTO> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List update(List objects) throws Exception {
+    public List<MetadataFileDTO> update(List<MetadataFileDTO> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Object find(Object object) throws Exception {
+    public MetadataFileDTO find(MetadataFileDTO object) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Object findById(String id) throws Exception {
+    public MetadataFileDTO findById(String id) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

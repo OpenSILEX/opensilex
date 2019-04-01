@@ -40,7 +40,7 @@ import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.dao.manager.SparqlDAO;
-import phis2ws.service.dao.phis.ScientificObjectDAO;
+import phis2ws.service.dao.phis.ScientificObjectSQLDAO;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.GeoSPARQL;
@@ -372,7 +372,7 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
             } 
             
             //3. insert in postgresql
-            ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO();
+            ScientificObjectSQLDAO scientificObjectDAO = new ScientificObjectSQLDAO();
             ArrayList<ScientificObject> aos = new ArrayList<>();
             aos.add(scientificObject);
             POSTResultsReturn postgreInsertionResult = scientificObjectDAO.checkAndInsertListAO(aos);
@@ -692,7 +692,7 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
             });
             
             //Get geometries in relational database
-            ScientificObjectDAO scientificObjectDao = new ScientificObjectDAO();
+            ScientificObjectSQLDAO scientificObjectDao = new ScientificObjectSQLDAO();
             HashMap<String, String> geometries = scientificObjectDao.getGeometries(scientificObjectsUris);
             
             scientificObjects.forEach((scientificObject) -> {

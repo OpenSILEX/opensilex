@@ -41,7 +41,6 @@ import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.dao.manager.SparqlDAO;
-import opensilex.service.dao.ScientificObjectDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.ontologies.Contexts;
 import opensilex.service.ontologies.GeoSPARQL;

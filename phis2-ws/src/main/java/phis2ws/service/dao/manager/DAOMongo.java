@@ -38,10 +38,31 @@ import phis2ws.service.model.User;
 public abstract class DAOMongo<T> {
 
     /**
-     * @see service.properties file
+     * This block initialize MongoDB connection URL with user authentication or not 
+     * depending of the configuration
+     * @see mongodb_nosql_config.properties file
      */
-    private final static MongoClient MONGO_CLIENT = new MongoClient(
-            new MongoClientURI(PropertiesFileManager.getConfigFileProperty("mongodb_nosql_config", "url")));
+    static {
+        String host = PropertiesFileManager.getConfigFileProperty("mongodb_nosql_config", "host");
+        String port = PropertiesFileManager.getConfigFileProperty("mongodb_nosql_config", "port");
+        String user = PropertiesFileManager.getConfigFileProperty("mongodb_nosql_config", "user");
+        String password = PropertiesFileManager.getConfigFileProperty("mongodb_nosql_config", "password");
+        String authdb = PropertiesFileManager.getConfigFileProperty("mongodb_nosql_config", "authdb");
+        String url = "mongodb://";
+        if (!user.equals("")) {
+            url += user + ":" + password + "@";
+        }
+        
+        url += host + ":" + port + "/";
+        
+        if (!authdb.equals("") && !user.equals("")) {
+             url += "?authSource=" + authdb;
+        }
+        
+        MONGO_CLIENT = new MongoClient(new MongoClientURI(url));
+    }
+    private final static MongoClient MONGO_CLIENT;
+    
     protected GridFS gridFS = new GridFS(MONGO_CLIENT.getDB(PropertiesFileManager.getConfigFileProperty("mongodb_nosql_config", "db")));
     protected MongoDatabase database;
     protected MongoCollection<Document> collection;

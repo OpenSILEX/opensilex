@@ -24,9 +24,9 @@ import static phis2ws.service.PropertiesFileManager.getSQLPoolDataSourceProperti
  * @date 05/2016
  * @author Arnaud Charleroy
  */
-public abstract class DataSourceDAOPhisBrapi extends AbstractSQLDataSource {
+public abstract class PostgreSQLDataSource extends AbstractPostgreSQLDataSource {
 
-    private DataSourceDAOPhisBrapi() {
+    private PostgreSQLDataSource() {
         setPropertyFileName("phis_sql_config");
         // récupération des propriétés
         final PoolProperties p = getSQLPoolDataSourceProperties(propertyFileName);
@@ -45,7 +45,7 @@ public abstract class DataSourceDAOPhisBrapi extends AbstractSQLDataSource {
      */
     private static class DataSourceDAOPhisBrapiHolder {
 
-        final private static DataSourceDAOPhisBrapi instance = new DataSourceDAOPhisBrapi() {
+        final private static PostgreSQLDataSource instance = new PostgreSQLDataSource() {
         };
     }
 
@@ -54,7 +54,7 @@ public abstract class DataSourceDAOPhisBrapi extends AbstractSQLDataSource {
      *
      * @return DataSourceDAOPhisBrapi
      */
-    public static DataSourceDAOPhisBrapi getInstance() {
+    public static PostgreSQLDataSource getInstance() {
         return DataSourceDAOPhisBrapiHolder.instance;
     }
 

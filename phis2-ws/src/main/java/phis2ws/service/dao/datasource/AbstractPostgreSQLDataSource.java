@@ -21,10 +21,10 @@ import org.slf4j.LoggerFactory;
  *
  * @author Arnaud Charleroy
  */
-public abstract class AbstractSQLDataSource extends DataSource {
+public abstract class AbstractPostgreSQLDataSource extends DataSource {
 
     // Récupération des logs
-    final static Logger LOGGER = LoggerFactory.getLogger(AbstractSQLDataSource.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(AbstractPostgreSQLDataSource.class);
     // Fichier de configuration
     protected static String propertyFileName;
 
@@ -33,7 +33,7 @@ public abstract class AbstractSQLDataSource extends DataSource {
     }
 
     public static void setPropertyFileName(String propertyFileName) {
-        AbstractSQLDataSource.propertyFileName = propertyFileName;
+        AbstractPostgreSQLDataSource.propertyFileName = propertyFileName;
     }
 
 }

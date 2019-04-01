@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 import org.postgis.Geometry;
 import phis2ws.service.authentication.TokenManager;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
-import phis2ws.service.dao.datasource.DataSourceDAOPhisBrapi;
+import phis2ws.service.dao.datasource.PostgreSQLDataSource;
 import phis2ws.service.model.User;
 import phis2ws.service.utils.JsonConverter;
 import phis2ws.service.utils.sql.SQLQueryBuilder;
@@ -58,8 +58,8 @@ public abstract class PostrgreSQLDAO<T> extends DAO<T> {
     // to manage multiple database switch 
     static {
         Map<String, DataSource> tmpMap = new HashMap<>();
-        tmpMap.put(PhisDAO.PHIS_MODEL_DB_LOCATION, DataSourceDAOPhisBrapi.getInstance());
-        tmpMap.put(PhisDAO.GNPIS_MODEL_DB_LOCATION, DataSourceDAOPhisBrapi.getInstance());
+        tmpMap.put(PhisDAO.PHIS_MODEL_DB_LOCATION, DataSource.getInstance());
+        tmpMap.put(PhisDAO.GNPIS_MODEL_DB_LOCATION, DataSource.getInstance());
         JWT_ISSUER_DATASOURCE = Collections.unmodifiableMap(tmpMap);
     }
 

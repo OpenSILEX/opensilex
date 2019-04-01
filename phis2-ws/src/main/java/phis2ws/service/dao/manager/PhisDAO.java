@@ -8,7 +8,7 @@
 package phis2ws.service.dao.manager;
 
 import java.util.List;
-import phis2ws.service.dao.datasource.DataSourceDAOPhisBrapi;
+import phis2ws.service.dao.datasource.PostgreSQLDataSource;
 import phis2ws.service.utils.POSTResultsReturn;
 
 /**
@@ -24,7 +24,7 @@ public abstract class PhisDAO<T, D> extends PostrgreSQLDAO<T> {
 
     public PhisDAO() {
         if (dataSource == null) {
-            dataSource = DataSourceDAOPhisBrapi.getInstance();
+            dataSource = PostgreSQLDataSource.getInstance();
         }
     }
     

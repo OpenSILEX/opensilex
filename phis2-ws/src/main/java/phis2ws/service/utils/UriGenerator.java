@@ -15,7 +15,7 @@ import java.util.UUID;
 import org.apache.commons.codec.binary.Base32;
 import org.apache.jena.sparql.AlreadyExists;
 import phis2ws.service.PropertiesFileManager;
-import phis2ws.service.dao.mongo.ImageMetadataDAO;
+import phis2ws.service.dao.mongo.ImageMetadataMongoDAO;
 import phis2ws.service.dao.phis.ExperimentMongoDAO;
 import phis2ws.service.dao.phis.GroupDAO;
 import phis2ws.service.dao.phis.ProjectDAO;
@@ -381,7 +381,7 @@ public class UriGenerator {
      */
     private String generateImageUri(String year, String lastGeneratedUri) {
         if (lastGeneratedUri == null) {
-            ImageMetadataDAO imageDaoMongo = new ImageMetadataDAO();
+            ImageMetadataMongoDAO imageDaoMongo = new ImageMetadataMongoDAO();
             long imagesNumber = imageDaoMongo.getNbImagesYear();
             imagesNumber++;
 

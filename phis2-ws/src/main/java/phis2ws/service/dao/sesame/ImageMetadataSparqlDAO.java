@@ -25,13 +25,13 @@ import phis2ws.service.view.model.phis.ImageMetadata;
  * Used to check if an image type exist in the triplestore
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class ImageMetadataDAO extends SparqlDAO<ImageMetadata> {
+public class ImageMetadataSparqlDAO extends SparqlDAO<ImageMetadata> {
     
-    final static Logger LOGGER = LoggerFactory.getLogger(ImageMetadataDAO.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(ImageMetadataSparqlDAO.class);
     
     public String rdfType;
 
-    public ImageMetadataDAO() {
+    public ImageMetadataSparqlDAO() {
     }
 
     @Override

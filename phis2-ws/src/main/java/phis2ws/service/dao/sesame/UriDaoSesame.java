@@ -712,12 +712,12 @@ public class UriDaoSesame extends DAOSesame<Uri> {
     }
 
     @Override
-    public Object find(Object object) throws Exception {
+    public Uri find(Uri object) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Object findById(String id) throws Exception {
+    public Uri findById(String id) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

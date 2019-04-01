@@ -828,12 +828,12 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
     }
 
     @Override
-    public Object find(Object object) throws Exception {
+    public Vector find(Vector object) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Object findById(String id) throws Exception {
+    public Vector findById(String id) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

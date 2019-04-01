@@ -837,12 +837,12 @@ public class DocumentDaoSesame extends DAOSesame<Document> {
     }
 
     @Override
-    public Object find(Object object) throws Exception {
+    public Document find(Document object) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Object findById(String id) throws Exception {
+    public Document findById(String id) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

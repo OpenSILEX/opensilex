@@ -404,12 +404,12 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
     }
 
     @Override
-    public Object find(Object object) throws Exception {
+    public Triplet find(Triplet object) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Object findById(String id) throws Exception {
+    public Triplet findById(String id) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

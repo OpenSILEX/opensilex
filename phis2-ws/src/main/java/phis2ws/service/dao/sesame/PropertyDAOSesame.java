@@ -989,12 +989,12 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
 
     @Override
-    public Object find(Object object) throws Exception {
+    public Property find(Property object) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Object findById(String id) throws Exception {
+    public Property findById(String id) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

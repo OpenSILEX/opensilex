@@ -228,12 +228,12 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
     }
 
     @Override
-    public Object find(Object object) throws Exception {
+    public Infrastructure find(Infrastructure object) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Object findById(String id) throws Exception {
+    public Infrastructure findById(String id) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

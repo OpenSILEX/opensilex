@@ -213,17 +213,17 @@ public class InfrastructureDAO extends SparqlDAO<Infrastructure> {
     }
 
     @Override
-    public List create(List objects) throws Exception {
+    public List<Infrastructure> create(List<Infrastructure> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List objects) throws Exception {
+    public void delete(List<Infrastructure> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List update(List objects) throws Exception {
+    public List<Infrastructure> update(List<Infrastructure> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

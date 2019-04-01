@@ -404,17 +404,17 @@ public class ExperimentSparqlDAO extends SparqlDAO<Experiment> {
     }
 
     @Override
-    public List create(List objects) throws Exception {
+    public List<Experiment> create(List<Experiment> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List objects) throws Exception {
+    public void delete(List<Experiment> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List update(List objects) throws Exception {
+    public List<Experiment> update(List<Experiment> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

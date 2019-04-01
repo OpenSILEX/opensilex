@@ -53,17 +53,17 @@ public class FileInformationDAO extends MongoDAO<FileInformations> {
     }
 
     @Override
-    public List create(List objects) throws Exception {
+    public List<FileInformations> create(List<FileInformations> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List objects) throws Exception {
+    public void delete(List<FileInformations> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List update(List objects) throws Exception {
+    public List<FileInformations> update(List<FileInformations> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

@@ -36,7 +36,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.sesame.UnitDaoSesame;
+import phis2ws.service.dao.sesame.UnitDAO;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.UnitDTO;
@@ -74,7 +74,7 @@ public class UnitResourceService extends ResourceService {
                               @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         if (units != null && !units.isEmpty()) {
-            UnitDaoSesame unitDaoSesame = new UnitDaoSesame();
+            UnitDAO unitDaoSesame = new UnitDAO();
             if (context.getRemoteAddr() != null) {
                 unitDaoSesame.remoteUserAdress = context.getRemoteAddr();
             }
@@ -120,7 +120,7 @@ public class UnitResourceService extends ResourceService {
         @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         if (units != null && !units.isEmpty()) {
-            UnitDaoSesame unitDaoSesame = new UnitDaoSesame();
+            UnitDAO unitDaoSesame = new UnitDAO();
             if (context.getRemoteAddr() != null) {
                 unitDaoSesame.remoteUserAdress = context.getRemoteAddr();
             }
@@ -153,7 +153,7 @@ public class UnitResourceService extends ResourceService {
      * on ne peut chercher que par uri et label. Il faudra ajouter d'autres critères
      * \SILEX:TODO
      */
-    private Response getUnitsData(UnitDaoSesame unitDaoSesame) {
+    private Response getUnitsData(UnitDAO unitDaoSesame) {
         ArrayList<Unit> units;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Unit> getResponse;
@@ -207,7 +207,7 @@ public class UnitResourceService extends ResourceService {
         @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_UNIT_URI) @QueryParam("uri") @URL String uri,
         @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_UNIT_LABEL) @QueryParam("label") String label
     ) {
-        UnitDaoSesame unitDaoSesame = new UnitDaoSesame();
+        UnitDAO unitDaoSesame = new UnitDAO();
         
         if (uri != null) {
             unitDaoSesame.uri = uri;
@@ -256,7 +256,7 @@ public class UnitResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
         }
         
-        UnitDaoSesame unitDaoSesame = new UnitDaoSesame();
+        UnitDAO unitDaoSesame = new UnitDAO();
         unitDaoSesame.uri = unit;
         unitDaoSesame.setPageSize(limit);
         unitDaoSesame.setPage(page);

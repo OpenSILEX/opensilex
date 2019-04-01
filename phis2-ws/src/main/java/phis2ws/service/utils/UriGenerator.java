@@ -15,22 +15,22 @@ import java.util.UUID;
 import org.apache.commons.codec.binary.Base32;
 import org.apache.jena.sparql.AlreadyExists;
 import phis2ws.service.PropertiesFileManager;
-import phis2ws.service.dao.mongo.ImageMetadataDaoMongo;
-import phis2ws.service.dao.phis.ExperimentDao;
-import phis2ws.service.dao.phis.GroupDao;
-import phis2ws.service.dao.phis.ProjectDao;
-import phis2ws.service.dao.sesame.ScientificObjectDAOSesame;
-import phis2ws.service.dao.sesame.AnnotationDAOSesame;
-import phis2ws.service.dao.sesame.EventDAOSesame;
-import phis2ws.service.dao.sesame.MethodDaoSesame;
-import phis2ws.service.dao.sesame.RadiometricTargetDAOSesame;
-import phis2ws.service.dao.sesame.SensorDAOSesame;
-import phis2ws.service.dao.sesame.TimeDAOSesame;
-import phis2ws.service.dao.sesame.UriDaoSesame;
-import phis2ws.service.dao.sesame.TraitDaoSesame;
-import phis2ws.service.dao.sesame.UnitDaoSesame;
-import phis2ws.service.dao.sesame.VariableDaoSesame;
-import phis2ws.service.dao.sesame.VectorDAOSesame;
+import phis2ws.service.dao.mongo.ImageMetadataDAO;
+import phis2ws.service.dao.phis.ExperimentMongoDAO;
+import phis2ws.service.dao.phis.GroupDAO;
+import phis2ws.service.dao.phis.ProjectDAO;
+import phis2ws.service.dao.sesame.ScientificObjectSparqlDAO;
+import phis2ws.service.dao.sesame.AnnotationDAO;
+import phis2ws.service.dao.sesame.EventDAO;
+import phis2ws.service.dao.sesame.MethodDAO;
+import phis2ws.service.dao.sesame.RadiometricTargetDAO;
+import phis2ws.service.dao.sesame.SensorDAO;
+import phis2ws.service.dao.sesame.TimeDAO;
+import phis2ws.service.dao.sesame.UriDAO;
+import phis2ws.service.dao.sesame.TraitDAO;
+import phis2ws.service.dao.sesame.UnitDAO;
+import phis2ws.service.dao.sesame.VariableDAO;
+import phis2ws.service.dao.sesame.VectorDAO;
 import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Foaf;
 import phis2ws.service.ontologies.Oeev;
@@ -95,7 +95,7 @@ public class UriGenerator {
      */
     private String generateVectorUri(String year) {
         //1. get the actual number of vectors in the triplestor for the year
-        VectorDAOSesame vectorDAO = new VectorDAOSesame();
+        VectorDAO vectorDAO = new VectorDAO();
         int lastVectorIdFromYear = vectorDAO.getLastIdFromYear(year);
 
         //2. generate vectors URI
@@ -124,7 +124,7 @@ public class UriGenerator {
      */
     private String generateSensorUri(String year) {
         //1. get the current number of sensors in the triplestor for the year
-        SensorDAOSesame sensorDAO = new SensorDAOSesame();
+        SensorDAO sensorDAO = new SensorDAO();
         int lastSensorIdFromYear = sensorDAO.getLastIdFromYear(year);
 
         //2. generate sensor URI
@@ -159,7 +159,7 @@ public class UriGenerator {
     private String generateAgronomicalObjectUri(String year) {
         //1. get the highest number for the year 
         //(i.e. the last inserted agronomical object for the year)
-        ScientificObjectDAOSesame agronomicalObjectDAO = new ScientificObjectDAOSesame();
+        ScientificObjectSparqlDAO agronomicalObjectDAO = new ScientificObjectSparqlDAO();
         int lastAgronomicalObjectIdFromYear = agronomicalObjectDAO.getLastScientificObjectIdFromYear(year);
 
         //2. generates agronomical object URI
@@ -182,7 +182,7 @@ public class UriGenerator {
      */
     private String generateVariableUri() {
         //1. get the higher variable id (i.e. the last inserted variable)
-        VariableDaoSesame variableDAO = new VariableDaoSesame();
+        VariableDAO variableDAO = new VariableDAO();
         int lastVariableId = variableDAO.getLastId();
 
         //2. generate variable URI
@@ -205,7 +205,7 @@ public class UriGenerator {
      */
     private String generateTraitUri() {
         //1. get the highest trait id (i.e. the last inserted trait)
-        TraitDaoSesame traitDAO = new TraitDaoSesame();
+        TraitDAO traitDAO = new TraitDAO();
         int lastTraitId = traitDAO.getLastId();
 
         //2. generate trait URI
@@ -228,7 +228,7 @@ public class UriGenerator {
      */
     private String generateMethodUri() {
         //1. get the highest method id (i.e. the last inserted method)
-        MethodDaoSesame methodDAO = new MethodDaoSesame();
+        MethodDAO methodDAO = new MethodDAO();
         int lastMethodId = methodDAO.getLastId();
 
         //2. generate method URI
@@ -251,7 +251,7 @@ public class UriGenerator {
      */
     private String generateUnitUri() {
         //1. get the highest unit id (i.e. the last inserted unit)
-        UnitDaoSesame unitDAO = new UnitDaoSesame();
+        UnitDAO unitDAO = new UnitDAO();
         int lastUnitId = unitDAO.getLastId();
 
         //2. generates unit URI
@@ -275,7 +275,7 @@ public class UriGenerator {
     private String generateRadiometricTargetUri() {
         //1. Get the highest radiometric target id (i.e. the last inserted
         //radiometric target)
-        RadiometricTargetDAOSesame radiometricTargetDAO = new RadiometricTargetDAOSesame();
+        RadiometricTargetDAO radiometricTargetDAO = new RadiometricTargetDAO();
         int lastID = radiometricTargetDAO.getLastId();
         
         //2. Generate radiometric target URI
@@ -323,7 +323,7 @@ public class UriGenerator {
      */
     private String generateAnnotationUri() {
         //1. check if URI already exists
-        AnnotationDAOSesame annotationDao = new AnnotationDAOSesame();
+        AnnotationDAO annotationDao = new AnnotationDAO();
         String newAnnotationUri = PLATFORM_URI_ID_ANNOTATION + UUID.randomUUID();
         while (annotationDao.existUri(newAnnotationUri)) {
             newAnnotationUri = PLATFORM_URI_ID_ANNOTATION + UUID.randomUUID();
@@ -341,7 +341,7 @@ public class UriGenerator {
      */
     private String generateEventUri() {
         // To check if URI already exists
-        EventDAOSesame eventDao = new EventDAOSesame(null);
+        EventDAO eventDao = new EventDAO(null);
         String newEventUri = PLATFORM_URI_ID_EVENT + UUID.randomUUID();
         while (eventDao.existUri(newEventUri)) {
             newEventUri = PLATFORM_URI_ID_EVENT + UUID.randomUUID();
@@ -359,7 +359,7 @@ public class UriGenerator {
      */
     private String generateInstantUri() {
         // To check if the URI already exists
-        TimeDAOSesame timeDao = new TimeDAOSesame(null);
+        TimeDAO timeDao = new TimeDAO(null);
         String newInstantUri = PLATFORM_URI_ID_INSTANT + UUID.randomUUID();
         while (timeDao.existUri(newInstantUri)) {
             newInstantUri = PLATFORM_URI_ID_INSTANT + UUID.randomUUID();
@@ -381,7 +381,7 @@ public class UriGenerator {
      */
     private String generateImageUri(String year, String lastGeneratedUri) {
         if (lastGeneratedUri == null) {
-            ImageMetadataDaoMongo imageDaoMongo = new ImageMetadataDaoMongo();
+            ImageMetadataDAO imageDaoMongo = new ImageMetadataDAO();
             long imagesNumber = imageDaoMongo.getNbImagesYear();
             imagesNumber++;
 
@@ -417,7 +417,7 @@ public class UriGenerator {
         //1. generates URI
         String projectUri = PLATFORM_URI + projectAcronyme;
         //2. check if URI exists
-        ProjectDao projectDAO = new ProjectDao();
+        ProjectDAO projectDAO = new ProjectDAO();
         Project project = new Project(projectUri);
         if (projectDAO.existInDB(project)) {
             throw new AlreadyExists("The project uri " + projectUri + " already exist in the triplestore.");
@@ -436,7 +436,7 @@ public class UriGenerator {
      */
     private String generateExperimentUri(String campaign) {
         //1. Get the campaign last experiment URI
-        String campaignLastExperimentUri = (new ExperimentDao()).getCampaignLastExperimentUri(campaign);
+        String campaignLastExperimentUri = (new ExperimentMongoDAO()).getCampaignLastExperimentUri(campaign);
         //2. Generate the URI of the experiment
         int newExperimentNumber;
         if (campaignLastExperimentUri == null) {
@@ -462,7 +462,7 @@ public class UriGenerator {
         //1. Generate URI
         String groupUri = PLATFORM_URI + name;
         //2. Check if the generated URI already exists
-        GroupDao groupDao = new GroupDao();
+        GroupDAO groupDao = new GroupDAO();
         Group group = new Group(groupUri);
         
         if (groupDao.existInDB(group)) {
@@ -546,7 +546,7 @@ public class UriGenerator {
             year = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
         }
 
-        UriDaoSesame uriDaoSesame = new UriDaoSesame();
+        UriDAO uriDaoSesame = new UriDAO();
 
         if (uriDaoSesame.isSubClassOf(instanceType, Oeso.CONCEPT_VECTOR.toString())) {
             return generateVectorUri(year);

@@ -36,7 +36,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.phis.GroupDao;
+import phis2ws.service.dao.phis.GroupDAO;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.group.GroupDTO;
@@ -93,7 +93,7 @@ public class GroupResourceService extends ResourceService {
     @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_GROUP_URI) @QueryParam("uri") @URL String uri,
     @ApiParam(value = "Search by name", example = DocumentationAnnotation.EXAMPLE_GROUP_NAME) @QueryParam("name") String name,
     @ApiParam(value = "Search by level", example = DocumentationAnnotation.EXAMPLE_GROUP_LEVEL) @QueryParam("level") @GroupLevel String level) {
-        GroupDao groupDao = new GroupDao();
+        GroupDAO groupDao = new GroupDAO();
         
         if (uri != null) {
             groupDao.uri = uri;
@@ -145,7 +145,7 @@ public class GroupResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
         }
         
-        GroupDao groupDao = new GroupDao(groupUri);
+        GroupDAO groupDao = new GroupDAO(groupUri);
         groupDao.setPageSize(limit);
         groupDao.setPage(page);
         
@@ -184,7 +184,7 @@ public class GroupResourceService extends ResourceService {
         
         //Si dans les données envoyées il y a au moins un groupe
         if (groups != null && !groups.isEmpty()) {
-            GroupDao groupDao = new GroupDao();
+            GroupDAO groupDao = new GroupDAO();
             if (groupDao.remoteUserAdress != null) {
                 groupDao.remoteUserAdress = context.getRemoteAddr();
             }
@@ -231,7 +231,7 @@ public class GroupResourceService extends ResourceService {
     @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         if (groups != null && !groups.isEmpty()) {
-            GroupDao groupDao = new GroupDao();
+            GroupDAO groupDao = new GroupDAO();
             if (groupDao.remoteUserAdress != null) {
                 groupDao.remoteUserAdress = context.getRemoteAddr();
             }
@@ -262,7 +262,7 @@ public class GroupResourceService extends ResourceService {
      * @return la réponse pour l'utilisateur. 
      *         Contient la liste des groups correspondant à la recherche
      */
-    private Response getGroupsData(GroupDao groupDao) {
+    private Response getGroupsData(GroupDAO groupDao) {
         ArrayList<Group> groups = new ArrayList<>();
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Group> getResponse; 

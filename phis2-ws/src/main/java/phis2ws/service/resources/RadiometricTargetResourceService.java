@@ -33,8 +33,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.sesame.PropertyDAOSesame;
-import phis2ws.service.dao.sesame.RadiometricTargetDAOSesame;
+import phis2ws.service.dao.sesame.PropertyDAO;
+import phis2ws.service.dao.sesame.RadiometricTargetDAO;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.radiometricTargets.RadiometricTargetDTO;
@@ -134,7 +134,7 @@ public class RadiometricTargetResourceService extends ResourceService {
         AbstractResultForm postResponse = null;
         
         if (radiometricTargets != null && !radiometricTargets.isEmpty()) {
-            RadiometricTargetDAOSesame radiometricTargetDAO = new RadiometricTargetDAOSesame();
+            RadiometricTargetDAO radiometricTargetDAO = new RadiometricTargetDAO();
             
              if (context.getRemoteAddr() != null) {
                 radiometricTargetDAO.remoteUserAdress = context.getRemoteAddr();
@@ -179,7 +179,7 @@ public class RadiometricTargetResourceService extends ResourceService {
         @Context HttpServletRequest context) {
         AbstractResultForm putResponse = null;
 
-        RadiometricTargetDAOSesame radiometricTargetDAO = new RadiometricTargetDAOSesame();
+        RadiometricTargetDAO radiometricTargetDAO = new RadiometricTargetDAO();
         if (context.getRemoteAddr() != null) {
             radiometricTargetDAO.remoteUserAdress = context.getRemoteAddr();
         }
@@ -254,7 +254,7 @@ public class RadiometricTargetResourceService extends ResourceService {
         @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_LABEL) @QueryParam("label") String label
     ) {
         // 1. Initialize radiometricTargetDAO with parameters
-        RadiometricTargetDAOSesame radiometricTargetDAO = new RadiometricTargetDAOSesame();
+        RadiometricTargetDAO radiometricTargetDAO = new RadiometricTargetDAO();
         
         radiometricTargetDAO.uri = uri;
         radiometricTargetDAO.label = label;
@@ -357,7 +357,7 @@ public class RadiometricTargetResourceService extends ResourceService {
     public Response getRadiometricTargetsDetails(
         @ApiParam(value = DocumentationAnnotation.INFRASTRUCTURE_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_URI) @PathParam("uri") @URL @Required String uri) {            
         // 1. Initialize propertyDAO with parameters
-        PropertyDAOSesame propertyDAO = new PropertyDAOSesame();
+        PropertyDAO propertyDAO = new PropertyDAO();
         
         propertyDAO.user = userSession.getUser();
         

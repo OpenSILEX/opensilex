@@ -29,7 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.sesame.TraitDaoSesame;
+import phis2ws.service.dao.sesame.TraitDAO;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.validation.interfaces.Required;
@@ -153,7 +153,7 @@ public class TraitsResourceService implements BrapiCall {
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0)int page 
         ) throws SQLException {        
-        TraitDaoSesame traitDAO = new TraitDaoSesame();
+        TraitDAO traitDAO = new TraitDAO();
         traitDAO.setPageSize(limit);
         traitDAO.setPage(page);           
         return getTraitsData(traitDAO);
@@ -206,7 +206,7 @@ public class TraitsResourceService implements BrapiCall {
     public Response getTraitDetails ( 
         @ApiParam(value = DocumentationAnnotation.TRAIT_URI_DEFINITION, required = true, example=DocumentationAnnotation.EXAMPLE_TRAIT_URI) @PathParam("traitDbId") @Required @URL String traitDbId
     ) throws SQLException {        
-        TraitDaoSesame traitDAO = new TraitDaoSesame(traitDbId);           
+        TraitDAO traitDAO = new TraitDAO(traitDbId);           
         return getOneTraitData(traitDAO);
     }    
     
@@ -226,7 +226,7 @@ public class TraitsResourceService implements BrapiCall {
      * @param traitDAO
      * @return the response with the traits data list 
      */
-    private Response getTraitsData(TraitDaoSesame traitDAO) {
+    private Response getTraitsData(TraitDAO traitDAO) {
         ArrayList<Status> statusList = new ArrayList<>();
         ArrayList<BrapiTraitDTO> brapiTraits = getBrapiTraitsData(traitDAO);
         BrapiMultiResponseForm getResponse;
@@ -245,7 +245,7 @@ public class TraitsResourceService implements BrapiCall {
      * @param traitDAO
      * @return the response with one trait data
      */
-    private Response getOneTraitData(TraitDaoSesame traitDAO) {
+    private Response getOneTraitData(TraitDAO traitDAO) {
         ArrayList<Status> statusList = new ArrayList<>();
         ArrayList<BrapiTraitDTO> brapiTraits = getBrapiTraitsData(traitDAO);
         BrapiSingleResponseForm getResponse;
@@ -265,7 +265,7 @@ public class TraitsResourceService implements BrapiCall {
      * @param BrapiTraitDAO
      * @return the traits available in the system
      */
-    private ArrayList<BrapiTraitDTO> getBrapiTraitsData(TraitDaoSesame traitDAO) {
+    private ArrayList<BrapiTraitDTO> getBrapiTraitsData(TraitDAO traitDAO) {
         ArrayList<Trait> traits = traitDAO.allPaginate();  
         ArrayList<BrapiTraitDTO> brapiTraits = new ArrayList();          
                 

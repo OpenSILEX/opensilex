@@ -30,7 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.authentication.Session;
 import phis2ws.service.authentication.TokenManager;
-import phis2ws.service.dao.phis.SessionDaoPhisBrapi;
+import phis2ws.service.dao.phis.SessionDAO;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionFactory;
 import phis2ws.service.injection.SessionInject;
@@ -116,7 +116,7 @@ public class ApplicationInitConfig extends ResourceConfig {
             LOGGER.error("Can't change rights on log directory");
         }
         TokenManager.Instance();
-        SessionDaoPhisBrapi sessionDao = new SessionDaoPhisBrapi();
+        SessionDAO sessionDao = new SessionDAO();
         // It's possible to reload a session that hasn't been desactived
 //        sessionDao.reloadActiveSession();
     }

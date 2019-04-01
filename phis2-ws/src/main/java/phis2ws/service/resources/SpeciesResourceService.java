@@ -25,7 +25,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.sesame.SpeciesDAOSesame;
+import phis2ws.service.dao.sesame.SpeciesDAO;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.species.SpeciesDTO;
 import phis2ws.service.resources.validation.interfaces.URL;
@@ -121,7 +121,7 @@ public class SpeciesResourceService extends ResourceService {
             language = DEFAULT_LANGUAGE;
         }
         
-        SpeciesDAOSesame speciesDAO = new SpeciesDAOSesame();
+        SpeciesDAO speciesDAO = new SpeciesDAO();
         speciesDAO.setPage(page);
         speciesDAO.setPageSize(pageSize);
         

@@ -26,7 +26,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.sesame.AcquisitionSessionDAOSesame;
+import phis2ws.service.dao.sesame.AcquisitionSessionDAO;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.acquisitionSession.MetadataFileDTO;
 import phis2ws.service.resources.dto.acquisitionSession.MetadataFileUAVDTO;
@@ -48,7 +48,7 @@ public class AcquisitionSessionResourceService extends ResourceService {
      * @return the acquisition session file metadata content for the hiddenPhis 
      *         part of the acquisition session file used for 4P.
      */
-    private Response getAcquisitionSessionMetadataFile(AcquisitionSessionDAOSesame acquisitionSessionDAOSesame) {       
+    private Response getAcquisitionSessionMetadataFile(AcquisitionSessionDAO acquisitionSessionDAOSesame) {       
         ArrayList<MetadataFileDTO> fileMetadata;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<MetadataFileDTO> getResponse;
@@ -135,7 +135,7 @@ public class AcquisitionSessionResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.VECTOR_RDF_TYPE_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_VECTOR_RDF_TYPE) @QueryParam("vectorRdfType") @Required @URL String vectorRdfType,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
-        AcquisitionSessionDAOSesame acquisitionSessionDAO = new AcquisitionSessionDAOSesame();
+        AcquisitionSessionDAO acquisitionSessionDAO = new AcquisitionSessionDAO();
         acquisitionSessionDAO.vectorRdfType = vectorRdfType;
         acquisitionSessionDAO.setPage(page);
         acquisitionSessionDAO.setPageSize(pageSize);

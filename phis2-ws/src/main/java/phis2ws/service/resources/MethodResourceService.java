@@ -36,7 +36,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.sesame.MethodDaoSesame;
+import phis2ws.service.dao.sesame.MethodDAO;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.MethodDTO;
@@ -74,7 +74,7 @@ public class MethodResourceService extends ResourceService {
                               @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         if (methods != null && !methods.isEmpty()) {
-            MethodDaoSesame methodDaoSesame = new MethodDaoSesame();
+            MethodDAO methodDaoSesame = new MethodDAO();
             if (context.getRemoteAddr() != null) {
                 methodDaoSesame.remoteUserAdress = context.getRemoteAddr();
             }
@@ -120,7 +120,7 @@ public class MethodResourceService extends ResourceService {
         @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         if (methods != null && !methods.isEmpty()) {
-            MethodDaoSesame methodDaoSesame = new MethodDaoSesame();
+            MethodDAO methodDaoSesame = new MethodDAO();
             if (context.getRemoteAddr() != null) {
                 methodDaoSesame.remoteUserAdress = context.getRemoteAddr();
             }
@@ -153,7 +153,7 @@ public class MethodResourceService extends ResourceService {
      * on ne peut chercher que par uri et label. Il faudra ajouter d'autres critères
      * \SILEX:TODO
      */
-    private Response getMethodsData(MethodDaoSesame methodDaoSesame) {
+    private Response getMethodsData(MethodDAO methodDaoSesame) {
         ArrayList<Method> methods;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Method> getResponse;
@@ -207,7 +207,7 @@ public class MethodResourceService extends ResourceService {
         @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_METHOD_URI) @QueryParam("uri") @URL String uri,
         @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_METHOD_LABEL) @QueryParam("label") String label
     ) {
-        MethodDaoSesame methodDaoSesame = new MethodDaoSesame();
+        MethodDAO methodDaoSesame = new MethodDAO();
         
         if (uri != null) {
             methodDaoSesame.uri = uri;
@@ -257,7 +257,7 @@ public class MethodResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
         }
         
-        MethodDaoSesame methodDaoSesame = new MethodDaoSesame();
+        MethodDAO methodDaoSesame = new MethodDAO();
         methodDaoSesame.uri = method;
         methodDaoSesame.setPageSize(limit);
         methodDaoSesame.setPage(page);

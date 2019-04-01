@@ -36,7 +36,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.sesame.TraitDaoSesame;
+import phis2ws.service.dao.sesame.TraitDAO;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.TraitDTO;
@@ -74,7 +74,7 @@ public class TraitResourceService extends ResourceService {
                               @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         if (traits != null && !traits.isEmpty()) {
-            TraitDaoSesame traitDaoSesame = new TraitDaoSesame();
+            TraitDAO traitDaoSesame = new TraitDAO();
             if (context.getRemoteAddr() != null) {
                 traitDaoSesame.remoteUserAdress = context.getRemoteAddr();
             }
@@ -120,7 +120,7 @@ public class TraitResourceService extends ResourceService {
         @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         if (traits != null && !traits.isEmpty()) {
-            TraitDaoSesame traitDaoSesame = new TraitDaoSesame();
+            TraitDAO traitDaoSesame = new TraitDAO();
             if (context.getRemoteAddr() != null) {
                 traitDaoSesame.remoteUserAdress = context.getRemoteAddr();
             }
@@ -153,7 +153,7 @@ public class TraitResourceService extends ResourceService {
      * on ne peut chercher que par uri et label. Il faudra ajouter d'autres critères
      * \SILEX:TODO
      */
-    private Response getTraitsData(TraitDaoSesame traitDaoSesame) {
+    private Response getTraitsData(TraitDAO traitDaoSesame) {
         ArrayList<Trait> traits;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Trait> getResponse;
@@ -199,7 +199,7 @@ public class TraitResourceService extends ResourceService {
         @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_TRAIT_URI) @QueryParam("uri") @URL String uri,
         @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_TRAIT_LABEL) @QueryParam("label") String label
     ) {
-        TraitDaoSesame traitDaoSesame = new TraitDaoSesame();
+        TraitDAO traitDaoSesame = new TraitDAO();
         
         if (uri != null) {
             traitDaoSesame.uri = uri;
@@ -249,7 +249,7 @@ public class TraitResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
         }
         
-        TraitDaoSesame traitDaoSesame = new TraitDaoSesame();
+        TraitDAO traitDaoSesame = new TraitDAO();
         traitDaoSesame.uri = trait;
         traitDaoSesame.setPageSize(limit);
         traitDaoSesame.setPage(page);

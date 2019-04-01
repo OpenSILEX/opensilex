@@ -37,7 +37,7 @@ import javax.ws.rs.core.Response;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.mongo.DatasetDAOMongo;
+import phis2ws.service.dao.mongo.DatasetDAO;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.DatasetDTO;
@@ -105,7 +105,7 @@ public class DatasetResourceService extends ResourceService {
         
         //If there are at least one provenance (and dataset) in the sended data
         if (datasets != null && !datasets.isEmpty()) {
-            DatasetDAOMongo datasetDAOMongo = new DatasetDAOMongo();
+            DatasetDAO datasetDAOMongo = new DatasetDAO();
             datasetDAOMongo.user = userSession.getUser();
             
             //check data and insert in the mongo database
@@ -126,7 +126,7 @@ public class DatasetResourceService extends ResourceService {
      * @param datasetDAOMongo
      * @return the user answer with the results
      */
-    private Response getDatasetsData(DatasetDAOMongo datasetDAOMongo) {
+    private Response getDatasetsData(DatasetDAO datasetDAOMongo) {
         ArrayList<Dataset> datasets = new ArrayList<>();
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Dataset> getResponse;
@@ -211,7 +211,7 @@ public class DatasetResourceService extends ResourceService {
         @ApiParam(value = "Search by sensor", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("sensor")  @URL String sensor,
         @ApiParam(value = "Search by incertitude", example = DocumentationAnnotation.EXAMPLE_DATA_INCERTITUDE) @QueryParam("incertitude") String incertitude) {
         
-        DatasetDAOMongo datasetDAOMongo = new DatasetDAOMongo();
+        DatasetDAO datasetDAOMongo = new DatasetDAO();
         
         if (experiment != null) {
             datasetDAOMongo.experiment = experiment;

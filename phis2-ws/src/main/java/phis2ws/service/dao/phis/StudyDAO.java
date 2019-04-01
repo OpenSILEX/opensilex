@@ -31,7 +31,7 @@ import phis2ws.service.model.User;
 import phis2ws.service.utils.sql.JoinAttributes;
 import phis2ws.service.view.model.phis.Experiment;
 import phis2ws.service.view.model.phis.ContactBrapi;
-import phis2ws.service.dao.phis.ExperimentDao;
+import phis2ws.service.dao.phis.ExperimentMongoDAO;
 import phis2ws.service.view.model.phis.StudyDetails;
 
 /**
@@ -96,7 +96,7 @@ public class StudyDAO {
      * @return expList list of Experiment
      */
     public ArrayList<Experiment> getExperimentsList() {
-        ExperimentDao experimentDAO = new ExperimentDao();
+        ExperimentMongoDAO experimentDAO = new ExperimentMongoDAO();
         ArrayList<Experiment> expList = new ArrayList();
         
         try (final Connection connection = experimentDAO.getDataSource().getConnection();
@@ -112,7 +112,7 @@ public class StudyDAO {
             //\SILEX:info
             
             try (final ResultSet queryResult = statement.executeQuery(query.toString())) {
-                UserDaoPhisBrapi userDao = new UserDaoPhisBrapi();
+                UserDAO userDao = new UserDAO();
                 userDao.isAdmin(user);
                 boolean isAdmin = (user.getAdmin().equals("t") || user.getAdmin().equals("true"));
 
@@ -149,7 +149,7 @@ public class StudyDAO {
     }
 
     public Integer count(){
-        ExperimentDao experimentDAO = new ExperimentDao();
+        ExperimentMongoDAO experimentDAO = new ExperimentMongoDAO();
         experimentDAO.uri = studyDbId;
         return experimentDAO.count();
     }    
@@ -188,7 +188,7 @@ public class StudyDAO {
     * @return study 
     */
     private StudyDetails getStudyContacts(StudyDetails study) throws SQLException {
-        ExperimentDao experimentDAO = new ExperimentDao();      
+        ExperimentMongoDAO experimentDAO = new ExperimentMongoDAO();      
 
         try (final Connection connection = experimentDAO.getDataSource().getConnection();
                 final Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
@@ -220,7 +220,7 @@ public class StudyDAO {
     * @return study 
     */
     private StudyDetails getStudyActive(StudyDetails study) throws SQLException {
-        ExperimentDao experimentDAO = new ExperimentDao();
+        ExperimentMongoDAO experimentDAO = new ExperimentMongoDAO();
         
             try (final Connection connection = experimentDAO.getDataSource().getConnection();
             final Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);

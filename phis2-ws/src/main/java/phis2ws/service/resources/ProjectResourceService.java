@@ -37,7 +37,7 @@ import javax.ws.rs.core.Response;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.phis.ProjectDao;
+import phis2ws.service.dao.phis.ProjectDAO;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.projects.ProjectDTO;
@@ -109,7 +109,7 @@ public class ProjectResourceService extends ResourceService {
     @ApiParam(value = "Search by parent project", example = DocumentationAnnotation.EXAMPLE_PROJECT_PARENT_PROJECT) @QueryParam("parentProject") String parentProject,
     @ApiParam(value = "Search by website", example = DocumentationAnnotation.EXAMPLE_PROJECT_WEBSITE) @QueryParam("website") @URL String website)  {
         
-        ProjectDao projectDao = new ProjectDao();
+        ProjectDAO projectDao = new ProjectDAO();
         if (uri != null) {
             projectDao.uri = uri;
         }
@@ -184,7 +184,7 @@ public class ProjectResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
         }
         
-        ProjectDao projectDao = new ProjectDao(projectURI);
+        ProjectDAO projectDao = new ProjectDAO(projectURI);
         projectDao.setPageSize(limit);
         projectDao.setPage(page);
         
@@ -215,7 +215,7 @@ public class ProjectResourceService extends ResourceService {
         
         //Si dans les données envoyées, il y a au moins un projet
         if (projects != null && !projects.isEmpty()) {
-            ProjectDao projectDao = new ProjectDao();
+            ProjectDAO projectDao = new ProjectDAO();
             if (projectDao.remoteUserAdress != null) {
                 projectDao.remoteUserAdress = context.getRemoteAddr();
             }
@@ -269,7 +269,7 @@ public class ProjectResourceService extends ResourceService {
         AbstractResultForm postResponse = null;
         
         if (projects != null && !projects.isEmpty()) {
-            ProjectDao projectDao = new ProjectDao();
+            ProjectDAO projectDao = new ProjectDAO();
             if (projectDao.remoteUserAdress != null) {
                 projectDao.remoteUserAdress = context.getRemoteAddr();
             }
@@ -299,7 +299,7 @@ public class ProjectResourceService extends ResourceService {
      * @return la réponse pour l'utilisateur
      *          contient la liste des projets correspondant à la recherche
      */
-    private Response getProjectsData(ProjectDao projectDao) {
+    private Response getProjectsData(ProjectDAO projectDao) {
         ArrayList<Project> projects = new ArrayList<>();
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Project> getResponse;

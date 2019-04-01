@@ -38,8 +38,8 @@ import javax.ws.rs.core.Response;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.sesame.SensorDAOSesame;
-import phis2ws.service.dao.sesame.SensorProfileDAOSesame;
+import phis2ws.service.dao.sesame.SensorDAO;
+import phis2ws.service.dao.sesame.SensorProfileDAO;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.SensorDTO;
@@ -67,7 +67,7 @@ public class SensorResourceService extends ResourceService {
      * @param sensorDAOSesame
      * @return the sensors corresponding to the search
      */
-    private Response getSensorsData(SensorDAOSesame sensorDAOSesame) {
+    private Response getSensorsData(SensorDAO sensorDAOSesame) {
         ArrayList<Sensor> sensors;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Sensor> getResponse;
@@ -99,7 +99,7 @@ public class SensorResourceService extends ResourceService {
      * @param sensorDAOSesame
      * @return the sensor profile of the given sensor uri
      */
-    private Response getSensorProfileData(SensorProfileDAOSesame sensorDAOSesame) {
+    private Response getSensorProfileData(SensorProfileDAO sensorDAOSesame) {
         ArrayList<SensorProfileDTO> sensorsProfiles;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<SensorProfileDTO> getResponse;
@@ -197,7 +197,7 @@ public class SensorResourceService extends ResourceService {
             @ApiParam(value = "Search by date of last calibration", example = DocumentationAnnotation.EXAMPLE_SENSOR_DATE_OF_LAST_CALIBRATION) @QueryParam("dateOfLastCalibration") @Date(DateFormat.YMD) String dateOfLastCalibration,
             @ApiParam(value = "Search by person in charge", example = DocumentationAnnotation.EXAMPLE_USER_EMAIL) @QueryParam("personInCharge") @Email String personInCharge) {
         
-        SensorDAOSesame sensorDAO = new SensorDAOSesame();
+        SensorDAO sensorDAO = new SensorDAO();
         if (uri != null) {
             sensorDAO.uri = uri;
         }
@@ -290,7 +290,7 @@ public class SensorResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
         }
 
-        SensorDAOSesame sensorDAO = new SensorDAOSesame();
+        SensorDAO sensorDAO = new SensorDAO();
         sensorDAO.uri = uri;
         sensorDAO.setPage(page);
         sensorDAO.setPageSize(pageSize);
@@ -366,7 +366,7 @@ public class SensorResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
         }
         
-        SensorProfileDAOSesame sensorDAO = new SensorProfileDAOSesame();
+        SensorProfileDAO sensorDAO = new SensorProfileDAO();
         sensorDAO.uri = uri;
         sensorDAO.setPage(page);
         sensorDAO.setPageSize(pageSize);
@@ -415,7 +415,7 @@ public class SensorResourceService extends ResourceService {
         AbstractResultForm postResponse = null;
         
         if (sensors != null && !sensors.isEmpty()) {
-            SensorDAOSesame sensorDAOSesame = new SensorDAOSesame();
+            SensorDAO sensorDAOSesame = new SensorDAO();
             
             if (context.getRemoteAddr() != null) {
                 sensorDAOSesame.remoteUserAdress = context.getRemoteAddr();
@@ -480,7 +480,7 @@ public class SensorResourceService extends ResourceService {
         AbstractResultForm postResponse = null;
         
         if (sensors != null && !sensors.isEmpty()) {
-            SensorDAOSesame sensorDAOSesame = new SensorDAOSesame();
+            SensorDAO sensorDAOSesame = new SensorDAO();
             if (context.getRemoteAddr() != null) {
                 sensorDAOSesame.remoteUserAdress = context.getRemoteAddr();
             }
@@ -530,7 +530,7 @@ public class SensorResourceService extends ResourceService {
         AbstractResultForm postResponse = null;
         
         if (profiles != null && !profiles.isEmpty()) {
-            SensorProfileDAOSesame sensorProfileDAO = new SensorProfileDAOSesame();
+            SensorProfileDAO sensorProfileDAO = new SensorProfileDAO();
             
              if (context.getRemoteAddr() != null) {
                 sensorProfileDAO.remoteUserAdress = context.getRemoteAddr();
@@ -604,7 +604,7 @@ public class SensorResourceService extends ResourceService {
             @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         
-        SensorDAOSesame sensorDAO = new SensorDAOSesame();
+        SensorDAO sensorDAO = new SensorDAO();
         if (context.getRemoteAddr() != null) {
             sensorDAO.remoteUserAdress = context.getRemoteAddr();
         }

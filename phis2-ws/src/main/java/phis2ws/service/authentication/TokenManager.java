@@ -1,6 +1,6 @@
 package phis2ws.service.authentication;
 
-import phis2ws.service.dao.phis.UserDaoPhisBrapi;
+import phis2ws.service.dao.phis.UserDAO;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import javax.ws.rs.WebApplicationException;
@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.dao.phis.SessionDaoPhisBrapi;
+import phis2ws.service.dao.phis.SessionDAO;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.ResponseFormGET;
 
@@ -178,7 +178,7 @@ public class TokenManager {
         this.listSession.add(session);
 //        logger.debug(this.listSession.toString());
         //BD
-       SessionDaoPhisBrapi sessionDao = new SessionDaoPhisBrapi(); 
+       SessionDAO sessionDao = new SessionDAO(); 
         try {
             session.setDateStart(new DateTime().toString("yyyy-MM-dd HH:mm:ss"));
             sessionDao.insertOrUpdateOrDeleteQueryFromDAO("INSERT INTO session (email, id, date) VALUES ('" + session.getName() + "', '" + session.getId() + "', now())");
@@ -206,7 +206,7 @@ public class TokenManager {
         if (listSession == null || listSession.isEmpty()) {
             return;
         }
-        SessionDaoPhisBrapi sessionDao = new SessionDaoPhisBrapi(); 
+        SessionDAO sessionDao = new SessionDAO(); 
         int i = 0;
         boolean find = false;
         while (i < listSession.size() && !find) {

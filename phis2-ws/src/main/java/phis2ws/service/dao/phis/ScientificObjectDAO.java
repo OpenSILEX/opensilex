@@ -20,7 +20,7 @@ import java.util.logging.Level;
 import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.dao.manager.DAOPhisBrapi;
+import phis2ws.service.dao.manager.PhisDAO;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.ScientificObjectDTO;
 import phis2ws.service.utils.POSTResultsReturn;
@@ -32,7 +32,7 @@ import phis2ws.service.view.model.phis.ScientificObject;
  * DAO for scientific objects
  * @author andreas
  */
-public class ScientificObjectDAO extends DAOPhisBrapi<ScientificObject, ScientificObjectDTO> {
+public class ScientificObjectDAO extends PhisDAO<ScientificObject, ScientificObjectDTO> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(ScientificObjectDAO.class);
     

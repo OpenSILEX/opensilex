@@ -30,7 +30,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.sesame.AnnotationDAOSesame;
+import phis2ws.service.dao.sesame.AnnotationDAO;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.utils.POSTResultsReturn;
@@ -95,7 +95,7 @@ public class AnnotationResourceService extends ResourceService {
         AbstractResultForm postResponse = null;
         //If there are at least one list of annotations
         if (annotationsDtos != null && !annotationsDtos.isEmpty()) {
-            AnnotationDAOSesame annotationDAOSesame = new AnnotationDAOSesame(userSession.getUser());
+            AnnotationDAO annotationDAOSesame = new AnnotationDAO(userSession.getUser());
             if (context.getRemoteAddr() != null) {
                 annotationDAOSesame.remoteUserAdress = context.getRemoteAddr();
             }
@@ -242,7 +242,7 @@ public class AnnotationResourceService extends ResourceService {
     private Response getAnnotations(String uri, String creator, String target, String bodyValue, String motivatedBy, int page, int pageSize) {
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<AnnotationDTO> getResponse;
-        AnnotationDAOSesame annotationDAOSesame = new AnnotationDAOSesame(userSession.getUser());
+        AnnotationDAO annotationDAOSesame = new AnnotationDAO(userSession.getUser());
 
         // Count all annotations for this specific request
         Integer totalCount = annotationDAOSesame.count(uri, creator, target, bodyValue, motivatedBy);

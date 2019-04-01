@@ -36,7 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.sesame.ScientificObjectDAOSesame;
+import phis2ws.service.dao.sesame.ScientificObjectSparqlDAO;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.ScientificObjectDTO;
@@ -101,7 +101,7 @@ public class ScientificObjectResourceService extends ResourceService {
         //if there is at least one scientific object
         if (!scientificObjectsDTO.isEmpty()) {
             try {
-                ScientificObjectDAOSesame scientificObjectDaoSesame = new ScientificObjectDAOSesame();
+                ScientificObjectSparqlDAO scientificObjectDaoSesame = new ScientificObjectSparqlDAO();
                 if (context.getRemoteAddr() != null) {
                     scientificObjectDaoSesame.remoteUserAdress = context.getRemoteAddr();
                 }
@@ -136,7 +136,7 @@ public class ScientificObjectResourceService extends ResourceService {
      * @param scientificObjectDaoSesame
      * @return the response for the user. Contains the list of scientific objects
      */
-    private Response getScientificObjectsData(ScientificObjectDAOSesame scientificObjectDaoSesame) {
+    private Response getScientificObjectsData(ScientificObjectSparqlDAO scientificObjectDaoSesame) {
         ArrayList<ScientificObject> scientificObjects;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<ScientificObject> getResponse;
@@ -184,7 +184,7 @@ public class ScientificObjectResourceService extends ResourceService {
         @ApiParam(value = "Search by alias", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_ALIAS) @QueryParam("alias") String alias,
         @ApiParam(value = "Search by rdfType", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_TYPE) @QueryParam("rdfType") @URL String rdfType
     ) {
-        ScientificObjectDAOSesame scientificObjectDaoSesame = new ScientificObjectDAOSesame();
+        ScientificObjectSparqlDAO scientificObjectDaoSesame = new ScientificObjectSparqlDAO();
         
         if (uri != null) {
             scientificObjectDaoSesame.uri = uri;

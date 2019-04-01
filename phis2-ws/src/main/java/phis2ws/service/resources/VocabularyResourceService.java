@@ -29,7 +29,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.sesame.VocabularyDAOSesame;
+import phis2ws.service.dao.sesame.VocabularyDAO;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.dto.PropertyVocabularyDTO;
 import phis2ws.service.resources.validation.interfaces.Required;
@@ -55,7 +55,7 @@ public class VocabularyResourceService extends ResourceService {
      * @param vocabularyDAO
      * @return the list of the rdfs properties, with their labels
      */
-    private Response getRdfsData(VocabularyDAOSesame vocabularyDAO) {
+    private Response getRdfsData(VocabularyDAO vocabularyDAO) {
         ArrayList<PropertyVocabularyDTO> properties;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<PropertyVocabularyDTO> getResponse;
@@ -141,7 +141,7 @@ public class VocabularyResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
 
-        VocabularyDAOSesame vocabularyDAO = new VocabularyDAOSesame();
+        VocabularyDAO vocabularyDAO = new VocabularyDAO();
 
         vocabularyDAO.user = userSession.getUser();
         vocabularyDAO.setPage(page);
@@ -156,7 +156,7 @@ public class VocabularyResourceService extends ResourceService {
      * @param vocabularyDAO
      * @return the list of the contact properties, with their labels
      */
-    private Response getContactProperties(VocabularyDAOSesame vocabularyDAO) {
+    private Response getContactProperties(VocabularyDAO vocabularyDAO) {
         ArrayList<PropertyVocabularyDTO> properties;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<PropertyVocabularyDTO> getResponse;
@@ -231,7 +231,7 @@ public class VocabularyResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
 
-        VocabularyDAOSesame vocabularyDAO = new VocabularyDAOSesame();
+        VocabularyDAO vocabularyDAO = new VocabularyDAO();
 
         if (rdfType != null) {
             vocabularyDAO.domainRdfType = rdfType;
@@ -250,7 +250,7 @@ public class VocabularyResourceService extends ResourceService {
      * @param vocabularyDAO
      * @return the list of the device properties, with their labels
      */
-    private Response getDeviceProperties(VocabularyDAOSesame vocabularyDAO) {
+    private Response getDeviceProperties(VocabularyDAO vocabularyDAO) {
         ArrayList<PropertyVocabularyDTO> properties;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<PropertyVocabularyDTO> getResponse;
@@ -335,7 +335,7 @@ public class VocabularyResourceService extends ResourceService {
             @ApiParam(value = "Search by rdfType", example = DocumentationAnnotation.EXAMPLE_SENSOR_RDF_TYPE) @QueryParam("rdfType") @URL @Required String rdfType,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
-        VocabularyDAOSesame vocabularyDAO = new VocabularyDAOSesame();
+        VocabularyDAO vocabularyDAO = new VocabularyDAO();
 
         if (rdfType != null) {
             vocabularyDAO.domainRdfType = rdfType;
@@ -408,7 +408,7 @@ public class VocabularyResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
 
-        VocabularyDAOSesame vocabularyDAO = new VocabularyDAOSesame();
+        VocabularyDAO vocabularyDAO = new VocabularyDAO();
 
         vocabularyDAO.user = userSession.getUser();
         vocabularyDAO.setPage(page);
@@ -424,7 +424,7 @@ public class VocabularyResourceService extends ResourceService {
      * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
      * @return the list of namespaces
      */
-    private Response getNamespaces(VocabularyDAOSesame vocabularyDAO) {
+    private Response getNamespaces(VocabularyDAO vocabularyDAO) {
         ArrayList<Namespace> namespaces;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Namespace> getResponse;

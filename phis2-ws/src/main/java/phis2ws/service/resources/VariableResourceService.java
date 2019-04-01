@@ -36,7 +36,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.sesame.VariableDaoSesame;
+import phis2ws.service.dao.sesame.VariableDAO;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.VariableDTO;
@@ -82,7 +82,7 @@ public class VariableResourceService extends ResourceService {
         
         //Si dans les données il y a au moins une variable
         if (variables != null && !variables.isEmpty()) {
-            VariableDaoSesame variableDao = new VariableDaoSesame();
+            VariableDAO variableDao = new VariableDAO();
             if (context.getRemoteAddr() != null) {
                 variableDao.remoteUserAdress = context.getRemoteAddr();
             }
@@ -129,7 +129,7 @@ public class VariableResourceService extends ResourceService {
         @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         if (variables != null && !variables.isEmpty()) {
-            VariableDaoSesame variableDaoSesame = new VariableDaoSesame();
+            VariableDAO variableDaoSesame = new VariableDAO();
             if (context.getRemoteAddr() != null) {
                 variableDaoSesame.remoteUserAdress = context.getRemoteAddr();
             }
@@ -162,7 +162,7 @@ public class VariableResourceService extends ResourceService {
      * on ne peut chercher que par uri et label. Il faudra ajouter d'autres critères
      * \SILEX:TODO
      */
-    private Response getVariablesData(VariableDaoSesame variableDaoSesame) {
+    private Response getVariablesData(VariableDAO variableDaoSesame) {
         ArrayList<Variable> variables;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Variable> getResponse;
@@ -223,7 +223,7 @@ public class VariableResourceService extends ResourceService {
         @ApiParam(value = "Search by method", example = DocumentationAnnotation.EXAMPLE_METHOD_URI) @QueryParam("method") @URL String method,
         @ApiParam(value = "Search by unit", example = DocumentationAnnotation.EXAMPLE_UNIT_URI) @QueryParam("unit") @URL String unit
     ) {
-        VariableDaoSesame variableDaoSesame = new VariableDaoSesame();
+        VariableDAO variableDaoSesame = new VariableDAO();
         
         if (uri != null) {
             variableDaoSesame.uri = uri;
@@ -282,7 +282,7 @@ public class VariableResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
         }
         
-        VariableDaoSesame variableDaoSesame = new VariableDaoSesame();
+        VariableDAO variableDaoSesame = new VariableDAO();
         variableDaoSesame.uri = variable;
         variableDaoSesame.setPageSize(limit);
         variableDaoSesame.setPage(page);

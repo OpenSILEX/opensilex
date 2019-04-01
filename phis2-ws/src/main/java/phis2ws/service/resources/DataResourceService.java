@@ -41,8 +41,8 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.mongo.DataDAOMongo;
-import phis2ws.service.dao.mongo.DataFileDAOMongo;
+import phis2ws.service.dao.mongo.DataDAO;
+import phis2ws.service.dao.mongo.DataFileDAO;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.data.DataDTO;
@@ -108,7 +108,7 @@ public class DataResourceService extends ResourceService {
         
         try {
             if (data != null && !data.isEmpty()) {
-                DataDAOMongo dataDAO = new DataDAOMongo();
+                DataDAO dataDAO = new DataDAO();
 
                 dataDAO.user = userSession.getUser();
 
@@ -222,7 +222,7 @@ public class DataResourceService extends ResourceService {
         @ApiParam(value = "Date search result order ('true' for ascending and 'false' for descending)", example = "true") @QueryParam("dateSortAsc") boolean dateSortAsc
     ) {
         // 1. Initialize dataDAO with parameters
-        DataDAOMongo dataDAO = new DataDAOMongo();
+        DataDAO dataDAO = new DataDAO();
         
         dataDAO.variableUri = variable;
 
@@ -299,7 +299,7 @@ public class DataResourceService extends ResourceService {
         @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) {
         
-        DataFileDAOMongo dataFileDaoMongo = new DataFileDAOMongo();
+        DataFileDAO dataFileDaoMongo = new DataFileDAO();
         AbstractResultForm postResponse = null;
         try {
             FileDescription description = descriptionDto.createObjectFromDTO();
@@ -348,7 +348,7 @@ public class DataResourceService extends ResourceService {
             @Context HttpServletResponse response
     ) {
         
-        DataFileDAOMongo dataFileDaoMongo = new DataFileDAOMongo();
+        DataFileDAO dataFileDaoMongo = new DataFileDAO();
         
         FileDescription description = dataFileDaoMongo.findFileDescriptionByUri(fileUri);
         
@@ -410,7 +410,7 @@ public class DataResourceService extends ResourceService {
             @Context HttpServletResponse response
     ) {
         
-        DataFileDAOMongo dataFileDaoMongo = new DataFileDAOMongo();
+        DataFileDAO dataFileDaoMongo = new DataFileDAO();
         
         FileDescription description = dataFileDaoMongo.findFileDescriptionByUri(fileUri);
         
@@ -478,7 +478,7 @@ public class DataResourceService extends ResourceService {
         @ApiParam(value = "Date search result order ('true' for ascending and 'false' for descending)", example = "true") @QueryParam("dateSortAsc") boolean dateSortAsc
     ) {
         
-        DataFileDAOMongo dataFileDaoMongo = new DataFileDAOMongo();
+        DataFileDAO dataFileDaoMongo = new DataFileDAO();
         
         // 1. Set all varaibles corresponding to the search
         dataFileDaoMongo.user = userSession.getUser();

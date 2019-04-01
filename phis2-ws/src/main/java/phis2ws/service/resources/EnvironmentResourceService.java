@@ -32,7 +32,7 @@ import javax.ws.rs.core.Response;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.mongo.EnvironmentDAOMongo;
+import phis2ws.service.dao.mongo.EnvironmentMeasureDAO;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.environment.EnvironmentMeasureDTO;
@@ -111,7 +111,7 @@ public class EnvironmentResourceService extends ResourceService {
         AbstractResultForm postResponse = null;
         
         if (environmentMeasures != null && !environmentMeasures.isEmpty()) {
-            EnvironmentDAOMongo environmentDAO = new EnvironmentDAOMongo();
+            EnvironmentMeasureDAO environmentDAO = new EnvironmentMeasureDAO();
             
             environmentDAO.user = userSession.getUser();
             
@@ -201,7 +201,7 @@ public class EnvironmentResourceService extends ResourceService {
         @ApiParam(value = "Date search result order ('true' for ascending and 'false' for descending)", example = "true") @QueryParam("dateSortAsc") boolean dateSortAsc
     ) {
         // 1. Initialize environmentDAO with parameters
-        EnvironmentDAOMongo environmentDAO = new EnvironmentDAOMongo();
+        EnvironmentMeasureDAO environmentDAO = new EnvironmentMeasureDAO();
         
         environmentDAO.variableUri = variable;
 

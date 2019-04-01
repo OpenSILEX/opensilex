@@ -32,7 +32,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.mongo.ProvenanceDAOMongo;
+import phis2ws.service.dao.mongo.ProvenanceDAO;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.provenance.ProvenanceDTO;
@@ -122,7 +122,7 @@ public class ProvenanceResourceService extends ResourceService {
         AbstractResultForm postResponse = null;
         
         if (provenances != null && !provenances.isEmpty()) {
-            ProvenanceDAOMongo provenanceDAO = new ProvenanceDAOMongo();
+            ProvenanceDAO provenanceDAO = new ProvenanceDAO();
             
             provenanceDAO.user = userSession.getUser();
             
@@ -181,7 +181,7 @@ public class ProvenanceResourceService extends ResourceService {
         @Context HttpServletRequest context) {
         AbstractResultForm putResponse = null;
 
-        ProvenanceDAOMongo provenanceDAO = new ProvenanceDAOMongo();
+        ProvenanceDAO provenanceDAO = new ProvenanceDAO();
 
         provenanceDAO.user = userSession.getUser();
 
@@ -254,7 +254,7 @@ public class ProvenanceResourceService extends ResourceService {
         @ApiParam(value = "Search by comment", example = DocumentationAnnotation.EXAMPLE_PROVENANCE_COMMENT) @QueryParam("comment") String comment,
         @ApiParam(value = "Search by json filter", example = DocumentationAnnotation.EXAMPLE_PROVENANCE_METADATA) @QueryParam("jsonValueFilter") String jsonValueFilter) {
 
-        ProvenanceDAOMongo provenanceDAO = new ProvenanceDAOMongo();
+        ProvenanceDAO provenanceDAO = new ProvenanceDAO();
         
         Provenance searchProvenance = new Provenance();
         searchProvenance.setUri(uri);

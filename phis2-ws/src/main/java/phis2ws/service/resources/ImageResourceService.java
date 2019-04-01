@@ -55,7 +55,7 @@ import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.mongo.ImageMetadataDaoMongo;
+import phis2ws.service.dao.mongo.ImageMetadataDAO;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.ontologies.Oeso;
@@ -136,7 +136,7 @@ public class ImageResourceService extends ResourceService {
             @ApiParam(value = "JSON Image metadata", required = true) @Valid List<ImageMetadataDTO> imagesMetadata) {
         AbstractResultForm postResponse;
         if (imagesMetadata != null && !imagesMetadata.isEmpty()) {
-            ImageMetadataDaoMongo imageDaoMongo = new ImageMetadataDaoMongo();
+            ImageMetadataDAO imageDaoMongo = new ImageMetadataDAO();
             imageDaoMongo.user = userSession.getUser();
             
             final POSTResultsReturn checkImageMetadata = imageDaoMongo.check(imagesMetadata); 
@@ -320,7 +320,7 @@ public class ImageResourceService extends ResourceService {
         
         WAITING_METADATA_INFORMATION.get(imageUri).getFileInformations().setServerFilePath(webAccessImagesDirectory + "/" + serverFileName);
         
-        ImageMetadataDaoMongo imageMetadataDaoMongo = new ImageMetadataDaoMongo();
+        ImageMetadataDAO imageMetadataDaoMongo = new ImageMetadataDAO();
         imageMetadataDaoMongo.user = userSession.getUser();
         
         final POSTResultsReturn insertMetadata = imageMetadataDaoMongo.insert(Arrays.asList(WAITING_METADATA_INFORMATION.get(imageUri)));
@@ -346,7 +346,7 @@ public class ImageResourceService extends ResourceService {
      * @param imageMetadataDaoMongo
      * @return the images corresponding to the search
      */
-    private Response getImagesData(ImageMetadataDaoMongo imageMetadataDaoMongo) {
+    private Response getImagesData(ImageMetadataDAO imageMetadataDaoMongo) {
         ArrayList<ImageMetadata> imagesMetadata;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<ImageMetadata> getResponse;
@@ -431,7 +431,7 @@ public class ImageResourceService extends ResourceService {
         @ApiParam(value = "Search by interval - end date", example = DocumentationAnnotation.EXAMPLE_IMAGE_DATE) @QueryParam("endDate") @phis2ws.service.resources.validation.interfaces.Date(DateFormat.YMDHMSZ) String endDate,
         @ApiParam(value = "Search by sensor", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("sensor") @URL String sensor) {
         
-        ImageMetadataDaoMongo imageMetadataDaoMongo = new ImageMetadataDaoMongo();
+        ImageMetadataDAO imageMetadataDaoMongo = new ImageMetadataDAO();
         
         if (uri != null) {
             imageMetadataDaoMongo.uri = uri;

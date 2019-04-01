@@ -32,7 +32,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.phis.LayerDao;
+import phis2ws.service.dao.phis.LayerDAO;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.LayerDTO;
@@ -76,7 +76,7 @@ public class LayerResourceService extends ResourceService {
         //SILEX:TODO
         //générer une couche par élément de la liste et retourner les url de tous les fichiers générés
         if (layers !=  null && !layers.isEmpty()) { 
-            LayerDao layerDao = new LayerDao();
+            LayerDAO layerDao = new LayerDAO();
             List<String> urlFilesList = new ArrayList<>();
             if (ResourcesUtils.getStringBooleanValue(layers.get(0).getGenerateFile())) { //On génère le fichier
 

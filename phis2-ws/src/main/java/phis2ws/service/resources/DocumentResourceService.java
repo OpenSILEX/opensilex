@@ -59,9 +59,8 @@ import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.manager.DAOFactory;
-import phis2ws.service.dao.mongo.DocumentDaoMongo;
-import phis2ws.service.dao.sesame.DocumentDaoSesame;
+import phis2ws.service.dao.mongo.DocumentMongoDAO;
+import phis2ws.service.dao.sesame.DocumentSparqlDAO;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.ontologies.Contexts;
@@ -130,7 +129,7 @@ public class DocumentResourceService extends ResourceService {
         AbstractResultForm postResponse;
         if (documentsAnnotations != null && !documentsAnnotations.isEmpty()) {
             //Insertion du document
-            DocumentDaoSesame documentDao = new DocumentDaoSesame();
+            DocumentSparqlDAO documentDao = new DocumentSparqlDAO();
             documentDao.user = userSession.getUser();
             //Vérification des documentsAnnotations
             final POSTResultsReturn checkAnnots = documentDao.check(documentsAnnotations);
@@ -286,7 +285,7 @@ public class DocumentResourceService extends ResourceService {
         }
         
         WAITING_ANNOT_INFORMATION.get(docUri).setServerFilePath(serverFilePath);
-        DocumentDaoSesame documentsDao = DAOFactory.getSESAMEDAOFactory().getDocumentsDaoSesame();
+        DocumentSparqlDAO documentsDao = new DocumentSparqlDAO();
         if (request.getRemoteAddr() != null) {
             documentsDao.remoteUserAdress = request.getRemoteAddr();
         }
@@ -338,7 +337,7 @@ public class DocumentResourceService extends ResourceService {
     public Response getDocumentsType(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
-        DocumentDaoSesame documentsDao = new DocumentDaoSesame();
+        DocumentSparqlDAO documentsDao = new DocumentSparqlDAO();
         Status errorStatus = null;
         try {
             ArrayList<String> documentCategories = documentsDao.getDocumentsTypes();
@@ -402,7 +401,7 @@ public class DocumentResourceService extends ResourceService {
         //Par la suite il faudra la faire sur une liste d'éléments
         //\SILEX:conception
         
-        DocumentDaoSesame documentDao = new DocumentDaoSesame();
+        DocumentSparqlDAO documentDao = new DocumentSparqlDAO();
         
         if (uri != null) {
             documentDao.uri = uri;
@@ -501,7 +500,7 @@ public class DocumentResourceService extends ResourceService {
         AbstractResultForm postResponse = null;
         
         if (documentsMetadata != null && !documentsMetadata.isEmpty()) {
-            DocumentDaoSesame documentDaoSesame = new DocumentDaoSesame();
+            DocumentSparqlDAO documentDaoSesame = new DocumentSparqlDAO();
             if (documentDaoSesame.remoteUserAdress != null) {
                 documentDaoSesame.remoteUserAdress = context.getRemoteAddr();
             }
@@ -531,7 +530,7 @@ public class DocumentResourceService extends ResourceService {
      * @return la réponse dédiée à l'utilisateur. 
      *         Contient la liste des métadonnées de documents correspondant au résultat de la recherche
      */
-    private Response getDocumentsMetadata(DocumentDaoSesame documentDao) {
+    private Response getDocumentsMetadata(DocumentSparqlDAO documentDao) {
         ArrayList<Document> documentsMetadata;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Document> getResponse;
@@ -565,7 +564,7 @@ public class DocumentResourceService extends ResourceService {
      * @return La réponse, contenant le document à télécharger s'il existe
      */
     private Response getFile(String documentURI) {
-        DocumentDaoMongo documentDaoMongo = new DocumentDaoMongo();
+        DocumentMongoDAO documentDaoMongo = new DocumentMongoDAO();
         File file = documentDaoMongo.getDocument(documentURI);
         
         if (file == null) {

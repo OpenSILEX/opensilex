@@ -34,7 +34,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.phis.UserDaoPhisBrapi;
+import phis2ws.service.dao.phis.UserDAO;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.model.User;
@@ -110,7 +110,7 @@ public class UserResourceService extends ResourceService {
     @ApiParam(value = "Search by admin", example = DocumentationAnnotation.EXAMPLE_USER_ADMIN) @QueryParam("admin") String admin,
     @ApiParam(value = "Search by available", example = DocumentationAnnotation.EXAMPLE_USER_AVAILABLE) @QueryParam("available") String available,
     @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_USER_URI) @QueryParam("uri") @URL String uri) {
-        UserDaoPhisBrapi userDao = new UserDaoPhisBrapi();
+        UserDAO userDao = new UserDAO();
         if (email != null) {
             userDao.email = email;
         }
@@ -182,7 +182,7 @@ public class UserResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
         }
         
-        UserDaoPhisBrapi userDao = new UserDaoPhisBrapi(userEmail);
+        UserDAO userDao = new UserDAO(userEmail);
         userDao.setPageSize(limit);
         userDao.setPage(page);
         
@@ -215,7 +215,7 @@ public class UserResourceService extends ResourceService {
         
         //Si dans les données envoyées il y a au moins un user
         if (users != null && !users.isEmpty()) {
-            UserDaoPhisBrapi userDao = new UserDaoPhisBrapi();
+            UserDAO userDao = new UserDAO();
             if (userDao.remoteUserAdress != null) {
                 userDao.remoteUserAdress = context.getRemoteAddr();
             }
@@ -262,7 +262,7 @@ public class UserResourceService extends ResourceService {
         AbstractResultForm postResponse = null;
         
         if (users != null && !users.isEmpty()) {
-            UserDaoPhisBrapi userDao = new UserDaoPhisBrapi();
+            UserDAO userDao = new UserDAO();
             if (userDao.remoteUserAdress != null) {
                 userDao.remoteUserAdress = context.getRemoteAddr();
             }
@@ -292,7 +292,7 @@ public class UserResourceService extends ResourceService {
      * @return  la réponse pour l'utilisateur.
      *          Contient la liste des users correspondant à la recherce
      */
-    private Response getUsersData(UserDaoPhisBrapi userDao) {
+    private Response getUsersData(UserDAO userDao) {
         ArrayList<User> users = new ArrayList<>();
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<User> getResponse;

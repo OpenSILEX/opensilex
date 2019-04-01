@@ -26,8 +26,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.sesame.InfrastructureDAOSesame;
-import phis2ws.service.dao.sesame.PropertyDAOSesame;
+import phis2ws.service.dao.sesame.InfrastructureDAO;
+import phis2ws.service.dao.sesame.PropertyDAO;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.resources.dto.infrastructures.InfrastructureDTO;
@@ -105,7 +105,7 @@ public class InfrastructureResourceService extends ResourceService {
         @ApiParam(value = "Language", example = DocumentationAnnotation.EXAMPLE_LANGUAGE) @QueryParam("language") String language
     ) {
         // 1. Initialize infrastructureDAO with parameters
-        InfrastructureDAOSesame infrastructureDAO = new InfrastructureDAOSesame();
+        InfrastructureDAO infrastructureDAO = new InfrastructureDAO();
         
         if (uri != null) {
             infrastructureDAO.uri = uri;
@@ -226,7 +226,7 @@ public class InfrastructureResourceService extends ResourceService {
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {            
         // 1. Initialize propertyDAO with parameters
-        PropertyDAOSesame propertyDAO = new PropertyDAOSesame();
+        PropertyDAO propertyDAO = new PropertyDAO();
         
         propertyDAO.setSubClassOf(Oeso.CONCEPT_INFRASTRUCTURE);
         

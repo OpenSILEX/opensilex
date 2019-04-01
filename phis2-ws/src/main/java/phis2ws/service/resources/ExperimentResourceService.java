@@ -37,7 +37,7 @@ import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.phis.ExperimentDao;
+import phis2ws.service.dao.phis.ExperimentMongoDAO;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.experiments.ExperimentDTO;
@@ -113,7 +113,7 @@ public class ExperimentResourceService extends ResourceService {
             @ApiParam(value = "Search by alias", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_ALIAS) @QueryParam("alias") String alias,
             @ApiParam(value = "Search by keywords", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_KEYWORDS) @QueryParam("keywords") String keywords) {
 
-        ExperimentDao experimentDao = new ExperimentDao();
+        ExperimentMongoDAO experimentDao = new ExperimentMongoDAO();
 
         if (uri != null) {
             experimentDao.uri = uri;
@@ -183,7 +183,7 @@ public class ExperimentResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
         }
 
-        ExperimentDao experimentDao = new ExperimentDao(experimentURI);
+        ExperimentMongoDAO experimentDao = new ExperimentMongoDAO(experimentURI);
         experimentDao.setPageSize(limit);
         experimentDao.setPage(page);
         experimentDao.user = userSession.getUser();
@@ -223,7 +223,7 @@ public class ExperimentResourceService extends ResourceService {
         if (experiments != null
                 && !experiments.isEmpty()) {
             try {
-                ExperimentDao experimentDao = new ExperimentDao();
+                ExperimentMongoDAO experimentDao = new ExperimentMongoDAO();
                 if (experimentDao.remoteUserAdress != null) {
                     experimentDao.remoteUserAdress = context.getRemoteAddr();
                 }
@@ -275,7 +275,7 @@ public class ExperimentResourceService extends ResourceService {
         AbstractResultForm postResponse = null;
 
         if (experiments != null && !experiments.isEmpty()) {
-            ExperimentDao experimentDao = new ExperimentDao();
+            ExperimentMongoDAO experimentDao = new ExperimentMongoDAO();
             if (experimentDao.remoteUserAdress != null) {
                 experimentDao.remoteUserAdress = context.getRemoteAddr();
             }
@@ -353,7 +353,7 @@ public class ExperimentResourceService extends ResourceService {
             @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         
-        ExperimentDao experimentDAO = new ExperimentDao();
+        ExperimentMongoDAO experimentDAO = new ExperimentMongoDAO();
         if (context.getRemoteAddr() != null) {
             experimentDAO.remoteUserAdress = context.getRemoteAddr();
         }
@@ -427,7 +427,7 @@ public class ExperimentResourceService extends ResourceService {
         @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         
-        ExperimentDao experimentDAO = new ExperimentDao();
+        ExperimentMongoDAO experimentDAO = new ExperimentMongoDAO();
         if (context.getRemoteAddr() != null) {
             experimentDAO.remoteUserAdress = context.getRemoteAddr();
         }
@@ -456,7 +456,7 @@ public class ExperimentResourceService extends ResourceService {
      * @return la réponse pour l'utilisateur. Contient la liste des
      * expérimentations correspondant à la recherche
      */
-    private Response getExperimentsData(ExperimentDao experimentDao) {
+    private Response getExperimentsData(ExperimentMongoDAO experimentDao) {
         ArrayList<Experiment> experiments = new ArrayList<>();
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Experiment> getResponse;

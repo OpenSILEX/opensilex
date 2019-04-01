@@ -29,7 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.sesame.VariableDaoSesame;
+import phis2ws.service.dao.sesame.VariableDAO;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.validation.interfaces.Required;
@@ -185,7 +185,7 @@ public class VariableResourceService implements BrapiCall {
         //@ApiParam(value = "traitClass") @QueryParam("traitClass") String traitClass
         //\SILEX:todo    
         ) throws SQLException {        
-        VariableDaoSesame varDAO = new VariableDaoSesame();
+        VariableDAO varDAO = new VariableDAO();
         varDAO.setPageSize(limit);
         varDAO.setPage(page);               
                 
@@ -216,7 +216,7 @@ public class VariableResourceService implements BrapiCall {
     public Response getVariableDetails ( 
         @ApiParam(value = DocumentationAnnotation.VARIABLE_URI_DEFINITION, required = true, example=DocumentationAnnotation.EXAMPLE_VARIABLE_URI) @PathParam("observationVariableDbId") @Required @URL String observationVariableDbId
     ) throws SQLException {        
-        VariableDaoSesame varDAO = new VariableDaoSesame();
+        VariableDAO varDAO = new VariableDAO();
         varDAO.uri = observationVariableDbId;
         return getOneVariableData(varDAO);
     }    
@@ -232,7 +232,7 @@ public class VariableResourceService implements BrapiCall {
      * @param varDAO
      * @return the response with the variables data list 
      */
-    private Response getVariablesData(VariableDaoSesame varDAO) {
+    private Response getVariablesData(VariableDAO varDAO) {
         ArrayList<Status> statusList = new ArrayList<>();
         ArrayList<BrapiVariable> brapiVariables = getBrapiVarData(varDAO);
         BrapiMultiResponseForm getResponse;
@@ -250,7 +250,7 @@ public class VariableResourceService implements BrapiCall {
      * @param varDAO
      * @return the response with one variable data
      */
-    private Response getOneVariableData(VariableDaoSesame varDAO) {
+    private Response getOneVariableData(VariableDAO varDAO) {
         ArrayList<Status> statusList = new ArrayList<>();
         ArrayList<BrapiVariable> brapiVariables = getBrapiVarData(varDAO);
         BrapiSingleResponseForm getResponse;
@@ -270,7 +270,7 @@ public class VariableResourceService implements BrapiCall {
      * @param varDAO
      * @return the list of brapi variables
      */
-    private ArrayList<BrapiVariable> getBrapiVarData(VariableDaoSesame varDAO) {
+    private ArrayList<BrapiVariable> getBrapiVarData(VariableDAO varDAO) {
         ArrayList<Variable> variablesList = varDAO.allPaginate();
         ArrayList<BrapiVariable> varList = new ArrayList();
         for (Variable var:variablesList) {

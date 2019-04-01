@@ -31,8 +31,8 @@ import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.authentication.Session;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.phis.UserDaoPhisBrapi;
-import phis2ws.service.dao.sesame.TripletDAOSesame;
+import phis2ws.service.dao.phis.UserDAO;
+import phis2ws.service.dao.sesame.TripletDAO;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.injection.SessionInject;
@@ -112,7 +112,7 @@ public class TripletsResourceService extends ResourceService {
         //If there are at least one list of triplets
         if (triplets != null && !triplets.isEmpty()) {
             if (canUserAddTriplets()) { //If the user has the rights to insert triplets
-                TripletDAOSesame tripletDAOSesame = new TripletDAOSesame();
+                TripletDAO tripletDAOSesame = new TripletDAO();
                 if (context.getRemoteAddr() != null) {
                     tripletDAOSesame.remoteUserAdress = context.getRemoteAddr();
                 }
@@ -150,7 +150,7 @@ public class TripletsResourceService extends ResourceService {
      *         false if user cannot insert triplets
      */
     private boolean canUserAddTriplets() {
-        UserDaoPhisBrapi userDao = new UserDaoPhisBrapi();
+        UserDAO userDao = new UserDAO();
         return userDao.isAdmin(userSession.getUser());
     }
 }

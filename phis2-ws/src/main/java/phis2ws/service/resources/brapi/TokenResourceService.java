@@ -52,7 +52,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.authentication.Session;
-import phis2ws.service.dao.phis.UserDaoPhisBrapi;
+import phis2ws.service.dao.phis.UserDAO;
 import phis2ws.service.authentication.TokenManager;
 import phis2ws.service.authentication.TokenResponseStructure;
 import phis2ws.service.documentation.StatusCodeMsg;
@@ -348,7 +348,7 @@ public class TokenResourceService implements BrapiCall{
      * @return User|null an instance of user or null
      */
     private User checkAuthentification(User user, boolean verifPassword) {
-        UserDaoPhisBrapi uspb = new UserDaoPhisBrapi();
+        UserDAO uspb = new UserDAO();
         // choose the database with payload information
         if (this.jwtClaimsSet != null) {
             uspb.setDataSourceFromJwtClaimsSet(this.jwtClaimsSet);

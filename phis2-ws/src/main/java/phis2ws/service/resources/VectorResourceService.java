@@ -38,7 +38,7 @@ import javax.ws.rs.core.Response;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.sesame.VectorDAOSesame;
+import phis2ws.service.dao.sesame.VectorDAO;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.VectorDTO;
@@ -65,7 +65,7 @@ public class VectorResourceService extends ResourceService {
      * @param vectorDAOSesame
      * @return the vectors corresponding to the search
      */
-    private Response getVectorsData(VectorDAOSesame vectorDAOSesame) {
+    private Response getVectorsData(VectorDAO vectorDAOSesame) {
         ArrayList<Vector> vectors;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Vector> getResponse;
@@ -160,7 +160,7 @@ public class VectorResourceService extends ResourceService {
             @ApiParam(value = "Search by date of purchase", example = DocumentationAnnotation.EXAMPLE_VECTOR_DATE_OF_PURCHASE) @QueryParam("dateOfPurchase") @Date(DateFormat.YMD) String dateOfPurchase,
             @ApiParam(value = "Search by person in charge", example = DocumentationAnnotation.EXAMPLE_VECTOR_PERSON_IN_CHARGE) @QueryParam("personInCharge") @Email String personInCharge) {
         
-        VectorDAOSesame vectorDAO = new VectorDAOSesame();
+        VectorDAO vectorDAO = new VectorDAO();
         if (uri != null) {
             vectorDAO.uri = uri;
         }
@@ -247,7 +247,7 @@ public class VectorResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
         }
 
-        VectorDAOSesame vectorDAO = new VectorDAOSesame();
+        VectorDAO vectorDAO = new VectorDAO();
         vectorDAO.uri = uri;
         vectorDAO.setPage(page);
         vectorDAO.setPageSize(pageSize);
@@ -295,7 +295,7 @@ public class VectorResourceService extends ResourceService {
         AbstractResultForm postResponse = null;
         
         if (vectors != null && !vectors.isEmpty()) {
-            VectorDAOSesame vectorDAOSesame = new VectorDAOSesame();
+            VectorDAO vectorDAOSesame = new VectorDAO();
             
             if (context.getRemoteAddr() != null) {
                 vectorDAOSesame.remoteUserAdress = context.getRemoteAddr();
@@ -359,7 +359,7 @@ public class VectorResourceService extends ResourceService {
         AbstractResultForm postResponse = null;
         
         if (vectors != null && !vectors.isEmpty()) {
-            VectorDAOSesame vectorDAOSesame = new VectorDAOSesame();
+            VectorDAO vectorDAOSesame = new VectorDAO();
             if (context.getRemoteAddr() != null) {
                 vectorDAOSesame.remoteUserAdress = context.getRemoteAddr();
             }

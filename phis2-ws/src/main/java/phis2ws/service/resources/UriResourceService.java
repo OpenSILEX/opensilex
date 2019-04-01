@@ -30,7 +30,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.sesame.UriDaoSesame;
+import phis2ws.service.dao.sesame.UriDAO;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
@@ -75,7 +75,7 @@ public class UriResourceService extends ResourceService {
     public Response isUriExisting(
             @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @PathParam("uri") @URL @Required String uri) {
 
-        UriDaoSesame uriDaoSesame = new UriDaoSesame();
+        UriDAO uriDaoSesame = new UriDAO();
         if (uri != null) {
             uriDaoSesame.uri = uri;
         }
@@ -134,7 +134,7 @@ public class UriResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
             @ApiParam(value = "Search by uri", required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @PathParam("uri") @URL @Required String uri) {
 
-        UriDaoSesame uriDaoSesame = new UriDaoSesame();
+        UriDAO uriDaoSesame = new UriDAO();
         if (uri != null) {
             uriDaoSesame.uri = uri;
         }
@@ -175,7 +175,7 @@ public class UriResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
             @ApiParam(value = "Search by label", required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_LABEL) @QueryParam("label") @Required String label) {
 
-        UriDaoSesame uriDaoSesame = new UriDaoSesame();
+        UriDAO uriDaoSesame = new UriDAO();
         if (label != null) {
             uriDaoSesame.label = label;
         }
@@ -219,7 +219,7 @@ public class UriResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
 
-        UriDaoSesame uriDaoSesame = new UriDaoSesame();
+        UriDAO uriDaoSesame = new UriDAO();
         if (uri != null) {
             uriDaoSesame.uri = uri;
         }
@@ -284,7 +284,7 @@ public class UriResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
 
-        UriDaoSesame uriDaoSesame = new UriDaoSesame();
+        UriDAO uriDaoSesame = new UriDAO();
         if (uri != null) {
             uriDaoSesame.uri = uri;
         }
@@ -348,7 +348,7 @@ public class UriResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
 
-        UriDaoSesame uriDaoSesame = new UriDaoSesame();
+        UriDAO uriDaoSesame = new UriDAO();
         if (uri != null) {
             uriDaoSesame.uri = uri;
         }
@@ -411,7 +411,7 @@ public class UriResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
 
-        UriDaoSesame uriDaoSesame = new UriDaoSesame();
+        UriDAO uriDaoSesame = new UriDAO();
         if (uri != null) {
             uriDaoSesame.uri = uri;
         }
@@ -448,7 +448,7 @@ public class UriResourceService extends ResourceService {
     public Response getTypeIfUriExist(
             @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @PathParam("uri") @URL @Required String uri) {
 
-        UriDaoSesame uriDaoSesame = new UriDaoSesame();
+        UriDAO uriDaoSesame = new UriDAO();
         if (uri != null) {
             uriDaoSesame.uri = uri;
         }
@@ -464,7 +464,7 @@ public class UriResourceService extends ResourceService {
      * @param uriDaoSesame
      * @return Response
      */
-    private Response getInstancesData(UriDaoSesame uriDaoSesame) {
+    private Response getInstancesData(UriDAO uriDaoSesame) {
         ArrayList<Uri> uris;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Uri> getResponse;
@@ -494,7 +494,7 @@ public class UriResourceService extends ResourceService {
      * @param uriDaoSesame
      * @return Response the result, containing the existing of each uri
      */
-    private Response existData(UriDaoSesame uriDaoSesame) {
+    private Response existData(UriDAO uriDaoSesame) {
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Ask> getResponse;
         ArrayList<Ask> ask = uriDaoSesame.askUriExistance();
@@ -522,7 +522,7 @@ public class UriResourceService extends ResourceService {
      * @param uriDaoSesame
      * @return Response
      */
-    private Response getUriMetadata(UriDaoSesame uriDaoSesame) {
+    private Response getUriMetadata(UriDAO uriDaoSesame) {
         ArrayList<Uri> uris;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Uri> getResponse;
@@ -551,7 +551,7 @@ public class UriResourceService extends ResourceService {
      *
      * @param uriDaoSesame collect all the Label data
      */
-    private Response getLabelMetaData(UriDaoSesame uriDaoSesame) {
+    private Response getLabelMetaData(UriDAO uriDaoSesame) {
         ArrayList<Uri> uris;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Uri> getResponse;
@@ -581,7 +581,7 @@ public class UriResourceService extends ResourceService {
      * @param uriDaoSesame
      * @return Response
      */
-    private Response getAncestorsMetaData(UriDaoSesame uriDaoSesame) {
+    private Response getAncestorsMetaData(UriDAO uriDaoSesame) {
         ArrayList<Uri> concepts;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Uri> getResponse;
@@ -610,7 +610,7 @@ public class UriResourceService extends ResourceService {
      * @param uriDaoSesame
      * @return Response
      */
-    private Response getSiblingsMetaData(UriDaoSesame uriDaoSesame) {
+    private Response getSiblingsMetaData(UriDAO uriDaoSesame) {
         ArrayList<Uri> concepts;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Uri> getResponse;
@@ -640,7 +640,7 @@ public class UriResourceService extends ResourceService {
      * @param uriDaoSesame
      * @return Response
      */
-    private Response getDescendantsMetaData(UriDaoSesame uriDaoSesame) {
+    private Response getDescendantsMetaData(UriDAO uriDaoSesame) {
         ArrayList<Uri> concepts;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Uri> getResponse;
@@ -669,7 +669,7 @@ public class UriResourceService extends ResourceService {
      * @param uriDaoSesame
      * @return Response
      */
-    private Response getUriType(UriDaoSesame uriDaoSesame) {
+    private Response getUriType(UriDAO uriDaoSesame) {
         ArrayList<Uri> uris;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Uri> getResponse;

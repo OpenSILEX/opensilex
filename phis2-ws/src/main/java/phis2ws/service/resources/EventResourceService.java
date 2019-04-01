@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.sesame.EventDAOSesame;
+import phis2ws.service.dao.sesame.EventDAO;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.resources.dto.event.EventDetailedDTO;
@@ -136,7 +136,7 @@ public class EventResourceService  extends ResourceService {
         @ApiParam(value = "Search by date - start of the range", example = DocumentationAnnotation.EXAMPLE_EVENT_SEARCH_START_DATE) @QueryParam("startDate") @Date(DateFormat.YMDTHMSZZ) String startDate, 
         @ApiParam(value = "Search by date - end of the range", example = DocumentationAnnotation.EXAMPLE_EVENT_SEARCH_END_DATE) @QueryParam("endDate") @Date(DateFormat.YMDTHMSZZ) String endDate
     ) {
-        EventDAOSesame eventDAO = new EventDAOSesame(userSession.getUser());
+        EventDAO eventDAO = new EventDAO(userSession.getUser());
         
         // 1. Search events with parameters
         ArrayList<Event> events = eventDAO.searchEvents(
@@ -270,7 +270,7 @@ public class EventResourceService  extends ResourceService {
     public Response getEventDetailed(
         @ApiParam(value = DocumentationAnnotation.EVENT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_EVENT_URI) @PathParam("uri") @URL @Required String uri) {
         
-        EventDAOSesame eventDAO = new EventDAOSesame(userSession.getUser());
+        EventDAO eventDAO = new EventDAO(userSession.getUser());
         
         // 1. Search an event's details with its URI
         Event event = eventDAO.searchEventDetailed(uri);
@@ -351,7 +351,7 @@ public class EventResourceService  extends ResourceService {
         AbstractResultForm postResponse = null;
         
         if (eventsDtos != null && !eventsDtos.isEmpty()) {
-            EventDAOSesame eventDao = new EventDAOSesame(userSession.getUser());
+            EventDAO eventDao = new EventDAO(userSession.getUser());
             
             if (context.getRemoteAddr() != null) {
                 eventDao.remoteUserAdress = context.getRemoteAddr();

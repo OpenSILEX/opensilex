@@ -9,7 +9,7 @@
 // Last modification date:  October, 2016
 // Subject: Abstract class for SQL datasources
 //***********************************************************************************************
-package phis2ws.service.dao.datasource;
+package opensilex.service.dao.datasource;
 
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.slf4j.Logger;

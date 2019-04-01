@@ -9,7 +9,7 @@
 // Last modification date:  October, 2016
 // Subject: Datasource for Phis database, create a pool of connexion for this database
 //***********************************************************************************************
-package phis2ws.service.dao.datasource;
+package opensilex.service.dao.datasource;
 
 import java.sql.Connection;
 import javax.ws.rs.WebApplicationException;

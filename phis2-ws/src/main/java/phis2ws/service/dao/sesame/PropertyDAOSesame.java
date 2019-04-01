@@ -22,7 +22,6 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
-import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
@@ -38,7 +37,6 @@ import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Skos;
 import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyPostDTO;
-import phis2ws.service.resources.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.brapi.Status;
@@ -989,12 +987,12 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     }
 
     @Override
-    public Object find(Object object) throws Exception {
+    public Property find(Property object) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Object findById(String id) throws Exception {
+    public Property findById(String id) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

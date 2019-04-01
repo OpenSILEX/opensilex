@@ -54,6 +54,7 @@ public class ScientificObjectPostDTO extends AbstractVerifiedClass {
         scientificObject.setGeometry(geometry);
         scientificObject.setUriExperiment(experiment);
         scientificObject.setIsPartOf(isPartOf);
+        scientificObject.setYear(year);
         
         if (properties != null) {
             properties.forEach((property) -> {

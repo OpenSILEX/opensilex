@@ -27,7 +27,6 @@ import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.MalformedQueryException;
-import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
@@ -44,9 +43,7 @@ import phis2ws.service.ontologies.GeoSPARQL;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Oeso;
-import phis2ws.service.resources.dto.scientificObject.ScientificObjectPostDTO;
 import phis2ws.service.resources.dto.LayerDTO;
-import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyPostDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.ResourcesUtils;
 import phis2ws.service.utils.UriGenerator;
@@ -166,18 +163,18 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
         
     /**
      * Check if the scientific objects are accurates.
-     * @param ScientificObjectsDTO
+     * @param scientificObjects
      * @return
      * @throws RepositoryException 
      */
-    public POSTResultsReturn check(List<ScientificObjectPostDTO> ScientificObjectsDTO) throws RepositoryException {
+    public POSTResultsReturn check(List<ScientificObject> scientificObjects) throws RepositoryException {
         //Expected results
         POSTResultsReturn scientificObjectsCheck = null;
         //Returned status list
         List<Status> checkStatusList = new ArrayList<>();
         
         boolean dataOk = true;
-        for (ScientificObjectPostDTO scientificObject : ScientificObjectsDTO) {
+        for (ScientificObject scientificObject : scientificObjects) {
             //Check if the types are present in the ontology
             UriDaoSesame uriDao = new UriDaoSesame();
 
@@ -204,7 +201,7 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
 
             //Check properties
             boolean missingAlias = true;
-            for (PropertyPostDTO property : scientificObject.getProperties()) {
+            for (Property property : scientificObject.getProperties()) {
                 //Check alias
                 if (property.getRelation().equals(Rdfs.RELATION_LABEL.toString())) {
                     missingAlias = false;
@@ -239,160 +236,36 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
     }
     
     /**
-     * Insert the given scientific objects in the triplestore.
-     * /!\ Prerequisite : data must have been checked before.
-     * @see ScientificObjectDAOSesame#check(java.util.List)
-     * @param scientificObjects
-     * @return The insertion result.
-     */
-    public POSTResultsReturn insert(List<ScientificObjectPostDTO> scientificObjects) {
-        List<Status> insertStatusList = new ArrayList<>();
-        List<String> createdResourcesURIList = new ArrayList<>(); 
-        
-        POSTResultsReturn results;
-        
-        boolean resultState = false; // To know if the data are ok and have been inserted.
-        boolean annotationInsert = true; // True if the insertion have been done.
-        
-        final Iterator<ScientificObjectPostDTO> iteratorScientificObjects = scientificObjects.iterator();
-        
-        UriGenerator uriGenerator = new UriGenerator();
-        
-        while (iteratorScientificObjects.hasNext() && annotationInsert) {
-            ScientificObjectPostDTO scientificObjectDTO = iteratorScientificObjects.next();
-            ScientificObject scientificObject = scientificObjectDTO.createObjectFromDTO();
-            
-            try {
-                //1. Generates scientific object URI.
-                scientificObject.setUri(uriGenerator.generateNewInstanceUri(scientificObject.getRdfType(), scientificObjectDTO.getYear(), null));
-            } catch (Exception ex) { // In the scientific object case, no exception should be raised
-                annotationInsert = false;
-            }
-            
-            //2. Register in triplestore
-            UpdateBuilder spql = new UpdateBuilder();
-            
-            Resource scientificObjectUri = ResourceFactory.createResource(scientificObject.getUri());
-            Node scientificObjectType = NodeFactory.createURI(scientificObject.getRdfType());
-            
-            Node graph = null;
-            if (scientificObject.getUriExperiment() != null) {
-                graph = NodeFactory.createURI(scientificObject.getUriExperiment());
-                
-                // Add participates in (scientific object participates in experiment)
-                Node participatesIn = NodeFactory.createURI(Oeso.RELATION_PARTICIPATES_IN.toString());
-                spql.addInsert(graph, scientificObjectUri, participatesIn, graph);
-            } else {
-                graph = NodeFactory.createURI(Contexts.SCIENTIFIC_OBJECTS.toString());
-            }
-            
-            spql.addInsert(graph, scientificObjectUri, RDF.type, scientificObjectType);
-            
-            // Properties associated to the scientific object
-            for (Property property : scientificObject.getProperties()) {
-                if (property.getRdfType() != null && !property.getRdfType().equals("")) {//Typed properties
-                    if (property.getRdfType().equals(Oeso.CONCEPT_VARIETY.toString())) {
-                        
-                        String propertyURI;
-                        try {
-                            propertyURI = uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_VARIETY.toString(), null, property.getValue());
-                            Node propertyNode = NodeFactory.createURI(propertyURI);
-                            Node propertyType = NodeFactory.createURI(property.getRdfType());
-                            org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
-                            
-                            spql.addInsert(graph, propertyNode, RDF.type, propertyType);
-                            spql.addInsert(graph, scientificObjectUri, propertyRelation, propertyNode);
-                        } catch (Exception ex) { //In the variety case, no exception should be raised
-                            annotationInsert = false;
-                        }
-                    } else {
-                        Node propertyNode = NodeFactory.createURI(property.getValue());
-                        Node propertyType = NodeFactory.createURI(property.getRdfType());
-                        org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
-                        
-                        spql.addInsert(graph, propertyNode, RDF.type, propertyType);
-                        spql.addInsert(graph, scientificObjectUri, propertyRelation, propertyNode);
-                    }
-                } else {
-                    Literal propertyLiteral = ResourceFactory.createStringLiteral(property.getValue());
-                    org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
-
-                    spql.addInsert(graph, scientificObjectUri, propertyRelation, propertyLiteral);         
-                }
-                
-            }
-            
-            if (scientificObject.getUriExperiment() != null) {
-                Node experimentUri = NodeFactory.createURI(scientificObject.getUriExperiment());
-                org.apache.jena.rdf.model.Property relationHasPlot = ResourceFactory.createProperty(Oeso.RELATION_HAS_PLOT.toString());
-                
-                spql.addInsert(graph, experimentUri, relationHasPlot, scientificObjectUri);  
-            }
-            
-            //isPartOf : the object which has part the element must not be a plot    
-            if (scientificObject.getIsPartOf()!= null) {
-                Node agronomicalObjectPartOf = NodeFactory.createURI(scientificObject.getIsPartOf());
-                org.apache.jena.rdf.model.Property relationIsPartOf = ResourceFactory.createProperty(Oeso.RELATION_HAS_PLOT.toString());
-                
-                spql.addInsert(graph, scientificObjectUri, relationIsPartOf, agronomicalObjectPartOf);  
-            }
-            
-            try {
-                this.getConnection().begin();
-                Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spql.buildRequest().toString());
-                LOGGER.debug(getTraceabilityLogs() + SPARQL_QUERY + prepareUpdate.toString());
-                prepareUpdate.execute();
-                createdResourcesURIList.add(scientificObject.getUri());
-               
-                if (annotationInsert) {
-                    resultState = true;
-                    this.getConnection().commit();
-                } else {
-                    // Rollback on the transaction.
-                    this.getConnection().rollback();
-                }
-//                this.getConnection().close();
-            } catch (RepositoryException ex) {
-                    LOGGER.error("Error during commit or rolleback Triplestore statements: ", ex);
-            } catch (MalformedQueryException e) {
-                    LOGGER.error(e.getMessage(), e);
-                    annotationInsert = false;
-                    insertStatusList.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.MALFORMED_CREATE_QUERY + e.getMessage()));
-            } 
-            
-            //3. insert in postgresql
-            ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO();
-            ArrayList<ScientificObject> aos = new ArrayList<>();
-            aos.add(scientificObject);
-            POSTResultsReturn postgreInsertionResult = scientificObjectDAO.checkAndInsertListAO(aos);
-            insertStatusList.addAll(postgreInsertionResult.statusList);
-        }
-        
-        results = new POSTResultsReturn(resultState, annotationInsert, true);
-        results.statusList = insertStatusList;
-        if (resultState && !createdResourcesURIList.isEmpty()) {
-            results.createdResources = createdResourcesURIList;
-            results.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, createdResourcesURIList.size() + " new resource(s) created."));
-        }
-
-        return results;
-    }
-    
-    /**
      * Check the given scientific objects and insert them in the triplestore.
-     * @param scientificObjectsDTO
+     * @param scientificObjects
      * @return 
      */
-    public POSTResultsReturn checkAndInsert(List<ScientificObjectPostDTO> scientificObjectsDTO) {
-        POSTResultsReturn checkResult = check(scientificObjectsDTO);
+    public POSTResultsReturn checkAndInsert(List<ScientificObject> scientificObjects) {
+        POSTResultsReturn checkResult = check(scientificObjects);
         if (checkResult.statusList.size() > 0) { // Errors founded in the given scientific objects.
             return checkResult;
         } else { // No error founded, we can insert them.
-            return insert(scientificObjectsDTO);
+              try {
+                  List<ScientificObject> createdScientificObjects = create(scientificObjects);
+                  ArrayList<String> createdScientificObjectsUris = new ArrayList<>();
+                  for (ScientificObject scientificObject : createdScientificObjects) {
+                      createdScientificObjectsUris.add(scientificObject.getUri());
+                  }
+                  
+                  POSTResultsReturn creationResult = new POSTResultsReturn(Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
+                  creationResult.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, createdScientificObjects.size() + " new resource(s) created."));
+                  creationResult.createdResources = createdScientificObjectsUris;
+                  
+                  return creationResult;
+              } catch (Exception ex) {
+                  POSTResultsReturn creationResult = new POSTResultsReturn(Boolean.FALSE, Boolean.FALSE, Boolean.FALSE);
+                  creationResult.statusList .add(new Status(StatusCodeMsg.ERR, StatusCodeMsg.ERR, ex.getMessage()));
+                  
+                  return creationResult;
+              }
         }
     }
     
-
     /**
      * Generates the query to get the list of scientific objects which participates in a given experiment.
      * @param experimentURI
@@ -798,10 +671,121 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
         LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
     }
-
+    
     @Override
-    public List create(List objects) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public List create(List<ScientificObject> scientificObjects) throws Exception {
+        
+        boolean resultState = false; // To know if the data are ok and have been inserted.
+        boolean annotationInsert = true; // True if the insertion have been done.
+        
+        final Iterator<ScientificObject> iteratorScientificObjects = scientificObjects.iterator();
+        
+        UriGenerator uriGenerator = new UriGenerator();
+        
+        while (iteratorScientificObjects.hasNext() && annotationInsert) {
+            ScientificObject scientificObject = iteratorScientificObjects.next();
+            
+            try {
+                //1. Generates scientific object URI.
+                scientificObject.setUri(uriGenerator.generateNewInstanceUri(scientificObject.getRdfType(), scientificObject.getYear(), null));
+            } catch (Exception ex) { // In the scientific object case, no exception should be raised
+                annotationInsert = false;
+            }
+            
+            //2. Register in triplestore
+            UpdateBuilder spql = new UpdateBuilder();
+            
+            Resource scientificObjectUri = ResourceFactory.createResource(scientificObject.getUri());
+            Node scientificObjectType = NodeFactory.createURI(scientificObject.getRdfType());
+            
+            Node graph = null;
+            if (scientificObject.getUriExperiment() != null) {
+                graph = NodeFactory.createURI(scientificObject.getUriExperiment());
+                
+                // Add participates in (scientific object participates in experiment)
+                Node participatesIn = NodeFactory.createURI(Oeso.RELATION_PARTICIPATES_IN.toString());
+                spql.addInsert(graph, scientificObjectUri, participatesIn, graph);
+            } else {
+                graph = NodeFactory.createURI(Contexts.SCIENTIFIC_OBJECTS.toString());
+            }
+            
+            spql.addInsert(graph, scientificObjectUri, RDF.type, scientificObjectType);
+            
+            // Properties associated to the scientific object
+            for (Property property : scientificObject.getProperties()) {
+                if (property.getRdfType() != null && !property.getRdfType().equals("")) {//Typed properties
+                    if (property.getRdfType().equals(Oeso.CONCEPT_VARIETY.toString())) {
+                        
+                        String propertyURI;
+                        try {
+                            propertyURI = uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_VARIETY.toString(), null, property.getValue());
+                            Node propertyNode = NodeFactory.createURI(propertyURI);
+                            Node propertyType = NodeFactory.createURI(property.getRdfType());
+                            org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
+                            
+                            spql.addInsert(graph, propertyNode, RDF.type, propertyType);
+                            spql.addInsert(graph, scientificObjectUri, propertyRelation, propertyNode);
+                        } catch (Exception ex) { //In the variety case, no exception should be raised
+                            annotationInsert = false;
+                        }
+                    } else {
+                        Node propertyNode = NodeFactory.createURI(property.getValue());
+                        Node propertyType = NodeFactory.createURI(property.getRdfType());
+                        org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
+                        
+                        spql.addInsert(graph, propertyNode, RDF.type, propertyType);
+                        spql.addInsert(graph, scientificObjectUri, propertyRelation, propertyNode);
+                    }
+                } else {
+                    Literal propertyLiteral = ResourceFactory.createStringLiteral(property.getValue());
+                    org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
+
+                    spql.addInsert(graph, scientificObjectUri, propertyRelation, propertyLiteral);         
+                }
+                
+            }
+            
+            if (scientificObject.getUriExperiment() != null) {
+                Node experimentUri = NodeFactory.createURI(scientificObject.getUriExperiment());
+                org.apache.jena.rdf.model.Property relationHasPlot = ResourceFactory.createProperty(Oeso.RELATION_HAS_PLOT.toString());
+                
+                spql.addInsert(graph, experimentUri, relationHasPlot, scientificObjectUri);  
+            }
+            
+            //isPartOf : the object which has part the element must not be a plot    
+            if (scientificObject.getIsPartOf()!= null) {
+                Node agronomicalObjectPartOf = NodeFactory.createURI(scientificObject.getIsPartOf());
+                org.apache.jena.rdf.model.Property relationIsPartOf = ResourceFactory.createProperty(Oeso.RELATION_HAS_PLOT.toString());
+                
+                spql.addInsert(graph, scientificObjectUri, relationIsPartOf, agronomicalObjectPartOf);  
+            }
+            
+            this.getConnection().begin();
+            Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spql.buildRequest().toString());
+            LOGGER.debug(getTraceabilityLogs() + SPARQL_QUERY + prepareUpdate.toString());
+            prepareUpdate.execute();
+
+            if (annotationInsert) {
+                resultState = true;
+                this.getConnection().commit();
+            } else {
+                // Rollback on the transaction.
+                this.getConnection().rollback();
+            }
+//                this.getConnection().close(); 
+            
+            //3. insert in postgresql
+            ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO();
+            ArrayList<ScientificObject> aos = new ArrayList<>();
+            aos.add(scientificObject);
+            scientificObjectDAO.checkAndInsertListAO(aos);
+        }
+        
+        if (resultState) {
+            return scientificObjects;
+        } else {
+            return new ArrayList<>();
+        }
     }
 
     @Override
@@ -815,12 +799,12 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
     }
 
     @Override
-    public Object find(Object object) throws Exception {
+    public ScientificObject find(ScientificObject object) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Object findById(String id) throws Exception {
+    public ScientificObject findById(String id) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

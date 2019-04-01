@@ -23,7 +23,6 @@ import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.resources.dto.acquisitionSession.MetadataFileDTO;
 import phis2ws.service.resources.dto.acquisitionSession.MetadataFilePhenomobileDTO;
 import phis2ws.service.resources.dto.acquisitionSession.MetadataFileUAVDTO;
-import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.model.phis.Experiment;
 import phis2ws.service.view.model.phis.RadiometricTarget;
 import phis2ws.service.view.model.phis.Sensor;

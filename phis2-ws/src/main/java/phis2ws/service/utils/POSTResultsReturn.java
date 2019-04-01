@@ -24,7 +24,7 @@ public class POSTResultsReturn {
     private Boolean insertState; // Si l'insertion a été réussie
     private Boolean dataState; //état des données (si elles sont correctes)
     private Response.Status httpStatus; //status qui sera renvoyé au client avec l'insertion
-    public List statusList; //Si je veux rajouter d'autres status
+    public List statusList = new ArrayList<>(); //Si je veux rajouter d'autres status
     public Boolean AlreadyExist; 
     public String errorMsg;
     public List<String> createdResources = new ArrayList<>();

@@ -12,13 +12,9 @@
 package phis2ws.service.dao.sesame;
 
 import java.util.List;
-import org.eclipse.rdf4j.query.MalformedQueryException;
-import org.eclipse.rdf4j.query.QueryEvaluationException;
-import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.dao.manager.DAOSesame;
-import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.model.phis.ImageMetadata;
 
 /**
@@ -50,12 +46,12 @@ public class ImageMetadataDaoSesame extends DAOSesame<ImageMetadata> {
     }
 
     @Override
-    public Object find(Object object) throws Exception {
+    public ImageMetadata find(ImageMetadata object) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Object findById(String id) throws Exception {
+    public ImageMetadata findById(String id) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

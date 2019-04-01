@@ -30,6 +30,8 @@ public class ScientificObject {
     private String experiment;
     //object which has part the scientific object
     private String isPartOf;
+    //year of the scientific object
+    private String year;
     
     //SILEX:INFO
     //Pour l'instant je l'ai mis en attribut pour aller plus vite et avancer le reste (dans le get ao)
@@ -109,5 +111,13 @@ public class ScientificObject {
 
     public void setIsPartOf(String isPartOf) {
         this.isPartOf = isPartOf;
+    }
+
+    public String getYear() {
+        return year;
+    }
+
+    public void setYear(String year) {
+        this.year = year;
     }
 }

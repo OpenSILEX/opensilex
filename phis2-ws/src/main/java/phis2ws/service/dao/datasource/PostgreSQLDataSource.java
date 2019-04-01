@@ -9,13 +9,13 @@
 // Last modification date:  October, 2016
 // Subject: Datasource for Phis database, create a pool of connexion for this database
 //***********************************************************************************************
-package opensilex.service.dao.datasource;
+package phis2ws.service.dao.datasource;
 
 import java.sql.Connection;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import org.apache.tomcat.jdbc.pool.PoolProperties;
-import static opensilex.service.PropertiesFileManager.getSQLPoolDataSourceProperties;
+import static phis2ws.service.PropertiesFileManager.getSQLPoolDataSourceProperties;
 
 /**
  * Source de données qui gère un ensemble de connexion pour la base de données
@@ -24,9 +24,9 @@ import static opensilex.service.PropertiesFileManager.getSQLPoolDataSourceProper
  * @date 05/2016
  * @author Arnaud Charleroy
  */
-public abstract class DataSourceDAOPhisBrapi extends AbstractSQLDataSource {
+public abstract class PostgreSQLDataSource extends AbstractPostgreSQLDataSource {
 
-    private DataSourceDAOPhisBrapi() {
+    private PostgreSQLDataSource() {
         setPropertyFileName("phis_sql_config");
         // récupération des propriétés
         final PoolProperties p = getSQLPoolDataSourceProperties(propertyFileName);
@@ -45,7 +45,7 @@ public abstract class DataSourceDAOPhisBrapi extends AbstractSQLDataSource {
      */
     private static class DataSourceDAOPhisBrapiHolder {
 
-        final private static DataSourceDAOPhisBrapi instance = new DataSourceDAOPhisBrapi() {
+        final private static PostgreSQLDataSource instance = new PostgreSQLDataSource() {
         };
     }
 
@@ -54,7 +54,7 @@ public abstract class DataSourceDAOPhisBrapi extends AbstractSQLDataSource {
      *
      * @return DataSourceDAOPhisBrapi
      */
-    public static DataSourceDAOPhisBrapi getInstance() {
+    public static PostgreSQLDataSource getInstance() {
         return DataSourceDAOPhisBrapiHolder.instance;
     }
 

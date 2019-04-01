@@ -13,7 +13,6 @@ import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.gridfs.GridFS;
-import java.util.ArrayList;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecProvider;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
@@ -29,7 +28,7 @@ import phis2ws.service.model.User;
  * @author Arnaud Charleroy
  * @param <T>
  */
-public abstract class DAOMongo<T> extends DAO {
+public abstract class DAOMongo<T> extends DAO<T> {
 
     /**
      * @see service.properties file

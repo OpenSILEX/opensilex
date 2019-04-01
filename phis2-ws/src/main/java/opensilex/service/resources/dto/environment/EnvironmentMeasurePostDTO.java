@@ -20,7 +20,7 @@ import opensilex.service.resources.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resources.validation.interfaces.Date;
 import opensilex.service.resources.validation.interfaces.Required;
 import opensilex.service.resources.validation.interfaces.URL;
-import opensilex.service.view.model.phis.EnvironmentMeasure;
+import opensilex.service.view.model.EnvironmentMeasure;
 
 /**
  * Represents the exchange format used to insert environment in the environment post service.

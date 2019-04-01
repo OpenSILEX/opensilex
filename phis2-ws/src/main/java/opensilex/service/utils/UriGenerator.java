@@ -15,8 +15,8 @@ import java.util.UUID;
 import org.apache.commons.codec.binary.Base32;
 import org.apache.jena.sparql.AlreadyExists;
 import opensilex.service.PropertiesFileManager;
-import opensilex.service.dao.ImageMetadataDAO;
-import opensilex.service.dao.phis.ExperimentMongoDAO;
+import opensilex.service.dao.ExperimentMongoDAO;
+import opensilex.service.dao.mongo.ImageMetadataMongoDAO;
 import opensilex.service.dao.phis.GroupDAO;
 import opensilex.service.dao.phis.ProjectDAO;
 import opensilex.service.dao.sparql.ScientificObjectSparqlDAO;
@@ -36,8 +36,8 @@ import opensilex.service.ontologies.Foaf;
 import opensilex.service.ontologies.Oeev;
 import opensilex.service.ontologies.Oeso;
 import opensilex.service.ontologies.Time;
-import opensilex.service.view.model.phis.Group;
-import opensilex.service.view.model.phis.Project;
+import opensilex.service.view.model.Group;
+import opensilex.service.view.model.Project;
 
 /**
  * Generate different kinds of URIs (vector, sensor, ...)
@@ -381,7 +381,7 @@ public class UriGenerator {
      */
     private String generateImageUri(String year, String lastGeneratedUri) {
         if (lastGeneratedUri == null) {
-            ImageMetadataDAO imageDaoMongo = new ImageMetadataDAO();
+            ImageMetadataMongoDAO imageDaoMongo = new ImageMetadataMongoDAO();
             long imagesNumber = imageDaoMongo.getNbImagesYear();
             imagesNumber++;
 

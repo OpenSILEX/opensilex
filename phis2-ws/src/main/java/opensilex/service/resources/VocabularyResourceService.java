@@ -36,8 +36,8 @@ import opensilex.service.resources.validation.interfaces.Required;
 import opensilex.service.resources.validation.interfaces.URL;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.manager.ResultForm;
-import opensilex.service.view.model.phis.Namespace;
-import opensilex.service.view.model.phis.Property;
+import opensilex.service.view.model.Namespace;
+import opensilex.service.view.model.Property;
 
 /**
  * vocabulary service. Used to generate client side menues and forms,

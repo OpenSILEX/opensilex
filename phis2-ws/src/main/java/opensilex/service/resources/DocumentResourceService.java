@@ -75,7 +75,7 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormGET;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
-import opensilex.service.view.model.phis.Document;
+import opensilex.service.view.model.Document;
 import opensilex.service.resources.validation.interfaces.SortingValue;
 import opensilex.service.view.manager.ResultForm;
 

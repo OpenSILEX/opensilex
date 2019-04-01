@@ -42,7 +42,7 @@ import opensilex.service.resources.dto.annotation.AnnotationPostDTO;
 import opensilex.service.resources.validation.interfaces.URL;
 import opensilex.service.view.brapi.form.ResponseFormGET;
 import opensilex.service.view.manager.ResultForm;
-import opensilex.service.view.model.phis.Annotation;
+import opensilex.service.view.model.Annotation;
 
 /**
  * Represent the annotation service.

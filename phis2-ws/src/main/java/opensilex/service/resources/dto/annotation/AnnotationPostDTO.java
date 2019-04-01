@@ -15,7 +15,7 @@ import org.joda.time.DateTime;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.resources.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resources.validation.interfaces.URL;
-import opensilex.service.view.model.phis.Annotation;
+import opensilex.service.view.model.Annotation;
 
 /**
  * DTO representing an annotation for a POST

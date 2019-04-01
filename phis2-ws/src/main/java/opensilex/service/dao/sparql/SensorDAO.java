@@ -46,8 +46,8 @@ import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.view.brapi.Status;
-import opensilex.service.view.model.phis.Dataset;
-import opensilex.service.view.model.phis.Sensor;
+import opensilex.service.view.model.Dataset;
+import opensilex.service.view.model.Sensor;
 
 /**
  * allows CRUD methods of sensors in the triplestore rdf4j

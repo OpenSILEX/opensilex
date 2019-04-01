@@ -29,10 +29,10 @@ import org.slf4j.LoggerFactory;
 import opensilex.service.utils.sql.SQLQueryBuilder;
 import opensilex.service.model.User;
 import opensilex.service.utils.sql.JoinAttributes;
-import opensilex.service.view.model.phis.Experiment;
-import opensilex.service.view.model.phis.ContactBrapi;
+import opensilex.service.view.model.Experiment;
+import opensilex.service.view.model.ContactBrapi;
 import opensilex.service.dao.ExperimentMongoDAO;
-import opensilex.service.view.model.phis.StudyDetails;
+import opensilex.service.view.model.StudyDetails;
 
 /**
  * Get Experiments filtered by StudiesSearchResourceService fields and add 

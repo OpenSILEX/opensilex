@@ -10,7 +10,7 @@ package opensilex.service.resources.dto.environment;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import opensilex.service.configuration.DateFormat;
-import opensilex.service.view.model.phis.EnvironmentMeasure;
+import opensilex.service.view.model.EnvironmentMeasure;
 
 /**
  * Represents the exchange format used to get environment measures.

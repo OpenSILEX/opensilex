@@ -51,7 +51,7 @@ import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormGET;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.view.manager.ResultForm;
-import opensilex.service.view.model.phis.Experiment;
+import opensilex.service.view.model.Experiment;
 
 /**
  * Experiment services.

@@ -8,7 +8,7 @@
 package opensilex.service.resources.dto.trait;
 
 import java.util.ArrayList;
-import opensilex.service.view.model.phis.Trait;
+import opensilex.service.view.model.Trait;
 
 /**
  * Represents a trait according to brapi specifications

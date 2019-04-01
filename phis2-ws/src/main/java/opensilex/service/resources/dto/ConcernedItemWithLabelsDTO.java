@@ -11,7 +11,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.resources.validation.interfaces.Required;
-import opensilex.service.view.model.phis.ConcernedItem;
+import opensilex.service.view.model.ConcernedItem;
 
 /**
  * DTO of a concerned item with labels

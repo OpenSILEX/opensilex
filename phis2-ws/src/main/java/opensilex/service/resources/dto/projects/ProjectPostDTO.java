@@ -15,8 +15,8 @@ import opensilex.service.resources.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resources.validation.interfaces.Date;
 import opensilex.service.resources.validation.interfaces.Required;
 import opensilex.service.resources.validation.interfaces.URL;
-import opensilex.service.view.model.phis.Contact;
-import opensilex.service.view.model.phis.Project;
+import opensilex.service.view.model.Contact;
+import opensilex.service.view.model.Project;
 
 /**
  * Project post DTO

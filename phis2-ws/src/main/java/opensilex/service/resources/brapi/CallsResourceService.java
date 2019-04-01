@@ -29,7 +29,7 @@ import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.BrapiMultiResponseForm;
-import opensilex.service.view.model.phis.Call;
+import opensilex.service.view.model.Call;
 
 @Api("/brapi/v1/calls")
 @Path("/brapi/v1/calls")

@@ -21,10 +21,10 @@ import opensilex.service.resources.dto.rdfResourceDefinition.PropertyDTO;
 import opensilex.service.resources.validation.interfaces.Date;
 import opensilex.service.resources.validation.interfaces.URL;
 import opensilex.service.utils.dates.Dates;
-import opensilex.service.view.model.phis.Annotation;
-import opensilex.service.view.model.phis.ConcernedItem;
-import opensilex.service.view.model.phis.Event;
-import opensilex.service.view.model.phis.Property;
+import opensilex.service.view.model.Annotation;
+import opensilex.service.view.model.ConcernedItem;
+import opensilex.service.view.model.Event;
+import opensilex.service.view.model.Property;
 
 /**
  * DTO representing a event with the information needed to create one

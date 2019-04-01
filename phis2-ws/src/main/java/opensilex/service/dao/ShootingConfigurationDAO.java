@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.configuration.DateFormats;
 import opensilex.service.dao.MongoDAO;
-import opensilex.service.view.model.phis.ShootingConfiguration;
+import opensilex.service.view.model.ShootingConfiguration;
 
 /**
  * Represents the mongodb Data Access Object for the images metadata shooting 

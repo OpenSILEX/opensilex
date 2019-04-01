@@ -24,7 +24,7 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import opensilex.service.configuration.DateFormats;
-import opensilex.service.view.model.phis.Annotation;
+import opensilex.service.view.model.Annotation;
 
 /**
  * serialize a annotation instance to JSON, used to have a different return from

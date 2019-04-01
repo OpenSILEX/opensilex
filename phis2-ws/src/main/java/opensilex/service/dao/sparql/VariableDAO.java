@@ -45,11 +45,11 @@ import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.view.brapi.Status;
-import opensilex.service.view.model.phis.Method;
-import opensilex.service.view.model.phis.OntologyReference;
-import opensilex.service.view.model.phis.Trait;
-import opensilex.service.view.model.phis.Unit;
-import opensilex.service.view.model.phis.Variable;
+import opensilex.service.view.model.Method;
+import opensilex.service.view.model.OntologyReference;
+import opensilex.service.view.model.Trait;
+import opensilex.service.view.model.Unit;
+import opensilex.service.view.model.Variable;
 
 /**
  * This class is a DAO for annotation.

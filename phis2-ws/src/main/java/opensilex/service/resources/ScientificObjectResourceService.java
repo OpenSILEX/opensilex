@@ -46,7 +46,7 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.view.manager.ResultForm;
-import opensilex.service.view.model.phis.ScientificObject;
+import opensilex.service.view.model.ScientificObject;
 
 /**
  * scientific objects service

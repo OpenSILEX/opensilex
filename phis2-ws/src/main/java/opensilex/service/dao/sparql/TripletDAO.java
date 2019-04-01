@@ -43,7 +43,7 @@ import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.view.brapi.Status;
-import opensilex.service.view.model.phis.Triplet;
+import opensilex.service.view.model.Triplet;
 
 /**
  * a specific DAO to insert triplets in the triplestore

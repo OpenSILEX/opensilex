@@ -8,7 +8,7 @@
 package opensilex.service.resources.dto.radiometricTarget;
 
 import opensilex.service.resources.dto.PropertiesPostDTO;
-import opensilex.service.view.model.phis.RadiometricTarget;
+import opensilex.service.view.model.RadiometricTarget;
 
 /**
  * Represents the JSON for the creation of a radiometric target.

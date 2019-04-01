@@ -32,7 +32,7 @@ import opensilex.service.utils.UriGenerator;
 import opensilex.service.utils.sql.JoinAttributes;
 import opensilex.service.utils.sql.SQLQueryBuilder;
 import opensilex.service.view.brapi.Status;
-import opensilex.service.view.model.phis.Group;
+import opensilex.service.view.model.Group;
 
 /**
  * DAO for groups

@@ -15,7 +15,7 @@ import opensilex.service.model.User;
 import opensilex.service.resources.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resources.validation.interfaces.GroupLevel;
 import opensilex.service.resources.validation.interfaces.Required;
-import opensilex.service.view.model.phis.Group;
+import opensilex.service.view.model.Group;
 
 /**
  * The group post dto.

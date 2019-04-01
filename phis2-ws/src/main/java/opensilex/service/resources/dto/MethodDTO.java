@@ -16,7 +16,7 @@ package opensilex.service.resources.dto;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.view.model.phis.Method;
+import opensilex.service.view.model.Method;
 
 public class MethodDTO extends InstanceDefinitionDTO {
     final static Logger LOGGER = LoggerFactory.getLogger(TraitDTO.class);

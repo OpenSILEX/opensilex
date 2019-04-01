@@ -15,7 +15,7 @@ package opensilex.service.model;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
-import opensilex.service.view.model.phis.Group;
+import opensilex.service.view.model.Group;
 
 /**
  *

@@ -34,7 +34,7 @@ import opensilex.service.ontologies.Rdfs;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.view.brapi.Status;
-import opensilex.service.view.model.phis.ConcernedItem;
+import opensilex.service.view.model.ConcernedItem;
 
 /**
  * DAO for concerned items

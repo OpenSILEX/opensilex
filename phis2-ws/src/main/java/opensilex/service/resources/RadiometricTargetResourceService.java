@@ -47,7 +47,7 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.view.manager.ResultForm;
-import opensilex.service.view.model.phis.RadiometricTarget;
+import opensilex.service.view.model.RadiometricTarget;
 
 /**
  * Radiometric target service.

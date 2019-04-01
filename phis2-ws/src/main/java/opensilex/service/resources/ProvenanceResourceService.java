@@ -43,7 +43,7 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.view.manager.ResultForm;
-import opensilex.service.view.model.phis.provenance.Provenance;
+import opensilex.service.view.model.provenance.Provenance;
 
 /**
  * Provenance resource service

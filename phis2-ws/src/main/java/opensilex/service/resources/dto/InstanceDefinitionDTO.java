@@ -20,8 +20,8 @@ import javax.validation.Valid;
 import opensilex.service.resources.validation.interfaces.Required;
 import opensilex.service.resources.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resources.validation.interfaces.URL;
-import opensilex.service.view.model.phis.RdfResourceDefinition;
-import opensilex.service.view.model.phis.OntologyReference;
+import opensilex.service.view.model.RdfResourceDefinition;
+import opensilex.service.view.model.OntologyReference;
 
 public class InstanceDefinitionDTO extends AbstractVerifiedClass {
     //SILEX:info

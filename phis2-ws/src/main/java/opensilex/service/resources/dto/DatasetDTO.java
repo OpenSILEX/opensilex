@@ -17,7 +17,7 @@ import javax.validation.Valid;
 import opensilex.service.resources.validation.interfaces.Required;
 import opensilex.service.resources.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resources.validation.interfaces.URL;
-import opensilex.service.view.model.phis.Dataset;
+import opensilex.service.view.model.Dataset;
 
 /**
  * corresponds to the submitted JSON for the datasets

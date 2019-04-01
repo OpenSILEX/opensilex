@@ -51,7 +51,7 @@ import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormGET;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.view.manager.ResultForm;
-import opensilex.service.view.model.phis.Project;
+import opensilex.service.view.model.Project;
 
 @Api("/projects")
 @Path("projects")

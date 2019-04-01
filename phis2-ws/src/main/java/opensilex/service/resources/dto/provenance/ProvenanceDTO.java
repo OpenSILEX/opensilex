@@ -10,7 +10,7 @@ package opensilex.service.resources.dto.provenance;
 import io.swagger.annotations.ApiModelProperty;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.resources.dto.manager.AbstractVerifiedClass;
-import opensilex.service.view.model.phis.provenance.Provenance;
+import opensilex.service.view.model.provenance.Provenance;
 
 /**
  * Represents a provenance DTO.

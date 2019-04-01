@@ -32,7 +32,7 @@ import opensilex.service.ontologies.Oeso;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.view.brapi.Status;
-import opensilex.service.view.model.phis.provenance.Provenance;
+import opensilex.service.view.model.provenance.Provenance;
 
 /**
  * Allows CRUD methods of provenances in mongo.

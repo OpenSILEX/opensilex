@@ -42,8 +42,8 @@ import opensilex.service.utils.FileUploader;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.view.brapi.Status;
-import opensilex.service.view.model.phis.ConcernedItem;
-import opensilex.service.view.model.phis.FileDescription;
+import opensilex.service.view.model.ConcernedItem;
+import opensilex.service.view.model.FileDescription;
 
 /**
  * Represents the MongoDB Data File Access Object.

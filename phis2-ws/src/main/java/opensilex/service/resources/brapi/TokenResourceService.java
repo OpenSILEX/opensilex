@@ -65,7 +65,7 @@ import opensilex.service.resources.validation.interfaces.Required;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.view.brapi.form.ResponseUnique;
-import opensilex.service.view.model.phis.Call;
+import opensilex.service.view.model.Call;
 
 /**
  * REST Web Service

@@ -49,8 +49,8 @@ import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.ResourcesUtils;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.view.brapi.Status;
-import opensilex.service.view.model.phis.Document;
-import opensilex.service.view.model.phis.Experiment;
+import opensilex.service.view.model.Document;
+import opensilex.service.view.model.Experiment;
 
 //SILEX:warning
 //After the update of the June 12, 2018 document's metadata are inserted inside 

@@ -39,7 +39,7 @@ import opensilex.service.dao.sparql.VariableDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.view.brapi.Status;
-import opensilex.service.view.model.phis.EnvironmentMeasure;
+import opensilex.service.view.model.EnvironmentMeasure;
 
 /**
  * Represents the MongoDB Data Access Object for the environment.

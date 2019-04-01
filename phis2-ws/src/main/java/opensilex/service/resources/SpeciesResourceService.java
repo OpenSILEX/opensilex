@@ -31,7 +31,7 @@ import opensilex.service.resources.dto.species.SpeciesDTO;
 import opensilex.service.resources.validation.interfaces.URL;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.manager.ResultForm;
-import opensilex.service.view.model.phis.Species;
+import opensilex.service.view.model.Species;
 
 /**
  * Species resource service.

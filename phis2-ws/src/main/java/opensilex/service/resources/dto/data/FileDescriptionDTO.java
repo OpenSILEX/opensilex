@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.Map;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.resources.dto.ConcernItemDTO;
-import opensilex.service.view.model.phis.ConcernedItem;
-import opensilex.service.view.model.phis.FileDescription;
+import opensilex.service.view.model.ConcernedItem;
+import opensilex.service.view.model.FileDescription;
 
 /**
  * This class describe FileDescription Metadata

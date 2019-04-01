@@ -11,7 +11,7 @@ import org.joda.time.format.DateTimeFormat;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.resources.validation.interfaces.URL;
 import opensilex.service.utils.dates.Dates;
-import opensilex.service.view.model.phis.Annotation;
+import opensilex.service.view.model.Annotation;
 
 /**
  * DTO representing an annotation

@@ -47,7 +47,7 @@ import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
 import phis2ws.service.view.brapi.form.ResponseFormGET;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
-import phis2ws.service.view.brapi.form.ResponseFormUser;
+import phis2ws.service.view.manager.ResultForm;
 
 /**
  * Represents the user data service.
@@ -295,20 +295,20 @@ public class UserResourceService extends ResourceService {
     private Response getUsersData(UserDaoPhisBrapi userDao) {
         ArrayList<User> users = new ArrayList<>();
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormUser getResponse;
+        ResultForm<User> getResponse;
         Integer usersCount = userDao.count();
         
         if (usersCount != null && usersCount == 0) {
-            getResponse = new ResponseFormUser((userDao.getPageSize()), userDao.getPage(), users, false);
+            getResponse = new ResultForm<User>((userDao.getPageSize()), userDao.getPage(), users, false);
             return noResultFound(getResponse, statusList);
         } else {
             users = userDao.allPaginate();
             if (users == null) {
                 users = new ArrayList<>();
-                getResponse = new ResponseFormUser(0, 0, users, true);
+                getResponse = new ResultForm<User>(0, 0, users, true);
                 return sqlError(getResponse, statusList);
             } else if (!users.isEmpty() && usersCount != null) {
-                getResponse = new ResponseFormUser(userDao.getPageSize(), userDao.getPage(), users, true, usersCount);
+                getResponse = new ResultForm<User>(userDao.getPageSize(), userDao.getPage(), users, true, usersCount);
                 if (getResponse.getResult().dataSize() == 0) {
                     return noResultFound(getResponse, statusList);
                 } else {
@@ -316,7 +316,7 @@ public class UserResourceService extends ResourceService {
                     return Response.status(Response.Status.OK).entity(getResponse).build();
                 }
             } else {
-                getResponse = new ResponseFormUser(0, 0, users, true);
+                getResponse = new ResultForm<User>(0, 0, users, true);
                 return noResultFound(getResponse, statusList);
             }
         }

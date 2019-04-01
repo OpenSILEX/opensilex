@@ -48,8 +48,8 @@ import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
 import phis2ws.service.view.brapi.form.ResponseFormGET;
-import phis2ws.service.view.brapi.form.ResponseFormGroup;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
+import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Group;
 
 @Api("/group")
@@ -265,23 +265,23 @@ public class GroupResourceService extends ResourceService {
     private Response getGroupsData(GroupDao groupDao) {
         ArrayList<Group> groups = new ArrayList<>();
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormGroup getResponse; 
+        ResultForm<Group> getResponse; 
         Integer groupsCount = groupDao.count();
         
         if (groupsCount != null && groupsCount == 0) {
-            getResponse = new ResponseFormGroup(groupDao.getPageSize(), groupDao.getPage(), groups, true, groupsCount);
+            getResponse = new ResultForm<Group>(groupDao.getPageSize(), groupDao.getPage(), groups, true, groupsCount);
             return noResultFound(getResponse, statusList);
         } else {
             groups = groupDao.allPaginate();
             
             if (groups == null || groupsCount == null) { //sql error
-                getResponse = new ResponseFormGroup(0, 0, groups, true, groupsCount);
+                getResponse = new ResultForm<Group>(0, 0, groups, true, groupsCount);
                 return sqlError(getResponse, statusList);
             } else if (groups.isEmpty()) { // no result found
-                getResponse = new ResponseFormGroup(groupDao.getPageSize(), groupDao.getPage(), groups, false, groupsCount);
+                getResponse = new ResultForm<Group>(groupDao.getPageSize(), groupDao.getPage(), groups, false, groupsCount);
                 return noResultFound(getResponse, statusList);
             } else { //results founded
-                getResponse = new ResponseFormGroup(groupDao.getPageSize(), groupDao.getPage(), groups, true, groupsCount);
+                getResponse = new ResultForm<Group>(groupDao.getPageSize(), groupDao.getPage(), groups, true, groupsCount);
                 getResponse.setStatus(statusList);
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }

@@ -47,9 +47,8 @@ import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
-import phis2ws.service.view.brapi.form.ResponseFormEventDetailed;
-import phis2ws.service.view.brapi.form.ResponseFormEventSimple;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
+import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Event;
 
 /**
@@ -153,13 +152,13 @@ public class EventResourceService  extends ResourceService {
         // 2. Analyse result
         ArrayList<EventSimpleDTO> eventDTOs = new ArrayList();
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormEventSimple responseForm;
+        ResultForm<EventSimpleDTO> responseForm;
         
         if (events == null) { // Request failure
-            responseForm = new ResponseFormEventSimple(0, 0, eventDTOs, true, 0);
+            responseForm = new ResultForm<EventSimpleDTO>(0, 0, eventDTOs, true, 0);
             return noResultFound(responseForm, statusList);
         } else if (events.isEmpty()) { // No result
-            responseForm = new ResponseFormEventSimple(0, 0, eventDTOs, true, 0);
+            responseForm = new ResultForm<EventSimpleDTO>(0, 0, eventDTOs, true, 0);
             return noResultFound(responseForm, statusList);
         } else { // Results
             
@@ -176,7 +175,7 @@ public class EventResourceService  extends ResourceService {
                 concernedItemUri, 
                 startDate, 
                 endDate);
-            responseForm = new ResponseFormEventSimple(eventDAO.getPageSize(), eventDAO.getPage(), eventDTOs, true, resultsCount);
+            responseForm = new ResultForm<EventSimpleDTO>(eventDAO.getPageSize(), eventDAO.getPage(), eventDTOs, true, resultsCount);
             if (responseForm.getResult().dataSize() == 0) {
                 return noResultFound(responseForm, statusList);
             } else {
@@ -279,17 +278,17 @@ public class EventResourceService  extends ResourceService {
         // 2. Analyse result
         ArrayList<EventDetailedDTO> eventDTOs = new ArrayList();
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormEventDetailed responseForm;
+        ResultForm<EventDetailedDTO> responseForm;
         
         if (event == null) { // Request failure
-            responseForm = new ResponseFormEventDetailed(0, 0, eventDTOs, true, 0);
+            responseForm = new ResultForm<EventDetailedDTO>(0, 0, eventDTOs, true, 0);
             return noResultFound(responseForm, statusList);
         } else { // Results
             
             // Generate DTO
             eventDTOs.add(new EventDetailedDTO(event));
             
-            responseForm = new ResponseFormEventDetailed(0, 0, eventDTOs, true, 0);
+            responseForm = new ResultForm<EventDetailedDTO>(0, 0, eventDTOs, true, 0);
             if (responseForm.getResult().dataSize() == 0) {
                 return noResultFound(responseForm, statusList);
             } else {

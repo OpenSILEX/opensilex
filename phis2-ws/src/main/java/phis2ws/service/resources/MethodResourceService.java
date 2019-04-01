@@ -46,8 +46,8 @@ import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
 import phis2ws.service.view.brapi.form.ResponseFormGET;
-import phis2ws.service.view.brapi.form.ResponseFormMethod;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
+import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Method;
 
 @Api("/methods")
@@ -156,15 +156,15 @@ public class MethodResourceService extends ResourceService {
     private Response getMethodsData(MethodDaoSesame methodDaoSesame) {
         ArrayList<Method> methods;
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormMethod getResponse;
+        ResultForm<Method> getResponse;
         
         methods = methodDaoSesame.allPaginate();
         
         if (methods == null) {
-            getResponse = new ResponseFormMethod(0, 0, methods, true);
+            getResponse = new ResultForm<Method>(0, 0, methods, true);
             return noResultFound(getResponse, statusList);
         } else if (!methods.isEmpty()) {
-            getResponse = new ResponseFormMethod(methodDaoSesame.getPageSize(), methodDaoSesame.getPage(), methods, false);
+            getResponse = new ResultForm<Method>(methodDaoSesame.getPageSize(), methodDaoSesame.getPage(), methods, false);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {
@@ -172,7 +172,7 @@ public class MethodResourceService extends ResourceService {
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         } else {
-            getResponse = new ResponseFormMethod(0, 0, methods, true);
+            getResponse = new ResultForm<Method>(0, 0, methods, true);
             return noResultFound(getResponse, statusList);
         }
     }

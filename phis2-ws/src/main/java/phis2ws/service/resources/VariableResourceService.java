@@ -47,7 +47,7 @@ import phis2ws.service.view.brapi.Status;
 import phis2ws.service.view.brapi.form.AbstractResultForm;
 import phis2ws.service.view.brapi.form.ResponseFormGET;
 import phis2ws.service.view.brapi.form.ResponseFormPOST;
-import phis2ws.service.view.brapi.form.ResponseFormVariable;
+import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Variable;
 
 @Api("/variables")
@@ -165,7 +165,7 @@ public class VariableResourceService extends ResourceService {
     private Response getVariablesData(VariableDaoSesame variableDaoSesame) {
         ArrayList<Variable> variables;
         ArrayList<Status> statusList = new ArrayList<>();
-        ResponseFormVariable getResponse;
+        ResultForm<Variable> getResponse;
         
         // 1. Get number of variables corresponding to the search params
         Integer totalCount = variableDaoSesame.count();
@@ -175,13 +175,13 @@ public class VariableResourceService extends ResourceService {
         
         //3. Return the result
         if (variables == null) { //Request error
-            getResponse = new ResponseFormVariable(0, 0, variables, true, 0);
+            getResponse = new ResultForm<Variable>(0, 0, variables, true, 0);
             return noResultFound(getResponse, statusList);
         } else if (variables.isEmpty()) { //No result
-            getResponse = new ResponseFormVariable(0, 0, variables, true, 0);
+            getResponse = new ResultForm<Variable>(0, 0, variables, true, 0);
             return noResultFound(getResponse, statusList);
         } else { //Results founded. Return the results
-            getResponse = new ResponseFormVariable(variableDaoSesame.getPageSize(), variableDaoSesame.getPage(), variables, true, totalCount);
+            getResponse = new ResultForm<Variable>(variableDaoSesame.getPageSize(), variableDaoSesame.getPage(), variables, true, totalCount);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }

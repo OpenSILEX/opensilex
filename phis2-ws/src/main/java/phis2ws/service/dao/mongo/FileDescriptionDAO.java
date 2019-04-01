@@ -49,9 +49,9 @@ import phis2ws.service.view.model.phis.FileDescription;
  * Represents the MongoDB Data File Access Object.
  * @author Vincent Migot
  */
-public class DataFileDAO extends MongoDAO<FileDescription> {
+public class FileDescriptionDAO extends MongoDAO<FileDescription> {
     
-    private final static Logger LOGGER = LoggerFactory.getLogger(DataFileDAO.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(FileDescriptionDAO.class);
      
     private final static String DB_FIELD_URI = "uri";
     private final static String DB_FIELD_DATE = "date";

@@ -32,14 +32,8 @@ public class TokenManager {
     private static TokenManager _instance = null;
 
     /**
-     * Instance() - Méthode de classe permettant de créer une instance unique de
-     * TokenManager Cette méthode doit être appelée à la place du constructeur
-     * de la classe TokenManager
-     *
-     * exemple ConnectionManger instance = TokenManager.Instance();
-     *
-     * @return une instance unique de TokenManager
-     * @date 26/11/2015
+     * Constructs a unique instance.
+     * @return a unique instance
      */
     public static TokenManager Instance() {
         if (_instance == null) {
@@ -49,27 +43,20 @@ public class TokenManager {
     }
 
     /**
-     * addThread() - Méthode privée appelée dans createToken() Crée un objet
-     * SessionThread pour chaque nouvel utilisateur qui se connecte, l'ajoute à
-     * une liste d'où il sera accessible et lance le nouveau thread
-     *
-     * @param id Identifiant de session
-     * @param username Nom de l'utilisateur
-     *
-     * @see SessionThreadcreateToken()
-     * @date 26/11/2015
+     * Creates and runs a new thread for each new user.
+     * @param sessionId
+     * @param username
      */
-    private void addThread(String id, String username) {
+    private void addThread(String sessionId, String username) {
         if (this.listThread == null) {
             this.listThread = new ArrayList();
         }
         this.removeEmptyThread();
-        SessionThread newThread = new SessionThread(id, username);
+        SessionThread newThread = new SessionThread(sessionId, username);
         listThread.add(newThread);
         newThread.start();
     }
 
-    
     private void removeThread(String id) {
         int i = 0;
         boolean interrupted = false;
@@ -82,20 +69,17 @@ public class TokenManager {
             i++;
         }
     }
+    
     /**
-     * reloadToken() - Rajoute du temps de connection à un utilisateur identifié
-     * par son id
-     *
-     * @param id Identifiant de connection de l'utilisateur
-     *
+     * Increases a user connection time.
+     * @param userConnectionId
      * @see SessionThread
-     * @date 26/11/2015
      */
-    public void reloadToken(String id) {
-        if (id != null && (listThread != null && !listThread.isEmpty())) {
+    public void reloadToken(String userConnectionId) {
+        if (userConnectionId != null && (listThread != null && !listThread.isEmpty())) {
             int i = 0;
             while (i < listThread.size()) {
-                if (this.listThread.get(i).getSessionId().equals(id)) {
+                if (this.listThread.get(i).getSessionId().equals(userConnectionId)) {
                     this.listThread.get(i).addTime();
                     return;
                 }
@@ -105,10 +89,7 @@ public class TokenManager {
     }
 
     /**
-     * removeEmptyThread - Supprime tout objet SessionThread ayant terminé son
-     * execution de la liste de threads
-     *
-     * @date 26/11/2015
+     * Removes every finished session thread from the active thread list.
      */
     private void removeEmptyThread() {
         int i = 0;
@@ -121,22 +102,15 @@ public class TokenManager {
     }
 
     /**
-     * searchSession() - Méthode appelée au moment de l'authentification
-     * Recherche si l'utilisateur identifié par name est présent dans la liste
-     * des sessions actives
-     *
-     * @param name Nom de l'utilisateur
-     * @return une String correspondant a l'identifiant de session de
-     * l'utilisateur ou null si aucune session n'est active pour cet utilisateur
-     *
-     * @see Token.getConnection()
-     * @date 26/11/2015
+     * Searches if a user belongs to the active sessions list.
+     * @param userName
+     * @return the session id or nothing if not found.
      */
-    public String searchSession(String name) {
+    public String searchSession(String userName) {
         if (listSession != null && !listSession.isEmpty()) {
             int i = 0;
             while (i < listSession.size()) {
-                if (name.equals(listSession.get(i).getName())) {
+                if (userName.equals(listSession.get(i).getName())) {
                     return listSession.get(i).getId();
                 }
                 i++;
@@ -159,31 +133,25 @@ public class TokenManager {
     }
 
     /**
-     * addSession() - Méthode appelée par createToken() Ajoute un objet Session
-     * à la liste des sessions actives
-     *
-     * @param session Un objet Session représentant une nouvelle session active
-     *
-     * @see createSession()
-     * @date 25/11/2015
-     * @note L'accès a cette méthode peut être remplacée par private, dans ce
-     * cas il faut changer le test unitaire de checkAuthentification()
-     *
-     * @update 09/02/2016
-     * @info AT, ajout d'une session au manager = ajout dans la bd, voir plus
-     * tard dao
+     * Adds a session the active sessions list.
+     * @param newActiveSession
+     * @note The method can be private. In this case replace the unit test of 
+     * checkAuthentification()
+     * //SILEX:todo
+     * Arnaud Charleroy: add a session to the manager = add in the database, 
+     * or later DAO
+     * //\SILEX:todo
      */
-    public void addSession(Session session) {
+    public void addSession(Session newActiveSession) {
         if (this.listSession == null) {
             this.listSession = new ArrayList();
         }
-        this.listSession.add(session);
-//        logger.debug(this.listSession.toString());
-        //BD
-       SessionDAO sessionDao = new SessionDAO(); 
+        this.listSession.add(newActiveSession);
+
+        SessionDAO sessionDao = new SessionDAO(); 
         try {
-            session.setDateStart(new DateTime().toString("yyyy-MM-dd HH:mm:ss"));
-            sessionDao.insertOrUpdateOrDeleteQueryFromDAO("INSERT INTO session (email, id, date) VALUES ('" + session.getName() + "', '" + session.getId() + "', now())");
+            newActiveSession.setDateStart(new DateTime().toString("yyyy-MM-dd HH:mm:ss"));
+            sessionDao.insertOrUpdateOrDeleteQueryFromDAO("INSERT INTO session (email, id, date) VALUES ('" + newActiveSession.getName() + "', '" + newActiveSession.getId() + "', now())");
         } catch (SQLException ex) {
             final Status status = new Status("Can't create session token", StatusCodeMsg.ERR, ex.getMessage());
             throw new WebApplicationException(Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(new ResponseFormGET(status)).build());
@@ -192,19 +160,11 @@ public class TokenManager {
     }
 
     /**
-     * removeSession - Méthode appelée à la fin de l'execution d'un
-     * SessionThread Supprime un objet Session de la liste des sessions actives
-     * et met a jour la bd en ajoutant la date de fin de validité de la session
-     *
-     * @param id Identifiant de session
-     *
-     * @see MyThread.run()
-     * @date 25/11/2015
-     *
-     * @update 09/02/2016
-     * @info AT lien bd pour invalider la session, déplacé ici
+     * Removes the session from the active sessions list and updates the database
+     * setting the session end date.
+     * @param sessionId
      */
-    public void removeSession(String id) {
+    public void removeSession(String sessionId) {
         if (listSession == null || listSession.isEmpty()) {
             return;
         }
@@ -213,68 +173,51 @@ public class TokenManager {
         boolean find = false;
         while (i < listSession.size() && !find) {
            String sessionid = listSession.get(i).getId(); 
-            if (id.equals(sessionid)) { 
+            if (sessionId.equals(sessionid)) { 
                 sessionDao.endSession(sessionid); 
                 listSession.remove(i);
                 find = true;
             }
             i++;
         }
-        this.removeThread(id);
+        this.removeThread(sessionId);
     }
 
     /**
-     * createToken() - Méthode appelée à chaque nouvelle authentification
-     * réussie Ajoute une session a la liste des sessions actives et crée un
-     * nouveau thread qui va gérer cette session
-     *
-     * @param session Un objet Session représentant une nouvelle session active
-     *
-     * @see addSession(), addThread(), DbConnector.getConnection()
-     * @date 25/11/2015
+     * Adds a session the the active sessions list and creates a new thread to 
+     * handle this session.
+     * @param newActiveSession
      */
-    public void createToken(Session session) {
-        this.addSession(session);
-        this.addThread(session.getId(), session.getName());
+    public void createToken(Session newActiveSession) {
+        this.addSession(newActiveSession);
+        this.addThread(newActiveSession.getId(), newActiveSession.getName());
     }
 
-    
      /** 
-     * createTokenFromBD() - Méthode appelée à chaque nouvelle authentification 
-     * réussie Ajoute une ancienne session a la liste des sessions actives et crée un 
-     * nouveau thread qui va gérer cette session 
-     * 
-     * @param session Un objet Session représentant une nouvelle session active 
-     * 
-     * @see addSession(), addThread(), DbConnector.getConnection() 
-     * @date 25/11/2015 
+     * Adds an former session to the active sessions list and creates a new 
+     * thread to handle this session.
+     * @param newActiveSession 
      */ 
-    public void createTokenFromBD(Session session) { 
+    public void createTokenFromBD(Session newActiveSession) { 
         if (this.listSession == null) { 
             this.listSession = new ArrayList(); 
         } 
-        this.listSession.add(session); 
-        this.addThread(session.getId(), session.getName()); 
-//        logger.debug(JsonConverter.ConvertToJson(this.listSession)); 
+        this.listSession.add(newActiveSession); 
+        this.addThread(newActiveSession.getId(), newActiveSession.getName()); 
     } 
     
     /**
-     * checkAuthentification() - Vérifie que la session déterminée par son id
-     * est encore valable et rajoute du temps de connection si la session est
-     * valide
-     *
-     * @param id L'identifiant de la session
-     * @return true si la session est valide ou false si elle ne l'est pas
-     *
-     * @see reloadToken()
-     * @date 25/11/2015
+     * Checks that the session is still valid and adds connection time if it is
+     * the case
+     * @param sessionId
+     * @return true if valid
+     *         false if not
      */
-    public boolean checkAuthentification(String id) {
-        if (id != null && (this.listSession != null && !this.listSession.isEmpty())) {
+    public boolean checkAuthentication(String sessionId) {
+        if (sessionId != null && (this.listSession != null && !this.listSession.isEmpty())) {
             int i = 0;
             while (i < listSession.size()) {
-                if (id.equals(listSession.get(i).getId())) {
-//                    this.reloadToken(id);
+                if (sessionId.equals(listSession.get(i).getId())) {
                     return true;
                 }
                 i++;

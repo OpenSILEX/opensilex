@@ -94,7 +94,7 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
 //            logger.debug(authorization);
 //            logger.debug(userToken);
 //            logger.debug(Boolean.toString(TokenManager.Instance().checkAuthentification(userToken)));
-            if (!TokenManager.Instance().checkAuthentification(userToken)) {
+            if (!TokenManager.Instance().checkAuthentication(userToken)) {
                 throw new WebApplicationException(accessDenied);
             }
         }

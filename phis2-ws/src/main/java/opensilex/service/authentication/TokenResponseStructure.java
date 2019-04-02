@@ -23,20 +23,15 @@ public class TokenResponseStructure {
     private final String expires_in;
 
     /**
-     * ResultForm() - Prepare l'objet métadata vide et associe l'identifiant de
-     * session à la variable session_token
-     *
-     * @param id L'identifiant de session
-     * @param userDisplayName nom et prénome de l'utilisateur
-     *
-     * @see result_output.Metadata
-     * @date 25/11/2015
-     * @update 08/2016
+     * Prepares an empty metadata object and joins the session id to the session 
+     * token variable.
+     * @param sessionId
+     * @param userDisplayName
      */
-    public TokenResponseStructure(String id, String userDisplayName) {
+    public TokenResponseStructure(String sessionId, String userDisplayName) {
         this.metadata = new Metadata(0, 0, 1);
         this.userDisplayName = userDisplayName;
-        this.access_token = id;
+        this.access_token = sessionId;
         this.expires_in = PropertiesFileManager.getConfigFileProperty("service", "sessionTime");
     }
 

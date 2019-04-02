@@ -38,7 +38,7 @@ public class SessionFactory implements Factory<Session> {
             String sessionId = request.getHeader(GlobalWebserviceValues.AUTHORIZATION_PROPERTY);
             if (sessionId != null) {
                 sessionId = sessionId.replace(GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ", "");
-                if (TokenManager.Instance().checkAuthentification(sessionId)) {
+                if (TokenManager.Instance().checkAuthentication(sessionId)) {
                     return TokenManager.Instance().getSession(sessionId);
                 }
             }

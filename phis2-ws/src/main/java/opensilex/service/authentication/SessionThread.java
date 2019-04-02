@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import opensilex.service.PropertiesFileManager;
 
 /**
- * Thread to manage sessions
+ * Thread to manage sessions.
  * @see DbConnector
  * @update [Arnaud Charleroy] May 2016: Add TokenDAO, logs. Modifications of
  * the property files
@@ -33,27 +33,21 @@ public class SessionThread extends Thread {
         this.setTimeSession();
     }
     
-    /**
-     * Update 20/06/14 Temps en seconde *1000
-     */
-   private void setTimeSession(){
+    private void setTimeSession(){
             try {
                 this.sessionTime = Integer.valueOf(PropertiesFileManager.getConfigFileProperty(propsFileName, "sessionTime")) * 1000;
             } catch (NumberFormatException e) {
                 LOGGER.error("Error : No session time defined or file parsing error for "+ propsFileName +" properties file", e);
             }
-   }
+    }
 
     /**
-     * run() - Execution du thread actuel Le thread est mis en pause un certain
-     * temps, qui peut etre allongé en fonction du comportement de
-     * l'utilisateur et
-     * supprime l'objet Session correspondant de la liste des sessions actives
-     *
+     * Run the current thread. It is paused is paused for a certain amoun of 
+     * time which can be extended according to the user's behaviour.
+     * Delete the session corresponding to the active sessions.
      * @see phenomeapi.service.model.brapi.authentication.TokenDaoPhisBraphi,TokenManager.removeSession()
-     * @date 25/11/2015
-     * @update 09/02/2016 AT : ne met plus la bd à jour, déplacé dans le manager + properties du temps de session
-     * 
+     * @update [Arnaud Charleroy] 9 Feb. 2016: doesn't update the database 
+     * anymore. Moved to the manager + session time properties.
      */
     @Override
     public void run() {
@@ -70,25 +64,13 @@ public class SessionThread extends Thread {
     }
 
     /**
-     * addTime - Permet d'augmenter le temps de connection d'un utilisateur
-     * Replace le compteur utilisé dans run() sur true ce qui met le thread sur
-     * pause plus longtemps et donc retarde la fin de la session correspondante
-     *
-     * @see run()
-     * @date 25/11/2015
+     * Increases a user connection time. It pauses the thread which delay the 
+     * session end.
      */
     public void addTime() {
         this.cmp = true;
     }
-
-    /**
-     * getSessionId - Récupère l'identifiant de la session gérée par cette
- instance de SessionThread
-     *
-     * @return l'identifiant de de la session
-     *
-     * @date 25/11/2015
-     */
+    
     public String getSessionId() {
         return this.id;
     }

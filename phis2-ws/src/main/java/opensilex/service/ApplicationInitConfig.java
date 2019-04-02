@@ -112,7 +112,7 @@ public class ApplicationInitConfig extends ResourceConfig {
                 }
             }
         }
-        // make the good rights on log directory on remote server
+        // apply the right rights on the log directory on the remote server
         try {
             Runtime.getRuntime().exec("chmod -R 755 " + logDirectory);
             LOGGER.info("Log directory rights successful update");
@@ -120,8 +120,5 @@ public class ApplicationInitConfig extends ResourceConfig {
             LOGGER.error("Can't change rights on log directory");
         }
         TokenManager.Instance();
-        SessionDAO sessionDao = new SessionDAO();
-        // It's possible to reload a session that hasn't been desactived
-//        sessionDao.reloadActiveSession();
     }
 }

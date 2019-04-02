@@ -689,6 +689,7 @@ public class StudiesResourceService implements BrapiCall {
                     obs.setObservationTimeStamp(data.getDate());
                     obs.setObservationVariableDbId(variable.getUri());
                     obs.setObservationVariableName(variable.getLabel());
+                    obs.setValue(data.getValue());
                     observationsPerObjectAndVariable.add(obs);
                 }
                 observationsPerObsUnit.addAll(observationsPerObjectAndVariable);

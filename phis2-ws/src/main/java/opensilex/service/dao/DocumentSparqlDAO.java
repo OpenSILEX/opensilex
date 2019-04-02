@@ -35,7 +35,7 @@ import opensilex.service.configuration.DocumentStatus;
 import opensilex.service.configuration.SortingValues;
 import opensilex.service.dao.manager.SparqlDAO;
 import opensilex.service.dao.DocumentMongoDAO;
-import opensilex.service.dao.ExperimentMongoDAO;
+import opensilex.service.dao.ExperimentSQLDAO;
 import opensilex.service.dao.UserDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.User;
@@ -615,7 +615,7 @@ public class DocumentSparqlDAO extends SparqlDAO<Document> {
         if (u.getAdmin().equals("t") || u.getAdmin().equals("true")) {
             return true;
         } else {
-            ExperimentMongoDAO experimentDao = new ExperimentMongoDAO();
+            ExperimentSQLDAO experimentDao = new ExperimentSQLDAO();
             for (ConcernedItemDTO concernedItem : document.getConcernedItems()) {
                 if (concernedItem.getTypeURI().equals(Oeso.CONCEPT_EXPERIMENT.toString())) {
                     Experiment experiment = new Experiment(concernedItem.getUri());

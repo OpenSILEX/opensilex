@@ -31,7 +31,7 @@ import opensilex.service.model.User;
 import opensilex.service.utils.sql.JoinAttributes;
 import opensilex.service.model.Experiment;
 import opensilex.service.model.ContactBrapi;
-import opensilex.service.dao.ExperimentMongoDAO;
+import opensilex.service.dao.ExperimentSQLDAO;
 import opensilex.service.dao.manager.DAO;
 import opensilex.service.model.StudyDetails;
 
@@ -97,7 +97,7 @@ public class StudyDAO extends DAO<StudyDetails>{
      * @return expList list of Experiment
      */
     public ArrayList<Experiment> getExperimentsList() {
-        ExperimentMongoDAO experimentDAO = new ExperimentMongoDAO();
+        ExperimentSQLDAO experimentDAO = new ExperimentSQLDAO();
         ArrayList<Experiment> expList = new ArrayList();
         
         try (final Connection connection = experimentDAO.getDataSource().getConnection();
@@ -150,7 +150,7 @@ public class StudyDAO extends DAO<StudyDetails>{
     }
 
     public Integer count(){
-        ExperimentMongoDAO experimentDAO = new ExperimentMongoDAO();
+        ExperimentSQLDAO experimentDAO = new ExperimentSQLDAO();
         experimentDAO.uri = studyDbId;
         return experimentDAO.count();
     }    
@@ -189,7 +189,7 @@ public class StudyDAO extends DAO<StudyDetails>{
     * @return study 
     */
     private StudyDetails getStudyContacts(StudyDetails study) throws SQLException {
-        ExperimentMongoDAO experimentDAO = new ExperimentMongoDAO();      
+        ExperimentSQLDAO experimentDAO = new ExperimentSQLDAO();      
 
         try (final Connection connection = experimentDAO.getDataSource().getConnection();
                 final Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
@@ -221,7 +221,7 @@ public class StudyDAO extends DAO<StudyDetails>{
     * @return study 
     */
     private StudyDetails getStudyActive(StudyDetails study) throws SQLException {
-        ExperimentMongoDAO experimentDAO = new ExperimentMongoDAO();
+        ExperimentSQLDAO experimentDAO = new ExperimentSQLDAO();
         
             try (final Connection connection = experimentDAO.getDataSource().getConnection();
             final Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);

@@ -30,7 +30,7 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.dao.manager.SparqlDAO;
-import opensilex.service.dao.ExperimentMongoDAO;
+import opensilex.service.dao.ExperimentSQLDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.ontology.Rdf;
 import opensilex.service.ontology.Rdfs;
@@ -153,7 +153,7 @@ public class ExperimentSparqlDAO extends SparqlDAO<Experiment> {
     /**
      * Update the list of the variables linked to the given experiment.
      * /!\ Prerequisite : the information must have been checked before.
-     * @see ExperimentMongoDAO#checkAndUpdateLinkedVariables(java.lang.String, java.util.List) 
+     * @see ExperimentSQLDAO#checkAndUpdateLinkedVariables(java.lang.String, java.util.List) 
      * @param experimentUri
      * @param variables
      * @return The update result.
@@ -277,7 +277,7 @@ public class ExperimentSparqlDAO extends SparqlDAO<Experiment> {
     /**
      * Update the list of the sensors linked to the given experiment.
      * /!\ Prerequisite : the information must have been checked before.
-     * @see ExperimentMongoDAO#checkAndUpdateLinkedSensors(java.lang.String, java.util.List)
+     * @see ExperimentSQLDAO#checkAndUpdateLinkedSensors(java.lang.String, java.util.List)
      * @param experimentUri
      * @param sensors
      * @return The update result.

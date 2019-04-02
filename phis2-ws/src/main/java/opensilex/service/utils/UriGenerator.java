@@ -15,7 +15,7 @@ import java.util.UUID;
 import org.apache.commons.codec.binary.Base32;
 import org.apache.jena.sparql.AlreadyExists;
 import opensilex.service.PropertiesFileManager;
-import opensilex.service.dao.ExperimentMongoDAO;
+import opensilex.service.dao.ExperimentSQLDAO;
 import opensilex.service.dao.ImageMetadataMongoDAO;
 import opensilex.service.dao.GroupDAO;
 import opensilex.service.dao.ProjectDAO;
@@ -436,7 +436,7 @@ public class UriGenerator {
      */
     private String generateExperimentUri(String campaign) {
         //1. Get the campaign last experiment URI
-        String campaignLastExperimentUri = (new ExperimentMongoDAO()).getCampaignLastExperimentUri(campaign);
+        String campaignLastExperimentUri = (new ExperimentSQLDAO()).getCampaignLastExperimentUri(campaign);
         //2. Generate the URI of the experiment
         int newExperimentNumber;
         if (campaignLastExperimentUri == null) {

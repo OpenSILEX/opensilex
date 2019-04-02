@@ -35,9 +35,10 @@ public class ScientificObjectDTO extends AbstractVerifiedClass {
     //object which has part the scientific object
     //@example http://www.opensilex.org/opensilex/2019/o19000012
     private String isPartOf;
-    
-    private String alias;
-    
+    //label of the scientific object
+    //@example M02_W
+    private String label;
+    //properties of the scientific object
     private ArrayList<PropertyDTO> properties = new ArrayList<>();
 
     public ScientificObjectDTO() {
@@ -50,7 +51,7 @@ public class ScientificObjectDTO extends AbstractVerifiedClass {
         setGeometry(scientificObject.getGeometry());
         setExperiment(scientificObject.getExperiment());
         setIsPartOf(scientificObject.getIsPartOf());
-        setAlias(scientificObject.getAlias());
+        setLabel(scientificObject.getLabel());
         
         for (Property property : scientificObject.getProperties()) {
             addProperty(new PropertyDTO(property));
@@ -65,7 +66,7 @@ public class ScientificObjectDTO extends AbstractVerifiedClass {
         scientificObject.setGeometry(geometry);
         scientificObject.setExperiment(experiment);
         scientificObject.setIsPartOf(isPartOf);
-        scientificObject.setAlias(alias);
+        scientificObject.setLabel(label);
         
         for (PropertyDTO property : properties) {
             scientificObject.addProperty(property.createObjectFromDTO());
@@ -114,12 +115,12 @@ public class ScientificObjectDTO extends AbstractVerifiedClass {
         properties.add(property);
     }
 
-    public String getAlias() {
-        return alias;
+    public String getLabel() {
+        return label;
     }
 
-    public void setAlias(String alias) {
-        this.alias = alias;
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     public String getExperiment() {

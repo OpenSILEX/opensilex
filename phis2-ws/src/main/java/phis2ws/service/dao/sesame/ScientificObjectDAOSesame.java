@@ -23,7 +23,9 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.MalformedQueryException;
@@ -200,11 +202,11 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
             }
 
             //Check properties
-            boolean missingAlias = true;
+            boolean missingLabel = scientificObject.getLabel() == null; // if there is no label, it is missing so we check the properties.
             for (Property property : scientificObject.getProperties()) {
                 //Check alias
                 if (property.getRelation().equals(Rdfs.RELATION_LABEL.toString())) {
-                    missingAlias = false;
+                    missingLabel = false;
                     //Check unique alias in the experiment
                     if (scientificObject.getExperiment() != null) {
                         SPARQLQueryBuilder query = askExistAliasInContext(property.getValue(), scientificObject.getExperiment());
@@ -225,7 +227,7 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
                 }
             }
         
-            if (missingAlias) {
+            if (missingLabel) {
                 dataOk = false;
                 checkStatusList.add(new Status(StatusCodeMsg.MISSING_FIELDS, StatusCodeMsg.ERR, "missing alias"));
             }
@@ -259,7 +261,7 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
                   return creationResult;
               } catch (Exception ex) {
                   POSTResultsReturn creationResult = new POSTResultsReturn(Boolean.FALSE, Boolean.FALSE, Boolean.FALSE);
-                  creationResult.statusList .add(new Status(StatusCodeMsg.ERR, StatusCodeMsg.ERR, ex.getMessage()));
+                  creationResult.statusList.add(new Status(StatusCodeMsg.ERR, StatusCodeMsg.ERR, ex.getMessage()));
                   
                   return creationResult;
               }
@@ -517,6 +519,9 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
                     
                     property.setRelation(bindingSet.getValue(RELATION).stringValue());
                     property.setValue(bindingSet.getValue(PROPERTY).stringValue());
+                    if (bindingSet.getValue(PROPERTY_TYPE) != null) {
+                        property.setRdfType(bindingSet.getValue(PROPERTY_TYPE).stringValue());
+                    }
                     
                     if (alreadyFoundedUri) {
                         scientificObject = foundedScientificObjects.get(actualUri);
@@ -531,9 +536,9 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
                         }
                         
                         if (alias != null) {
-                            scientificObject.setAlias(alias);
+                            scientificObject.setLabel(alias);
                         } else {
-                            scientificObject.setAlias(bindingSet.getValue(ALIAS).stringValue());
+                            scientificObject.setLabel(bindingSet.getValue(ALIAS).stringValue());
                         }
                         
                         if (rdfType != null) {
@@ -563,12 +568,6 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
             scientificObjects.forEach((scientificObject) -> {
                 scientificObject.setGeometry(geometries.get(scientificObject.getUri()));
             });
-            
-            
-            //SILEX:test
-            //Pour les soucis de pool de connexion
-            getConnection().close();
-            //\SILEX:test
             
             return scientificObjects;
         }   catch (SQLException ex) {
@@ -636,8 +635,10 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
             sparqlQuery.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString(), null);
         }
         
-        sparqlQuery.appendSelect(" ?" + RELATION + " ?" + PROPERTY);
+        sparqlQuery.appendSelect(" ?" + RELATION + " ?" + PROPERTY + " ?" + PROPERTY_TYPE);
         sparqlQuery.appendTriplet(scientificObjectURI, "?" + RELATION, "?" + PROPERTY, null);
+        
+        sparqlQuery.appendOptional("?" + PROPERTY + " <" + Rdf.RELATION_TYPE.toString() + "> ?" + PROPERTY_TYPE);
         
         LOGGER.debug(SPARQL_QUERY + sparqlQuery.toString());
         
@@ -755,7 +756,7 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
             //isPartOf : the object which has part the element must not be a plot    
             if (scientificObject.getIsPartOf()!= null) {
                 Node agronomicalObjectPartOf = NodeFactory.createURI(scientificObject.getIsPartOf());
-                org.apache.jena.rdf.model.Property relationIsPartOf = ResourceFactory.createProperty(Oeso.RELATION_HAS_PLOT.toString());
+                org.apache.jena.rdf.model.Property relationIsPartOf = ResourceFactory.createProperty(Oeso.RELATION_IS_PART_OF.toString());
                 
                 spql.addInsert(graph, scientificObjectUri, relationIsPartOf, agronomicalObjectPartOf);  
             }
@@ -772,7 +773,6 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
                 // Rollback on the transaction.
                 this.getConnection().rollback();
             }
-//                this.getConnection().close(); 
             
             //3. insert in postgresql
             ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO();
@@ -787,10 +787,216 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
             return new ArrayList<>();
         }
     }
+    
+    public POSTResultsReturn checkAndUpdateInContext(ScientificObject scientificObject, String context) throws Exception {
+        POSTResultsReturn updateResult;
+        //1. Check the new data for the scientific object
+        ArrayList<ScientificObject> scientificObjects = new ArrayList<>();
+        scientificObjects.add(scientificObject);
+        updateResult = check(scientificObjects);
+        if (updateResult.statusList.isEmpty()) { // No error founded, we can update the scientific object.
+            //2. Update the scientific object.
+            try {
+                ScientificObject updatedScientificObject = updateOneInContext(scientificObject, context);
+
+                ArrayList<String> updatedScientificObjectsUris = new ArrayList<>();
+                updatedScientificObjectsUris.add(updatedScientificObject.getUri());
+
+                updateResult = new POSTResultsReturn(Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
+                updateResult.statusList.add(new Status(StatusCodeMsg.RESOURCES_UPDATED, StatusCodeMsg.INFO, updatedScientificObjectsUris.size() + " updated resource(s)."));
+                updateResult.createdResources = updatedScientificObjectsUris;
+            } catch (Exception ex) {
+                updateResult = new POSTResultsReturn(Boolean.FALSE, Boolean.FALSE, Boolean.FALSE);
+                updateResult.statusList.add(new Status(StatusCodeMsg.ERR, StatusCodeMsg.ERR, ex.getMessage()));
+            }
+        }
+        return updateResult;
+    }
 
     @Override
     public void delete(List objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    /**
+     * Get a scientific object by its URI in a given context.
+     * @param uri
+     * @param context
+     * @return the scientific object if it exist,
+     *         null if this scientific object does not exist.
+     */
+    public ScientificObject getScientificObjectInContext(String uri, String context) {
+        ArrayList<ScientificObject> scientificObjects = find(uri, null, context, null);
+        if (!scientificObjects.isEmpty()) {
+            return scientificObjects.get(0);
+        } else {
+            return null;
+        }
+    }
+    
+    /**
+     * Delete the given scientific object's data in the given context.
+     * @param scientificObject
+     * @param context
+     * @example
+     * DELETE DATA {
+     *      GRAPH <http://www.opensilex.org/opensilex/DMO2018-1> {
+     *          <http://www.opensilex.org/opensilex/2019/o19000106> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.opensilex.org/vocabulary/oeso#Plot> .
+     *          <http://www.opensilex.org/vocabulary/oeso#Plot> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+     *          <http://www.opensilex.org/opensilex/2019/o19000106> <http://www.w3.org/2000/01/rdf-schema#label> "LA23" .
+     *          <http://www.opensilex.org/opensilex/2019/o19000106> <http://www.opensilex.org/vocabulary/oeso#isPartOf> <http://www.opensilex.org/opensilex/2019/o19000102> .
+     *          <http://www.opensilex.org/opensilex/2019/o19000106> <http://www.opensilex.org/vocabulary/oeso#participatesIn> <http://www.opensilex.org/opensilex/DMO2018-1> .
+     *      }
+     *  }
+     * @return the generated query
+     */
+    private UpdateRequest prepareDeleteOneInContextQuery(ScientificObject scientificObject, String context) {
+        UpdateBuilder updateBuilder = new UpdateBuilder();
+        
+        Node graph = NodeFactory.createURI(context);
+        Resource scientificObjectUri = ResourceFactory.createResource(scientificObject.getUri());
+        
+        for (Property property : scientificObject.getProperties()) {
+            if (property.getValue() != null) {
+                org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
+                
+                if (property.getRdfType() != null) { //If there is a Rdf Type, it is an URI
+                    Node propertyValue = NodeFactory.createURI(property.getValue());
+                    Node propertyRdfType = NodeFactory.createURI(property.getRdfType());
+                    updateBuilder.addDelete(graph, scientificObjectUri, propertyRelation, propertyValue);
+                    updateBuilder.addDelete(graph, propertyValue, RDF.type, propertyRdfType);
+                } else if (existUri(property.getValue())) { //If there is no Rdf type but the value is an existing URI in the triplestore, it is an object URI.
+                    Node propertyValue = NodeFactory.createURI(property.getValue());
+                    updateBuilder.addDelete(graph, scientificObjectUri, propertyRelation, propertyValue);
+                } else { //The value is a literal
+                    Literal propertyValue = ResourceFactory.createStringLiteral(property.getValue());
+                    updateBuilder.addDelete(graph, scientificObjectUri, propertyRelation, propertyValue);
+                }
+            }
+        }
+        
+        UpdateRequest request = updateBuilder.buildRequest();
+        LOGGER.debug(request.toString());
+        
+        return request;
+    }
+    
+    /**
+     * Generates the query to create a scientific object in the given context.
+     * @param scientificObject
+     * @param context
+     * @example 
+     * INSERT DATA {
+     *      GRAPH <http://www.opensilex.org/opensilex/DMO2018-1> {
+     *          <http://www.opensilex.org/opensilex/2019/o19000106> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.opensilex.org/vocabulary/oeso#Plot> .
+     *          <http://www.opensilex.org/opensilex/2019/o19000106> <http://www.opensilex.org/vocabulary/oeso#participatesIn> <http://www.opensilex.org/opensilex/DMO2018-1> .
+     *          <http://www.opensilex.org/opensilex/2019/o19000106> <http://www.opensilex.org/vocabulary/oeso#isPartOf> <http://www.opensilex.org/opensilex/2019/o19000102> .
+     *          <http://www.opensilex.org/opensilex/2019/o19000106> <http://www.w3.org/2000/01/rdf-schema#label> "LA23" .
+     *      }
+     * }
+     * @return the generated query
+     */
+    private UpdateRequest prepareInsertOneInContextQuery(ScientificObject scientificObject, String context) {
+        UpdateBuilder insertBuilder = new UpdateBuilder();
+        
+        Node graph = NodeFactory.createURI(context);
+        Resource scientificObjectURI = ResourceFactory.createResource(scientificObject.getUri());
+        
+        //rdf type
+        Node rdfType = NodeFactory.createURI(scientificObject.getRdfType());
+        insertBuilder.addInsert(graph, scientificObjectURI, RDF.type, rdfType);
+        
+        //participates in (in the case where it is a new participates in an experiment)
+        Node participatesIn = NodeFactory.createURI(Oeso.RELATION_PARTICIPATES_IN.toString());
+        insertBuilder.addInsert(graph, scientificObjectURI, participatesIn, graph);
+        
+        //is part of
+        if (scientificObject.getIsPartOf() != null) {
+            Node isPartOf = NodeFactory.createURI(Oeso.RELATION_IS_PART_OF.toString());
+            Resource scientificObjectPartOf = ResourceFactory.createResource(scientificObject.getIsPartOf());
+            insertBuilder.addInsert(graph, scientificObjectURI, isPartOf, scientificObjectPartOf);
+        }
+        
+        //label
+        Literal label = ResourceFactory.createStringLiteral(scientificObject.getLabel());
+        insertBuilder.addInsert(graph, scientificObjectURI, RDFS.label, label);
+        
+        //properties
+        for (Property property : scientificObject.getProperties()) {
+            if (property.getValue() != null) {
+                org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
+                
+                if (property.getRdfType() != null) {
+                    Node propertyValue = NodeFactory.createURI(property.getValue());
+                    insertBuilder.addInsert(graph, scientificObjectURI, propertyRelation, propertyValue);
+                    insertBuilder.addInsert(graph, propertyValue, RDF.type, property.getRdfType());
+                } else {
+                    Literal propertyValue = ResourceFactory.createStringLiteral(property.getValue());
+                    insertBuilder.addInsert(graph, scientificObjectURI, propertyRelation, propertyValue);
+                }
+            }
+        }
+        UpdateRequest query = insertBuilder.buildRequest();
+        LOGGER.debug(query.toString());
+        
+        return query;
+    }
+    
+    /**
+     * Update the metadata about the scientific object.
+     * The rdfType and geometry are global metadata and are updated for each context.
+     * The others metadata of the scientific object are updated for the given context.
+     * /!\ prerequisite: data must have been checked before. 
+     * @see ScientificObjectDAOSesame#check(java.util.List)
+     * @param scientificObject
+     * @param context
+     * @return the updated scientific object
+     */
+    public ScientificObject updateOneInContext(ScientificObject scientificObject, String context) throws Exception {
+        //1. Get the old scientific object data in the given experiment
+        ScientificObject oldScientificObject = getScientificObjectInContext(scientificObject.getUri(), context);
+        
+        //2. Update the scientific object
+        //2.1. Triplestore data
+        //2.1.1 Delete old data
+        UpdateRequest deleteQuery = prepareDeleteOneInContextQuery(oldScientificObject, context);
+        
+        //2.1.2 Insert new data
+        UpdateRequest insertQuery = prepareInsertOneInContextQuery(scientificObject, context);
+        getConnection().begin();
+        try {
+            Update prepareDelete = getConnection().prepareUpdate(deleteQuery.toString());
+            Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, insertQuery.toString());
+            prepareDelete.execute();
+            prepareUpdate.execute();
+            
+            //2.2 Relational database data
+            //2.2.1 Check if it exist in the relational database
+            //3. insert in postgresql
+            ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO();
+            ScientificObject scientificObjectToSearchInDB = new ScientificObject();
+            scientificObjectToSearchInDB.setGeometry(scientificObject.getGeometry());
+            scientificObjectToSearchInDB.setUri(scientificObject.getUri());
+            if (scientificObjectDAO.existInDB(scientificObjectToSearchInDB)) {
+                //2.2.1a Update old data
+                scientificObjectDAO.updateOneGeometry(scientificObject.getUri(), scientificObject.getGeometry());
+            } else {
+                //2.2.1b Add new entry in database
+                ArrayList<ScientificObject> scientificObjects = new ArrayList<>();
+                scientificObjects.add(scientificObject);
+                scientificObjectDAO.checkAndInsertListAO(scientificObjects);
+            }
+            
+            this.getConnection().commit();
+        } catch (MalformedQueryException e) { //an error occurred, rollback
+            this.getConnection().rollback();
+            throw new MalformedQueryException(e.getMessage());
+        } catch (SQLException e) { //an error occurred, rollback
+            this.getConnection().rollback();
+            throw new SQLException(e.getMessage());
+        }
+        
+        return scientificObject;  
     }
 
     @Override

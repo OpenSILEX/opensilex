@@ -62,21 +62,31 @@ import phis2ws.service.view.model.phis.ScientificObject;
 @Path("scientificObjects")
 public class ScientificObjectResourceService extends ResourceService {
     final static Logger LOGGER = LoggerFactory.getLogger(ScientificObjectResourceService.class);
-  
-    private List<ScientificObject> scientificObjectsDTOsToScientificObjects(List<ScientificObjectDTO> scientificObjectDTOs) {
+    
+    /**
+     * Transform ScientificObjectPostDTO to ScientificObject
+     * @param scientificObjectDTOs
+     * @return the transformed list
+     */
+    private List<ScientificObject> scientificObjectPostsDTOsToScientificObjects(List<ScientificObjectPostDTO> scientificObjectDTOs) {
         ArrayList<ScientificObject> scientificObjects = new ArrayList<>();
         
-        for (ScientificObjectDTO scientificObjectDTO : scientificObjectDTOs) {
+        for (ScientificObjectPostDTO scientificObjectDTO : scientificObjectDTOs) {
             scientificObjects.add(scientificObjectDTO.createObjectFromDTO());
         }
         
         return scientificObjects;
     }
     
-    private List<ScientificObject> scientificObjectPostsDTOsToScientificObjects(List<ScientificObjectPostDTO> scientificObjectDTOs) {
+    /**
+     * Transform ScientificObjectPutDTO to ScientificObject
+     * @param scientificObjectPutDTOs
+     * @return the transformed list
+     */
+    private List<ScientificObject> scientificObjectPutDTOsToScientificObjects(List<ScientificObjectPutDTO> scientificObjectPutDTOs) {
         ArrayList<ScientificObject> scientificObjects = new ArrayList<>();
         
-        for (ScientificObjectPostDTO scientificObjectDTO : scientificObjectDTOs) {
+        for (ScientificObjectPutDTO scientificObjectDTO : scientificObjectPutDTOs) {
             scientificObjects.add(scientificObjectDTO.createObjectFromDTO());
         }
         
@@ -157,6 +167,47 @@ public class ScientificObjectResourceService extends ResourceService {
         }
     }
     
+    /**
+     * Update the data of a given scientific object in the given context (experiment).
+     * @param uri
+     * @param experiment
+     * @param scientificObjectDTO
+     * @param context
+     * @example
+     * {
+     *      "rdfType": "http://www.opensilex.org/vocabulary/oeso#Plot",
+     *      "geometry": "POLYGON((0 0, 10 0, 10 10, 0 10, 0 0))",
+     *      "isPartOf": "http://www.opensilex.org/opensilex/2019/o19000102",
+     *      "label": "POZ_1",
+     *      "properties": [
+     *          {
+     *              "relation": "http://www.w3.org/2000/01/rdf-schema#label",
+     *              "value": "LA23"
+     *          }
+     *      ]
+     * }
+     * @return the put result
+     * @example
+     * {
+     *      "metadata": {
+     *          "pagination": null,
+     *          "status": [
+     *              {
+     *                  "message": "Resource(s) updated",
+     *                  "exception": {
+     *                      "type": "Info",
+     *                      "href": null,
+     *                      "details": "1 updated resource(s)."
+     *                  }
+     *              }
+     *          ],
+     *          "datafiles": [
+     *              "http://www.opensilex.org/opensilex/2019/o19000106"
+     *          ]
+     *      }
+     * }
+     * @throws Exception 
+     */
     @PUT
     @Path("{uri}/{experiment}")
     @ApiOperation(value = "Put scientific object(s) in the given experiment",
@@ -178,11 +229,26 @@ public class ScientificObjectResourceService extends ResourceService {
     public Response put(
             @ApiParam(value = DocumentationAnnotation.SCIENTIFIC_OBJECT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_URI) @PathParam("uri") @Required @URL String uri,
             @ApiParam(value = DocumentationAnnotation.EXPERIMENT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI) @PathParam("experiment") @Required @URL String experiment,
-            @ApiParam(value = DocumentationAnnotation.SCIENTIFIC_OBJECT_POST_DATA_DEFINITION, required = true) @Valid ArrayList<ScientificObjectPutDTO> scientificObjectsDTO,
-            @Context HttpServletRequest context) {
+            @ApiParam(value = DocumentationAnnotation.SCIENTIFIC_OBJECT_POST_DATA_DEFINITION, required = true) @Valid ScientificObjectPutDTO scientificObjectDTO,
+            @Context HttpServletRequest context) throws Exception {
+        
         ScientificObjectDAOSesame scientificObjectDAO = new ScientificObjectDAOSesame();
-        //TODO
-        return null;
+        
+        ScientificObject scientificObject = scientificObjectDTO.createObjectFromDTO();
+        scientificObject.setUri(uri);
+        POSTResultsReturn result = scientificObjectDAO.checkAndUpdateInContext(scientificObject, experiment);
+        
+        AbstractResultForm putResponse = null;
+        if (result.getHttpStatus().equals(Response.Status.OK)
+                || result.getHttpStatus().equals(Response.Status.CREATED)) {
+            putResponse = new ResponseFormPOST(result.statusList);
+            putResponse.getMetadata().setDatafiles(result.createdResources);
+        } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                || result.getHttpStatus().equals(Response.Status.OK)
+                || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+            putResponse = new ResponseFormPOST(result.statusList);
+        }
+        return Response.status(result.getHttpStatus()).entity(putResponse).build();
     }
     
     @GET

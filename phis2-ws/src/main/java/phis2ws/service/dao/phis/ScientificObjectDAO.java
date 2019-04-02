@@ -313,6 +313,33 @@ public class ScientificObjectDAO extends DAOPhisBrapi<ScientificObject, Scientif
             return null;
         }  
     }
+    
+    /**
+     * Update the geometry of a scientific object identified by its URI.
+     * @param uri
+     * @param geometry
+     * @example 
+     *  UPDATE "trial"
+     *  SET "geometry" = ST_GeomFromText("POLYGON(1 0, 0 0, 0 1, 1 0)", 4326)
+     *  WHERE "uri" = "http://www.opensilex.org/demo/o1800000000023"
+     * @return the updated scientific object.
+     * @throws SQLException 
+     */
+    public ScientificObject updateOneGeometry(String uri, String geometry) throws SQLException {
+        try (Connection connection = dataSource.getConnection(); Statement statement = connection.createStatement()) {
+            String updateGeometry = "UPDATE \"" + table + "\" "
+                              + "SET \"" + GEOMETRY + "\" = ST_GeomFromText('" + geometry + "', 4326) "
+                              + "WHERE \"" + URI + "\" = '" + uri + "'";
+            
+            LOGGER.debug(updateGeometry);
+            
+            statement.executeUpdate(updateGeometry);
+            ScientificObject scientificObject = new ScientificObject(uri);
+            scientificObject.setGeometry(geometry);
+            
+            return scientificObject;
+        }
+    }
 
     @Override
     public POSTResultsReturn checkAndInsertList(List<ScientificObjectPostDTO> newObjects) {

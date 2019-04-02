@@ -44,6 +44,7 @@ public class ScientificObjectPutDTO  extends AbstractVerifiedClass {
         scientificObject.setRdfType(rdfType);
         scientificObject.setGeometry(geometry);
         scientificObject.setIsPartOf(isPartOf);
+        scientificObject.setLabel(label);
         
         if (properties != null) {
             properties.forEach((property) -> {

@@ -33,7 +33,7 @@ import phis2ws.service.view.model.phis.Namespace;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
-public class VocabularyDAO extends SparqlDAO<Object> {
+public class VocabularyDAO extends SparqlDAO<PropertyVocabularyDTO> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(VocabularyDAO.class);
 
@@ -233,27 +233,27 @@ public class VocabularyDAO extends SparqlDAO<Object> {
     }
 
     @Override
-    public List<Object> create(List<Object> objects) throws Exception {
+    public List<PropertyVocabularyDTO> create(List<PropertyVocabularyDTO> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List<Object> objects) throws Exception {
+    public void delete(List<PropertyVocabularyDTO> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<Object> update(List<Object> objects) throws Exception {
+    public List<PropertyVocabularyDTO> update(List<PropertyVocabularyDTO> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Object find(Object object) throws Exception {
+    public PropertyVocabularyDTO find(PropertyVocabularyDTO object) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Object findById(String id) throws Exception {
+    public PropertyVocabularyDTO findById(String id) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

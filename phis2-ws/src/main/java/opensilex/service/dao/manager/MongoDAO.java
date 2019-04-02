@@ -44,7 +44,7 @@ public abstract class MongoDAO<T> extends DAO<T> {
     protected Integer pageSize;
     
     /**
-     * User ip adress
+     * User IP address
      */
     protected String remoteUserAdress;
     
@@ -60,6 +60,7 @@ public abstract class MongoDAO<T> extends DAO<T> {
     public final static String MONGO_AND = "$and";
     //error code send by mongo in case of duplicated data with unique indexes
     public final static int DUPLICATE_KEY_ERROR_CODE = 11000;
+    
     /**
      * @see service.properties file
      */
@@ -84,8 +85,6 @@ public abstract class MongoDAO<T> extends DAO<T> {
         this.database = database;
     }
 
-    
-
     public MongoCollection<Document> getCollection() {
         return collection;
     }
@@ -95,11 +94,10 @@ public abstract class MongoDAO<T> extends DAO<T> {
     }
 
     /**
-     * La page de l'api brapi commence à 0
-     *
-     * @return numéro de la page courante
+     * @return current page
      */
     public Integer getPage() {
+        // The first BrAPI page is 0
         if (page == null || pageSize < 0) {
             return 0;
         }
@@ -107,10 +105,8 @@ public abstract class MongoDAO<T> extends DAO<T> {
     }
 
     /**
-     * La page de l'api brapi pour pouvoir l'utiliser pour la pagination dans
-     * une base de données
-     *
-     * @return numéro de la page courante + 1
+     * BrAPI page to be used to use pagination in a database query.
+     * @return current page + 1
      */
     public Integer getPageForDBQuery() {
         if (page == null || pageSize < 0) {
@@ -120,8 +116,7 @@ public abstract class MongoDAO<T> extends DAO<T> {
     }
 
     /**
-     * Définit le paramètre page
-     *
+     * Sets page parameter.
      * @param page
      */
     public void setPage(Integer page) {
@@ -132,7 +127,7 @@ public abstract class MongoDAO<T> extends DAO<T> {
     }
 
     /**
-     * Retourne le paramètre taille de la page
+     * Gets page size.
      */
     public Integer getPageSize() {
         if (pageSize == null || pageSize < 0) {
@@ -142,8 +137,7 @@ public abstract class MongoDAO<T> extends DAO<T> {
     }
 
     /**
-     * 
-     * @return Les logs qui seront utilisés pour la traçabilité
+     * @return traceability logs
      */
     protected String getTraceabilityLogs() {
         String log = "";
@@ -158,8 +152,7 @@ public abstract class MongoDAO<T> extends DAO<T> {
     }
     
     /**
-     * Définit le paramètre taille de page
-     *
+     * Sets page size.
      * @param pageSize
      */
     public void setPageSize(Integer pageSize) {
@@ -167,9 +160,7 @@ public abstract class MongoDAO<T> extends DAO<T> {
     }
 
     /**
-     * Fonction qui permet de créer la partie commune d'une requête à la fois
-     * pour lister les éléments et les récupérés
-     *
+     * Prepares a search query.
      * @return BasicDBObject
      */
     abstract protected BasicDBObject prepareSearchQuery();

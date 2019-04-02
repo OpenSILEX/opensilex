@@ -67,30 +67,30 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
     protected static final String SQL_SELECT_QUERY = "SQL query : ";
     
     /**
-     * user c'est l'objet qui représente l'utilisateur
+     * User
      */
     public User user;
     protected Integer page;
     protected Integer pageSize;
 
     public String remoteUserAdress;
+    
     /**
-     * Nom de la table du dao (table principale)
+     * DAO main table
      */
     protected String table;
     protected String tableAlias;
 
     /**
-     * Connexion du DAO pool de con ;)
+     * Data source
      */
     protected DataSource dataSource;
 
     /**
-     * pour le batch
+     * For batch
      */
     protected final int batchSize = 1000;
-
-//    protected static Connection connectCommitFalse = null;
+    
     public DataSource getDataSource() {
         return dataSource;
     }
@@ -108,9 +108,8 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
     }
 
     /**
-     * La page de l'api brapi commence à 0
-     *
-     * @return numéro de la page courante
+     * @return current page number
+     * BrApi page starts at 0
      */
     public Integer getPage() {
         if (page == null || pageSize < 0) {
@@ -120,10 +119,8 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
     }
 
     /**
-     * La page de l'api brapi pour pouvoir l'utiliser pour la pagination dans
-     * une base de données
-     *
-     * @return numéro de la page courante + 1
+     * Gets BrAPI page for database querying.
+     * @return current page + 1
      */
     public Integer getPageForDBQuery() {
         if (page == null || pageSize < 0) {
@@ -133,8 +130,6 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
     }
 
     /**
-     * Définit le paramètre page
-     *
      * @param page
      */
     public void setPage(Integer page) {
@@ -145,8 +140,6 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
     }
 
     /**
-     * Retourne le paramètre taille de la page
-     *
      * @return Integer taille de la page
      */
     public Integer getPageSize() {
@@ -157,8 +150,6 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
     }
 
     /**
-     * Définit le paramètre taille de page
-     *
      * @param pageSize
      */
     public void setPageSize(Integer pageSize) {
@@ -166,9 +157,7 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
     }
 
     /**
-     * Définit un objet utilisateur à partir d'un identifiant
-     *
-     * @param id identifiant
+     * @param id
      */
     public void setUser(String id) {
         if (TokenManager.Instance().getSession(id).getUser() == null) {
@@ -183,13 +172,9 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
     }
 
     /**
-     * Pas pratique les ressources (statement et resulset) restent ouvertes
-     * Exécute une requête de recherche à partir d'un DAO qui est en lien vers
-     * une BD relationnelle.
-     *
-     * @author Arnaud Charleroy
+     * Not practical the resources (statement and resultset) stay open.Execute a search request from a DAO linked to a relational database.
      * @param query
-     * @return
+     * @return 
      * @deprecated
      * @throws SQLException
      */
@@ -198,18 +183,13 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
         Statement stat = null;
         con = dataSource.getConnection();
         stat = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-//        System.err.println(query);
         return stat.executeQuery(query);
     }
 
     /**
-     *
-     * Exécute une requête d'ajout de suppresion ou de mise à jour à partir d'un
-     * DAO qui est en lien vers une BD relationnelle.
-     *
-     * @author Arnaud Charleroy
+     * Runs a query from a DAO
      * @param query
-     * @return
+     * @return 
      * @throws SQLException
      */
     public Integer insertOrUpdateOrDeleteQueryFromDAO(String query) throws SQLException {
@@ -224,7 +204,6 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
     /**
      * Prepare une requete sql en utilisant une chaine de variables sous forme
      * variable1,variable2
-     *
      * @author Samuel Cherimon
      * @param variables
      * @param request

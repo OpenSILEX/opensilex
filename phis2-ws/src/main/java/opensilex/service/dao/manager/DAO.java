@@ -17,7 +17,7 @@ import java.util.List;
 public abstract class DAO<T> {
 
     /**
-     * Creates in the storage the list of objects given
+     * Creates in the storage the list of objects given.
      * @param objects
      * @return the given list with the generated IDs 
      * @throws java.lang.Exception
@@ -25,14 +25,14 @@ public abstract class DAO<T> {
     public abstract List<T> create(List<T> objects) throws Exception;
 
     /**
-     * Deletes in the storage the list of objects given
+     * Deletes in the storage the list of objects given.
      * @param objects
      * @throws java.lang.Exception
      */
     public abstract void delete(List<T> objects) throws Exception;
 
     /**
-     * Updates in the storage the list of objects given
+     * Updates in the storage the list of objects given.
      * @param objects
      * @return the given list with the data updated
      * @throws java.lang.Exception
@@ -40,7 +40,7 @@ public abstract class DAO<T> {
     public abstract List<T> update(List<T> objects) throws Exception;
 
     /**
-     * Finds in the storage the object given
+     * Finds in the storage the object given.
      * @param object
      * @return the object found
      * @throws java.lang.Exception
@@ -48,7 +48,7 @@ public abstract class DAO<T> {
     public abstract T find(T object) throws Exception;
 
     /**
-     * Finds in the storage the objects with the ID given
+     * Finds in the storage the objects with the ID given.
      * @param id
      * @return the object found
      * @throws java.lang.Exception

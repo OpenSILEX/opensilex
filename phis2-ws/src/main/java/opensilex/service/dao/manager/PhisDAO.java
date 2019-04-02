@@ -27,29 +27,27 @@ public abstract class PhisDAO<T, D> extends PostgreSQLDAO<T> {
     }
     
     /**
-     * 
      * @param newObject
      * @return 
      */
     public abstract POSTResultsReturn checkAndInsert(D newObject);
     
     /**
-     * Vérifie les données et les enregistre en base de données
+     * Checks the new objects integrity and inserts them in the storage.
      * @param newObjects
      * @return 
      */
     public abstract POSTResultsReturn checkAndInsertList(List<D> newObjects);
     
     /**
-     * Vérifie les données et fais les modifications en BD
+     * Checks the new objects integrity and updates them in the storage.
      * @param newObjects
      * @return 
      */
     public abstract POSTResultsReturn checkAndUpdateList(List<D> newObjects);
     
      /**
-     * 
-     * @return Les logs qui seront utilisés pour la traçabilité
+     * @return the traceability logs
      */
     protected String getTraceabilityLogs() {
         String log = "";

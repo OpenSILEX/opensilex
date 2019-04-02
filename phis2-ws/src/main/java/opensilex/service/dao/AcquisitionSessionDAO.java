@@ -27,10 +27,10 @@ import opensilex.service.model.Sensor;
 import opensilex.service.model.Vector;
 
 /**
- * This class is a Data Access Object for the acquisition sessions.
- * It gets the metadata for the excel file used to define acquisition sessions.
- * @update [Arnaud Charleroy] 10 September, 2018 : minor fix on vector data gathering
- * @author Morgane Vidal <morgane.vidal@inra.fr>, Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * DAO for acquisition sessions.
+ * @update [Arnaud Charleroy] 10 September 2018: minor fix on vector data gathering
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class AcquisitionSessionDAO extends SparqlDAO<MetadataFileDTO> {
     

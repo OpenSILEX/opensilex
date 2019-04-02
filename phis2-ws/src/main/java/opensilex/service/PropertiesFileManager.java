@@ -28,12 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Gère les méthodes appelant tous types de propriétés à partir de fichier de
- * configuration Les fichiers sont disponible dans /src/main/resources par
- * défaut dans un projet Maven
- *
- * @date 05/2016
- * @author Arnaud Charleroy
+ * Property file manager.
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class PropertiesFileManager {
 

@@ -11,9 +11,8 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Dates formats used in the WS.
- * Contains the date formats used in the web service.
- * @author Arnaud Charleroy
+ * Dates formats used in the web service.
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  * SILEX:todo : - Element: Datetime
  *         Attribute : YMDHMSZ_FORMAT
  *         Purpose : wrong date time format @link https://www.w3.org/TR/xmlschema-2/#dateTime

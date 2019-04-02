@@ -9,9 +9,9 @@
 package opensilex.service.authentication;
 
 /**
- *
- * @author cherimon
- * @Update AC 05/16 Mise à jour de la connexion aux données
+ * Data table
+ * @update [Arnaud Charleroy] 5 June: update connection
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class DataTable {
 
@@ -123,19 +123,4 @@ public class DataTable {
     public String getCollector() {
         return collector;
     }
-
-    
-    
-    
-
-//    public void fillDataTable(ResultSet resultat) throws SQLException {
-//        setInstanceNumber(resultat.getString("date") + ":" + resultat.getString("sensor") + ":" + resultat.getString("codeVariable"));
-//        setObservationVariableId(resultat.getString("codeVariable"));
-//        setObservationVariableDbId(resultat.getString("codeVariable"));
-//        setSeason(resultat.getString("season"));
-//        setObservationValue(resultat.getString("value"));
-//        setObservationTimeStamp(resultat.getString("date"));
-//        setCollectionFacilityLabel(resultat.getString("site"));
-//        setCollector(resultat.getString("sensor"));
-//    }
 }

@@ -41,7 +41,7 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 
 /**
  * Application init configuration
- * @author andreas
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @ApplicationPath("/rest")
 public class ApplicationInitConfig extends ResourceConfig {

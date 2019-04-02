@@ -2,7 +2,7 @@
 //                                 Session.java 
 // SILEX-PHIS
 // Copyright © INRA 2015
-// Creation date: November 2015
+// Creation date: 25 November 2015
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.authentication;
@@ -12,15 +12,11 @@ import org.slf4j.LoggerFactory;
 import opensilex.service.PropertiesFileManager;
 
 /**
- * SessionThread - Extension de la classe Thread Prend en charge la gestion du temps
- de connection d'une session
- *
- * @version1.0
- *
- * @author Samuël Chérimont
+ * Thread to manage sessions
  * @see DbConnector
- * @date 25/11/2015
- * @update AC 05/2016 Ajout TokenDAO, log et modification des fichiers de propriétés
+ * @update [Arnaud Charleroy] May 2016: Add TokenDAO, logs. Modifications of
+ * the property files
+ * @author Samuël Chérimont
  */
 public class SessionThread extends Thread {
     private static final String propsFileName = "service";

@@ -2,7 +2,7 @@
 //                                 Session.java 
 // SILEX-PHIS
 // Copyright © INRA 2015
-// Creation date: November 2015
+// Creation date: 25 November 2015
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.authentication;
@@ -20,12 +20,9 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.ResponseFormGET;
 
 /**
- * Connection Manager - Permet la gestion de toutes les sessions et
- * authentification par l'intermédiaire d'une seule instance de cette classe
- *
- * @version1.0
+ * Session manager.
+ * Manages sessions and authentications using the singleton pattern.
  * @author Samuël Chérimont
- * @date 25/11/2015
  */
 public class TokenManager {
 

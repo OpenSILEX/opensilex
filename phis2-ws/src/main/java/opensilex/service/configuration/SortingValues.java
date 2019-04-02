@@ -13,10 +13,10 @@ package opensilex.service.configuration;
 //\SILEX:todo
 
 /**
- * The list of the authorized sort parameters formats.
- * If you modify sorting values changes the linked documentation below.
+ * List of authorized sorting values.
  * @see DocumentationAnnotation.EXAMPLE_SORTING_ALLOWABLE_VALUES
- * @author Arnaud Charleroy<arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public enum SortingValues {
     

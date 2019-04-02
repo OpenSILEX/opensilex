@@ -18,8 +18,8 @@ import java.util.concurrent.TimeUnit;
 //\SILEX:todo
 
 /**
- * The list of the authorized date formats
- * @author Arnaud Charleroy<arnaud.charleroy@inra.fr>
+ * List of authorized date formats
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public enum DateFormat {
     YMDHMSZ {

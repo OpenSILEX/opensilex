@@ -2,7 +2,7 @@
 //                                 Session.java 
 // SILEX-PHIS
 // Copyright © INRA 2015
-// Creation date: November 2015
+// Creation date: 25 November 2015
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.authentication;
@@ -11,14 +11,9 @@ import opensilex.service.PropertiesFileManager;
 import opensilex.service.view.brapi.Metadata;
 
 /**
- * TokenResponseStructure - Prépare le résultat final pour qu'il soit conforme
- * au modèle de la Plant breeding API
- *
- * @version1.0
- *
+ * Structure of a response representing a token corresponding to the Brapi 
+ * prerequisites. 
  * @author Samuël Chérimont
- * @date 25/11/2015
- * @note session_token n'est pas conforme aux norme de nomination Java
  */
 public class TokenResponseStructure {
 
@@ -55,5 +50,4 @@ public class TokenResponseStructure {
             this.expires_in = expires_in;
         }
     }
-
 }

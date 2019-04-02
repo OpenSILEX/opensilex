@@ -46,10 +46,10 @@ import opensilex.service.model.Event;
 import opensilex.service.model.Property;
 
 /**
- * DAO for Events
- * @update [Andreas Garcia] 14 Feb., 2019: Add event detail service
- * @update [Andreas Garcia] 5 March, 2019: Add events insertion service
- * @update [Andréas Garcia] 5 March, 2019: 
+ * DAO for Events.
+ * @update [Andreas Garcia] 14 Feb. 2019: Add event detail service
+ * @update [Andreas Garcia] 5 March 2019: Add events insertion service
+ * @update [Andréas Garcia] 5 March 2019: 
  *      Move the generic function to get a string value from a binding set to DAOSesame
  *      Move concerned items accesses handling into a new ConcernedItemDAOSesame class
  * @author Andreas Garcia <andreas.garcia@inra.fr>

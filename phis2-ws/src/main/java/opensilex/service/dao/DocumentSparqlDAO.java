@@ -50,21 +50,22 @@ import opensilex.service.model.Document;
 import opensilex.service.model.Experiment;
 
 //SILEX:warning
-//After the update of the June 12, 2018 document's metadata are inserted inside 
-//the triplestore and in mongodb, the document is updated (linked/unlinked)
+// After the update of June 12, 2018, document's metadata are inserted inside 
+// the triplestore and in MongoDB, the document is updated (linked/unlinked)
 //\SILEX:warning
 
 //SILEX:conception
-//If the object concerned by the document does not exist in the triplestore, 
-//dont add the triplet (element rdf:type elementType). It allows more genericity
-//but might need to be updated in the future
+// If the object concerned by the document does not exist in the triplestore, 
+// don't add the triplet (element rdf:type elementType). It allows more genericity
+// but might need to be updated in the future
 //\SILEX:conception
 
 /**
- * A Dao specific to insert the metadata of a document inside the triplestore.
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
- * @update [Morgane Vidal] 12 October, 2017 : add status on documents : linked/unlinked
- * @update [Andréas Garcia] 15 Jan. 2019 : Replace "concern" occurences by "concernedItem"
+ * Dao to insert the metadata of a document inside the triplestore.
+ * @update [Morgane Vidal] 12 Oct. 2017: add status on documents : linked/unlinked
+ * @update [Andréas Garcia] 15 Jan. 2019: Replace "concern" occurences by "concernedItem"
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class DocumentSparqlDAO extends SparqlDAO<Document> {
     final static Logger LOGGER = LoggerFactory.getLogger(DocumentSparqlDAO.class);

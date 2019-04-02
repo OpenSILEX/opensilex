@@ -37,7 +37,7 @@ import opensilex.service.model.AgronomicalData;
 import opensilex.service.model.Dataset;
 
 /**
- * Represents the MongoDB AgronomicalData Access Object for the datasets
+ * DAO for datasets.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class DatasetDAO extends MongoDAO<Dataset> {

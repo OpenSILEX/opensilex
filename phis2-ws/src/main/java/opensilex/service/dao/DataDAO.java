@@ -39,8 +39,8 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.model.Data;
 
 /**
- * Represents the MongoDB Data Access Object.
- * @author Vincent Migot
+ * DAO for data.
+ * @author Vincent Migot <vincent.migot@inra.fr>
  */
 public class DataDAO extends MongoDAO<Data> {
 

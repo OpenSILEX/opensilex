@@ -13,10 +13,8 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.ResponseFormGET;
 
 /**
- * Définit des réponse qui seront utilisées par défaut dans le
- * WebService
- * @date 07/16
- * @author Arnaud Charleroy
+ * Global web service values.
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public final class GlobalWebserviceValues {
 

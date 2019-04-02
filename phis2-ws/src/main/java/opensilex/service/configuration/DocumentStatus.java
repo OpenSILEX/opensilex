@@ -8,12 +8,14 @@
 package opensilex.service.configuration;
 
 //SILEX:todo
-// Use this enum instead of the Documentation in the documentation swagger examples and in the Documents DAO
+// Use this enum instead of the Documentation in the documentation swagger 
+// examples and in the Documents DAO
 //\SILEX:todo
 
 /**
- * The list of the authorized documents status
- * @author Arnaud Charleroy<arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
+ * List of authorized document status
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public enum DocumentStatus {
     LINKED {

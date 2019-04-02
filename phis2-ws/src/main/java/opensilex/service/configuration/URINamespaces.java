@@ -12,10 +12,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Personal parameters for global usage.
+ * User specific namespaces.
+ * @update [Morgane Vidal] 12 Sept. 2018: remove ontology references (moved in the ontologies package)
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  * @author Morgane Vidal <morgane.vidal@inra.fr>
- * @update [Morgane Vidal] 12 Sept, 2018 : remove ontologies references (moved in the ontologies package)
  */
 public class URINamespaces {
     // Add additionnal custom users namespaces to triplestore based namespace. e.g. platform => http://www.phenome-fppn.fr/platform/

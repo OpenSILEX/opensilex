@@ -8,8 +8,9 @@
 package opensilex.service.configuration;
 
 /**
- * The list of the authorized group levels
- * @author Arnaud Charleroy<arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
+ * List of authorized group levels.
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public enum GroupLevels {
     GUEST {

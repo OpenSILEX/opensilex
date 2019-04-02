@@ -2,7 +2,7 @@
 //                                 Session.java 
 // SILEX-PHIS
 // Copyright © INRA 2015
-// Creation date: November 2015
+// Creation date: 25 November 2015
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.authentication;
@@ -11,20 +11,18 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import opensilex.service.model.User;
 
 /**
- * Reprents user web service session
- *
- * @version1.0
- *
- * @author Samuël Chérimont
- * @date 25/11/2015
- * @note Fields dateStart and dateEnd are not used
- * @update Arnaud Charleroy Define SQLDBModel and unique fields
- * @update Arnaud Charleroy Implementation of Json web token
+ * Represents an user web service session.
+ * @update [Arnaud Charleroy] Define SQLDBModel and unique fields
+ * @update [Arnaud Charleroy] Implementation of Json web token
  * @see https://self-issued.info/docs/draft-ietf-oauth-json-web-token.html#rfc.section.4.1.1
+ * @author Samuël Chérimont
  */
 public class Session {
     
     // Session start date
+    /**
+     * @note Fields dateStart and dateEnd are not used
+     */
     private String dateStart;
     // Session end date
     private String dateEnd;

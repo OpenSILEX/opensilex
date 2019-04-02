@@ -36,7 +36,7 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.model.ConcernedItem;
 
 /**
- * DAO for concerned items
+ * DAO for concerned items.
  * @author Andreas Garcia <andreas.garcia@inra.fr>
  */
 public class ConcernedItemDAO extends SparqlDAO<ConcernedItem> {

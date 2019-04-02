@@ -50,7 +50,7 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.model.Annotation;
 
 /**
- * DAO for annotations
+ * DAO for annotations.
  * @update [Andréas Garcia] 15 Feb. 2019: search parameters are no longer class 
  * attributes but parameters sent through search functions
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>

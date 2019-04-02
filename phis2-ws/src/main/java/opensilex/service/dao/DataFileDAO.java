@@ -45,8 +45,8 @@ import opensilex.service.model.ConcernedItem;
 import opensilex.service.model.FileDescription;
 
 /**
- * Represents the MongoDB Data File Access Object.
- * @author Vincent Migot
+ * DAO for data file.
+ * @author Vincent Migot <vincent.migot@inra.fr>
  */
 public class DataFileDAO extends MongoDAO<FileDescription> {
     

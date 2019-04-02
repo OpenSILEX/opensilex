@@ -44,6 +44,10 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.model.OntologyReference;
 import opensilex.service.model.Unit;
 
+/**
+ * DAO for units.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class UnitDAO extends SparqlDAO<Unit> {
     final static Logger LOGGER = LoggerFactory.getLogger(UnitDAO.class);
     

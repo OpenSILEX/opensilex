@@ -41,7 +41,7 @@ import opensilex.service.model.SensorProfile;
 import opensilex.service.model.Uri;
 
 /**
- * CRUD method of sensor's profiles, in the triplestore [rdf4j]
+ * DAO for sensor profiles.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class SensorProfileDAO extends SparqlDAO<SensorProfile> {

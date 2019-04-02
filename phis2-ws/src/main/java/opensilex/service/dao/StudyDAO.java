@@ -29,9 +29,8 @@ import opensilex.service.dao.manager.DAO;
 import opensilex.service.model.StudyDetails;
 
 /**
- * Get Experiments filtered by StudiesSearchResourceService fields and add 
- * required attributes to get brapi studies
- * @author Alice Boizet
+ * DAO for studies.
+ * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class StudyDAO extends DAO<StudyDetails>{
     final static Logger LOGGER = LoggerFactory.getLogger(StudyDAO.class);

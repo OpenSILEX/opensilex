@@ -44,6 +44,10 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.model.OntologyReference;
 import opensilex.service.model.Trait;
 
+/**
+ * DAO for traits.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class TraitDAO extends SparqlDAO<Trait> {
     final static Logger LOGGER = LoggerFactory.getLogger(TraitDAO.class);
 

@@ -18,8 +18,7 @@ import opensilex.service.dao.manager.MongoDAO;
 import opensilex.service.model.ShootingConfiguration;
 
 /**
- * Represents the mongodb Data Access Object for the images metadata shooting 
- * configurations
+ * DAO for image metadata shooting configurations
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ShootingConfigurationDAO extends MongoDAO<ShootingConfiguration> {

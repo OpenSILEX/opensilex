@@ -44,6 +44,10 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.model.Method;
 import opensilex.service.model.OntologyReference;
 
+/**
+ * DAO for methods.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class MethodDAO extends SparqlDAO<Method> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(MethodDAO.class);

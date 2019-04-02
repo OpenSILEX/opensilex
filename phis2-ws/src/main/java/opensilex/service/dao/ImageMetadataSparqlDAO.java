@@ -14,7 +14,8 @@ import opensilex.service.dao.manager.SparqlDAO;
 import opensilex.service.model.ImageMetadata;
 
 /**
- * Used to check if an image type exist in the triplestore
+ * DAO for Image metadata in a triplestore.
+ * Used to check if an image type exists in the triplestore.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ImageMetadataSparqlDAO extends SparqlDAO<ImageMetadata> {

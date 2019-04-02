@@ -61,7 +61,7 @@ import opensilex.service.model.Experiment;
 //\SILEX:conception
 
 /**
- * Dao to insert the metadata of a document inside the triplestore.
+ * DAO for documents metadata in a triplestore.
  * @update [Morgane Vidal] 12 Oct. 2017: add status on documents : linked/unlinked
  * @update [Andréas Garcia] 15 Jan. 2019: Replace "concern" occurences by "concernedItem"
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>

@@ -35,7 +35,7 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.view.model.provenance.Provenance;
 
 /**
- * Allows CRUD methods of provenances in mongo.
+ * DAO for provenances.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ProvenanceDAO extends MongoDAO<Provenance> {

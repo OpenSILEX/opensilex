@@ -16,8 +16,7 @@ import opensilex.service.dao.manager.MongoDAO;
 import opensilex.service.model.FileInformations;
 
 /**
- * Represents the mongodb Data Access Object for the images metadata 
- * file informations
+ * DAO for file information.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class FileInformationDAO extends MongoDAO<FileInformations> {

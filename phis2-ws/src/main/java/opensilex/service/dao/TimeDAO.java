@@ -29,7 +29,7 @@ import opensilex.service.utils.dates.Dates;
 import opensilex.service.utils.sparql.SPARQLStringBuilder;
 
 /**
- * DAO for Time objects
+ * DAO for Time objects.
  * @author Andreas Garcia <andreas.garcia@inra.fr>
  */
 public class TimeDAO extends SparqlDAO<Time> {

@@ -43,7 +43,7 @@ import opensilex.service.model.Property;
 import opensilex.service.model.RadiometricTarget;
 
 /**
- * Allows CRUD methods of radiometric target in the triplestore.
+ * DAO for radiometric targets.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class RadiometricTargetDAO extends SparqlDAO<RadiometricTarget> {

@@ -49,7 +49,7 @@ import opensilex.service.model.Property;
 //\SILEX:todo
 
 /**
- * CRUD methods for the properties stored in the Triplestore
+ * DAO for properties.
  * @update [Andréas Garcia] 5 March, 2019: Move URI from the class attributes to 
  * the parameters of the DAO functions
  * @author Morgane Vidal <morgane.vidal@inra.fr>

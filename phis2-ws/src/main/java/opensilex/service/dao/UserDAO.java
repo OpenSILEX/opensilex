@@ -4,7 +4,7 @@
 // Copyright © INRA 2016
 // Creation date: May 2016
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr, 
-//         morgane.vidal@inra.fr
+//          morgane.vidal@inra.fr
 //******************************************************************************
 package opensilex.service.dao;
 
@@ -35,16 +35,14 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.model.Group;
 
 /**
- * Manipule les Sessions et leur modifications à partir de la base de données
- *
- * @date 05/2016
+ * DAO for users.
+ * @update [Morgane Vidal] Apr. 2017: deletion of isAdmin, role and type 
+ * attributes in User table which caused the deletion of isAdmin,
+ * getProjectUserType, getUserGroup, getUserRole and getUserExperiment functions
+ * @update [Arnaud Charleroy] Jul. 2018: Add URI generation from e-mail
+ * @update [Arnaud Charleroy] Sept. 2018: Pagination fixed
+ * @update [Morgane Vidal] 8 Nov. 2018: fix users update (orcid) 
  * @author Arnaud Charleroy
- * @update [Morgane Vidal] April, 2017 : suppression des attributs isAdmin, role, type
- * dans la table User ce qui a impliqué la suppression des méthodes isAdmin,
- * getProjectUserType, getUserGroup, getUserRole, getUserExperiment
- * @update [Arnaud Charleroy] July, 2018 : Add uri generation from e-mail
- * @update [Arnaud Charleroy] September, 2018 : Pagination fixed
- * @update [Morgane Vidal] 8 November, 2018 : fix users update (orcid) 
  */
 public class UserDAO extends PhisDAO<User, UserDTO> {
 

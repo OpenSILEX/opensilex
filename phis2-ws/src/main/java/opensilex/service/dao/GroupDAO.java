@@ -35,8 +35,8 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.model.Group;
 
 /**
- * DAO for groups
- * @author andreas
+ * DAO for groups.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class GroupDAO extends PhisDAO<Group, GroupDTO> {
     

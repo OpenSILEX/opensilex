@@ -2,7 +2,7 @@
 //                                SessionDAO.java 
 // SILEX-PHIS
 // Copyright © INRA 2017
-// Creation date: July 2017
+// Creation date: May 2016
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.dao;
@@ -25,10 +25,8 @@ import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.sql.SQLQueryBuilder;
 
 /**
- * Manipule les Sessions et leur modifications à partir de la base de données
- *
- * @date 05/2016
- * @author Arnaud Charleroy
+ * DAO for sessions.
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class SessionDAO extends PhisDAO<Session, Object> {
 

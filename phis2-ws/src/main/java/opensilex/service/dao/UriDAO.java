@@ -35,9 +35,8 @@ import opensilex.service.model.Uri;
 //   Purpose : need to paginate the query instead of retreive all instances and then filtered them
 // \SILEX:todo
 /**
- * Represents the Triplestore Data Access Object for the uris
- *
- * @author Eloan LAGIER
+ * DAO for URIs.
+ * @author Eloan Lagier
  */
 public class UriDAO extends SparqlDAO<Uri> {
 

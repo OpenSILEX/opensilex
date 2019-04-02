@@ -34,6 +34,10 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.model.Contact;
 import opensilex.service.model.Project;
 
+/**
+ * DAO for projects.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class ProjectDAO extends PhisDAO<Project, ProjectDTO> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(ProjectDAO.class);

@@ -48,7 +48,7 @@ import opensilex.service.model.Dataset;
 import opensilex.service.model.Sensor;
 
 /**
- * allows CRUD methods of sensors in the triplestore rdf4j
+ * DAO for sensors.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class SensorDAO extends SparqlDAO<Sensor> {

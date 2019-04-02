@@ -40,7 +40,7 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.model.Triplet;
 
 /**
- * a specific DAO to insert triplets in the triplestore
+ * DAO for triplets.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class TripletDAO extends SparqlDAO<Triplet> {

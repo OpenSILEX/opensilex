@@ -26,7 +26,7 @@ import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.model.Namespace;
 
 /**
- * Dao to get the vocabulary (and add data) of the phis instance
+ * DAO for vocabularies.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */

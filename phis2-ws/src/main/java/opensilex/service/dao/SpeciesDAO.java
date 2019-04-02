@@ -23,7 +23,7 @@ import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.model.Species;
 
 /**
- * Species access in the triplestore rdf4j
+ * DAO for species.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class SpeciesDAO extends SparqlDAO<Species> {

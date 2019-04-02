@@ -45,7 +45,7 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.model.Vector;
 
 /**
- * CRUD methods of vectors, in the triplestore rdf4j
+ * DAO for vectors.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class VectorDAO extends SparqlDAO<Vector> {

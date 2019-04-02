@@ -52,8 +52,7 @@ import opensilex.service.model.Unit;
 import opensilex.service.model.Variable;
 
 /**
- * This class is a DAO for annotation.
- * It manages operation on variables in the triplestore.
+ * DAO for variables.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class VariableDAO extends SparqlDAO<Variable> {

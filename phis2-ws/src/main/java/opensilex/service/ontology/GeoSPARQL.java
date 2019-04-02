@@ -1,41 +1,35 @@
 //******************************************************************************
-//                                       Foaf.java
+//                                       GeoSPARQL.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 11 sept. 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package opensilex.service.ontologies;
+package opensilex.service.ontology;
 
 /**
- * The elements of the ontology foaf used.
- * @see http://xmlns.com/foaf/spec/
+ * Used to get the vocabulary of GeoSPARQL.
+ * @see http://www.opengis.net/ont/geosparql#
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public enum Foaf {
+public enum GeoSPARQL {
     NAMESPACE {
         @Override
         public String toString() {
-            return "http://xmlns.com/foaf/0.1/";
+            return "http://www.opengis.net/ont/geosparql#";
         }
     },
     
-    CONCEPT_AGENT {
+    RELATION_CONTAINS {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "Agent";
+            return NAMESPACE.toString() + "contains";
         }
     },
-    CONCEPT_GROUP {
+    RELATION_CONTAINS_MULTIPLE {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "Group";
-        }
-    },
-    CONCEPT_PERSON {
-        @Override
-        public String toString() {
-            return NAMESPACE.toString() + "Person";
+            return RELATION_CONTAINS.toString() + "*";
         }
     }
 }

@@ -15,7 +15,7 @@ import javax.validation.constraints.NotNull;
 import org.joda.time.DateTime;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.documentation.DocumentationAnnotation;
-import opensilex.service.ontologies.Oa;
+import opensilex.service.ontology.Oa;
 import opensilex.service.resources.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resources.dto.rdfResourceDefinition.PropertyDTO;
 import opensilex.service.resources.validation.interfaces.Date;

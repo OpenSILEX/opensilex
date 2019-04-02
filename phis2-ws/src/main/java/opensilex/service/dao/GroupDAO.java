@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 import opensilex.service.dao.manager.PhisDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.User;
-import opensilex.service.ontologies.Foaf;
+import opensilex.service.ontology.Foaf;
 import opensilex.service.resources.dto.group.GroupDTO;
 import opensilex.service.resources.dto.group.GroupPostDTO;
 import opensilex.service.utils.POSTResultsReturn;

@@ -20,9 +20,9 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.dao.manager.SparqlDAO;
-import opensilex.service.ontologies.Rdf;
-import opensilex.service.ontologies.Rdfs;
-import opensilex.service.ontologies.Oeso;
+import opensilex.service.ontology.Rdf;
+import opensilex.service.ontology.Rdfs;
+import opensilex.service.ontology.Oeso;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.model.Infrastructure;
 

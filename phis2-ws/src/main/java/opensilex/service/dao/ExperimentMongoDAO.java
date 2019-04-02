@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.User;
-import opensilex.service.ontologies.Oeso;
+import opensilex.service.ontology.Oeso;
 import opensilex.service.resources.AcquisitionSessionResourceService;
 import opensilex.service.resources.dto.experiment.ExperimentDTO;
 import opensilex.service.resources.dto.experiment.ExperimentPostDTO;

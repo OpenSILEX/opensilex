@@ -63,7 +63,7 @@ import opensilex.service.dao.DocumentMongoDAO;
 import opensilex.service.dao.DocumentSparqlDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
-import opensilex.service.ontologies.Contexts;
+import opensilex.service.ontology.Contexts;
 import opensilex.service.resources.dto.DocumentMetadataDTO;
 import opensilex.service.resources.validation.interfaces.Date;
 import opensilex.service.resources.validation.interfaces.URL;

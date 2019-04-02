@@ -19,7 +19,7 @@ import opensilex.service.dao.manager.SparqlDAO;
 import opensilex.service.dao.ExperimentMongoDAO;
 import opensilex.service.dao.UserDAO;
 import opensilex.service.model.User;
-import opensilex.service.ontologies.Oeso;
+import opensilex.service.ontology.Oeso;
 import opensilex.service.resources.dto.acquisitionSession.MetadataFileDTO;
 import opensilex.service.resources.dto.acquisitionSession.MetadataFilePhenomobileDTO;
 import opensilex.service.resources.dto.acquisitionSession.MetadataFileUAVDTO;

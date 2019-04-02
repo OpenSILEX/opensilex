@@ -1,65 +1,67 @@
 //******************************************************************************
-//                                       Rdfs.java
+//                                       Owl.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 11 sept. 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package opensilex.service.ontologies;
+package opensilex.service.ontology;
 
 /**
- * The elements of the ontology rdf used.
- * @see https://www.w3.org/TR/rdf-schema/
- * @see https://www.w3.org/2000/01/rdf-schema#
+ * The elements of the ontology owl used.
+ * @see https://www.w3.org/OWL/
+ * @see http://www.w3.org/2002/07/owl#
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public enum Rdfs {
+public enum Owl {
     NAMESPACE {
         @Override
         public String toString() {
-            return "http://www.w3.org/2000/01/rdf-schema#";
+            return "http://www.w3.org/2002/07/owl#";
         }
     },
-    RELATION_DOMAIN {
+    
+    CONCEPT_RESTRICTION {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "domain";
+            return NAMESPACE.toString() + "Restriction";
         }
     },
-    RELATION_RANGE {
+    
+    RELATION_CARDINALITY {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "range";
+            return NAMESPACE.toString() + "cardinality";
         }
     },
-    RELATION_COMMENT {
+    RELATION_MAX_CARDINALITY {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "comment";
+            return NAMESPACE.toString() + "maxCardinality";
         }
     },
-    RELATION_LABEL {
+    RELATION_MIN_CARDINALITY {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "label";
+            return NAMESPACE.toString() + "minCardinality";
         }
     },
-    RELATION_SEE_ALSO {
+    RELATION_ON_PROPERTY {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "seeAlso";
+            return NAMESPACE.toString() + "onProperty";
         }
     },
-    RELATION_SUBCLASS_OF {
+    RELATION_QUALIFIED_CARDINALITY {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "subClassOf";
+            return NAMESPACE.toString() + "qualifiedCardinality";
         }
     },
-    RELATION_SUBPROPERTY_OF {
+    RELATION_UNION_OF {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "subPropertyOf";
+            return NAMESPACE.toString() + "unionOf";
         }
     }
 }

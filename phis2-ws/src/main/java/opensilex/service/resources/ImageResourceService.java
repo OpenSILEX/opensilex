@@ -58,7 +58,7 @@ import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.ImageMetadataMongoDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
-import opensilex.service.ontologies.Oeso;
+import opensilex.service.ontology.Oeso;
 import opensilex.service.resources.dto.ImageMetadataDTO;
 import opensilex.service.resources.validation.interfaces.Required;
 import opensilex.service.resources.validation.interfaces.URL;

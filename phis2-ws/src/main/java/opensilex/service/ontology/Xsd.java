@@ -5,7 +5,7 @@
 // Creation date: 08 jan. 2018
 // Contact: andreas.garcia@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package opensilex.service.ontologies;
+package opensilex.service.ontology;
 
 /**
  * Elements of the Xsd ontology used in the ws

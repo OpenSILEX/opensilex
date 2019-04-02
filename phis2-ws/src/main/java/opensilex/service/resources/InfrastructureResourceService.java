@@ -29,7 +29,7 @@ import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.InfrastructureDAO;
 import opensilex.service.dao.PropertyDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
-import opensilex.service.ontologies.Oeso;
+import opensilex.service.ontology.Oeso;
 import opensilex.service.resources.dto.infrastructure.InfrastructureDTO;
 import opensilex.service.resources.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
 import opensilex.service.resources.validation.interfaces.Required;

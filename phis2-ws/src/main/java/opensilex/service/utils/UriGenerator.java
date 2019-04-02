@@ -31,11 +31,11 @@ import opensilex.service.dao.TraitDAO;
 import opensilex.service.dao.UnitDAO;
 import opensilex.service.dao.VariableDAO;
 import opensilex.service.dao.VectorDAO;
-import opensilex.service.ontologies.Contexts;
-import opensilex.service.ontologies.Foaf;
-import opensilex.service.ontologies.Oeev;
-import opensilex.service.ontologies.Oeso;
-import opensilex.service.ontologies.Time;
+import opensilex.service.ontology.Contexts;
+import opensilex.service.ontology.Foaf;
+import opensilex.service.ontology.Oeev;
+import opensilex.service.ontology.Oeso;
+import opensilex.service.ontology.Time;
 import opensilex.service.model.Group;
 import opensilex.service.model.Project;
 

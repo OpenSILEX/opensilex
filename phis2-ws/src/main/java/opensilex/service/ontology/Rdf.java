@@ -1,35 +1,41 @@
 //******************************************************************************
-//                                       GeoSPARQL.java
+//                                       Rdf.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 11 sept. 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package opensilex.service.ontologies;
+package opensilex.service.ontology;
 
 /**
- * Used to get the vocabulary of GeoSPARQL.
- * @see http://www.opengis.net/ont/geosparql#
+ * The elements of the ontology rdf used.
+ * @see https://www.w3.org/1999/02/22-rdf-syntax-ns
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public enum GeoSPARQL {
+public enum Rdf {
     NAMESPACE {
         @Override
         public String toString() {
-            return "http://www.opengis.net/ont/geosparql#";
+            return "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
         }
     },
     
-    RELATION_CONTAINS {
+    RELATION_FIRST {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "contains";
+            return NAMESPACE.toString() + "first";
         }
     },
-    RELATION_CONTAINS_MULTIPLE {
+    RELATION_REST {
         @Override
         public String toString() {
-            return RELATION_CONTAINS.toString() + "*";
+            return NAMESPACE.toString() + "rest";
+        }
+    },
+    RELATION_TYPE {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "type";
         }
     }
 }

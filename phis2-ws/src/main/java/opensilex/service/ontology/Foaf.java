@@ -1,41 +1,41 @@
 //******************************************************************************
-//                                       Rdf.java
+//                                       Foaf.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 11 sept. 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package opensilex.service.ontologies;
+package opensilex.service.ontology;
 
 /**
- * The elements of the ontology rdf used.
- * @see https://www.w3.org/1999/02/22-rdf-syntax-ns
+ * The elements of the ontology foaf used.
+ * @see http://xmlns.com/foaf/spec/
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public enum Rdf {
+public enum Foaf {
     NAMESPACE {
         @Override
         public String toString() {
-            return "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+            return "http://xmlns.com/foaf/0.1/";
         }
     },
     
-    RELATION_FIRST {
+    CONCEPT_AGENT {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "first";
+            return NAMESPACE.toString() + "Agent";
         }
     },
-    RELATION_REST {
+    CONCEPT_GROUP {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "rest";
+            return NAMESPACE.toString() + "Group";
         }
     },
-    RELATION_TYPE {
+    CONCEPT_PERSON {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "type";
+            return NAMESPACE.toString() + "Person";
         }
     }
 }

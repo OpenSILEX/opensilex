@@ -37,7 +37,7 @@ import opensilex.service.configuration.DateFormat;
 import opensilex.service.dao.manager.MongoDAO;
 import opensilex.service.dao.ScientificObjectSparqlDAO;
 import opensilex.service.documentation.StatusCodeMsg;
-import opensilex.service.ontologies.Oeso;
+import opensilex.service.ontology.Oeso;
 import opensilex.service.utils.FileUploader;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.UriGenerator;

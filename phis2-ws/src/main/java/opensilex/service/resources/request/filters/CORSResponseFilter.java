@@ -1,8 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+//                            CORSResponseFilter.java
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Creation date: May 2016
+// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package opensilex.service.resources.request.filters;
 
 import java.io.IOException;

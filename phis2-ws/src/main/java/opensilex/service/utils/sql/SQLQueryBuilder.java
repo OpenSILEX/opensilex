@@ -2,8 +2,9 @@
 //                              SQLQueryBuilder.java 
 // SILEX-PHIS
 // Copyright © INRA 2016
-// Creation date: may 2016
-// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Creation date: May 2016
+// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, 
+//          pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.utils.sql;
 

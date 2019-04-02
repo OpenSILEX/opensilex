@@ -1,14 +1,10 @@
-//**********************************************************************************************
-//                                       Status.java 
-//
-// Author(s): Arnaud Charleroy
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2016
-// Creation date: august 2016
-// Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  October, 2016
-// Subject: Define the status message which is returned to the user after a request
-//***********************************************************************************************
+//******************************************************************************
+//                                   Status.java 
+// SILEX-PHIS
+// Copyright © INRA 2016
+// Creation date: Aug. 2016
+// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package opensilex.service.view.brapi;
 
 /**

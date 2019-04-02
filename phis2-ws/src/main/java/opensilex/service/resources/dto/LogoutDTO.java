@@ -1,8 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+//                               LayerDTO.java
+// SILEX-PHIS
+// Copyright © INRA 2017
+// Creation date: August 2017
+// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package opensilex.service.resources.dto;
 
 import io.swagger.annotations.ApiModel;

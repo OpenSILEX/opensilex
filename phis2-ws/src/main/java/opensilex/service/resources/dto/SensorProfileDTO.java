@@ -1,13 +1,9 @@
 //******************************************************************************
-//                                       SensorProfileDTO.java
-//
-// Author(s): Morgane Vidal <morgane.vidal@inra.fr>
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: 28 mai 2018
+//                             SensorProfileDTO.java
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Creation date: 28 May 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  28 mai 2018
-// Subject: Represents the submitted JSON for the sensor's profile
 //******************************************************************************
 package opensilex.service.resources.dto;
 

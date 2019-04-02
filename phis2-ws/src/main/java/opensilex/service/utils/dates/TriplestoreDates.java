@@ -1,15 +1,10 @@
 //******************************************************************************
-//                                       PhisTriplestoreDates.java
-//
-// Author(s): Morgane Vidal <morgane.vidal@inra.fr>, Arnaud Charleroy
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: 5 févr. 2018
-// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  5 févr. 2018 - the resourcesUtils has all of the 
-// methods of dates, a Dates class has been now created, with it's specializations
-// Subject: Classes which represents the triplestore dates. With this class we can 
-// check if a date format corresponds to the triplestore authorized formats.
+//                             TriplestoreDates.java
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Creation date: 5 Feb. 2018
+// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, 
+//          pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.utils.dates;
 

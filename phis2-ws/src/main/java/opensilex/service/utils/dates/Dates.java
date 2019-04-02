@@ -1,15 +1,9 @@
 //******************************************************************************
-//                                       PhisDate.java
-//
-// Author(s): Morgane Vidal <morgane.vidal@inra.fr>, Arnaud Charleroy
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: 5 févr. 2018
+//                                 Dates.java
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Creation date: 5 Feb. 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  5 févr. 2018
-// Subject: Represents the dates used in Phis. Contains : 
-// - methods to convert dates
-// - used formats
 //******************************************************************************
 package opensilex.service.utils.dates;
 

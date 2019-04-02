@@ -1,8 +1,8 @@
 //******************************************************************************
-//                                       GroupPostDTO.java
+//                             GroupPostDTO.java
 // SILEX-PHIS
 // Copyright © INRA 2019
-// Creation date: 19 févr. 2019
+// Creation date: 19 Feb. 2019
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.resources.dto.group;

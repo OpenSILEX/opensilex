@@ -1,13 +1,9 @@
 //******************************************************************************
-//                                       SensorDTO.java
-//
-// Author(s): Morgane Vidal <morgane.vidal@inra.fr>
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: 25 mai 2018
+//                                 SensorDTO.java
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Creation date: 25 May 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  25 mai 2018
-// Subject: definition of a sensor, viewed by the web service client
 //******************************************************************************
 package opensilex.service.resources.dto;
 

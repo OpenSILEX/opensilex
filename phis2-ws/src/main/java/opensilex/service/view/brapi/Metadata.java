@@ -1,14 +1,10 @@
-//**********************************************************************************************
-//                                       Metadata.java 
-//
-// Author(s): Samuël Chérimont, Arnaud Charleroy 
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2016
-// Creation date: december 2015
-// Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  October, 2016
-// Subject: A class which represente metadata in response form 
-//***********************************************************************************************
+//******************************************************************************
+//                               Metadata.java 
+// SILEX-PHIS
+// Copyright © INRA 2016
+// Creation date: Dec. 2015
+// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package opensilex.service.view.brapi;
 
 import io.swagger.annotations.ApiModel;

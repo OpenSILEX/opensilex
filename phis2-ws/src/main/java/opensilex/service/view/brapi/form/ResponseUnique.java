@@ -1,8 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+//                             ResponseUnique.java
+// SILEX-PHIS
+// Copyright © INRA 2019
+// Creation date: Aug. 2016
+// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package opensilex.service.view.brapi.form;
 
 import opensilex.service.view.brapi.Metadata;

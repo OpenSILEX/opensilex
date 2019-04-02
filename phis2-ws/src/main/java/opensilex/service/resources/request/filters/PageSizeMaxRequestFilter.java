@@ -1,8 +1,8 @@
 //******************************************************************************
-//                       PageSizeMaxRequestFilter.java
+//                          PageSizeMaxRequestFilter.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 01 May 2016
+// Creation date: 1 May 2016
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.resources.request.filters;

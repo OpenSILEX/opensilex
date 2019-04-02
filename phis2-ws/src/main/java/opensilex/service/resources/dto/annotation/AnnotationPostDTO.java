@@ -1,8 +1,8 @@
 //******************************************************************************
-//                          AnnotationPostDTO.java
+//                            AnnotationPostDTO.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 06 March, 2019
+// Creation date: 06 March 2019
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.resources.dto.annotation;

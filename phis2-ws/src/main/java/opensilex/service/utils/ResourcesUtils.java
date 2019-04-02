@@ -1,15 +1,11 @@
-//**********************************************************************************************
-//                                       ResourcesUtils.java 
-//
-// Author(s): Arnaud Charleroy, Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2016
-// Creation date: may 2016
-// Contact:arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  February 05,  2018 - all the dates methods has been
-// moved to a date package (phis2ws.service.utils.dates)
-// Subject: A class which regroup all function which are not specific or can be usable in all the webservice
-//***********************************************************************************************
+//******************************************************************************
+//                              ResourcesUtils.java 
+// SILEX-PHIS
+// Copyright © INRA 2016
+// Creation date: May 2016
+// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, 
+//          pascal.neveu@inra.fr
+//******************************************************************************
 package opensilex.service.utils;
 
 import java.util.ArrayList;

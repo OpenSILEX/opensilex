@@ -1,10 +1,10 @@
 //******************************************************************************
-//                                       DocumentStatus.java
+//                              DocumentStatus.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 28, Jun 2018
+// Creation date: 28 June 2018
 // Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, 
-// pascal.neveu@inra.fr
+//          pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.resources.validation.interfaces;
 

@@ -1,8 +1,8 @@
 //******************************************************************************
-//                                       ProvenancePostDTO.java
+//                          ProvenancePostDTO.java
 // SILEX-PHIS
 // Copyright © INRA 2019
-// Creation date: 5 mars 2019
+// Creation date: 5 March 2019
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.resources.dto.provenance;

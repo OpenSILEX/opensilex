@@ -1,14 +1,10 @@
-//**********************************************************************************************
-//                                       POSTResultsReturn.java 
-//
-// Author(s): Arnaud Charleroy 
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2016
+//******************************************************************************
+//                           POSTResultsReturn.java 
+// SILEX-PHIS
+// Copyright © INRA 2016
 // Creation date: June 2016
 // Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  October, 2016
-// Subject: A class which collect results, error, and http status from an insertion
-//***********************************************************************************************
+//******************************************************************************
 package opensilex.service.utils;
 
 import java.util.ArrayList;

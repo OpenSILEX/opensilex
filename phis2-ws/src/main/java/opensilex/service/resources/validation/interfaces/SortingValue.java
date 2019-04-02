@@ -1,8 +1,8 @@
 //******************************************************************************
-//                                       SortingValue.java
+//                               SortingValue.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 07, Sep 2018
+// Creation date: 7 Sept 2018
 // Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, 
 //          pascal.neveu@inra.fr
 //******************************************************************************

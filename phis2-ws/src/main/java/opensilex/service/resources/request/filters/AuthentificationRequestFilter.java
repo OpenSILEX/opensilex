@@ -1,3 +1,10 @@
+//******************************************************************************
+//                     AuthentificationRequestFilter.java
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Creation date: May 2016
+// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package opensilex.service.resources.request.filters;
 
 import java.io.IOException;

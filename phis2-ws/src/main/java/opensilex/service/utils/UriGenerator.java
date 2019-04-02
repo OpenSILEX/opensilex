@@ -1,7 +1,8 @@
 //******************************************************************************
-//                            UriGenerator.java
+//                               UriGenerator.java
 // SILEX-PHIS
 // Copyright © INRA 2018
+// Creation date: 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.utils;

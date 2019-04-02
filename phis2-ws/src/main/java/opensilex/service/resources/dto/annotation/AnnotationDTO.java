@@ -1,5 +1,5 @@
 //******************************************************************************
-//                             AnnotationDTO.java
+//                              AnnotationDTO.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 14 June 2018

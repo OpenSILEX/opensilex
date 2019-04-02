@@ -1,14 +1,11 @@
-//**********************************************************************************************
-//                                       DocumentWaitingCheck.java 
-//
-// Author(s): Arnaud Charleroy, Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2016
-// Creation date: may 2016
-// Contact:arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  March, 2017
-// Subject: A class which permit to start a thread for documents sending
-//***********************************************************************************************
+//******************************************************************************
+//                              DocumentWaitingCheck.java 
+// SILEX-PHIS
+// Copyright © INRA 2016
+// Creation date: May 2016
+// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, 
+//          pascal.neveu@inra.fr
+//******************************************************************************
 package opensilex.service.utils;
 
 import java.util.concurrent.Callable;
@@ -17,6 +14,10 @@ import org.slf4j.LoggerFactory;
 import opensilex.service.PropertiesFileManager;
 import opensilex.service.resources.DocumentResourceService;
 
+/**
+ * A class which permit to start a thread for document sending
+ * @author andreas
+ */
 public class DocumentWaitingCheck implements Callable<Boolean> {
     final static Logger LOGGER = LoggerFactory.getLogger(DocumentWaitingCheck.class);
     final static String PROPS_FILE_NAME = "service";

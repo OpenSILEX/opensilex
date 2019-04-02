@@ -1,8 +1,8 @@
 //******************************************************************************
-//                                       Provenance.java
+//                              Provenance.java
 // SILEX-PHIS
 // Copyright © INRA 2019
-// Creation date: 5 mars 2019
+// Creation date: 5 Mar. 2019
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.view.model.provenance;

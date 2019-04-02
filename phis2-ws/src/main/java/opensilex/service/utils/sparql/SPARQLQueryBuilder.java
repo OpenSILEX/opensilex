@@ -1,14 +1,11 @@
-//**********************************************************************************************
-//                                       SPARQLQueryBuilder.java 
-//
-// Author(s): Arnaud Charleroy 
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2016
-// Creation date: may 2016
-// Contact:eloan.lagier@inra.fr, arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  Janvier 29 , 2018
-// Subject: A class which is used to build a SPARQL query
-//***********************************************************************************************
+//******************************************************************************
+//                               SPARQLQueryBuilder.java 
+// SILEX-PHIS
+// Copyright © INRA 2016
+// Creation date: May 2016
+// Contact: eloan.lagier@inra.fr, arnaud.charleroy@inra.fr, anne.tireau@inra.fr, 
+//          pascal.neveu@inra.fr
+//******************************************************************************
 package opensilex.service.utils.sparql;
 
 /**

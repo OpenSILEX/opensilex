@@ -1,10 +1,10 @@
 //******************************************************************************
-//                                       ExperimentPostDTO.java
+//                             ExperimentPostDTO.java
 // SILEX-PHIS
 // Copyright © INRA 2019
+// Creation date: January 2019
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-
 package opensilex.service.resources.dto.experiment;
 
 import io.swagger.annotations.ApiModelProperty;

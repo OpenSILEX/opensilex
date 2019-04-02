@@ -1,8 +1,8 @@
 //******************************************************************************
-//                                       RdfResourceDefinitionDTO.java
+//                            RdfResourceDefinitionDTO.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 7 sept. 2018
+// Creation date: 7 Sept. 2018
 // Contact: vincent.migot@inra.fr anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.resources.dto.rdfResourceDefinition;

@@ -1,10 +1,10 @@
-//**********************************************************************************************
-//                                       Result.java 
+//******************************************************************************
+//                                Result.java 
 // SILEX-PHIS
 // Copyright © INRA 2016
-// Creation date: december 2015
+// Creation date: Dec. 2015
 // Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-//***********************************************************************************************
+//******************************************************************************
 package opensilex.service.result;
 
 import opensilex.service.view.brapi.Pagination;

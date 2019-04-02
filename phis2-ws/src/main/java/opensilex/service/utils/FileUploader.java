@@ -1,11 +1,10 @@
-//**********************************************************************************************
-//                                       FileUploader.java 
+//******************************************************************************
+//                               FileUploader.java 
 // PHIS-SILEX
 // Copyright © INRA 2016
 // Creation date: May 2016
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Subject: A class which permits to send a file to a distant server
-//***********************************************************************************************
+//******************************************************************************
 package opensilex.service.utils;
 
 import java.io.File;

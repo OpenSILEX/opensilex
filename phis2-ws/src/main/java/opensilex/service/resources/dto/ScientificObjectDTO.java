@@ -1,15 +1,10 @@
-//**********************************************************************************************
-//                               ScientificObjectDTO.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
-// Creation date: august 2017
+//******************************************************************************
+//                             ScientificObjectDTO.java 
+// SILEX-PHIS
+// Copyright © INRA 2017
+// Creation date: Aug. 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  July 18, 2017 - modifications of the saved data and save in triplestore
-// Subject: A class which contains methods to automatically check the attributes 
-//          of a class, from rules defined by the user
-//***********************************************************************************************
+//******************************************************************************
 
 package opensilex.service.resources.dto;
 

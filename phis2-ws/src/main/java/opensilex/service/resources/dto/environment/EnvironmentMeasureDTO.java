@@ -1,8 +1,8 @@
 //******************************************************************************
-//                                       EnvironmentMeasureDTO.java
+//                           EnvironmentMeasureDTO.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 7 nov. 2018
+// Creation date: 7 Nov. 2018
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.resources.dto.environment;

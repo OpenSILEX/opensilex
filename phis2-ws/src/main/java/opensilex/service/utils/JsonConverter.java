@@ -1,3 +1,10 @@
+//******************************************************************************
+//                            ImageWaitingCheck.java 
+// SILEX-PHIS
+// Copyright © INRA 2017
+// Creation date: 3 December 2015
+// Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package opensilex.service.utils;
 
 import com.google.gson.Gson;

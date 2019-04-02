@@ -1,14 +1,10 @@
-//**********************************************************************************************
-//                                       ResultForm.java 
-//
-// Author(s): Samuël Chérimont, Arnaud Charleroy 
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2016
+//******************************************************************************
+//                              ResultForm.java 
+// SILEX-PHIS
+// Copyright © INRA 2016
 // Creation date: december 2015
 // Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  October, 2016
-// Subject: A class which represente response form 
-//***********************************************************************************************
+//******************************************************************************
 package opensilex.service.result;
 
 import java.util.ArrayList;

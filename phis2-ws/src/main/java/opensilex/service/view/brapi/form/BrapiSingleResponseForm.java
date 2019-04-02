@@ -1,8 +1,8 @@
 //******************************************************************************
-//                                       BrapiSingleResponseForm.java
+//                             BrapiSingleResponseForm.java
 // SILEX-PHIS
 // Copyright © INRA 2019
-// Creation date: 22 janv. 2019
+// Creation date: 22 Jan. 2019
 // Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.view.brapi.form;

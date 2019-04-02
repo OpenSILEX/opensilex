@@ -2,9 +2,9 @@
 //                                PropertyDTO.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 10 sept, 2018
-// Contact: morgane.vidal@inra.fr, vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-
+// Creation date: 10 Sept, 2018
+// Contact: morgane.vidal@inra.fr, vincent.migot@inra.fr, anne.tireau@inra.fr, 
+//          pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.resources.dto.rdfResourceDefinition;
 

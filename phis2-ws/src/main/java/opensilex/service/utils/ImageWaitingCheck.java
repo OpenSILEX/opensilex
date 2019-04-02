@@ -1,18 +1,10 @@
-//**********************************************************************************************
-//                                       ImageWaitingCheck.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
-// Creation date: December, 11 2017
+//******************************************************************************
+//                            ImageWaitingCheck.java 
+// SILEX-PHIS
+// Copyright © INRA 2017
+// Creation date: 11 December 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  January, 03 2018
-// Subject: A class which allows to start a thread for image sending. When an
-// image is sent to the web service, it is sent in two times : 
-// 1. the image metadata is sent
-// 2. the file is sent
-// This is why we need this class (to wait for the image file)
-//***********************************************************************************************
+//******************************************************************************
 package opensilex.service.utils;
 
 import java.util.concurrent.Callable;
@@ -22,7 +14,11 @@ import opensilex.service.PropertiesFileManager;
 import opensilex.service.resources.ImageResourceService;
 
 /**
- * allows to start a thread for image sending
+ * A class which allows to start a thread for image sending. 
+ * When an image is sent to the web service, it is sent in two times: 
+ * 1. the image metadata is sent
+ * 2. the file is sent
+ * This is why we need this class (to wait for the image file)
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ImageWaitingCheck implements Callable<Boolean> {

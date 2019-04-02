@@ -1,8 +1,8 @@
 //******************************************************************************
-//                                       FileMetadataDTO.java
+//                           FileMetadataDTO.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 30 August, 2018
+// Creation date: 30 August 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.resources.dto.acquisitionSession;

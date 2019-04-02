@@ -1,8 +1,8 @@
 //******************************************************************************
-//                                       ProjectDTO.java
+//                               ProjectDTO.java
 // SILEX-PHIS
 // Copyright © INRA 2019
-// Creation date: 14 févr. 2019
+// Creation date: 14 Feb. 2019
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.resources.dto.projects;

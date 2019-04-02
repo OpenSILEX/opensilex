@@ -89,8 +89,8 @@ public class TimeDAO extends SparqlDAO<Time> {
     }
 
     /**
-     * Appends a filter to select only the results whose datetime is 
-     * included in the date range in parameter
+     * Appends a filter to select only the results whose datetime is included in 
+     * the date range in parameter.
      * @param query
      * @param filterRangeDatesStringFormat
      * @param filterRangeStartDateString
@@ -129,7 +129,7 @@ public class TimeDAO extends SparqlDAO<Time> {
     
     /**
      * Inserts an Instant linked to the given URI in the given graph with the 
-     * given date value
+     * given date value.
      * @param updateBuilder
      * @param graph
      * @param resourceLinkedToInstant

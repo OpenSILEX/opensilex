@@ -111,7 +111,7 @@ public class ProjectDAO extends PhisDAO<Project, ProjectDTO> {
                 boolean insertionLeft = true;
                 int count = 0;
 
-                //connexion + préparation de la transaction
+                //connection + transaction preparation
                 connection = dataSource.getConnection();
                 connection.setAutoCommit(false);
 
@@ -121,7 +121,7 @@ public class ProjectDAO extends PhisDAO<Project, ProjectDTO> {
                 
                 for (Project project : projects) {
                     try {
-                        //Generate project uri
+                        // Generate project URI
                         project.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_PROJECT.toString(), null, project.getAcronyme()));
                         
                         insertionLeft = true;
@@ -139,7 +139,7 @@ public class ProjectDAO extends PhisDAO<Project, ProjectDTO> {
                         insertPreparedStatementProject.setString(12, project.getParentProject());
                         insertPreparedStatementProject.setString(13, project.getWebsite());
 
-                        //Ajout dans les logs de qui a fait quoi (traçabilité)
+                        // Traceability
                         String log = "";
                         if (remoteUserAdress != null) {
                             log += "IP Addess " + remoteUserAdress + " - ";
@@ -161,12 +161,12 @@ public class ProjectDAO extends PhisDAO<Project, ProjectDTO> {
                         }
                         inserted++;
                     } catch (AlreadyExists ex) {
-                    //AlreadyExists throwed by the UriGenerator if the project uri generated already exists
+                    // AlreadyExists throwed by the UriGenerator if the project uri generated already exists
                         exists++;
                         insertStatusList.add(new Status (StatusCodeMsg.ALREADY_EXISTING_DATA, StatusCodeMsg.INFO, project.getAcronyme()+ " already exists"));
                     }
                     
-                    //Insertion par batch
+                    // Insertion by batch
                     if (++count % batchSize == 0) {
                         insertPreparedStatementProject.executeBatch();
                         insertPreparedStatementProjectContact.executeBatch();
@@ -181,29 +181,34 @@ public class ProjectDAO extends PhisDAO<Project, ProjectDTO> {
                 
                 connection.commit(); //Envoi des données dans la BD
                 
-////////////////////
-    //ATTENTION, vérifications à re regarder et re vérifier
-//////////////////
-                //Si data insérées et existantes
+                /**
+                 * //SILEX:todo
+                 *  Tests to review
+                 */
+                
+                // data inserted and existing
                 if (exists > 0 && inserted > 0) {
                     results = new POSTResultsReturn(resultState, insertionState, dataState);
                     results.setHttpStatus(Response.Status.CREATED);
                     results.statusList = insertStatusList;
                 } else {
                     results = new POSTResultsReturn(resultState, insertionState, dataState);
-                    if (exists > 0) { //Si données existantes et aucunes insérées
+                    if (exists > 0) { // if existing and inserted data
                         results.setHttpStatus(Response.Status.CONFLICT); //409 
-                    } else { //Si données qui n'existent pas et donc sont insérées
+                    } else { // if non existing data and therefor inserted
                         insertStatusList.add(new Status("Data inserted", StatusCodeMsg.INFO, String.valueOf(inserted) + " projects inserted"));
                     }
-                }   
+                }  
+                /**
+                 * //\SILEX:todo
+                 */
                 
                 results.createdResources = createdResourcesURIs;
                 results.statusList = insertStatusList;
             } catch (SQLException e) {
                 LOGGER.error(e.getMessage(), e);
                 
-                //Rollback
+                // Rollback
                 if (connection != null) {
                     connection.rollback();
                 }
@@ -237,7 +242,7 @@ public class ProjectDAO extends PhisDAO<Project, ProjectDTO> {
     
 
     /**
-     * Vérifie tous les projets et les insère dans la BD Postgres
+     * Checks projects and creates them.
      * @param newObjects list des projets
      * @return
      */
@@ -317,10 +322,9 @@ public class ProjectDAO extends PhisDAO<Project, ProjectDTO> {
     }
 
     /**
-     * 
-     * @param projects ArrayList<Project> liste des projets pour lesquels on veut les contacts
-     * @param statement Statement
-     * @return la liste envoyée en paramètre contenant en plus pour chaque projet la liste de ses contacts
+     * @param projects ArrayList<Project> projects from which the contacts are requested
+     * @param statement
+     * @return the projects containing their contacts
      * @throws SQLException
      */
     private ArrayList<Project> getProjectsContacts(ArrayList<Project> projects, Statement statement) throws SQLException{
@@ -357,7 +361,7 @@ public class ProjectDAO extends PhisDAO<Project, ProjectDTO> {
             statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
             SQLQueryBuilder query = new SQLQueryBuilder();
             
-            //Add request filters
+            // Add request filters
             query.appendFrom(table, tableAlias);
             addFilters(query);
             
@@ -392,7 +396,7 @@ public class ProjectDAO extends PhisDAO<Project, ProjectDTO> {
     }
 
     /**
-     * Add filter for query project search
+     * Adds filter for query project search.
      * @param query 
      */
     private void addFilters(SQLQueryBuilder query) {
@@ -469,7 +473,7 @@ public class ProjectDAO extends PhisDAO<Project, ProjectDTO> {
     }
     
     private POSTResultsReturn checkAndUpdateProjectList(List<ProjectDTO> updateProjects) throws SQLException, Exception {
-        //init result returned maps
+        // init result returned maps
         List<Status> insertStatusList = new ArrayList<>();
         boolean allProjectsAlreadyInDB = true;
         POSTResultsReturn results = null;
@@ -478,7 +482,7 @@ public class ProjectDAO extends PhisDAO<Project, ProjectDTO> {
         
         String log = getTraceabilityLogs();
         
-        //1. On récupère la liste des projets et on vérifie qu'ils existent bien en BD
+        // 1. Get projects and check they exist
         if (updateProjects != null && !updateProjects.isEmpty()) {
             for (ProjectDTO projectDTO : updateProjects) {
                 Project project = projectDTO.createObjectFromDTO();
@@ -491,7 +495,7 @@ public class ProjectDAO extends PhisDAO<Project, ProjectDTO> {
             }
         }
         
-        //2. Modifications de la BD en fonction des données envoyées
+        //2. Update the database with the data sent
         if (allProjectsAlreadyInDB) { //Si tous les projets sont présents en BD on peut continuer
             PreparedStatement updatePreparedStatementProject = null;
             PreparedStatement deletePreparedStatementContacts = null;
@@ -507,11 +511,11 @@ public class ProjectDAO extends PhisDAO<Project, ProjectDTO> {
             final String insertContact = "INSERT INTO \"at_project_users\" (\"project_uri\", \"users_email\", \"type\") "
                     + "VALUES (?, ?, ?)";
             try {
-                //Batch
+                // Batch
                 int count = 0;
                 boolean insertionLeft = true;
 
-                //Connection + préparation de la transaction
+                // Connection + transaction preparation
                 connection = dataSource.getConnection();
                 connection.setAutoCommit(false);
 
@@ -520,7 +524,7 @@ public class ProjectDAO extends PhisDAO<Project, ProjectDTO> {
                 insertPreparedStatementContacts = connection.prepareStatement(insertContact);
                 
                 for (Project project : projects) {
-                    //Update des données de la table project
+                    //Update data in project table
                     updatePreparedStatementProject.setString(1, project.getName());
                     updatePreparedStatementProject.setString(2, project.getSubprojectType());
                     updatePreparedStatementProject.setString(3, project.getFinancialSupport());
@@ -536,12 +540,12 @@ public class ProjectDAO extends PhisDAO<Project, ProjectDTO> {
                     LOGGER.trace(log + " quert : " + updatePreparedStatementProject.toString());
                     updatePreparedStatementProject.execute();
                     
-                    //Delete des contacts 
+                    // Delete contacts 
                     deletePreparedStatementContacts.setString(1, project.getUri());
                     deletePreparedStatementContacts.execute();
                     LOGGER.trace(log + " quert : " + deletePreparedStatementContacts.toString());
                     
-                    //Insertion des contacts
+                    // Insert contacts
                     if (project.getContacts() != null && !project.getContacts().isEmpty()) {
                         for (Contact contact : project.getContacts()) {
                             insertPreparedStatementContacts.setString(1, project.getUri());
@@ -552,7 +556,7 @@ public class ProjectDAO extends PhisDAO<Project, ProjectDTO> {
                         }
                     }
                     
-                    //Insertion par batch
+                    // Insertion by batch
                     if (++count % batchSize == 0) {
                         updatePreparedStatementProject.executeBatch();
                         deletePreparedStatementContacts.executeBatch();
@@ -567,7 +571,7 @@ public class ProjectDAO extends PhisDAO<Project, ProjectDTO> {
                     insertPreparedStatementContacts.executeBatch();
                 }
                 
-                connection.commit(); //Envoi des données à la BD
+                connection.commit();
                 
                 insertStatusList.add(new Status("Data updated", StatusCodeMsg.INFO, "projects updated"));
                 results = new POSTResultsReturn(true, true, allProjectsAlreadyInDB);
@@ -575,7 +579,7 @@ public class ProjectDAO extends PhisDAO<Project, ProjectDTO> {
             } catch (SQLException e) {
                 LOGGER.error(e.getMessage(), e);
 
-                //Rollback
+                // Rollback
                 if (connection != null) {
                     connection.rollback();
                 }
@@ -600,7 +604,7 @@ public class ProjectDAO extends PhisDAO<Project, ProjectDTO> {
                     connection.close();
                 }
             }
-        } else { //Certains projets ne sont pas déjà présents en BD.
+        } else { // Some projects doesn't exist in the database
             results = new POSTResultsReturn(true, true, allProjectsAlreadyInDB);
             results.statusList = insertStatusList;
         }

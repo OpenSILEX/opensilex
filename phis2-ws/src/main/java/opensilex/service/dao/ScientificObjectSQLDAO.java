@@ -102,7 +102,7 @@ public class ScientificObjectSQLDAO extends PhisDAO<ScientificObject, Scientific
                         exists++;
                     }
                     
-                    //Insertion par batch
+                    //Insertion by batch
                     if (++count % batchSize == 0) {
                         insertPreparedStatement.executeBatch();
                         insertionLeft = false;
@@ -114,18 +114,21 @@ public class ScientificObjectSQLDAO extends PhisDAO<ScientificObject, Scientific
                 }
                 
                 connection.commit();
-////////////////////
-//ATTENTION, vérifications à re regarder et re vérifier
-//////////////////
-                //Si data insérées et existantes
+                
+                /**
+                 * //SILEX:todo
+                 *  Tests to review
+                 */
+                
+                // data inserted and existing
                 if (exists > 0 && inserted > 0) {
                     results = new POSTResultsReturn(resultState, insertionState, dataState);
                     insertStatusList.add(new Status(StatusCodeMsg.ALREADY_EXISTING_DATA, StatusCodeMsg.INFO, "All scientific objects already exist"));
                     results.setHttpStatus(Response.Status.OK);
                 } else {
-                    if (exists > 0) { //Si données existantes et aucunes insérées
+                    if (exists > 0) { // if existing and inserted data
                         insertStatusList.add(new Status (StatusCodeMsg.ALREADY_EXISTING_DATA, StatusCodeMsg.INFO, String.valueOf(exists) + " scientific objects already exists"));
-                    } else { //Si données qui n'existent pas et donc sont insérées
+                    } else { // if non existing data and therefor inserted
                         insertStatusList.add(new Status(StatusCodeMsg.DATA_INSERTED, StatusCodeMsg.INFO, String.valueOf(inserted) + " scientific objects inserted"));
                     }
                 }   
@@ -133,7 +136,7 @@ public class ScientificObjectSQLDAO extends PhisDAO<ScientificObject, Scientific
             } catch (SQLException e) {
                 LOGGER.error(e.getMessage(), e);
                 
-                //Rollback
+                // Rollback
                 if (connection != null) {
                     connection.rollback();
                 }
@@ -243,9 +246,8 @@ public class ScientificObjectSQLDAO extends PhisDAO<ScientificObject, Scientific
     }
     
     /**
-     * 
-     * @param scientificObjectsURIs la liste des uris pour lesquelles on veut la géométrie
-     * @return la géométrie associée à chaque uri, dans la BD, en geojson 
+     * @param scientificObjectsURIs URIs for which the geometry is requested
+     * @return the geometry associated to each URI in GeoSON 
      *          ex : {"type":"Polygon","coordinates":[[[0,0],[10,0],[10,10],[0,10],[0,0]]]}
      * @throws java.sql.SQLException
      */
@@ -288,7 +290,6 @@ public class ScientificObjectSQLDAO extends PhisDAO<ScientificObject, Scientific
     }
     
     /**
-     * 
      * @param year
      * @return String corresponds to the number of scientific objects 
      *                recorded for the year

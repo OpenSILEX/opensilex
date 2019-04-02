@@ -94,8 +94,9 @@ public class PropertyDAO extends SparqlDAO<Property> {
     
     /**
      * Prepares the SPARQL query to get the list of properties and their relations
-     * to the given URI. If subClassOf is specified, the object corresponding to 
-     * the URI must be a subclass of the given type.
+     * to the given URI. 
+     * If subClassOf is specified, the object corresponding to the URI must be a 
+     * subclass of the given type.
      * @param searchUri
      * @return the built query
      * @example
@@ -124,7 +125,7 @@ public class PropertyDAO extends SparqlDAO<Property> {
     }
     
     /**
-     * Prepares the SPARQL query to get the domain of a relation
+     * Prepares the SPARQL query to get the domain of a relation.
      * @return the built query
      * @example
      * SELECT ?domain
@@ -145,7 +146,7 @@ public class PropertyDAO extends SparqlDAO<Property> {
     }
     
     /**
-     * Prepares the SPARQL query to get the domain of a relation
+     * Prepares the SPARQL query to get the domain of a relation.
      * @return the built query
      * @example
      * SELECT ?domain
@@ -166,7 +167,7 @@ public class PropertyDAO extends SparqlDAO<Property> {
     }
     
     /**
-     * Gets in the Triplestore the domain of the property if it exists
+     * Gets in the Triplestore the domain of the property if it exists.
      * @param relationUri
      * @return the domain of the property (attributes relation)
      */
@@ -186,7 +187,7 @@ public class PropertyDAO extends SparqlDAO<Property> {
     }
     
     /**
-     * Gets in the Triplestore the domain of the property if it exists
+     * Gets in the Triplestore the domain of the property if it exists.
      * @param relationUri
      * @return the domain of the property (attributes relation)
      */
@@ -266,7 +267,7 @@ public class PropertyDAO extends SparqlDAO<Property> {
     }
    
     /**
-     * Query to get the cardinalities of a relation for a given type
+     * Generates a query to get the cardinalities of a relation for a given type.
      * @param rdfType
      * @return 
      */
@@ -291,7 +292,7 @@ public class PropertyDAO extends SparqlDAO<Property> {
     }
     
     /**
-     * Query to get the cardinalities required for each property for a given concept
+     * Generates a query to get the cardinalities required for each property for a given concept.
      * @param concept
      * @return the query
      * @example 
@@ -329,7 +330,7 @@ public class PropertyDAO extends SparqlDAO<Property> {
     }
     
     /**
-     * Gets the cardinalities of a relation for each concerned concept
+     * Gets the cardinalities of a relation for each concerned concept.
      * @return the list of the cardinalities found in the Triplestore
      * @example content : 
      * "owl:cardinality" : 1
@@ -363,7 +364,7 @@ public class PropertyDAO extends SparqlDAO<Property> {
     }
     
     /**
-     * Gets the cardinalities of each relations for a concept
+     * Gets the cardinalities of each relations for a concept.
      * @param concept
      * @return the list of the cardinalities found in the Triplestore
      * @example of content: 
@@ -404,7 +405,7 @@ public class PropertyDAO extends SparqlDAO<Property> {
     }
     
     /**
-     * SPARQL query to get the number of the property "relation" for the given object URI
+     * Generates a query to get the number of the property "relation" for the given object URI.
      * @param objectUri
      * @return the query
      * @example
@@ -427,7 +428,7 @@ public class PropertyDAO extends SparqlDAO<Property> {
     }
     
     /**
-     * Sorts the given properties by relation
+     * Sorts the given properties by relation.
      * @param properties
      * @return the ordered list
      */
@@ -446,7 +447,7 @@ public class PropertyDAO extends SparqlDAO<Property> {
     }
     
     /**
-     * Checks the cardinalities for a list of properties, for a concept
+     * Checks the cardinalities for a list of properties, for a given concept.
      * @param numberOfRelations
      * @param expectedCardinalities
      * @return 
@@ -500,7 +501,7 @@ public class PropertyDAO extends SparqlDAO<Property> {
     }
     
     /**
-     * Checks the existence and domain of the given list of properties
+     * Checks the existence and domain of the given list of properties.
      * @param properties
      * @param ownerType
      * @return the result with the list of the found errors (empty if no error)
@@ -549,7 +550,7 @@ public class PropertyDAO extends SparqlDAO<Property> {
     }
     
     /**
-     * Checks the cardinalities of properties for a given object URI
+     * Checks the cardinalities of properties for a given object URI.
      * @param properties
      * @param objectUri
      * @param objectRdfType
@@ -586,7 +587,7 @@ public class PropertyDAO extends SparqlDAO<Property> {
             numberOfRelations.put(pair.getKey(), nbProp);
         }
         
-        //check all the cardinalities 
+        // check all the cardinalities 
         POSTResultsReturn checkPropertyCardinality = checkPropertyCardinality(numberOfRelations, cardinalities);
         if (!checkPropertyCardinality.getDataState()) {
             dataOk = false;
@@ -600,7 +601,7 @@ public class PropertyDAO extends SparqlDAO<Property> {
     }
     
     /**
-     * Prepares the SPARQL query to get the list of properties and their 
+     * Prepares the query to get the list of properties and their 
      * relations to the given URI with labels (skos:prefered and rdfs:label). 
      * If "subClassOf" property is defined, the request will also check
      * if the current URI corresponds to this type of ontology 
@@ -757,7 +758,7 @@ public class PropertyDAO extends SparqlDAO<Property> {
     
      /**
      * Searches all the properties corresponding to the given object URI
-     * and fill the RDF Resource definition object with the values and labels
+     * and fills the RDF Resource definition object with the values and labels.
      * @param definition The definition object which will be filled
      * @param language specify in which language labels should be returned. The 
      * language can be null
@@ -770,7 +771,7 @@ public class PropertyDAO extends SparqlDAO<Property> {
     
      /**
      * Searches all the properties corresponding to the given object URI
-     * and fill the RDF Resource definition object with the values and labels
+     * and fills the RDF Resource definition object with the values and labels.
      * @param definition The definition object which will be filled
      * @param language specify in which language labels should be returned.
      * @param propertiesRelationsToIgnore some relations sometimes must not be 
@@ -865,12 +866,11 @@ public class PropertyDAO extends SparqlDAO<Property> {
     }
     
     /**
-     * Generates an insert query for the given properties
+     * Generates an insert query for the given properties.
      * @param objectUri the property owner's URI
      * @param peoperty
      * @param graphString
      * @return the query
-     * @example
      */
     private UpdateRequest prepareInsertLinksBetweenObjectAndPropertiesQuery(Resource objectResource, ArrayList<Property> properties, String graphString, boolean createProperties) {
         UpdateBuilder updateBuilder = new UpdateBuilder();

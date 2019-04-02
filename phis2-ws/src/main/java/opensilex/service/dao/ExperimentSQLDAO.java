@@ -379,7 +379,7 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
     }
     
     /**
-     * Adds filter for query experiment search
+     * Adds filter for query experiment search.
      * @param query 
      */
     private void addFilters(SQLQueryBuilder query) {
@@ -659,7 +659,7 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
     }
     
     /**
-     * Checks experiments and stores them
+     * Checks experiments and stores them.
      * @param newObjects experiment list
      * @return
      */
@@ -731,8 +731,8 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
     }
     
     /**
-     * @param user User 
-     * @param experiment Experiment
+     * @param user 
+     * @param experiment
      * @return 
      *  true if the user belongs to a group having access to the 
      * experiment

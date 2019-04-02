@@ -53,23 +53,37 @@ public class EnvironmentMeasureDAO extends MongoDAO<EnvironmentMeasure> {
     private final static String DB_FIELD_DATE = "date";
     private final static String DB_FIELD_VALUE = "value";
     
-    // Variable URI when querying for environment measures (required)
-    // e.g. http://www.phenome-fppn.fr/diaphen/id/variable/ev000070
+    /**
+     * Variable URI when querying for environment measures (required)
+     * @example http://www.phenome-fppn.fr/diaphen/id/variable/ev000070
+     */
     public String variableUri;
-    // End date filter when querying for environment measures (optional)
-    // e.g. 2017-06-07 13:14:32+0200
+    
+    /**
+     * End date filter when querying for environment measures (optional).
+     * @example 2017-06-07 13:14:32+0200
+     */
     public String endDate;
-    // Start date filter when querying for environment measures (optional)
-    // e.g. 2017-06-07 13:14:32+0200
+    
+    /** 
+     * Start date filter when querying for environment measures (optional).
+     * @example 2017-06-07 13:14:32+0200
+     */
     public String startDate;
-    // Sensor URI filter when querying for environment measures (optional)
-    // e.g. http://www.phenome-fppn.fr/mauguio/diaphen/2013/sb140227
+    
+    /**
+     * Sensor URI filter when querying for environment measures (optional).
+     * @example http://www.phenome-fppn.fr/mauguio/diaphen/2013/sb140227
+     */
     public String sensorUri;
-    // Determine the sort order by date of the results (optional, true by default)
+    
+    /**
+     * Determine the sort order by date of the results (optional, true by default).
+     */
     public boolean dateSortAsc = true;
     
     /**
-     * Get document count according to the prepareSearchQuery
+     * Gets document count according to the prepareSearchQuery.
      * @return the document count
      */
     public int count() {
@@ -85,7 +99,8 @@ public class EnvironmentMeasureDAO extends MongoDAO<EnvironmentMeasure> {
     }
 
     /**
-     * Prepare and return the environment search query with the given parameters
+     * Prepares and returns the environmental measures search query with the 
+     * given parameters.
      * @return The environment measure search query
      * @example
      *  {
@@ -138,13 +153,8 @@ public class EnvironmentMeasureDAO extends MongoDAO<EnvironmentMeasure> {
     }
 
     /**
-     * Return the paginated list of environment measures corresponding to given parameters
-     * which are (see corresponding variable members on this class) :
-     * - variableUri
-     * - endDate
-     * - startDate
-     * - sensorUri
-     * - dateSortAsc
+     * Returns the paginated list of environmental measures corresponding to the 
+     * given parameters.
      * @return List of measures
      */
     public ArrayList<EnvironmentMeasure> allPaginate() {
@@ -159,9 +169,9 @@ public class EnvironmentMeasureDAO extends MongoDAO<EnvironmentMeasure> {
         FindIterable<Document> measuresMongo = environmentMeasureVariableCollection.find(query);
         
         //SILEX:info
-        //Measures are always sort by date, either ascending or descending depending on dateSortAsc parameter
-        //If dateSortAsc=true, sort by date ascending
-        //If dateSortAsc=false, sort by date descending
+        // Measures are always sort by date, either ascending or descending depending on dateSortAsc parameter
+        // If dateSortAsc=true, sort by date ascending
+        // If dateSortAsc=false, sort by date descending
         //\SILEX:info
         if (dateSortAsc) {
             measuresMongo = measuresMongo.sort(Sorts.ascending(DB_FIELD_DATE));
@@ -196,12 +206,12 @@ public class EnvironmentMeasureDAO extends MongoDAO<EnvironmentMeasure> {
     }
     
     /**
-     * Check the given list of environment measures.
+     * Checks the given list of environmental measures.
      * @param environmentMeasures
      * @return the check result with the founded errors
      */
     private POSTResultsReturn check(List<EnvironmentMeasure> environmentMeasures) {
-        POSTResultsReturn checkResult = new POSTResultsReturn();
+        POSTResultsReturn checkResult;
         List<Status> checkStatus = new ArrayList<>();
         
         boolean dataOk = true;
@@ -238,7 +248,8 @@ public class EnvironmentMeasureDAO extends MongoDAO<EnvironmentMeasure> {
     }
     
     /**
-     * Generates the query to insert a new environment measure in the mongodb database.
+     * Generates the query to insert a new environmental measure in the 
+     * MongoDB database.
      * @param environmentMeasure
      * @example
      * { 
@@ -264,8 +275,7 @@ public class EnvironmentMeasureDAO extends MongoDAO<EnvironmentMeasure> {
     }
     
     /**
-     * Get the environment collection name from the given variable. 
-     * 
+     * Gets the environmental measure collection name from the given variable. 
      * @param variableUri
      * @example variableUri http://www.phenome-fppn.fr/id/variables/v001
      * @return the collection name. It corresponds to the last part of the uri.
@@ -277,7 +287,7 @@ public class EnvironmentMeasureDAO extends MongoDAO<EnvironmentMeasure> {
     }
     
     /**
-     * Insert the given envoronment measures in the mongodb database
+     * Inserts the given environmental measures in the MongoDB database.
      * @param environmentMeasures
      * @return the insertion result
      */
@@ -291,14 +301,14 @@ public class EnvironmentMeasureDAO extends MongoDAO<EnvironmentMeasure> {
         ClientSession session = client.startSession();
         session.startTransaction();
         
-        POSTResultsReturn result = null;
+        POSTResultsReturn result;
         List<Status> status = new ArrayList<>();
         List<String> createdResources = new ArrayList<>(); 
         
         HashMap<String, List<Document>> environmentsToInsertByVariable = new HashMap<>();
         
         //1. Prepare all the documents to insert (we will do one insert by variable)
-        for (EnvironmentMeasure environmentMeasure : environmentMeasures) {
+        environmentMeasures.forEach((environmentMeasure) -> {
             Document createEnvironmentMeasure = prepareInsertEnvironmentDocument(environmentMeasure);
 
             List<Document> environmentsByVariable;
@@ -310,7 +320,7 @@ public class EnvironmentMeasureDAO extends MongoDAO<EnvironmentMeasure> {
 
             environmentsByVariable.add(createEnvironmentMeasure);
             environmentsToInsertByVariable.put(environmentMeasure.getVariableUri(), environmentsByVariable);
-        }
+        });
 
         //2. Create unique index on sensor/variable/date for each variable collection
         //   Mongo won't create index if it already exists
@@ -385,7 +395,7 @@ public class EnvironmentMeasureDAO extends MongoDAO<EnvironmentMeasure> {
     }
     
     /**
-     * Check the given environment measures and insert them if no errors founded.
+     * Checks the given environmental measures and inserts them if no errors found.
      * @param environmentMeasures
      * @return the insertion result, with the errors if some have been found.
      */

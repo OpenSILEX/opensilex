@@ -104,7 +104,7 @@ public class SessionDAO extends PhisDAO<Session, Object> {
             String query = "UPDATE " + table + " SET date_end = now() WHERE id = '" + sessionId + "'";
 //            logger.debug(query);
             statement.executeUpdate(query);
-        } catch (Exception e) {
+        } catch (SQLException e) {
             LOGGER.error(e.getMessage(), e);
         } finally {
 
@@ -144,7 +144,6 @@ public class SessionDAO extends PhisDAO<Session, Object> {
             SQLQueryBuilder query = new SQLQueryBuilder(); 
             query.appendFrom(table, null); 
             query.addISNULL("date_end"); 
-//            logger.debug(query.toString()); 
             rs = statement.executeQuery(query.toString()); 
             if (rs != null) { 
                 while (rs.next()) { 
@@ -159,8 +158,7 @@ public class SessionDAO extends PhisDAO<Session, Object> {
                     } 
                 } 
             } 
-//            TokenManager.Instance().searchSession("5e47fd3d1639c95957f1e9099ddadd84"); 
-        } catch (Exception e) { 
+        } catch (SQLException e) { 
             LOGGER.error(e.getMessage(), e); 
         } finally { 
  
@@ -170,7 +168,6 @@ public class SessionDAO extends PhisDAO<Session, Object> {
                 } catch (SQLException e) { 
                     LOGGER.error(e.getMessage(), e); 
                 } 
- 
             } 
             if (statement != null) { 
                 try { 
@@ -179,7 +176,6 @@ public class SessionDAO extends PhisDAO<Session, Object> {
                     LOGGER.error(e.getMessage(), e); 
                 } 
             } 
- 
             if (con != null) { 
                 try { 
                     con.close(); 
@@ -187,16 +183,13 @@ public class SessionDAO extends PhisDAO<Session, Object> {
                     LOGGER.error(e.getMessage(), e); 
                 } 
             } 
- 
         } 
     } 
  
     /** 
-     * loadFromDB Charge attributs de l'utilisateur depuis la BD 
-     * 
-     * @param user utilisateur avec email et mot de passe 
-     * @return utilisateur avec les champ définis dans UserDaoPhisBrapi dans 
- relationFieldsJavaSQLObject 
+     * Loads user attributes
+     * @param user with email and password
+     * @return a User
      */ 
     private User loadFromDB(User user) { 
         UserDAO userDao = new UserDAO(); 
@@ -205,7 +198,6 @@ public class SessionDAO extends PhisDAO<Session, Object> {
         } catch (Exception ex) { 
             LOGGER.error(ex.getMessage(), ex); 
         } 
-        //user.setIsAdmin(userDao.isAdmin(user)); // Admin ou non 
         return user; 
     } 
 

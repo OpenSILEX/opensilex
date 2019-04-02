@@ -57,7 +57,7 @@ public class ProvenanceDAO extends MongoDAO<Provenance> {
     }
     
     /**
-     * Generates the query to search provenances by uri, label, comment and additional json filters
+     * Generates the query to search provenances.
      * @param searchProvenance
      * @param jsonValueFilter
      * @example
@@ -94,10 +94,10 @@ public class ProvenanceDAO extends MongoDAO<Provenance> {
     }
     
     /**
-     * Count the number of results for the query
+     * Counts the number of results for the query.
      * @param searchProvenance
      * @param jsonValueFilter
-     * @return the number of provenances corresponding to the search params
+     * @return the number of provenances corresponding to the search parameters.
      */
     public int count(Provenance searchProvenance, String jsonValueFilter) {
         MongoCollection<Document> provenanceCollection = database.getCollection(provenanceCollectionName);
@@ -138,7 +138,7 @@ public class ProvenanceDAO extends MongoDAO<Provenance> {
     }
     
     /**
-     * Insert the given provenances in the mongodb database
+     * Inserts the given provenances in the MongoDB database.
      * @param provenances
      * @return the insertion result
      */
@@ -148,7 +148,7 @@ public class ProvenanceDAO extends MongoDAO<Provenance> {
         ClientSession session = client.startSession();
         session.startTransaction();
         
-        POSTResultsReturn result = null;
+        POSTResultsReturn result;
         List<Status> status = new ArrayList<>();
         List<String> createdResources = new ArrayList<>();
         
@@ -218,7 +218,8 @@ public class ProvenanceDAO extends MongoDAO<Provenance> {
     }
     
     /**
-     * Insert the given provenances. No check is needed, the Java Beans validation is enought. 
+     * Inserts the given provenances. 
+     * No check is needed, the Java Beans validation is enough. 
      * @param provenances
      * @return the insertion result.
      */
@@ -231,7 +232,7 @@ public class ProvenanceDAO extends MongoDAO<Provenance> {
     }
     
     /**
-     * Checkt if the given provenance uri exist in the provenance collection
+     * Checks if the given provenance URI exist in the provenance collection.
      * @param uri
      * @example 
      * {"uri": "http://www.opensilex.org/demo/id/provenance/0193759540"}
@@ -248,12 +249,12 @@ public class ProvenanceDAO extends MongoDAO<Provenance> {
     }
     
     /**
-     * Check the given provenance.
+     * Checks the given provenance.
      * @param provenances
      * @return the check result with the founded errors
      */
     private POSTResultsReturn check(List<Provenance> provenances) {
-        POSTResultsReturn checkResult = new POSTResultsReturn();
+        POSTResultsReturn checkResult;
         List<Status> checkStatus = new ArrayList<>();
         
         boolean dataOk = true;
@@ -299,7 +300,7 @@ public class ProvenanceDAO extends MongoDAO<Provenance> {
     }
     
     /**
-     * Generates the query to get a provenance by an uri.
+     * Generates the query to get a provenance by an URI.
      * @param uri
      * @example { "uri" : "http://www.opensilex.org/opensilex/id/provenance/1551805521606" }
      * @return the query
@@ -314,7 +315,7 @@ public class ProvenanceDAO extends MongoDAO<Provenance> {
     }
     
     /**
-     * Update the given provenances.
+     * Updates the given provenances.
      * /!\ Prerequisite : data must have been checked before calling this method.
      * @see ProvenanceDAO#check(java.util.List)
      * @param provenances the list of the provenances to update
@@ -326,7 +327,7 @@ public class ProvenanceDAO extends MongoDAO<Provenance> {
         ClientSession session = client.startSession();
         session.startTransaction();
         
-        POSTResultsReturn result = null;
+        POSTResultsReturn result;
         List<Status> status = new ArrayList<>();
         List<String> updatedResources = new ArrayList<>();
         boolean error = false;
@@ -392,7 +393,7 @@ public class ProvenanceDAO extends MongoDAO<Provenance> {
      * Get the list of provenances corresponding to given search parameters.
      * @param searchProvenance
      * @param jsonValueFilter
-     * @return the list of the provenances corresponding to the given search params
+     * @return the list of the provenances corresponding to the given search parameters
      */
     public ArrayList<Provenance> getProvenances(Provenance searchProvenance, String jsonValueFilter) {
         MongoCollection<Document> provenanceCollection = database.getCollection(provenanceCollectionName);
@@ -423,7 +424,6 @@ public class ProvenanceDAO extends MongoDAO<Provenance> {
                 provenances.add(provenance);
             }
         }
-        
         return provenances;
     }
 

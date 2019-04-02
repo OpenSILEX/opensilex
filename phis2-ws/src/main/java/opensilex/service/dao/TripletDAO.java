@@ -52,7 +52,7 @@ public class TripletDAO extends SparqlDAO<Triplet> {
     private final static String LITERAL = "literal";
     
     /**
-     * check each triplet's values 
+     * Checks each triplet's values.
      * @param tripletsGroup
      * @return the check of the triplets. Contains the list of the errors founded
      */
@@ -103,7 +103,7 @@ public class TripletDAO extends SparqlDAO<Triplet> {
     }
     
     /**
-     * for each list of triplets, check if there are some errors and return them
+     * Check objects integrity.
      * @see TripletDAO#checkTripletsGroup(java.util.ArrayList) 
      * @param triplets
      * @return 
@@ -127,7 +127,7 @@ public class TripletDAO extends SparqlDAO<Triplet> {
     }
     
     /**
-     * generates the query of insertion of a triplets group
+     * Generates the query of insertion of a triplets group.
      * @param triplets
      * @param graphUri
      * @return the insertion query
@@ -145,7 +145,7 @@ public class TripletDAO extends SparqlDAO<Triplet> {
         Node graph = NodeFactory.createURI(graphUri);
         
         triplets.forEach((triplet) -> {
-            RDFNode tripletValue = null;
+            RDFNode tripletValue;
             if (triplet.getO_type().equals(LITERAL)) {
                 if (triplet.getO_lang() != null) {
                     tripletValue = ResourceFactory.createLangLiteral(triplet.getO(), triplet.getO_lang());
@@ -166,11 +166,11 @@ public class TripletDAO extends SparqlDAO<Triplet> {
     }
     
     /**
-     * generates the uri of the triplet group if it is needed
-     * (REQUEST_GENERATION_URI_STRING founded as triplet subject)
-     * needs to find the rdf:type property
+     * Generates the URI of the triplet group if it is needed
+     * (REQUEST_GENERATION_URI_STRING found as triplet subject).
+     * Needs to find the rdf:type property.
      * @param tripletsGroup
-     * @return the uri generated
+     * @return the URI generated
      */
     private String generateUriIfNeeded(ArrayList<TripletDTO> tripletsGroup) {
         String rdfType = null;
@@ -203,8 +203,7 @@ public class TripletDAO extends SparqlDAO<Triplet> {
     }
     
     /**
-     * register the triplets in the triplestore. Add the triplets in the given
-     * graphs
+     * Registers the triplets in the triplestore in the given graph.
      * @param tripletsGroup
      */
     private ArrayList<String> registerTripletsInGivenGraphs(ArrayList<TripletDTO> tripletsGroup) {
@@ -241,7 +240,7 @@ public class TripletDAO extends SparqlDAO<Triplet> {
     }
     
     /**
-     * insert a group of triplets in the triplestore
+     * Inserts a group of triplets in the triplestore.
      * @param tripletsGroup
      * @param graphUri
      * @return the insertion result with the resources created or the errors
@@ -274,16 +273,6 @@ public class TripletDAO extends SparqlDAO<Triplet> {
             }
         }
         try {
-            //SILEX:test
-            //All the triplestore connection has to been checked and updated
-            //This is an unclean hot fix
-
-//            String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, SESAME_SERVER);
-//            String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, REPOSITORY_ID);
-//            rep = new HTTPRepository(sesameServer, repositoryID); //Stockage triplestore Sesame
-//            rep.initialize();
-//            this.setConnection(rep.getConnection());
-
             this.getConnection().begin();
 
             //Register triplet in the triplestore, in the graph created at the request reception
@@ -326,7 +315,7 @@ public class TripletDAO extends SparqlDAO<Triplet> {
     }
     
     /**
-     * for each group of triplets, insert them in the triplestore
+     * Creates triplets in the storage.
      * @param graphUri
      * @see POSTResultsReturn
      * @see TripletDAO#insertTripletsGroup(java.utils.ArrayList)
@@ -364,14 +353,13 @@ public class TripletDAO extends SparqlDAO<Triplet> {
     }
     
     /**
-     * check if there are some errors in the triplets list when no error founded
-     * insert them in the triplestore
+     * Checks the integrity of the objects and creates them in the storage.
      * @param triplets
      * @param graphUri
      * @see POSTResultsReturn
      * @see TripletDAO#check(java.util.ArrayList) 
      * @see TripletDAO#insert(java.util.ArrayList)
-     * @return the list of errors founded or the list of created resources
+     * @return the list of errors found or the list of created resources
      */
     public POSTResultsReturn checkAndInsert(ArrayList<ArrayList<TripletDTO>> triplets, String graphUri) {
         POSTResultsReturn checkResults = check(triplets);

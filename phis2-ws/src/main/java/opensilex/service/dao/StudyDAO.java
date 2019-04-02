@@ -49,9 +49,6 @@ public class StudyDAO extends DAO<StudyDetails>{
     public int page;
     public int limit;
     public User user;
-    
-    public StudyDAO() {
-    }
 
     public StudyDAO(String studyDbId) {
         this.studyDbId = studyDbId;
@@ -74,7 +71,7 @@ public class StudyDAO extends DAO<StudyDetails>{
     }
      
     /**
-     * Correspondance between base fields and service research fields
+     * Corresponding between base fields and service research fields.
      * @return createSQLFields
      */
     public Map<String, String> relationFieldsObject() {
@@ -85,7 +82,7 @@ public class StudyDAO extends DAO<StudyDetails>{
     }
    
     /**
-     * Collect a list of Experiment objects corresponding to the user research 
+     * Collects a list of Experiment objects corresponding to the user search. 
      * @return expList list of Experiment
      */
     public ArrayList<Experiment> getExperimentsList() {
@@ -125,7 +122,7 @@ public class StudyDAO extends DAO<StudyDetails>{
     }
     
     /**
-    * Fill all the StudyDetails attributes
+    * Fills all the StudyDetails attributes.
     * @return study the StudyDetails object corresponding to the study requested by the user
     * @throws SQLException
     */
@@ -148,7 +145,7 @@ public class StudyDAO extends DAO<StudyDetails>{
     }    
     
     /**
-    * Transform the collected Experiments into a list of StudiesDetails objects
+    * Transforms the collected Experiments into a list of StudiesDetails objects.
     * @return studiesList list of StudiesSearch objects
     */
     private StudyDetails transformExptoStudyDetails() {
@@ -177,7 +174,7 @@ public class StudyDAO extends DAO<StudyDetails>{
     }
     
     /**
-    * Get the BrapiContacts of a StudyDetails
+    * Gets the BrapiContacts of a StudyDetails.
     * @return study 
     */
     private StudyDetails getStudyContacts(StudyDetails study) throws SQLException {
@@ -209,7 +206,7 @@ public class StudyDAO extends DAO<StudyDetails>{
     }
 
     /**
-    * Fill the active attribute of a StudyDetails
+    * Fills the active attribute of a StudyDetails.
     * @return study 
     */
     private StudyDetails getStudyActive(StudyDetails study) throws SQLException {

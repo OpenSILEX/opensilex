@@ -56,7 +56,7 @@ public class SpeciesDAO extends SparqlDAO<Species> {
     }
 
     /**
-     * Count the query result with the given filter
+     * Counts the query result with the given filter.
      * @param filter
      * @param language
      * @return The number of results for a given filter.
@@ -127,9 +127,8 @@ public class SpeciesDAO extends SparqlDAO<Species> {
     }
     
     /**
-     * Get a species from a given binding set.
-     * Assume that the following attributes exist :
-     * uri, label
+     * Gets a species from a given binding set.
+     * Assume that the following attributes exist: URI, label
      * @param bindingSet a bindingSet from a search query
      * @return a species with data extracted from the given bindingSet
      */
@@ -148,7 +147,7 @@ public class SpeciesDAO extends SparqlDAO<Species> {
     }
     
     /**
-     * Search species with the given filter.
+     * Searches species with the given filter.
      * @param filter
      * @param language
      * @return The list of species corresponding to the result.

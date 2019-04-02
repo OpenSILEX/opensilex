@@ -48,14 +48,26 @@ public class ImageMetadataMongoDAO extends MongoDAO<ImageMetadata> {
     final static Logger LOGGER = LoggerFactory.getLogger(ImageMetadataMongoDAO.class);
     public String uri;
     public String rdfType;
-    //Start date of the wanted images
+    
+    /**
+     * Start date of the wanted images
+     */
     public String startDate;
-    //End date of the wanted images
+    
+    /**
+     * End date of the wanted images
+     */
     public String endDate;
-    //uri of the sensor for the wanted images
+    
+    /**
+     * URI of the sensor for the wanted images
+     */
     public String sensor;
-    //List of the elements concerned by the image. The elements are represented 
-    //by uris
+    
+    /**
+     * List of the elements concerned by the image. 
+     * The elements are represented by URIs.
+     */
     public ArrayList<String> concernedItems = new ArrayList<>();
     
     private final MongoCollection<Document> imagesCollection = database.getCollection(PropertiesFileManager.getConfigFileProperty("mongodb_nosql_config", "images"));
@@ -72,13 +84,10 @@ public class ImageMetadataMongoDAO extends MongoDAO<ImageMetadata> {
     final static String DB_FIELDS_SHOOTING_CONFIGURATION = "shootingConfiguration";
         //Represents the mongodb documents label for the storage
     final static String DB_FIELDS_STORAGE = "storage";
-    
-    public ImageMetadataMongoDAO() {
-        super();
-    }
+
     
     /**
-     * search images metadata by uri, rdfType, date, concernedItems
+     * Searches images metadata
      * @return the search query.
      *         Query example :
      *         { 
@@ -200,9 +209,8 @@ public class ImageMetadataMongoDAO extends MongoDAO<ImageMetadata> {
     }
     
     /**
-     * check if the images metadata are correct 
+     * Checks if the images metadata are correct.
      * (rules, image type, concerned items)
-     * @see phis2ws.service.resources.dto rules()
      * @param imagesMetadata
      * @return the result of the check of the images metadata. 
      */
@@ -241,7 +249,7 @@ public class ImageMetadataMongoDAO extends MongoDAO<ImageMetadata> {
     }
     
     /**
-     * Prepare the query of getting the number of images by year.
+     * Prepares the query of getting the number of images by year.
      * @return query to get the number of images by year. 
      *         Query example : 
      *         {uri: {$regex: "http://www.phenome-fppn.fr/diaphen/2017*"}}    
@@ -260,7 +268,6 @@ public class ImageMetadataMongoDAO extends MongoDAO<ImageMetadata> {
     }
     
     /**
-     * 
      * @return the number of images in the database for the actual year
      */
     public long getNbImagesYear() {
@@ -284,7 +291,7 @@ public class ImageMetadataMongoDAO extends MongoDAO<ImageMetadata> {
     }
     
     /**
-     * insert the images metadata in the nosql database
+     * Inserts the images metadata in MongoDB.
      * @param imagesMetadata
      * @return the result of the insert
      * @throws ParseException 
@@ -296,7 +303,7 @@ public class ImageMetadataMongoDAO extends MongoDAO<ImageMetadata> {
         List<String> createdResourcesUris = new ArrayList<>();
         
        //SILEX:todo
-       //transactions
+       // transactions
        //\SILEX:todo
        SimpleDateFormat df = new SimpleDateFormat(DateFormats.YMDHMSZ_FORMAT);
        for (ImageMetadata imageMetadata : imagesMetadata) {
@@ -304,7 +311,7 @@ public class ImageMetadataMongoDAO extends MongoDAO<ImageMetadata> {
            metadata.append(DB_FIELDS_IMAGE_URI, imageMetadata.getUri());
            metadata.append(DB_FIELDS_RDF_TYPE, imageMetadata.getRdfType());
            
-           //Concerned Item
+           //Concerned Items
            ArrayList<Document> concernedItemsToSave = new ArrayList<>();
            for (ConcernedItem concernedItem : imageMetadata.getConcernedItems()) {
                Document concernedItemDocument = new Document();
@@ -314,7 +321,7 @@ public class ImageMetadataMongoDAO extends MongoDAO<ImageMetadata> {
            }
            metadata.append(DB_FIELDS_CONCERNED_ITEMS, concernedItemsToSave);
            
-           //Configuration
+           // Configuration
            Document configuration = new Document();
            Date dateImage = df.parse(imageMetadata.getConfiguration().getDate());
            configuration.append(ShootingConfigurationDAO.DB_FIELDS_DATE, dateImage);
@@ -324,7 +331,7 @@ public class ImageMetadataMongoDAO extends MongoDAO<ImageMetadata> {
            configuration.append(ShootingConfigurationDAO.DB_FIELDS_SENSOR, imageMetadata.getConfiguration().getSensor());
            metadata.append(DB_FIELDS_SHOOTING_CONFIGURATION, configuration);
            
-           //FileInformations (Storage)
+           // FileInformations (Storage)
            Document storage = new Document();
            storage.append(FileInformationDAO.DB_FIELDS_EXTENSION, imageMetadata.getFileInformations().getExtension());
            storage.append(FileInformationDAO.DB_FIELDS_MD5SUM, imageMetadata.getFileInformations().getChecksum());

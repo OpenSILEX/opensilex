@@ -33,23 +33,32 @@ public class InfrastructureDAO extends SparqlDAO<Infrastructure> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(InfrastructureDAO.class);
     
-    // This attribute is used to search all properties of the given uri
+    /**
+     * This attribute is used to search all properties of the given URI.
+     */
     public String uri;
     
-    //type uri of the infrastructure(s)
+    /**
+     * Type URI of the infrastructure(s).
+     */
     public String rdfType;
 
-    //alias of the infrastructure(s)
+    /**
+     * Alias of the infrastructure(s).
+     */
     public String label;
 
-    //language in which labels will be retrieve
+    /**
+     * Language in which labels will be retrieve.
+     */
     public String language;
     
     protected static final String RDF_TYPE_LABEL = "rdfTypeLabel";
     protected static final String IS_PART_OF = "isPartOf";
     
     /**
-     * generates a paginated search query (search by uri, type, label)
+     * Generates a paginated search query.
+     * @example
      * SELECT  ?uri ?rdfType  ?label 
      * WHERE {
      *   ?uri  ?0  ?rdfType  . 
@@ -115,7 +124,7 @@ public class InfrastructureDAO extends SparqlDAO<Infrastructure> {
     }
 
     /**
-     * Get count of elements matching current prepared query
+     * Gets count of elements matching current prepared query.
      * @return query total result count
      */
     public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
@@ -132,7 +141,7 @@ public class InfrastructureDAO extends SparqlDAO<Infrastructure> {
     }
 
     /**
-     * Return prepared count query based on the current search query
+     * Returns prepared count query based on the current search query.
      * SELECT (COUNT(DISTINCT ?uri) as ?count)
      * WHERE {
      *   ?uri  ?0  ?rdfType  . 
@@ -155,7 +164,7 @@ public class InfrastructureDAO extends SparqlDAO<Infrastructure> {
     }
 
     /**
-     * Search all the infrastructures corresponding to the search params given by the user
+     * Searches all the infrastructures corresponding to the search parameters.
      * @return list of infrastructures which match given search params.
      */
     public ArrayList<Infrastructure> allPaginate() {
@@ -178,9 +187,8 @@ public class InfrastructureDAO extends SparqlDAO<Infrastructure> {
     }
 
     /**
-     * Get an infrastructure from a given binding set.
-     * Assume that the following attributes exist :
-     * uri, rdfType, label
+     * Gets an infrastructure from a given binding set.
+     * Assumes that the following attributes exist : URI, rdfType, label.
      * @param bindingSet a bindingSet from a search query
      * @return a infrastructure with data extracted from the given bindingSet
      */

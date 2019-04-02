@@ -40,8 +40,8 @@ public class ShootingConfigurationDAO extends MongoDAO<ShootingConfiguration> {
     }
     
     /**
-     * get a Document corresponding to an image shooting configuration and 
-     * transform it in a ShootingConfiguration object
+     * Gets a Document corresponding to an image shooting configuration and 
+     * transforms it in a ShootingConfiguration object.
      * @param shootingConfigurationDocument
      * @return the Shooting configuration corresponding to the document
      */

@@ -66,7 +66,7 @@ public class GroupDAO extends PhisDAO<Group, GroupDTO> {
     }
     
     private POSTResultsReturn checkAndInsertGroupList(List<GroupPostDTO> newGroups) throws SQLException, Exception {
-        //init result returned maps
+        // init result returned maps
         List<Status> insertStatusList = new ArrayList<>();
         boolean dataState = true;
         boolean resultState = true;
@@ -95,11 +95,11 @@ public class GroupDAO extends PhisDAO<Group, GroupDTO> {
             int exists = 0;
             
             try {
-            //batch
+            // batch
                 boolean insertionLeft = true;
                 int count = 0;
 
-                //connexion + préparation de la transaction
+                // connection nd transaction preparation
                 connection = dataSource.getConnection();
                 connection.setAutoCommit(false);
 
@@ -109,7 +109,7 @@ public class GroupDAO extends PhisDAO<Group, GroupDTO> {
                 
                 for (Group group : groups) {
                     try {
-                        //Generate group uri
+                        // Generate group URI
                         group.setUri(uriGenerator.generateNewInstanceUri(Foaf.CONCEPT_GROUP.toString(), null, group.getName()));
                         insertionLeft = true;
                         insertPreparedStatement.setString(1, group.getUri());
@@ -117,7 +117,7 @@ public class GroupDAO extends PhisDAO<Group, GroupDTO> {
                         insertPreparedStatement.setString(3, group.getLevel());
                         insertPreparedStatement.setString(4, group.getDescription());
                         
-                        //Ajout dans les logs de qui a fait quoi (traçabilité)
+                        // Traceability
                         String log = "";
                         if (remoteUserAdress != null) {
                             log += "IP Addess " + remoteUserAdress + " - ";
@@ -138,12 +138,12 @@ public class GroupDAO extends PhisDAO<Group, GroupDTO> {
                         }
                         inserted++;
                     } catch (AlreadyExists ex) {
-                        //AlreadyExists throwed by the UriGenerator if the group uri generated already exists
+                        // AlreadyExists throwed by the UriGenerator if the group uri generated already exists
                         exists++;
                         insertStatusList.add(new Status (StatusCodeMsg.ALREADY_EXISTING_DATA, StatusCodeMsg.INFO, group.getName() + " already exists"));
                     }
                     
-                    //Insertion par batch
+                    // Insertion by batch
                     if (++count % batchSize == 0) {
                         insertPreparedStatement.executeBatch();
                         insertPreparedStatementGroupUser.execute();
@@ -155,11 +155,14 @@ public class GroupDAO extends PhisDAO<Group, GroupDTO> {
                     insertPreparedStatement.executeBatch(); // checkAndInsert remaining records
                     insertPreparedStatementGroupUser.executeBatch();
                 }
-                connection.commit(); //Envoi des données dans la BD
-////////////////////
-//ATTENTION, vérifications à re regarder et re vérifier
-//////////////////
-                //Si data insérées et existantes
+                connection.commit();
+
+                /**
+                 * //SILEX:todo
+                 * Tests to check
+                 * //\SILEX:todo
+                 */
+                // If data existing and inserted
                 if (exists > 0 && inserted > 0) {
                     results = new POSTResultsReturn(resultState, insertionState, dataState);
                     insertStatusList.add(new Status("Already existing data", StatusCodeMsg.INFO, "All groups already exist"));
@@ -167,9 +170,9 @@ public class GroupDAO extends PhisDAO<Group, GroupDTO> {
                     results.statusList = insertStatusList;
                 } else {
                     results = new POSTResultsReturn(resultState, insertionState, dataState);
-                    if (exists > 0) { //Si données existantes et aucunes insérées
+                    if (exists > 0) { // if existing data and non inserted
                         results.setHttpStatus(Response.Status.CONFLICT); //409
-                    } else { //Si données qui n'existent pas et donc sont insérées
+                    } else { // If non existing data and therefor inserted
                         insertStatusList.add(new Status("Data inserted", StatusCodeMsg.INFO, String.valueOf(inserted) + " groups inserted"));
                     }
                 }   
@@ -179,7 +182,7 @@ public class GroupDAO extends PhisDAO<Group, GroupDTO> {
             } catch (SQLException e) {
                  LOGGER.error(e.getMessage(), e);
                 
-                //Rollback
+                // Rollback
                 if (connection != null) {
                     connection.rollback();
                 }
@@ -269,7 +272,7 @@ public class GroupDAO extends PhisDAO<Group, GroupDTO> {
     /**
      * 
      * @param group Group
-     * @return la liste des users faisant partie du groupe
+     * @return list of users in group
      * @throws SQLException 
      */
     public ArrayList<User> getGroupUsers(Group group) throws SQLException {
@@ -280,7 +283,7 @@ public class GroupDAO extends PhisDAO<Group, GroupDTO> {
         
         try {
             if (this.existInDB(group)) {
-              //Récupération des users dans les tables at_group_users et users
+              // users recovery in at_group and users tables
               SQLQueryBuilder query = new SQLQueryBuilder();
               query.appendSelect("u.email, u.first_name, u.family_name");
               query.appendFrom("at_group_users", "gu");
@@ -329,7 +332,7 @@ public class GroupDAO extends PhisDAO<Group, GroupDTO> {
             
             Map<String, String> sqlFields = relationFieldsJavaSQLObject();
             
-            //Ajout des conditions à la requête
+            // Add conditions to request
             query.appendFrom(table, tableAlias);
             query.appendANDWhereConditionIfNeeded(sqlFields.get("uri"), uri, "ILIKE", null, tableAlias);
             query.appendANDWhereConditionIfNeeded(sqlFields.get("name"), name, "ILIKE", null, tableAlias);
@@ -424,22 +427,22 @@ public class GroupDAO extends PhisDAO<Group, GroupDTO> {
     }
 
     /**
-     * @action fais les modifications des groupes en base de données. Même organisation de code que pour les post
+     * Checks and updates groups.
      * @param updatedGroups
      * @return
      */
     private POSTResultsReturn checkAndUpdateGroupList(List<GroupDTO> updatedGroups) throws SQLException, Exception {
-        //init result returned maps
+        // init result returned maps
         List<Status> insertStatusList = new ArrayList<>();
         boolean allGroupsAlreadyInDB = true;
         POSTResultsReturn results = null;
 
         ArrayList<Group> groups = new ArrayList<>();
 
-        //Logs pour la traçabilité
+        // Traceability
         String log = getTraceabilityLogs();
 
-        //1. on récupère la liste des utilisateurs et on vérifie s'ils existent bien en BD
+        // 1. Get user list and check of existance in database
         for (GroupDTO groupDTO : updatedGroups) {
             Group group = groupDTO.createObjectFromDTO();
             if (existInDB(group)) {
@@ -450,8 +453,8 @@ public class GroupDAO extends PhisDAO<Group, GroupDTO> {
             }
         }
 
-        //2. Modifications de la BD en fonction des données envoyées
-        if (allGroupsAlreadyInDB) { //Si tous les users sont présents en BD, on peut continuer
+        //2. Database update according to given data.
+        if (allGroupsAlreadyInDB) { // if all users in database, we can continue
             PreparedStatement updatePreparedStatementGroup = null;
             PreparedStatement deletePreparedStatementUserGroup = null;
             PreparedStatement insertPreparedStatementUserGroup = null;
@@ -463,11 +466,11 @@ public class GroupDAO extends PhisDAO<Group, GroupDTO> {
             final String insertGabUserGroup = "INSERT INTO \"at_group_users\" (\"group_uri\", \"users_email\")"
                     + " VALUES(?, ?)";
             try {
-                //Batch
+                // Batch
                 int count = 0;
                 boolean insertionLeft = true;
 
-                //Connection + préparation de la transaction
+                // Connection + transaction peparation
                 connection = dataSource.getConnection();
                 connection.setAutoCommit(false);
 
@@ -476,19 +479,19 @@ public class GroupDAO extends PhisDAO<Group, GroupDTO> {
                 insertPreparedStatementUserGroup = connection.prepareStatement(insertGabUserGroup);
 
                 for (Group group : groups) {
-                    //Update des données de la table group
+                    // Update group table
                     updatePreparedStatementGroup.setString(1, group.getLevel());
                     updatePreparedStatementGroup.setString(2, group.getDescription());
                     updatePreparedStatementGroup.setString(3, group.getUri());
                     updatePreparedStatementGroup.execute();
                     LOGGER.trace(log + " quert : " + updatePreparedStatementGroup.toString());
                     
-                    //Delete des liens group / user
+                    // Delete Group/User links
                     deletePreparedStatementUserGroup.setString(1, group.getUri());
                     deletePreparedStatementUserGroup.execute();
                     LOGGER.trace(log + " quert : " + deletePreparedStatementUserGroup.toString());
 
-                    //Insert des nouveaux liens users / email
+                    // Insert new user/email links
                     if (group.getUsers() != null && !group.getUsers().isEmpty()) {
                         for (User u : group.getUsers()) {
                             insertPreparedStatementUserGroup.setString(1, group.getUri());
@@ -498,7 +501,7 @@ public class GroupDAO extends PhisDAO<Group, GroupDTO> {
                         }
                     }
 
-                    //Insertion par batch
+                    // Insertion by batch
                     if (++count % batchSize == 0) {
                         updatePreparedStatementGroup.executeBatch();
                         deletePreparedStatementUserGroup.executeBatch();
@@ -513,7 +516,7 @@ public class GroupDAO extends PhisDAO<Group, GroupDTO> {
                     insertPreparedStatementUserGroup.executeBatch();
                 }
 
-                connection.commit(); //Envoi des données à la BD
+                connection.commit();
 
                 insertStatusList.add(new Status("Data inserted", StatusCodeMsg.INFO, "groups updated"));
                 results = new POSTResultsReturn(true, true, allGroupsAlreadyInDB);
@@ -546,7 +549,7 @@ public class GroupDAO extends PhisDAO<Group, GroupDTO> {
                 }
             }
 
-        } else { //Certains users ne sont pas déjà présents en BD.
+        } else { // Some users are not already in the database
             results = new POSTResultsReturn(true, true, allGroupsAlreadyInDB);
             results.statusList = insertStatusList;
         }

@@ -47,9 +47,8 @@ public class ExperimentSparqlDAO extends SparqlDAO<Experiment> {
     final static Logger LOGGER = LoggerFactory.getLogger(ExperimentSparqlDAO.class);
     
     /**
-     * Prepare the SPARQL query to return all variables measured by an experiment.
-     * 
-     * @param experimentUri The experiment uri which measures veriables
+     * Prepares the SPARQL query to return all variables measured by an experiment.
+     * @param experimentUri The experiment URI which measures the variables
      * @return The prepared query
      * @example 
      * SELECT DISTINCT  ?uri ?label WHERE {
@@ -74,9 +73,8 @@ public class ExperimentSparqlDAO extends SparqlDAO<Experiment> {
     }
     
     /**
-     * Prepare the SPARQL query to return all sensors which participates in the given experiment.
-     * 
-     * @param experimentUri The experiment uri which measures veriables
+     * Prepares the SPARQL query to return all sensors which participates in the given experiment.
+     * @param experimentUri The experiment URI which measures variables
      * @return The prepared query
      * @example 
      * SELECT DISTINCT  ?uri ?label WHERE {
@@ -101,10 +99,9 @@ public class ExperimentSparqlDAO extends SparqlDAO<Experiment> {
     }
     
     /**
-     * Return a HashMap of uri => label of the variables linked to an experiment.
-     * 
-     * @param experimentUri The experiment uri which measures variables
-     * @return HashMap of uri => label
+     * Returns a HashMap of URI => label of the variables linked to an experiment.
+     * @param experimentUri The experiment URI which measures variables
+     * @return HashMap of URI => label
      */
     public HashMap<String, String> getVariables(String experimentUri) {
         SPARQLQueryBuilder query = prepareSearchVariablesQuery(experimentUri);
@@ -125,10 +122,9 @@ public class ExperimentSparqlDAO extends SparqlDAO<Experiment> {
     }
     
     /**
-     * Return a HashMap of uri => label of the sensors linked to an experiment.
-     * 
-     * @param experimentUri The experiment uri
-     * @return HashMap of uri => label
+     * Returns a HashMap of URI => label of the sensors linked to an experiment.
+     * @param experimentUri The experiment URI
+     * @return HashMap of URI => label
      */
     public HashMap<String, String> getSensors(String experimentUri) {
         SPARQLQueryBuilder query = prepareSearchSensorsQuery(experimentUri);
@@ -149,7 +145,7 @@ public class ExperimentSparqlDAO extends SparqlDAO<Experiment> {
     }
     
     /**
-     * Update the list of the variables linked to the given experiment.
+     * Updates the list of the variables linked to the given experiment.
      * /!\ Prerequisite : the information must have been checked before.
      * @see ExperimentSQLDAO#checkAndUpdateLinkedVariables(java.lang.String, java.util.List) 
      * @param experimentUri
@@ -189,7 +185,7 @@ public class ExperimentSparqlDAO extends SparqlDAO<Experiment> {
     }
     
     /**
-     * Add participatesIn relations between a list of sensors and an experiment.
+     * Adds participatesIn relations between a list of sensors and an experiment.
      * @param sensors
      * @param experimentUri
      * @example
@@ -231,7 +227,7 @@ public class ExperimentSparqlDAO extends SparqlDAO<Experiment> {
     }
     
     /**
-     * Delete the participatesIn relations between the given sensors and the given experiment.
+     * Deletes the participatesIn relations between the given sensors and the given experiment.
      * @param subjectUri
      * @param predicateUri
      * @param objectPropertiesUris
@@ -273,7 +269,7 @@ public class ExperimentSparqlDAO extends SparqlDAO<Experiment> {
     }
     
     /**
-     * Update the list of the sensors linked to the given experiment.
+     * Updates the list of the sensors linked to the given experiment.
      * /!\ Prerequisite : the information must have been checked before.
      * @see ExperimentSQLDAO#checkAndUpdateLinkedSensors(java.lang.String, java.util.List)
      * @param experimentUri
@@ -313,11 +309,11 @@ public class ExperimentSparqlDAO extends SparqlDAO<Experiment> {
     }
     
     /**
-     * Insert the experiment
-     * SILEX:warning
+     * Inserts an experiment.
+     * //SILEX:warning
      * In this first version, the experiments are created in the PostgreSQL database. 
      * The only information added in the triplestore is the uri of the experiment and its type.
-     * \SILEX:warning
+     * //\SILEX:warning
      * @example
      * INSERT DATA {
      *      GRAPH <http://www.opensilex.org/opensilex/DMOcampaign-1> {
@@ -343,12 +339,12 @@ public class ExperimentSparqlDAO extends SparqlDAO<Experiment> {
     }
     
     /**
-     * Insert the given experiments in the triplestore.
-     * SILEX:warning
+     * Inserts the given experiments in the triplestore.
+     * //SILEX:warning
      * In this first version, the experiments are created in the PostgreSQL database. 
      * We assume that the givent experiments does not exist in the triplestore 
      * (the existance of the URI is done by ExperimentDao#checkAndInsertExperimentList)
-     * \SILEX:warning
+     * //\SILEX:warning
      * @param newExperiments
      * @return the insertion result with the list of the errors or the list of the URIs of the inserted experiments.
      */

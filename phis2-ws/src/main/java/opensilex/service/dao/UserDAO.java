@@ -74,17 +74,16 @@ public class UserDAO extends PhisDAO<User, UserDTO> {
     }
 
     /**
-     *
-     * @param email l'email pour lequel on souhaite récupérer le mot de passe
-     * @return le mot de passe correspondant à l'email envoyé en paramètre
+     * @param userEmail
+     * @return the password corresponding to the user's email sent
      */
-    public String getPasswordFromDb(String email) {
+    public String getPasswordFromDb(String userEmail) {
         ResultSet result = null;
         Connection con = null;
         Statement stat = null;
         try {
             con = dataSource.getConnection();
-            String query = "SELECT password FROM users WHERE email = '" + email + "'";
+            String query = "SELECT password FROM users WHERE email = '" + userEmail + "'";
             stat = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
             result = stat.executeQuery(query);
             while (result.next()) {
@@ -120,27 +119,26 @@ public class UserDAO extends PhisDAO<User, UserDTO> {
     }
 
     /**
-     * Verifie si un utilisateur est Admin
-     *
-     * @param u
+     * Checks if a user is admin.
+     * @param user
      * @return
      */
-    public Boolean isAdmin(User u) {
-        if (u.getAdmin() == null) {
+    public Boolean isAdmin(User user) {
+        if (user.getAdmin() == null) {
             ResultSet result = null;
             Connection con = null;
             Statement stat = null;
             try {
                 con = dataSource.getConnection();
-                String query = "SELECT isadmin FROM users WHERE email='" + u.getEmail() + "'";
+                String query = "SELECT isadmin FROM users WHERE email='" + user.getEmail() + "'";
                 stat = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 result = stat.executeQuery(query);
 
                 while (result.next()) {
-                    u.setAdmin(result.getString("isadmin"));
+                    user.setAdmin(result.getString("isadmin"));
                 }
 
-                return ResourcesUtils.getStringBooleanValue(u.getAdmin());
+                return ResourcesUtils.getStringBooleanValue(user.getAdmin());
             } catch (SQLException ex) {
                 LOGGER.error(ex.getMessage(), ex);
             } finally {
@@ -167,29 +165,28 @@ public class UserDAO extends PhisDAO<User, UserDTO> {
                 }
             }
         } else {
-            return ResourcesUtils.getStringBooleanValue(u.getAdmin());
+            return ResourcesUtils.getStringBooleanValue(user.getAdmin());
         }
         return false;
     }
 
     /**
-     * Verify if an user uri exist in Relationnal DB
-     *
-     * @param uri user uri
-     * @return boolean true if user uri exist 
+     * Checks if a user URI exists
+     * @param userUri user
+     * @return boolean true if user URI exists
      *                 false if not
      */
-    public Boolean existUserUri(String uri) {
+    public Boolean existUserUri(String userUri) {
         boolean valid = false;
         ResultSet result = null;
-        Connection con = null;
+        Connection con;
         Statement stat = null;
         try {
             con = dataSource.getConnection();
             SQLQueryBuilder sqlQueryBuilder = new SQLQueryBuilder();
             sqlQueryBuilder.appendSelect("*");
             sqlQueryBuilder.appendFrom(table, tableAlias);
-            sqlQueryBuilder.appendANDWhereConditionIfNeeded("uri", uri, "=", null, tableAlias);
+            sqlQueryBuilder.appendANDWhereConditionIfNeeded("uri", userUri, "=", null, tableAlias);
             
             stat = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
             result = stat.executeQuery(sqlQueryBuilder.toString());
@@ -339,7 +336,7 @@ public class UserDAO extends PhisDAO<User, UserDTO> {
     }
 
     /**
-     * Get all the users emails from the database.
+     * Gets all the users emails from the storage.
      * @return the list of the users
      */
     public ArrayList<User> getAllUsersEmails() {
@@ -460,12 +457,11 @@ public class UserDAO extends PhisDAO<User, UserDTO> {
 
     /**
      *
-     * @param u User
-     * @return la liste des groupes auxquels appartient l'utilisateur. (liste
-     * des noms de gp et lvls)
+     * @param user
+     * @return the groups to which the user belongs
      * @throws SQLException
      */
-    public ArrayList<Group> getUserGroups(User u) throws SQLException {
+    public ArrayList<Group> getUserGroups(User user) throws SQLException {
         ResultSet result = null;
         ResultSet resultDefaultGroup = null;
         Connection connection = null;
@@ -474,12 +470,12 @@ public class UserDAO extends PhisDAO<User, UserDTO> {
         ArrayList<Group> userGroups = new ArrayList<>();
 
         try {
-            if (this.existInDB(u)) {
+            if (this.existInDB(user)) {
                 //Récupération des groupes dans la table at_group_users
                 SQLQueryBuilder query = new SQLQueryBuilder();
                 query.appendSelect("gp.uri, gp.level, gp.name");
                 query.appendFrom("at_group_users", "gu");
-                query.appendANDWhereConditions("users_email", u.getEmail(), "=", null, null);
+                query.appendANDWhereConditions("users_email", user.getEmail(), "=", null, null);
                 query.appendJoin(JoinAttributes.INNERJOIN, "group", "gp", "gu.group_uri = gp.uri");
 
                 connection = dataSource.getConnection();
@@ -560,7 +556,7 @@ public class UserDAO extends PhisDAO<User, UserDTO> {
                 boolean insertionLeft = true;
                 int count = 0;
 
-                //connexion + préparation de la transaction
+                // connection + transaction preparation
                 connection = dataSource.getConnection();
                 connection.setAutoCommit(false);
 
@@ -594,7 +590,7 @@ public class UserDAO extends PhisDAO<User, UserDTO> {
                         }
                         insertPreparedStatementUser.setString(10, u.getUri());
 
-                        //Ajout dans les logs de qui a fait quoi (traçabilité)
+                        // Traceability
                         String log = "";
                         if (remoteUserAdress != null) {
                             log += "IP Addess " + remoteUserAdress + " - ";
@@ -606,7 +602,7 @@ public class UserDAO extends PhisDAO<User, UserDTO> {
                         LOGGER.debug(insertPreparedStatementUser.toString());
                         insertPreparedStatementUser.execute();
 
-                        //Ajout dans at_group_users des groupes auxquels l'utilisateur appartient.
+                        // Add the links to the groups to which the user belongs
                         for (Group group : u.getGroups()) {
                             insertPreparedStatementAtGroupUsers.setString(1, u.getEmail());
                             insertPreparedStatementAtGroupUsers.setString(2, group.getUri());
@@ -619,7 +615,7 @@ public class UserDAO extends PhisDAO<User, UserDTO> {
                         exists++;
                     }
 
-                    //Insertion par batch
+                    // Insertion by batch
                     if (++count % batchSize == 0) {
                         insertPreparedStatementUser.executeBatch();
                         insertPreparedStatementAtGroupUsers.executeBatch();
@@ -633,22 +629,27 @@ public class UserDAO extends PhisDAO<User, UserDTO> {
                 }
                 connection.commit(); //Envoi des données dans la BD
 
-                ////////////////////
-                //ATTENTION, vérifications à re regarder et re vérifier
-                //////////////////
-                //Si data insérées et existantes
+                /**
+                 * //SILEX:todo
+                 * Tests to review
+                 */
+                
+                // If data exists
                 if (exists > 0 && inserted > 0) {
                     results = new POSTResultsReturn(resultState, insertionState, dataState);
                     insertStatusList.add(new Status("Already existing data", StatusCodeMsg.INFO, "All users already exist"));
                     results.setHttpStatus(Response.Status.OK);
                     results.statusList = insertStatusList;
                 } else {
-                    if (exists > 0) { //Si données existantes et aucunes insérées
+                    if (exists > 0) { // iIf data exists and not inserted
                         insertStatusList.add(new Status("Already existing data", StatusCodeMsg.INFO, String.valueOf(exists) + " user already exists"));
-                    } else { //Si données qui n'existent pas et donc sont insérées
+                    } else { // If data non existant and therefor inserted
                         insertStatusList.add(new Status("Data inserted", StatusCodeMsg.INFO, String.valueOf(inserted) + " users inserted"));
                     }
                 }
+                /**
+                 * //\SILEX:todo
+                 */
                 results = new POSTResultsReturn(resultState, insertionState, dataState);
 
             } catch (SQLException e) {
@@ -703,10 +704,9 @@ public class UserDAO extends PhisDAO<User, UserDTO> {
     }
 
     /**
-     * @action fais les modifications des utilisateurs en base de données. Même
-     * organisation de code que pour les post
+     * Checks objects integrity and updates in the storage.
      * @param updatedUsers
-     * @return
+     * @return result
      */
     private POSTResultsReturn checkAndUpdateUserList(List<UserDTO> updatedUsers) throws SQLException, Exception {
         //init result returned maps
@@ -716,10 +716,9 @@ public class UserDAO extends PhisDAO<User, UserDTO> {
 
         ArrayList<User> users = new ArrayList<>();
 
-        //Logs pour la traçabilité
         String log = getTraceabilityLogs();
 
-        //1. on récupère la liste des utilisateurs et on vérifie s'ils existent bien en BD
+        //1. Get users and check they exist in the storage
         if (updatedUsers != null && !updatedUsers.isEmpty()) {
             for (UserDTO userDTO : updatedUsers) {
                 User u = userDTO.createObjectFromDTO();
@@ -732,8 +731,8 @@ public class UserDAO extends PhisDAO<User, UserDTO> {
             }
         }
 
-        //2. Modifications de la BD en fonction des données envoyées
-        if (allUsersAlreadyInDB) { //Si tous les users sont présents en BD, on peut continuer
+        //2. Update the database if all users exist
+        if (allUsersAlreadyInDB) {
             PreparedStatement updatePreparedStatementUser = null;
             PreparedStatement deletePreparedStatementUserGroup = null;
             PreparedStatement insertPreparedStatementUserGroup = null;
@@ -750,11 +749,11 @@ public class UserDAO extends PhisDAO<User, UserDTO> {
 
             final String updateGabUSerPassword = "UPDATE \"users\" SET \"password\"=  ? WHERE \"email\" = ?";
             try {
-                //Batch
+                // Batch
                 int count = 0;
                 boolean insertionLeft = true;
 
-                //Connection + préparation de la transaction
+                // connection + prepare transaction
                 connection = dataSource.getConnection();
                 connection.setAutoCommit(false);
 
@@ -784,7 +783,7 @@ public class UserDAO extends PhisDAO<User, UserDTO> {
                     updatePreparedStatementUser.setString(9, u.getEmail());
                     updatePreparedStatementUser.execute();
                     LOGGER.debug(log + " query : " + updatePreparedStatementUser.toString());
-                    //Delete des liens user / group
+                    // Delete  user / group links
                     deletePreparedStatementUserGroup.setString(1, u.getEmail());
                     deletePreparedStatementUserGroup.execute();
                     LOGGER.debug(log + " query : " + deletePreparedStatementUserGroup.toString());
@@ -796,7 +795,7 @@ public class UserDAO extends PhisDAO<User, UserDTO> {
                         LOGGER.debug(log + " query : " + updatePreparedStatementUserPassword.toString());
                     }
 
-                    //Insert des nouveaux liens users / email
+                    // Insert new users / email links
                     if (u.getGroups() != null && !u.getGroups().isEmpty()) {
                         for (Group group : u.getGroups()) {
                             insertPreparedStatementUserGroup.setString(1, group.getUri());
@@ -806,7 +805,7 @@ public class UserDAO extends PhisDAO<User, UserDTO> {
                         }
                     }
 
-                    //Insertion par batch
+                    // Insertion by batch
                     if (++count % batchSize == 0) {
                         updatePreparedStatementUser.executeBatch();
                         deletePreparedStatementUserGroup.executeBatch();
@@ -823,7 +822,7 @@ public class UserDAO extends PhisDAO<User, UserDTO> {
                     updatePreparedStatementUserPassword.executeBatch();
                 }
 
-                connection.commit(); //Envoi des données à la BD
+                connection.commit();
 
                 insertStatusList.add(new Status("Data updated", StatusCodeMsg.INFO, "users updated"));
                 results = new POSTResultsReturn(true, true, allUsersAlreadyInDB);
@@ -859,7 +858,7 @@ public class UserDAO extends PhisDAO<User, UserDTO> {
                 }
             }
 
-        } else { //Certains users ne sont pas déjà présents en BD.
+        } else { // Some users are not in the database
             results = new POSTResultsReturn(true, true, allUsersAlreadyInDB);
             results.statusList = insertStatusList;
         }

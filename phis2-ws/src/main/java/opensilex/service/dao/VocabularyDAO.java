@@ -35,7 +35,7 @@ public class VocabularyDAO extends SparqlDAO<PropertyVocabularyDTO> {
     final static Logger LOGGER = LoggerFactory.getLogger(VocabularyDAO.class);
 
     //the domain wanted for the searched properties
-    //e.g. http://www.phenome-fppn.fr/vocabulary/2018#UAV
+    //@example http://www.phenome-fppn.fr/vocabulary/2018#UAV
     public String domainRdfType;
 
     final static String LANGUAGE_EN = "en";
@@ -44,9 +44,8 @@ public class VocabularyDAO extends SparqlDAO<PropertyVocabularyDTO> {
     final static String PROPERTY = "property";
 
     /**
-     * get the list of rdfs properties usually used
-     *
-     * @return the list of the rdfs properties
+     * Gets the list of RDFs properties usually used.
+     * @return the list of the RDFs properties
      */
     public ArrayList<PropertyVocabularyDTO> allPaginateRdfsProperties() {
         ArrayList<PropertyVocabularyDTO> rdfsPropertyes = new ArrayList<>();
@@ -67,12 +66,12 @@ public class VocabularyDAO extends SparqlDAO<PropertyVocabularyDTO> {
     }
 
     /**
-     * generates the SPARQL query to get the list of the contact properties e.g.
+     * Generates the SPARQL query to get the list of the contact properties 
+     * @example
      * SELECT ?contactProperty 
      * WHERE { 
      *  ?contactProperty rdfs:subPropertyOf* <http://www.opensilex.org/vocabulary/oeso#hasContact> . 
      * }
-     *
      * @return
      */
     protected SPARQLQueryBuilder prepareGetContactProperties() {
@@ -84,12 +83,12 @@ public class VocabularyDAO extends SparqlDAO<PropertyVocabularyDTO> {
     }
 
     /**
-     * generates the SPARQL query to get the list of the device properties e.g.
+     * Generates the SPARQL query to get the list of the device properties
+     * @example
      * SELECT ?property 
      * WHERE { 
      *  ?property rdfs:subPropertyOf <http://www.opensilex.org/vocabulary/oeso#deviceProperty> . 
      * }
-     *
      * @return
      */
     protected SPARQLQueryBuilder prepareGetDeviceProperties() {
@@ -101,9 +100,7 @@ public class VocabularyDAO extends SparqlDAO<PropertyVocabularyDTO> {
     }
 
     /**
-     * check if a given property has the class attribute domainRdfType as
-     * domain.
-     *
+     * Checks if a given property has the class attribute domainRdfType as domain.
      * @param property
      * @return true if the class attribute domainRdfType can have the property
      *         false if not
@@ -123,9 +120,7 @@ public class VocabularyDAO extends SparqlDAO<PropertyVocabularyDTO> {
     }
 
     /**
-     * generates a PropertyVocabularyDTO with the given property URI. Get the
-     * labels from the triplestore
-     *
+     * Generates a vocabulary with the given property URI. 
      * @see UriDAO#getLabels()
      * @param propertyUri
      * @return the property
@@ -142,9 +137,8 @@ public class VocabularyDAO extends SparqlDAO<PropertyVocabularyDTO> {
     }
 
     /**
-     * search the list of contact properties that can be added to an instance of
-     * a given concept
-     *
+     * Searches the list of contact properties that can be added to an instance of
+     * a given concept.
      * @return list of contact properties
      */
     public ArrayList<PropertyVocabularyDTO> allPaginateContactProperties() {
@@ -169,9 +163,8 @@ public class VocabularyDAO extends SparqlDAO<PropertyVocabularyDTO> {
     }
 
     /**
-     * search the list of device properties that can be added to an instance of
-     * a given concept
-     *
+     * Searches the list of device properties that can be added to an instance of
+     * a given concept.
      * @return list of device properties
      */
     public ArrayList<PropertyVocabularyDTO> allPaginateDeviceProperties() {
@@ -196,7 +189,7 @@ public class VocabularyDAO extends SparqlDAO<PropertyVocabularyDTO> {
     }
 
     /**
-     * Get all rdf4j namespaces.
+     * Gets all the triplestore namespaces.
      * [
      *  {
      *   prefix : oa 

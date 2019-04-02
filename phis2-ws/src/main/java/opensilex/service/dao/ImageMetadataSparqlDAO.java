@@ -24,9 +24,6 @@ public class ImageMetadataSparqlDAO extends SparqlDAO<ImageMetadata> {
     
     public String rdfType;
 
-    public ImageMetadataSparqlDAO() {
-    }
-
     @Override
     public List<ImageMetadata> create(List<ImageMetadata> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.

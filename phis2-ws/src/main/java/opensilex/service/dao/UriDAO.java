@@ -31,8 +31,8 @@ import opensilex.service.model.Uri;
 
 // SILEX:todo
 // - Element: Instances
-//   Method : instancesPaginate
-//   Purpose : need to paginate the query instead of retreive all instances and then filtered them
+//   Method: instancesPaginate
+//   Purpose: need to paginate the query instead of retreive all instances and then filtered them
 // \SILEX:todo
 /**
  * URI DAO.
@@ -42,9 +42,8 @@ public class UriDAO extends SparqlDAO<Uri> {
 
     public String uri;
     public String label;
+    
     //used to query the triplestore
-    final static String COMMENT = "comment";
-
     final static String TRIPLESTORE_FIELDS_TYPE = "type";
     final static String TRIPLESTORE_FIELDS_CLASS = "class";
     final static String TRIPLESTORE_FIELDS_INSTANCE = "instance";
@@ -54,13 +53,13 @@ public class UriDAO extends SparqlDAO<Uri> {
     public Boolean deep;
 
     /**
-     * prepare a query to get the triplets of an uri (given or not).
-     *
-     * @return the query 
-     * e.g. SELECT DISTINCT ?class ?type 
+     * Prepares a query to get the triplets of an URI (given or not).
+     * @example
+     * SELECT DISTINCT ?class ?type 
      * WHERE {
      * <http://www.opensilex.org/vocabulary/oeso#Document> ?class ?type . 
      * }
+     * @return the query 
      */
     protected SPARQLQueryBuilder prepareSearchQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
@@ -83,8 +82,7 @@ public class UriDAO extends SparqlDAO<Uri> {
     }
 
     /**
-     * Search uri with same label
-     *
+     * Builds a query to search a URI with the same label.
      * @return the query 
      * query example : 
      * SELECT ?class 
@@ -114,14 +112,13 @@ public class UriDAO extends SparqlDAO<Uri> {
     }
 
     /**
-     * Search siblings of concept. 
-     * query example : 
+     * Searches siblings of concept. 
+     * @example 
      * SELECT DISTINCT ?class 
      * WHERE {
      *    contextURI rdfs:subClassOf ?parent .
      *    ?class rdfs:subClassOf ?parent 
      * }
-     *
      * @return SPARQLQueryBuilder
      */
     protected SPARQLQueryBuilder prepareSiblingsQuery() {
@@ -149,11 +146,10 @@ public class UriDAO extends SparqlDAO<Uri> {
     }
 
     /**
-     * Ask if an Uri is in the triplestore
-     *
-     * @return the ask query query 
-     * 
-     * exemple : ASK { 
+     * Asks if an URI is in the triplestore.
+     * @return the ask query 
+     * @example
+     * ASK { 
      *   concept ?any1 ?any2 .
      * }
      */
@@ -176,9 +172,8 @@ public class UriDAO extends SparqlDAO<Uri> {
     }
 
     /**
-     * check if the given uris exists in the triplestore and return the results
-     *
-     * @return a boolean saying if the uri exist
+     * Checks if the given URIs exists in the triplestore and return the results
+     * @return a boolean saying if the URI exist
      */
     public ArrayList<Ask> askUriExistance() {
         SPARQLQueryBuilder query = prepareAskQuery();
@@ -194,8 +189,7 @@ public class UriDAO extends SparqlDAO<Uri> {
     }
 
     /**
-     * Search instances by uri, concept
-     *
+     * Searches instances by URI, concept
      * @return SPARQLQueryBuilder the query
      * query example :
      * SELECT DISTINCT ?instance ?subclass 
@@ -231,10 +225,9 @@ public class UriDAO extends SparqlDAO<Uri> {
     }
 
     /**
-     * Search ancestors of a concept
-     *
+     * Searches ancestors of a concept.
      * @return SPARQLQueryBuilder the query
-     * query example :
+     * @example
      * SELECT DISTINCT ?class 
      * WHERE {
      *    contextURI rdfs:subClassOf* ?class 
@@ -259,10 +252,9 @@ public class UriDAO extends SparqlDAO<Uri> {
     }
 
     /**
-     * Search descendants of concept
-     *
+     * Searches descendants of a concept.
      * @return SPARQLQueryBuilder  the query 
-     * query example : 
+     * @example : 
      * SELECT DISTINCT ?class 
      * WHERE {
      *    ?class rdfs:subClassOf* contextURI 
@@ -288,16 +280,14 @@ public class UriDAO extends SparqlDAO<Uri> {
     }
 
     /**
-     * return the type of the uri given
-     *
+     * Creates the query that returns the type of an URI.
      * @return SPARQLQueryBuilder the query
-     * query example : 
+     * @example 
      * SELECT DISTINCT ?type 
      * WHERE {
      *    concept rdf:type ?type . 
      * }
      */
-    /* create the query that return the type of an URI if its in the Tupple */
     protected SPARQLQueryBuilder prepareGetUriType() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
@@ -317,9 +307,8 @@ public class UriDAO extends SparqlDAO<Uri> {
     }
 
     /**
-     * return all metadata for the uri given
-     *
-     * @return the list of the uris corresponding to the search informations
+     * Returns all metadata for the URI given.
+     * @return the list of the URIs corresponding to the search information
      */
     public ArrayList<Uri> allPaginate() {
         SPARQLQueryBuilder query = prepareSearchQuery();
@@ -348,8 +337,7 @@ public class UriDAO extends SparqlDAO<Uri> {
     }
 
     /**
-     * search the uris which has the given label as label and return the list
-     *
+     * Searches the URIs which have the given label as label.
      * @return ArrayList
      */
     public ArrayList<Uri> labelsPaginate() {
@@ -369,9 +357,9 @@ public class UriDAO extends SparqlDAO<Uri> {
     }
 
     /**
-     * List of desired instances.
+     * List the desired instances.
      * SILEX:todo
-     * need to paginate the query instead of retreive all instances and then filtered them after
+     * need to paginate the query instead of retrieving all instances and then filter them
      * \SILEX:todo
      * @return the list of the instances, corresponding to the search params
      * given
@@ -399,8 +387,7 @@ public class UriDAO extends SparqlDAO<Uri> {
     }
 
     /**
-     * call the query function for the ancestors GET
-     *
+     * Calls the query function for the ancestors GET.
      * @return the ancestors info all paginate
      */
     public ArrayList<Uri> ancestorsAllPaginate() {
@@ -423,8 +410,7 @@ public class UriDAO extends SparqlDAO<Uri> {
     }
 
     /**
-     * call the query function for the siblings GET
-     *
+     * Calls the query function for the siblings GET.
      * @return the siblings info all paginate
      */
     public ArrayList<Uri> siblingsAllPaginate() {
@@ -446,8 +432,7 @@ public class UriDAO extends SparqlDAO<Uri> {
     }
 
     /**
-     * call the query function for the descendants GET
-     *
+     * Calls the query function for the descendants GET.
      * @return the descendants info all paginate
      */
     public ArrayList<Uri> descendantsAllPaginate() {
@@ -469,8 +454,7 @@ public class UriDAO extends SparqlDAO<Uri> {
     }
 
     /**
-     * return the type of the uri if it's in the triplestore
-     *
+     * Returns the type of the URI if it's in the triplestore.
      * @return a boolean or a type
      */
     public ArrayList<Uri> getAskTypeAnswer() {
@@ -497,13 +481,13 @@ public class UriDAO extends SparqlDAO<Uri> {
     }
 
     /**
-     * generates an ask query to know if the given rdfSubType is a subclass of
+     * Generates an ask query to know if the given rdfSubType is a subclass of
      * rdfType.
-     *
      * @param rdfSubType
      * @param rdfType
      * @return the query. 
-     * e.g. ASK {
+     * @example
+     * ASK {
      *    <http://www.opensilex.org/vocabulary/oeso#HemisphericalCamera>  rdfs:subClassOf* <http://www.opensilex.org/vocabulary/oeso#SensingDevice> 
      * }
      */
@@ -519,13 +503,13 @@ public class UriDAO extends SparqlDAO<Uri> {
     }
 
     /**
-     * generates an ask query to know if the given instance URI is an instance
+     * Generates an ask query to know if the given instance URI is an instance
      * of rdfType.
-     *
      * @param instanceUri
      * @param rdfType
      * @return the query. 
-     * e.g. ASK { 
+     * @example
+     * ASK { 
      *  <http://www.w3.org/ns/oa#commenting>  rdf:type  <  http://www.w3.org/ns/oa#Motivation>  .  
      * }
      */
@@ -550,8 +534,7 @@ public class UriDAO extends SparqlDAO<Uri> {
     }
 
     /**
-     * check if the given rdfSubType is a sub class of the given rdfType
-     *
+     * Checks if the given rdfSubType is a sub class of the given rdfType.
      * @param rdfSubType
      * @param rdfType
      * @return true if it is a subclass 
@@ -565,8 +548,7 @@ public class UriDAO extends SparqlDAO<Uri> {
     }
 
     /**
-     * check if the given uri is an instance of the given rdfType
-     *
+     * Checks if the given URI is an instance of the given rdfType.
      * @param instanceUri
      * @param rdfType
      * @return true if it is a subclass 
@@ -585,12 +567,12 @@ public class UriDAO extends SparqlDAO<Uri> {
     }
 
     /**
-     * generates a query to get the list of the labels of the uri attribute e.g.
+     * Generates a query to get the list of the labels of the URI attribute
+     * @example
      * SELECT DISTINCT ?label 
      * WHERE {
      *  <http://www.opensilex.org/vocabulary/oeso#hasTechnicalContact> rdfs:label ?label . 
      * }
-     *
      * @return the generated query
      */
     protected SPARQLQueryBuilder prepareGetLabels() {
@@ -606,13 +588,12 @@ public class UriDAO extends SparqlDAO<Uri> {
     }
 
     /**
-     * generates a query to get the list of the comments of the uri attribute.
-     * e.g. 
+     * Generates a query to get the list of the comments of the URI attribute.
+     * @example
      * SELECT DISTINCT ?comment 
      * WHERE {
      *      <http://www.opensilex.org/vocabulary/oeso#hasTechnicalContact> rdfs:comment ?comment . 
      * }
-     *
      * @return the generated query
      */
     protected SPARQLQueryBuilder prepareGetComments() {
@@ -628,13 +609,13 @@ public class UriDAO extends SparqlDAO<Uri> {
     }
 
     /**
-     * get the labels associated to the uri attribute in the triplestore
-     *
-     * @return the list of labels. the key is the language 
-     * e.g. [ 
-     *          "fr" : "maison", 
-     *          "en" : "home", 
-     *          "none" : "dqfgdf" 
+     * Gets the labels associated to the uri attribute in the triplestore.
+     * @return the list of labels. The key is the language.
+     * @example
+     * [ 
+     *    "fr" : "maison", 
+     *    "en" : "home", 
+     *    "none" : "dqfgdf" 
      * ]
      */
     public Multimap<String, String> getLabels() {
@@ -659,14 +640,14 @@ public class UriDAO extends SparqlDAO<Uri> {
     }
 
     /**
-     * get the comments associated to the uri attribute in the triplestore
-     *
+     * Gets the comments associated to the uri attribute in the triplestore.
      * @return the list of comments. the key is the language 
-     * e.g.  [ 
-     *          "fr" : "maison", 
-     *          "en" : "home", 
-     *          "none" : "dqfgdf" 
-     *       ]
+     * @example
+     * [ 
+     *    "fr" : "maison", 
+     *    "en" : "home", 
+     *    "none" : "dqfgdf" 
+     * ]
      */
     public Multimap<String, String> getComments() {
         SPARQLQueryBuilder query = prepareGetComments();

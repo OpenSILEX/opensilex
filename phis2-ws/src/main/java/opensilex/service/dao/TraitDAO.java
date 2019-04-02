@@ -57,9 +57,6 @@ public class TraitDAO extends SparqlDAO<Trait> {
     public ArrayList<OntologyReference> ontologiesReferences = new ArrayList<>();
     
     private static final String VAR_URI = "varUri";
-    
-    public TraitDAO() {
-    }
 
     public TraitDAO(String uri) {
         this.uri = uri;
@@ -67,7 +64,7 @@ public class TraitDAO extends SparqlDAO<Trait> {
     
     protected SPARQLQueryBuilder prepareSearchQuery() {
         //SILEX:todo
-        //Ajouter la recherche par référence vers d'autres ontologies aussi
+        // Add the search by ontology reference
         //\SILEX:todo
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
@@ -102,7 +99,7 @@ public class TraitDAO extends SparqlDAO<Trait> {
     }
     
     /**
-     * prepare a query to get the higher id of the traits
+     * Prepares a query to get the higher id of the traits.
      * @return 
      */
     private SPARQLQueryBuilder prepareGetLastId() {
@@ -117,7 +114,7 @@ public class TraitDAO extends SparqlDAO<Trait> {
     }
     
     /**
-     * get the higher id of the traits
+     * Gets the higher id of the traits.
      * @return the id
      */
     public int getLastId() {
@@ -148,13 +145,13 @@ public class TraitDAO extends SparqlDAO<Trait> {
     }
     
     /**
-     * Vérifie si les traits sont corrects
+     * Check traits.
      * @param traitsDTO
      * @return 
      */
     public POSTResultsReturn check(List<TraitDTO> traitsDTO) {
         //Résultats attendus
-        POSTResultsReturn traitsCheck = null;
+        POSTResultsReturn traitsCheck;
         //Liste des status retournés
         List<Status> checkStatusList = new ArrayList<>();
         boolean dataOk = true;
@@ -184,8 +181,7 @@ public class TraitDAO extends SparqlDAO<Trait> {
     }
     
     /**
-     * Prepare update query for trait
-     * 
+     * Prepares update query for trait.
      * @param traitDTO
      * @return update request
      */
@@ -204,30 +200,29 @@ public class TraitDAO extends SparqlDAO<Trait> {
             spql.addInsert(graph, traitUri, RDFS.comment, traitDTO.getComment());
         }
         
-        for (OntologyReference ontologyReference : traitDTO.getOntologiesReferences()) {
+        traitDTO.getOntologiesReferences().forEach((ontologyReference) -> {
             Property ontologyProperty = ResourceFactory.createProperty(ontologyReference.getProperty());
             Node ontologyObject = NodeFactory.createURI(ontologyReference.getObject());
             spql.addInsert(graph, traitUri, ontologyProperty, ontologyObject);
             Literal seeAlso = ResourceFactory.createStringLiteral(ontologyReference.getSeeAlso());
             spql.addInsert(graph, ontologyObject, RDFS.seeAlso, seeAlso);
-        }
+        });
         
         return spql.buildRequest();
     }
     
     /**
-     * insère les données dans le triplestore
-     * On suppose que la vérification de leur intégrité a été faite auparavent, via l'appel à la méthode check
+     * Creates traits.The data check has to be done previously.
      * @param traitsDTO
-     * @return 
+     * @return Creation result
      */
     public POSTResultsReturn insert(List<TraitDTO> traitsDTO) {
         List<Status> insertStatusList = new ArrayList<>();
         List<String> createdResourcesURI = new ArrayList<>();
         
         POSTResultsReturn results;
-        boolean resultState = false; //Pour savoir si les données sont bonnes et ont bien été insérées
-        boolean annotationInsert = true; //Si l'insertion a bien été faite
+        boolean resultState = false;
+        boolean annotationInsert = true;
         
         UriGenerator uriGenerator = new UriGenerator();
         final Iterator<TraitDTO> iteratorTraitDTO = traitsDTO.iterator();
@@ -236,16 +231,17 @@ public class TraitDAO extends SparqlDAO<Trait> {
             TraitDTO traitDTO = iteratorTraitDTO.next();
             try {
                 traitDTO.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_TRAIT.toString(), null, null));
-            } catch (Exception ex) { //In the traits case, no exception should be raised
+            } catch (Exception ex) {
                 annotationInsert = false;
             }
-            //Enregistrement dans le triplestore
+            
+            // Register
             UpdateRequest spqlInsert = prepareInsertQuery(traitDTO);
             
             try {
-                //SILEX:test
-                //Toute la notion de connexion au triplestore sera à revoir.
-                //C'est un hot fix qui n'est pas propre
+                /*//SILEX:todo
+                Connection te review. Dirty hot fix.
+                */
                 this.getConnection().begin();
                 Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spqlInsert.toString());
                 LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
@@ -281,9 +277,8 @@ public class TraitDAO extends SparqlDAO<Trait> {
     }
     
     /**
-     * 
      * @param uri
-     * @return la liste des liens vers d'autres ontologies
+     * @return ontology references list
      */
     private SPARQLQueryBuilder prepareSearchOntologiesReferencesQuery(String uri) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
@@ -311,8 +306,7 @@ public class TraitDAO extends SparqlDAO<Trait> {
     }
     
     /**
-     * 
-     * @return la liste des traits correspondant à la recherche
+     * @return traits found
      */
     public ArrayList<Trait> allPaginate() {
         SPARQLQueryBuilder query = prepareSearchQuery();
@@ -342,7 +336,7 @@ public class TraitDAO extends SparqlDAO<Trait> {
                     trait.setComment(bindingSet.getValue(COMMENT).stringValue());
                 }
                 
-                //On récupère maintenant la liste des références vers des ontologies... 
+                // Get ontology references list 
                 SPARQLQueryBuilder queryOntologiesReferences = prepareSearchOntologiesReferencesQuery(trait.getUri());
                 TupleQuery tupleQueryOntologiesReferences = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryOntologiesReferences.toString());
                 TupleQueryResult resultOntologiesReferences = tupleQueryOntologiesReferences.evaluate();
@@ -368,8 +362,7 @@ public class TraitDAO extends SparqlDAO<Trait> {
     }
     
     /**
-     * Prepare delete query for trait
-     * 
+     * Prepares delete query for trait.
      * @param trait
      * @return delete request
      */
@@ -382,7 +375,7 @@ public class TraitDAO extends SparqlDAO<Trait> {
         spql.addDelete(graph, traitUri, RDFS.label, trait.getLabel());
         spql.addDelete(graph, traitUri, RDFS.comment, trait.getComment());
         
-        for (OntologyReference ontologyReference : trait.getOntologiesReferences()) {
+        trait.getOntologiesReferences().forEach((ontologyReference) -> {
             Property ontologyProperty = ResourceFactory.createProperty(ontologyReference.getProperty());
             Node ontologyObject = NodeFactory.createURI(ontologyReference.getObject());
             spql.addDelete(graph, traitUri, ontologyProperty, ontologyObject);
@@ -390,7 +383,7 @@ public class TraitDAO extends SparqlDAO<Trait> {
                 Literal seeAlso = ResourceFactory.createStringLiteral(ontologyReference.getSeeAlso());
                 spql.addDelete(graph, ontologyObject, RDFS.seeAlso, seeAlso);
             }
-        }
+        });
                 
         return spql.buildRequest();        
     }
@@ -400,21 +393,21 @@ public class TraitDAO extends SparqlDAO<Trait> {
         List<String> updatedResourcesURIList = new ArrayList<>();
         POSTResultsReturn results;
         
-        boolean annotationUpdate = true; // Si l'insertion a bien été réalisée
-        boolean resultState = false; // Pour savoir si les données étaient bonnes et on bien été mises à jour
+        boolean annotationUpdate = true;
+        boolean resultState = false;
         
         for (TraitDTO traitDTO : traitsDTO) {
-            //1. Suppression des données déjà existantes
-            //1.1 Récupération des infos qui seront modifiées (pour supprimer les bons triplets)
+            //1. Delete existing data
+            //1.1 Get information that will be modified (to delete the right triplets)
             uri = traitDTO.getUri();
             ArrayList<Trait> traitsCorresponding = allPaginate();
             if (traitsCorresponding.size() > 0) {
                 UpdateRequest deleteQuery = prepareDeleteQuery(traitsCorresponding.get(0));
 
-                //2. Insertion des nouvelles données
+                //2. Insert new data
                 UpdateRequest queryInsert = prepareInsertQuery(traitDTO);
                  try {
-                        // début de la transaction : vérification de la requête
+                        // Transaction start: check request
                         this.getConnection().begin();
                         Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery.toString());
                         LOGGER.debug(getTraceabilityLogs() + " query : " + prepareDelete.toString());
@@ -443,7 +436,7 @@ public class TraitDAO extends SparqlDAO<Trait> {
                 LOGGER.error("Error during commit Triplestore statements: ", ex);
             }
         } else {
-            // retour en arrière sur la transaction
+            // Rollback
             try {
                 this.getConnection().rollback();
             } catch (RepositoryException ex) {
@@ -462,9 +455,9 @@ public class TraitDAO extends SparqlDAO<Trait> {
     }
     
     /**
-     * Vérifie les données et les insère dans le triplestore.
+     * Check data and create them in the storage.
      * @param traitsDTO
-     * @return POSTResultsReturn le résultat de la tentative d'insertion
+     * @return Creation result
      */
     public POSTResultsReturn checkAndInsert(List<TraitDTO> traitsDTO) {
         POSTResultsReturn checkResult = check(traitsDTO);
@@ -476,9 +469,9 @@ public class TraitDAO extends SparqlDAO<Trait> {
     }
     
     /**
-     * Vérifie les données et met à jour le triplestore
+     * Check data and update them in the storage.
      * @param traitsDTO
-     * @return POSTResultsReturn le résultat de la tentative de modification des données
+     * @return Update result
      */
     public POSTResultsReturn checkAndUpdate(List<TraitDTO> traitsDTO) {
         POSTResultsReturn checkResult = check(traitsDTO);
@@ -490,7 +483,7 @@ public class TraitDAO extends SparqlDAO<Trait> {
     }
     
     /**
-     * Query generated by the searched parameter above (traitDbId) 
+     * Query generated by the searched parameter above (traitDbId).
      * @example 
      * SELECT DISTINCT ?varUri
      * WHERE {
@@ -507,7 +500,7 @@ public class TraitDAO extends SparqlDAO<Trait> {
     }    
     
     /**
-     * Get the Variables associated to the traits
+     * Gets the variables associated to the traits.
      * @author Alice Boizet <alice.boizet@inra.fr>
      * @param trait 
      * @return traits list of traits

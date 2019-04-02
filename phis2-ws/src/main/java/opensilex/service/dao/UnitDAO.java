@@ -58,7 +58,7 @@ public class UnitDAO extends SparqlDAO<Unit> {
 
     protected SPARQLQueryBuilder prepareSearchQuery() {
         //SILEX:todo
-        //Ajouter la recherche par référence vers d'autres ontologies aussi
+        // Add search by ontology references
         //\SILEX:todo
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
@@ -94,13 +94,13 @@ public class UnitDAO extends SparqlDAO<Unit> {
     }
     
     /**
-     * Vérifie si les unités sont correctes
+     * Check if the objects are valid.
      * @param unitsDTO
      * @return 
      */
     public POSTResultsReturn check(List<UnitDTO> unitsDTO) {
         //Résultats attendus
-        POSTResultsReturn traitsCheck = null;
+        POSTResultsReturn traitsCheck;
         //Liste des status retournés
         List<Status> checkStatusList = new ArrayList<>();
         boolean dataOk = true;
@@ -130,7 +130,7 @@ public class UnitDAO extends SparqlDAO<Unit> {
     }
     
     /**
-     * prepare a query to get the higher id of the units
+     * Prepares a query to get the higher id of the units.
      * @return 
      */
     private SPARQLQueryBuilder prepareGetLastId() {
@@ -145,7 +145,7 @@ public class UnitDAO extends SparqlDAO<Unit> {
     }
     
     /**
-     * get the higher id of the units
+     * Gets the higher id of the units.
      * @return the id
      */
     public int getLastId() {
@@ -176,8 +176,7 @@ public class UnitDAO extends SparqlDAO<Unit> {
     }
     
     /**
-     * Prepare update query for unit
-     * 
+     * Prepares an update query for a unit.
      * @param unitDTO
      * @return update request
      */
@@ -196,21 +195,20 @@ public class UnitDAO extends SparqlDAO<Unit> {
             spql.addInsert(graph, unitUri, RDFS.comment, unitDTO.getComment());
         }
         
-        for (OntologyReference ontologyReference : unitDTO.getOntologiesReferences()) {
+        unitDTO.getOntologiesReferences().forEach((ontologyReference) -> {
             Property ontologyProperty = ResourceFactory.createProperty(ontologyReference.getProperty());
             Node ontologyObject = NodeFactory.createURI(ontologyReference.getObject());
             spql.addInsert(graph, unitUri, ontologyProperty, ontologyObject);
             Literal seeAlso = ResourceFactory.createStringLiteral(ontologyReference.getSeeAlso());
             spql.addInsert(graph, ontologyObject, RDFS.seeAlso, seeAlso);
-
-        }
+        });
         
         return spql.buildRequest();
     }
     
     /**
-     * insère les données dans le triplestore
-     * On suppose que la vérification de leur intégrité a été faite auparavent, via l'appel à la méthode check
+     * Create objects. 
+     * The objects integrity must have been checked previously.
      * @param unitsDTO
      * @return 
      */
@@ -219,8 +217,8 @@ public class UnitDAO extends SparqlDAO<Unit> {
         List<String> createdResourcesURI = new ArrayList<>();
         
         POSTResultsReturn results;
-        boolean resultState = false; //Pour savoir si les données sont bonnes et ont bien été insérées
-        boolean annotationInsert = true; //Si l'insertion a bien été faite
+        boolean resultState = false;
+        boolean annotationInsert = true;
         
         UriGenerator uriGenerator = new UriGenerator();
         final Iterator<UnitDTO> iteratorUnitDTO = unitsDTO.iterator();
@@ -233,18 +231,17 @@ public class UnitDAO extends SparqlDAO<Unit> {
                 annotationInsert = false;
             }
             
-            //Enregistrement dans le triplestore
+            // Register
             UpdateRequest spqlInsert = prepareInsertQuery(unitDTO);
             
             try {
-                //SILEX:test
-                //Toute la notion de connexion au triplestore sera à revoir.
-                //C'est un hot fix qui n'est pas propre
+                //SILEX:todo
+                // Connection to review. Dirty hotfix.
                 this.getConnection().begin();
                 Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spqlInsert.toString());
                 LOGGER.trace(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                 prepareUpdate.execute();
-                //\SILEX:test
+                //\SILEX:todo
 
                 createdResourcesURI.add(unitDTO.getUri());
 
@@ -275,23 +272,22 @@ public class UnitDAO extends SparqlDAO<Unit> {
     }
     
     /**
-     * Vérifie les données et les insère dans le triplestore.
+     * Checks the integrity of the objects and create them in the storage.
      * @param unitsDTO
-     * @return POSTResultsReturn le résultat de la tentative d'insertion
+     * @return the result
      */
     public POSTResultsReturn checkAndInsert(List<UnitDTO> unitsDTO) {
         POSTResultsReturn checkResult = check(unitsDTO);
         if (checkResult.getDataState()) {
             return insert(unitsDTO);
-        } else { //Les données ne sont pas bonnes
+        } else {
             return checkResult;
         }
     }
     
     /**
-     * 
      * @param uri
-     * @return la liste des liens vers d'autres ontologies
+     * @return the ontology references links
      */
     private SPARQLQueryBuilder prepareSearchOntologiesReferencesQuery(String uri) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
@@ -319,8 +315,7 @@ public class UnitDAO extends SparqlDAO<Unit> {
     }
     
     /**
-     * 
-     * @return la liste des unités correspondant à la recherche
+     * @return the units found
      */
     public ArrayList<Unit> allPaginate() {
         SPARQLQueryBuilder query = prepareSearchQuery();
@@ -350,7 +345,7 @@ public class UnitDAO extends SparqlDAO<Unit> {
                     unit.setComment(bindingSet.getValue(COMMENT).stringValue());
                 }
                 
-                //On récupère maintenant la liste des références vers des ontologies... 
+                // Get ontology references  
                 SPARQLQueryBuilder queryOntologiesReferences = prepareSearchOntologiesReferencesQuery(unit.getUri());
                 TupleQuery tupleQueryOntologiesReferences = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryOntologiesReferences.toString());
                 TupleQueryResult resultOntologiesReferences = tupleQueryOntologiesReferences.evaluate();
@@ -368,17 +363,14 @@ public class UnitDAO extends SparqlDAO<Unit> {
                         unit.addOntologyReference(ontologyReference);
                     }
                 }
-                
                 units.add(unit);
             }
         }
-        
         return units;
     }
     
     /**
-     * Prepare delete query for unit
-     * 
+     * Prepares delete request for a unit.
      * @param unit
      * @return delete request
      */
@@ -391,7 +383,7 @@ public class UnitDAO extends SparqlDAO<Unit> {
         spql.addDelete(graph, unitUri, RDFS.label, unit.getLabel());
         spql.addDelete(graph, unitUri, RDFS.comment, unit.getComment());
         
-        for (OntologyReference ontologyReference : unit.getOntologiesReferences()) {
+        unit.getOntologiesReferences().forEach((ontologyReference) -> {
             Property ontologyProperty = ResourceFactory.createProperty(ontologyReference.getProperty());
             Node ontologyObject = NodeFactory.createURI(ontologyReference.getObject());
             spql.addDelete(graph, unitUri, ontologyProperty, ontologyObject);
@@ -399,7 +391,7 @@ public class UnitDAO extends SparqlDAO<Unit> {
                 Literal seeAlso = ResourceFactory.createStringLiteral(ontologyReference.getSeeAlso());
                 spql.addDelete(graph, ontologyObject, RDFS.seeAlso, seeAlso);
             }
-        }
+        });
                 
         return spql.buildRequest();        
     }
@@ -409,21 +401,21 @@ public class UnitDAO extends SparqlDAO<Unit> {
         List<String> updatedResourcesURIList = new ArrayList<>();
         POSTResultsReturn results;
         
-        boolean annotationUpdate = true; // Si l'insertion a bien été réalisée
-        boolean resultState = false; // Pour savoir si les données étaient bonnes et on bien été mises à jour
+        boolean annotationUpdate = true;
+        boolean resultState = false;
         
         for (UnitDTO unitDTO : unitsDTO) {
-            //1. Suppression des données déjà existantes
-            //1.1 Récupération des infos qui seront modifiées (pour supprimer les bons triplets)
+            //1. Delete existing data
+            //1.1 Get information to modify (to delete the right triplets)
             uri = unitDTO.getUri();
             ArrayList<Unit> unitsCorresponding = allPaginate();
             if (unitsCorresponding.size() > 0) {
                 UpdateRequest deleteQuery = prepareDeleteQuery(unitsCorresponding.get(0));
 
-                //2. Insertion des nouvelles données
+                //2. Insert the new data
                 UpdateRequest queryInsert = prepareInsertQuery(unitDTO);
                  try {
-                        // début de la transaction : vérification de la requête
+                        // transaction start: check connection
                         this.getConnection().begin();
                         Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery.toString());
                         LOGGER.debug(getTraceabilityLogs() + " query : " + prepareDelete.toString());
@@ -452,7 +444,7 @@ public class UnitDAO extends SparqlDAO<Unit> {
                 LOGGER.error("Error during commit Triplestore statements: ", ex);
             }
         } else {
-            // retour en arrière sur la transaction
+            // Rollback
             try {
                 this.getConnection().rollback();
             } catch (RepositoryException ex) {
@@ -471,9 +463,9 @@ public class UnitDAO extends SparqlDAO<Unit> {
     }
     
     /**
-     * Vérifie les données et met à jour le triplestore
+     * Checks the objects integrity and updates them in the storage.
      * @param unitsDTO
-     * @return POSTResultsReturn le résultat de la tentative de modification des données
+     * @return the result of check and update
      */
     public POSTResultsReturn checkAndUpdate(List<UnitDTO> unitsDTO) {
         POSTResultsReturn checkResult = check(unitsDTO);

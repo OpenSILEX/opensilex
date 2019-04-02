@@ -89,11 +89,11 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
     }
     
     /**
-     * generates a query to get the last scientific object uri from the given year
+     * Generates a query to get the last scientific object URI from the given year.
      * @param year 
-     * @return the query to get the uri of the last inserted scientific object 
+     * @return the query to get the URI of the last inserted scientific object 
      *         for the given year
-     * e.g
+     * @example
      * SELECT ?uri WHERE {
      *      ?uri  rdf:type  ?type  . 
      *      ?type  rdfs:subClassOf*  <http://www.opensilex.org/vocabulary/oeso#ScientificObject> . 
@@ -116,8 +116,7 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
     }
     
     /**
-     * get the last scientific object id for the given year. 
-     * e.g : for http://www.phenome-fppn.fr/diaphen/
+     * Gets the last scientific object id for the given year. 
      * @param year the year of the wanted scientific object number.
      * @return the id of the last scientific object inserted in the triplestore for the given year
      */
@@ -126,7 +125,7 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
         
         this.getConnection().begin();
 
-        //get last scientificObject uri inserted during the given year
+        //get the last scientificObject URI inserted during the given year
         TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, lastScientificObjectUriFromYearQuery.toString());
         TupleQueryResult result = tupleQuery.evaluate();
 
@@ -155,8 +154,7 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
     }
     
     /**
-     * generates the sparql ask query to know if a given alias is already 
-     * existing in a given context
+     * Generates the ask query to know if a given alias exists in a given context.
      * @param alias
      * @param context
      * @return the query
@@ -174,14 +172,14 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
     }
         
     /**
-     * Check if the scientific objects are accurates
+     * Checks if the scientific objects are valid.
      * @param ScientificObjectsDTO
      * @return
      * @throws RepositoryException 
      */
     public POSTResultsReturn check(List<ScientificObjectDTO> ScientificObjectsDTO) throws RepositoryException {
         //Expected results
-        POSTResultsReturn scientificObjectsCheck = null;
+        POSTResultsReturn scientificObjectsCheck;
         //returned status list
         List<Status> checkStatusList = new ArrayList<>();
         
@@ -248,8 +246,7 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
     }
     
     /**
-     * insère les données dans le triplestore. 
-     * On suppose que la vérification de leur intégrité a été fait auparavent via l'appel à la méthode check()
+     * Creates objects. Objects must have been checked.
      * @param scientificObjects
      * @return 
      */
@@ -259,8 +256,8 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
         
         POSTResultsReturn results;
         
-        boolean resultState = false; //Pour savoir si les données sont bonnes et ont bien été insérées
-        boolean annotationInsert = true; // Si l'insertion a bien été effectuée
+        boolean resultState = false; // Data are valid and well inserted
+        boolean annotationInsert = true; // Insertion well done
         
         final Iterator<ScientificObjectDTO> iteratorScientificObjects = scientificObjects.iterator();
         
@@ -271,7 +268,7 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
             ScientificObject scientificObject = scientificObjectDTO.createObjectFromDTO();
             
             try {
-                //1. generates scientific object uri
+                //1. generates a scientific object URI
                 scientificObject.setUri(uriGenerator.generateNewInstanceUri(scientificObject.getRdfType(), scientificObjectDTO.getYear(), null));
             } catch (Exception ex) { //In the scientific object case, no exception should be raised
                 annotationInsert = false;
@@ -283,11 +280,11 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
             Resource scientificObjectUri = ResourceFactory.createResource(scientificObject.getUri());
             Node scientificObjectType = NodeFactory.createURI(scientificObject.getRdfType());
             
-            Node graph = null;
+            Node graph;
             if (scientificObject.getUriExperiment() != null) {
                 graph = NodeFactory.createURI(scientificObject.getUriExperiment());
                 
-                //Add participates in (scientific object participates in experiment)
+                // Add participates in (scientific object participates in experiment)
                 Node participatesIn = NodeFactory.createURI(Oeso.RELATION_PARTICIPATES_IN.toString());
                 spql.addInsert(graph, scientificObjectUri, participatesIn, graph);
             } else {
@@ -296,9 +293,9 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
             
             spql.addInsert(graph, scientificObjectUri, RDF.type, scientificObjectType);
             
-            //Propriétés associées à l'AO
+            // Scientific objects properties
             for (Property property : scientificObject.getProperties()) {
-                if (property.getRdfType() != null && !property.getRdfType().equals("")) {//Propriété typée
+                if (property.getRdfType() != null && !property.getRdfType().equals("")) {// Typed property
                     if (property.getRdfType().equals(Oeso.CONCEPT_VARIETY.toString())) {
                         
                         String propertyURI;
@@ -337,7 +334,7 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
                 spql.addInsert(graph, experimentUri, relationHasPlot, scientificObjectUri);  
             }
             
-            //isPartOf : the object which has part the element must not be a plot    
+            // isPartOf: the object which has part the element must not be a plot    
             if (scientificObject.getIsPartOf()!= null) {
                 Node agronomicalObjectPartOf = NodeFactory.createURI(scientificObject.getIsPartOf());
                 org.apache.jena.rdf.model.Property relationIsPartOf = ResourceFactory.createProperty(Oeso.RELATION_HAS_PLOT.toString());
@@ -359,7 +356,6 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
                     // retour en arrière sur la transaction
                     this.getConnection().rollback();
                 }
-//                this.getConnection().close();
             } catch (RepositoryException ex) {
                     LOGGER.error("Error during commit or rolleback Triplestore statements: ", ex);
             } catch (MalformedQueryException e) {
@@ -387,22 +383,21 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
     }
     
     /**
-     * vérifie les données et les insère dans le triplestore
+     * Check objects and create them.
      * @param scientificObjectsDTO
      * @return 
      */
     public POSTResultsReturn checkAndInsert(List<ScientificObjectDTO> scientificObjectsDTO) {
         POSTResultsReturn checkResult = check(scientificObjectsDTO);
-        if (checkResult.statusList.size() > 0) { //Les données ne sont pas bonnes
+        if (checkResult.statusList.size() > 0) {
             return checkResult;
-        } else { //Si les données sont bonnes
+        } else {
             return insert(scientificObjectsDTO);
         }
     }
     
 
     /**
-     * 
      * @param experimentURI
      * @return the query enabling to retrieve the list of scientific objects participating in the experiment and the objects propertiesT
      * SILEX:TODO 
@@ -429,10 +424,9 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
     }
     
     /**
-     * 
+     * Prepares the query to search children with contained (geo:contains) elements.
      * @param objectURI
-     * @return la requête permettant d'avoir tous les éléments contenus (geo:contains) dans objectURI.
-     *         la requête permet d'avoir la liste de tous les descendants
+     * @return the query to search children with contained elements
      */
     private SPARQLQueryBuilder prepareSearchChildrenWithContains(String objectURI, String objectType) {
         SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
@@ -450,9 +444,9 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
     }
     
     /**
-     * 
+     * Prepares the query to search the first children contained (geo:contains).
      * @param objectURI
-     * @return La liste des premiers enfants de l'entités (relation geo:contains)
+     * @return the query to search the first children contained (geo:contains).
      */
     private SPARQLQueryBuilder prepareSearchFirstChildrenWithContains(String objectURI) {
         SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
@@ -468,20 +462,21 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
     }
      
     /**
-     * 
+     * Search the descendants of the layer.
      * @param layerDTO
-     * @return la liste des enfants de layerDTO.getObjectURI. Retourne tous les
-     *         descendants si layerDTO.getDepth == true. (clé : uri, valeur : type)
+     * @return the descendants of the layer. Returns all the descendants if 
+     * layerDTO.getDepth == true. (key: URI, value: type)
      */
     public HashMap<String, ScientificObject> searchChildren(LayerDTO layerDTO) {
         HashMap<String, ScientificObject> children = new HashMap<>(); // uri (clé), type (valeur)
         
-        //Si c'est une expérimentation, le nom du lien n'est pas le même donc, 
-        //on commence par récupérer la liste des enfants directs
+        /* If it is an experiment, the name of the link is not the same so we 
+        start by getting the list of the direct children
+        */
         if (layerDTO.getObjectType().equals(Oeso.CONCEPT_EXPERIMENT.toString())) {
             //SILEX:test
-            //Pour les soucis de pool de connexion
-            rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID); //Stockage triplestore Sesame
+            // For pool connection issues
+            rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID);
             rep.initialize();
             setConnection(rep.getConnection());
             //\SILEX:test
@@ -492,13 +487,13 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
             TupleQueryResult result = tupleQuery.evaluate();
                         
             //SILEX:test
-            //Pour les soucis de pool de connexion
+            // For pool connection issues
             getConnection().close();
             //\SILEX:test
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 ScientificObject scientificObject = children.get(bindingSet.getValue(CHILD).stringValue());
-                if (scientificObject != null) { //Il suffit juste de lui ajouter la propriété. 
+                if (scientificObject != null) { // Add property 
                     Property property = new Property();
                     property.setValue(bindingSet.getValue(PROPERTY).stringValue());
                     property.setRelation(bindingSet.getValue(PROPERTY_RELATION).stringValue());
@@ -507,7 +502,7 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
                     }
                     
                     scientificObject.addProperty(property);
-                } else { //Il n'est pas encore dans la liste, il faut le rajouter
+                } else { // It is not in the list yet, it has to be added
                     scientificObject = new ScientificObject();
                     scientificObject.setUri(bindingSet.getValue(CHILD).stringValue());
                     scientificObject.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
@@ -524,16 +519,17 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
                 children.put(scientificObject.getUri(), scientificObject);
             }
         }
-        //SILEX:INFO
-        //Pour l'instant, on ne récupère que les propriétés des premiers descendants de l'expérimentation.
-        //Pas les autres
-        //Si il faut aussi tous les descendants
+        /*
+        For the moment, we only get the properties of the first descendants of
+        the experimentation, not the others.
+        If all descendants are needed
+        */
         if (ResourcesUtils.getStringBooleanValue(layerDTO.getDepth())) {
-            //Si c'est les descendants d'un essai, il y a un traitement particulier
+            // If they are descendants from a trial, a specific treatment is needed
             if (layerDTO.getObjectType().equals(Oeso.CONCEPT_EXPERIMENT.toString())) {
-                //On recherche tous les fils des plots de l'experimentation, récupérés précédemment
+                // We get all the children of the plots of the experimentation, recovered previously
                     //SILEX:test
-                    //Pour les soucis de pool de connexion
+                    // For pool connection issues
                     rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID); //Stockage triplestore Sesame
                     rep.initialize();
                     setConnection(rep.getConnection());
@@ -557,13 +553,13 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
                     }
                 }
                  //SILEX:test
-                    //Pour les soucis de pool de connexion
+                 // For pool connection issues
                     getConnection().close();
                     //\SILEX:test
-            } else { //Si c'est un objet classique
+            } else { // If a classic object
                 //SILEX:test
-                //Pour les soucis de pool de connexion
-                rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID); //Stockage triplestore Sesame
+                // For pool connection issues
+                rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID);
                 rep.initialize();
                 setConnection(rep.getConnection());
                 //\SILEX:test
@@ -571,7 +567,7 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
                 TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
                 TupleQueryResult result = tupleQuery.evaluate();
                 //SILEX:test
-                //Pour les soucis de pool de connexion
+                // For pool connection issues
                 getConnection().close();
                 //\SILEX:test
                 
@@ -586,10 +582,11 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
                 }
             }
             
-        } else if (!layerDTO.getObjectType().equals(Oeso.CONCEPT_EXPERIMENT.toString())) { //S'il ne faut que les enfants directs et que ce n'est pas une expérimentation
+        } else if (!layerDTO.getObjectType().equals(Oeso.CONCEPT_EXPERIMENT.toString())) { 
+            // If only direct children needed and not an experimentation
             //SILEX:test
-            //Pour les soucis de pool de connexion
-            rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID); //Stockage triplestore Sesame
+            // For pool connection issues
+            rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID);
             rep.initialize();
             setConnection(rep.getConnection());
             //\SILEX:test
@@ -597,7 +594,7 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
             TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
             TupleQueryResult result = tupleQuery.evaluate();
             //SILEX:test
-            //Pour les soucis de pool de connexion
+            // For pool connection issues
             getConnection().close();
             //\SILEX:test
             
@@ -616,15 +613,14 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
     }
     
     /**
-     * 
      * @return scientific objects list, result of the user query, empty if no result
      */
     public ArrayList<ScientificObject> allPaginate() {
         try {
             SPARQLQueryBuilder sparqlQuery = prepareSearchQuery();
             //SILEX:test
-            //Pour les soucis de pool de connexion
-            rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID); //Stockage triplestore Sesame
+            // For pool connection issues
+            rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID);
             rep.initialize();
             setConnection(rep.getConnection());
             //\SILEX:test
@@ -643,7 +639,7 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
                         alreadyFoundedUri = true;
                     }
                     
-                    ScientificObject scientificObject = null;
+                    ScientificObject scientificObject;
                     
                     Property property = new Property();
                     
@@ -698,7 +694,7 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
             
             
             //SILEX:test
-            //Pour les soucis de pool de connexion
+            // For pool connection issues
             getConnection().close();
             //\SILEX:test
             
@@ -715,9 +711,9 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
     }
     
     protected SPARQLQueryBuilder prepareSearchQuery() {
-        //SILEX:INFO
-        //- il faudra ajouter les propriétés de l'objet
-        //\SILEX:INFO
+        //SILEX:todo
+        // object properties will have to be added
+        //\SILEX:todo
         SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
         
         sparqlQuery.appendDistinct(true);
@@ -762,9 +758,9 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
     }
     
     /**
-     * checks if the scientific object exists
+     * Checks if the scientific object exists.
      * @param uri
-     * @return 0 if the object uri doesn't exist, 1 if it does exist
+     * @return 0 if the object URI doesn't exist, 1 if it does exist
      */
     public boolean existScientificObject(String uri) {        
         SPARQLQueryBuilder query = askExistScientificObject(uri);
@@ -774,7 +770,7 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
     }
 
     /**
-     * generates the sparql ask query to know if the scientific object uri exists
+     * Generates the ask query to know if the scientific object URI exists.
      * existing in a given context
      * @param uri
      * @return the query

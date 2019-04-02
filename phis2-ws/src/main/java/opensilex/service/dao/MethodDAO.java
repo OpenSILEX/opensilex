@@ -62,7 +62,7 @@ public class MethodDAO extends SparqlDAO<Method> {
 
     protected SPARQLQueryBuilder prepareSearchQuery() {
         //SILEX:todo
-        //Ajouter la recherche par référence vers d'autres ontologies aussi
+        // Add search by ontology referencies
         //\SILEX:todo
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
@@ -100,20 +100,20 @@ public class MethodDAO extends SparqlDAO<Method> {
     }
     
     /**
-     * Vérifie si les méthodes sont corrects
+     * Checks if methods are valid.
      * @param methodsDTO
      * @return 
      */
     public POSTResultsReturn check(List<MethodDTO> methodsDTO) {
-        //Résultats attendus
-        POSTResultsReturn traitsCheck = null;
-        //Liste des status retournés
+        // Results
+        POSTResultsReturn traitsCheck;
+        // Returned status
         List<Status> checkStatusList = new ArrayList<>();
         boolean dataOk = true;
         
-        //Vérification des méthodes
+        // Check methods
         for (MethodDTO methodDTO : methodsDTO) {
-            //Vérification des relations d'ontologies de référence
+            // Check ontology referencies relations
             for (OntologyReference ontologyReference : methodDTO.getOntologiesReferences()) {
                 if (!ontologyReference.getProperty().equals(Skos.RELATION_EXACT_MATCH.toString())
                    && !ontologyReference.getProperty().equals(Skos.RELATION_CLOSE_MATCH.toString())
@@ -140,7 +140,7 @@ public class MethodDAO extends SparqlDAO<Method> {
     }
     
     /**
-     * prepare a query to get the higher id of the methods
+     * Prepares a query to get the higher id of the methods.
      * @return 
      */
     private SPARQLQueryBuilder prepareGetLastId() {
@@ -155,7 +155,7 @@ public class MethodDAO extends SparqlDAO<Method> {
     }
     
     /**
-     * get the higher id of the methods
+     * Gets the higher id of the methods.
      * @return the id
      */
     public int getLastId() {
@@ -186,8 +186,7 @@ public class MethodDAO extends SparqlDAO<Method> {
     }
     
     /**
-     * Prepare update query for method
-     * 
+     * Prepares update query for a method.
      * @param methodDTO
      * @return update request
      */
@@ -206,20 +205,20 @@ public class MethodDAO extends SparqlDAO<Method> {
             spql.addInsert(graph, methodUri, RDFS.comment, methodDTO.getComment());
         }
         
-        for (OntologyReference ontologyReference : methodDTO.getOntologiesReferences()) {
+        methodDTO.getOntologiesReferences().forEach((ontologyReference) -> {
             Property ontologyProperty = ResourceFactory.createProperty(ontologyReference.getProperty());
             Node ontologyObject = NodeFactory.createURI(ontologyReference.getObject());
             spql.addInsert(graph, methodUri, ontologyProperty, ontologyObject);
             Literal seeAlso = ResourceFactory.createStringLiteral(ontologyReference.getSeeAlso());
             spql.addInsert(graph, ontologyObject, RDFS.seeAlso, seeAlso);
-        }
+        });
         
         return spql.buildRequest();
     }
     
     /**
-     * insère les données dans le triplestore
-     * On suppose que la vérification de leur intégrité a été faite auparavent, via l'appel à la méthode check
+     * Create methods.
+     * Methods integrity must have been checked.
      * @param methodsDTO
      * @return 
      */
@@ -228,8 +227,8 @@ public class MethodDAO extends SparqlDAO<Method> {
         List<String> createdResourcesURI = new ArrayList<>();
         
         POSTResultsReturn results;
-        boolean resultState = false; //Pour savoir si les données sont bonnes et ont bien été insérées
-        boolean annotationInsert = true; //Si l'insertion a bien été faite
+        boolean resultState = false; // To know if the data is valid and inserted well
+        boolean annotationInsert = true; // If the insertion has been correctly done
         
         UriGenerator uriGenerator = new UriGenerator();
         
@@ -239,22 +238,22 @@ public class MethodDAO extends SparqlDAO<Method> {
             MethodDTO methodDTO = iteratorMethodDTO.next();
             try {
                 methodDTO.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_METHOD.toString(), null, null));
-            } catch (Exception ex) { //In the method case, no exception should be raised
+            } catch (Exception ex) { // In the method case, no exception should be raised
                 annotationInsert = false;
             }
             
-            //Enregistrement dans le triplestore
+            // Register in the triplestore
             UpdateRequest spqlInsert = prepareInsertQuery(methodDTO);
             
             try {
-                //SILEX:test
-                //Toute la notion de connexion au triplestore sera à revoir.
-                //C'est un hot fix qui n'est pas propre
+                //SILEX:todo
+                // Review the connection to the triplestore
+                // Dirty hotfix
                 this.getConnection().begin();
                 Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spqlInsert.toString());
                 LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                 prepareUpdate.execute();
-                //\SILEX:test
+                //\SILEX:todo
 
                 createdResourcesURI.add(methodDTO.getUri());
 
@@ -285,23 +284,22 @@ public class MethodDAO extends SparqlDAO<Method> {
     }
     
     /**
-     * Vérifie les données et les insère dans le triplestore.
+     * Checks the data and inserts them.
      * @param methodsDTO
-     * @return POSTResultsReturn le résultat de la tentative d'insertion
+     * @return POSTResultsReturn the insertion result.
      */
     public POSTResultsReturn checkAndInsert(List<MethodDTO> methodsDTO) {
         POSTResultsReturn checkResult = check(methodsDTO);
         if (checkResult.getDataState()) {
             return insert(methodsDTO);
-        } else { //Les données ne sont pas bonnes
+        } else { // the data is incorrect
             return checkResult;
         }
     }
     
     /**
-     * 
      * @param uri
-     * @return la liste des liens vers d'autres ontologies
+     * @return the ontology references links
      */
     private SPARQLQueryBuilder prepareSearchOntologiesReferencesQuery(String uri) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
@@ -329,8 +327,7 @@ public class MethodDAO extends SparqlDAO<Method> {
     }
     
     /**
-     * 
-     * @return la liste des méthodes correspondant à la recherche
+     * @return methods found
      */
     public ArrayList<Method> allPaginate() {
         SPARQLQueryBuilder query = prepareSearchQuery();
@@ -360,7 +357,7 @@ public class MethodDAO extends SparqlDAO<Method> {
                     method.setComment(bindingSet.getValue(COMMENT).stringValue());
                 }
                 
-                //On récupère maintenant la liste des références vers des ontologies... 
+                // Get ontology references list 
                 SPARQLQueryBuilder queryOntologiesReferences = prepareSearchOntologiesReferencesQuery(method.getUri());
                 TupleQuery tupleQueryOntologiesReferences = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryOntologiesReferences.toString());
                 TupleQueryResult resultOntologiesReferences = tupleQueryOntologiesReferences.evaluate();
@@ -378,17 +375,14 @@ public class MethodDAO extends SparqlDAO<Method> {
                         method.addOntologyReference(ontologyReference);
                     }
                 }
-                
                 methods.add(method);
             }
         }
-        
         return methods;
     }
     
     /**
-     * Prepare delete query for method
-     * 
+     * Prepares a delete request for a method.
      * @param method
      * @return delete request
      */
@@ -419,21 +413,21 @@ public class MethodDAO extends SparqlDAO<Method> {
         List<String> updatedResourcesURIList = new ArrayList<>();
         POSTResultsReturn results;
         
-        boolean annotationUpdate = true; // Si l'insertion a bien été réalisée
-        boolean resultState = false; // Pour savoir si les données étaient bonnes et on bien été mises à jour
+        boolean annotationUpdate = true; // Insertion done well
+        boolean resultState = false; // To know if the data are valid and well updated
         
         for (MethodDTO methodDTO : methodsDTO) {
-            //1. Suppression des données déjà existantes
-            //1.1 Récupération des infos qui seront modifiées (pour supprimer les bons triplets)
+            //1. Delete existing data
+            //1.1 Get the information that will be modified (to delete the right triplets)
             uri = methodDTO.getUri();
             ArrayList<Method> methodsCorresponding = allPaginate();
             if (methodsCorresponding.size() > 0) {
                 UpdateRequest deleteQuery = prepareDeleteQuery(methodsCorresponding.get(0));
 
-                //2. Insertion des nouvelles données
+                //2. Create new data
                 UpdateRequest queryInsert = prepareInsertQuery(methodDTO);
                  try {
-                        // début de la transaction : vérification de la requête
+                        // transaction beginning: request check
                         this.getConnection().begin();
                         Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery.toString());
                         LOGGER.trace(getTraceabilityLogs() + " query : " + prepareDelete.toString());
@@ -462,7 +456,7 @@ public class MethodDAO extends SparqlDAO<Method> {
                 LOGGER.error("Error during commit Triplestore statements: ", ex);
             }
         } else {
-            // retour en arrière sur la transaction
+            // Roll back
             try {
                 this.getConnection().rollback();
             } catch (RepositoryException ex) {
@@ -481,15 +475,15 @@ public class MethodDAO extends SparqlDAO<Method> {
     }
     
     /**
-     * Vérifie les données et met à jour le triplestore
+     * Checks the data and updates the triplestore.
      * @param methodsDTO
-     * @return POSTResultsReturn le résultat de la tentative de modification des données
+     * @return POSTResultsReturn data update result
      */
     public POSTResultsReturn checkAndUpdate(List<MethodDTO> methodsDTO) {
         POSTResultsReturn checkResult = check(methodsDTO);
         if (checkResult.getDataState()) {
             return updateAndReturnPOSTResultsReturn(methodsDTO);
-        } else { //Les données ne sont pas bonnes
+        } else { // unvalid data
             return checkResult;
         }
     }

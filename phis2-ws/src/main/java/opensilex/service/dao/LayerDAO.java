@@ -43,17 +43,7 @@ import opensilex.service.model.Property;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class LayerDAO extends DAO<LayerDTO>{
-    
-    /**
-     * @param objectURI URI de l'objet auquel la couche correspond
-     * @param objectType type de l'objet (ex : http://www.opensilex.org/vocabulary/oeso/Experiment)
-     * @param depth true si la couche a tous les descendants de objectURI
-     *              false si on elle n'a que les enfants directs
-     * @param filePath le chemin du fichier geoJSON correspondant à la couche
-     * @param children la liste des descendants de objectURI. Clé : URI, 
-     *                 valeur : HashMap avec (clé : le type de l'attribut ex. type, valeur : sa valeur ex. http://...../Experiment)
-     */
-    
+
     final static Logger LOGGER = LoggerFactory.getLogger(LayerDAO.class);
     
     public String objectURI;
@@ -67,9 +57,8 @@ public class LayerDAO extends DAO<LayerDTO>{
     private static final String LAYER_FILE_SERVER_ADDRESS = PropertiesFileManager.getConfigFileProperty("service", "layerFileServerAddress");
      
     /**
+     * Searches and updates children.
      * @throws java.sql.SQLException
-     * @action récupère la liste des enfants de objectURI et met à jour 
-     *         l'attribut children en conséquence
      * @param layerDTO 
      */
       public void searchAndUpdateChildren(LayerDTO layerDTO) throws SQLException {
@@ -81,18 +70,17 @@ public class LayerDAO extends DAO<LayerDTO>{
         ArrayList<String> childrenURIs = new ArrayList<>(childrendAgronomicalObjectDaoSesame.keySet());
         HashMap<String,String> childrenAgronomicalObjectsGeometries = agronomicalObject.getGeometries(childrenURIs);
         
-        for (Entry<String, ScientificObject> child : childrendAgronomicalObjectDaoSesame.entrySet()) {
+        childrendAgronomicalObjectDaoSesame.entrySet().forEach((child) -> {
             ScientificObject ao = child.getValue();
             ao.setGeometry(childrenAgronomicalObjectsGeometries.get(child.getKey()));
             children.put(child.getKey(), ao);
-        }
+        });
     }
     
-      /**
-       * 
-       * @param objectURI
-       * @return le lien vers le fichier geojson correspondant à la couche
-       */
+    /**
+     * @param objectURI
+     * @return the link to the GeoSON corresponding to the layer.
+     */
     public String getObjectURILayerFilePath(String objectURI) {
         String[] splitUri = objectURI.split("/");
         String layerName = splitUri[splitUri.length-1];
@@ -108,8 +96,8 @@ public class LayerDAO extends DAO<LayerDTO>{
     }
       
     /**
-     * @action uilisé pour la façon de nommer les propriétés dans le geojson correspondant à la couche
-     * @return une hashmap avec les noms des propriétés en fonction de l'uri de la relation ou du concept
+     * Gets types by URI, relation or concept.
+     * @return a hash map with the properties and their type.
      */
     private HashMap<String, String> getTypesByURIRelationOrConcept() {
         HashMap<String, String> typesByRelationOrConcept = new HashMap<>();
@@ -126,36 +114,37 @@ public class LayerDAO extends DAO<LayerDTO>{
         
         return typesByRelationOrConcept;
     }
-      /**
-       * @action génère le fichier geojson correspondant à la couche
-       * @param layerDTO
-       * @return 
-       */
+    /**
+     * Generates the GeoSon file corresponding to the layer.
+     * @param layerDTO
+     * @return 
+     * @throws java.io.IOException 
+     */
     public POSTResultsReturn createLayerFile(LayerDTO layerDTO) throws IOException {
         POSTResultsReturn createLayerFile;
         List<Status> createStatusList = new ArrayList<>();
         List<String> createdResourcesFilesPaths = new ArrayList<>();
         boolean createLayerFileOk = true;
         try {
-            //1. on récupère tous les descendants à mettre dans la couche
+            //1. Get the descendant to put in the layer
             searchAndUpdateChildren(layerDTO);
             
-            //2. on crée le fichier
+            //2. Create file
             String[] splitUri = layerDTO.getObjectUri().split("/");
             String layerName = splitUri[splitUri.length-1];
             String filename = layerName + ".geojson";
             filePath = LAYER_FILE_SERVER_DIRECTORY + "/" + filename;
             
             try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(filePath))) {
-                //1. On écrit le parent et le début du fichier
-                //SILEX:test
-                //code à revoir et à mieux écrire plus tard...
+                //1. Write parent and file start
+                //SILEX:todo
+                //code to improve
                 writer.write("{");
                 writer.write("\"type\" : \"FeatureCollection\",");
                 writer.write("\"features\" : [");
                 int nbChild = 0;
                 for (Entry<String, ScientificObject> child : children.entrySet()) {
-                    //On écrit chaque enfant
+                    // Write each child
                     writer.write("{\"type\" : \"Feature\",");
 
                     writer.write("\"geometry\" : " + child.getValue().getGeometry() + ",");
@@ -163,13 +152,12 @@ public class LayerDAO extends DAO<LayerDTO>{
                     writer.write("\"uri\" : \"" + child.getValue().getUri()+ "\",");
                     
                     //SILEX:conception
-                    //Il faudrait trouver une façon plus générique de le faire 
-                    // (dans URINamespaces, une HashMap avec les correspondances uri type/relation --> type de la prop ?)
-                    //Ajout des propriétés associées à l'AO (vartiety, repetition, ...)
+                    // A more generic way could be done (in URINamespaces, a HashMap with corespondancies URI type/relation --> property type ?)
+                    // Add properties corresponding to the AO (vartiety, repetition, ...)
                     HashMap<String, String> typesByRelationOrConcept = getTypesByURIRelationOrConcept();
                     int nbProperties = 0;
                     for (Property property : child.getValue().getProperties()) {
-                        //On déduit le nom de la propriété du type de relation ou de concept
+                        // We deduct the name of the property from the type or relation of the concept
                          if (property.getRdfType() != null) {
                             writer.write("\"" + typesByRelationOrConcept.get(property.getRdfType()) + "\" : \"" + property.getValue() + "\"");
                         } else {
@@ -191,11 +179,13 @@ public class LayerDAO extends DAO<LayerDTO>{
                 
                 writer.write("]}");
                 
-                java.nio.file.Path path = Paths.get(filePath);
-                UserPrincipalLookupService lookupService = FileSystems.getDefault().getUserPrincipalLookupService();
-                UserPrincipal up = lookupService.lookupPrincipalByName("www-data");
-//                Files.setOwner(path, up); ///!\ À décommenter en prod
-
+                //SILEX:warning ///!\ To uncomment in PROD
+//                java.nio.file.Path path = Paths.get(filePath);
+//                UserPrincipalLookupService lookupService = FileSystems.getDefault().getUserPrincipalLookupService();
+//                UserPrincipal up = lookupService.lookupPrincipalByName("www-data");
+//                Files.setOwner(path, up); 
+                //\SILEX:warning
+                
                 File f = new File(filePath);
                 final Set<PosixFilePermission> perms = PosixFilePermissions.fromString("rw-rw-r--");
                 Files.setPosixFilePermissions(f.toPath(), perms);
@@ -205,7 +195,7 @@ public class LayerDAO extends DAO<LayerDTO>{
                 createdResourcesFilesPaths.add(filePath);
                 createStatusList.add(new Status("Resources created", StatusCodeMsg.INFO, createdResourcesFilesPaths.size() + " new resources created"));
                 //\SILEX:test
-                //Le fichier est normalement automatiquement fermé
+                // The file is normally closed automatically
             } catch (IOException ex) {
                 java.util.logging.Logger.getLogger(LayerDAO.class.getName()).log(Level.SEVERE, null, ex);
                 createLayerFileOk = false;

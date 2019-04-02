@@ -68,8 +68,7 @@ public class EventDAO extends SparqlDAO<Event> {
     }
     
     /**
-     * Sets a search query to select an URI and adds a filter according to it 
-     * if necessary
+     * Sets a search query to select an URI and adds a filter according to it if necessary.
      * @example SparQL filter added:
      *  SELECT DISTINCT  ?uri
      *  WHERE {
@@ -94,8 +93,7 @@ public class EventDAO extends SparqlDAO<Event> {
     }
     
     /**
-     * Sets a search query to select a type and to filter according to it 
-     * if necessary
+     * Sets a search query to select a type and to filter according to it if necessary.
      * @example SparQL filter added:
      *  SELECT DISTINCT ?rdfType
      *  WHERE {
@@ -160,7 +158,7 @@ public class EventDAO extends SparqlDAO<Event> {
     }
     
     /**
-     * Prepares the event search query
+     * Prepares the event search query.
      * @param uri
      * @param type
      * @example
@@ -206,7 +204,7 @@ public class EventDAO extends SparqlDAO<Event> {
     }
     
     /**
-     * Prepares the event search query
+     * Prepares the event search query.
      * @example
      * SELECT  ?uri ?rdfType ?dateTimeStamp 
      * WHERE {
@@ -252,7 +250,7 @@ public class EventDAO extends SparqlDAO<Event> {
     }
     
     /**
-     * Searches events stored
+     * Searches events.
      * @param searchUri
      * @param searchType
      * @param searchConcernedItemLabel
@@ -289,11 +287,11 @@ public class EventDAO extends SparqlDAO<Event> {
     }
     
     /**
-     * Searches an event detailed
+     * Searches an event.
      * @param searchUri
      * @return events
      */
-    public Event searchEventDetailed(String searchUri) {
+    public Event searchEvent(String searchUri) {
         
         SPARQLQueryBuilder eventDetailedQuery = prepareSearchQueryEventDetailed(searchUri);
         
@@ -318,7 +316,7 @@ public class EventDAO extends SparqlDAO<Event> {
     }
     
     /**
-     * Generates an insert query for the given event
+     * Generates an insert query for the given event.
      * @param event
      * @return the query
      * @example
@@ -353,7 +351,6 @@ public class EventDAO extends SparqlDAO<Event> {
     /**
      * Inserts the given events in the storage.
      * /!\ Prerequisite: data must have been checked before calling this method
-     * @see EventDAO#check(java.util.List) 
      * @param events
      * @return the insertion result, with the error list or the URI of the 
      *         events inserted
@@ -440,7 +437,7 @@ public class EventDAO extends SparqlDAO<Event> {
     }
     
     /**
-     * Checks and eventually inserts events in the storage
+     * Checks and eventually inserts events in the storage.
      * @param events
      * @return the insertion result :
      *           Error message if errors found in data
@@ -456,7 +453,7 @@ public class EventDAO extends SparqlDAO<Event> {
     }
     
     /**
-     * Checks the given list of events
+     * Checks the given list of events.
      * @param events
      * @return the result with the list of the found errors (empty if no error)
      */
@@ -517,7 +514,7 @@ public class EventDAO extends SparqlDAO<Event> {
     }
     
     /**
-     * Searches event properties and set them to it
+     * Searches event properties and set them to it.
      * @param event 
      */
     private void searchEventPropertiesAndSetThemToIt(Event event) {
@@ -532,8 +529,7 @@ public class EventDAO extends SparqlDAO<Event> {
     }
 
     /**
-     * Generates a query to count the results of the research with the 
-     * searched parameters. 
+     * Generates a query to count the results of the research with the searched parameters. 
      * @example 
      * SELECT DISTINCT  (COUNT(DISTINCT ?uri) AS ?count) 
      * WHERE {
@@ -570,7 +566,7 @@ public class EventDAO extends SparqlDAO<Event> {
     }
 
     /**
-     * Counts the total number of events filtered with the search fields
+     * Counts the total number of events filtered with the search fields.
      * @param searchUri
      * @param searchType
      * @param searchConcernedItemLabel

@@ -59,7 +59,7 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
     private final static String DB_FIELD_CONCERNED_ITEM_URI = "concernedItems.uri";
     
     /**
-     * Prepare and return the data file description search query with the given parameters
+     * Prepares and returns the data file description search query with the given parameters
      * @param rdfType
      * @param startDate
      * @param endDate
@@ -135,7 +135,7 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
     }
 
     /**
-     * Search all data files descriptinos corresponding to the search params
+     * Searches all data files descriptions corresponding to the search parameters.
      * @param rdfType
      * @param startDate
      * @param endDate
@@ -198,7 +198,7 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
     }
 
     /**
-     * Get data count according to the params given
+     * Gets data count according to the parameters given.
      * @param rdfType
      * @param startDate
      * @param endDate
@@ -236,7 +236,7 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
     }
     
     /**
-     * Check and insert data file and its metadata
+     * Checks and inserts data file and its metadata.
      * @param fileDescription
      * @param file
      * @return true if file and its metadata are saved
@@ -252,7 +252,7 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
     }
     
     /**
-     * Check the given data file description.
+     * Checks the given data file description.
      * @param fileDescription
      * @return the check result with the founded errors
      */
@@ -298,7 +298,7 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
     }
     
     /**
-     * Insert the given data in the mongodb database
+     * Inserts the given data in the MongoDB database
      * @param dataList
      * @return the insertion result
      */
@@ -426,7 +426,7 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
     }
 
     /**
-     * Return collection name from file rdt type uri
+     * Returns collection name from file RDF type URI.
      * @example http://www.opensilex.org/vocabulary/oeso#HemisphericalImage -> HemisphericalImage
      * @param rdfType
      * @return The name of the collection
@@ -437,8 +437,8 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
     }
 
       /**
-     * Return true if the given URI already exists in variable collection
-     * @param variableUri variable which will determine in which collection to look
+     * Returns true if the given URI already exists in variable collection
+     * @param rdfType
      * @param uri URI to check
      * @return true if the URI exists and false otherwise
      */

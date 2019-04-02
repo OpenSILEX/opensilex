@@ -23,11 +23,19 @@ public class FileInformationDAO extends MongoDAO<FileInformations> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(FileInformationDAO.class);
     
-    //Represents the mongodb documents label for the file extension
+    /**
+     * Represents the MongoDB documents label for the file extension
+     */
     final static String DB_FIELDS_EXTENSION = "extension";
-    //Represents the mongodb documents label for the file md5sum
+    
+    /**
+     * Represents the MongoDB documents label for the file md5sum
+     */
     final static String DB_FIELDS_MD5SUM = "md5sum";
-    //Represents the mongodb documents label for the server file path
+    
+    /**
+     * Represents the MongoDB documents label for the server file path
+     */
     final static String DB_FIELDS_SERVER_FILE_PATH = "serverFilePath";
 
     @Override
@@ -36,8 +44,8 @@ public class FileInformationDAO extends MongoDAO<FileInformations> {
     }
     
     /**
-     * get a Document corresponding to an image shooting configuration and 
-     * transform it in a ShootingConfiguration object
+     * Gets a document corresponding to an image shooting configuration and 
+     * transforms it in a ShootingConfiguration object.
      * @param fileInformationsDocument
      * @return the Shooting configuration corresponding to the document
      */

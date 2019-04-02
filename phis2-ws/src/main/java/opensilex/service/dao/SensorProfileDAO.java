@@ -70,12 +70,12 @@ public class SensorProfileDAO extends SparqlDAO<SensorProfile> {
     }
     
     /**
-     * check the given sensors profiles
+     * Checks the given sensor profiles.
      * @param sensorProfiles
      * @return the result with the list of the founded errors (empty if no errors)
      */
     public POSTResultsReturn check(List<SensorProfileDTO> sensorProfiles) {
-        POSTResultsReturn sensorProfilesCheck = null;
+        POSTResultsReturn sensorProfilesCheck;
         //list of the returned status
         List<Status> checkStatus = new ArrayList<>();
         boolean validData = true;
@@ -154,10 +154,10 @@ public class SensorProfileDAO extends SparqlDAO<SensorProfile> {
     }
     
     /**
-     * generates an insert query for the given sensor profile
+     * Generates an insert query for the given sensor profile.
      * @param sensorProfile
      * @return the query
-     * e.g.
+     * @example
      * INSERT DATA {
      *  GRAPH <http://www.opensilex.org/vocabulary/oeso#sensors> {
      *      <http://www.phenome-fppn.fr/diaphen/2019/s18143> <http://www.opensilex.org/vocabulary/oeso#wavelength> "150" . 
@@ -191,11 +191,11 @@ public class SensorProfileDAO extends SparqlDAO<SensorProfile> {
     }
     
     /**
-     * insert the given sensor profiles in the triplestore. 
+     * Inserts the given sensor profiles in the triplestore. 
      * /!\ we assume that the data has been checked before calling this method
      * @see SensorProfileDAO#check(java.util.List) 
      * @param sensorsProfiles
-     * @return the insertion result, with the errors list or the uri of the 
+     * @return the insertion result, with the errors list or the URI of the 
      *         sensors concerned by the sensors profiles
      */
     private POSTResultsReturn insert(List<SensorProfileDTO> sensorsProfiles) {
@@ -207,13 +207,13 @@ public class SensorProfileDAO extends SparqlDAO<SensorProfile> {
         boolean annotationInsert = true;
         
         this.getConnection().begin();
-        for (SensorProfileDTO sensorProfileDTO : sensorsProfiles) {
+        sensorsProfiles.forEach((sensorProfileDTO) -> {
             UpdateRequest query = prepareInsertQuery(sensorProfileDTO.createObjectFromDTO());
             Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
             prepareUpdate.execute();
             
             createdResourcesUris.add(sensorProfileDTO.getUri());
-        }
+        });
         
         if (annotationInsert) {
             resultState = true;
@@ -237,12 +237,12 @@ public class SensorProfileDAO extends SparqlDAO<SensorProfile> {
     }
     
     /**
-     * check and insert the given sensor profiles in the triplestore.
+     * Checks and inserts the given sensor profiles in the triplestore.
      * /!\ the sensor profiles properties depends of the sensor type. The list
      * of expected properties is extracted from the triplestore
      * @param sensorProfiles
      * @return the insertion result. Message error if errors founded in data, 
-     *         the list of the uris of the sensors concerned by the given profiles 
+     *         the list of the URIs of the sensors concerned by the given profiles 
      *         if the insertion has been done 
      */
     public POSTResultsReturn checkAndInsert(List<SensorProfileDTO> sensorProfiles) {
@@ -255,8 +255,8 @@ public class SensorProfileDAO extends SparqlDAO<SensorProfile> {
     }
     
     /**
-     * get a sensor property from a given binding set/
-     * Assume that the following attributes exist : relation, property
+     * Gets a sensor property from a given binding set.
+     * Assumes that the following attributes exist : relation, property
      * @param bindingSetProperty a binding set from a sensor profile search query
      * @return a sensor property
      */
@@ -270,8 +270,8 @@ public class SensorProfileDAO extends SparqlDAO<SensorProfile> {
     }
     
     /**
-     * search all the sensors profiles corresponding to the given sensor uri
-     * @return the list of the sensors profiles which match the given uri.
+     * Searches all the sensors profiles corresponding to the given sensor URI.
+     * @return the list of the sensor profiles which match the given URI.
      */
     public ArrayList<SensorProfileDTO> allPaginate() {        
         SPARQLQueryBuilder query = prepareSearchQuery();

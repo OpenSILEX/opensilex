@@ -3,8 +3,8 @@
 // SILEX-PHIS
 // Copyright © INRA 2016
 // Creation date: May 2016
-// Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr,
-//         morgane.vidal@inra.fr
+// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr,
+//          morgane.vidal@inra.fr
 //******************************************************************************
 package opensilex.service.authentication;
 

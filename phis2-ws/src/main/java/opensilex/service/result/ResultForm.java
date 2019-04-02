@@ -2,8 +2,8 @@
 //                              ResultForm.java 
 // SILEX-PHIS
 // Copyright © INRA 2016
-// Creation date: december 2015
-// Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Creation date: December 2015
+// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.result;
 

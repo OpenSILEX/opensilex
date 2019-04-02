@@ -3,7 +3,7 @@
 // SILEX-PHIS
 // Copyright © INRA 2017
 // Creation date: August 2016
-// Contact:arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.dao.manager;
 

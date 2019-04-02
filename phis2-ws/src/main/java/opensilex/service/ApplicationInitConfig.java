@@ -3,9 +3,8 @@
 // SILEX-PHIS
 // Copyright © INRA 2017
 // Creation date: January 2017
-// Contact:morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //*****************************************************************************
-
 package opensilex.service;
 
 import io.swagger.jaxrs.config.BeanConfig;

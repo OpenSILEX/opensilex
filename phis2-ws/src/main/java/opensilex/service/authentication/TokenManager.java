@@ -7,7 +7,6 @@
 //******************************************************************************
 package opensilex.service.authentication;
 
-import opensilex.service.dao.UserDAO;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import javax.ws.rs.WebApplicationException;
@@ -15,7 +14,6 @@ import javax.ws.rs.core.Response;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.PropertiesFileManager;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.dao.SessionDAO;
 import opensilex.service.view.brapi.Status;

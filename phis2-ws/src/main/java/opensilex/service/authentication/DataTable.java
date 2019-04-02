@@ -17,9 +17,6 @@ public class DataTable {
 
     private String instanceNumber, observationVariableId, observationVariableDbId, season, observationValue, observationTimeStamp, collectionFacilityLabel, collector;
 
-    public DataTable() {
-    }
-
     public DataTable(String instanceNumber, String observationVariableId, String observationVariableDbId, String season, String observationValue, String observationTimeStamp, String collectionFacilityLabel, String collector) {
         this.instanceNumber = instanceNumber;
         this.observationVariableId = observationVariableId;

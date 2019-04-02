@@ -39,13 +39,19 @@ import opensilex.service.resources.brapi.TraitsResourceService;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 
+/**
+ * Application init configuration
+ * @author andreas
+ */
 @ApplicationPath("/rest")
 public class ApplicationInitConfig extends ResourceConfig {
 
     final static String PROPERTY_FILE_NAME = "service";
     final static Logger LOGGER = LoggerFactory.getLogger(ApplicationInitConfig.class);
 
-    
+    /**
+     * Initializes application configuration
+     */
     public ApplicationInitConfig() {
         packages("io.swagger.jaxrs.listing;"
                 + "opensilex.service.resources;"
@@ -89,6 +95,9 @@ public class ApplicationInitConfig extends ResourceConfig {
         });
     }
     
+    /**
+     * Initializes application
+     */
     @PostConstruct
     public static void initialize() {
         final String logDirectory = PropertiesFileManager.getConfigFileProperty("service", "logDirectory");

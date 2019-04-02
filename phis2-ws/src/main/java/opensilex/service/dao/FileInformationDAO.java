@@ -8,7 +8,6 @@
 package opensilex.service.dao;
 
 import com.mongodb.BasicDBObject;
-import java.util.ArrayList;
 import java.util.List;
 import org.bson.Document;
 import org.slf4j.Logger;

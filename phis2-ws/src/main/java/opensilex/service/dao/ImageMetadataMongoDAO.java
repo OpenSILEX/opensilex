@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
 import opensilex.service.PropertiesFileManager;
 import opensilex.service.configuration.DateFormats;
 import opensilex.service.dao.manager.MongoDAO;
-import opensilex.service.dao.SensorDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.ontology.Contexts;
 import opensilex.service.resources.dto.ConcernedItemDTO;

@@ -8,7 +8,6 @@
 package opensilex.service.model;
 
 import java.util.ArrayList;
-import opensilex.service.model.User;
 
 public class Group {
     private String uri;

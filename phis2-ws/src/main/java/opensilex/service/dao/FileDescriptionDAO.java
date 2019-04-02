@@ -35,7 +35,6 @@ import org.slf4j.LoggerFactory;
 import opensilex.service.PropertiesFileManager;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.dao.manager.MongoDAO;
-import opensilex.service.dao.ScientificObjectSparqlDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.ontology.Oeso;
 import opensilex.service.utils.FileUploader;

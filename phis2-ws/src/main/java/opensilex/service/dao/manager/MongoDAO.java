@@ -7,7 +7,6 @@
 //******************************************************************************
 package opensilex.service.dao.manager;
 
-import opensilex.service.dao.manager.DAO;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;

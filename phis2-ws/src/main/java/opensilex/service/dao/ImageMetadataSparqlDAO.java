@@ -8,13 +8,9 @@
 package opensilex.service.dao;
 
 import java.util.List;
-import org.eclipse.rdf4j.query.MalformedQueryException;
-import org.eclipse.rdf4j.query.QueryEvaluationException;
-import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.dao.manager.SparqlDAO;
-import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.model.ImageMetadata;
 
 /**

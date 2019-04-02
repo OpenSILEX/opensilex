@@ -8,12 +8,6 @@
 
 package opensilex.service.dao;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientURI;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -31,7 +25,6 @@ import opensilex.service.model.User;
 import opensilex.service.utils.sql.JoinAttributes;
 import opensilex.service.model.Experiment;
 import opensilex.service.model.ContactBrapi;
-import opensilex.service.dao.ExperimentMongoDAO;
 import opensilex.service.dao.manager.DAO;
 import opensilex.service.model.StudyDetails;
 

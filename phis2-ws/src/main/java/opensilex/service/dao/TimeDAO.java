@@ -15,9 +15,6 @@ import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.vocabulary.RDF;
-import org.eclipse.rdf4j.query.MalformedQueryException;
-import org.eclipse.rdf4j.query.QueryEvaluationException;
-import org.eclipse.rdf4j.repository.RepositoryException;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -29,7 +26,6 @@ import opensilex.service.ontology.Time;
 import opensilex.service.ontology.Xsd;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.utils.dates.Dates;
-import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.utils.sparql.SPARQLStringBuilder;
 
 /**

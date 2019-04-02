@@ -74,6 +74,11 @@ public class PropertiesFileManager {
         return props;
     }
 
+    /**
+     * Parses a binary public key
+     * @param fileName
+     * @return 
+     */
     public static RSAPublicKey parseBinaryPublicKey(String fileName) {
         //property is in /src/main/resources By default in maven project
         RSAPublicKey generatedRSAPublicKey = null;
@@ -231,7 +236,7 @@ public class PropertiesFileManager {
 
             return p;
 
-        } catch (Exception ex) {
+        } catch (NumberFormatException ex) {
             LOGGER.error("Error : Cannot find " + fileName + " configuration file \n", ex);
             return null;
         }

@@ -18,7 +18,7 @@ import java.util.Map;
 import javax.validation.Valid;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.documentation.DocumentationAnnotation;
-import opensilex.service.resources.dto.ConcernItemDTO;
+import opensilex.service.resources.dto.ConcernedItemDTO;
 import opensilex.service.resources.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resources.validation.interfaces.Date;
 import opensilex.service.resources.validation.interfaces.Required;
@@ -39,7 +39,7 @@ public class FileDescriptionPostDTO extends AbstractVerifiedClass {
     //e.g. 2018-06-25T15:13:59+0200  
     String date;
     //A List of concerned items related to the data file
-    List<ConcernItemDTO> concernedItems;
+    List<ConcernedItemDTO> concernedItems;
     //The uri of the provenance from which data file come.
     //e.g. http://www.phenome-fppn.fr/diaphen/id/provenance/1552404943020
     String provenanceUri;
@@ -74,11 +74,11 @@ public class FileDescriptionPostDTO extends AbstractVerifiedClass {
     }
 
     @Valid
-    public List<ConcernItemDTO> getConcernedItems() {
+    public List<ConcernedItemDTO> getConcernedItems() {
         return concernedItems;
     }
 
-    public void setConcernedItems(List<ConcernItemDTO> concernedItems) {
+    public void setConcernedItems(List<ConcernedItemDTO> concernedItems) {
         this.concernedItems = concernedItems;
     }
 

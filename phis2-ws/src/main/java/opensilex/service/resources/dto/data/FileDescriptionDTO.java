@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import opensilex.service.configuration.DateFormat;
-import opensilex.service.resources.dto.ConcernItemDTO;
+import opensilex.service.resources.dto.ConcernedItemDTO;
 import opensilex.service.model.ConcernedItem;
 import opensilex.service.model.FileDescription;
 
@@ -32,7 +32,7 @@ public class FileDescriptionDTO {
     //e.g. 2018-06-25T15:13:59+0200    
     String date;
     //A List of concerned items related to the data file
-    List<ConcernItemDTO> concernedItems;
+    List<ConcernedItemDTO> concernedItems;
     //The uri of the provenance from which data file come.
     //e.g. http://www.phenome-fppn.fr/diaphen/id/provenance/1552404943020
     String provenanceUri;
@@ -59,9 +59,9 @@ public class FileDescriptionDTO {
         setProvenanceUri(description.getProvenanceUri());
         setRdfType(description.getRdfType());
         
-        List<ConcernItemDTO> items = new ArrayList<>();
+        List<ConcernedItemDTO> items = new ArrayList<>();
         for (ConcernedItem item : description.getConcernedItems()) {
-            ConcernItemDTO itemDTO = new ConcernItemDTO();
+            ConcernedItemDTO itemDTO = new ConcernedItemDTO();
             itemDTO.setTypeURI(item.getRdfType());
             itemDTO.setUri(item.getUri());
             items.add(itemDTO);
@@ -94,11 +94,11 @@ public class FileDescriptionDTO {
         this.date = date;
     }
 
-    public List<ConcernItemDTO> getConcernedItems() {
+    public List<ConcernedItemDTO> getConcernedItems() {
         return concernedItems;
     }
 
-    public void setConcernedItems(List<ConcernItemDTO> concernedItems) {
+    public void setConcernedItems(List<ConcernedItemDTO> concernedItems) {
         this.concernedItems = concernedItems;
     }
 

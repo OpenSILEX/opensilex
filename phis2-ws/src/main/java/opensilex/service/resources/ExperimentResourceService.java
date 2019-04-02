@@ -33,7 +33,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-<<<<<<< HEAD:phis2-ws/src/main/java/opensilex/service/resources/ExperimentResourceService.java
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DateFormats;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
@@ -53,27 +52,6 @@ import opensilex.service.view.brapi.form.ResponseFormGET;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Experiment;
-=======
-import phis2ws.service.configuration.DateFormat;
-import phis2ws.service.configuration.DateFormats;
-import phis2ws.service.configuration.DefaultBrapiPaginationValues;
-import phis2ws.service.configuration.GlobalWebserviceValues;
-import phis2ws.service.dao.phis.ExperimentSQLDAO;
-import phis2ws.service.documentation.DocumentationAnnotation;
-import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.resources.dto.experiments.ExperimentDTO;
-import phis2ws.service.resources.dto.experiments.ExperimentPostDTO;
-import phis2ws.service.resources.validation.interfaces.Date;
-import phis2ws.service.resources.validation.interfaces.Required;
-import phis2ws.service.resources.validation.interfaces.URL;
-import phis2ws.service.utils.POSTResultsReturn;
-import phis2ws.service.view.brapi.Status;
-import phis2ws.service.view.brapi.form.AbstractResultForm;
-import phis2ws.service.view.brapi.form.ResponseFormGET;
-import phis2ws.service.view.brapi.form.ResponseFormPOST;
-import phis2ws.service.view.manager.ResultForm;
-import phis2ws.service.view.model.phis.Experiment;
->>>>>>> renaming-and-removing-factory:phis2-ws/src/main/java/phis2ws/service/resources/ExperimentResourceService.java
 
 /**
  * Experiment services.

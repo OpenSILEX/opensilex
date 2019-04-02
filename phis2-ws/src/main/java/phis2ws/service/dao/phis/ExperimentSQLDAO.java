@@ -21,25 +21,26 @@ import javax.ws.rs.core.Response;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.dao.manager.PhisDAO;
-import phis2ws.service.dao.sesame.ExperimentSparqlDAO;
-import phis2ws.service.dao.sesame.SensorDAO;
-import phis2ws.service.dao.sesame.VariableDAO;
-import phis2ws.service.view.brapi.Status;
-import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.model.User;
-import phis2ws.service.ontologies.Oeso;
-import phis2ws.service.resources.AcquisitionSessionResourceService;
-import phis2ws.service.resources.dto.experiments.ExperimentDTO;
-import phis2ws.service.resources.dto.experiments.ExperimentPostDTO;
-import phis2ws.service.utils.POSTResultsReturn;
-import phis2ws.service.utils.UriGenerator;
-import phis2ws.service.utils.sql.JoinAttributes;
-import phis2ws.service.utils.sql.SQLQueryBuilder;
-import phis2ws.service.view.model.phis.Contact;
-import phis2ws.service.view.model.phis.Group;
-import phis2ws.service.view.model.phis.Project;
-import phis2ws.service.view.model.phis.Experiment;
+import opensilex.service.dao.manager.PhisDAO;
+import opensilex.service.dao.ExperimentSparqlDAO;
+import opensilex.service.dao.SensorDAO;
+import opensilex.service.dao.UserDAO;
+import opensilex.service.dao.VariableDAO;
+import opensilex.service.view.brapi.Status;
+import opensilex.service.documentation.StatusCodeMsg;
+import opensilex.service.model.User;
+import opensilex.service.ontology.Oeso;
+import opensilex.service.resources.AcquisitionSessionResourceService;
+import opensilex.service.resources.dto.experiment.ExperimentDTO;
+import opensilex.service.resources.dto.experiment.ExperimentPostDTO;
+import opensilex.service.utils.POSTResultsReturn;
+import opensilex.service.utils.UriGenerator;
+import opensilex.service.utils.sql.JoinAttributes;
+import opensilex.service.utils.sql.SQLQueryBuilder;
+import opensilex.service.model.Contact;
+import opensilex.service.model.Group;
+import opensilex.service.model.Project;
+import opensilex.service.model.Experiment;
 
 /**
  * DAO for the experiments in the relational database. It allows CRUD operations.

@@ -46,6 +46,10 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Method;
 
+/**
+ * Method resource service.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 @Api("/methods")
 @Path("methods")
 public class MethodResourceService extends ResourceService {

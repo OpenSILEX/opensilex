@@ -46,15 +46,15 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 
 /**
- * DAO class to query the triplestore 
- * @update [Morgane Vidal] 04 Oct, 2018: Rename existObject to existUri and change the query of the method existUri.
- * @update [Andréas Garcia] 11 Jan, 2019: Add generic date time stamp comparison SparQL filter.
- * @update [Andréas Garcia] 5 March, 2019: 
+ * DAO class to query a triplestore.
+ * @update [Morgane Vidal] 4 Oct. 2018: Rename existObject to existUri and change the query of the method existUri.
+ * @update [Andréas Garcia] 11 Jan. 2019: Add generic date time stamp comparison SparQL filter.
+ * @update [Andréas Garcia] 5 Mar. 2019: 
  *   Move date related functions in TimeDAOSesame.java
  *   Add a generic function to get a string value from a binding set
  *   Add the max value of a page (to get all results of a service)
  * @param <T>
- * @author Arnaud Charleroy
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public abstract class SparqlDAO<T> extends DAO<T> {
 

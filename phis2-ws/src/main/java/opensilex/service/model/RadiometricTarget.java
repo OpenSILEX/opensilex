@@ -8,7 +8,7 @@
 package opensilex.service.model;
 
 /**
- * Represents a radiometric target view
+ * Radiometric target model
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class RadiometricTarget extends RdfResourceDefinition {

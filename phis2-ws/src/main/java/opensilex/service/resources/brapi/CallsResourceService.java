@@ -36,7 +36,7 @@ import opensilex.service.model.Call;
 @Path("/brapi/v1/calls")
 
 /**
- * Calls service
+ * Calls resource service.
  * @see https://brapi.docs.apiary.io/#reference/calls/call-search
  * @author Alice Boizet <alice.boizet@inra.fr>
  */

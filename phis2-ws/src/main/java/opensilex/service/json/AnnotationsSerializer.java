@@ -21,9 +21,7 @@ import opensilex.service.configuration.DateFormats;
 import opensilex.service.model.Annotation;
 
 /**
- * serialize a annotation instance to JSON, used to have a different return from
- * the annotation model class 
- *
+ * Annotation JSON serializer.
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class AnnotationsSerializer implements JsonSerializer<Annotation> {

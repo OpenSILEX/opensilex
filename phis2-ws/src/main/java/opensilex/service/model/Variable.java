@@ -7,6 +7,10 @@
 //******************************************************************************
 package opensilex.service.model;
 
+/**
+ * Variable model.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class Variable extends RdfResourceDefinition {
     
     /**

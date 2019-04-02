@@ -37,9 +37,7 @@ import opensilex.service.model.Namespace;
 import opensilex.service.model.Property;
 
 /**
- * vocabulary service. Used to generate client side menues and forms,
- * dynamically
- *
+ * Vocabulary resource service.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Api("/vocabularies")

@@ -8,7 +8,7 @@
 package opensilex.service.ontology;
 
 /**
- * The elements of the ontology foaf used.
+ * Vocabulary definition from the FOAF ontology.
  * @see http://xmlns.com/foaf/spec/
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */

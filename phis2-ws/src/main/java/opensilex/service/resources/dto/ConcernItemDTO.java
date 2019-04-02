@@ -16,7 +16,7 @@ import opensilex.service.model.ConcernedItem;
 import opensilex.service.resources.validation.interfaces.URL;
 
 /**
- * corresponds to the submitted JSON for the objects concerned (by an annotation for example)
+ * Concerned item DTO. 
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ConcernItemDTO extends AbstractVerifiedClass {

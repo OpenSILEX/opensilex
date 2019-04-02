@@ -48,6 +48,10 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Group;
 
+/**
+ * Group resource service.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 @Api("/group")
 @Path("groups")
 public class GroupResourceService extends ResourceService {

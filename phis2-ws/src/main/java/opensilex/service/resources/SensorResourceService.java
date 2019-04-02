@@ -52,7 +52,7 @@ import opensilex.service.result.ResultForm;
 import opensilex.service.model.Sensor;
 
 /**
- * sensor service 
+ * Sensor resource service.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Api("/sensors")

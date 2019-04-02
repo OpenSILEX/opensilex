@@ -7,6 +7,10 @@
 //******************************************************************************
 package opensilex.service.model;
 
+/**
+ * Method model.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class Method extends RdfResourceDefinition {
     public Method() {
         

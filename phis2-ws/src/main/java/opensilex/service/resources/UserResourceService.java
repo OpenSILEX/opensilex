@@ -50,10 +50,9 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 
 /**
- * Represents the user data service.
+ * User resource service.
+ * @update [Arnaud Charleroy] 13 Sept. 2018: add total count to response object
  * @author Morgane Vidal <morgane.vidal@inra.fr>
- * @update [Morgane Vidal] April, 2017 : no explanation
- * @update [Arnaud Charleroy] 13 September, 2018 : add total count to response object
  */
 @Api("/user")
 @Path("users")

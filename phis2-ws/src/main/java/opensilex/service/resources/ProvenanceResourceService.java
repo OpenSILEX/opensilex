@@ -46,7 +46,7 @@ import opensilex.service.result.ResultForm;
 import opensilex.service.view.model.provenance.Provenance;
 
 /**
- * Provenance resource service
+ * Provenance resource service.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Api("/provenances")

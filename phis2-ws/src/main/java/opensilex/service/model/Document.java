@@ -12,7 +12,10 @@ import java.util.ArrayList;
 import opensilex.service.resources.dto.ConcernedItemDTO;
 
 /**
- * @update [Andréas Garcia] 15 Jan. 2019 : Replace "concern" occurences by "concernedItem"
+ * Document model.
+ * @update [Andréas Garcia] 15 Jan. 2019: Replace "concern" occurences by 
+ * "concernedItem"
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr> 
  */
 public class Document {
     private String uri;

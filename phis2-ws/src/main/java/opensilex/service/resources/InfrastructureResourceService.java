@@ -39,7 +39,7 @@ import opensilex.service.result.ResultForm;
 import opensilex.service.model.Infrastructure;
 
 /**
- * Infrastructure service
+ * Infrastructure resource service.
  * @author Vincent Migot <vincent.migot@inra.fr>
  */
 @Api("/infrastructures")

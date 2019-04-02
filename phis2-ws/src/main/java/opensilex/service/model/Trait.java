@@ -7,6 +7,10 @@
 //******************************************************************************
 package opensilex.service.model;
 
+/**
+ * Trait model.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class Trait extends RdfResourceDefinition {
 
     public Trait() {

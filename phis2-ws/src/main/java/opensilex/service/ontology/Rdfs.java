@@ -8,7 +8,7 @@
 package opensilex.service.ontology;
 
 /**
- * The elements of the ontology rdf used.
+ * Vocabulary definition from the RDFS ontology.
  * @see https://www.w3.org/TR/rdf-schema/
  * @see https://www.w3.org/2000/01/rdf-schema#
  * @author Morgane Vidal <morgane.vidal@inra.fr>

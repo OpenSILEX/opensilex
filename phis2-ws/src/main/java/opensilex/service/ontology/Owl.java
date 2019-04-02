@@ -8,7 +8,7 @@
 package opensilex.service.ontology;
 
 /**
- * The elements of the ontology owl used.
+ * Vocabulary definition from the OWL ontology.
  * @see https://www.w3.org/OWL/
  * @see http://www.w3.org/2002/07/owl#
  * @author Morgane Vidal <morgane.vidal@inra.fr>

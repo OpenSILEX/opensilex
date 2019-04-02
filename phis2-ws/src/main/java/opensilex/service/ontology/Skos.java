@@ -8,7 +8,7 @@
 package opensilex.service.ontology;
 
 /**
- * The elements of the ontology skos used.
+ * Vocabulary definition from the SKOS ontology.
  * @see http://www.w3.org/2008/05/skos
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */

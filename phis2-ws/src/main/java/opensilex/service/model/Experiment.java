@@ -10,6 +10,10 @@ package opensilex.service.model;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * Experiment model.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class Experiment {
     private String uri;
     private String startDate;

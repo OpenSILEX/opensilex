@@ -8,7 +8,8 @@
 package opensilex.service.ontology;
 
 /**
- * Elements of the Xsd ontology used in the ws
+ * Vocabulary definition from the XSD ontology.
+ * @see https://www.w3.org/TR/xmlschema11-1/
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
 public enum Xsd {

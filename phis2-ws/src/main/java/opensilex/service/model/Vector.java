@@ -8,7 +8,7 @@
 package opensilex.service.model;
 
 /**
- *Represents a vector view
+ * Vector model.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class Vector {

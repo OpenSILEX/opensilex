@@ -8,7 +8,7 @@
 package opensilex.service.model;
 
 /**
- * Represents the triplet view.
+ * Triplet model.
  * @see https://www.w3.org/wiki/JSON_Triple_Sets
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */

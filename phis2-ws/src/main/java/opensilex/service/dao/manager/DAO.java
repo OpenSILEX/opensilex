@@ -10,9 +10,9 @@ package opensilex.service.dao.manager;
 import java.util.List;
 
 /**
- * DAO mother class
- * @author Arnaud Charleroy
- * @param <T>
+ * DAO mother class.
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * @param <T> the type of object handled
  */
 public abstract class DAO<T> {
 

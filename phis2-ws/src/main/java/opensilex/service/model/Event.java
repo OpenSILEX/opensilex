@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import org.joda.time.DateTime;
 
 /**
- * Represents the Event model
+ * Event model.
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
 public class Event extends RdfResourceDefinition {

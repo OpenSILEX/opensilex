@@ -8,7 +8,7 @@
 package opensilex.service.model;
 
 /**
- * Represents a species model
+ * Species model.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class Species extends RdfResourceDefinition {

@@ -9,6 +9,10 @@ package opensilex.service.model;
 
 import java.util.ArrayList;
 
+/**
+ * Provenance model.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class Provenance {
     private String uri;
     private String creationDate;

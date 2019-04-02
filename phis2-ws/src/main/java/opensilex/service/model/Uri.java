@@ -13,7 +13,7 @@ import java.util.Map;
 import opensilex.service.documentation.DocumentationAnnotation;
 
 /**
- * Model of the Uri object
+ * URI model.
  * @author Eloan LAGIER
  */
 public class Uri {

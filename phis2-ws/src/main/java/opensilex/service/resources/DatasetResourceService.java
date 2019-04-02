@@ -46,7 +46,7 @@ import opensilex.service.result.ResultForm;
 import opensilex.service.model.Dataset;
 
 /**
- * Represents the datasets service
+ * Datasets resource service.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Api("/datasets")

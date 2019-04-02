@@ -7,6 +7,10 @@
 //******************************************************************************
 package opensilex.service.model;
 
+/**
+ * Generator model.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class WasGeneratedBy {
     private String wasGeneratedBy; 
     private String wasGeneratedByDescription;

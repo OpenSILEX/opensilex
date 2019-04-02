@@ -45,7 +45,7 @@ import opensilex.service.result.ResultForm;
 import opensilex.service.model.ScientificObject;
 
 /**
- * scientific objects service
+ * Scientific objects resource service.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Api("/scientificObjects")

@@ -15,11 +15,11 @@ import org.apache.jena.rdf.model.ResourceFactory;
 
 /**
  * Vocabulary definition from the OEEV ontology.
- * Follow Jena vocabulary java implementations
+ * Follows Jena vocabulary java implementations.
  * @see http://agroportal.lirmm.fr/ontologies/OEEV
  * @see https://github.com/apache/jena/tree/master/jena-core/src/main/java/org/apache/jena/vocabulary
- * @update [Andréas Garcia] 05 March, 2019: Make the class follow the Jena 
- * vocabulary java implementation
+ * @update [Andréas Garcia] 5 Mar. 2019: Make the class follow the Jena 
+ * vocabulary java implementation.
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
 public class Oeev {

@@ -2,7 +2,7 @@
 //                           TokenResourceService.java 
 // SILEX-PHIS
 // Copyright © INRA 2015
-// Creation date: November 2015
+// Creation date: 26 November 2015
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.resources.brapi;
@@ -64,24 +64,14 @@ import opensilex.service.view.brapi.form.ResponseUnique;
 import opensilex.service.model.Call;
 
 /**
- * REST Web Service
- *
- * TokenResourceService - Classe correspondant au chemin brapi/v1/token ou token
- * du Web Service
- *
- * @version 1.0
- *
- * @author Samuël Chérimont
- * @date 26/11/2015
- * @update 03/08/2016 Ajout du JWT 03/2018 Update for jwt
- * @update [Alice Boizet] 27 July, 2018 : override callInfo() to add token call description in the brapi calls service
+ * Token resource service.
+ * @update [Arnaud Charleroy] 3 Aug. 2016: Add JWT
+ * @update [Alice Boizet] 27 July 2018: override callInfo() to add token call 
+ * description in the Brapi calls service
  * @see https://jwt.io/introduction/
- * @see
- * http://connect2id.com/products/nimbus-jose-jwt/examples/jwt-with-rsa-signature
+ * @see http://connect2id.com/products/nimbus-jose-jwt/examples/jwt-with-rsa-signature
+ * @author Samuël Chérimont
  */
-//@Path("{brapi/v1/token|token}")
-//@RolesAllowed("ADMIN")
-//@PermitAll
 @Api(value = "/brapi/v1/token")
 @Path("brapi/v1/token")
 public class TokenResourceService implements BrapiCall{

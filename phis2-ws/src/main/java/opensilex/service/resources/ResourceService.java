@@ -17,7 +17,7 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.result.ResultForm;
 
 /**
- * Class extended by all the resource services, which contains the common methods and attributes.
+ * Resource service mother class.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ResourceService {

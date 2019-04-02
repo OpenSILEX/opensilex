@@ -10,8 +10,7 @@ package opensilex.service.model;
 import java.util.ArrayList;
 
 /**
- * Represents the view of the profiles of sensors.
- * @see Property
+ * Sensor profile model.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class SensorProfile {

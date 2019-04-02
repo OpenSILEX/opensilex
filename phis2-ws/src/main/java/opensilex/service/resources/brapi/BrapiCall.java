@@ -11,10 +11,11 @@ import java.util.ArrayList;
 import opensilex.service.model.Call;
 
 /**
- * Interface for dependency injection in order to get Calls attributes
+ * Interface for dependency injection in order to get Calls attributes.
+ * @update [Alice Boizet] 24 Sept. 2018: the input of the method callInfo is now 
+ * a List because there can be several calls defined in the same class (see 
+ * TraitsResourceService as an example)
  * @author Alice Boizet alice.boizet@inra.fr
- * @update [Alice Boizet] 24 September, 2018 : the input of the method callInfo is now a List 
- * because there can be several calls defined in the same class (see TraitsResourceService as an example)
  */
 public interface BrapiCall {
 

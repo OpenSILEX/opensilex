@@ -72,9 +72,9 @@ import opensilex.service.result.ResultForm;
 import opensilex.service.model.ImageMetadata;
 
 /**
- * Represents the images service
- * @author Morgane Vidal 
- * @update [Andréas Garcia] Jan., 2019 : modify "concern(s)" occurences into "concernedItem(s)"
+ * Image resource service.
+ * @update [Andréas Garcia] Jan. 2019: modify "concern(s)" occurences into "concernedItem(s)"
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Api("/images")
 @Path("/images")

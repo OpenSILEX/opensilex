@@ -10,7 +10,7 @@ package opensilex.service.model;
 import java.util.ArrayList;
 
 /**
- * represents the concerned item view
+ * Concerned item model.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ConcernedItem {

@@ -11,8 +11,7 @@ package opensilex.service.model;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
- * this object is here to help the ask-type query result to be shawn
- *
+ * Ask model.
  * @author Eloan LAGIER
  */
 public class Ask {

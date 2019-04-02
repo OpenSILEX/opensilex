@@ -36,7 +36,7 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.result.ResultForm;
 
 /**
- * Acquisition session service.
+ * Acquisition session resource service.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Api("/acquisitionSessions")

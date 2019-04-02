@@ -14,9 +14,7 @@ import org.apache.tomcat.jdbc.pool.PoolProperties;
 import static opensilex.service.PropertiesFileManager.getSQLPoolDataSourceProperties;
 
 /**
- * Source de données qui gère un ensemble de connexion pour la base de données
- * relationnelle Postgresql Phis pattern SingletonHolder
- *
+ * PostgreSQL data source.
  * @date 05/2016
  * @author Arnaud Charleroy
  */

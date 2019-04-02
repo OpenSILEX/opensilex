@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Represents the study format for the brapi/studies service response
+ * Brapi study model.
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class StudyDetails {

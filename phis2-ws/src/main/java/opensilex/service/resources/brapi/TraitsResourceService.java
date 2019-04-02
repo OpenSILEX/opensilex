@@ -41,15 +41,15 @@ import opensilex.service.view.brapi.form.BrapiSingleResponseForm;
 import opensilex.service.model.Call;
 import opensilex.service.model.Trait;
 
-@Api("/brapi/v1/traits")
-@Path("/brapi/v1/traits")
 
 /**
- * Traits service
+ * Traits resource service.
  * @See https://brapi.docs.apiary.io/#reference/traits
+ * @update [Alice Boizet] 24 Sept. 2018: add Get Trait Details.
  * @author Alice Boizet <alice.boizet@inra.fr>
- * @update [Alice Boizet] 24 September, 2018: add Get Trait Details 
  */
+@Api("/brapi/v1/traits")
+@Path("/brapi/v1/traits")
 public class TraitsResourceService implements BrapiCall {
     final static Logger LOGGER = LoggerFactory.getLogger(TraitsResourceService.class);
     

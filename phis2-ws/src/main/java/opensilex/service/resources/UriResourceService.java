@@ -36,13 +36,12 @@ import opensilex.service.result.ResultForm;
 import opensilex.service.model.Ask;
 import opensilex.service.model.Uri;
 
+/**
+ * URI resource service.
+ * @author Eloan Lagier
+ */
 @Api("/uri")
 @Path("uri")
-/**
- * Represents the Uri Resource Service
- *
- * @author Eloan LAGIER
- */
 public class UriResourceService extends ResourceService {
     /**
      * search if an uri is in the triplestore or not

@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import org.joda.time.DateTime;
 
 /**
- * Represents a variable according to brapi specifications
+ * Brapi variable model.
  * @See https://brapi.docs.apiary.io/#reference/observation-variables
  * @author Alice Boizet <alice.boizet@inra.fr>
  */

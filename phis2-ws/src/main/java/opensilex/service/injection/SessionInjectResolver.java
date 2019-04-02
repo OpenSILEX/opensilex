@@ -15,9 +15,9 @@ import org.glassfish.hk2.api.ServiceHandle;
 import opensilex.service.authentication.Session;
 
 /**
- * Permet de repérer l'utilisation de l'annotation Session Inject
+ * Session inject resolver.
  * @see https://jersey.java.net/documentation/latest/ioc.html
- * @author A. Charleroy
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class SessionInjectResolver implements InjectionResolver<SessionInject> {
 

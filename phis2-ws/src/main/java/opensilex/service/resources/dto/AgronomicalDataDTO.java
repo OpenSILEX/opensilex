@@ -17,7 +17,7 @@ import opensilex.service.model.AgronomicalData;
 import opensilex.service.resources.validation.interfaces.URL;
 
 /**
- * corresponds to the submitted JSON for the data 
+ * Agronomical data DTO. 
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class AgronomicalDataDTO extends AbstractVerifiedClass {

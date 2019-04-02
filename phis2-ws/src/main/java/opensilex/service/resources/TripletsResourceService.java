@@ -36,10 +36,7 @@ import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 
 /**
- * Represents the triplets service.
- * A triplet corresponds to an rdf triplet.
- * it is composed of a subject, a predicate and an object
- * @see https://www.w3.org/wiki/JSON_Triple_Sets
+ * RDF Triplet resource service.
  * for the moment, the following keys have been implemented :
  * "s"
  * "p"

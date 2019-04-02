@@ -8,7 +8,7 @@
 package opensilex.service.model;
 
 /**
- * the file informations view
+ * File information model.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class FileInformations {

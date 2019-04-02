@@ -10,6 +10,10 @@ package opensilex.service.model;
 import io.swagger.annotations.ApiModelProperty;
 import opensilex.service.resources.validation.interfaces.URL;
 
+/**
+ * Ontology reference model.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class OntologyReference {
     /**
      * @param property ex. skos:exactMatch

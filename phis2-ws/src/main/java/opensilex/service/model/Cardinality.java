@@ -8,7 +8,7 @@
 package opensilex.service.model;
 
 /**
- * represents the cardinality of a concept
+ * Concept cardinality model.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class Cardinality {

@@ -48,7 +48,7 @@ import opensilex.service.result.ResultForm;
 import opensilex.service.model.EnvironmentMeasure;
 
 /**
- * Environment resource service
+ * Environmental measure resource service.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Api("/environments")

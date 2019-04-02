@@ -10,7 +10,7 @@ package opensilex.service.ontology;
 import opensilex.service.PropertiesFileManager;
 
 /**
- * The contexts used in SILEX-PHIS
+ * Triplestore contexts.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public enum Contexts {

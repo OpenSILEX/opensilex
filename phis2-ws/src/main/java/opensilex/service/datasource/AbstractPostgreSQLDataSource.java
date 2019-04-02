@@ -12,10 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Représente une source de données avec les paramètres communs à toutes les
- * sources de données SQL
- *
- * @author Arnaud Charleroy
+ * SQL data source.
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public abstract class AbstractPostgreSQLDataSource extends DataSource {
 

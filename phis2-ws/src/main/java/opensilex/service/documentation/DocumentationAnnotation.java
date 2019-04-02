@@ -12,7 +12,7 @@ import javax.inject.Singleton;
 import opensilex.service.PropertiesFileManager;
 
 /**
- * A class which group documentation informations
+ * Documentation annotations.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Singleton

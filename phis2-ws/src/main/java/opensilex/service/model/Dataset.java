@@ -10,7 +10,7 @@ package opensilex.service.model;
 import java.util.ArrayList;
 
 /**
- * represents the dataset view
+ * Dataset model
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class Dataset {

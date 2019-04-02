@@ -7,6 +7,10 @@
 //******************************************************************************
 package opensilex.service.model;
 
+/**
+ * Unit model.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class Unit extends RdfResourceDefinition {
     public Unit() {
         

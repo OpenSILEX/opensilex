@@ -46,6 +46,10 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Unit;
 
+/**
+ * Unit resource service.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 @Api("/units")
 @Path("units")
 public class UnitResourceService extends ResourceService {

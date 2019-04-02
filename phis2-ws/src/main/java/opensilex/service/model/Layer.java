@@ -9,6 +9,10 @@ package opensilex.service.model;
 
 import java.util.HashMap;
 
+/**
+ * Layer model.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class Layer {
     
     /**

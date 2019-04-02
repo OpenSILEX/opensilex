@@ -8,7 +8,7 @@
 package opensilex.service.model;
 
 /**
- * the shooting configuration view
+ * Shooting configuration model.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ShootingConfiguration {

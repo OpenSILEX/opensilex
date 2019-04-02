@@ -42,7 +42,7 @@ import opensilex.service.model.StudyDetails;
 @Path("/brapi/v1/studies")
 
 /**
- * StudyDetails service
+ * Study details resource service.
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class StudyDetailsResourceService implements BrapiCall{

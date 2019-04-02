@@ -10,7 +10,7 @@ package opensilex.service.model;
 import com.google.gson.annotations.SerializedName;
 
 /**
- * Represents a method according to brapi specifications
+ * Brapi method model.
  * @See https://brapi.docs.apiary.io/#reference/observation-variables
  * @author Alice Boizet <alice.boizet@inra.fr>
  */

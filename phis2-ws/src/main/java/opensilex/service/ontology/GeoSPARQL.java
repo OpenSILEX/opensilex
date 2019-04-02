@@ -8,7 +8,7 @@
 package opensilex.service.ontology;
 
 /**
- * Used to get the vocabulary of GeoSPARQL.
+ * Vocabulary definition from the GeoSPARQL ontology.
  * @see http://www.opengis.net/ont/geosparql#
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */

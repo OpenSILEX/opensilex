@@ -21,8 +21,7 @@ import opensilex.service.model.AgronomicalData;
 import opensilex.service.model.Dataset;
 
 /**
- * serialize a dataset instance to JSON, used to have a different return from 
- * the model class for the GET dataset
+ * Dataset JSON serializer.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class DatasetsSerializer implements JsonSerializer<Dataset> {

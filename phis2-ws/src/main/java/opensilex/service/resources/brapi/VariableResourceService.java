@@ -45,7 +45,7 @@ import opensilex.service.model.BrapiMethod;
 import opensilex.service.model.BrapiScale;
 
 /**
- * Variable service
+ * Variable resource service.
  * @See https://brapi.docs.apiary.io/#reference/observation-variables
  * @author Alice Boizet <alice.boizet@inra.fr>
  */

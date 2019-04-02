@@ -11,7 +11,7 @@ import com.google.gson.annotations.SerializedName;
 import java.util.ArrayList;
 
 /**
- * Represents a variable trait according to brapi specification
+ * Brapi variable trait model.
  * @See https://brapi.docs.apiary.io/#reference/observation-variables
  * @author Alice Boizet <alice.boizet@inra.fr>
  */

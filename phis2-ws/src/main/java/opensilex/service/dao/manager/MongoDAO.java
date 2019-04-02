@@ -24,7 +24,7 @@ import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.model.User;
 
 /**
- * DAO for Mongo querying
+ * DAO for MongoDB querying.
  * @author Arnaud Charleroy
  * @param <T>
  */

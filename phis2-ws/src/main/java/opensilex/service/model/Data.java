@@ -3,14 +3,15 @@
 // SILEX-PHIS
 // Copyright © INRA 2019
 // Creation date: 1 March 2019
-// Contact: vincent.migotl@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.model;
 
 import java.util.Date;
 
 /**
- * This is the model for the phenotypes data
+ * Data model
+ * @auhor Vincent Migot <vincent.migot@inra.fr>
  */
 public class Data {
     //The uri of the data.

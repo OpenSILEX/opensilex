@@ -2,7 +2,7 @@
 //                          CustomJsonWriterReader.java 
 // SILEX-PHIS
 // Copyright © INRA 2016
-// Creation date: August 2016
+// Creation date: May 2016
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.json;
@@ -38,11 +38,8 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.model.Dataset;
 
 /**
- * Classe permettant de surcharger la classe qui permet la sérialization et la
- * deserialisation du JSON dans Jersey
- *
- * @author Arnaud Charleroy
- * @date 05/16
+ * Custom JSON handler.
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  * @param <T>
  */
 @Produces(MediaType.APPLICATION_JSON)

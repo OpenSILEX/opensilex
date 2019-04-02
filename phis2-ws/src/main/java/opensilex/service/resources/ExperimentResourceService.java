@@ -54,12 +54,12 @@ import opensilex.service.result.ResultForm;
 import opensilex.service.model.Experiment;
 
 /**
- * Experiment services.
- * @author Morgane Vidal <morgane.vidal@inra.fr>
- * @update [Morgane Vidal] October, 31 2017 refactor trial to experiment
- * @update [Morgane Vidal] December, 20 2018 add PUT services :
+ * Experiment resource service.
+ * @update [Morgane Vidal] 31 Oct. 2017: refactor trial to experiment
+ * @update [Morgane Vidal] 20 Dec. 2018: add PUT services:
  *                          - experiment/{uri}/variables 
  *                          - experiment/{uri}/sensors
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Api("/experiments")
 @Path("experiments")

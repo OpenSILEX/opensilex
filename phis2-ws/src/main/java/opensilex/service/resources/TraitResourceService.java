@@ -46,6 +46,10 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Trait;
 
+/**
+ * Trait resource service.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 @Api("/traits")
 @Path("traits")
 public class TraitResourceService extends ResourceService {

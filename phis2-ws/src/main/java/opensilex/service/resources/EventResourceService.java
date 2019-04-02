@@ -52,9 +52,9 @@ import opensilex.service.result.ResultForm;
 import opensilex.service.model.Event;
 
 /**
- * Service to handle events
- * @update [Andréas Garcia] 14 Feb., 2019: Add event detail service
- * @update [Andréas Garcia] 5 March, 2019: Add event POST service
+ * Event resource service.
+ * @update [Andréas Garcia] 14 Feb. 2019: Add event detail service
+ * @update [Andréas Garcia] 5 Mar. 2019: Add event POST service
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
 @Api("/events")

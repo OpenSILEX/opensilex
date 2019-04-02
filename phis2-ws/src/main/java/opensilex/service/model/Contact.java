@@ -8,6 +8,10 @@
 
 package opensilex.service.model;
 
+/**
+ * Contact model.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class Contact {
     private String email;
     private String firstName;

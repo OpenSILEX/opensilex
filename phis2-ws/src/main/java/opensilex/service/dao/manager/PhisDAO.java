@@ -2,8 +2,9 @@
 //                               PhisDAO.java 
 // SILEX-PHIS
 // Copyright © INRA 2017
-// Creation date: August 2016
-// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Creation date: May 2016
+// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, 
+//          pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.dao.manager;
 
@@ -12,13 +13,10 @@ import opensilex.service.datasource.PostgreSQLDataSource;
 import opensilex.service.utils.POSTResultsReturn;
 
 /**
- * Répresente une définition de la classe DAO permettant de se connecter à la
- * source de données Phis tout en ayant les méthodes déjà définies
- *
- * @author Arnaud Charleroy
- * @date 05/2016
- * @param <T> Classe représentant l'objet
- * @param <D> Classe représentant l'objet à enregistrer en BD
+ * DAO to connect a PHIS source.
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * @param <T>
+ * @param <D> Object handled in the database
  */
 public abstract class PhisDAO<T, D> extends PostgreSQLDAO<T> {
 

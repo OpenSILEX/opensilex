@@ -42,8 +42,8 @@ import opensilex.service.utils.JsonConverter;
 import opensilex.service.utils.sql.SQLQueryBuilder;
 
 /**
- * DAO for relational database querying
- * @author Arnaud Charleroy
+ * DAO to query a PostgreSQL database.
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  * @param <T>
  */
 public abstract class PostgreSQLDAO<T> extends DAO<T> {

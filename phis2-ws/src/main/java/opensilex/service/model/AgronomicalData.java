@@ -7,6 +7,10 @@
 //******************************************************************************
 package opensilex.service.model;
 
+/**
+ * Agronomical data model.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class AgronomicalData {
     private String agronomicalObject;
     private String date;

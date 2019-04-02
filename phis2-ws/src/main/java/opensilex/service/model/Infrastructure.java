@@ -8,7 +8,7 @@
 package opensilex.service.model;
 
 /**
- * Represents an infrastructure model
+ * Infrastructure model.
  * @author Vincent Migot <vincent.migot@inra.fr>
  */
 public class Infrastructure extends RdfResourceDefinition {

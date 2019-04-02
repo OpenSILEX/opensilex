@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 /**
- * This is the model for the environment measures
+ * Environmental measure model.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class EnvironmentMeasure {

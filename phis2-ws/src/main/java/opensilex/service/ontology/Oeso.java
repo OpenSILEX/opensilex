@@ -10,8 +10,7 @@ package opensilex.service.ontology;
 import opensilex.service.PropertiesFileManager;
 
 /**
- * Used to get the vocabulary of SILEX-PHIS. 
- * Contains the ontology (oepo here) relations and context.
+ * Vocabulary definition from the OESO ontology.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public enum Oeso {

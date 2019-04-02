@@ -45,6 +45,10 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Variable;
 
+/**
+ * Variable resource service.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 @Api("/variables")
 @Path("variables")
 public class VariableResourceService extends ResourceService {

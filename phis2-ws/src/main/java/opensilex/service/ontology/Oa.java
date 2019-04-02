@@ -8,7 +8,7 @@
 package opensilex.service.ontology;
 
 /**
- * The elements of the ontology oa used.
+ * Vocabulary definition from the OA ontology.
  * @see https://www.w3.org/ns/oa
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */

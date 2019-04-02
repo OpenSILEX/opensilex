@@ -45,8 +45,7 @@ import opensilex.service.result.ResultForm;
 import opensilex.service.model.Annotation;
 
 /**
- * Represent the annotation service.
- * @update [Arnaud Charleroy] 23 August, 2018: update coding style.
+ * Annotation resource service.
  * @update [Andréas Garcia] 15 Feb. 2019: search parameters are no longer DAO 
  * class attributes but parameters sent through the search functions
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>

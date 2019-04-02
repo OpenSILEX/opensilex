@@ -61,8 +61,8 @@ import opensilex.service.model.Data;
 import opensilex.service.model.FileDescription;
 
 /**
- * Data resource service
- * @Author Vincent Migot
+ * Data resource service.
+ * @Author Vincent Migot <vincent.migot@inra.fr>
  */
 @Api("/data")
 @Path("/data")

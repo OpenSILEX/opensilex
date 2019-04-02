@@ -49,6 +49,10 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Project;
 
+/**
+ * Project resource service.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 @Api("/projects")
 @Path("projects")
 public class ProjectResourceService extends ResourceService {

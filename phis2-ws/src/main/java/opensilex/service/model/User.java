@@ -13,13 +13,14 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 
 /**
- *
+ * User model.
+ * @update [Arnaud Charleroy] Sept. 2016: add user attributes and user DAO 
+ * implementation.
+ * @update [Morgane Vidal] Apr. 2016: add phone, affiliation and orcid attributes.
+ * The deletion of isAdmin, role and type attributes impacted the 
+ * UserDaoPhisBrapi class.  
+ * Adding of the groups to which the user belongs (used to create a user)
  * @author tireau
- * @update AC 07/16 Ajout des champ de classe user et implémentation du DAO USER
- * @update [Morgane Vidal] 04/26 ajout des attributs phone, affiliation, orcid.
- * suppression des attributs isAdmin, role, type a impacté la classe
- * UserDaoPhisBrapi. Et ajout de la liste des groupes auxquels l'utilisateur
- * appartient (utilisé pour la création d'un utilisateur)
  */
 @ApiModel
 public class User {

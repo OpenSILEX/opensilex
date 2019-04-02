@@ -10,8 +10,7 @@ package opensilex.service.model;
 import java.util.ArrayList;
 
 /**
- * Represents the view of an instance in the triplestore. 
- * With its properties and ontology references
+ * RDF resource model. 
  * @see Property
  * @see OntologyReference
  * @author Morgane Vidal <morgane.vidal@inra.fr>

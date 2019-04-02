@@ -17,10 +17,9 @@ import opensilex.service.authentication.TokenManager;
 import opensilex.service.configuration.GlobalWebserviceValues;
 
 /**
- * Extrait les donnees de la requete de l'utilisateur 
- * et les lie à l'objet de l'annotation personnalisee @SessionInject
+ * Link user information to session injection.
  * @see https://jersey.java.net/documentation/latest/ioc.html
- * @author A. Charleroy
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class SessionFactory implements Factory<Session> {
 

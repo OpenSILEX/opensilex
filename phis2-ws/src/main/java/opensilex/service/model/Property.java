@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 /**
- * Represents the view of the properties in the triplestore. 
+ * Property model. 
  * @author Migot Vincent <vincent.migot@inra.fr>
  */
 public class Property {

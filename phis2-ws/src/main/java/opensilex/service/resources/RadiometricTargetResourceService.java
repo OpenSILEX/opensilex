@@ -50,7 +50,7 @@ import opensilex.service.result.ResultForm;
 import opensilex.service.model.RadiometricTarget;
 
 /**
- * Radiometric target service.
+ * Radiometric target resource service.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Api("/radiometricTargets")

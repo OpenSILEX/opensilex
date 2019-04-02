@@ -9,6 +9,10 @@ package opensilex.service.model;
 
 import java.util.ArrayList;
 
+/**
+ * Group model.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class Group {
     private String uri;
     private String name;

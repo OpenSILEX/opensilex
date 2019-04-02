@@ -9,6 +9,10 @@ package opensilex.service.model;
 
 import java.util.ArrayList;
 
+/**
+ * Project model.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class Project {
     private String uri;
     private String name;

@@ -10,10 +10,10 @@ package opensilex.service.documentation;
 import javax.inject.Singleton;
 
 /**
- * Defines the web service return messages
+ * Web service return messages
  * @see phenomeapi.service.view.brapi.Status
- * @author Arnaud Charleroy
- * @author Morgane Vidal
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Singleton
 public final class StatusCodeMsg {

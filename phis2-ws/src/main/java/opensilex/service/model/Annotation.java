@@ -11,8 +11,7 @@ import java.util.ArrayList;
 import org.joda.time.DateTime;
 
 /**
- * Represents an annotation
- * @update [Andréas Garcia] 15 Feb., 2019: Improve coding style
+ * Annotation model.
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class Annotation {

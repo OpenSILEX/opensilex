@@ -10,7 +10,7 @@ package opensilex.service.model;
 import java.util.ArrayList;
 
 /**
- * Represents a call
+ * Call model.
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class Call {

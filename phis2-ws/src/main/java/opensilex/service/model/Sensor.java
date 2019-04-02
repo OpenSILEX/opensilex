@@ -10,7 +10,7 @@ package opensilex.service.model;
 import java.util.HashMap;
 
 /**
- * Represents a sensor view
+ * Sensor model.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class Sensor {

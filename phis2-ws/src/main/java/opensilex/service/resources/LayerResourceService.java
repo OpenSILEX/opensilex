@@ -38,6 +38,10 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 
+/**
+ * Layer resource service.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 @Api("/layers")
 @Path("layers")
 public class LayerResourceService extends ResourceService {

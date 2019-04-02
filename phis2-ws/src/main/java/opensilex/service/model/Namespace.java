@@ -8,8 +8,8 @@
 package opensilex.service.model;
 
 /**
- * Represent a namespace with the corresponding prefix
- * @author Arnaud Charleroy<arnaud.charleroy@inra.fr>
+ * Namespace with prefix model.
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class Namespace implements Comparable<Namespace>{
 

@@ -12,8 +12,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This model represent the description metadata of a data file
- * @author Vincent Migot
+ * File description model.
+ * @author Vincent Migot <vincent.migot@inra.fr>
  */
 public class FileDescription {
 

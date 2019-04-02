@@ -517,7 +517,9 @@ public class StudiesResourceService implements BrapiCall {
 
         ExperimentDao experimentDAO = new ExperimentDao();
         experimentDAO.uri = studyDbId;
-        Experiment experiment = experimentDAO.getAllExperimentsForAcquisitionSessionFile().get(0);
+        experimentDAO.setPageSize(1);
+        experimentDAO.user = userSession.getUser();
+        Experiment experiment = experimentDAO.allPaginate().get(0);
 
         ArrayList<BrapiObservationUnitDTO> observationUnits= getObservationUnitsResult(scientificObjects,experiment);
 

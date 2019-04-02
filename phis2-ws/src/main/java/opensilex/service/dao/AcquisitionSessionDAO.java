@@ -15,6 +15,7 @@ import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+<<<<<<< HEAD:phis2-ws/src/main/java/opensilex/service/dao/AcquisitionSessionDAO.java
 import opensilex.service.dao.manager.SparqlDAO;
 import opensilex.service.dao.ExperimentSQLDAO;
 import opensilex.service.dao.UserDAO;
@@ -28,6 +29,21 @@ import opensilex.service.model.Experiment;
 import opensilex.service.model.RadiometricTarget;
 import opensilex.service.model.Sensor;
 import opensilex.service.model.Vector;
+=======
+import phis2ws.service.dao.manager.SparqlDAO;
+import phis2ws.service.dao.phis.ExperimentSQLDAO;
+import phis2ws.service.dao.phis.UserDAO;
+import phis2ws.service.model.User;
+import phis2ws.service.ontologies.Oeso;
+import phis2ws.service.resources.dto.acquisitionSession.MetadataFileDTO;
+import phis2ws.service.resources.dto.acquisitionSession.MetadataFilePhenomobileDTO;
+import phis2ws.service.resources.dto.acquisitionSession.MetadataFileUAVDTO;
+import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
+import phis2ws.service.view.model.phis.Experiment;
+import phis2ws.service.view.model.phis.RadiometricTarget;
+import phis2ws.service.view.model.phis.Sensor;
+import phis2ws.service.view.model.phis.Vector;
+>>>>>>> renaming-and-removing-factory:phis2-ws/src/main/java/phis2ws/service/dao/sesame/AcquisitionSessionDAO.java
 
 /**
  * This class is a Data Access Object for the acquisition sessions.

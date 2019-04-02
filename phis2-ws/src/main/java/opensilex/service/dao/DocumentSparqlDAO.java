@@ -31,6 +31,7 @@ import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+<<<<<<< HEAD:phis2-ws/src/main/java/opensilex/service/dao/DocumentSparqlDAO.java
 import opensilex.service.configuration.DocumentStatus;
 import opensilex.service.configuration.SortingValues;
 import opensilex.service.dao.manager.SparqlDAO;
@@ -51,6 +52,28 @@ import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.model.Document;
 import opensilex.service.model.Experiment;
+=======
+import phis2ws.service.configuration.DocumentStatus;
+import phis2ws.service.configuration.SortingValues;
+import phis2ws.service.dao.manager.SparqlDAO;
+import phis2ws.service.dao.mongo.DocumentMongoDAO;
+import phis2ws.service.dao.phis.ExperimentSQLDAO;
+import phis2ws.service.dao.phis.UserDAO;
+import phis2ws.service.documentation.StatusCodeMsg;
+import phis2ws.service.model.User;
+import phis2ws.service.ontologies.Contexts;
+import phis2ws.service.ontologies.Rdf;
+import phis2ws.service.ontologies.Rdfs;
+import phis2ws.service.ontologies.Oeso;
+import phis2ws.service.resources.dto.ConcernedItemDTO;
+import phis2ws.service.resources.dto.DocumentMetadataDTO;
+import phis2ws.service.utils.POSTResultsReturn;
+import phis2ws.service.utils.ResourcesUtils;
+import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
+import phis2ws.service.view.brapi.Status;
+import phis2ws.service.view.model.phis.Document;
+import phis2ws.service.view.model.phis.Experiment;
+>>>>>>> renaming-and-removing-factory:phis2-ws/src/main/java/phis2ws/service/dao/sesame/DocumentSparqlDAO.java
 
 //SILEX:warning
 //After the update of the June 12, 2018 document's metadata are inserted inside 

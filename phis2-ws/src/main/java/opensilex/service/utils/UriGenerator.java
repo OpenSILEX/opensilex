@@ -14,6 +14,7 @@ import java.util.Calendar;
 import java.util.UUID;
 import org.apache.commons.codec.binary.Base32;
 import org.apache.jena.sparql.AlreadyExists;
+<<<<<<< HEAD:phis2-ws/src/main/java/opensilex/service/utils/UriGenerator.java
 import opensilex.service.PropertiesFileManager;
 import opensilex.service.dao.ExperimentSQLDAO;
 import opensilex.service.dao.ImageMetadataMongoDAO;
@@ -38,6 +39,32 @@ import opensilex.service.ontology.Oeso;
 import opensilex.service.ontology.Time;
 import opensilex.service.model.Group;
 import opensilex.service.model.Project;
+=======
+import phis2ws.service.PropertiesFileManager;
+import phis2ws.service.dao.mongo.ImageMetadataMongoDAO;
+import phis2ws.service.dao.phis.ExperimentSQLDAO;
+import phis2ws.service.dao.phis.GroupDAO;
+import phis2ws.service.dao.phis.ProjectDAO;
+import phis2ws.service.dao.sesame.ScientificObjectSparqlDAO;
+import phis2ws.service.dao.sesame.AnnotationDAO;
+import phis2ws.service.dao.sesame.EventDAO;
+import phis2ws.service.dao.sesame.MethodDAO;
+import phis2ws.service.dao.sesame.RadiometricTargetDAO;
+import phis2ws.service.dao.sesame.SensorDAO;
+import phis2ws.service.dao.sesame.TimeDAO;
+import phis2ws.service.dao.sesame.UriDAO;
+import phis2ws.service.dao.sesame.TraitDAO;
+import phis2ws.service.dao.sesame.UnitDAO;
+import phis2ws.service.dao.sesame.VariableDAO;
+import phis2ws.service.dao.sesame.VectorDAO;
+import phis2ws.service.ontologies.Contexts;
+import phis2ws.service.ontologies.Foaf;
+import phis2ws.service.ontologies.Oeev;
+import phis2ws.service.ontologies.Oeso;
+import phis2ws.service.ontologies.Time;
+import phis2ws.service.view.model.phis.Group;
+import phis2ws.service.view.model.phis.Project;
+>>>>>>> renaming-and-removing-factory:phis2-ws/src/main/java/phis2ws/service/utils/UriGenerator.java
 
 /**
  * Generate different kinds of URIs (vector, sensor, ...)

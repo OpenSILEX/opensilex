@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+<<<<<<< HEAD:phis2-ws/src/main/java/opensilex/service/dao/StudyDAO.java
 import opensilex.service.utils.sql.SQLQueryBuilder;
 import opensilex.service.model.User;
 import opensilex.service.utils.sql.JoinAttributes;
@@ -34,6 +35,16 @@ import opensilex.service.model.ContactBrapi;
 import opensilex.service.dao.ExperimentSQLDAO;
 import opensilex.service.dao.manager.DAO;
 import opensilex.service.model.StudyDetails;
+=======
+import phis2ws.service.dao.manager.DAO;
+import phis2ws.service.utils.sql.SQLQueryBuilder;
+import phis2ws.service.model.User;
+import phis2ws.service.utils.sql.JoinAttributes;
+import phis2ws.service.view.model.phis.Experiment;
+import phis2ws.service.view.model.phis.ContactBrapi;
+import phis2ws.service.dao.phis.ExperimentSQLDAO;
+import phis2ws.service.view.model.phis.StudyDetails;
+>>>>>>> renaming-and-removing-factory:phis2-ws/src/main/java/phis2ws/service/dao/phis/StudyDAO.java
 
 /**
  * Get Experiments filtered by StudiesSearchResourceService fields and add 

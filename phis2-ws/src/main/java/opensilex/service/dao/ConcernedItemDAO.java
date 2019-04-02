@@ -89,15 +89,8 @@ public class ConcernedItemDAO extends SparqlDAO<ConcernedItem> {
         }
     }
     
-    /**         
-            if (searchConcernedItemUri != null) {
-                query.appendAndFilter("regex (str(" + CONCERNED_ITEM_URI_SELECT_NAME_SPARQL + ")" + ", \"" + searchConcernedItemUri + "\", \"i\")");
-            }
-        }
-    }
-    
     /**
-     * Prepares the query to search the concerned items of a object
+     * Prepares the query to search the concerned items of a object.
      * @param searchLabel
      * @param searchUri
      * @param concernsRelationUri since "concerns" can designate various
@@ -158,7 +151,7 @@ public class ConcernedItemDAO extends SparqlDAO<ConcernedItem> {
     }
     
     /**
-     * Searches an object's concerned items with filters
+     * Searches an object's concerned items with filters.
      * @param objectUri 
      * @param concernsRelationUri since "concerns" can designate various
      * relations in various vocabularies (e.g OESO or OEEV), the URI of the 
@@ -190,7 +183,7 @@ public class ConcernedItemDAO extends SparqlDAO<ConcernedItem> {
     }
     
     /**
-     * Generates an insert query for the links of the given concerned items
+     * Generates an insert query for the links of the given concerned items.
      * @param graphString
      * @param objectResource the concerning object's URI
      * @param concernsRelationUri since "concerns" can designate various
@@ -215,7 +208,7 @@ public class ConcernedItemDAO extends SparqlDAO<ConcernedItem> {
     }
     
     /**
-     * Checks the existence of the given list of concerned items
+     * Checks the existence of the given list of concerned items.
      * @param concernedItems
      * @return the result with the list of the found errors (empty if no error)
      */
@@ -306,7 +299,7 @@ public class ConcernedItemDAO extends SparqlDAO<ConcernedItem> {
     }
     
     /**
-     * Gets a concerned item from a binding set
+     * Gets a concerned item from a binding set.
      * @param bindingSet
      * @return concerned item
      */

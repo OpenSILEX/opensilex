@@ -25,17 +25,41 @@ public final class DateFormats {
     
     public final static String DATETIME_MONGO_MEASURE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSSZZ";
     public final static String DATETIME_METEO_DB_FORMAT = "yyyy-MM-dd HH:mm:ssZZ";
-    public final static List<String> DATETIME_MONGO_FORMAT = Arrays.asList("yyyy-MM-dd HH:mm:ss.SSSZZ", "yyyy-MM-dd HH:mm:ss.SSSSSS", "yyyy-MM-dd HH:mm:ss.SSSSSSZZ", "yyyy-MM-dd HH:mm:ssZZ");
+    public final static List<String> DATETIME_MONGO_FORMAT = Arrays.asList(
+            "yyyy-MM-dd HH:mm:ss.SSSZZ", 
+            "yyyy-MM-dd HH:mm:ss.SSSSSS", 
+            "yyyy-MM-dd HH:mm:ss.SSSSSSZZ", 
+            "yyyy-MM-dd HH:mm:ssZZ");
 
-    public final static List<String> AUTHORIZED_DATE_FORMATS = Arrays.asList(DateFormat.YMDHMSZ.toString(), "yyyy-MM-dd'T'HH:mm:ss.SSSZ", "yyyy-MM-dd'T'HH:mm:ssZ", "yyyy-MM-dd'T'HH:mm:ssZZ", DateFormat.YMD.toString());
-    public final static List<String> AUTHORIZED_USER_ENVIRONMENT_DATE_FORMATS = Arrays.asList("yyyy-MM-dd HH:mm:ss", DateFormat.YMD.toString(), "yyyy-MM-dd HH:mm:ssZZ");
-    public final static List<String> AUTHORIZED_USER_TRIPLESTORE_DATE_FORMATS = Arrays.asList("yyyy-MM-dd HH:mm:ss", DateFormat.YMD.toString(), "yyyy-MM-dd HH:mm:ssZZ");
-    public final static List<String> AUTHORIZED_USER_MONGO_DATE_FORMATS = Arrays.asList("yyyy-MM-dd HH:mm:ss", DateFormat.YMD.toString(), "yyyy-MM-dd HH:mm:ss.SSS", "yyyy-MM-dd HH:mm:ssZZ", "yyyy-MM-dd HH:mm:ss.SSSZZ");
+    public final static List<String> AUTHORIZED_DATE_FORMATS = Arrays.asList(
+            DateFormat.YMDHMSZ.toString(), 
+            "yyyy-MM-dd'T'HH:mm:ss.SSSZ", 
+            "yyyy-MM-dd'T'HH:mm:ssZ", 
+            "yyyy-MM-dd'T'HH:mm:ssZZ", 
+            DateFormat.YMD.toString());
+    public final static List<String> AUTHORIZED_USER_ENVIRONMENT_DATE_FORMATS = Arrays.asList(
+            "yyyy-MM-dd HH:mm:ss", 
+            DateFormat.YMD.toString(), 
+            "yyyy-MM-dd HH:mm:ssZZ");
+    public final static List<String> AUTHORIZED_USER_TRIPLESTORE_DATE_FORMATS = Arrays.asList(
+            "yyyy-MM-dd HH:mm:ss", 
+            DateFormat.YMD.toString(), 
+            "yyyy-MM-dd HH:mm:ssZZ");
+    public final static List<String> AUTHORIZED_USER_MONGO_DATE_FORMATS = Arrays.asList(
+            "yyyy-MM-dd HH:mm:ss", 
+            DateFormat.YMD.toString(), 
+            "yyyy-MM-dd HH:mm:ss.SSS", 
+            "yyyy-MM-dd HH:mm:ssZZ", 
+            "yyyy-MM-dd HH:mm:ss.SSSZZ");
 
     // Dates formats
     public final static String YMD_FORMAT = DateFormat.YMD.toString();
-    public final static String YMDHMSZ_FORMAT = DateFormat.YMDHMSZ.toString(); // To change to yyyy-MM-ddTHH:mm:ssZ see todo above 
-    public final static String YMDTHMSZ_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ"; // Resolve the todo but we need remove YMDHMSZ_FORMAT date format in the web service
+    
+    // To change to yyyy-MM-ddTHH:mm:ssZ see todo above 
+    public final static String YMDHMSZ_FORMAT = DateFormat.YMDHMSZ.toString(); 
+    
+    // Resolve the todo but we need remove YMDHMSZ_FORMAT date format in the web service
+    public final static String YMDTHMSZ_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ"; 
     public final static String YMDHMS_FORMAT = "yyyy-MM-dd HH:mm:ss";
     
     // Timezones

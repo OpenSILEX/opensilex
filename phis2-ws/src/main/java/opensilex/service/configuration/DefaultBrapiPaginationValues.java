@@ -8,7 +8,7 @@
 package opensilex.service.configuration;
 
 /**
- * Web service default values according to Brapi
+ * Web service default values according to BrAPI.
  * @see http://docs.brapi.apiary.io/#
  * @author Arnaud Charleroy
  */

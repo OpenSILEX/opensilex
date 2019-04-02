@@ -221,7 +221,7 @@ public class DatasetResourceService extends ResourceService {
         if (agronomicalObjects != null) {
             //the agronomical object's uri must be separated by ","
             String[] agronomicalObjectsURIs = agronomicalObjects.split(",");
-            datasetDAOMongo.agronomicalObjects.addAll(Arrays.asList(agronomicalObjectsURIs));
+            datasetDAOMongo.scientificObjects.addAll(Arrays.asList(agronomicalObjectsURIs));
         }
         if (sensor != null) {
             datasetDAOMongo.sensor = sensor;

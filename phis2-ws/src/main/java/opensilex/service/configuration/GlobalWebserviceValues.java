@@ -18,7 +18,6 @@ import opensilex.service.view.brapi.form.ResponseFormGET;
  */
 public final class GlobalWebserviceValues {
 
-// BRAPI V1
     public static final String AUTHORIZATION_PROPERTY = "Authorization";
     public static final String AUTHENTICATION_SCHEME = "Bearer";
     public static final Response ACCESS_DENIED = Response.status(Response.Status.UNAUTHORIZED)

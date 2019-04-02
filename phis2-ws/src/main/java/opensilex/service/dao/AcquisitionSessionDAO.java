@@ -36,13 +36,16 @@ public class AcquisitionSessionDAO extends SparqlDAO<MetadataFileDTO> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(AcquisitionSessionDAO.class);
     
-    //The rdf type of the vector concerned by the acquisition session. 
-    //Used in the GET fileMetadata to generate the informations for the file of definition the acquisition session for 4P.
-    //e.g. http://www.opensilex.org/vocabulary/oeso#UAV
+    /**
+     * The RDF type of the vector concerned by the acquisition session. 
+     * Used in the GET fileMetadata to generate the information for the file of 
+     * definition the acquisition session for 4P.
+     * @example http://www.opensilex.org/vocabulary/oeso#UAV
+     */
     public String vectorRdfType;
     
     /**
-     * Count the number of rows for the metadata file
+     * Counts the number of rows of the metadata file.
      * @return The number of rows
      */
     public Integer countFileMetadataRows() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
@@ -65,7 +68,7 @@ public class AcquisitionSessionDAO extends SparqlDAO<MetadataFileDTO> {
             //3. platform
             sizes.add(1);
             
-            //uav
+            //UAV
             if (uriDao.isSubClassOf(vectorRdfType, Oeso.CONCEPT_UAV.toString())) {
                 //3. get the number of cameras
                 SensorDAO sensorDAO = new SensorDAO();
@@ -87,7 +90,7 @@ public class AcquisitionSessionDAO extends SparqlDAO<MetadataFileDTO> {
     }
     
     /**
-     * Get all the required informations to generate the hidden phis part of the excel file for 4P.
+     * Gets all the required information to generate the hidden PHIS part of the excel file for 4P.
      * The content of the metadata depends of the acquisition session vector type.
      * @see AcquisitionSessionDAO#allPaginateFileMetadata() 
      * @return the content of the metadata required.
@@ -143,7 +146,7 @@ public class AcquisitionSessionDAO extends SparqlDAO<MetadataFileDTO> {
                 vectors = vectorDAO.getUAVs();
                 sizes.add(vectors.size());
 
-                //5. get the radiometric targets
+                // 5. get the radiometric targets
                 RadiometricTargetDAO radiometricTargetDAO = new RadiometricTargetDAO();
                 radiometricTargetDAO.setPage(page);
                 radiometricTargetDAO.setPageSize(pageSize);
@@ -152,9 +155,9 @@ public class AcquisitionSessionDAO extends SparqlDAO<MetadataFileDTO> {
             }
         }
         
-        //generates the file metadata list
+        // generates the file metadata list
         int maxListSize = Collections.max(sizes);
-        //field robot metadata
+        // field robot metadata
         if (uriDao.isSubClassOf(vectorRdfType, Oeso.CONCEPT_FIELD_ROBOT.toString())) {
             for (int i = 0; i < maxListSize; i++) {
                 MetadataFilePhenomobileDTO fileMetadata = new MetadataFilePhenomobileDTO();
@@ -173,7 +176,7 @@ public class AcquisitionSessionDAO extends SparqlDAO<MetadataFileDTO> {
                 fileMetadataList.add(fileMetadata);
             }
         } else if (uriDao.isSubClassOf(vectorRdfType, Oeso.CONCEPT_UAV.toString())) {
-            //uav metadata
+            // UAV metadata
             for (int i = 0; i < maxListSize; i++) {
                 MetadataFileUAVDTO fileMetadata = new MetadataFileUAVDTO();
                 
@@ -217,13 +220,13 @@ public class AcquisitionSessionDAO extends SparqlDAO<MetadataFileDTO> {
     }
     
     /**
-     * Get all the required informations to generate the hidden phis part of the excel file for 4P.
+     * Gets all the required information to generate the hidden PHIS part of the excel file for 4P.
      * The content of the metadata depends of the acquisition session vector type.
      * @return the content of the metadata required. 
      *         null if no metadata for the given vector type
      */
     public ArrayList<MetadataFileDTO> allPaginateFileMetadata() {
-        //Check if the rdf type is a subclass of vector
+        // Check if the rdf type is a subclass of vector
         UriDAO uriDAOSesame = new UriDAO();
         if (uriDAOSesame.isSubClassOf(vectorRdfType, Oeso.CONCEPT_VECTOR.toString())) {
             return getFileMetadata();

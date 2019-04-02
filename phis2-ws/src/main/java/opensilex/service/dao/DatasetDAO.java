@@ -44,31 +44,59 @@ public class DatasetDAO extends MongoDAO<Dataset> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(DatasetDAO.class);
     
-    //Mongodb collection of the provenance
+    /**
+     * MongoDB provenance collection 
+     */
     private final MongoCollection<Document> provenanceCollection = database.getCollection(PropertiesFileManager.getConfigFileProperty("mongodb_nosql_config", "provenance"));
-    //Mongodb collection of the data
+    
+    /**
+     * MongoDB data collection
+     */
     private final MongoCollection<Document> dataCollection = database.getCollection(PropertiesFileManager.getConfigFileProperty("mongodb_nosql_config", "data"));
     
-    //experiment uri concerned by the dataset
+    /**
+     * Experiment URI concerned by the dataset
+     */
     public String experiment;
-    //variable uri of the data of the dataset
+    
+    /**
+     * Variable URI of the data of the dataset
+     */
     public String variable;
-    //list of the agronomical objects uris concerned by the dataset
-    public ArrayList<String> agronomicalObjects = new ArrayList<>();
-    //start date of the data searched (when the user want data in a time interval)
+    
+    /**
+     * List of the scientific objects URIs concerned by the dataset
+     */
+    public ArrayList<String> scientificObjects = new ArrayList<>();
+    
+    /**
+     * Start date of the data searched (when the user want data in a time interval)
+     */
     public String startDate;
-    //end date of the data searched (when the user want data in a time interval)
+    
+    /**
+     * End date of the data searched (when the user want data in a time interval)
+     */
     public String endDate;
-    //provenance uri of the dataset
+    
+    /**
+     * Provenance URI of the dataset
+     */
     public String provenance;
-    //senesor uri
+    
+    /**
+     * Sensor URI
+     */
     public String sensor;
-    //incertitude of the data
+    
+    /**
+     * Incertitude of the data
+     */
     public String incertitude;
     
-    //Mongodb fields labels 
+    // MongoDB fields labels 
     //Represents the agronomical object label used for mongodb documents
-    private final static String DB_FIELD_AGRONOMICAL_OBJECT = "agronomicalObject";
+    private final static String DB_FIELD_SCIENTIFIC_OBJECT = "agronomicalObject";
     //Represents the variable label used for mongodb documents
     private final static String DB_FIELD_VARIABLE = "variable";
     //Represents the date label used for mongodb documents
@@ -96,15 +124,10 @@ public class DatasetDAO extends MongoDAO<Dataset> {
     //Represents the mongodb documents label for the sensor uri
     private final static String DB_FIELDS_SENSOR = "sensor";
     //Represents the mongodb documents label for the incertitude of data
-    private final static String DB_FIELDS_INCERTITUDE = "incertitude";
-    
-    public DatasetDAO() {
-        super();
-    }    
+    private final static String DB_FIELDS_INCERTITUDE = "incertitude";  
     
     /**
-     * Search by variable, start date, end date, agronomical object 
-     * @see phis2ws.service.dao.manager prepareSearchQuery()
+     * Searches by variable, start date, end date, agronomical object 
      * @return the search query
      */
     @Override
@@ -128,16 +151,16 @@ public class DatasetDAO extends MongoDAO<Dataset> {
             }
         }
         
-        if (agronomicalObjects != null && !agronomicalObjects.isEmpty()) {
-            if (agronomicalObjects.size() > 1) {
+        if (scientificObjects != null && !scientificObjects.isEmpty()) {
+            if (scientificObjects.size() > 1) {
                 BasicDBList or = new BasicDBList();
-                for (String agronomicalObject : agronomicalObjects) {
-                    BasicDBObject clause = new BasicDBObject(DB_FIELD_AGRONOMICAL_OBJECT, agronomicalObject);
+                for (String agronomicalObject : scientificObjects) {
+                    BasicDBObject clause = new BasicDBObject(DB_FIELD_SCIENTIFIC_OBJECT, agronomicalObject);
                     or.add(clause);
                 }
                 query.append("$or", or);
             } else {
-                query.append(DB_FIELD_AGRONOMICAL_OBJECT, agronomicalObjects.get(0));
+                query.append(DB_FIELD_SCIENTIFIC_OBJECT, scientificObjects.get(0));
             }
         }
         
@@ -153,7 +176,7 @@ public class DatasetDAO extends MongoDAO<Dataset> {
     }
     
     /**
-     * prepare a provenance search query for mongodb. Search by uri
+     * Prepares a provenance search query for MongoDB. Search by URI.
      * @return 
      */
     protected BasicDBObject prepareSearchProvenance() {
@@ -165,29 +188,29 @@ public class DatasetDAO extends MongoDAO<Dataset> {
     }
 
     /**
-     * get experiment's agronomical objects and add them to the searched 
-     * agronomical objects list 
+     * Gets experiment's scientific objects and add them to the searched 
+     * scientific objects list 
      */
-    private void updateAgronomicalObjectsWithExperimentsAgronomicalObjects() {
-        ScientificObjectSparqlDAO agronomicalObjectDaoSesame = new ScientificObjectSparqlDAO();
-        agronomicalObjectDaoSesame.experiment = experiment;
+    private void updateScientificObjectsWithExperimentsScientificObjects() {
+        ScientificObjectSparqlDAO scientificObjectSparqlDao = new ScientificObjectSparqlDAO();
+        scientificObjectSparqlDao.experiment = experiment;
         
-        ArrayList<ScientificObject> agronomicalObjectsSearched = agronomicalObjectDaoSesame.allPaginate();
+        ArrayList<ScientificObject> scientificObjectsSearched = scientificObjectSparqlDao.allPaginate();
         
-        for (ScientificObject agronomicalObject : agronomicalObjectsSearched) {
-            this.agronomicalObjects.add(agronomicalObject.getUri());
-        }
+        scientificObjectsSearched.forEach((scientificObject) -> {
+            this.scientificObjects.add(scientificObject.getUri());
+        });
     }
     
     /**
-     * get all datasets corresponding to search params (experiment, agronomical
-     * objects, variable, date start, date end)
+     * Gets all the datasets corresponding to search parameters (experiment, 
+     * scientific objects, variable, date start, date end)
      * @return datasets list, empty if no search result
      */
     public ArrayList<Dataset> allPaginate() {
-        //If search by experiment, get experiment's agronomical objects.
+        //If search by experiment, get experiment's scientific objects.
         if (experiment != null) {
-            updateAgronomicalObjectsWithExperimentsAgronomicalObjects();
+            updateScientificObjectsWithExperimentsScientificObjects();
         }
         
         BasicDBObject query = prepareSearchQuery();
@@ -207,7 +230,7 @@ public class DatasetDAO extends MongoDAO<Dataset> {
                 Document datasetDocument = datasetCursor.next();
                 
                 AgronomicalData data = new AgronomicalData();
-                data.setAgronomicalObject(datasetDocument.getString(DB_FIELD_AGRONOMICAL_OBJECT));
+                data.setAgronomicalObject(datasetDocument.getString(DB_FIELD_SCIENTIFIC_OBJECT));
                 data.setDate(new SimpleDateFormat(DateFormats.YMD_FORMAT).format(datasetDocument.getDate(DB_FIELD_DATE)));
                 data.setValue(Double.toString(datasetDocument.getDouble(DB_FIELD_VALUE)));
                 data.setVariable(datasetDocument.getString(DB_FIELD_VARIABLE));
@@ -254,8 +277,8 @@ public class DatasetDAO extends MongoDAO<Dataset> {
             //if the datasetDTO follows the rules
             for (AgronomicalDataDTO data : datasetDTO.getData()) {
                 //is agronomical object exist ?
-                ScientificObjectSparqlDAO agronomicalObjectDao = new ScientificObjectSparqlDAO();
-                if (!agronomicalObjectDao.existScientificObject(data.getAgronomicalObject())) {
+                ScientificObjectSparqlDAO scientifiObjectSparqlDao = new ScientificObjectSparqlDAO();
+                if (!scientifiObjectSparqlDao.existScientificObject(data.getAgronomicalObject())) {
                     dataState = false;
                     insertStatusList.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Unknown Agronomical Object URI : " + data.getAgronomicalObject()));
                 }
@@ -270,7 +293,7 @@ public class DatasetDAO extends MongoDAO<Dataset> {
                 }
             }
 
-            //is variable exist ? 
+            // does variable exist ? 
             VariableDAO variableDaoSesame = new VariableDAO();
             if (!variableDaoSesame.existUri(datasetDTO.getVariableUri())) {
                 dataState = false;
@@ -281,20 +304,20 @@ public class DatasetDAO extends MongoDAO<Dataset> {
             datasets.add(phenotype);
         }
         
-        //if data is valid, insert in mongo
+        // if data is valid, insert in mongo
         if (dataState) {
             SimpleDateFormat df = new SimpleDateFormat(DateFormats.YMD_FORMAT);
-            //SILEX:todo
-            //transactions
-            //mongodb insertion
+            // SILEX:todo
+            // transactions
+            // MongoDB insertion
             for (Dataset dataset : datasets) {
                 //1. provenance creation if needed
                 Object provenanceId = null;
                 if (dataset.getProvenance().getCreationDate() != null) {
-                    //If the provenance creation date is not given, it means that the provenance
-                    //already exist. The dataset is added to the existing provenance. If the 
-                    //provenance does not exist and the creation date is given, a new provenance
-                    //is created
+                    // If the provenance creation date is not given, it means that the provenance
+                    // already exists. The dataset is added to the existing provenance. If the 
+                    // provenance does not exist and the creation date is given, a new provenance
+                    // is created
                     Document provenanceDocument = new Document();
                     Date creationDate = df.parse(dataset.getProvenance().getCreationDate());
 
@@ -327,7 +350,7 @@ public class DatasetDAO extends MongoDAO<Dataset> {
                 createdProvenances.add(dataset.getProvenance().getUri());
                 
                 ArrayList<Document> dataToInsert = new ArrayList<>();
-                //2. AgronomicalData insertion
+                // 2. AgronomicalData insertion
                 for (AgronomicalData data : dataset.getData()) {
                     Document d = new Document();
                     Date date = df.parse(data.getDate());
@@ -335,12 +358,12 @@ public class DatasetDAO extends MongoDAO<Dataset> {
                     d.append(DB_FIELD_DATE, date);
                     d.append(DB_FIELD_VARIABLE, dataset.getVariableURI());
                     //SILEX:todo
-                    //choose the type of the value with the variable type 
-                    //(string or double)
-                    //for the first version, we can only handle double values
+                    // choose the type of the value with the variable type 
+                    // (string or double)
+                    // for the first version, we can only handle double values
                     d.append(DB_FIELD_VALUE, Double.parseDouble(data.getValue()));
                     //\SILEX:todo
-                    d.append(DB_FIELD_AGRONOMICAL_OBJECT, data.getAgronomicalObject());
+                    d.append(DB_FIELD_SCIENTIFIC_OBJECT, data.getAgronomicalObject());
                     //SILEX:todo
                     //DBRef (https://docs.mongodb.com/manual/reference/database-references/#dbref-explanation)
                     d.append(DB_FIELDS_PROVENANCE_ID, provenanceId);
@@ -373,7 +396,7 @@ public class DatasetDAO extends MongoDAO<Dataset> {
     }
     
     /**
-     * register datasets in MongoDB
+     * Registers datasets in MongoDB
      * @param datasetsDTO datasets to save
      * @return insertion result
      */

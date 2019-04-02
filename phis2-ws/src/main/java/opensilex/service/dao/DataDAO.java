@@ -46,7 +46,7 @@ public class DataDAO extends MongoDAO<Data> {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(DataDAO.class);
 
-    //MongoFields labels, used to query (CRUD) the mongo data
+    // MongoDB fields labels, used to query (CRUD) the mongo data
     private final static String DB_FIELD_URI = "uri";
     private final static String DB_FIELD_OBJECT = "object";
     private final static String DB_FIELD_VARIABLE = "variable";
@@ -63,13 +63,12 @@ public class DataDAO extends MongoDAO<Data> {
     
 
     /**
-     * Check the given list of data.
-     *
+     * Checks the given list of data.
      * @param dataList
      * @return the check result with the founded errors
      */
     private POSTResultsReturn check(List<Data> dataList) {
-        POSTResultsReturn checkResult = new POSTResultsReturn();
+        POSTResultsReturn checkResult;
         List<Status> checkStatus = new ArrayList<>();
 
         boolean dataOk = true;
@@ -78,18 +77,18 @@ public class DataDAO extends MongoDAO<Data> {
         ProvenanceDAO provenanceDAO = new ProvenanceDAO();
 
         for (Data data : dataList) {
-            //1. Check if the variableUri exist and is a variable
+            // 1. Check if the variableUri exist and is a variable
             if (!variableDAO.existAndIsVariable(data.getVariableUri())) {
                 dataOk = false;
                 checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR,
                         "Unknwon variable : " + data.getVariableUri()));
-            //2. Check if the object uri exist
+            // 2. Check if the object uri exist
             } else if (!variableDAO.existUri(data.getObjectUri())) {
                 dataOk = false;
                 checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR,
                         "Unknwon object : " + data.getObjectUri()));
             }
-            //3. Check if the provenance uri exist and is a provenance
+            // 3. Check if the provenance uri exist and is a provenance
             if (!provenanceDAO.existProvenanceUri(data.getProvenanceUri())) {
                 dataOk = false;
                 checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
@@ -103,9 +102,7 @@ public class DataDAO extends MongoDAO<Data> {
     }
 
     /**
-     * Generates the query to insert a new data in the mongodb
-     * database.
-     *
+     * Generates the query to insert a new data in the MongoDB database.
      * @param data
      * @return the document to insert, representing the given data
      * @throws ParseException
@@ -140,8 +137,7 @@ public class DataDAO extends MongoDAO<Data> {
     }
 
     /**
-     * Get the collection name from the given variable.
-     *
+     * Gets the collection name from the given variable.
      * @param variableUri
      * @example variableUri http://www.phenome-fppn.fr/id/variables/v001
      * @return the collection name. It corresponds to the last part of the uri.
@@ -153,8 +149,7 @@ public class DataDAO extends MongoDAO<Data> {
     }
 
     /**
-     * Insert the given data in the mongodb database
-     *
+     * Inserts the given data in the MongoDB database.
      * @param dataList
      * @return the insertion result
      */
@@ -264,8 +259,7 @@ public class DataDAO extends MongoDAO<Data> {
     }
 
     /**
-     * Check the given data and insert them if no errors founded.
-     *
+     * Checks the given data and insert them if no errors found.
      * @param dataList
      * @return the insertion result, with the errors if some have been found.
      */
@@ -328,7 +322,7 @@ public class DataDAO extends MongoDAO<Data> {
     }
 
     /**
-     * Prepare and return the data search query with the given parameters
+     * Prepares and returns the data search query with the given parameters.
      * @return The data search query
      * @example
      *  {
@@ -385,7 +379,7 @@ public class DataDAO extends MongoDAO<Data> {
     }
 
     /**
-     * Get data count according to the prepareSearchQuery
+     * Gets data count according to the prepareSearchQuery.
      * @return the data count
      */
     public int count() {
@@ -401,7 +395,7 @@ public class DataDAO extends MongoDAO<Data> {
     }
 
     /**
-     * Return true if the given URI already exists in variable collection
+     * Returns true if the given URI already exists in variable collection.
      * @param variableUri variable which will determine in which collection to look
      * @param uri URI to check
      * @return true if the URI exists and false otherwise

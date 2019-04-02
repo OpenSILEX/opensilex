@@ -93,19 +93,19 @@ public class DocumentSparqlDAO extends SparqlDAO<Document> {
     public static final String COMMENTS = "comments";
 
     /**
-     * Sort document by date
-     * Allowable values : asc, desc
+     * Document sorting by date.
+     * Enable values: asc, desc
      */
     public String sortByDate;
     
-    //List of the elements concerned by the document
+    // List of the elements concerned by the document
     public List<String> concernedItemsUris = new ArrayList<>();
     public static final String CONCERNED_ITEM_URI = "concernedItemUri";
     public static final String CONCERNED_ITEM_TYPE = "concernedItemType";
     
-    //Document's status. Equals to linked if the document has been linked to at 
-    //least one element (concernedItems). Unlinked if the document isnt linked 
-    //to any element
+    // Document's status. Equals to linked if the document has been linked to at 
+    // least one element (concernedItems). Unlinked if the document isnt linked 
+    // to any element
     public String status;
     public static final String STATUS = "status";
 
@@ -115,9 +115,8 @@ public class DocumentSparqlDAO extends SparqlDAO<Document> {
     }
     
     /**
-     * Check if document's metadata are valid 
-     * (check rules, documents types, documents status)
-     * @see phis2ws.service.resources.dto.DocumentMetadataDTO#rules() 
+     * Checks if the document's metadata is valid.
+     * Checks rules, documents types and documents status.
      * @param documentsMetadata 
      * @return The POSTResultsReturn of the check. Contains list of errors if
      * errors found.
@@ -157,7 +156,7 @@ public class DocumentSparqlDAO extends SparqlDAO<Document> {
     }
     
     /**
-     * Save the document in mongodb
+     * Saves the document in MongoDB.
      * @param filePath the file path of the document to save in mongodb
      * @return true document saved in mongodb
      *         false an error occurred
@@ -168,8 +167,7 @@ public class DocumentSparqlDAO extends SparqlDAO<Document> {
     }
     
     /**
-     * Generate a unique document uri. 
-     * @see phis2ws.service.utils.ResourcesUtils#getUniqueID() 
+     * Generates a unique document URI.
      * @return the generated document's uri
      */
     private String generateDocumentsURI() {
@@ -189,8 +187,7 @@ public class DocumentSparqlDAO extends SparqlDAO<Document> {
     }
 
     /**
-     * Prepare insert query for document metadata
-     * 
+     * Prepares an insert query for the document metadata.
      * @param documentMetadata
      * @return update request
      */
@@ -237,8 +234,7 @@ public class DocumentSparqlDAO extends SparqlDAO<Document> {
     } 
     
     /**
-     * Prepare delete query for document metadata
-     * 
+     * Prepares a delete query for the document metadata.
      * @param documentMetadata
      * @return delete request
      */
@@ -357,8 +353,8 @@ public class DocumentSparqlDAO extends SparqlDAO<Document> {
     }
     
     /**
-     * Return the list of documents types Retourne les types de documents disponibles
-     * @return List de concepts de document 
+     * Returns the list of documents types.
+     * @return document types
      * @throws RepositoryException
      * @throws MalformedQueryException
      * @throws QueryEvaluationException 
@@ -465,9 +461,9 @@ public class DocumentSparqlDAO extends SparqlDAO<Document> {
         }
         
         if (!concernedItemsUris.isEmpty() && concernedItemsUris.size() > 0) {
-            for (String concernedItemUri : concernedItemsUris) {
+            concernedItemsUris.forEach((concernedItemUri) -> {
                 sparqlQuery.appendTriplet(select, Oeso.RELATION_CONCERNS.toString(), concernedItemUri, null);
-            }
+           });
         } 
         
         if (status != null) {
@@ -501,33 +497,6 @@ public class DocumentSparqlDAO extends SparqlDAO<Document> {
         LOGGER.debug(SPARQL_QUERY + sparqlQuery.toString());
         
        return sparqlQuery;
-    }
-    
-    /**
-     * prepare the query to search the comments of a document
-     * @param uriDocument
-     * @return the document's comments search query
-     */
-    private SPARQLQueryBuilder prepareSearchCommentQuery(String uriDocument) {
-        SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
-        sparqlQuery.appendDistinct(true);
-        sparqlQuery.appendGraph(Contexts.DOCUMENTS.toString());
-        sparqlQuery.appendSelect("?comment");
-        sparqlQuery.appendTriplet(uriDocument, Rdfs.RELATION_COMMENT.toString(), "?comment", null);
-        
-        if (sortByDate != null) {
-            sparqlQuery.appendOrderBy(sortByDate.toUpperCase() + "(?" + CREATION_DATE + ")");
-        } else {
-            // Use by default DESC if the sortByDate parameter is null
-            sparqlQuery.appendOrderBy(SortingValues.DESC.toString().toUpperCase() + "(?" + CREATION_DATE + ")");
-        }
-        
-        sparqlQuery.appendLimit(this.getPageSize());
-        sparqlQuery.appendOffset(this.getPage() * this.getPageSize());
-        
-        LOGGER.debug(SPARQL_QUERY + sparqlQuery.toString());
-        
-        return sparqlQuery;
     }
     
     /**

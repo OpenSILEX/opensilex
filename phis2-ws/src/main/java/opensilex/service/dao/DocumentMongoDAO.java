@@ -40,9 +40,9 @@ public class DocumentMongoDAO extends MongoDAO<Document> {
     }
     
     /**
-     * 
-     * @param filePath le chemin du document à enregistrer en mongo
-     * @param fileUri l'uri du fichier, à mettre dans les métadonnées du document dans mongo
+     * Inserts a file.
+     * @param filePath
+     * @param fileUri
      * @return POSTResultsReturn
      */
     public POSTResultsReturn insertFile(String filePath, String fileUri) {
@@ -68,10 +68,9 @@ public class DocumentMongoDAO extends MongoDAO<Document> {
     }
     
     /**
-     * 
-     * @param documentURI l'URI du document à récupérer dans mongo
-     * @return null si le document n'est pas dans la base, 
-     *         le document sinon
+     * Gets a document.
+     * @param documentURI
+     * @return the document or null if not found
      */
     public File getDocument(String documentURI) {
         GridFSDBFile out = (GridFSDBFile) gridFS.findOne(new BasicDBObject("uri", documentURI));

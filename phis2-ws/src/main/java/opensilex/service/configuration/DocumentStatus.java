@@ -13,7 +13,7 @@ package opensilex.service.configuration;
 //\SILEX:todo
 
 /**
- * List of authorized document status
+ * List of authorized document status.
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */

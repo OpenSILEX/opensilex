@@ -55,7 +55,7 @@ public class AcquisitionSessionDAO extends SparqlDAO<MetadataFileDTO> {
                 || uriDao.isSubClassOf(vectorRdfType, Oeso.CONCEPT_UAV.toString())) {
             //Common metadata
             //1. get the number of group plots (just the experiments in this version)
-            ExperimentMongoDAO experimentDAO = new ExperimentMongoDAO();
+            ExperimentSQLDAO experimentDAO = new ExperimentSQLDAO();
             sizes.add(experimentDAO.count());
             
             //2. get the number of pilots
@@ -111,7 +111,7 @@ public class AcquisitionSessionDAO extends SparqlDAO<MetadataFileDTO> {
                 || uriDao.isSubClassOf(vectorRdfType, Oeso.CONCEPT_UAV.toString())) {
             //Common metadata
             //1. get the group plot list with the alias, uri and species (just the experiments in this version)
-            ExperimentMongoDAO experimentDAO = new ExperimentMongoDAO();
+            ExperimentSQLDAO experimentDAO = new ExperimentSQLDAO();
             experimentDAO.setPage(page);
             experimentDAO.setPageSize(pageSize);
             experiments = experimentDAO.getAllExperimentsForAcquisitionSessionFile();

@@ -47,9 +47,9 @@ import opensilex.service.model.Experiment;
  * experiment's number
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class ExperimentMongoDAO extends PhisDAO<Experiment, ExperimentDTO> {
+public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
 
-    final static Logger LOGGER = LoggerFactory.getLogger(ExperimentMongoDAO.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(ExperimentSQLDAO.class);
     
     //Search parameters :
      
@@ -118,13 +118,13 @@ public class ExperimentMongoDAO extends PhisDAO<Experiment, ExperimentDTO> {
      */
     public String cropSpecies;
     
-    public ExperimentMongoDAO() {
+    public ExperimentSQLDAO() {
         super();
         setTable("trial");
         setTableAlias("t");
     }
     
-    public ExperimentMongoDAO(String uri) {
+    public ExperimentSQLDAO(String uri) {
         super();
         this.uri = uri;
         setTable("trial");
@@ -227,7 +227,7 @@ public class ExperimentMongoDAO extends PhisDAO<Experiment, ExperimentDTO> {
                 experiments.add(experiment);
             }
         } catch (SQLException ex) {
-            java.util.logging.Logger.getLogger(ExperimentMongoDAO.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ExperimentSQLDAO.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
                 if (queryResult != null) {
@@ -240,7 +240,7 @@ public class ExperimentMongoDAO extends PhisDAO<Experiment, ExperimentDTO> {
                     connection.close();
                 }
             } catch (SQLException ex) {
-                java.util.logging.Logger.getLogger(ExperimentMongoDAO.class.getName()).log(Level.SEVERE, null, ex);
+                java.util.logging.Logger.getLogger(ExperimentSQLDAO.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         return experiments;
@@ -299,7 +299,7 @@ public class ExperimentMongoDAO extends PhisDAO<Experiment, ExperimentDTO> {
             }
             
         } catch (SQLException ex) {
-            java.util.logging.Logger.getLogger(ExperimentMongoDAO.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ExperimentSQLDAO.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
                 if (queryResult != null) {
@@ -312,7 +312,7 @@ public class ExperimentMongoDAO extends PhisDAO<Experiment, ExperimentDTO> {
                     connection.close();
                 }
             } catch (SQLException ex) {
-                java.util.logging.Logger.getLogger(ExperimentMongoDAO.class.getName()).log(Level.SEVERE, null, ex);
+                java.util.logging.Logger.getLogger(ExperimentSQLDAO.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         return experiments;
@@ -710,7 +710,7 @@ public class ExperimentMongoDAO extends PhisDAO<Experiment, ExperimentDTO> {
                 }
             }
         } catch (Exception ex) {
-            java.util.logging.Logger.getLogger(ExperimentMongoDAO.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ExperimentSQLDAO.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             if (connection != null) {
                 connection.close();
@@ -753,7 +753,7 @@ public class ExperimentMongoDAO extends PhisDAO<Experiment, ExperimentDTO> {
                 }
             }
         } catch (SQLException ex) {
-            java.util.logging.Logger.getLogger(ExperimentMongoDAO.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ExperimentSQLDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         return false;
@@ -1043,7 +1043,7 @@ public class ExperimentMongoDAO extends PhisDAO<Experiment, ExperimentDTO> {
                     StatusCodeMsg.UNKNOWN_URI + " " + experimentUri));
             }
         } catch (Exception ex) {
-            java.util.logging.Logger.getLogger(ExperimentMongoDAO.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ExperimentSQLDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         checkResult = new POSTResultsReturn(dataOk, null, dataOk);
@@ -1090,7 +1090,7 @@ public class ExperimentMongoDAO extends PhisDAO<Experiment, ExperimentDTO> {
                     StatusCodeMsg.UNKNOWN_URI + " " + experimentUri));
             }
         } catch (Exception ex) {
-            java.util.logging.Logger.getLogger(ExperimentMongoDAO.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ExperimentSQLDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         checkResult = new POSTResultsReturn(dataOk, null, dataOk);
@@ -1101,7 +1101,7 @@ public class ExperimentMongoDAO extends PhisDAO<Experiment, ExperimentDTO> {
     /**
      * Updates the list of variables linked to the given experiment. 
      * /!\ Prerequisite: the information must have been checked before. 
-     * @see ExperimentMongoDAO#checkLinkedVariables(java.lang.String, java.util.List)
+     * @see ExperimentSQLDAO#checkLinkedVariables(java.lang.String, java.util.List)
      * @see ExperimentSparqlDAO#updateLinkedVariables(java.lang.String, java.util.List) 
      * @param experimentUri
      * @param variables
@@ -1115,7 +1115,7 @@ public class ExperimentMongoDAO extends PhisDAO<Experiment, ExperimentDTO> {
     /**
      * Updates the list of sensors linked to the given experiment. 
      * /!\ Prerequisite: the information must have been checked before. 
-     * @see ExperimentMongoDAO#checkLinkedSensors(java.lang.String, java.util.List)
+     * @see ExperimentSQLDAO#checkLinkedSensors(java.lang.String, java.util.List)
      * @see ExperimentSparqlDAO#updateLinkedSensors(java.lang.String, java.util.List)
      * @param experimentUri
      * @param sensors

@@ -37,7 +37,7 @@ import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DateFormats;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
-import opensilex.service.dao.ExperimentMongoDAO;
+import opensilex.service.dao.ExperimentSQLDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.resources.dto.experiment.ExperimentDTO;
@@ -113,7 +113,7 @@ public class ExperimentResourceService extends ResourceService {
             @ApiParam(value = "Search by alias", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_ALIAS) @QueryParam("alias") String alias,
             @ApiParam(value = "Search by keywords", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_KEYWORDS) @QueryParam("keywords") String keywords) {
 
-        ExperimentMongoDAO experimentDao = new ExperimentMongoDAO();
+        ExperimentSQLDAO experimentDao = new ExperimentSQLDAO();
 
         if (uri != null) {
             experimentDao.uri = uri;
@@ -183,7 +183,7 @@ public class ExperimentResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
         }
 
-        ExperimentMongoDAO experimentDao = new ExperimentMongoDAO(experimentURI);
+        ExperimentSQLDAO experimentDao = new ExperimentSQLDAO(experimentURI);
         experimentDao.setPageSize(limit);
         experimentDao.setPage(page);
         experimentDao.user = userSession.getUser();
@@ -223,7 +223,7 @@ public class ExperimentResourceService extends ResourceService {
         if (experiments != null
                 && !experiments.isEmpty()) {
             try {
-                ExperimentMongoDAO experimentDao = new ExperimentMongoDAO();
+                ExperimentSQLDAO experimentDao = new ExperimentSQLDAO();
                 if (experimentDao.remoteUserAdress != null) {
                     experimentDao.remoteUserAdress = context.getRemoteAddr();
                 }
@@ -275,7 +275,7 @@ public class ExperimentResourceService extends ResourceService {
         AbstractResultForm postResponse = null;
 
         if (experiments != null && !experiments.isEmpty()) {
-            ExperimentMongoDAO experimentDao = new ExperimentMongoDAO();
+            ExperimentSQLDAO experimentDao = new ExperimentSQLDAO();
             if (experimentDao.remoteUserAdress != null) {
                 experimentDao.remoteUserAdress = context.getRemoteAddr();
             }
@@ -353,7 +353,7 @@ public class ExperimentResourceService extends ResourceService {
             @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         
-        ExperimentMongoDAO experimentDAO = new ExperimentMongoDAO();
+        ExperimentSQLDAO experimentDAO = new ExperimentSQLDAO();
         if (context.getRemoteAddr() != null) {
             experimentDAO.remoteUserAdress = context.getRemoteAddr();
         }
@@ -427,7 +427,7 @@ public class ExperimentResourceService extends ResourceService {
         @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         
-        ExperimentMongoDAO experimentDAO = new ExperimentMongoDAO();
+        ExperimentSQLDAO experimentDAO = new ExperimentSQLDAO();
         if (context.getRemoteAddr() != null) {
             experimentDAO.remoteUserAdress = context.getRemoteAddr();
         }
@@ -456,7 +456,7 @@ public class ExperimentResourceService extends ResourceService {
      * @return la réponse pour l'utilisateur. Contient la liste des
      * expérimentations correspondant à la recherche
      */
-    private Response getExperimentsData(ExperimentMongoDAO experimentDao) {
+    private Response getExperimentsData(ExperimentSQLDAO experimentDao) {
         ArrayList<Experiment> experiments = new ArrayList<>();
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Experiment> getResponse;

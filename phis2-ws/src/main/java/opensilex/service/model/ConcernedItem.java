@@ -1,14 +1,10 @@
-//**********************************************************************************************
-//                                       ConcernItem.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
-// Creation date: December, 11 2017
+//******************************************************************************
+//                               ConcernedItem.java 
+// SILEX-PHIS
+// Copyright © INRA 2017
+// Creation date: 11 December 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  December, 11 2017
-// Subject: Represents the concerned item view
-//***********************************************************************************************
+//******************************************************************************
 package opensilex.service.model;
 
 import java.util.ArrayList;

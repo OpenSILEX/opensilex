@@ -1,8 +1,8 @@
 //******************************************************************************
-//                          ConcernedItemDAOSesame.java
+//                            ConcernedItemDAO.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 5 March, 2019
+// Creation date: 5 March 2019
 // Contact: andreas.garcia@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.dao;

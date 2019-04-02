@@ -1,16 +1,10 @@
-//**********************************************************************************************
-//                                       DatasetSerializer.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
-// Creation date: October, 23 2017
+//******************************************************************************
+//                              DatasetSerializer.java 
+// SILEX-PHIS
+// Copyright © INRA 2017
+// Creation date: 23 October 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  October, 23 2017
-// Subject: Serialize a Dataset instance to JSON, 
-//          used to have a different return from the model class for the GET 
-//          dataset
-//***********************************************************************************************
+//******************************************************************************
 package opensilex.service.json;
 
 import com.google.gson.JsonArray;

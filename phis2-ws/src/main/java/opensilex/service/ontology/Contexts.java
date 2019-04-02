@@ -1,8 +1,8 @@
 //******************************************************************************
-//                                       Contexts.java
+//                                 Contexts.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 11 sept. 2018
+// Creation date: 11 Sept. 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.ontology;

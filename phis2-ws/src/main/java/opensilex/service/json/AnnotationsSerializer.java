@@ -1,16 +1,10 @@
-//**********************************************************************************************
-//                                       AnnotationSerializer.java 
-//
-// Author(s): Arnaud Charleroy
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
-// Creation date: June, 25 2018
+//******************************************************************************
+//                          AnnotationSerializer.java 
+// SILEX-PHIS
+// Copyright © INRA 2017
+// Creation date: 25 June 2018
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  June, 25 2018
-// Subject: Serialize a Annotation instance to JSON, 
-//          used to have a different return from the model class for the GET 
-//          annotation
-//***********************************************************************************************
+//******************************************************************************
 package opensilex.service.json;
 
 import com.google.gson.JsonArray;

@@ -1,3 +1,10 @@
+//******************************************************************************
+//                                 Session.java 
+// SILEX-PHIS
+// Copyright © INRA 2015
+// Creation date: November 2015
+// Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package opensilex.service.authentication;
 
 import opensilex.service.dao.UserDAO;

@@ -1,14 +1,10 @@
-//**********************************************************************************************
+//******************************************************************************
 //                               ScientificObject.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
-// Creation date: august 2017
+// SILEX-PHIS
+// Copyright © INRA 2017
+// Creation date: August 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  January, 2017
-// Subject: Represents the scientific object
-//***********************************************************************************************
+//******************************************************************************
 
 package opensilex.service.model;
 

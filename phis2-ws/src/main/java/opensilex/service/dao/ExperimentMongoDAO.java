@@ -1,5 +1,5 @@
 //******************************************************************************
-//                            ExperimentDao.java 
+//                            ExperimentMongoDao.java 
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: January 2017

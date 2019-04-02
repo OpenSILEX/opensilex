@@ -1,8 +1,8 @@
 //******************************************************************************
-//                      ConcernedItemWithLabelDTO.java
+//                       ConcernedItemWithLabelDTO.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 20 déc. 2018
+// Creation date: 20 Dec. 2018
 // Contact: andreas.garcia@inra.fr anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.resources.dto;

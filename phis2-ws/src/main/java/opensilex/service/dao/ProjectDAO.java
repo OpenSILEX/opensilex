@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                ProjectDao.java 
+//                                ProjectDAO.java 
 // SILEX-PHIS
 // Copyright © INRA 2017
 // Creation date: March 2017

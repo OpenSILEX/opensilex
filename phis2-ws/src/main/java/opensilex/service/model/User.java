@@ -1,15 +1,11 @@
-//**********************************************************************************************
+//******************************************************************************
 //                                       User.java 
-//
-// Author(s): Anne TIREAU, Arnaud Charleroy, Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
-// Creation date: may 2016
+// SILEX-PHIS
+// Copyright © INRA 2017
+// Creation date: May 2016
 // Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr, 
 //         morgane.vidal@inra.fr
-// Last modification date:  April, 2017
-// Subject: Represents a user
-//***********************************************************************************************
+//******************************************************************************
 package opensilex.service.model;
 
 import io.swagger.annotations.ApiModel;

@@ -1,13 +1,9 @@
 //******************************************************************************
-//                                       Vector.java
-//
-// Author(s): Morgane Vidal <morgane.vidal@inra.fr>
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: 6 avr. 2018
+//                                Vector.java
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Creation date: 6 Apr. 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  6 avr. 2018
-// Subject: Represents vector view
 //******************************************************************************
 package opensilex.service.model;
 

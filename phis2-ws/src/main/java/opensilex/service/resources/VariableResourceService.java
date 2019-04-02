@@ -1,14 +1,9 @@
-//**********************************************************************************************
+//******************************************************************************
 //                                       VariableResourceService.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
-// Creation date: November, 14 2017
+// Copyright © INRA 2017
+// Creation date: 14 November 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  November, 14 2017
-// Subject: Represents the variable data service
-//***********************************************************************************************
+//******************************************************************************
 package opensilex.service.resources;
 
 import io.swagger.annotations.Api;

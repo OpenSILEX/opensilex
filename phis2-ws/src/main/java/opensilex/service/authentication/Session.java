@@ -1,15 +1,10 @@
-//**********************************************************************************************
-//                                       Session.java 
-//
-// Author(s): Samuël Chérimont, Arnaud Charleroy
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2015
-// Creation date: november 2015
+//******************************************************************************
+//                                 Session.java 
+// SILEX-PHIS
+// Copyright © INRA 2015
+// Creation date: November 2015
 // Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  March, 2018
-// Subject: represents user session class
-//***********************************************************************************************
-
+//******************************************************************************
 package opensilex.service.authentication;
 
 import com.nimbusds.jwt.JWTClaimsSet;

@@ -1,14 +1,10 @@
-//**********************************************************************************************
-//                                       ApplicationInitConfig.java 
-//
-// Author(s): Morgane Vidal, Arnaud Charleroy
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
-// Creation date: january 2017
+//******************************************************************************
+//                            ApplicationInitConfig.java 
+// SILEX-PHIS
+// Copyright © INRA 2017
+// Creation date: January 2017
 // Contact:morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  june, 2018
-// Subject: Configuration of the webservice
-//***********************************************************************************************
+//*****************************************************************************
 
 package opensilex.service;
 

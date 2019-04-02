@@ -1,5 +1,5 @@
 //******************************************************************************
-//                              DatasetDaoMongo.java 
+//                                 DatasetDao.java 
 // SILEX-PHIS
 // Copyright © INRA 2017
 // Creation date: September 2017

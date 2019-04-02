@@ -1,8 +1,8 @@
 //******************************************************************************
-//                                DAOMongo.java 
+//                                MongoDAO.java 
 // SILEX-PHIS
-// Copyright © - INRA - 2016
-// Creation date: august 2016
+// Copyright © INRA 2016
+// Creation date: August 2016
 // Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.dao.manager;

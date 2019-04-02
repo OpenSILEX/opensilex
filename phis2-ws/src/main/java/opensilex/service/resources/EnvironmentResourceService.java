@@ -1,8 +1,8 @@
 //******************************************************************************
-//                                       EnvironmentResourceService.java
+//                          EnvironmentResourceService.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 29 oct. 2018
+// Creation date: 29 Oct. 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.resources;

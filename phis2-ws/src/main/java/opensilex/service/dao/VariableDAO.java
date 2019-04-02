@@ -1,10 +1,10 @@
-//**********************************************************************************************
-//                                       VariableDaoSesame.java 
+//******************************************************************************
+//                              VariableDAO.java 
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: November, 16 2017
+// Creation date: 16 Nov. 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-//***********************************************************************************************
+//******************************************************************************
 package opensilex.service.dao;
 
 import java.util.ArrayList;

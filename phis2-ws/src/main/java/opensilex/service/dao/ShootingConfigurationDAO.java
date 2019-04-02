@@ -1,8 +1,8 @@
 //******************************************************************************
-//                       ShootingConfigurationDAOMongo.java
+//                       ShootingConfigurationDAO.java
 // SILEX-INRA
 // Copyright © INRA 2018
-// Creation date: 5 févr. 2018
+// Creation date: 5 Feb. 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.dao;

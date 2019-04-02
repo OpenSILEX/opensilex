@@ -1,8 +1,8 @@
 //******************************************************************************
-//                                       DocumentsDaoSesame.java
+//                           DocumentsDaoSparql.java
 // SILEX-PHIS
 // Copyright © INRA 2016
-// Creation date: Aug, 2016
+// Creation date: Aug. 2016
 // Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, 
 //          pascal.neveu@inra.fr
 //******************************************************************************

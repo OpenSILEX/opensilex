@@ -1,14 +1,10 @@
-//**********************************************************************************************
+//******************************************************************************
 //                                       DatasetDTO.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
+// SILEX-PHIS
+// Copyright © INRA 2017
 // Creation date: September 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  September, 13 2017
-// Subject: Represents the JSON submitted for the datasets
-//***********************************************************************************************
+//******************************************************************************
 package opensilex.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;

@@ -1,15 +1,10 @@
-//**********************************************************************************************
-//                                       Experiment.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
+//******************************************************************************
+//                               Experiment.java 
+// SILEX-PHIS
+// Copyright © INRA 2017
 // Creation date: January 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  February, 2017
-// Subject: Represents the experiment 
-//***********************************************************************************************
-
+//******************************************************************************
 package opensilex.service.model;
 
 import java.util.ArrayList;

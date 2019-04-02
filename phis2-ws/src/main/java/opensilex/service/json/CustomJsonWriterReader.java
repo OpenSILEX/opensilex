@@ -1,14 +1,10 @@
-//**********************************************************************************************
-//                                       CustomJsonWriterReader.java 
-//
-// Author(s): Arnaud Charleroy
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2016
+//******************************************************************************
+//                          CustomJsonWriterReader.java 
+// SILEX-PHIS
+// Copyright © INRA 2016
 // Creation date: august 2016
 // Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  October, 2016
-// Subject: Define the way to read incoming JSON and write output JSON
-//***********************************************************************************************
+//******************************************************************************
 package opensilex.service.json;
 
 import java.io.InputStream;

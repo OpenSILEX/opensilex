@@ -1,13 +1,10 @@
 //******************************************************************************
-//                                       VocabularyResourceService.java
-//
-// Author(s): Morgane Vidal <morgane.vidal@inra.fr>, Arnaud Charleroy <arnaud.charleroy@inra.fr>
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: 18 june 2018
-// Contact: morgane.vidal@inra.fr, arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  15 july 2018
-// Subject: represents the vocabulary service
+//                            VocabularyResourceService.java
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Creation date: 18 June 2018
+// Contact: morgane.vidal@inra.fr, arnaud.charleroy@inra.fr, anne.tireau@inra.fr, 
+//          pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.resources;
 

@@ -1,7 +1,7 @@
 //******************************************************************************
 //                            DocumentDaoMongo.java 
 // SILEX-PHIS
-// Copyright © - INRA - 2017
+// Copyright © INRA 2017
 // Creation date: June 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************

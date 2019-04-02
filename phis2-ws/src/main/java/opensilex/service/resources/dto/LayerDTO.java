@@ -1,17 +1,10 @@
-//**********************************************************************************************
-//                                       LayerDTO.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
-// Creation date: August, 2017
+//******************************************************************************
+//                                  LayerDTO.java
+// SILEX-PHIS
+// Copyright © INRA 2017
+// Creation date: August 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  August, 16 2017
-// Subject: A class which contains methods to automatically check the attributes
-//          of a class, from rules defined by user.
-//          Contains the list of the elements which might be send by the client to
-//          create a geojson file corresponding to a layer
-//***********************************************************************************************
+//******************************************************************************
 package opensilex.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;

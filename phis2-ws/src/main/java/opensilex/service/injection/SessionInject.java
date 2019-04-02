@@ -1,16 +1,10 @@
-//**********************************************************************************************
-//                                       SessionInject.java 
-//
-// Author(s): Arnaud Charleroy
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2016
-// Creation date: august 2016
+//******************************************************************************
+//                             SessionInject.java 
+// SILEX-PHIS
+// Copyright © INRA 2016
+// Creation date: August 2016
 // Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  October, 2016
-// Subject: Annotation created to inject user data in webservice resources classes
-// Custom Injection Provider
-// see https://jersey.java.net/documentation/latest/ioc.html
-//***********************************************************************************************
+//******************************************************************************
 package opensilex.service.injection;
 
 import java.lang.annotation.ElementType;

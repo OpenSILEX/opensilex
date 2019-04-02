@@ -1,14 +1,10 @@
-//**********************************************************************************************
-//                                       OntologyReference.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
+//******************************************************************************
+//                          OntologyReference.java 
+// SILEX-PHIS
+// Copyright © INRA 2017
 // Creation date: November, 15 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  November, 15 2017
-// Subject: Represents the reference to an ontology view
-//***********************************************************************************************
+//******************************************************************************
 package opensilex.service.model;
 
 import io.swagger.annotations.ApiModelProperty;

@@ -1,14 +1,11 @@
-//**********************************************************************************************
-//                                       ConcernItemDTO.java 
-//
-// Author(s): Arnaud Charleroy, Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
+//******************************************************************************
+//                              ConcernItemDTO.java 
+// SILEX-PHIS
+// Copyright © INRA 2017
 // Creation date: March 2017
-// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  January, 03 2018
-// Subject: Represents the JSON submitted for the objects concerned by the annotation
-//***********************************************************************************************
+// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, 
+//          pascal.neveu@inra.fr
+//******************************************************************************
 package opensilex.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;

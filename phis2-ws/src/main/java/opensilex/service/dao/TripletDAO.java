@@ -1,13 +1,9 @@
 //******************************************************************************
-//                                       TripletsDAOSesame.java
-//
-// Author(s): Morgane Vidal <morgane.vidal@inra.fr>
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: 7 mars 2018
+//                               TripletsDAO.java
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Creation date: 7 Mar. 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  7 mars 2018
-// Subject: a specific DAO to insert triplets in the triplestore
 //******************************************************************************
 package opensilex.service.dao;
 

@@ -1,12 +1,10 @@
-//**********************************************************************************************
-//                                       ImageMetadata.java 
+//******************************************************************************
+//                               ImageMetadata.java 
 // PHIS-SILEX
-// Copyright © - INRA 2017
-// Creation date: December, 11 2017
+// Copyright © INRA 2017
+// Creation date: 11 December 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  January, 03 2018
-// Subject: Represents the image metadata view
-//***********************************************************************************************
+//******************************************************************************
 package opensilex.service.model;
 
 import java.util.ArrayList;

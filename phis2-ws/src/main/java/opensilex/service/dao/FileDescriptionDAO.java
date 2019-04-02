@@ -1,9 +1,9 @@
 //******************************************************************************
-//                                       DataFileDAOMongo.java
+//                              FileDescriptionDAO.java
 // SILEX-PHIS
 // Copyright © INRA 2019
-// Creation date: 7 mars 2019
-// Contact: Expression userEmail is undefined on line 6, column 15 in file:///home/vincent/opensilex/phis-ws/phis2-ws/licenseheader.txt., anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Creation date: 7 March 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.dao;
 

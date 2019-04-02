@@ -1,13 +1,9 @@
 //******************************************************************************
-//                                       Namespace.java
-//
-// Author(s): Arnaud Charleroy <arnaud.charleroy@inra.fr>
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: 13 juil. 2018
+//                              Namespace.java
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Creation date: 13 Jul. 2018
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  13 juil. 2018
-// Subject: Represent a namespace model
 //******************************************************************************
 package opensilex.service.model;
 

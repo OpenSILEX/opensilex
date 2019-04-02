@@ -1,14 +1,10 @@
-//**********************************************************************************************
+//******************************************************************************
 //                                       FileInformationDTO.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
-// Creation date: December, 8 2017
+// SILEX-PHIS
+// Copyright © INRA 2017
+// Creation date: 8 December 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  December, 8 2017
-// Subject: Represents the JSON submitted for the file informations 
-//***********************************************************************************************
+//******************************************************************************
 package opensilex.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;

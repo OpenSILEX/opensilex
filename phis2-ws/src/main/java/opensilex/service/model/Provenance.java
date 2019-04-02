@@ -1,14 +1,10 @@
-//**********************************************************************************************
-//                                       Provenance.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
+//******************************************************************************
+//                              Provenance.java 
+// SILEX-PHIS
+// Copyright © INRA 2017
 // Creation date: September 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  October, 4 2017 (ajout de l'attribut wasGeneratedBy)
-// Subject: Represents the data provenance view
-//***********************************************************************************************
+//******************************************************************************
 package opensilex.service.model;
 
 import java.util.ArrayList;

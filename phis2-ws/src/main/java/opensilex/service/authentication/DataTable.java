@@ -1,8 +1,11 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+//                                 DataTable.java 
+// SILEX-PHIS
+// Copyright © INRA 2016
+// Creation date: May 2016
+// Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr,
+//         morgane.vidal@inra.fr
+//******************************************************************************
 package opensilex.service.authentication;
 
 /**

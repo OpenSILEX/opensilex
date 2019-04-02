@@ -2,7 +2,7 @@
 //                        InfrastructureResourceService.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 5 sept. 2018
+// Creation date: 5 Sept. 2018
 // Contact: vincent.migot@inra.fr anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.resources;

@@ -1,14 +1,11 @@
-//**********************************************************************************************
-//                                       ConfigurationFilesMetadataDTO.java 
-//
-// Author(s): Arnaud Charleroy, Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
+//******************************************************************************
+//                        ConfigurationFilesMetadataDTO.java 
+// SILEX-PHIS
+// Copyright © INRA 2017
 // Creation date: March 2017
-// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  March, 2017
-// Subject: Represents the submitted JSON for the file metadata
-//***********************************************************************************************
+// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, 
+//          pascal.neveu@inra.fr
+//******************************************************************************
 package opensilex.service.resources.dto;
 
 import io.swagger.annotations.ApiModel;

@@ -1,14 +1,10 @@
-//**********************************************************************************************
-//                               ScientificObjectDaoSesame.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
-// Creation date: august 2017
+//******************************************************************************
+//                          ScientificObjectSparqlDAO.java 
+// SILEX-PHIS
+// Copyright © INRA 2017
+// Creation date: Aug. 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  September, 6 2017
-// Subject: A specific DAO to retreive data on scientific objects
-//***********************************************************************************************
+//******************************************************************************
 
 package opensilex.service.dao;
 

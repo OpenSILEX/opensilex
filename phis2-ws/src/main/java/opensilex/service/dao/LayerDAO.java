@@ -1,14 +1,10 @@
-//**********************************************************************************************
-//                                       LayerDao.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
+//******************************************************************************
+//                                LayerDAO.java 
+// SILEX-PHIS
+// Copyright © INRA 2017
 // Creation date: August 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  September, 6 2017
-// Subject: A DAO specific to product layers files
-//***********************************************************************************************
+//******************************************************************************
 package opensilex.service.dao;
 
 import java.io.BufferedWriter;

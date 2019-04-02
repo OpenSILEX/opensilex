@@ -1,9 +1,10 @@
 //******************************************************************************
-//                                       Property.java
+//                                Property.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 25 sept. 2018
-// Contact: vincent.migot@inra.fr morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Creation date: 25 Sept. 2018
+// Contact: vincent.migot@inra.fr morgane.vidal@inra.fr, anne.tireau@inra.fr, 
+//          pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.model;
 

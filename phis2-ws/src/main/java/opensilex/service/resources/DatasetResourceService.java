@@ -1,15 +1,10 @@
-//**********************************************************************************************
-//                                       DatasetResourceService.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
+//******************************************************************************
+//                            DatasetResourceService.java 
+// SILEX-PHIS
+// Copyright © INRA 2017
 // Creation date: September 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  January, 12 2018 Update POST datasets : add 
-// possibility to post a dataset with an already existing provenance                             
-// Subject: Represents the dataset service
-//***********************************************************************************************
+//******************************************************************************
 package opensilex.service.resources;
 
 import io.swagger.annotations.Api;

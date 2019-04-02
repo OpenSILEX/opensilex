@@ -1,8 +1,8 @@
 //******************************************************************************
-//                           UserDaoPhisBrapi.java 
+//                                  UserDAO.java 
 // SILEX-PHIS
 // Copyright © INRA 2016
-// Creation date: may 2016
+// Creation date: May 2016
 // Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr, 
 //         morgane.vidal@inra.fr
 //******************************************************************************

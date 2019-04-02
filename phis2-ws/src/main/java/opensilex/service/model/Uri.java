@@ -1,14 +1,10 @@
-//**********************************************************************************************
-//                                       Uri.java 
-//
-// Author(s): Eloan LAGIER
-// PHIS-SILEX version 1.0
+//******************************************************************************
+//                                   Uri.java 
+// SILEX-PHIS
 // Copyright © - INRA - 2018
 // Creation date: 26 Feb 2018
-// Contact: eloan.lagier@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  26 Feb, 2018
-// Subject: Uri model for the service call
-//***********************************************************************************************
+// Contact: eloan.lagier@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, 
+//******************************************************************************
 package opensilex.service.model;
 
 import io.swagger.annotations.ApiModelProperty;

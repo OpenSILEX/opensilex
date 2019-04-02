@@ -1,14 +1,10 @@
-//**********************************************************************************************
-//                                       UnitDaoSesame.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
-// Creation date: November, 18 2017
+//******************************************************************************
+//                                UnitDAO.java 
+// SILEX-PHIS
+// Copyright © INRA 2017
+// Creation date: 18 Nov. 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  November, 18 2017
-// Subject: A specific DAO to retrieve data on units
-//***********************************************************************************************
+//******************************************************************************
 package opensilex.service.dao;
 
 import java.util.ArrayList;

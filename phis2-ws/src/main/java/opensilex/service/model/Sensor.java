@@ -1,13 +1,9 @@
 //******************************************************************************
-//                                       Sensor.java
-//
-// Author(s): Morgane Vidal <morgane.vidal@inra.fr>
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: 14 mars 2018
+//                              Sensor.java
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Creation date: 14 Mar. 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  14 mars 2018
-// Subject: Represents sensors view
 //******************************************************************************
 package opensilex.service.model;
 

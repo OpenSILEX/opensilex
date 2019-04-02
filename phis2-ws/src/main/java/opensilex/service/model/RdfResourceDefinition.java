@@ -1,14 +1,10 @@
-//**********************************************************************************************
-//                                       RdfResourceDefinition.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
-// Creation date: November, 15 2017
+//******************************************************************************
+//                             RdfResourceDefinition.java 
+// SILEX-PHIS
+// Copyright © INRA 2017
+// Creation date: 15 November 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  November, 15 2017
-// Subject: Represents the instance definiton view
-//***********************************************************************************************
+//******************************************************************************
 package opensilex.service.model;
 
 import java.util.ArrayList;

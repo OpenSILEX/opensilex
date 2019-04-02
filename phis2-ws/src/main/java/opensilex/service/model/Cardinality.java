@@ -1,13 +1,9 @@
 //******************************************************************************
-//                                       Cardinality.java
-//
-// Author(s): Morgane Vidal <morgane.vidal@inra.fr>
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: 8 juin 2018
+//                              Cardinality.java
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Creation date: 8 June 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  8 juin 2018
-// Subject: represents the cardinality owl of a concept (for the triplestore)
 //******************************************************************************
 package opensilex.service.model;
 

@@ -1,5 +1,5 @@
 //******************************************************************************
-//                          Data.java
+//                                 Data.java
 // SILEX-PHIS
 // Copyright © INRA 2019
 // Creation date: 1 March 2019

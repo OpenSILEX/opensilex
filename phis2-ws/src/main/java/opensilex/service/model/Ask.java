@@ -1,14 +1,11 @@
-//**********************************************************************************************
-//                                       Ask.java 
-//
-// Author(s): Eloan LAGIER
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
-// Creation date: Janvier 30 2018
-// Contact: eloan.lagire@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  Janvier 31, 2018
-// Subject: Ask model for SPARQL Ask Response
-//***********************************************************************************************
+//******************************************************************************
+//                                   Ask.java 
+// SILEX-PHIS
+// Copyright © INRA 2017
+// Creation date: 30 Jan. 2018
+// Contact: eloan.lagire@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, 
+//          pascal.neveu@inra.fr
+//******************************************************************************
 package opensilex.service.model;
 
 import io.swagger.annotations.ApiModelProperty;

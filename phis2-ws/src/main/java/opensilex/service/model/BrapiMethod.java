@@ -1,8 +1,8 @@
 //******************************************************************************
-//                                       BrapiMethod.java
+//                                BrapiMethod.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 27 sept. 2018
+// Creation date: 27 Sept. 2018
 // Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.model;

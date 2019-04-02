@@ -1,14 +1,11 @@
-//**********************************************************************************************
-//                                       UriResourceService.java 
-//
-// Author(s): Eloan LAGIER, Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
+//******************************************************************************
+//                             UriResourceService.java 
+// SILEX-PHIS
+// Copyright © INRA 2018
 // Creation date: 26 Feb 2018
-// Contact: eloan.lagier@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  20 June, 2018
-// Subject: Represents the Uri Resource Service
-//***********************************************************************************************
+// Contact: eloan.lagier@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, 
+//          pascal.neveu@inra.fr
+//******************************************************************************
 package opensilex.service.resources;
 
 import io.swagger.annotations.Api;

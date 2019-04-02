@@ -1,13 +1,9 @@
 //******************************************************************************
-//                                       AgronomicalDataDTO.java
-//
-// Author(s): Morgane Vidal <morgane.vidal@inra.fr>
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: 12 janv. 2018
+//                           AgronomicalDataDTO.java
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Creation date: 12 Jan. 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  12 janv. 2018
-// Subject: Represents the JSON submitted for the data
 //******************************************************************************
 package opensilex.service.resources.dto;
 

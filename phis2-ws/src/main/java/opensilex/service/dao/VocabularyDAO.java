@@ -1,8 +1,8 @@
 //******************************************************************************
-//                            VocabularyDAOSesame.java
+//                              VocabularyDAO.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 18 Jun, 2018
+// Creation date: 18 June 2018
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.dao;

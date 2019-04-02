@@ -1,10 +1,10 @@
-//**********************************************************************************************
-//                                       ExperimentResourceService.java 
+//******************************************************************************
+//                          ExperimentResourceService.java 
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: January 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-//***********************************************************************************************
+//******************************************************************************
 package opensilex.service.resources;
 
 import io.swagger.annotations.Api;

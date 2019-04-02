@@ -1,14 +1,10 @@
-//**********************************************************************************************
-//                                       TokenResourceService.java 
-//
-// Author(s): Samuel Cherimont, Arnaud Charleroy
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2015
-// Creation date: november 2015
+//******************************************************************************
+//                           TokenResourceService.java 
+// SILEX-PHIS
+// Copyright © INRA 2015
+// Creation date: November 2015
 // Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  March, 2018
-// Subject: Represents the token data service
-//***********************************************************************************************
+//******************************************************************************
 package opensilex.service.resources.brapi;
 
 import com.nimbusds.jose.JOSEException;

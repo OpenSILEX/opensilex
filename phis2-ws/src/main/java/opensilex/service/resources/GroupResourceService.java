@@ -1,14 +1,10 @@
-//**********************************************************************************************
-//                                       GroupResourceService.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
+//******************************************************************************
+//                            GroupResourceService.java 
+// SILEX-PHIS
+// Copyright © INRA 2017
 // Creation date: April 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  April, 2017
-// Subject: Represents the group data service
-//***********************************************************************************************
+//******************************************************************************
 package opensilex.service.resources;
 
 import io.swagger.annotations.Api;

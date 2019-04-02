@@ -2,7 +2,7 @@
 //                            UserResourceService.java
 // SILEX-PHIS
 // Copyright © INRA 2017
-// Creation date: Apr, 2017
+// Creation date: Apr. 2017
 // Contact: morgane.vidal@inra.fr,arnaud.charleroy@inra.fr, anne.tireau@inra.fr, 
 //          pascal.neveu@inra.fr
 //******************************************************************************

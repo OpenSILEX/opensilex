@@ -1,5 +1,5 @@
 //******************************************************************************
-//                             SessionDaoPhisBrapi.java 
+//                                SessionDAO.java 
 // SILEX-PHIS
 // Copyright © INRA 2017
 // Creation date: July 2017

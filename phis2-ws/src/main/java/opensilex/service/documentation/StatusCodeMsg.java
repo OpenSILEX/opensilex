@@ -1,21 +1,17 @@
-//**********************************************************************************************
-//                                       StatusCodeMsg.java 
-//
-// Author(s): Arnaud Charleroy 
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2016
-// Creation date: august 2016
+//******************************************************************************
+//                             StatusCodeMsg.java 
+// SILEX-PHIS 
+// Copyright © INRA 2016
+// Creation date: August 2016
 // Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  February, 05 2018 - add constants
-// Subject: A class which group possible status message return
-// @see phenomeapi.service.view.brapi.Status
-//***********************************************************************************************
+//******************************************************************************
 package opensilex.service.documentation;
 
 import javax.inject.Singleton;
 
 /**
  * Defines the web service return messages
+ * @see phenomeapi.service.view.brapi.Status
  * @author Arnaud Charleroy
  * @author Morgane Vidal
  */

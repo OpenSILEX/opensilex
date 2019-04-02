@@ -2,8 +2,9 @@
 //                           DocumentationAnnotation.java 
 // SILEX-PHIS
 // Copyright © INRA 2016
-// Creation date: august 2016
-// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, eloan.lagier@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Creation date: August 2016
+// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, eloan.lagier@inra.fr, 
+//          anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.documentation;
 

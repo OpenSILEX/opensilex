@@ -1,14 +1,10 @@
-//**********************************************************************************************
-//                                       LayerResourceService.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
+//******************************************************************************
+//                            LayerResourceService.java 
+// SILEX-PHIS
+// Copyright © INRA 2017
 // Creation date: August 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  September, 6 2017
-// Subject: Represents the layer data service
-//***********************************************************************************************
+//******************************************************************************
 package opensilex.service.resources;
 
 import io.swagger.annotations.Api;

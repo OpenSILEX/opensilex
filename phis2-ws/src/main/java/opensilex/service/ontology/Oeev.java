@@ -2,7 +2,7 @@
 //                                  Oeev.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 14 nov. 2018
+// Creation date: 14 Nov. 2018
 // Contact: andreas.garcia@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.ontology;

@@ -1,9 +1,9 @@
 //******************************************************************************
-//                                       DataDAOMongo.java
+//                                  DataDAO.java
 // SILEX-PHIS
 // Copyright © INRA 2019
 // Creation date: 1 March 2019
-// Contact: vinecnt.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.dao;
 

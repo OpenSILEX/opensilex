@@ -1,19 +1,11 @@
-//**********************************************************************************************
-//                                       UriDaoSesame.java 
-//
-// Author(s): Eloan LAGIER, Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: Feb 26 2018
-// Contact: eloan.lagier@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  Feb 26, 2018
-// Subject: A Dao specific to insert Uri into the triplestore
-// SILEX:todo
-// - Element: Instances
-//   Method : instancesPaginate
-//   Purpose : need to paginate the query instead of retreive all instances and then filtered them
-// \SILEX:todo
-//***********************************************************************************************
+//******************************************************************************
+//                                 UriDAO.java 
+// SILEX-PHIS
+// Copyright © INRA 2018
+// Creation date: 26 Feb. 2018
+// Contact: eloan.lagier@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, 
+//          pascal.neveu@inra.fr
+//******************************************************************************
 package opensilex.service.dao;
 
 import com.google.common.collect.ArrayListMultimap;
@@ -40,6 +32,11 @@ import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.model.Ask;
 import opensilex.service.model.Uri;
 
+// SILEX:todo
+// - Element: Instances
+//   Method : instancesPaginate
+//   Purpose : need to paginate the query instead of retreive all instances and then filtered them
+// \SILEX:todo
 /**
  * Represents the Triplestore Data Access Object for the uris
  *

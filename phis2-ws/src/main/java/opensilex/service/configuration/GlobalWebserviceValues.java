@@ -1,14 +1,10 @@
-//**********************************************************************************************
-//                                       GlobalWebserviceValues.java 
-//
-// Author(s): Arnaud Charleroy
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2016
-// Creation date: august 2016
+//******************************************************************************
+//                          GlobalWebserviceValues.java 
+// SILEX-PHIS
+// Copyright © INRA 2016
+// Creation date: August 2016
 // Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  October, 2016
-// Subject: Recognize sessionInject utilisation in jersey resources
-//***********************************************************************************************
+//******************************************************************************
 package opensilex.service.configuration;
 
 import opensilex.service.documentation.StatusCodeMsg;

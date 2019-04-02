@@ -1,8 +1,8 @@
 //******************************************************************************
-//                             PropertyDAOSesame.java
+//                                 PropertyDA.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 29 may 2018
+// Creation date: 29 May 2018
 // Contact: morgane.vidal@inra.fr, vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.dao;

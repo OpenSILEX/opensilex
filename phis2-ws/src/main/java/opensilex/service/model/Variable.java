@@ -1,14 +1,10 @@
-//**********************************************************************************************
+//******************************************************************************
 //                                       Variable.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
-// Creation date: November, 16 2017
+// SILEX-PHIS
+// Copyright © INRA 2017
+// Creation date: 16 November 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  November, 16 2017
-// Subject: Represents the instance of definition view
-//***********************************************************************************************
+//******************************************************************************
 package opensilex.service.model;
 
 public class Variable extends RdfResourceDefinition {

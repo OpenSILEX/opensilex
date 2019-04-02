@@ -2,7 +2,7 @@
 //                            URINamespaces.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 6 Aug, 2017
+// Creation date: 6 Aug. 2017
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.configuration;

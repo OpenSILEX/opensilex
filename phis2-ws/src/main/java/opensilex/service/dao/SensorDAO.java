@@ -1,8 +1,8 @@
 //******************************************************************************
-//                                       SensorDAOSesame.java
+//                                SensorDAO.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 9 mars 2018
+// Creation date: 9 Mar. 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.dao;

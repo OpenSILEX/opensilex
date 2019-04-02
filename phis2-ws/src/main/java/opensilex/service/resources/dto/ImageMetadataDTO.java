@@ -1,11 +1,10 @@
-//**********************************************************************************************
-//                                       ImageMetadata.java
-// PHIS-SILEX
+//******************************************************************************
+//                            ImageMetadata.java
+// SILEX-PHIS
 // Copyright © INRA 2017
-// Creation date: Dec., 8 2017
+// Creation date: 8 Dec. 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Subject: Represents the submitted JSON for the images
-//***********************************************************************************************
+//******************************************************************************
 package opensilex.service.resources.dto;
 
 import io.swagger.annotations.ApiModelProperty;

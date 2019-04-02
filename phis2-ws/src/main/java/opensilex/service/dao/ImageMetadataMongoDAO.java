@@ -1,8 +1,8 @@
 //******************************************************************************
-//                           ImageMetadataDaoSesame.java
+//                          ImageMetadataMongoDAO.java
 // SILEX-PHIS
 // Copyright © INRA 2017
-// Creation date: Dec., 11 2017
+// Creation date: 11 Dec. 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.dao;

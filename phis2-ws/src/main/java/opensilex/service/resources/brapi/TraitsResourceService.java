@@ -38,8 +38,8 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.BrapiMultiResponseForm;
 import opensilex.service.resources.dto.trait.BrapiTraitDTO;
 import opensilex.service.view.brapi.form.BrapiSingleResponseForm;
-import opensilex.service.view.model.Call;
-import opensilex.service.view.model.Trait;
+import opensilex.service.model.Call;
+import opensilex.service.model.Trait;
 
 @Api("/brapi/v1/traits")
 @Path("/brapi/v1/traits")

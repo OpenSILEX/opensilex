@@ -24,10 +24,10 @@ import opensilex.service.resources.dto.acquisitionSession.MetadataFileDTO;
 import opensilex.service.resources.dto.acquisitionSession.MetadataFilePhenomobileDTO;
 import opensilex.service.resources.dto.acquisitionSession.MetadataFileUAVDTO;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
-import opensilex.service.view.model.Experiment;
-import opensilex.service.view.model.RadiometricTarget;
-import opensilex.service.view.model.Sensor;
-import opensilex.service.view.model.Vector;
+import opensilex.service.model.Experiment;
+import opensilex.service.model.RadiometricTarget;
+import opensilex.service.model.Sensor;
+import opensilex.service.model.Vector;
 
 /**
  * This class is a Data Access Object for the acquisition sessions.

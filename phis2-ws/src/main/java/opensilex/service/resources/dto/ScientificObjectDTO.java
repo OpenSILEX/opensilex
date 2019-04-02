@@ -21,7 +21,7 @@ import opensilex.service.configuration.DateFormats;
 import opensilex.service.resources.validation.interfaces.Required;
 import opensilex.service.resources.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resources.dto.rdfResourceDefinition.PropertyPostDTO;
-import opensilex.service.view.model.ScientificObject;
+import opensilex.service.model.ScientificObject;
 import opensilex.service.resources.validation.interfaces.URL;
 
 /**

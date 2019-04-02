@@ -26,7 +26,7 @@ import opensilex.service.dao.manager.MongoDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.view.brapi.Status;
-import opensilex.service.view.model.Document;
+import opensilex.service.model.Document;
 
 public class DocumentMongoDAO extends MongoDAO<Document> { 
 

@@ -35,8 +35,8 @@ import opensilex.service.resources.dto.rdfResourceDefinition.RdfResourceDefiniti
 import opensilex.service.resources.validation.interfaces.Required;
 import opensilex.service.resources.validation.interfaces.URL;
 import opensilex.service.view.brapi.Status;
-import opensilex.service.view.manager.ResultForm;
-import opensilex.service.view.model.Infrastructure;
+import opensilex.service.result.ResultForm;
+import opensilex.service.model.Infrastructure;
 
 /**
  * Infrastructure service

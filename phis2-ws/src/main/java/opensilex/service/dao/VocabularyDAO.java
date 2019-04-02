@@ -26,7 +26,7 @@ import opensilex.service.ontologies.Rdfs;
 import opensilex.service.ontologies.Oeso;
 import opensilex.service.resources.dto.PropertyVocabularyDTO;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
-import opensilex.service.view.model.Namespace;
+import opensilex.service.model.Namespace;
 
 /**
  * Dao to get the vocabulary (and add data) of the phis instance

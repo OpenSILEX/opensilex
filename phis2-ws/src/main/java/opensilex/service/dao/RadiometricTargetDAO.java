@@ -40,8 +40,8 @@ import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.view.brapi.Status;
-import opensilex.service.view.model.Property;
-import opensilex.service.view.model.RadiometricTarget;
+import opensilex.service.model.Property;
+import opensilex.service.model.RadiometricTarget;
 
 /**
  * Allows CRUD methods of radiometric target in the triplestore.

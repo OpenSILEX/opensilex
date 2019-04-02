@@ -14,7 +14,7 @@ import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.dao.manager.MongoDAO;
-import opensilex.service.view.model.FileInformations;
+import opensilex.service.model.FileInformations;
 
 /**
  * Represents the mongodb Data Access Object for the images metadata 

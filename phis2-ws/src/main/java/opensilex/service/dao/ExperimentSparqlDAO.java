@@ -38,7 +38,7 @@ import opensilex.service.ontologies.Oeso;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.view.brapi.Status;
-import opensilex.service.view.model.Experiment;
+import opensilex.service.model.Experiment;
 
 /**
  * Access to the experiments in the triplestore. 

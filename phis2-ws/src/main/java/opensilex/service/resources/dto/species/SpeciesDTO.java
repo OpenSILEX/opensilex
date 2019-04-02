@@ -7,7 +7,7 @@
 //******************************************************************************
 package opensilex.service.resources.dto.species;
 
-import opensilex.service.view.model.Species;
+import opensilex.service.model.Species;
 
 /**
  * Represents a species

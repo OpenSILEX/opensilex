@@ -48,7 +48,7 @@ import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.utils.dates.Dates;
 import opensilex.service.view.brapi.Status;
-import opensilex.service.view.model.Annotation;
+import opensilex.service.model.Annotation;
 
 /**
  * DAO for annotations

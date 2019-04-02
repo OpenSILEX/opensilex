@@ -17,7 +17,7 @@ import opensilex.service.resources.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resources.validation.interfaces.Date;
 import opensilex.service.resources.validation.interfaces.Required;
 import opensilex.service.resources.validation.interfaces.URL;
-import opensilex.service.view.model.Data;
+import opensilex.service.model.Data;
 
 /**
  * Represents the exchange format used to insert data in post service.

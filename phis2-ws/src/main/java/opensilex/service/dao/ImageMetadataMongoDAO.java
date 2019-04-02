@@ -35,8 +35,8 @@ import opensilex.service.resources.dto.ConcernedItemDTO;
 import opensilex.service.resources.dto.ImageMetadataDTO;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.view.brapi.Status;
-import opensilex.service.view.model.ConcernedItem;
-import opensilex.service.view.model.ImageMetadata;
+import opensilex.service.model.ConcernedItem;
+import opensilex.service.model.ImageMetadata;
 
 /**
  * Represents the MongoDB Data Access Object for the images metadata

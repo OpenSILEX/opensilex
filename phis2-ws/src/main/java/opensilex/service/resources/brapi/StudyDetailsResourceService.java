@@ -35,8 +35,8 @@ import opensilex.service.resources.validation.interfaces.URL;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.BrapiMultiResponseForm;
 import opensilex.service.view.brapi.form.BrapiSingleResponseForm;
-import opensilex.service.view.model.Call;
-import opensilex.service.view.model.StudyDetails;
+import opensilex.service.model.Call;
+import opensilex.service.model.StudyDetails;
 
 @Api("/brapi/v1/studies")
 @Path("/brapi/v1/studies")

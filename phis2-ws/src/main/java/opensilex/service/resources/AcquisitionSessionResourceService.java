@@ -33,7 +33,7 @@ import opensilex.service.resources.dto.acquisitionSession.MetadataFileUAVDTO;
 import opensilex.service.resources.validation.interfaces.Required;
 import opensilex.service.resources.validation.interfaces.URL;
 import opensilex.service.view.brapi.Status;
-import opensilex.service.view.manager.ResultForm;
+import opensilex.service.result.ResultForm;
 
 /**
  * Acquisition session service.

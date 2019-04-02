@@ -9,7 +9,7 @@ package opensilex.service.resources.dto.event;
 
 import java.util.ArrayList;
 import opensilex.service.resources.dto.annotation.AnnotationDTO;
-import opensilex.service.view.model.Event;
+import opensilex.service.model.Event;
 
 /**
  * DTO representing an event detailed

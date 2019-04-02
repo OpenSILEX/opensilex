@@ -39,8 +39,8 @@ import opensilex.service.ontologies.Rdfs;
 import opensilex.service.resources.dto.LayerDTO;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.view.brapi.Status;
-import opensilex.service.view.model.ScientificObject;
-import opensilex.service.view.model.Property;
+import opensilex.service.model.ScientificObject;
+import opensilex.service.model.Property;
 
 
 public class LayerDAO extends DAO<LayerDTO>{

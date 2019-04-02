@@ -33,10 +33,10 @@ import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.utils.sql.JoinAttributes;
 import opensilex.service.utils.sql.SQLQueryBuilder;
-import opensilex.service.view.model.Contact;
-import opensilex.service.view.model.Group;
-import opensilex.service.view.model.Project;
-import opensilex.service.view.model.Experiment;
+import opensilex.service.model.Contact;
+import opensilex.service.model.Group;
+import opensilex.service.model.Project;
+import opensilex.service.model.Experiment;
 
 /**
  * DAO for the experiments in the relational database. It allows CRUD operations.

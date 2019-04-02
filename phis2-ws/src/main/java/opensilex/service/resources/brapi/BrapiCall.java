@@ -7,7 +7,7 @@
 package opensilex.service.resources.brapi;
 
 import java.util.ArrayList;
-import opensilex.service.view.model.Call;
+import opensilex.service.model.Call;
 
 /**
  * Interface for dependency injection in order to get Calls attributes

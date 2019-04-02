@@ -26,7 +26,7 @@ import opensilex.service.resources.dto.ScientificObjectDTO;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.sql.SQLQueryBuilder;
 import opensilex.service.view.brapi.Status;
-import opensilex.service.view.model.ScientificObject;
+import opensilex.service.model.ScientificObject;
 
 /**
  * DAO for scientific objects

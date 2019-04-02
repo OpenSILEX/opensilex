@@ -37,7 +37,7 @@ import opensilex.service.dao.manager.MongoDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.view.brapi.Status;
-import opensilex.service.view.model.EnvironmentMeasure;
+import opensilex.service.model.EnvironmentMeasure;
 
 /**
  * Represents the MongoDB Data Access Object for the environment.

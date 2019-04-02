@@ -55,9 +55,9 @@ import opensilex.service.utils.ResourcesUtils;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.view.brapi.Status;
-import opensilex.service.view.model.ScientificObject;
-import opensilex.service.view.model.Property;
-import opensilex.service.view.model.Uri;
+import opensilex.service.model.ScientificObject;
+import opensilex.service.model.Property;
+import opensilex.service.model.Uri;
 
 
 public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {

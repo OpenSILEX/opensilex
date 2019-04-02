@@ -42,9 +42,9 @@ import opensilex.service.resources.dto.rdfResourceDefinition.RdfResourceDefiniti
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.view.brapi.Status;
-import opensilex.service.view.model.Cardinality;
-import opensilex.service.view.model.RdfResourceDefinition;
-import opensilex.service.view.model.Property;
+import opensilex.service.model.Cardinality;
+import opensilex.service.model.RdfResourceDefinition;
+import opensilex.service.model.Property;
 
 //SILEX:todo
 //use this DAO in the agronomical objects DAO

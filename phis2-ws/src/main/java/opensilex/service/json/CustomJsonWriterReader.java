@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
-import opensilex.service.view.model.Dataset;
+import opensilex.service.model.Dataset;
 
 /**
  * Classe permettant de surcharger la classe qui permet la sérialization et la
@@ -146,7 +146,7 @@ public final class CustomJsonWriterReader<T> implements MessageBodyWriter<T>,
             Gson g = new GsonBuilder()
                     .registerTypeAdapter(Dataset.class, new DatasetsSerializer())
                     // specific serializer for Annotation
-                    .registerTypeAdapter(opensilex.service.view.model.Annotation.class, new AnnotationsSerializer())
+                    .registerTypeAdapter(opensilex.service.model.Annotation.class, new AnnotationsSerializer())
                    
                     .serializeNulls() // Pour serialiser les variables null en nulll json
                     //                    see https://github.com/plantbreeding/documentation/wiki/Best-Practices-and-Conventions

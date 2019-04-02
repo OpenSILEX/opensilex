@@ -24,7 +24,7 @@ import opensilex.service.resources.dto.manager.AbstractVerifiedClass;
 import opensilex.service.model.User;
 import opensilex.service.resources.validation.interfaces.Required;
 import opensilex.service.resources.validation.interfaces.URL;
-import opensilex.service.view.model.Group;
+import opensilex.service.model.Group;
 
 public class UserDTO extends AbstractVerifiedClass {
 

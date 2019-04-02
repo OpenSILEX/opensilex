@@ -10,7 +10,7 @@ package opensilex.service.resources.dto.data;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import opensilex.service.configuration.DateFormat;
-import opensilex.service.view.model.Data;
+import opensilex.service.model.Data;
 
 /**
  * Represents the exchange format used to get data from generic service.

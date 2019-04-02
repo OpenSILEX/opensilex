@@ -24,7 +24,7 @@ import opensilex.service.ontologies.Rdf;
 import opensilex.service.ontologies.Rdfs;
 import opensilex.service.ontologies.Oeso;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
-import opensilex.service.view.model.Infrastructure;
+import opensilex.service.model.Infrastructure;
 
 /**
  * Represents an infrastructure model

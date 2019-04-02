@@ -9,7 +9,7 @@ package opensilex.service.view.brapi.form;
 
 import java.util.ArrayList;
 import opensilex.service.view.brapi.BrapiMetadata;
-import opensilex.service.view.manager.BrapiMultiResult;
+import opensilex.service.result.BrapiMultiResult;
 
 /**
  * Allows the formating of the result of the request about any object T

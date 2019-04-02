@@ -30,8 +30,8 @@ import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.resources.dto.species.SpeciesDTO;
 import opensilex.service.resources.validation.interfaces.URL;
 import opensilex.service.view.brapi.Status;
-import opensilex.service.view.manager.ResultForm;
-import opensilex.service.view.model.Species;
+import opensilex.service.result.ResultForm;
+import opensilex.service.model.Species;
 
 /**
  * Species resource service.

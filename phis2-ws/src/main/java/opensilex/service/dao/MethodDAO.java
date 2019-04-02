@@ -46,8 +46,8 @@ import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.view.brapi.Status;
-import opensilex.service.view.model.Method;
-import opensilex.service.view.model.OntologyReference;
+import opensilex.service.model.Method;
+import opensilex.service.model.OntologyReference;
 
 public class MethodDAO extends SparqlDAO<Method> {
 

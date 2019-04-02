@@ -17,7 +17,7 @@ import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.resources.validation.interfaces.Required;
 import opensilex.service.resources.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resources.validation.interfaces.Date;
-import opensilex.service.view.model.AgronomicalData;
+import opensilex.service.model.AgronomicalData;
 import opensilex.service.resources.validation.interfaces.URL;
 
 /**

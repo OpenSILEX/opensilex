@@ -37,8 +37,8 @@ import opensilex.service.dao.manager.SparqlDAO;
 import opensilex.service.ontologies.Rdf;
 import opensilex.service.ontologies.Rdfs;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
-import opensilex.service.view.model.Ask;
-import opensilex.service.view.model.Uri;
+import opensilex.service.model.Ask;
+import opensilex.service.model.Uri;
 
 /**
  * Represents the Triplestore Data Access Object for the uris

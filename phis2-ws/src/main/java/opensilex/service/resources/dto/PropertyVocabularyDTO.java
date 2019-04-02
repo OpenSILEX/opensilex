@@ -19,7 +19,7 @@ import java.util.Map;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.resources.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resources.validation.interfaces.URL;
-import opensilex.service.view.model.Property;
+import opensilex.service.model.Property;
 
 /**
  * represents the submitted and returned JSON for the vocabulary properties

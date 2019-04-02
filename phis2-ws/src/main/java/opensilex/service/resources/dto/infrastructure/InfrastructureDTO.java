@@ -10,8 +10,8 @@ package opensilex.service.resources.dto.infrastructure;
 import opensilex.service.resources.dto.rdfResourceDefinition.PropertyDTO;
 import opensilex.service.resources.dto.rdfResourceDefinition.PropertyLabelsDTO;
 import opensilex.service.resources.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
-import opensilex.service.view.model.Infrastructure;
-import opensilex.service.view.model.Property;
+import opensilex.service.model.Infrastructure;
+import opensilex.service.model.Property;
 
 /**
  * Represent an infrastructure

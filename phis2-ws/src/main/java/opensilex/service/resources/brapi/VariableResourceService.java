@@ -37,12 +37,12 @@ import opensilex.service.resources.validation.interfaces.URL;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.BrapiMultiResponseForm;
 import opensilex.service.view.brapi.form.BrapiSingleResponseForm;
-import opensilex.service.view.model.BrapiVariable;
-import opensilex.service.view.model.Call;
-import opensilex.service.view.model.Variable;
-import opensilex.service.view.model.BrapiVariableTrait;
-import opensilex.service.view.model.BrapiMethod;
-import opensilex.service.view.model.BrapiScale;
+import opensilex.service.model.BrapiVariable;
+import opensilex.service.model.Call;
+import opensilex.service.model.Variable;
+import opensilex.service.model.BrapiVariableTrait;
+import opensilex.service.model.BrapiMethod;
+import opensilex.service.model.BrapiScale;
 
 /**
  * Variable service

@@ -16,7 +16,7 @@ package opensilex.service.resources.dto;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.view.model.Unit;
+import opensilex.service.model.Unit;
 
 public class UnitDTO extends InstanceDefinitionDTO {
     final static Logger LOGGER = LoggerFactory.getLogger(UnitDTO.class);

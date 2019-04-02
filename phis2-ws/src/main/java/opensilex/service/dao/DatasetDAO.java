@@ -32,9 +32,9 @@ import opensilex.service.resources.dto.AgronomicalDataDTO;
 import opensilex.service.resources.dto.DatasetDTO;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.view.brapi.Status;
-import opensilex.service.view.model.ScientificObject;
-import opensilex.service.view.model.AgronomicalData;
-import opensilex.service.view.model.Dataset;
+import opensilex.service.model.ScientificObject;
+import opensilex.service.model.AgronomicalData;
+import opensilex.service.model.Dataset;
 
 /**
  * Represents the MongoDB AgronomicalData Access Object for the datasets

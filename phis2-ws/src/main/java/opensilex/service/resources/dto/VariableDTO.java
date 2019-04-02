@@ -19,10 +19,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.resources.validation.interfaces.Required;
 import opensilex.service.resources.validation.interfaces.URL;
-import opensilex.service.view.model.Method;
-import opensilex.service.view.model.Trait;
-import opensilex.service.view.model.Unit;
-import opensilex.service.view.model.Variable;
+import opensilex.service.model.Method;
+import opensilex.service.model.Trait;
+import opensilex.service.model.Unit;
+import opensilex.service.model.Variable;
 
 public class VariableDTO extends InstanceDefinitionDTO {
 

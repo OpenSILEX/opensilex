@@ -69,8 +69,8 @@ import opensilex.service.utils.UriGenerator;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
-import opensilex.service.view.manager.ResultForm;
-import opensilex.service.view.model.ImageMetadata;
+import opensilex.service.result.ResultForm;
+import opensilex.service.model.ImageMetadata;
 
 /**
  * Represents the images service

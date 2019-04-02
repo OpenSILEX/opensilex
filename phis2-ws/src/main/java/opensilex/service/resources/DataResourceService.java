@@ -57,9 +57,9 @@ import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
-import opensilex.service.view.manager.ResultForm;
-import opensilex.service.view.model.Data;
-import opensilex.service.view.model.FileDescription;
+import opensilex.service.result.ResultForm;
+import opensilex.service.model.Data;
+import opensilex.service.model.FileDescription;
 
 /**
  * Data resource service

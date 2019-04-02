@@ -43,10 +43,10 @@ import opensilex.service.resources.dto.rdfResourceDefinition.PropertyPostDTO;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.view.brapi.Status;
-import opensilex.service.view.model.Ask;
-import opensilex.service.view.model.Property;
-import opensilex.service.view.model.SensorProfile;
-import opensilex.service.view.model.Uri;
+import opensilex.service.model.Ask;
+import opensilex.service.model.Property;
+import opensilex.service.model.SensorProfile;
+import opensilex.service.model.Uri;
 
 /**
  * CRUD method of sensor's profiles, in the triplestore [rdf4j]

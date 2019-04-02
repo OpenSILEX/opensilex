@@ -15,7 +15,7 @@ import io.swagger.annotations.ApiModelProperty;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.resources.validation.interfaces.Required;
 import opensilex.service.resources.dto.manager.AbstractVerifiedClass;
-import opensilex.service.view.model.FileInformations;
+import opensilex.service.model.FileInformations;
 
 /**
  * corresponds to the submitted JSON for a file information

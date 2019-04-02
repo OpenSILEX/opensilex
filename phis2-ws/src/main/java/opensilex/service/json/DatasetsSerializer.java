@@ -23,8 +23,8 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import opensilex.service.view.model.AgronomicalData;
-import opensilex.service.view.model.Dataset;
+import opensilex.service.model.AgronomicalData;
+import opensilex.service.model.Dataset;
 
 /**
  * serialize a dataset instance to JSON, used to have a different return from 

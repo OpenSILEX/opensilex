@@ -46,8 +46,8 @@ import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.view.brapi.Status;
-import opensilex.service.view.model.OntologyReference;
-import opensilex.service.view.model.Trait;
+import opensilex.service.model.OntologyReference;
+import opensilex.service.model.Trait;
 
 public class TraitDAO extends SparqlDAO<Trait> {
     final static Logger LOGGER = LoggerFactory.getLogger(TraitDAO.class);

@@ -19,7 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.dao.manager.SparqlDAO;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
-import opensilex.service.view.model.ImageMetadata;
+import opensilex.service.model.ImageMetadata;
 
 /**
  * Used to check if an image type exist in the triplestore

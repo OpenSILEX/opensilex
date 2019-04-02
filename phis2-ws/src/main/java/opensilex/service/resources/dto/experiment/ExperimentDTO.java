@@ -25,10 +25,10 @@ import opensilex.service.resources.validation.interfaces.Required;
 import opensilex.service.resources.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resources.validation.interfaces.Date;
 import opensilex.service.resources.validation.interfaces.URL;
-import opensilex.service.view.model.Contact;
-import opensilex.service.view.model.Group;
-import opensilex.service.view.model.Project;
-import opensilex.service.view.model.Experiment;
+import opensilex.service.model.Contact;
+import opensilex.service.model.Group;
+import opensilex.service.model.Project;
+import opensilex.service.model.Experiment;
 
 public class ExperimentDTO extends AbstractVerifiedClass {
 

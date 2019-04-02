@@ -17,7 +17,7 @@ import opensilex.service.resources.validation.interfaces.Required;
 import opensilex.service.resources.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resources.validation.interfaces.OType;
 import opensilex.service.resources.validation.interfaces.URL;
-import opensilex.service.view.model.Triplet;
+import opensilex.service.model.Triplet;
 
 /**
  * Corresponds to the submitted json for a triplet

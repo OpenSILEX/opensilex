@@ -8,7 +8,7 @@
 package opensilex.service.resources.dto.radiometricTarget;
 
 import opensilex.service.resources.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
-import opensilex.service.view.model.RadiometricTarget;
+import opensilex.service.model.RadiometricTarget;
 
 /**
  * Represent a radiometric target

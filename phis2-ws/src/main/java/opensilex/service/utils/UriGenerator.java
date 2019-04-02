@@ -36,8 +36,8 @@ import opensilex.service.ontologies.Foaf;
 import opensilex.service.ontologies.Oeev;
 import opensilex.service.ontologies.Oeso;
 import opensilex.service.ontologies.Time;
-import opensilex.service.view.model.Group;
-import opensilex.service.view.model.Project;
+import opensilex.service.model.Group;
+import opensilex.service.model.Project;
 
 /**
  * Generate different kinds of URIs (vector, sensor, ...)

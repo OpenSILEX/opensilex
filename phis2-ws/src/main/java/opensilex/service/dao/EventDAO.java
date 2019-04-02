@@ -42,9 +42,9 @@ import opensilex.service.utils.UriGenerator;
 import opensilex.service.utils.dates.Dates;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.view.brapi.Status;
-import opensilex.service.view.model.Annotation;
-import opensilex.service.view.model.Event;
-import opensilex.service.view.model.Property;
+import opensilex.service.model.Annotation;
+import opensilex.service.model.Event;
+import opensilex.service.model.Property;
 
 /**
  * DAO for Events

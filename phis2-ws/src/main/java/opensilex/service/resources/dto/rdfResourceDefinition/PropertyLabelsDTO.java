@@ -11,7 +11,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.Collection;
 import java.util.LinkedList;
 import opensilex.service.documentation.DocumentationAnnotation;
-import opensilex.service.view.model.Property;
+import opensilex.service.model.Property;
 
 /**
  * Represent the submitted JSON of a property with associated labels

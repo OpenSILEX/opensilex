@@ -16,8 +16,8 @@ import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.resources.validation.interfaces.Required;
 import opensilex.service.resources.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resources.validation.interfaces.URL;
-import opensilex.service.view.model.RdfResourceDefinition;
-import opensilex.service.view.model.Property;
+import opensilex.service.model.RdfResourceDefinition;
+import opensilex.service.model.Property;
 
 /**
  * Represents the JSON for an rdf resource definition with its uri and label

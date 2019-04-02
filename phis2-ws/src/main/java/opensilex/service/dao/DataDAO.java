@@ -36,7 +36,7 @@ import opensilex.service.ontologies.Oeso;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.view.brapi.Status;
-import opensilex.service.view.model.Data;
+import opensilex.service.model.Data;
 
 /**
  * Represents the MongoDB Data Access Object.

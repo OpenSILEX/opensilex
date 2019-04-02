@@ -35,9 +35,9 @@ import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.resources.validation.interfaces.Required;
 import opensilex.service.resources.validation.interfaces.URL;
 import opensilex.service.view.brapi.Status;
-import opensilex.service.view.manager.ResultForm;
-import opensilex.service.view.model.Ask;
-import opensilex.service.view.model.Uri;
+import opensilex.service.result.ResultForm;
+import opensilex.service.model.Ask;
+import opensilex.service.model.Uri;
 
 @Api("/uri")
 @Path("uri")

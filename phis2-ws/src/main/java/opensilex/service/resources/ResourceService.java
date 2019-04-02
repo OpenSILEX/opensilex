@@ -14,7 +14,7 @@ import opensilex.service.authentication.Session;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.injection.SessionInject;
 import opensilex.service.view.brapi.Status;
-import opensilex.service.view.manager.ResultForm;
+import opensilex.service.result.ResultForm;
 
 /**
  * Class extended by all the resource services, which contains the common methods and attributes.

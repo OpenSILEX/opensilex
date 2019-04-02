@@ -18,9 +18,9 @@ import opensilex.service.resources.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resources.dto.rdfResourceDefinition.PropertyDTO;
 import opensilex.service.resources.validation.interfaces.URL;
 import opensilex.service.utils.dates.Dates;
-import opensilex.service.view.model.ConcernedItem;
-import opensilex.service.view.model.Event;
-import opensilex.service.view.model.Property;
+import opensilex.service.model.ConcernedItem;
+import opensilex.service.model.Event;
+import opensilex.service.model.Property;
 
 /**
  * DTO representing a event with the basic information

@@ -23,7 +23,7 @@ import opensilex.service.ontologies.Rdf;
 import opensilex.service.ontologies.Rdfs;
 import opensilex.service.ontologies.Oeso;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
-import opensilex.service.view.model.Species;
+import opensilex.service.model.Species;
 
 /**
  * Species access in the triplestore rdf4j

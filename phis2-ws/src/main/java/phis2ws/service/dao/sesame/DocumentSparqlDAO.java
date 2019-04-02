@@ -35,7 +35,7 @@ import phis2ws.service.configuration.DocumentStatus;
 import phis2ws.service.configuration.SortingValues;
 import phis2ws.service.dao.manager.SparqlDAO;
 import phis2ws.service.dao.mongo.DocumentMongoDAO;
-import phis2ws.service.dao.phis.ExperimentMongoDAO;
+import phis2ws.service.dao.phis.ExperimentSQLDAO;
 import phis2ws.service.dao.phis.UserDAO;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.model.User;
@@ -615,7 +615,7 @@ public class DocumentSparqlDAO extends SparqlDAO<Document> {
         if (u.getAdmin().equals("t") || u.getAdmin().equals("true")) {
             return true;
         } else {
-            ExperimentMongoDAO experimentDao = new ExperimentMongoDAO();
+            ExperimentSQLDAO experimentDao = new ExperimentSQLDAO();
             for (ConcernedItemDTO concernedItem : document.getConcernedItems()) {
                 if (concernedItem.getTypeURI().equals(Oeso.CONCEPT_EXPERIMENT.toString())) {
                     Experiment experiment = new Experiment(concernedItem.getUri());

@@ -16,7 +16,7 @@ import org.apache.commons.codec.binary.Base32;
 import org.apache.jena.sparql.AlreadyExists;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.dao.mongo.ImageMetadataMongoDAO;
-import phis2ws.service.dao.phis.ExperimentMongoDAO;
+import phis2ws.service.dao.phis.ExperimentSQLDAO;
 import phis2ws.service.dao.phis.GroupDAO;
 import phis2ws.service.dao.phis.ProjectDAO;
 import phis2ws.service.dao.sesame.ScientificObjectSparqlDAO;
@@ -436,7 +436,7 @@ public class UriGenerator {
      */
     private String generateExperimentUri(String campaign) {
         //1. Get the campaign last experiment URI
-        String campaignLastExperimentUri = (new ExperimentMongoDAO()).getCampaignLastExperimentUri(campaign);
+        String campaignLastExperimentUri = (new ExperimentSQLDAO()).getCampaignLastExperimentUri(campaign);
         //2. Generate the URI of the experiment
         int newExperimentNumber;
         if (campaignLastExperimentUri == null) {

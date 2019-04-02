@@ -303,7 +303,9 @@ public class DataDAOMongo extends DAOMongo<Data> {
         }
         
         // Define pagination for the request
-        dataMongo = dataMongo.skip(page * pageSize).limit(pageSize);
+        if (page != null && pageSize != null) {
+            dataMongo = dataMongo.skip(page * pageSize).limit(pageSize);
+        }
 
         ArrayList<Data> dataList = new ArrayList<>();
         

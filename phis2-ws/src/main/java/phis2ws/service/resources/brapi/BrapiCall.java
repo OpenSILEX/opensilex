@@ -7,6 +7,7 @@
 package phis2ws.service.resources.brapi;
 
 import java.util.ArrayList;
+import org.glassfish.jersey.spi.Contract;
 import phis2ws.service.view.model.phis.Call;
 
 /**
@@ -15,6 +16,7 @@ import phis2ws.service.view.model.phis.Call;
  * @update [Alice Boizet] 24 September, 2018 : the input of the method callInfo is now a List 
  * because there can be several calls defined in the same class (see TraitsResourceService as an example)
  */
+@Contract
 public interface BrapiCall {
 
     ArrayList<Call> callInfo();

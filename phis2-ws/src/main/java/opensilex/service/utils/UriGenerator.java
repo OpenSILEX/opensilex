@@ -41,11 +41,12 @@ import opensilex.service.model.Group;
 import opensilex.service.model.Project;
 
 /**
- * Generate different kinds of URIs (vector, sensor, ...)
+ * URI generator. Used for various objects (vector, sensor, ...).
  * @update [Andreas Garcia] 14 Feb. 2019: use the last inserted experiment
  * number instead of total number of experiment to calculate the number of a
  * new experiment
- * @author Morgane Vidal <morgane.vidal@inra.fr>, Arnaud Charleroy <arnaud.charleory@inra.fr>
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleory@inra.fr>
  * SILEX:todo: 
  *       - Element: User agent uri
  *         Purpose: For now, generated user agent uris are not unic. 

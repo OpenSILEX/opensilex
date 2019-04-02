@@ -8,9 +8,8 @@
 package opensilex.service.view.brapi;
 
 /**
- * Implémentation de la plant breeding api pour les status des messages de retour.
- * Il est possible de mettre des codes Error ou autre
- * @author Arnaud Charleroy
+ * BrAPI status model.
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class Status {
 

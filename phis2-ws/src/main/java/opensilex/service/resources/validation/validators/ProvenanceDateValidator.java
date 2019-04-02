@@ -14,10 +14,13 @@ import opensilex.service.resources.dto.ProvenanceDTO;
 import opensilex.service.resources.validation.interfaces.ProvenanceDate;
 
 /**
- * Check the following rule : the provenance date must not be null if the provenance uri is not set.
+ * Provenance date validator. 
+ * The date must not be null if the provenance URI is not set.
  * {@code null} elements are considered valid.
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
- * @update [Morgane Vidal] 10 Oct, 2018 : remove the date validation (the @Date must already be used on the date field). 
+ * @update [Morgane Vidal] 10 Oct. 2018: remove the date validation (the @Date 
+ * must already be used on the date field). 
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ProvenanceDateValidator implements ConstraintValidator<ProvenanceDate, ProvenanceDTO> {
 

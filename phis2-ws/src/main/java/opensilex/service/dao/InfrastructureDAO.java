@@ -26,7 +26,7 @@ import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.model.Infrastructure;
 
 /**
- * DAO for infrastructures.
+ * Infrastructure DAO.
  * @author Vincent Migot <vincent.migot@inra.fr>
  */
 public class InfrastructureDAO extends SparqlDAO<Infrastructure> {

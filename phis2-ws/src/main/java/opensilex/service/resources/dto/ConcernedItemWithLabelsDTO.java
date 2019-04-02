@@ -14,7 +14,7 @@ import opensilex.service.resources.validation.interfaces.Required;
 import opensilex.service.model.ConcernedItem;
 
 /**
- * DTO of a concerned item with labels
+ * Concerned item with labels DTO.
  * @author andreas
  */
 public class ConcernedItemWithLabelsDTO extends ConcernedItemDTO {

@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import opensilex.service.view.brapi.BrapiPagination;
 
 /**
- * This class provides the format of Result when there is a list of several elements
+ * Provides the format of Result when there is a list of several elements.
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class BrapiMultiResult<T>{

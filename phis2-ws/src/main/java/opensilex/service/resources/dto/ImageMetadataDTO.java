@@ -17,9 +17,9 @@ import opensilex.service.resources.validation.interfaces.URL;
 import opensilex.service.model.ImageMetadata;
 
 /**
- * corresponds to the submitted JSON for the images metadata
+ * Image metadata DTO.
+ * @update [Andréas Garcia] Jan. 2019: modify "concern(s)" occurences into "concernedItem(s)"
  * @author Morgane Vidal <morgane.vidal@inra.fr>
- * @update [Andréas Garcia] Jan., 2019 : modify "concern(s)" occurences into "concernedItem(s)"
  */
 public class ImageMetadataDTO extends AbstractVerifiedClass {
     

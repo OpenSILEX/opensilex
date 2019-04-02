@@ -54,7 +54,7 @@ import opensilex.service.model.Property;
 import opensilex.service.model.Uri;
 
 /**
- * DAO for scientific objects in a triple store.
+ * Scientific object DAO for a triplestore.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {

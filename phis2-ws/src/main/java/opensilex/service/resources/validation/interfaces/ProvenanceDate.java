@@ -18,9 +18,12 @@ import javax.validation.Constraint;
 import javax.validation.Payload;
 
 /**
- * Check the following rule : the provenance date must not be null if the provenance uri is not set.
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
- * @update [Morgane Vidal] 10 Oct, 2018 : remove the date validation (the @Date must already be used on the date field). 
+ * Provenance date validator. 
+ * The date must not be null if the provenance URI is not set.
+ * @update [Morgane Vidal] 10 Oct. 2018: remove the date validation (the @Date 
+ * must already be used on the date field). 
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE})
 @Retention(RUNTIME)

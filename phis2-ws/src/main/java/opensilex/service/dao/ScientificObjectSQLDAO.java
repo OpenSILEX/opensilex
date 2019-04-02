@@ -29,7 +29,7 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.model.ScientificObject;
 
 /**
- * DAO for scientific objects in a relational database.
+ * Scientific objects DAO for a relational database.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ScientificObjectSQLDAO extends PhisDAO<ScientificObject, ScientificObjectDTO> {

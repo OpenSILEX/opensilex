@@ -46,7 +46,7 @@ import opensilex.service.model.Event;
 import opensilex.service.model.Property;
 
 /**
- * DAO for Events.
+ * Events DAO.
  * @update [Andreas Garcia] 14 Feb. 2019: Add event detail service
  * @update [Andreas Garcia] 5 March 2019: Add events insertion service
  * @update [Andréas Garcia] 5 March 2019: 

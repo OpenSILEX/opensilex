@@ -14,9 +14,8 @@ import opensilex.service.resources.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resources.validation.interfaces.GrantType;
 
 /**
- * Represente le JSON soumis pour les objets de type token
- *
- * @author Arnaud Charleroy
+ * Token DTO.
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class TokenDTO extends AbstractVerifiedClass {
 

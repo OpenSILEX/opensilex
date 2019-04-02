@@ -14,8 +14,7 @@ import opensilex.service.model.Infrastructure;
 import opensilex.service.model.Property;
 
 /**
- * Represent an infrastructure
- * 
+ * Infrastructure DTO.
  * @author Vincent Migot <vincent.migot@inra.fr>
  */
 public class InfrastructureDTO extends RdfResourceDefinitionDTO {

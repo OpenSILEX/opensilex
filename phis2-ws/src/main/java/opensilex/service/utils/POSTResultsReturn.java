@@ -12,8 +12,8 @@ import java.util.List;
 import javax.ws.rs.core.Response;
 
 /**
- * Représentes les résults d'un envoi en POST
- * @author Arnaud Charleroy
+ * POST return result.
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class POSTResultsReturn {
     private Boolean resultState; // Le résultat de insert et data (bon si les 2 snt ok et faux sinon)

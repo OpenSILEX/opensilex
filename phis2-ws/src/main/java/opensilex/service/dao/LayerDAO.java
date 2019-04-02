@@ -39,7 +39,7 @@ import opensilex.service.model.ScientificObject;
 import opensilex.service.model.Property;
 
 /**
- * DAO for layers.
+ * Layer DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class LayerDAO extends DAO<LayerDTO>{

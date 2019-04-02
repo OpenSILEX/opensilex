@@ -13,7 +13,8 @@ import opensilex.service.configuration.DateFormat;
 import opensilex.service.model.Data;
 
 /**
- * Represents the exchange format used to get data from generic service.
+ * Data DTO.
+ * @author Vincent Migot <vincent.migot@inra.fr>
  */
 public class DataDTO {
     //The uri of the data.

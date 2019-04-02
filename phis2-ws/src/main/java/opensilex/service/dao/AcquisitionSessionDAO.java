@@ -27,7 +27,7 @@ import opensilex.service.model.Sensor;
 import opensilex.service.model.Vector;
 
 /**
- * DAO for acquisition sessions.
+ * Acquisition sessions DAO.
  * @update [Arnaud Charleroy] 10 September 2018: minor fix on vector data gathering
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>

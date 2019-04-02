@@ -48,7 +48,7 @@ import opensilex.service.model.Dataset;
 import opensilex.service.model.Sensor;
 
 /**
- * DAO for sensors.
+ * Sensor DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class SensorDAO extends SparqlDAO<Sensor> {

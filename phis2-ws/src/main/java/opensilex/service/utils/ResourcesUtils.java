@@ -14,10 +14,9 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * List of functions which can be used in ressources
- *
- * @author Morgane Vidal
- * @author Arnaud Charleroy
+ * Resource useful functions.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class ResourcesUtils {
 

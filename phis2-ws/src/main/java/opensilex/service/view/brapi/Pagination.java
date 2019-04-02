@@ -2,21 +2,15 @@
 //                            Pagination.java 
 // SILEX-PHIS
 // Copyright © INRA 2016
-// Creation date: Dec. 2015
+// Creation date: 3 Dec. 2015
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.view.brapi;
 
 /**
- * Pagination - Cette classe donne des détails sur la pagination et ses champs
- * sont utilisés pour permettre une pagination correcte des résultats
- *
- * @version1.0
- *
+ * Pagination model.
  * @author Samuël Cherimont
- * @date 03/12/2015
  */
-
 public class Pagination {
 
     private Integer pageSize, currentPage, totalCount, totalPages;

@@ -14,13 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * JsonConverter - Classe possédant deux méthodes qui permettent la convertion
- * d'objets en chaines de caractères au format JSON
- *
- * @version1.0
- *
+ * JSON Converter. Converts JSON objects into strings.
  * @author Samuël Chérimont
- * @date 03/12/2015
  */
 @Singleton
 public final class JsonConverter {

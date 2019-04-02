@@ -10,7 +10,7 @@ package opensilex.service.resources.dto.species;
 import opensilex.service.model.Species;
 
 /**
- * Represents a species
+ * Species DTO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class SpeciesDTO {

@@ -21,7 +21,7 @@ import opensilex.service.model.Project;
 import opensilex.service.model.Experiment;
 
 /**
- * The DTO of the POST experiment.
+ * Experiment POST DTO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ExperimentPostDTO extends AbstractVerifiedClass {

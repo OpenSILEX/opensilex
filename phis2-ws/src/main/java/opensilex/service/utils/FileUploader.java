@@ -23,9 +23,10 @@ import org.slf4j.LoggerFactory;
 import opensilex.service.PropertiesFileManager;
  
 /**
- * Classe qui étend la libraire JSch qui permet de réaliser des appels en SFTP en Java de façon siplifiée.
+ * File Uploader. Enables simple SFTP calls in Java.
+ * @update [Andréas Garcia] 23 Jan. 2019: Add generic function to create nested 
+ * directories from a complete path
  * @author Arnaud Charleroy
- * @update [Andréas Garcia] 23 Jan., 2019: Add generic function to create nested directories from a complete path
  */
 public class FileUploader extends JSch{
     final static Logger LOGGER = LoggerFactory.getLogger(FileUploader.class);

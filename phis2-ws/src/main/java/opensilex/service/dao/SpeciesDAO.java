@@ -23,7 +23,7 @@ import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.model.Species;
 
 /**
- * DAO for species.
+ * Specie DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class SpeciesDAO extends SparqlDAO<Species> {

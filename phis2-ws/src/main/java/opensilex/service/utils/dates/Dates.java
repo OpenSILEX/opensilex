@@ -19,8 +19,8 @@ import org.joda.time.format.DateTimeParser;
 import opensilex.service.configuration.DateFormats;
 
 /**
- * Represents the dates formats and manipulations in PHIS
- * @author Arnaud Charleroy
+ * Dates formats and manipulations
+ * @author Arnaud Charleroy <arnaud.charleory@inra.fr>
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class Dates {

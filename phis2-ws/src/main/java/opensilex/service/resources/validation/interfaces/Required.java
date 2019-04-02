@@ -9,7 +9,7 @@
 package opensilex.service.resources.validation.interfaces;
 
 /**
- * Multiple annotations which provides required annotation
+ * Multiple annotations which provides the @required annotation.
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 import java.lang.annotation.Documented;

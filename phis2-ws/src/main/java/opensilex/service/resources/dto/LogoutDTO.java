@@ -13,9 +13,8 @@ import opensilex.service.resources.validation.interfaces.Required;
 import opensilex.service.resources.dto.manager.AbstractVerifiedClass;
 
 /**
- * Represente le JSON soumis pour les objets de type token
- *
- * @author A. Charleroy
+ * Logout DTO.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @ApiModel
 public class LogoutDTO extends AbstractVerifiedClass {

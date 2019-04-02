@@ -16,9 +16,9 @@ import org.joda.time.format.DateTimeParser;
 import opensilex.service.configuration.DateFormats;
 
 /**
- * represents the mongodb dates. Manipulates thoses dates (e.g. check formats)
+ * MongoDB dates manager.
  * @see opensilex.service.utils.dates.Dates
- * @author Arnaud Charleroy
+ * @author Arnaud Charleroy <arnaud.charleory@inra.fr>
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class MongoDates extends Dates {

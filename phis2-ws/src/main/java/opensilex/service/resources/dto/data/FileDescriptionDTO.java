@@ -17,8 +17,8 @@ import opensilex.service.model.ConcernedItem;
 import opensilex.service.model.FileDescription;
 
 /**
- * This class describe FileDescription Metadata
- * @author Vincent Migot
+ * File description DTO.
+ * @author Vincent Migot <vincent.migot@inra.fr>
  */
 public class FileDescriptionDTO {
 

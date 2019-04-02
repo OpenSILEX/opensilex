@@ -15,6 +15,10 @@ import opensilex.service.resources.validation.interfaces.Required;
 import opensilex.service.resources.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resources.validation.interfaces.URL;
 
+/**
+ * Layer DTO.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class LayerDTO extends AbstractVerifiedClass {
     final static Logger LOGGER = LoggerFactory.getLogger(LayerDTO.class);
     

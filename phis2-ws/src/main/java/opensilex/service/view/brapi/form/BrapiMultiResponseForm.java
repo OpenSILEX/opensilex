@@ -12,7 +12,7 @@ import opensilex.service.view.brapi.BrapiMetadata;
 import opensilex.service.result.BrapiMultiResult;
 
 /**
- * Allows the formating of the result of the request about any object T
+ * Allows the formatting of the result of the request about any object.
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class BrapiMultiResponseForm<T> {

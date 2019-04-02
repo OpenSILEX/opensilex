@@ -19,7 +19,8 @@ import opensilex.service.resources.validation.interfaces.DocumentStatus;
 import opensilex.service.resources.validation.interfaces.URL;
 
 /**
- * @update [Andréas Garcia] 15 Jan. 2019 : Replace "concern" occurences by "concernedItem"
+ * Document metadata DTO.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class DocumentMetadataDTO extends AbstractVerifiedClass {
     private String uri; // /!\ ne sera pas utilisé pour le POST de métadonnées

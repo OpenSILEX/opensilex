@@ -40,7 +40,7 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.model.EnvironmentMeasure;
 
 /**
- * DAO for environmental measures.
+ * Environmental measures DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class EnvironmentMeasureDAO extends MongoDAO<EnvironmentMeasure> {

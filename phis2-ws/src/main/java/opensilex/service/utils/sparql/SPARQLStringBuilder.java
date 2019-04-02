@@ -13,11 +13,11 @@ import opensilex.service.resources.validation.validators.URLValidator;
 
 /**
  * Abstract class which provides common methods and attributes 
- * to manipulate SPARQL query and update.
+ * to manipulate SPARQL query.
+ * @update [Arnaud Charleroy] 10 Sept. 2018: Add "And" and "Or" filter choices
+ * @update [Vincent Migot] 03 Oct. 2018: Create isLink method to check URIs 
+ * instead of only testing "http://" prefix
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
- * @update [No information] October, 2016 : no explanation
- * @update [Arnaud Charleroy] 10 September, 2018 : Add "And" and "Or" filter choices
- * @update [Vincent Migot] 03 October, 2018 : Create isLink method to check URIs instead of only testing "http://" prefix
  */
 public abstract class SPARQLStringBuilder {
 

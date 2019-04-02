@@ -11,7 +11,7 @@ import opensilex.service.resources.dto.PropertiesPostDTO;
 import opensilex.service.model.RadiometricTarget;
 
 /**
- * Represents the JSON for the creation of a radiometric target.
+ * Radiometric target POST DTO.
  * @see PropertiesPostDTO
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */

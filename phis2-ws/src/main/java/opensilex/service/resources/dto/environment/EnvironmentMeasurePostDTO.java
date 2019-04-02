@@ -23,8 +23,8 @@ import opensilex.service.resources.validation.interfaces.URL;
 import opensilex.service.model.EnvironmentMeasure;
 
 /**
- * Represents the exchange format used to insert environment in the environment post service.
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * Environmental measure POST DTO.
+ * @author Vincent Migot <vincent.migot@inra.fr>
  */
 public class EnvironmentMeasurePostDTO extends AbstractVerifiedClass {
     //The uri of the sensor which has provide the measured value.

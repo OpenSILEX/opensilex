@@ -45,7 +45,7 @@ import opensilex.service.model.OntologyReference;
 import opensilex.service.model.Trait;
 
 /**
- * DAO for traits.
+ * Trait DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class TraitDAO extends SparqlDAO<Trait> {

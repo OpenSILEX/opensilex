@@ -16,8 +16,7 @@ import opensilex.service.resources.dto.rdfResourceDefinition.PropertyPostDTO;
 import opensilex.service.resources.validation.interfaces.Required;
 
 /**
- * Represents the JSON for the creation of an object with it label and its properties.
- * @see PropertiesDTO
+ * Property POST DTO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class PropertiesPostDTO extends AbstractVerifiedClass {

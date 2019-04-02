@@ -45,7 +45,7 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.model.Vector;
 
 /**
- * DAO for vectors.
+ * Vector DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class VectorDAO extends SparqlDAO<Vector> {

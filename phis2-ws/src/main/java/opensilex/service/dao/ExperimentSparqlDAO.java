@@ -39,7 +39,7 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.model.Experiment;
 
 /**
- * DAO for experiments in a triplestore. 
+ * Experiments DAO for a triplestore. 
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ExperimentSparqlDAO extends SparqlDAO<Experiment> {

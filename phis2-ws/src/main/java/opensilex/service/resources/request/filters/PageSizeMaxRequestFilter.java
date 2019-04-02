@@ -20,10 +20,10 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.ResponseFormGET;
 
 /**
- * Filter for the pageSize max.
- * @update [Morgane Vidal] 03 December, 2018: simplify the pageSize query filter
- * @update [Andréas Garcia] 28 Feb., 2019: get page size limit from configuration file
- * @author Arnaud Charleroy
+ * Filter for the page size max parameter.
+ * @update [Morgane Vidal] 03 Dec. 2018: simplify the pageSize query filter
+ * @update [Andréas Garcia] 28 Feb. 2019: get page size limit from configuration file
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 @Provider
 public class PageSizeMaxRequestFilter implements ContainerRequestFilter {

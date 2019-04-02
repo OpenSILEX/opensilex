@@ -39,7 +39,7 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.model.Data;
 
 /**
- * DAO for data.
+ * Data DAO.
  * @author Vincent Migot <vincent.migot@inra.fr>
  */
 public class DataDAO extends MongoDAO<Data> {

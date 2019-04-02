@@ -35,7 +35,7 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.model.Group;
 
 /**
- * DAO for users.
+ * User DAO.
  * @update [Morgane Vidal] Apr. 2017: deletion of isAdmin, role and type 
  * attributes in User table which caused the deletion of isAdmin,
  * getProjectUserType, getUserGroup, getUserRole and getUserExperiment functions

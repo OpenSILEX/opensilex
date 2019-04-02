@@ -17,7 +17,8 @@ import opensilex.service.resources.validation.interfaces.SortingValue;
  * Validator used to validate sort parameters.
  * {@code null} elements are considered valid.
  * @see SortingValue
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class SortingValueValidator implements ConstraintValidator<SortingValue, String> {
     /**

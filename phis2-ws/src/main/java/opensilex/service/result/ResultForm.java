@@ -2,7 +2,7 @@
 //                              ResultForm.java 
 // SILEX-PHIS
 // Copyright © INRA 2016
-// Creation date: December 2015
+// Creation date: 3 December 2015
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.result;
@@ -13,15 +13,10 @@ import opensilex.service.view.brapi.Metadata;
 import opensilex.service.view.brapi.Status;
 
 /**
- * ResultForm - Classe abstraite qui sert de base aux ResultForm plus
- * spécifiques
- *
- * @version1.0
- *
- * @author Samuël Chérimont
- * @param <T> classe de spécification de la classe héritée
+ * Result form.
+ * @param <T> DTO handled by the form
  * @see Result
- * @date 03/12/2015
+ * @author Samuël Chérimont
  */
 public class ResultForm<T> {
 

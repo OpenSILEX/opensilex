@@ -43,7 +43,7 @@ import opensilex.service.model.Property;
 import opensilex.service.model.RadiometricTarget;
 
 /**
- * DAO for radiometric targets.
+ * Radiometric target DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class RadiometricTargetDAO extends SparqlDAO<RadiometricTarget> {

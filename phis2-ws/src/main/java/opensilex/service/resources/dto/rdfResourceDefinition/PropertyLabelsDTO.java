@@ -14,7 +14,7 @@ import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.model.Property;
 
 /**
- * Represent the submitted JSON of a property with associated labels
+ * Property with labels DTO.
  * @author Vincent Migot <vincent.migot@inra.fr>
  */
 public class PropertyLabelsDTO extends PropertyDTO {

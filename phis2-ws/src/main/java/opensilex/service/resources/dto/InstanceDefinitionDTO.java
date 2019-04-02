@@ -17,8 +17,7 @@ import opensilex.service.model.RdfResourceDefinition;
 import opensilex.service.model.OntologyReference;
 
 /**
- * A class which contains methods to automatically check the attributes of a 
- * class, from rules defined by user.
+ * Instance definition DTO.
  * Contains the list of the elements which might be send by the client to save 
  * the database.
  * @author Morgane Vidal <morgane.vidal@inra.fr>

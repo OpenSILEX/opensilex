@@ -25,7 +25,7 @@ import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.sql.SQLQueryBuilder;
 
 /**
- * DAO for sessions.
+ * Session DAO.
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class SessionDAO extends PhisDAO<Session, Object> {

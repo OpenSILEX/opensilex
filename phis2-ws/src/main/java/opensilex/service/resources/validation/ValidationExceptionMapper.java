@@ -23,8 +23,9 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.ResponseFormGET;
 
 /**
- * Class that catches validation errors (related to validation annotations) 
- * on resource services parameters and return response object with specific error messages.
+ * Validation exception mapper (related to validation annotations).
+ * Applied on resource services parameters and return response object with 
+ * specific error messages.
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 @Produces(MediaType.APPLICATION_JSON)

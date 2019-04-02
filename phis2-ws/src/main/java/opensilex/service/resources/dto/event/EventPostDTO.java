@@ -27,8 +27,8 @@ import opensilex.service.model.Event;
 import opensilex.service.model.Property;
 
 /**
- * DTO representing a event with the information needed to create one
- * @author Andréas Garcia<andreas.garcia@inra.fr>
+ * Event POST DTO.
+ * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
 public class EventPostDTO extends AbstractVerifiedClass {
     

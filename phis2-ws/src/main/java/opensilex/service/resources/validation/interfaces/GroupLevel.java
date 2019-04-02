@@ -22,9 +22,10 @@ import javax.validation.Payload;
 import opensilex.service.resources.validation.validators.GroupLevelValidator;
 
 /**
- * Interface to check that the given group level is one of thoses expected
+ * Interface to check that the given group level is one of those expected.
  * @see GroupLevelValidator
- * @author Arnaud Charleroy<arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Target(value={METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER})
 @Retention(RUNTIME)

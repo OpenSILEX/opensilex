@@ -39,7 +39,7 @@ import opensilex.service.model.Project;
 import opensilex.service.model.Experiment;
 
 /**
- * DAO for experiments in a relational database. 
+ * Experiments in a relational database DAO. 
  * @update [Andreas Garcia] 14 Feb. 2019: update the method that returns the 
  * total number of experiment by making it return the last experiment URI 
  * because the experiment URI generator now use the last inserted experiment

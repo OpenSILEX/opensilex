@@ -13,7 +13,7 @@ import opensilex.service.configuration.DateFormat;
 import opensilex.service.model.EnvironmentMeasure;
 
 /**
- * Represents the exchange format used to get environment measures.
+ * Environmental measure DTO.
  * @author Vincent Migot <vincent.migot@inra.fr>
  */
 public class EnvironmentMeasureDTO {

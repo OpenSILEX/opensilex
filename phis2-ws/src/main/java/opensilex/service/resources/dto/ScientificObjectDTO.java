@@ -20,7 +20,7 @@ import opensilex.service.model.ScientificObject;
 import opensilex.service.resources.validation.interfaces.URL;
 
 /**
- * Represents the submitted JSON for the scientific objects
+ * Scientific object DTO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ScientificObjectDTO extends AbstractVerifiedClass {

@@ -10,8 +10,7 @@ package opensilex.service.resources.dto.acquisitionSession;
 import com.google.gson.annotations.SerializedName;
 
 /**
- * Represents the JSON return by the web service used to generate the acquisition 
- * session excel file for the 4P platform, specific to the uav.
+ * Metadata file DTO specific to UAV.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class MetadataFileUAVDTO extends MetadataFileDTO {

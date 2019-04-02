@@ -18,7 +18,7 @@ import opensilex.service.resources.validation.interfaces.URL;
 import opensilex.service.model.Property;
 
 /**
- * represents the submitted and returned JSON for the vocabulary properties
+ * Vocabulary property DTO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class PropertyVocabularyDTO extends AbstractVerifiedClass {

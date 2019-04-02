@@ -22,10 +22,12 @@ import opensilex.service.configuration.DateFormat;
 import opensilex.service.resources.validation.validators.DateFormatValidator;
 
 /**
+ * Date validator.
  * Used to specify if a string has a valid date format.
  * @see DateFormat
  * @see DateFormatValidator
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Target({METHOD, FIELD, PARAMETER})
 @Retention(RUNTIME)

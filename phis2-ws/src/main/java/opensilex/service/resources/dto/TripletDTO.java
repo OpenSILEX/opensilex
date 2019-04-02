@@ -16,9 +16,7 @@ import opensilex.service.resources.validation.interfaces.URL;
 import opensilex.service.model.Triplet;
 
 /**
- * Corresponds to the submitted json for a triplet
- *
- * @see https://www.w3.org/wiki/JSON_Triple_Sets
+ * Triplet DTO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class TripletDTO extends AbstractVerifiedClass {

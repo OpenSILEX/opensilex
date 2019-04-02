@@ -14,7 +14,7 @@ import opensilex.service.resources.validation.interfaces.Required;
 import opensilex.service.view.model.provenance.Provenance;
 
 /**
- * Represents a provenance DTO.
+ * Provenance POST DTO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ProvenancePostDTO extends AbstractVerifiedClass {

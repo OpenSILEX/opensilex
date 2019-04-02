@@ -20,6 +20,10 @@ import opensilex.service.resources.validation.interfaces.URL;
 import opensilex.service.model.Contact;
 import opensilex.service.model.Project;
 
+/**
+ * Project DTO.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class ProjectDTO extends AbstractVerifiedClass {
 
     final static Logger LOGGER = LoggerFactory.getLogger(ProjectDTO.class);

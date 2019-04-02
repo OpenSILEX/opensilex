@@ -12,8 +12,8 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Provides SQL query building
- * @update [Andréas Garcia] 28 Feb., 2019: Add max clause handling
+ * SQL query builder.
+ * @update [Andréas Garcia] 28 Feb. 2019: Add max clause handling
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */

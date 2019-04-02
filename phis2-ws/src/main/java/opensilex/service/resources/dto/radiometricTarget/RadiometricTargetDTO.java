@@ -11,8 +11,7 @@ import opensilex.service.resources.dto.rdfResourceDefinition.RdfResourceDefiniti
 import opensilex.service.model.RadiometricTarget;
 
 /**
- * Represent a radiometric target
- * 
+ * Radiometric target DTO.
  * @author Vincent Migot <vincent.migot@inra.fr>
  */
 public class RadiometricTargetDTO extends RdfResourceDefinitionDTO {

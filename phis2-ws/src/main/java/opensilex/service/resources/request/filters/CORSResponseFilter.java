@@ -19,8 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
- * @author A. Charleroy
+ * CORS response filter.
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 @Provider
 public class CORSResponseFilter implements ContainerResponseFilter {

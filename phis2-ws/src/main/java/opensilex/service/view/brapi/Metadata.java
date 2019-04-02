@@ -2,7 +2,7 @@
 //                               Metadata.java 
 // SILEX-PHIS
 // Copyright © INRA 2016
-// Creation date: Dec. 2015
+// Creation date: 3 Dec. 2015
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.view.brapi;
@@ -13,15 +13,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Metadata - Classe contenant les données de pagination ainsi que des
- * informations de status pour chaque requête
- *
- * @version1.0
- *
- * @author Samuël Chérimont
+ * Request metadata model.
  * @see Pagination, ResultForm
- * @date 03/12/2015
- * @update 10/2016 AC mise à jour BRAPI datafiles (liens retournés à l'utilisateur)
+ * @update [Arnaud Charleroy] Oct. 2016: BrAPI datafiles update
+ * @author Samuël Chérimont
  */
 
 @ApiModel

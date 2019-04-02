@@ -29,7 +29,7 @@ import opensilex.service.dao.manager.DAO;
 import opensilex.service.model.StudyDetails;
 
 /**
- * DAO for studies.
+ * Study DAO.
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class StudyDAO extends DAO<StudyDetails>{

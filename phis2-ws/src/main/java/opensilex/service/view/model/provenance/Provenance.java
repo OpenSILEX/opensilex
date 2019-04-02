@@ -10,7 +10,7 @@ package opensilex.service.view.model.provenance;
 import java.util.HashMap;
 
 /**
- * Represents the view of a provenance.
+ * Provenance model.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class Provenance {

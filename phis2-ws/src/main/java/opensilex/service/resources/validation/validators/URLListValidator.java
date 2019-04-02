@@ -15,10 +15,11 @@ import javax.validation.ConstraintValidatorContext;
 import opensilex.service.resources.validation.interfaces.URL;
 
 /**
- * Class used by URL annotation to validate that a string value list contains an URL.
+ * Used by URL annotation to validate that a string value list contains an URL.
  * {@code null} elements are considered valid.
  * @see opensilex.service.resources.validation.interfaces.URL
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class URLListValidator implements ConstraintValidator<URL, List<String>> {
 

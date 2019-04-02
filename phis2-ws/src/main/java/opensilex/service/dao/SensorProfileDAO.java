@@ -41,7 +41,7 @@ import opensilex.service.model.SensorProfile;
 import opensilex.service.model.Uri;
 
 /**
- * DAO for sensor profiles.
+ * Sensor profile DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class SensorProfileDAO extends SparqlDAO<SensorProfile> {

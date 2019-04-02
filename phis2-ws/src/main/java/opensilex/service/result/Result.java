@@ -2,7 +2,7 @@
 //                                Result.java 
 // SILEX-PHIS
 // Copyright © INRA 2016
-// Creation date: Dec. 2015
+// Creation date: 14 Dec. 2015
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.result;
@@ -12,12 +12,12 @@ import java.util.ArrayList;
 
 /**
  * Abstract class which provides a model to format the web service returns to be
- * BreedingAPI compatible.
- * @author Samuël Chérimont, Arnaud Charleroy <arnaud.charleroy@inra.fr>
- * @param <T> The type of the objects of the data list attribute.
+ * Brapi compatible.
  * @see Pagination
  * @see https://brapi.docs.apiary.io
- * @date 14/12/2015
+ * @param <T> The type of the objects of the data list attribute.
+ * @author Samuël Chérimont
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class Result<T> {
 

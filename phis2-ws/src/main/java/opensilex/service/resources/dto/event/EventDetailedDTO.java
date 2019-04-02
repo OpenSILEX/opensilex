@@ -12,8 +12,8 @@ import opensilex.service.resources.dto.annotation.AnnotationDTO;
 import opensilex.service.model.Event;
 
 /**
- * DTO representing an event detailed
- * @author Andréas Garcia<andreas.garcia@inra.fr>
+ * Event DTO.
+ * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
 public class EventDetailedDTO extends EventSimpleDTO {
     

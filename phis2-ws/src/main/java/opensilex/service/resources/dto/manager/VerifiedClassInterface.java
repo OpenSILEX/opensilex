@@ -8,10 +8,10 @@
 package opensilex.service.resources.dto.manager;
 
 /**
- * Interface implemented by DTO class which will be verified
+ * Interface implemented by DTO classes which will be verified
  * during a POST Request
- * @author Arnaud Charleroy<arnaud.charleroy@inra.fr>
  * @param <T> Object returned by the class
+ * @author Arnaud Charleroy<arnaud.charleroy@inra.fr>
  */
 public interface VerifiedClassInterface<T> {
     

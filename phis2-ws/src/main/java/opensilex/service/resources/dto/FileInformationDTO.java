@@ -14,7 +14,7 @@ import opensilex.service.resources.dto.manager.AbstractVerifiedClass;
 import opensilex.service.model.FileInformations;
 
 /**
- * corresponds to the submitted JSON for a file information
+ * File information DTO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class FileInformationDTO extends AbstractVerifiedClass {

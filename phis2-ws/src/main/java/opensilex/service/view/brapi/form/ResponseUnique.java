@@ -10,8 +10,8 @@ package opensilex.service.view.brapi.form;
 import opensilex.service.view.brapi.Metadata;
 
 /**
- *
- * @author charlero
+ * Response unique.
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class ResponseUnique {
     Metadata metadata;

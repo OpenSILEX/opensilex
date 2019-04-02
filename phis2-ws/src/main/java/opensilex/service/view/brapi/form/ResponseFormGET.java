@@ -11,8 +11,8 @@ import java.util.List;
 import opensilex.service.view.brapi.Status;
 
 /**
- * 
- * @author A. Charleroy
+ * Response form GET.
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class ResponseFormGET extends AbstractResultForm{
 

@@ -49,7 +49,7 @@ import opensilex.service.model.Property;
 //\SILEX:todo
 
 /**
- * DAO for properties.
+ * Property DAO.
  * @update [Andréas Garcia] 5 March, 2019: Move URI from the class attributes to 
  * the parameters of the DAO functions
  * @author Morgane Vidal <morgane.vidal@inra.fr>

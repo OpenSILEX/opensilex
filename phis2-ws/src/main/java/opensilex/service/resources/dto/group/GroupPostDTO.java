@@ -18,7 +18,7 @@ import opensilex.service.resources.validation.interfaces.Required;
 import opensilex.service.model.Group;
 
 /**
- * The group post dto.
+ * Group POST DTO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class GroupPostDTO extends AbstractVerifiedClass {

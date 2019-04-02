@@ -12,8 +12,8 @@ import opensilex.service.view.brapi.Metadata;
 import opensilex.service.view.brapi.Status;
 
 /**
- * 
- * @author A. Charleroy
+ * Abstract result form.
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public abstract class AbstractResultForm {
 

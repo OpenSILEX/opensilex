@@ -18,7 +18,7 @@ import opensilex.service.resources.validation.interfaces.URL;
 import opensilex.service.model.Annotation;
 
 /**
- * DTO representing an annotation for a POST
+ * Annotation POST DTO.
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class AnnotationPostDTO extends AbstractVerifiedClass {

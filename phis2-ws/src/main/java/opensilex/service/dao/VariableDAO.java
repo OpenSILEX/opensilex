@@ -52,7 +52,7 @@ import opensilex.service.model.Unit;
 import opensilex.service.model.Variable;
 
 /**
- * DAO for variables.
+ * Variable DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class VariableDAO extends SparqlDAO<Variable> {

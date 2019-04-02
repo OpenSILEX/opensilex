@@ -20,6 +20,10 @@ import opensilex.service.resources.validation.interfaces.GroupLevel;
 import opensilex.service.resources.validation.interfaces.URL;
 import opensilex.service.model.Group;
 
+/**
+ * Group DTO.
+ * @author Vincent Migot <vincent.migot@inra.fr>
+ */
 public class GroupDTO extends AbstractVerifiedClass {
     
     final static Logger LOGGER = LoggerFactory.getLogger(GroupDTO.class);

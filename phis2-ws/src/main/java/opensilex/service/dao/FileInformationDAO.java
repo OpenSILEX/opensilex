@@ -16,7 +16,7 @@ import opensilex.service.dao.manager.MongoDAO;
 import opensilex.service.model.FileInformations;
 
 /**
- * DAO for file information.
+ * File information DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class FileInformationDAO extends MongoDAO<FileInformations> {

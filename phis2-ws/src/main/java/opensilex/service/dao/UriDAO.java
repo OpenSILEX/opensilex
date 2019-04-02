@@ -35,7 +35,7 @@ import opensilex.service.model.Uri;
 //   Purpose : need to paginate the query instead of retreive all instances and then filtered them
 // \SILEX:todo
 /**
- * DAO for URIs.
+ * URI DAO.
  * @author Eloan Lagier
  */
 public class UriDAO extends SparqlDAO<Uri> {

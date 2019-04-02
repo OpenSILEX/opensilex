@@ -12,20 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class which contains the metadata part of the brapi WS response with pagination 
- * and status information
+ * BrAPI metadata model.
  * @author Alice Boizet <alice.boizet@inra.fr>
- * @example 
- * "metadata": {
-    "pagination": {
-      "pageSize": 20,
-      "currentPage": 0,
-      "totalCount": 3,
-      "totalPages": 1
-    },
-    "status": [],
-    "datafiles": []
-   }
  */
 @ApiModel
 public class BrapiMetadata {

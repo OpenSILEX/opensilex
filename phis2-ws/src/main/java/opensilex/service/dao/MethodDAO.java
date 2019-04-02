@@ -45,7 +45,7 @@ import opensilex.service.model.Method;
 import opensilex.service.model.OntologyReference;
 
 /**
- * DAO for methods.
+ * Method DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class MethodDAO extends SparqlDAO<Method> {

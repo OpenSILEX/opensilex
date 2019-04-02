@@ -27,8 +27,8 @@ import opensilex.service.model.ConcernedItem;
 import opensilex.service.model.FileDescription;
 
 /**
- * This class describe FileDescription Metadata
- * @author vincent
+ * File description POST DTO.
+ * @author Vincent Migot <vincent.migot@inra.fr>
  */
 public class FileDescriptionPostDTO extends AbstractVerifiedClass {
     

@@ -20,8 +20,7 @@ import opensilex.service.model.RdfResourceDefinition;
 import opensilex.service.model.Property;
 
 /**
- * Represents the JSON for an rdf resource definition with its uri and label
- *
+ * RDF resource definition DTO.
  * @see PropertyDTO
  * @author Vincent Migot <vincent.migot@inra.fr>
  */

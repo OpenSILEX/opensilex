@@ -8,7 +8,7 @@
 package opensilex.service.view.brapi;
 
 /**
- * Class which represents the pagination part of the response
+ * BrAPI Pagination model.
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class BrapiPagination {

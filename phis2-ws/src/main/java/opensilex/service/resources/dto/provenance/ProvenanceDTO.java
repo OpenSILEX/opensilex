@@ -13,7 +13,7 @@ import opensilex.service.resources.dto.manager.AbstractVerifiedClass;
 import opensilex.service.view.model.provenance.Provenance;
 
 /**
- * Represents a provenance DTO.
+ * Provenance DTO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ProvenanceDTO extends AbstractVerifiedClass {

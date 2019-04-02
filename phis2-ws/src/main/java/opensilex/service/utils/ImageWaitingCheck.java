@@ -14,11 +14,11 @@ import opensilex.service.PropertiesFileManager;
 import opensilex.service.resources.ImageResourceService;
 
 /**
- * A class which allows to start a thread for image sending. 
- * When an image is sent to the web service, it is sent in two times: 
+ * Allows to start a thread for image sending. 
+ * When an image is sent to the web service, it is sent in two stages: 
  * 1. the image metadata is sent
  * 2. the file is sent
- * This is why we need this class (to wait for the image file)
+ * This is why we need this class (to wait for the image file).
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ImageWaitingCheck implements Callable<Boolean> {

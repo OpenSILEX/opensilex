@@ -9,8 +9,7 @@
 package opensilex.service.utils.sparql;
 
 /**
- * Classe concrète qui permet de créer des requêtes de recherche en SPARQL
- *
+ * SPARQL query builder.
  * @author Arnaud Charleroy
  */
 public class SPARQLQueryBuilder extends SPARQLStringBuilder {

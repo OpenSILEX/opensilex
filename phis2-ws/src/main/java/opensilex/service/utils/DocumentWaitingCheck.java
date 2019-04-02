@@ -15,8 +15,8 @@ import opensilex.service.PropertiesFileManager;
 import opensilex.service.resources.DocumentResourceService;
 
 /**
- * A class which permit to start a thread for document sending
- * @author andreas
+ * Permits to start a thread for document sending.
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class DocumentWaitingCheck implements Callable<Boolean> {
     final static Logger LOGGER = LoggerFactory.getLogger(DocumentWaitingCheck.class);

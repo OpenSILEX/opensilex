@@ -19,7 +19,7 @@ import opensilex.service.model.Contact;
 import opensilex.service.model.Project;
 
 /**
- * Project post DTO
+ * Project POST DTO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ProjectPostDTO extends AbstractVerifiedClass {

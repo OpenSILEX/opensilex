@@ -61,7 +61,7 @@ import opensilex.service.model.Experiment;
 //\SILEX:conception
 
 /**
- * DAO for documents metadata in a triplestore.
+ * Documents metadata DAO for a triplestore.
  * @update [Morgane Vidal] 12 Oct. 2017: add status on documents : linked/unlinked
  * @update [Andréas Garcia] 15 Jan. 2019: Replace "concern" occurences by "concernedItem"
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>

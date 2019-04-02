@@ -45,7 +45,7 @@ import opensilex.service.model.OntologyReference;
 import opensilex.service.model.Unit;
 
 /**
- * DAO for units.
+ * Unit DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class UnitDAO extends SparqlDAO<Unit> {

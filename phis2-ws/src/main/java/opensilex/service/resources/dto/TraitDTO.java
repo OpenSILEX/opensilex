@@ -12,11 +12,8 @@ import org.slf4j.LoggerFactory;
 import opensilex.service.model.Trait;
 
 /**
- * A class which contains methods to automatically check the attributes of a 
- * class, from rules defined by user.
- * Contains the list of the elements which might be send by the client  to save 
- * the database
- * @author morgane
+ * Trait DTO.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class TraitDTO extends InstanceDefinitionDTO {
     final static Logger LOGGER = LoggerFactory.getLogger(TraitDTO.class);

@@ -23,8 +23,8 @@ import opensilex.service.model.Event;
 import opensilex.service.model.Property;
 
 /**
- * DTO representing a event with the basic information
- * @author Andréas Garcia<andreas.garcia@inra.fr>
+ * Event DTO.
+ * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
 public class EventSimpleDTO extends AbstractVerifiedClass {
     

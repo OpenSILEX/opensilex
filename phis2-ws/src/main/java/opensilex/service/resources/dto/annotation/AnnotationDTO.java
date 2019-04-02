@@ -14,8 +14,7 @@ import opensilex.service.utils.dates.Dates;
 import opensilex.service.model.Annotation;
 
 /**
- * DTO representing an annotation
- * @update [Andréas Garcia] Make AnnotationDTO only concerns GET calls of annotations
+ * Annotation DTO.
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class AnnotationDTO extends AnnotationPostDTO {

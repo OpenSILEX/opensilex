@@ -38,7 +38,7 @@ import opensilex.service.model.ConcernedItem;
 import opensilex.service.model.ImageMetadata;
 
 /**
- * DAO for image metadata.
+ * Image metadata DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  * @update [Andréas Garcia] Jan. 2019: modify "concern(s)" occurences into 
  * "concernedItem(s)" in Java variables and MongoDB fields

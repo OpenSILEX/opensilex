@@ -16,12 +16,14 @@ import opensilex.service.utils.dates.Dates;
 import opensilex.service.resources.validation.interfaces.Date;
 
 /**
- * Class used by DateFormat annotation to validate a string value with one
- * or more date format, the value is considered valid as soon as it correspond to one format.
+ * Used by DateFormat annotation to validate a string value with one or more 
+ * date format. 
+ * The value is considered valid as soon as it corresponds to one format.
  * {@code null} elements are considered valid.
  * @see Date
  * @see DateFormat
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class DateFormatValidator implements ConstraintValidator<Date, String> {
 

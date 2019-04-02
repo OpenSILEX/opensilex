@@ -35,7 +35,7 @@ import opensilex.service.model.Contact;
 import opensilex.service.model.Project;
 
 /**
- * DAO for projects.
+ * Project DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ProjectDAO extends PhisDAO<Project, ProjectDTO> {

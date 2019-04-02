@@ -29,7 +29,7 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.model.Document;
 
 /**
- * DAO for documents in MongoDB.
+ * Documents DAO for MongoDB.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class DocumentMongoDAO extends MongoDAO<Document> { 

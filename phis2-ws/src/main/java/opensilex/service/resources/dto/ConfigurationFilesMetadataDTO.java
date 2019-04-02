@@ -14,6 +14,10 @@ import javax.validation.constraints.Pattern;
 import opensilex.service.resources.validation.interfaces.Required;
 import opensilex.service.resources.dto.manager.AbstractVerifiedClass;
 
+/**
+ * Configuration files metadata DTO.
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ */
 @ApiModel
 public class ConfigurationFilesMetadataDTO extends AbstractVerifiedClass {
     private String provider;

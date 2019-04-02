@@ -18,8 +18,7 @@ import opensilex.service.resources.validation.interfaces.URL;
 import opensilex.service.model.Sensor;
 
 /**
- * corresponds to the submitted JSON for the sensors
- *
+ * Sensor DTO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class SensorDTO extends AbstractVerifiedClass {

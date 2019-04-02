@@ -22,6 +22,10 @@ import opensilex.service.model.Group;
 import opensilex.service.model.Project;
 import opensilex.service.model.Experiment;
 
+/**
+ * Experiment DTO.
+ * @author Vincent Migot <vincent.migot@inra.fr>
+ */
 public class ExperimentDTO extends AbstractVerifiedClass {
 
     final static Logger LOGGER = LoggerFactory.getLogger(ExperimentDTO.class);

@@ -21,9 +21,7 @@ import opensilex.service.resources.validation.interfaces.URL;
 import opensilex.service.model.SensorProfile;
 
 /**
- * Represents the submitted JSON for the sensor's profile
- *
- * @see PropertyDTO
+ * Sensor profile DTO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class SensorProfileDTO extends AbstractVerifiedClass {

@@ -17,6 +17,10 @@ import opensilex.service.model.Trait;
 import opensilex.service.model.Unit;
 import opensilex.service.model.Variable;
 
+/**
+ * Variable DTO.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
 public class VariableDTO extends InstanceDefinitionDTO {
 
     final static Logger LOGGER = LoggerFactory.getLogger(VariableDTO.class);

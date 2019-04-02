@@ -19,7 +19,7 @@ import opensilex.service.resources.validation.interfaces.URL;
 import opensilex.service.model.Provenance;
 
 /**
- * Represents the submitted JSON for the Provenance data
+ * Provenance DTO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @ProvenanceDate

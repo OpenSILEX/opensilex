@@ -25,7 +25,7 @@ import opensilex.service.resources.validation.validators.URLListValidator;
 import opensilex.service.resources.validation.validators.URLValidator;
 
 /**
- * Annotation used to check if a string is a valid URL
+ * Annotation used to check if a string is a valid URL.
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 @Target({METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER})

@@ -10,7 +10,7 @@ package opensilex.service.view.brapi.form;
 import opensilex.service.view.brapi.BrapiMetadata;
 
 /**
- * Allows the formating of the result of the request about any object T
+ * Allows the formatting of the result of the request about any object.
  * it is used when there is only one element in the response
  * @author Alice Boizet <alice.boizet@inra.fr>
  */

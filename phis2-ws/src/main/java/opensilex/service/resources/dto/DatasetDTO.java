@@ -16,7 +16,7 @@ import opensilex.service.resources.validation.interfaces.URL;
 import opensilex.service.model.Dataset;
 
 /**
- * corresponds to the submitted JSON for the datasets
+ * Dataset DTO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class DatasetDTO extends AbstractVerifiedClass {

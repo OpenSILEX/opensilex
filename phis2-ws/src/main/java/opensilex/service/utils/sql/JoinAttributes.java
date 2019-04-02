@@ -10,8 +10,8 @@ package opensilex.service.utils.sql;
 import javax.inject.Singleton;
 
 /**
- * Liste des jointures
- * @author A. Charleroy
+ * SQL joins.
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 @Singleton
 public final class JoinAttributes {

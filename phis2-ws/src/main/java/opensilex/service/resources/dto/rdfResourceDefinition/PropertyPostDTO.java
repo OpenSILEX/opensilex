@@ -12,7 +12,8 @@ import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.resources.validation.interfaces.Required;
 
 /**
- * The property DTO used for the post. It adds the @Required to the value param
+ * Property POST DTO.
+ * It adds the @Required to the value param.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class PropertyPostDTO extends PropertyDTO {

@@ -20,7 +20,8 @@ import opensilex.service.resources.validation.interfaces.URL;
 import opensilex.service.model.Data;
 
 /**
- * Represents the exchange format used to insert data in post service.
+ * Data POST DTO.
+ * @author Vincent Migot <vincent.migot@inra.fr>
  */
 public class DataPostDTO extends AbstractVerifiedClass {
     //The uri of the provenance from which data come.

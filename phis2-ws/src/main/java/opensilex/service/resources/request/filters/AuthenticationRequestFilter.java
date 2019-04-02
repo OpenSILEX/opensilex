@@ -30,17 +30,15 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.ResponseFormGET;
 
 /**
- * Permet de filtrer les envois au Web Service grâce au header des requêtes
- * ainsi que d'autres paramètres
- *
- * @author Arnaud Charleroy
- * @date 05/16
- * @update 10/16 brapi v1
+ * Authentication request filter.
+ * Filters web service requests according to the header and other parameters.
+ * @update [Arnaud Charleroy] Oct. 2016: Brapi v1
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 @Provider
-public class AuthentificationRequestFilter implements ContainerRequestFilter {
+public class AuthenticationRequestFilter implements ContainerRequestFilter {
 
-    final static Logger LOGGER = LoggerFactory.getLogger(AuthentificationRequestFilter.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(AuthenticationRequestFilter.class);
 
     @Context
     private ResourceInfo resourceInfo;

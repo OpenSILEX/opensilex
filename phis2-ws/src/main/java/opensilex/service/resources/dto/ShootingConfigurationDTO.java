@@ -17,7 +17,7 @@ import opensilex.service.resources.validation.interfaces.URL;
 import opensilex.service.model.ShootingConfiguration;
 
 /**
- * corresponds to the submitted JSON for an image shooting configuration
+ * Shooting configuration DTO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ShootingConfigurationDTO extends AbstractVerifiedClass {

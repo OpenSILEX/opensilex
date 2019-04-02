@@ -18,8 +18,7 @@ import opensilex.service.resources.validation.interfaces.URL;
 import opensilex.service.model.Vector;
 
 /**
- * corresponds to the submitted JSON for a vector
- *
+ * Vector DTO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class VectorDTO extends AbstractVerifiedClass {

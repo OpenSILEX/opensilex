@@ -8,8 +8,8 @@
 package opensilex.service.view.brapi;
 
 /**
- *
- * @author charlero
+ * Status exception model.
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class StatusException {
 

@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import opensilex.service.model.Trait;
 
 /**
- * Represents a trait according to brapi specifications
+ * BrAPI trait DTO.
  * @See https://brapi.docs.apiary.io/#reference/traits
  * @author Alice Boizet <alice.boizet@inra.fr>
  */

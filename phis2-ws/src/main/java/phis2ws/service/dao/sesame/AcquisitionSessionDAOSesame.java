@@ -34,7 +34,7 @@ import phis2ws.service.view.model.phis.Vector;
  * @update [Arnaud Charleroy] 10 September, 2018 : minor fix on vector data gathering
  * @author Morgane Vidal <morgane.vidal@inra.fr>, Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
-public class AcquisitionSessionDAOSesame extends DAOSesame<Object> {
+public class AcquisitionSessionDAOSesame extends DAOSesame<MetadataFileDTO> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(AcquisitionSessionDAOSesame.class);
     
@@ -235,27 +235,27 @@ public class AcquisitionSessionDAOSesame extends DAOSesame<Object> {
     }
 
     @Override
-    public List create(List objects) throws Exception {
+    public List<MetadataFileDTO> create(List<MetadataFileDTO> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List objects) throws Exception {
+    public void delete(List<MetadataFileDTO> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List update(List objects) throws Exception {
+    public List<MetadataFileDTO> update(List<MetadataFileDTO> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Object find(Object object) throws Exception {
+    public MetadataFileDTO find(MetadataFileDTO object) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Object findById(String id) throws Exception {
+    public MetadataFileDTO findById(String id) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

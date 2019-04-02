@@ -302,17 +302,17 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
     }
 
     @Override
-    public List create(List objects) throws Exception {
+    public List<SensorProfile> create(List<SensorProfile> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List objects) throws Exception {
+    public void delete(List<SensorProfile> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List update(List objects) throws Exception {
+    public List<SensorProfile> update(List<SensorProfile> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

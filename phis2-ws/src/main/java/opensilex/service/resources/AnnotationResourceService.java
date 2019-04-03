@@ -54,7 +54,7 @@ import opensilex.service.model.Annotation;
 @Path("/annotations")
 public class AnnotationResourceService extends ResourceService {
     /**
-     * Inserts the given annotations in the triplestore
+     * Inserts the given annotations in the triplestore.
      * @example
      * [
      *   {
@@ -94,16 +94,16 @@ public class AnnotationResourceService extends ResourceService {
         AbstractResultForm postResponse = null;
         //If there are at least one list of annotations
         if (annotationsDtos != null && !annotationsDtos.isEmpty()) {
-            AnnotationDAO annotationDAOSesame = new AnnotationDAO(userSession.getUser());
+            AnnotationDAO annotationDao = new AnnotationDAO(userSession.getUser());
             if (context.getRemoteAddr() != null) {
-                annotationDAOSesame.remoteUserAdress = context.getRemoteAddr();
+                annotationDao.remoteUserAdress = context.getRemoteAddr();
             }
             
             ArrayList<Annotation> annotations = new ArrayList<>();
             annotationsDtos.forEach((annotationDTO) -> {
                 annotations.add(annotationDTO.createObjectFromDTO());
             });
-            POSTResultsReturn insertResult = annotationDAOSesame.checkAndInsert(annotations);
+            POSTResultsReturn insertResult = annotationDao.checkAndInsert(annotations);
             
             // annotations inserted
             if (insertResult.getHttpStatus().equals(Response.Status.CREATED)) {
@@ -122,7 +122,7 @@ public class AnnotationResourceService extends ResourceService {
     }
 
     /**
-     * Searches annotations by URI, creator, comment, date of creation, target
+     * Searches annotations by URI, creator, comment, date of creation, target.
      * @example { 
      * "metadata": { 
      *      "pagination": { 
@@ -182,7 +182,7 @@ public class AnnotationResourceService extends ResourceService {
     }
 
     /**
-     * Gets the information about an annotation
+     * Gets the information about an annotation.
      * @example
      * {
      * "metadata": { "pagination": null, "status": [], "datafiles": [] },
@@ -234,35 +234,35 @@ public class AnnotationResourceService extends ResourceService {
     }
 
     /**
-     * Searches annotations corresponding to search parameters given by the user
+     * Searches annotations corresponding to search parameters given by the user.
      * @param annotationDAOSesame
      * @return the annotations corresponding to the search
      */
     private Response getAnnotations(String uri, String creator, String target, String bodyValue, String motivatedBy, int page, int pageSize) {
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<AnnotationDTO> getResponse;
-        AnnotationDAO annotationDAOSesame = new AnnotationDAO(userSession.getUser());
+        AnnotationDAO annotationDao = new AnnotationDAO(userSession.getUser());
 
         // Count all annotations for this specific request
-        Integer totalCount = annotationDAOSesame.count(uri, creator, target, bodyValue, motivatedBy);
+        Integer totalCount = annotationDao.count(uri, creator, target, bodyValue, motivatedBy);
         
         // Retreive all annotations returned by the query
-        ArrayList<Annotation> annotations = annotationDAOSesame.searchAnnotations(uri, creator, target, bodyValue, motivatedBy, page, pageSize);
+        ArrayList<Annotation> annotations = annotationDao.searchAnnotations(uri, creator, target, bodyValue, motivatedBy, page, pageSize);
         
         ArrayList<AnnotationDTO> annotationDTOs = new ArrayList();
 
         if (annotations == null) {
-            getResponse = new ResultForm<AnnotationDTO>(0, 0, annotationDTOs, true);
+            getResponse = new ResultForm<>(0, 0, annotationDTOs, true);
             return noResultFound(getResponse, statusList);
         } else if (annotations.isEmpty()) {
-            getResponse = new ResultForm<AnnotationDTO>(0, 0, annotationDTOs, true);
+            getResponse = new ResultForm<>(0, 0, annotationDTOs, true);
             return noResultFound(getResponse, statusList);
         } else {
             // Generate DTOs
             annotations.forEach((annotation) -> {
                 annotationDTOs.add(new AnnotationDTO(annotation));
             });
-            getResponse = new ResultForm<AnnotationDTO>(annotationDAOSesame.getPageSize(), annotationDAOSesame.getPage(), annotationDTOs, true, totalCount);
+            getResponse = new ResultForm<>(annotationDao.getPageSize(), annotationDao.getPage(), annotationDTOs, true, totalCount);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }

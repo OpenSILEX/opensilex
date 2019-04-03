@@ -55,14 +55,14 @@ import opensilex.service.model.EnvironmentMeasure;
 @Path("/environments")
 public class EnvironmentResourceService extends ResourceService {
     /**
-     * Generayes an Environment list from a given list of EnvironmentPostDTO.
-     * @param environmentDTOs
+     * Generates environmental measures from a given list of environmental measures DTOs.
+     * @param environmentMeasureDTOs
      * @return the list of environments
      */
-    private List<EnvironmentMeasure> environmentMeasurePostDTOsToEnvironmentMeasure(List<EnvironmentMeasurePostDTO> environmentDTOs) {
+    private List<EnvironmentMeasure> environmentMeasurePostDTOsToEnvironmentMeasure(List<EnvironmentMeasurePostDTO> environmentMeasureDTOs) {
         ArrayList<EnvironmentMeasure> environments = new ArrayList<>();
         
-        environmentDTOs.forEach((environmentDTO) -> {
+        environmentMeasureDTOs.forEach((environmentDTO) -> {
             environments.add(environmentDTO.createObjectFromDTO());
         });
         
@@ -70,7 +70,7 @@ public class EnvironmentResourceService extends ResourceService {
     }
     
     /**
-     * Service to insert environment measures. 
+     * Service to insert environmental measures. 
      * @example
      * [
      *  {
@@ -133,7 +133,7 @@ public class EnvironmentResourceService extends ResourceService {
     }
     
     /**
-     * Service to get environment measures
+     * Service to get environment measures.
      * @param pageSize
      * @param page
      * @param variable
@@ -141,7 +141,7 @@ public class EnvironmentResourceService extends ResourceService {
      * @param endDate
      * @param sensor
      * @param dateSortAsc
-     * @return list of the environment measures corresponding to the search params given
+     * @return list of the environment measures corresponding to the search parameters given
      * @example
      * {
      *      "metadata": {
@@ -201,24 +201,24 @@ public class EnvironmentResourceService extends ResourceService {
         @ApiParam(value = "Date search result order ('true' for ascending and 'false' for descending)", example = "true") @QueryParam("dateSortAsc") boolean dateSortAsc
     ) {
         // 1. Initialize environmentDAO with parameters
-        EnvironmentMeasureDAO environmentDAO = new EnvironmentMeasureDAO();
+        EnvironmentMeasureDAO environmentMeasureDAO = new EnvironmentMeasureDAO();
         
-        environmentDAO.variableUri = variable;
+        environmentMeasureDAO.variableUri = variable;
 
-        environmentDAO.startDate = startDate;
-        environmentDAO.endDate = endDate;
-        environmentDAO.sensorUri = sensor;
-        environmentDAO.dateSortAsc = dateSortAsc;
+        environmentMeasureDAO.startDate = startDate;
+        environmentMeasureDAO.endDate = endDate;
+        environmentMeasureDAO.sensorUri = sensor;
+        environmentMeasureDAO.dateSortAsc = dateSortAsc;
         
-        environmentDAO.user = userSession.getUser();
-        environmentDAO.setPage(page);
-        environmentDAO.setPageSize(pageSize);
+        environmentMeasureDAO.user = userSession.getUser();
+        environmentMeasureDAO.setPage(page);
+        environmentMeasureDAO.setPageSize(pageSize);
         
         // 2. Get environment measures count
-        int totalCount = environmentDAO.count();
+        int totalCount = environmentMeasureDAO.count();
         
         // 3. Get environment measures page list
-        ArrayList<EnvironmentMeasure> measures = environmentDAO.allPaginate();
+        ArrayList<EnvironmentMeasure> measures = environmentMeasureDAO.allPaginate();
         
         // 4. Initialize return variables
         ArrayList<EnvironmentMeasureDTO> list = new ArrayList<>();
@@ -227,11 +227,11 @@ public class EnvironmentResourceService extends ResourceService {
         
         if (measures == null) {
             // Request failure
-            getResponse = new ResultForm<EnvironmentMeasureDTO>(0, 0, list, true, 0);
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         } else if (measures.isEmpty()) {
             // No results
-            getResponse = new ResultForm<EnvironmentMeasureDTO>(0, 0, list, true, 0);
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         } else {
             // Convert all measures object to DTO's
@@ -240,7 +240,7 @@ public class EnvironmentResourceService extends ResourceService {
             });
             
             // Return list of DTO
-            getResponse = new ResultForm<EnvironmentMeasureDTO>(environmentDAO.getPageSize(), environmentDAO.getPage(), list, true, totalCount);
+            getResponse = new ResultForm<>(environmentMeasureDAO.getPageSize(), environmentMeasureDAO.getPage(), list, true, totalCount);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }

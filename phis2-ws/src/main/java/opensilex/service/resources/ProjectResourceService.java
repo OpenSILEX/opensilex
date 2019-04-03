@@ -56,8 +56,9 @@ import opensilex.service.model.Project;
 @Api("/projects")
 @Path("projects")
 public class ProjectResourceService extends ResourceService {
+    
     /**
-     * 
+     * Project GET service.
      * @param limit
      * @param page
      * @param uri
@@ -71,14 +72,7 @@ public class ProjectResourceService extends ResourceService {
      * @param keywords
      * @param parentProject
      * @param website
-     * @return liste des projets correspondant aux différents critères de recherche 
-     *                                                 (ou tous les projets si pas de critères)
-     *  Le retour (dans "data") est de la forme : 
-     *          [
-     *              { description du projet1 },
-     *              { description du projet2 },
-     *               ...
-     *          ]
+     * @return the projects found
      */
     @GET
     @ApiOperation(value = "Get all projects corresponding to the searched params given",
@@ -152,11 +146,11 @@ public class ProjectResourceService extends ResourceService {
     }
     
     /**
-     * 
+     * Single project GET service from URI.
      * @param projectURI
      * @param limit
      * @param page
-     * @return le projet correspondant à l'uri donnée s'il existe
+     * @return the project found
      */
     @GET
     @Path("{projectURI}")
@@ -193,6 +187,12 @@ public class ProjectResourceService extends ResourceService {
         return getProjectsData(projectDao);
     }
     
+    /**
+     * Project POST service.
+     * @param projects
+     * @param context
+     * @return the project creation result
+     */
     @POST
     @ApiOperation(value = "Post a project",
                   notes = "Register a new project in the database")
@@ -213,7 +213,7 @@ public class ProjectResourceService extends ResourceService {
             @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         
-        //Si dans les données envoyées, il y a au moins un projet
+        // If there is at least a project
         if (projects != null && !projects.isEmpty()) {
             ProjectDAO projectDao = new ProjectDAO();
             if (projectDao.remoteUserAdress != null) {
@@ -222,10 +222,10 @@ public class ProjectResourceService extends ResourceService {
 
             projectDao.user = userSession.getUser();
 
-            //Vérification des projets et insertion en BD
+            // Check and insert projects
             POSTResultsReturn result = projectDao.checkAndInsert(projects);
 
-            if (result.getHttpStatus().equals(Response.Status.CREATED)) { //201, projects inserted
+            if (result.getHttpStatus().equals(Response.Status.CREATED)) { //201: projects inserted
                 postResponse = new ResponseFormPOST(result.statusList);
                 postResponse.getMetadata().setDatafiles(result.getCreatedResources());
             } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
@@ -242,10 +242,10 @@ public class ProjectResourceService extends ResourceService {
     }
     
     /**
-     * @action modifie une liste de projets en fonction des modifs envoyées
+     * Project PUT service.
      * @param projects
      * @param context
-     * @return Response le resultat de la requete
+     * @return the update result
      */
     @PUT
     @ApiOperation(value = "Update project")
@@ -275,10 +275,10 @@ public class ProjectResourceService extends ResourceService {
             }
             projectDao.user = userSession.getUser();
             
-            //Vérification des données et update de la BD
+            // Check and update projects
             POSTResultsReturn result = projectDao.checkAndUpdateList(projects);
             
-            if (result.getHttpStatus().equals(Response.Status.OK)) { //200 users modifiés
+            if (result.getHttpStatus().equals(Response.Status.OK)) { //200: projects updated
                 postResponse = new ResponseFormPOST(result.statusList);
                 return Response.status(result.getHttpStatus()).entity(postResponse).build();
             } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
@@ -294,10 +294,9 @@ public class ProjectResourceService extends ResourceService {
     }
         
     /**
-     * Collecte les données issues d'une requête de l'utilisateur (recherche de projets)
-     * @param projectDao ProjectDao
-     * @return la réponse pour l'utilisateur
-     *          contient la liste des projets correspondant à la recherche
+     * Gets projects data.
+     * @param projectDao
+     * @return the projects found
      */
     private Response getProjectsData(ProjectDAO projectDao) {
         ArrayList<Project> projects = new ArrayList<>();
@@ -306,19 +305,19 @@ public class ProjectResourceService extends ResourceService {
         Integer projectsCount = projectDao.count();
         
         if (projectsCount != null && projectsCount == 0) {
-            getResponse = new ResultForm<Project>(projectDao.getPageSize(), projectDao.getPage(), projects, true, projectsCount);
+            getResponse = new ResultForm<>(projectDao.getPageSize(), projectDao.getPage(), projects, true, projectsCount);
             return noResultFound(getResponse, statusList);
         } else {
             projects = projectDao.allPaginate();
             
             if (projects == null || projectsCount == null) { //sql error
-                getResponse = new ResultForm<Project>(0, 0, projects, true, projectsCount);
+                getResponse = new ResultForm<>(0, 0, projects, true, projectsCount);
                 return sqlError(getResponse, statusList);
             } else if (projects.isEmpty()) { // no result found
-                getResponse = new ResultForm<Project>(projectDao.getPageSize(), projectDao.getPage(), projects, false, projectsCount);
+                getResponse = new ResultForm<>(projectDao.getPageSize(), projectDao.getPage(), projects, false, projectsCount);
                 return noResultFound(getResponse, statusList);
             } else { //results founded
-                getResponse = new ResultForm<Project>(projectDao.getPageSize(), projectDao.getPage(), projects, true, projectsCount);
+                getResponse = new ResultForm<>(projectDao.getPageSize(), projectDao.getPage(), projects, true, projectsCount);
                 getResponse.setStatus(statusList);
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }

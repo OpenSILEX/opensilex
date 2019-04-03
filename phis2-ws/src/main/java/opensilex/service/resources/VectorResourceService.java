@@ -56,39 +56,39 @@ import opensilex.service.model.Vector;
 @Api("/vectors")
 @Path("/vectors")
 public class VectorResourceService extends ResourceService {
+    
     /**
-     * Search vectors corresponding to search params given by a user
-     * @param vectorDAOSesame
+     * Search vectors corresponding to search parameters given.
+     * @param vectorDao
      * @return the vectors corresponding to the search
      */
-    private Response getVectorsData(VectorDAO vectorDAOSesame) {
+    private Response getVectorsData(VectorDAO vectorDao) {
         ArrayList<Vector> vectors;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Vector> getResponse;
         
         //1. Get number of vectors corresponding to the search params
-        Integer totalCount = vectorDAOSesame.count();
+        Integer totalCount = vectorDao.count();
         //2. Get vectors to return
-        vectors = vectorDAOSesame.allPaginate();
+        vectors = vectorDao.allPaginate();
         
         //3. Return the result
         if (vectors == null) { //Request error
-            getResponse = new  ResultForm<Vector>(0, 0, vectors, true, 0);
+            getResponse = new  ResultForm<>(0, 0, vectors, true, 0);
             return noResultFound(getResponse, statusList);
         } else if (vectors.isEmpty()) { //No result
-            getResponse = new  ResultForm<Vector>(0, 0, vectors, true, 0);
+            getResponse = new  ResultForm<>(0, 0, vectors, true, 0);
             return noResultFound(getResponse, statusList);
         } else { //Results founded. Return the results
-            getResponse = new  ResultForm<Vector>(vectorDAOSesame.getPageSize(), vectorDAOSesame.getPage(), vectors, true, totalCount);
+            getResponse = new  ResultForm<>(vectorDao.getPageSize(), vectorDao.getPage(), vectors, true, totalCount);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }
     }  
     
     /**
-     * search vectors by uri, rdfType, label, brand, in service date, 
+     * Searches vectors by URI, rdfType, label, brand, in service date, 
      * date of purchase. 
-     * 
      * @param pageSize
      * @param page
      * @param uri
@@ -100,7 +100,7 @@ public class VectorResourceService extends ResourceService {
      * @param dateOfPurchase
      * @param personInCharge
      * @return list of the vectors corresponding to the search params given
-     * e.g
+     * @example
      * {
      *      "metadata": {
      *          "pagination": {
@@ -114,17 +114,17 @@ public class VectorResourceService extends ResourceService {
      *      },
      *      "result": {
      *          "data": [
-     *              {
-     *                  "uri": "http://www.phenome-fppn.fr/diaphen/2018/v1801",
-     *                  "rdfType": "http://www.opensilex.org/vocabulary/oeso#UAV",
-     *                  "label": "alias",
-     *                  "brand": "brand",
-     *                  "serialNumber" : "serialNumber",
-     *                  "inServiceDate": null,
-     *                  "dateOfPurchase": null,
-     *                  "personInCharge": "user@mail.fr"
-     *              },
-     *          ]
+     *            {
+     *                "uri": "http://www.phenome-fppn.fr/diaphen/2018/v1801",
+     *                "rdfType": "http://www.opensilex.org/vocabulary/oeso#UAV",
+     *                "label": "alias",
+     *                "brand": "brand",
+     *                "serialNumber" : "serialNumber",
+     *                "inServiceDate": null,
+     *                "dateOfPurchase": null,
+     *                "personInCharge": "user@mail.fr"
+     *            },
+     *          
      *      }
      * }
      */
@@ -190,12 +190,12 @@ public class VectorResourceService extends ResourceService {
     }
     
     /**
-     * get the informations about a vector
+     * Gets the information about a vector.
      * @param uri
      * @param pageSize
      * @param page
-     * @return the informations about the vector if it exists
-     * e.g.
+     * @return the information about the vector if it exists
+     * @example
      * {
      *      "metadata": {
      *          "pagination": null,
@@ -204,14 +204,14 @@ public class VectorResourceService extends ResourceService {
      *      },
      *      "result": {
      *          "data": [
-     *              {
-     *                 "uri": "http://www.phenome-fppn.fr/diaphen/2018/v1825",
-     *                 "rdfType": "http://www.opensilex.org/vocabulary/oeso#UAV",
-     *                 "label": "aria_hr1_p",
-     *                 "brand": "unknown",
-     *                 "inServiceDate": null,
-     *                 "dateOfPurchase": null
-     *              }
+     *             {
+     *                "uri": "http://www.phenome-fppn.fr/diaphen/2018/v1825",
+     *                "rdfType": "http://www.opensilex.org/vocabulary/oeso#UAV",
+     *                "label": "aria_hr1_p",
+     *                "brand": "unknown",
+     *                "inServiceDate": null,
+     *                "dateOfPurchase": null
+     *             }
      *          ]
      *      }
      * }
@@ -253,9 +253,9 @@ public class VectorResourceService extends ResourceService {
     }
     
     /**
-     * insert vectors in the database(s)
+     * Inserts vectors in the database(s).
      * @param vectors list of the vectors to insert.
-     *                e.g of vector data :
+     * @example of vector data :
      * {
      *      "rdfType": "http://www.opensilex.org/vocabulary/oeso#UAV",
      *      "label": "par03_p",
@@ -266,7 +266,7 @@ public class VectorResourceService extends ResourceService {
      *      "personInCharge": "morgane.vidal@inra.fr"
      * }
      * @param context
-     * @return the post result with the errors or the uri of the inserted vectors
+     * @return the post result with the errors or the URI of the inserted vectors
      */
     @POST
     @ApiOperation(value = "Post a vector",
@@ -291,15 +291,15 @@ public class VectorResourceService extends ResourceService {
         AbstractResultForm postResponse = null;
         
         if (vectors != null && !vectors.isEmpty()) {
-            VectorDAO vectorDAOSesame = new VectorDAO();
+            VectorDAO vectorDAO = new VectorDAO();
             
             if (context.getRemoteAddr() != null) {
-                vectorDAOSesame.remoteUserAdress = context.getRemoteAddr();
+                vectorDAO.remoteUserAdress = context.getRemoteAddr();
             }
             
-            vectorDAOSesame.user = userSession.getUser();
+            vectorDAO.user = userSession.getUser();
             
-            POSTResultsReturn result = vectorDAOSesame.checkAndInsert(vectors);
+            POSTResultsReturn result = vectorDAO.checkAndInsert(vectors);
             
             if (result.getHttpStatus().equals(Response.Status.CREATED)) {
                 postResponse = new ResponseFormPOST(result.statusList);
@@ -317,8 +317,8 @@ public class VectorResourceService extends ResourceService {
     }
     
     /**
-     * update the given vectors
-     * e.g. 
+     * Updates the given vectors.
+     * @example
      * [
      *      {
      *          "uri": "http://www.phenome-fppn.fr/diaphen/2018/v18142",
@@ -333,7 +333,7 @@ public class VectorResourceService extends ResourceService {
      * ]
      * @param vectors
      * @param context
-     * @return the post result with the founded errors or the uris of the updated vectors
+     * @return the POST result with the found errors or the URIs of the updated vectors
      */
     @PUT
     @ApiOperation(value = "Update vector")
@@ -355,14 +355,14 @@ public class VectorResourceService extends ResourceService {
         AbstractResultForm postResponse = null;
         
         if (vectors != null && !vectors.isEmpty()) {
-            VectorDAO vectorDAOSesame = new VectorDAO();
+            VectorDAO vectorDAO = new VectorDAO();
             if (context.getRemoteAddr() != null) {
-                vectorDAOSesame.remoteUserAdress = context.getRemoteAddr();
+                vectorDAO.remoteUserAdress = context.getRemoteAddr();
             }
             
-            vectorDAOSesame.user = userSession.getUser();
+            vectorDAO.user = userSession.getUser();
             
-            POSTResultsReturn result = vectorDAOSesame.checkAndUpdate(vectors);
+            POSTResultsReturn result = vectorDAO.checkAndUpdate(vectors);
             
             if (result.getHttpStatus().equals(Response.Status.OK)) {
                 //Code 200, traits modifiés

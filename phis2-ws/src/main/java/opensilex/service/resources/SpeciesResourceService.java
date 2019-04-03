@@ -44,7 +44,7 @@ public class SpeciesResourceService extends ResourceService {
     /**
      * Generates a speciesDTO list from a given list of species.
      * @param species
-     * @return the list of species dto
+     * @return the list of species DTOs
      */
     private ArrayList<SpeciesDTO> speciesToSpeciesDTO(ArrayList<Species> species) {
         ArrayList<SpeciesDTO> speciesDTO = new ArrayList<>();
@@ -57,7 +57,7 @@ public class SpeciesResourceService extends ResourceService {
     }
     
     /**
-     * Get the species corresponding to the search params given.
+     * Gets the species corresponding to the search parameters given.
      * @param pageSize
      * @param page
      * @param uri
@@ -66,28 +66,28 @@ public class SpeciesResourceService extends ResourceService {
      * @return the result
      * @example 
      * {
-     *      "metadata": {
-     *          "pagination": {
-     *              "pageSize": 2,
-     *              "currentPage": 0,
-     *              "totalCount": 18,
-     *              "totalPages": 9
-     *          },
-     *          "status": [],
-     *          "datafiles": []
+     *    "metadata": {
+     *      "pagination": {
+     *          "pageSize": 2,
+     *          "currentPage": 0,
+     *          "totalCount": 18,
+     *          "totalPages": 9
      *      },
-     *      "result": {
-     *          "data": [
-     *              {
-     *                  "uri": "http://www.phenome-fppn.fr/id/species/zeamays",
-     *                  "label": "Maize"
-     *              },
-     *              {
-     *                  "uri": "http://www.phenome-fppn.fr/id/species/gossypiumhirsutum",
-     *                  "label": "Upland cotton"
-     *              }
-     *          ]
-     *      }
+     *      "status": [],
+     *      "datafiles": []
+     *    },
+     *    "result": {
+     *      "data": [
+     *          {
+     *              "uri": "http://www.phenome-fppn.fr/id/species/zeamays",
+     *              "label": "Maize"
+     *          },
+     *          {
+     *              "uri": "http://www.phenome-fppn.fr/id/species/gossypiumhirsutum",
+     *              "label": "Upland cotton"
+     *          }
+     *      ]
+     *    }
      * }
      */
     @GET
@@ -138,11 +138,11 @@ public class SpeciesResourceService extends ResourceService {
         
         if (searchResult == null || speciesToReturn.isEmpty()) {
             //No result found
-            getResponse = new ResultForm<SpeciesDTO>(0, 0, speciesToReturn, true, 0);
+            getResponse = new ResultForm<>(0, 0, speciesToReturn, true, 0);
             return noResultFound(getResponse, statusList);
         } else {
             //Return the result list
-            getResponse = new ResultForm<SpeciesDTO>(pageSize, page, speciesToReturn, true, totalCount);
+            getResponse = new ResultForm<>(pageSize, page, speciesToReturn, true, totalCount);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }

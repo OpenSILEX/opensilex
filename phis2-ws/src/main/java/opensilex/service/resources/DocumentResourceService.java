@@ -103,9 +103,8 @@ public class DocumentResourceService extends ResourceService {
     public final static Map<String, DocumentMetadataDTO> WAITING_ANNOT_INFORMATION = new HashMap<>();
     
     /**
-     * Vérifie un ensemble d'annotation au format JSON
-     *
-     * @param headers Entête de la requête
+     * Checks JSON annotations.
+     * @param headers Request header
      * @param documentsAnnotations documentsAnnotations
      * @return
      */
@@ -128,15 +127,15 @@ public class DocumentResourceService extends ResourceService {
             @ApiParam(value = "JSON Document metadata", required = true) @Valid List<DocumentMetadataDTO> documentsAnnotations) throws RepositoryException {
         AbstractResultForm postResponse;
         if (documentsAnnotations != null && !documentsAnnotations.isEmpty()) {
-            //Insertion du document
-            DocumentSparqlDAO documentDao = new DocumentSparqlDAO();
-            documentDao.user = userSession.getUser();
-            //Vérification des documentsAnnotations
-            final POSTResultsReturn checkAnnots = documentDao.check(documentsAnnotations);
+            // Insert document
+            DocumentSparqlDAO documentSparqlDao = new DocumentSparqlDAO();
+            documentSparqlDao.user = userSession.getUser();
+            // Check documentsAnnotations
+            final POSTResultsReturn checkAnnots = documentSparqlDao.check(documentsAnnotations);
             
-            if (checkAnnots.statusList == null) { //Les annotations ne sont pas bonnes
+            if (checkAnnots.statusList == null) { // Incorrect annotations
                 postResponse = new ResponseFormPOST();
-            } else if (checkAnnots.getDataState()) { // Si les annotations sont bonnes
+            } else if (checkAnnots.getDataState()) { // Correct annotations
                 List<String> uriList = new ArrayList<>();
                 Iterator<DocumentMetadataDTO> itdocsMetadata = documentsAnnotations.iterator();
                 while (itdocsMetadata.hasNext()) {
@@ -148,12 +147,15 @@ public class DocumentResourceService extends ResourceService {
                     final String uploadLink = uploadPath.path("documents").path("upload").queryParam("uri", docsUri).toString();
                     //Ajout URI en attente
                     uriList.add(uploadLink);
-                    WAITING_ANNOT_FILE_CHECK.put(docsUri, false); // fichier en attente
+                    WAITING_ANNOT_FILE_CHECK.put(docsUri, false); // Waiting file
                     WAITING_ANNOT_INFORMATION.put(docsUri, docsM);
-                    //Lancement THREAD pour le fichier en attente
+                    // Run thread for waiting file
                     THREAD_POOL.submit(new DocumentWaitingCheck(docsUri));
                 }
-                final Status waitingTimeStatus = new Status("Timeout", StatusCodeMsg.INFO, " Timeout :" + PropertiesFileManager.getConfigFileProperty("service", "waitingFileTime") + " seconds");
+                final Status waitingTimeStatus = new Status(
+                        "Timeout", 
+                        StatusCodeMsg.INFO, 
+                        " Timeout :" + PropertiesFileManager.getConfigFileProperty("service", "waitingFileTime") + " seconds");
                 checkAnnots.statusList.add(waitingTimeStatus);
                 postResponse = new ResponseFormPOST(checkAnnots.statusList);
                 postResponse.getMetadata().setDatafiles(uriList);
@@ -167,18 +169,19 @@ public class DocumentResourceService extends ResourceService {
     }
     
     /**
-     * Adresse du fichier a envoyer
-     *
-     * @param in Fichier
-     * @param docUri Uri de l'annotation
-     * @param headers Entête de la requête
+     * Address of the file to send.
+     * @param in File
+     * @param docUri Document URI
+     * @param headers Request header
      * @param request
      * @return
      * @throws URISyntaxException
      */
     @POST
     @Path("upload")
-    @ApiOperation(value = "Post data file", notes = DocumentationAnnotation.USER_ONLY_NOTES + " Not working from this documentation. Implement a client or use Postman application.")
+    @ApiOperation(
+            value = "Post data file", 
+            notes = DocumentationAnnotation.USER_ONLY_NOTES + " Not working from this documentation. Implement a client or use Postman application.")
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Document file and document metadata saved", response = ResponseFormPOST.class),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
@@ -197,10 +200,10 @@ public class DocumentResourceService extends ResourceService {
             @ApiParam(value = "URI given from \"/documents\" path for upload") @QueryParam("uri") @URL String docUri,
             @Context HttpHeaders headers,
             @Context HttpServletRequest request) throws URISyntaxException {
-        ResponseFormPOST postResponse = null;
+        ResponseFormPOST postResponse;
         List<Status> statusList = new ArrayList();
         
-        // Annotation présente
+        // Existing annotation
         if (!WAITING_ANNOT_FILE_CHECK.containsKey(docUri)) { 
             statusList.add(new Status("No waiting file", "Error", "No waiting file for the following uri : " + docUri));
             postResponse = new ResponseFormPOST(statusList);
@@ -213,7 +216,7 @@ public class DocumentResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
         
-        // Vérification du checksum md5
+        // Check md5 checksum 
         String hash = getHash(in);
         if (hash != null && !WAITING_ANNOT_INFORMATION.get(docUri).getChecksum().equals(hash)) {
             statusList.add(new Status("MD5 error", "Error", "Checksum MD5 doesn't match. Corrupted File."));
@@ -232,12 +235,13 @@ public class DocumentResourceService extends ResourceService {
             jsch = new FileUploader();
         } catch (Exception exp) {
             LOGGER.error(exp.getMessage(), exp);
-            throw new WebApplicationException(
-                      Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                      .entity(new ResponseFormPOST(new Status("FileUploaderException",
-                                                            StatusCodeMsg.ERR,
-                                                            "Problem with file system configuration")
-                                                )).build());
+            throw new WebApplicationException(Response
+                    .status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(new ResponseFormPOST(new Status(
+                            "FileUploaderException",
+                            StatusCodeMsg.ERR,
+                            "Problem with file system configuration")))
+                    .build());
         }
         //SILEX:conception
         // Add a class to group constants for properties
@@ -278,7 +282,7 @@ public class DocumentResourceService extends ResourceService {
         boolean fileTransfered = jsch.fileTransfer(in, serverFileName);
         jsch.closeConnection();
         
-        if (!fileTransfered) { // Si le fichier n'a pas été enregistré
+        if (!fileTransfered) { // File hasn't been saved
             statusList.add(new Status("File upload error", "Error", "Problem during file upload. Try to submit it again " + docUri));
             postResponse = new ResponseFormPOST(statusList);
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
@@ -294,7 +298,7 @@ public class DocumentResourceService extends ResourceService {
 
         postResponse = new ResponseFormPOST(insertAnnotationJSON.statusList);
 
-        if (insertAnnotationJSON.getDataState()) { // Etat du fichier JSON
+        if (insertAnnotationJSON.getDataState()) { // JSON file state
             WAITING_ANNOT_FILE_CHECK.remove(docUri);
             WAITING_ANNOT_INFORMATION.remove(docUri);
             if (insertAnnotationJSON.getHttpStatus() == Response.Status.CREATED) {
@@ -311,7 +315,7 @@ public class DocumentResourceService extends ResourceService {
     private String getHash(File in) {
         String hash = null;
         try {
-            hash = MD5.asHex(MD5.getHash(in)); // Ex : 106fa487baa1728083747de1c6df73e9
+            hash = MD5.asHex(MD5.getHash(in)); // e.g 106fa487baa1728083747de1c6df73e9
         } catch (IOException ex) {
             LOGGER.error(ex.getMessage(), ex);
         }
@@ -335,8 +339,13 @@ public class DocumentResourceService extends ResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDocumentsType(
-            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
-            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) 
+                @QueryParam("pageSize") 
+                @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) 
+                @Min(0) int limit,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") 
+                @DefaultValue(DefaultBrapiPaginationValues.PAGE) 
+                @Min(0) int page) {
         DocumentSparqlDAO documentsDao = new DocumentSparqlDAO();
         Status errorStatus = null;
         try {
@@ -344,7 +353,7 @@ public class DocumentResourceService extends ResourceService {
             if (documentCategories.isEmpty()) {
                 return Response.status(Response.Status.NOT_FOUND).entity(new ResponseFormGET()).build();
             }
-            return Response.status(Response.Status.OK).entity(new ResultForm<String>(limit, page, documentCategories, false)).build();
+            return Response.status(Response.Status.OK).entity(new ResultForm<>(limit, page, documentCategories, false)).build();
         } catch (RepositoryException | MalformedQueryException | QueryEvaluationException ex) {
             errorStatus = new Status("Error", StatusCodeMsg.ERR, ex.getMessage());
         }
@@ -352,7 +361,6 @@ public class DocumentResourceService extends ResourceService {
     }
     
     /**
-     * 
      * @param limit
      * @param page
      * @param uri
@@ -396,11 +404,13 @@ public class DocumentResourceService extends ResourceService {
         @ApiParam(value = "Search by status", example = DocumentationAnnotation.EXAMPLE_DOCUMENT_STATUS) @QueryParam("status") String status,
         @ApiParam(value = "Sort results by date", allowableValues = DocumentationAnnotation.EXAMPLE_SORTING_ALLOWABLE_VALUES) @QueryParam("sortByDate") @SortingValue String sortByDate) {
         
-        //SILEX:conception
-        //Pour l'instant la recherche de documents liés à un élément se fait sur un seul élément. 
-        //Par la suite il faudra la faire sur une liste d'éléments
-        //\SILEX:conception
-        
+        /*
+        SILEX:todo
+        For the moment, the document search by its concerned items can only be
+        done according to one concerned items. Then it should be done on a 
+        concerned item list.
+        \SILEX:todo
+        */
         DocumentSparqlDAO documentDao = new DocumentSparqlDAO();
         
         if (uri != null) {
@@ -444,11 +454,11 @@ public class DocumentResourceService extends ResourceService {
     
     /**
      * SILEX:todo
-     * We must find a way to send validation errors in json when an error occured.
-     * Maybe just change the response status.
+     * We must find a way to send validation errors in JSON when an error occured.
+     * Maybe just by changing the response status.
      * \SILEX:todo
-     * @param documentURI l'uri du document à télécharger
-     * @return la réponse, avec le document si l'uri existe bien
+     * @param documentURI URI of the document to download
+     * @return the response with the document if the URI exists
      */
     @GET
     @Path("{documentURI}")
@@ -468,15 +478,19 @@ public class DocumentResourceService extends ResourceService {
     })
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getDocumentByUri(
-            @ApiParam(value = DocumentationAnnotation.DOCUMENT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_DOCUMENT_URI) @PathParam("documentURI") String documentURI) {
+            @ApiParam(
+                    value = DocumentationAnnotation.DOCUMENT_URI_DEFINITION, 
+                    required = true, 
+                    example = DocumentationAnnotation.EXAMPLE_DOCUMENT_URI) 
+            @PathParam("documentURI") String documentURI) {
         return getFile(documentURI);
     }
     
     /**
-     * @action modifie une liste de métadonnées de documents en fonction des informations envoyées 
+     * Updates a list of document metadata.
      * @param documentsMetadata
      * @param context
-     * @return Response le resultat de la requête
+     * @return Response the request result
      */
     @PUT
     @ApiOperation(value = "Update document metadata")
@@ -506,10 +520,10 @@ public class DocumentResourceService extends ResourceService {
             }
             documentDaoSesame.user = userSession.getUser();
             
-            //Vérification des données et update de la BD
+            // Check data and update database
             POSTResultsReturn result = documentDaoSesame.checkAndUpdateList(documentsMetadata);
             
-            if (result.getHttpStatus().equals(Response.Status.OK)) { //200 users modifiés
+            if (result.getHttpStatus().equals(Response.Status.OK)) { // 200: users updated
                 postResponse = new ResponseFormPOST(result.statusList);
                 return Response.status(result.getHttpStatus()).entity(postResponse).build();
             } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
@@ -525,27 +539,26 @@ public class DocumentResourceService extends ResourceService {
     }
     
     /**
-     * Collecte les métadonnées de documents issues d'une recherche utilisateur
-     * @param documentDao DocumentDaoSesame
-     * @return la réponse dédiée à l'utilisateur. 
-     *         Contient la liste des métadonnées de documents correspondant au résultat de la recherche
+     * Gets the metadata of documents searched.
+     * @param documentSparqlDao 
+     * @return the response containing the searched document metadata list.
      */
-    private Response getDocumentsMetadata(DocumentSparqlDAO documentDao) {
+    private Response getDocumentsMetadata(DocumentSparqlDAO documentSparqlDao) {
         ArrayList<Document> documentsMetadata;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Document> getResponse;
         
-        documentDao.user = userSession.getUser();
+        documentSparqlDao.user = userSession.getUser();
         // Count all documents for this specific request
-        Integer totalCount = documentDao.count();
+        Integer totalCount = documentSparqlDao.count();
         // Retreive all documents for this specific request
-        documentsMetadata = documentDao.allPaginate();
+        documentsMetadata = documentSparqlDao.allPaginate();
         
         if (documentsMetadata == null) {
-            getResponse = new ResultForm<Document>(0, 0, documentsMetadata, true);
+            getResponse = new ResultForm<>(0, 0, documentsMetadata, true);
             return noResultFound(getResponse, statusList);
         } else if (!documentsMetadata.isEmpty()) {
-            getResponse = new ResultForm<Document>(documentDao.getPageSize(), documentDao.getPage(), documentsMetadata, true, totalCount);
+            getResponse = new ResultForm<>(documentSparqlDao.getPageSize(), documentSparqlDao.getPage(), documentsMetadata, true, totalCount);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {
@@ -553,15 +566,15 @@ public class DocumentResourceService extends ResourceService {
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         } else {
-            getResponse = new ResultForm<Document>(0, 0, documentsMetadata, true);
+            getResponse = new ResultForm<>(0, 0, documentsMetadata, true);
             return noResultFound(getResponse, statusList);
         }
     }
     
     /**
      * 
-     * @param documentURI l'URI du document à télécharger
-     * @return La réponse, contenant le document à télécharger s'il existe
+     * @param documentURI URI of the document to download
+     * @return The response containing the document if existing
      */
     private Response getFile(String documentURI) {
         DocumentMongoDAO documentDaoMongo = new DocumentMongoDAO();

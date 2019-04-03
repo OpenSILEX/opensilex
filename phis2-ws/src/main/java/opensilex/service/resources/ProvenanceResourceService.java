@@ -54,16 +54,16 @@ import opensilex.service.view.model.provenance.Provenance;
 public class ProvenanceResourceService extends ResourceService {
     
     /**
-     * Generates a Provenance list from a given list of ProvenancePostDTO
+     * Generates a Provenance list from a given list of ProvenancePostDTO.
      * @param provenanceDTOs
      * @return the list of provenances
      */
     private List<Provenance> provenancePostDTOsToprovenances(List<ProvenancePostDTO> provenanceDTOs) {
         ArrayList<Provenance> provenances = new ArrayList<>();
         
-        for (ProvenancePostDTO provenancePostDTO : provenanceDTOs) {
+        provenanceDTOs.forEach((provenancePostDTO) -> {
             provenances.add(provenancePostDTO.createObjectFromDTO());
-        }
+        });
         
         return provenances;
     }
@@ -75,26 +75,26 @@ public class ProvenanceResourceService extends ResourceService {
     private List<Provenance> provenanceDTOsToprovenances(List<ProvenanceDTO> provenanceDTOs) {
         ArrayList<Provenance> provenances = new ArrayList<>();
         
-        for (ProvenanceDTO provenanceDTO : provenanceDTOs) {
+        provenanceDTOs.forEach((provenanceDTO) -> {
             provenances.add(provenanceDTO.createObjectFromDTO());
-        }
+        });
         
         return provenances;
     }
     
     /**
-     * Insert provenances.
+     * Inserts provenances.
      * @param provenances
      * @param context
      * @example 
      * [
      *  {
-     *      "label": "PROV2019-LEAF",
-     *      "comment": "In this provenance we have count the number of leaf per plant",
-     *      "metadata": { 
-     *          "SensingDevice" : "http://www.opensilex.org/demo/s001",
-     *          "Vector" : "http://www.opensilex.org/demo/v001"
-     *      }
+     *    "label": "PROV2019-LEAF",
+     *    "comment": "In this provenance we have count the number of leaf per plant",
+     *    "metadata": { 
+     *        "SensingDevice" : "http://www.opensilex.org/demo/s001",
+     *        "Vector" : "http://www.opensilex.org/demo/v001"
+     *    }
      *  }
      * ]
      * @return the insertion result
@@ -144,19 +144,19 @@ public class ProvenanceResourceService extends ResourceService {
     }
     
     /**
-     * Update the given provenances.
+     * Updates the given provenances.
      * @param provenances
      * @param context
      * @example
      * [
      *  {
-     *      "uri": "http://www.opensilex.org/opensilex/id/provenance/1551805521606",
-     *      "label": "PROV2019-EAR",
-     *      "comment": "In this provenance we have count the number of leaf per plant",
-     *      "metadata": { 
-     *                      "SensingDevice" : "http://www.opensilex.org/demo/s001",
-     *                      "Vector" : "http://www.opensilex.org/demo/v001"
-     *                  }
+     *    "uri": "http://www.opensilex.org/opensilex/id/provenance/1551805521606",
+     *    "label": "PROV2019-EAR",
+     *    "comment": "In this provenance we have count the number of leaf per plant",
+     *    "metadata": { 
+     *                    "SensingDevice" : "http://www.opensilex.org/demo/s001",
+     *                    "Vector" : "http://www.opensilex.org/demo/v001"
+     *                }
      *  }
      * ]
      * @return the query result
@@ -200,7 +200,7 @@ public class ProvenanceResourceService extends ResourceService {
     }
     
     /**
-     * Service to get provenances
+     * Service to get provenances.
      * @param pageSize
      * @param page
      * @param uri
@@ -210,24 +210,24 @@ public class ProvenanceResourceService extends ResourceService {
      * @return list of the provenances corresponding to the search params given
      * @example
      * {
-     *      "metadata": {
-     *          "pagination": null,
-     *          "status": [],
-     *          "datafiles": []
-     *      },
-     *      "result": {
-     *          "data": [
-     *              {
-     *                  "uri": "http://www.opensilex.org/opensilex/id/provenance/1551805521606",
-     *                  "label": "PROV2019-LEAF",
-     *                  "comment": "In this provenance we have count the number of leaf per plant",
-     *                  "metadata": {
-     *                      "SensingDevice": "http://www.opensilex.org/demo/s001",
-     *                      "Vector": "http://www.opensilex.org/demo/v001"
-     *                  }
+     *    "metadata": {
+     *        "pagination": null,
+     *        "status": [],
+     *        "datafiles": []
+     *    },
+     *    "result": {
+     *        "data": [
+     *          {
+     *              "uri": "http://www.opensilex.org/opensilex/id/provenance/1551805521606",
+     *              "label": "PROV2019-LEAF",
+     *              "comment": "In this provenance we have count the number of leaf per plant",
+     *              "metadata": {
+     *                  "SensingDevice": "http://www.opensilex.org/demo/s001",
+     *                  "Vector": "http://www.opensilex.org/demo/v001"
      *              }
-     *          ]
-     *      }
+     *          }
+     *      ]
+     *    }
      * }
      */
     @GET
@@ -278,11 +278,11 @@ public class ProvenanceResourceService extends ResourceService {
         
         if (measures == null) {
             // Request failure
-            getResponse = new ResultForm<ProvenanceDTO>(0, 0, list, true, 0);
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         } else if (measures.isEmpty()) {
             // No results
-            getResponse = new ResultForm<ProvenanceDTO>(0, 0, list, true, 0);
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         } else {
             // Convert all provenances object to DTO's
@@ -291,7 +291,7 @@ public class ProvenanceResourceService extends ResourceService {
             });
             
             // Return list of DTO
-            getResponse = new ResultForm<ProvenanceDTO>(provenanceDAO.getPageSize(), provenanceDAO.getPage(), list, true, totalCount);
+            getResponse = new ResultForm<>(provenanceDAO.getPageSize(), provenanceDAO.getPage(), list, true, totalCount);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }

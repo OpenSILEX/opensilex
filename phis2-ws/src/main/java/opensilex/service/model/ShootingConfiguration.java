@@ -13,13 +13,24 @@ package opensilex.service.model;
  */
 public class ShootingConfiguration {
     
-    //date of the image shooting
+    /**
+     * Date of the image shooting.
+     */
     private String date;
-    //timestamp of the date attribute
+    
+    /**
+     * Timestamp of the date attribute.
+     */
     private String timestamp;
-    //position of the sensor
+    
+    /**
+     * Position of the sensor.
+     */
     private String position;
-    //uri of the sensor
+    
+    /**
+     * Sensor URI.
+     */
     private String sensor;
 
     public ShootingConfiguration() {

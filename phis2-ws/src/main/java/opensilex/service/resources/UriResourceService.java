@@ -43,13 +43,13 @@ import opensilex.service.model.Uri;
 @Api("/uri")
 @Path("uri")
 public class UriResourceService extends ResourceService {
+    
     /**
-     * search if an uri is in the triplestore or not
-     *
+     * Searches if a URI exists.
      * @param uri
      * @return a response which contains 
-     *         true if the uri exist, 
-     *         false if it is an unknown uri
+     *         true if the URI exist, 
+     *         false if it is an unknown URI
      */
     @GET
     @Path("{uri}/exist")
@@ -69,43 +69,46 @@ public class UriResourceService extends ResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response isUriExisting(
-            @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @PathParam("uri") @URL @Required String uri) {
+            @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) 
+                @PathParam("uri") 
+                @URL 
+                @Required String uri) {
 
-        UriDAO uriDaoSesame = new UriDAO();
+        UriDAO uriDao = new UriDAO();
         if (uri != null) {
-            uriDaoSesame.uri = uri;
+            uriDao.uri = uri;
         }
 
-        uriDaoSesame.user = userSession.getUser();
+        uriDao.user = userSession.getUser();
 
-        return existData(uriDaoSesame);
+        return existData(uriDao);
     }
 
     /**
-     * this GET return all the concept metadata
-     *
+     * Returns the concept's metadata.
      * @param limit
      * @param page
      * @param uri
      * @return concept list. The result form depends on the query results 
-     * e.g. of result : 
+     * @example
+     * result : 
      * { 
-     *      "metadata": 
-     *          { "pagination": null, 
-     *            "status": [],
-     *            "datafiles": [] 
-     *          }, 
-     *          "result": { 
-     *              "data": [ 
-     *                  { "uri": "http://www.opensilex.org/vocabulary/oeso#Document",
-     *                    "infos": { 
-     *                          "type":"http://www.w3.org/2002/07/owl#Class",
-     *                          "label_en": "document",
-     *                          "label_fr": "document" 
-     *                      } 
-     *                  } 
-     *              ] 
-     *          } 
+     *    "metadata": 
+     *    { "pagination": null, 
+     *      "status": [],
+     *      "datafiles": [] 
+     *    }, 
+     *    "result": { 
+     *        "data": [ 
+     *            { "uri": "http://www.opensilex.org/vocabulary/oeso#Document",
+     *              "infos": { 
+     *                    "type":"http://www.w3.org/2002/07/owl#Class",
+     *                    "label_en": "document",
+     *                    "label_fr": "document" 
+     *                } 
+     *            } 
+     *        ] 
+     *    } 
      * }
      */
     @GET
@@ -124,27 +127,29 @@ public class UriResourceService extends ResourceService {
                 example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
 
+    /**
+     * Gets a URI's metadata.
+     */
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUriMetadata(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
             @ApiParam(value = "Search by uri", required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @PathParam("uri") @URL @Required String uri) {
 
-        UriDAO uriDaoSesame = new UriDAO();
+        UriDAO uriDao = new UriDAO();
         if (uri != null) {
-            uriDaoSesame.uri = uri;
+            uriDao.uri = uri;
         }
 
-        uriDaoSesame.user = userSession.getUser();
-        uriDaoSesame.setPage(page);
-        uriDaoSesame.setPageSize(limit);
+        uriDao.user = userSession.getUser();
+        uriDao.setPage(page);
+        uriDao.setPageSize(limit);
 
-        return getUriMetadata(uriDaoSesame);
+        return getUriMetadata(uriDao);
     }
 
     /**
-     * search all uri with the label given
-     *
+     * Searches URIs with the label given.
      * @param limit
      * @param page
      * @param label
@@ -171,25 +176,26 @@ public class UriResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
             @ApiParam(value = "Search by label", required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_LABEL) @QueryParam("label") @Required String label) {
 
-        UriDAO uriDaoSesame = new UriDAO();
+        UriDAO uriDao = new UriDAO();
         if (label != null) {
-            uriDaoSesame.label = label;
+            uriDao.label = label;
         }
 
-        uriDaoSesame.user = userSession.getUser();
-        uriDaoSesame.setPage(page);
-        uriDaoSesame.setPageSize(limit);
+        uriDao.user = userSession.getUser();
+        uriDao.setPage(page);
+        uriDao.setPageSize(limit);
 
-        return getLabelMetaData(uriDaoSesame);
+        return getLabelMetaData(uriDao);
     }
 
     /**
-     * Get all the instances of an uri
+     * Gets all the instances of an URI.
      * @param uri
      * @param deep verify subclass or not
      * @param limit
      * @param page
-     * @update Arnaud Charleroy (18/07/2018): change deep string type to real boolean type
+     * @update [Arnaud Charleroy] 18 Jul. 2018: change deep string type to real 
+     * boolean type
      * @return the query result, with the list of the instances or the errors
      */
     @GET
@@ -215,47 +221,47 @@ public class UriResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
 
-        UriDAO uriDaoSesame = new UriDAO();
+        UriDAO uriDao = new UriDAO();
         if (uri != null) {
-            uriDaoSesame.uri = uri;
+            uriDao.uri = uri;
         }
 
         if (deep != null) {
-            uriDaoSesame.deep = deep;
+            uriDao.deep = deep;
         } else {
-            uriDaoSesame.deep = true;
+            uriDao.deep = true;
         }
 
-        uriDaoSesame.setPageSize(limit);
-        uriDaoSesame.setPage(page);
-        uriDaoSesame.user = userSession.getUser();
+        uriDao.setPageSize(limit);
+        uriDao.setPage(page);
+        uriDao.user = userSession.getUser();
 
-        return getInstancesData(uriDaoSesame);
+        return getInstancesData(uriDao);
     }
 
     /**
-     * give all the class parent of a given uri
-     *
+     * Gives all the parent class of a given URI.
      * @param uri
      * @param limit
      * @param page
-     * @return the result. 
-     * Example :
+     * @return the result
+     * @example
      * { 
-     *      "metadata": 
-     *          { 
-     *              "pagination": null, 
-     *              "status": [], 
-     *              "datafiles": []
-     *          },
-     *      "result": 
-     *          { 
-     *              "data": [ 
-     *                  { "uri": "http://www.opensilex.org/vocabulary/oeso#Document",
-     *                    "properties": {} 
-     *                  }
-     *              ] 
-     *          } 
+     *    "metadata": 
+     *    { 
+     *       "pagination": null, 
+     *       "status": [], 
+     *       "datafiles": []
+     *    },
+     *    "result": 
+     *    { 
+     *          "data": [ 
+     *            { 
+     *              "uri": "http://www.opensilex.org/vocabulary/oeso#Document",
+     *              "properties": {} 
+     *            }
+     *          ] 
+     *    } 
      * }
      */
     @GET
@@ -292,34 +298,34 @@ public class UriResourceService extends ResourceService {
     }
 
     /**
-     * give all the concepts with the same parent
-     *
+     * Gives all the concepts with the same parent.
      * @param uri
      * @param limit
      * @param page
      * @return 
-     * Example : 
+     * @example
      * { 
-     *      "metadata": { 
-     *          "pagination": { 
-     *              "pageSize": 20,
-     *              "currentPage": 0,
-     *              "totalCount": 11,
-     *              "totalPages": 1 
-     *          }, 
-     *          "status": [], 
-     *          "datafiles": [] 
+     *   "metadata": { 
+     *     "pagination": { 
+     *       "pageSize": 20,
+     *       "currentPage": 0,
+     *       "totalCount": 11,
+     *       "totalPages": 1 
+     *     }, 
+     *     "status": [], 
+     *     "datafiles": [] 
+     *   },
+     *   "result": { 
+     *   "data": [ 
+     *       { "uri": "http://www.opensilex.org/vocabulary/oeso#DataFile",
+     *        "properties": {}
      *      },
-     *      "result": { 
-     *          "data": [ 
-     *              { "uri": "http://www.opensilex.org/vocabulary/oeso#DataFile",
-     *                "properties": {}
-     *              },
-     *              { "uri": "http://www.opensilex.org/vocabulary/oeso#TechnicalDocument",
-     *                "properties": {} 
-     *              } 
-     *          ] 
+     *      { 
+     *        "uri": "http://www.opensilex.org/vocabulary/oeso#TechnicalDocument",
+     *        "properties": {} 
      *      } 
+     *    ] 
+     *   } 
      * }
      */
     @GET
@@ -344,20 +350,19 @@ public class UriResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
 
-        UriDAO uriDaoSesame = new UriDAO();
+        UriDAO uriDao = new UriDAO();
         if (uri != null) {
-            uriDaoSesame.uri = uri;
+            uriDao.uri = uri;
         }
-        uriDaoSesame.setPageSize(limit);
-        uriDaoSesame.setPage(page);
-        uriDaoSesame.user = userSession.getUser();
+        uriDao.setPageSize(limit);
+        uriDao.setPage(page);
+        uriDao.user = userSession.getUser();
 
-        return getSiblingsMetaData(uriDaoSesame);
+        return getSiblingsMetaData(uriDao);
     }
 
     /**
-     * search all descendants of a given uri
-     *
+     * Searches all descendants of a given URI.
      * @param uri
      * @param limit
      * @param page
@@ -374,14 +379,16 @@ public class UriResourceService extends ResourceService {
      *          "datafiles": [] 
      *      },
      *      "result": { 
-     *          "data": [ 
-     *              { "uri": "http://www.opensilex.org/vocabulary/oeso#Document",
-     *                "properties": {}
-     *              }, 
-     *              { "uri": "http://www.opensilex.org/vocabulary/oeso#DataFile",
-     *                "properties": {} 
-     *              } 
-     *          ] 
+     *        "data": [ 
+     *            { 
+     *              "uri": "http://www.opensilex.org/vocabulary/oeso#Document",
+     *              "properties": {}
+     *            }, 
+     *            { 
+     *              "uri": "http://www.opensilex.org/vocabulary/oeso#DataFile",
+     *              "properties": {} 
+     *            } 
+     *        ] 
      *      } 
      * }
      */
@@ -407,22 +414,21 @@ public class UriResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
 
-        UriDAO uriDaoSesame = new UriDAO();
+        UriDAO uriDao = new UriDAO();
         if (uri != null) {
-            uriDaoSesame.uri = uri;
+            uriDao.uri = uri;
         }
-        uriDaoSesame.setPageSize(limit);
-        uriDaoSesame.setPage(page);
-        uriDaoSesame.user = userSession.getUser();
+        uriDao.setPageSize(limit);
+        uriDao.setPage(page);
+        uriDao.user = userSession.getUser();
 
-        return getDescendantsMetaData(uriDaoSesame);
+        return getDescendantsMetaData(uriDao);
     }
 
     /**
-     * return the type of an uri if exist else return empty list
-     *
+     * Returns the type of an URI if exist else return empty list.
      * @param uri
-     * @return false or type of the uri
+     * @return false or type of the URI
      */
     @GET
     @Path("{uri}/type")
@@ -444,33 +450,32 @@ public class UriResourceService extends ResourceService {
     public Response getTypeIfUriExist(
             @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @PathParam("uri") @URL @Required String uri) {
 
-        UriDAO uriDaoSesame = new UriDAO();
+        UriDAO uriDao = new UriDAO();
         if (uri != null) {
-            uriDaoSesame.uri = uri;
+            uriDao.uri = uri;
         }
 
-        uriDaoSesame.user = userSession.getUser();
+        uriDao.user = userSession.getUser();
 
-        return getUriType(uriDaoSesame);
+        return getUriType(uriDao);
     }
 
     /**
-     * collect all the data for the instances request
-     *
-     * @param uriDaoSesame
+     * Collects all the data for the instances request.
+     * @param uriDao
      * @return Response
      */
-    private Response getInstancesData(UriDAO uriDaoSesame) {
+    private Response getInstancesData(UriDAO uriDao) {
         ArrayList<Uri> uris;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Uri> getResponse;
 
-        uris = uriDaoSesame.instancesPaginate();
+        uris = uriDao.instancesPaginate();
         if (uris == null) { //no result found
-            getResponse = new ResultForm<Uri>(0, 0, uris, true);
+            getResponse = new ResultForm<>(0, 0, uris, true);
             return noResultFound(getResponse, statusList);
         } else if (!uris.isEmpty()) { //result founded
-            getResponse = new ResultForm<Uri>(uriDaoSesame.getPageSize(), uriDaoSesame.getPage(), uris, false);
+            getResponse = new ResultForm<>(uriDao.getPageSize(), uriDao.getPage(), uris, false);
             if (getResponse.getResult().dataSize() == 0) { //no result found
                 return noResultFound(getResponse, statusList);
             } else { //return instances metadata
@@ -478,28 +483,26 @@ public class UriResourceService extends ResourceService {
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         } else { //no result found
-            getResponse = new ResultForm<Uri>(0, 0, uris, true);
+            getResponse = new ResultForm<>(0, 0, uris, true);
             return noResultFound(getResponse, statusList);
         }
     }
 
     /**
-     * use the uriDaoSesame to check if the uris exist or not and return the 
-     * formatted result
-     *
-     * @param uriDaoSesame
-     * @return Response the result, containing the existing of each uri
+     * Checks if the URIs exist or not and returns the formatted result.
+     * @param uriDao
+     * @return Response the result, containing the existing of each URI
      */
-    private Response existData(UriDAO uriDaoSesame) {
+    private Response existData(UriDAO uriDao) {
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Ask> getResponse;
-        ArrayList<Ask> ask = uriDaoSesame.askUriExistance();
+        ArrayList<Ask> ask = uriDao.askUriExistance();
         
         if (ask == null) {//no result found
-            getResponse = new ResultForm<Ask>(0, 0, ask, true);
+            getResponse = new ResultForm<>(0, 0, ask, true);
             return noResultFound(getResponse, statusList);
         } else if (!ask.isEmpty()) {// result founded
-            getResponse = new ResultForm<Ask>(uriDaoSesame.getPageSize(), uriDaoSesame.getPage(), ask, false);
+            getResponse = new ResultForm<>(uriDao.getPageSize(), uriDao.getPage(), ask, false);
             if (getResponse.getResult().dataSize() == 0) { //no result 
                 return noResultFound(getResponse, statusList);
             } else { // return ask metadata
@@ -507,29 +510,29 @@ public class UriResourceService extends ResourceService {
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         } else { //no result found
-            getResponse = new ResultForm<Ask>(0, 0, ask, true);
+            getResponse = new ResultForm<>(0, 0, ask, true);
             return noResultFound(getResponse, statusList);
         }
     }
 
     /**
-     * get the metadata of a given uri. 
-     * The uri can be a concept uri or an instance
-     * @param uriDaoSesame
+     * Gets the metadata of a given URI. 
+     * The URI can be a concept URI or an instance
+     * @param uriDao
      * @return Response
      */
-    private Response getUriMetadata(UriDAO uriDaoSesame) {
+    private Response getUriMetadata(UriDAO uriDao) {
         ArrayList<Uri> uris;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Uri> getResponse;
 
-        uris = uriDaoSesame.allPaginate();
+        uris = uriDao.allPaginate();
 
         if (uris == null) { //no result found
-            getResponse = new ResultForm<Uri>(0, 0, uris, true);
+            getResponse = new ResultForm<>(0, 0, uris, true);
             return noResultFound(getResponse, statusList);
         } else if (!uris.isEmpty()) { //concepts founded
-            getResponse = new ResultForm<Uri>(uriDaoSesame.getPageSize(), uriDaoSesame.getPage(), uris, false);
+            getResponse = new ResultForm<>(uriDao.getPageSize(), uriDao.getPage(), uris, false);
             if (getResponse.getResult().dataSize() == 0) { // no result found
                 return noResultFound(getResponse, statusList);
             } else { //return concepts metadata
@@ -537,27 +540,26 @@ public class UriResourceService extends ResourceService {
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         } else { //no result found
-            getResponse = new ResultForm<Uri>(0, 0, uris, true);
+            getResponse = new ResultForm<>(0, 0, uris, true);
             return noResultFound(getResponse, statusList);
         }
     }
 
     /**
-     * return the list of uris which has the given label
-     *
-     * @param uriDaoSesame collect all the Label data
+     * Returns the list of URIs which has the given label.
+     * @param uriDao collect all the Label data
      */
-    private Response getLabelMetaData(UriDAO uriDaoSesame) {
+    private Response getLabelMetaData(UriDAO uriDao) {
         ArrayList<Uri> uris;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Uri> getResponse;
 
-        uris = uriDaoSesame.labelsPaginate();
+        uris = uriDao.labelsPaginate();
         if (uris == null) {
-            getResponse = new ResultForm<Uri>(0, 0, uris, true);
+            getResponse = new ResultForm<>(0, 0, uris, true);
             return noResultFound(getResponse, statusList);
         } else if (!uris.isEmpty()) {
-            getResponse = new ResultForm<Uri>(uriDaoSesame.getPageSize(), uriDaoSesame.getPage(), uris, false);
+            getResponse = new ResultForm<>(uriDao.getPageSize(), uriDao.getPage(), uris, false);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {
@@ -565,29 +567,28 @@ public class UriResourceService extends ResourceService {
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         } else {
-            getResponse = new ResultForm<Uri>(0, 0, uris, true);
+            getResponse = new ResultForm<>(0, 0, uris, true);
             return noResultFound(getResponse, statusList);
 
         }
     }
 
     /**
-     * collect all the ancestors of a given uri
-     *
-     * @param uriDaoSesame
+     * Collects all the ancestors of a given URI.
+     * @param uriDao
      * @return Response
      */
-    private Response getAncestorsMetaData(UriDAO uriDaoSesame) {
+    private Response getAncestorsMetaData(UriDAO uriDao) {
         ArrayList<Uri> concepts;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Uri> getResponse;
 
-        concepts = uriDaoSesame.ancestorsAllPaginate();
+        concepts = uriDao.ancestorsAllPaginate();
         if (concepts == null) { //no result found
-            getResponse = new ResultForm<Uri>(0, 0, concepts, true);
+            getResponse = new ResultForm<>(0, 0, concepts, true);
             return noResultFound(getResponse, statusList);
         } else if (!concepts.isEmpty()) { //result founded
-            getResponse = new ResultForm<Uri>(uriDaoSesame.getPageSize(), uriDaoSesame.getPage(), concepts, false);
+            getResponse = new ResultForm<>(uriDao.getPageSize(), uriDao.getPage(), concepts, false);
             if (getResponse.getResult().dataSize() == 0) { //no result found
                 return noResultFound(getResponse, statusList);
             } else { //return concepts metadata
@@ -595,28 +596,27 @@ public class UriResourceService extends ResourceService {
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         } else { // no result found
-            getResponse = new ResultForm<Uri>(0, 0, concepts, true);
+            getResponse = new ResultForm<>(0, 0, concepts, true);
             return noResultFound(getResponse, statusList);
         }
     }
 
     /**
-     * collect all the siblings of a given uri
-     *
-     * @param uriDaoSesame
+     * Collects all the siblings of a given URI.
+     * @param uriDao
      * @return Response
      */
-    private Response getSiblingsMetaData(UriDAO uriDaoSesame) {
+    private Response getSiblingsMetaData(UriDAO uriDao) {
         ArrayList<Uri> concepts;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Uri> getResponse;
 
-        concepts = uriDaoSesame.siblingsAllPaginate();
+        concepts = uriDao.siblingsAllPaginate();
         if (concepts == null) { //no result found
-            getResponse = new ResultForm<Uri>(0, 0, concepts, true);
+            getResponse = new ResultForm<>(0, 0, concepts, true);
             return noResultFound(getResponse, statusList);
         } else if (!concepts.isEmpty()) { //result founded
-            getResponse = new ResultForm<Uri>(uriDaoSesame.getPageSize(), uriDaoSesame.getPage(), concepts, false);
+            getResponse = new ResultForm<>(uriDao.getPageSize(), uriDao.getPage(), concepts, false);
             if (getResponse.getResult().dataSize() == 0) { //no result founded
                 return noResultFound(getResponse, statusList);
             } else { //return concepts metadata
@@ -625,28 +625,27 @@ public class UriResourceService extends ResourceService {
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         } else { //no result found
-            getResponse = new ResultForm<Uri>(0, 0, concepts, true);
+            getResponse = new ResultForm<>(0, 0, concepts, true);
             return noResultFound(getResponse, statusList);
         }
     }
 
     /**
-     * collect all the descendants of a given uri
-     *
-     * @param uriDaoSesame
+     * Collects the descendants of a given URI.
+     * @param uriDao
      * @return Response
      */
-    private Response getDescendantsMetaData(UriDAO uriDaoSesame) {
+    private Response getDescendantsMetaData(UriDAO uriDao) {
         ArrayList<Uri> concepts;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Uri> getResponse;
 
-        concepts = uriDaoSesame.descendantsAllPaginate();
+        concepts = uriDao.descendantsAllPaginate();
         if (concepts == null) { //no result found
-            getResponse = new ResultForm<Uri>(0, 0, concepts, true);
+            getResponse = new ResultForm<>(0, 0, concepts, true);
             return noResultFound(getResponse, statusList);
         } else if (!concepts.isEmpty()) { //concept founded 
-            getResponse = new ResultForm<Uri>(uriDaoSesame.getPageSize(), uriDaoSesame.getPage(), concepts, false);
+            getResponse = new ResultForm<>(uriDao.getPageSize(), uriDao.getPage(), concepts, false);
             if (getResponse.getResult().dataSize() == 0) { // no result found
                 return noResultFound(getResponse, statusList);
             } else {//return concepts metadata
@@ -654,28 +653,27 @@ public class UriResourceService extends ResourceService {
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         } else { // no result found
-            getResponse = new ResultForm<Uri>(0, 0, concepts, true);
+            getResponse = new ResultForm<>(0, 0, concepts, true);
             return noResultFound(getResponse, statusList);
         }
     }
 
     /**
-     * get the type of a given uri
-     *
-     * @param uriDaoSesame
+     * Gets the type of a given URI.
+     * @param uriDao
      * @return Response
      */
-    private Response getUriType(UriDAO uriDaoSesame) {
+    private Response getUriType(UriDAO uriDao) {
         ArrayList<Uri> uris;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Uri> getResponse;
-        uris = uriDaoSesame.getAskTypeAnswer();
+        uris = uriDao.getAskTypeAnswer();
         
         if (uris == null) {//no result found
-            getResponse = new ResultForm<Uri>(0, 0, uris, true);
+            getResponse = new ResultForm<>(0, 0, uris, true);
             return noResultFound(getResponse, statusList);
         } else if (!uris.isEmpty()) { //result founded
-            getResponse = new ResultForm<Uri>(uriDaoSesame.getPageSize(), uriDaoSesame.getPage(), uris, false);
+            getResponse = new ResultForm<>(uriDao.getPageSize(), uriDao.getPage(), uris, false);
             if (getResponse.getResult().dataSize() == 0) {//no result found
                 return noResultFound(getResponse, statusList);
             } else { //return meta data
@@ -683,7 +681,7 @@ public class UriResourceService extends ResourceService {
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         } else {//no result found
-            getResponse = new ResultForm<Uri>(0, 0, uris, true);
+            getResponse = new ResultForm<>(0, 0, uris, true);
             return noResultFound(getResponse, statusList);
         }
     }

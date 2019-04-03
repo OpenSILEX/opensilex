@@ -42,8 +42,9 @@ import opensilex.service.result.ResultForm;
 @Api("/acquisitionSessions")
 @Path("/acquisitionSessions")
 public class AcquisitionSessionResourceService extends ResourceService {
+    
     /**
-     * Search acquisition session metadata file metadata corresponding to the given type of file wanted.
+     * Searches acquisition session metadata file metadata corresponding to the given type of file wanted.
      * @param acquisitionSessionDAOSesame
      * @return the acquisition session file metadata content for the hiddenPhis 
      *         part of the acquisition session file used for 4P.
@@ -59,24 +60,24 @@ public class AcquisitionSessionResourceService extends ResourceService {
         Integer count = acquisitionSessionDAOSesame.countFileMetadataRows();
         
         if (fileMetadata == null) {
-            getResponse = new ResultForm<MetadataFileDTO>(0, 0, new ArrayList<>(), true);
+            getResponse = new ResultForm<>(0, 0, new ArrayList<>(), true);
             return noResultFound(getResponse, statusList);
         } else if (fileMetadata.isEmpty()) {
-            getResponse = new ResultForm<MetadataFileDTO>(0, 0, fileMetadata, true);
+            getResponse = new ResultForm<>(0, 0, fileMetadata, true);
             return noResultFound(getResponse, statusList);
         } else {
             //SILEX:info
             //In this service, the total count is equals to the number of rows
             //\SILEX:info
-            getResponse = new ResultForm<MetadataFileDTO>(acquisitionSessionDAOSesame.getPageSize(), acquisitionSessionDAOSesame.getPage(), fileMetadata, true, count);
+            getResponse = new ResultForm<>(acquisitionSessionDAOSesame.getPageSize(), acquisitionSessionDAOSesame.getPage(), fileMetadata, true, count);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }
     }
     
     /**
-     * Service to get the hidenPhis content of the excel file used to define 
-     * acquisition session for the 4P platform.
+     * Service to get the hiddenPhis content of the excel file used to define 
+     * acquisition sessions for the 4P platform.
      * @param vectorRdfType
      * @param pageSize
      * @param page

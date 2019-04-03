@@ -50,6 +50,9 @@ public class StudyDAO extends DAO<StudyDetails>{
     public int limit;
     public User user;
 
+    public StudyDAO() {
+    }
+
     public StudyDAO(String studyDbId) {
         this.studyDbId = studyDbId;
     }

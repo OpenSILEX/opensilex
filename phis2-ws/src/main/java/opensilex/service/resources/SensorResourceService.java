@@ -58,29 +58,30 @@ import opensilex.service.model.Sensor;
 @Api("/sensors")
 @Path("/sensors")
 public class SensorResourceService extends ResourceService {
+    
     /**
-     * Search sensors corresponding to search params given by a user
-     * @param sensorDAOSesame
+     * Searches sensors corresponding to search parameters given by a user.
+     * @param sensorDao
      * @return the sensors corresponding to the search
      */
-    private Response getSensorsData(SensorDAO sensorDAOSesame) {
+    private Response getSensorsData(SensorDAO sensorDao) {
         ArrayList<Sensor> sensors;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Sensor> getResponse;
         
         //1. count
-        Integer totalCount = sensorDAOSesame.count();
+        Integer totalCount = sensorDao.count();
         //2. get sensors
-        sensors = sensorDAOSesame.allPaginate();
+        sensors = sensorDao.allPaginate();
         
         if (sensors == null) {
-            getResponse = new ResultForm<Sensor>(0, 0, sensors, true);
+            getResponse = new ResultForm<>(0, 0, sensors, true);
             return noResultFound(getResponse, statusList);
         } else if (sensors.isEmpty()) {
-            getResponse = new ResultForm<Sensor>(0, 0, sensors, true);
+            getResponse = new ResultForm<>(0, 0, sensors, true);
             return noResultFound(getResponse, statusList);
         } else {
-            getResponse = new ResultForm<Sensor>(sensorDAOSesame.getPageSize(), sensorDAOSesame.getPage(), sensors, true, totalCount);
+            getResponse = new ResultForm<>(sensorDao.getPageSize(), sensorDao.getPage(), sensors, true, totalCount);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {
@@ -91,25 +92,25 @@ public class SensorResourceService extends ResourceService {
     }
     
     /**
-     * Search sensors profile corresponding to the given sensor uri
-     * @param sensorDAOSesame
+     * Searches sensors profile corresponding to the given sensor URI.
+     * @param sensorDao
      * @return the sensor profile of the given sensor uri
      */
-    private Response getSensorProfileData(SensorProfileDAO sensorDAOSesame) {
+    private Response getSensorProfileData(SensorProfileDAO sensorDao) {
         ArrayList<SensorProfileDTO> sensorsProfiles;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<SensorProfileDTO> getResponse;
         
-        sensorsProfiles = sensorDAOSesame.allPaginate();
+        sensorsProfiles = sensorDao.allPaginate();
         
         if (sensorsProfiles == null) {
-            getResponse = new ResultForm<SensorProfileDTO>(0, 0, sensorsProfiles, true);
+            getResponse = new ResultForm<>(0, 0, sensorsProfiles, true);
             return noResultFound(getResponse, statusList);
         } else if (sensorsProfiles.isEmpty()) {
-            getResponse = new ResultForm<SensorProfileDTO>(0, 0, sensorsProfiles, true);
+            getResponse = new ResultForm<>(0, 0, sensorsProfiles, true);
             return noResultFound(getResponse, statusList);
         } else {
-            getResponse = new ResultForm<SensorProfileDTO>(sensorDAOSesame.getPageSize(), sensorDAOSesame.getPage(), sensorsProfiles, false);
+            getResponse = new ResultForm<>(sensorDao.getPageSize(), sensorDao.getPage(), sensorsProfiles, false);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {
@@ -120,9 +121,8 @@ public class SensorResourceService extends ResourceService {
     }
     
     /**
-     * search sensors by uri, rdfType, label, brand, in service date, 
+     * Searches sensors by URI, rdfType, label, brand, in service date, 
      * date of purchase and date of last calibration. 
-     * 
      * @param pageSize
      * @param page
      * @param uri
@@ -135,7 +135,7 @@ public class SensorResourceService extends ResourceService {
      * @param dateOfLastCalibration
      * @param personInCharge
      * @return list of the sensors corresponding to the search params given
-     * e.g
+     * @example
      * {
      *      "metadata": {
      *          "pagination": {
@@ -230,12 +230,12 @@ public class SensorResourceService extends ResourceService {
     }
 
     /**
-     * get the informations about a sensor
+     * Gets the information about a sensor.
      * @param uri
      * @param pageSize
      * @param page
      * @return the informations about the sensor if it exists
-     * e.g.
+     * @example
      * {
      *      "metadata": {
      *          "pagination": null,
@@ -296,43 +296,42 @@ public class SensorResourceService extends ResourceService {
     }
     
     /**
-     * search sensor's profile by uri
-     * 
+     * Searches sensor's profile by its URI
      * @param pageSize
      * @param page
      * @param uri
      * @return list of the sensor's profile corresponding to the search params given
-     * e.g
+     * @example
      * {
-     *      "metadata": {
-     *          "pagination": {
-     *              "pageSize": 20,
-     *              "currentPage": 0,
-     *              "totalCount": 3,
-     *              "totalPages": 1
-     *          },
-     *          "status": [],
-     *          "datafiles": []
-     *      },
-     *      "result": {
-     *          "data": [
-     *              {
-     *                  "uri": "http://www.phenome-fppn.fr/diaphen/2018/s18560",
-     *                  "properties": [
-     *                      {
-     *                         "rdfType": null,
-     *                         "relation": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-     *                         "value": "http://www.opensilex.org/vocabulary/oeso#MultispectralCamera"
-     *                       },
-     *                       {
-     *                         "rdfType": null,
-     *                         "relation": "http://www.w3.org/2000/01/rdf-schema#label",
-     *                         "value": "testMS-final-peut-etre"
-     *                       },
-     *                  ]
-     *              }
-     *         ]
+     *  "metadata": {
+     *    "pagination": {
+     *        "pageSize": 20,
+     *        "currentPage": 0,
+     *        "totalCount": 3,
+     *        "totalPages": 1
+     *    },
+     *    "status": [],
+     *    "datafiles": []
+     *  },
+     *  "result": {
+     *    "data": [
+     *      {
+     *        "uri": "http://www.phenome-fppn.fr/diaphen/2018/s18560",
+     *        "properties": [
+     *            {
+     *               "rdfType": null,
+     *               "relation": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+     *               "value": "http://www.opensilex.org/vocabulary/oeso#MultispectralCamera"
+     *             },
+     *             {
+     *               "rdfType": null,
+     *               "relation": "http://www.w3.org/2000/01/rdf-schema#label",
+     *               "value": "testMS-final-peut-etre"
+     *             },
+     *        ]
      *      }
+     *    ]
+     *  }
      * }
      */
     @GET
@@ -372,9 +371,9 @@ public class SensorResourceService extends ResourceService {
     }
     
     /**
-     * insert sensors in the database(s)
+     * Inserts sensors in the storage.
      * @param sensors list of sensors to insert.
-     *                e.g.
+     * @example
      * {
      *      "rdfType": "http://www.opensilex.org/vocabulary/oeso#Thermocouple",
      *      "label": "tcorg0001",
@@ -437,24 +436,24 @@ public class SensorResourceService extends ResourceService {
     }
     
     /**
-     * update the given sensors
-     * e.g. 
+     * Updates the given sensors.
+     * @example 
      * [
-     *      {
-     *          "uri": "http://www.phenome-fppn.fr/diaphen/2018/s18142",
-     *          "rdfType": "http://www.opensilex.org/vocabulary/oeso#Thermocouple",
-     *          "label": "testNewLabel",
-     *          "brand": "Skye Instrdfgduments",
-     *          "serialNumber": "A1E34qsf5F32",
-     *          "inServiceDate": "2017-06-15",
-     *          "dateOfPurchase": "2017-06-15",
-     *          "dateOfLastCalibration": "2017-06-15",
-     *          "personInCharge": "morgane.vidal@inra.fr"
-     *      }
+     *   {
+     *       "uri": "http://www.phenome-fppn.fr/diaphen/2018/s18142",
+     *       "rdfType": "http://www.opensilex.org/vocabulary/oeso#Thermocouple",
+     *       "label": "testNewLabel",
+     *       "brand": "Skye Instrdfgduments",
+     *       "serialNumber": "A1E34qsf5F32",
+     *       "inServiceDate": "2017-06-15",
+     *       "dateOfPurchase": "2017-06-15",
+     *       "dateOfLastCalibration": "2017-06-15",
+     *       "personInCharge": "morgane.vidal@inra.fr"
+     *   }
      * ]
      * @param sensors
      * @param context
-     * @return the post result with the founded errors or the uris of the updated sensors
+     * @return the post result with the founded errors or the URIs of the updated sensors
      */
     @PUT
     @ApiOperation(value = "Update sensors")
@@ -502,6 +501,12 @@ public class SensorResourceService extends ResourceService {
         }
     }
     
+    /**
+     * Sensor POST service.
+     * @param profiles
+     * @param context
+     * @return 
+     */
     @POST
     @Path("profiles")
     @ApiOperation(value = "Post sensor(s) profile(s)",
@@ -552,7 +557,7 @@ public class SensorResourceService extends ResourceService {
     }
     
     /**
-     * 
+     * Sensor PUT service.
      * @param variables the list of variables measured by the sensor. This list can be empty but not null.
      * @param uri
      * @param context
@@ -596,7 +601,10 @@ public class SensorResourceService extends ResourceService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response putMeasuredVariables(
             @ApiParam(value = DocumentationAnnotation.LINK_VARIABLES_DEFINITION) @URL ArrayList<String> variables,
-            @ApiParam(value = DocumentationAnnotation.SENSOR_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_SENSOR_URI, required = true) @PathParam("uri") @Required @URL String uri,
+            @ApiParam(value = DocumentationAnnotation.SENSOR_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_SENSOR_URI, required = true) 
+                @PathParam("uri") 
+                @Required 
+                @URL String uri,
             @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         

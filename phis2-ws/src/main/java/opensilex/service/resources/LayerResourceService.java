@@ -45,11 +45,13 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 @Api("/layers")
 @Path("layers")
 public class LayerResourceService extends ResourceService {
+    
     /**
-     * 
+     * Layer POST service.
      * @param layers
      * @param context
      * @return 
+     * @throws java.io.IOException 
      */
     @POST
     @ApiOperation(value = "Post a layer",
@@ -73,20 +75,32 @@ public class LayerResourceService extends ResourceService {
         @Context HttpServletRequest context) throws IOException {
         AbstractResultForm postResponse = null;
         
-        //SILEX:TODO
-        //générer une couche par élément de la liste et retourner les url de tous les fichiers générés
+        /*
+        SILEX:todo
+        Generate a layer per element and return the URL of all the generared files.
+        */
         if (layers !=  null && !layers.isEmpty()) { 
             LayerDAO layerDao = new LayerDAO();
             List<String> urlFilesList = new ArrayList<>();
-            if (ResourcesUtils.getStringBooleanValue(layers.get(0).getGenerateFile())) { //On génère le fichier
+            if (ResourcesUtils.getStringBooleanValue(layers.get(0).getGenerateFile())) { // Generate file
 
-                //SILEX:test
-                //Pour l'instant on le fait que pour une seule couche (la première
-                //de la liste envoyée. Il faudra par la suite le faire pour le reste)
+                /*
+                SILEX:todo
+                For the moment, done for a single layer (the first of the list sent)
+                Then it should be done for the rest.
+                */
                 POSTResultsReturn resultCreateFile = layerDao.createLayerFile(layers.get(0));
 
-                if (resultCreateFile.getHttpStatus().equals(Response.Status.CREATED)) { //PAS SURE DE ÇA, À VÉRIFIER
-                    //Retour de base à retourner. Il me faut ajouter l'url du fichier
+                
+                /*
+                SILEX:warning
+                Not sure of this. To check
+                */
+                if (resultCreateFile.getHttpStatus().equals(Response.Status.CREATED)) {
+                /*
+                /SILEX:warning    
+                */
+                    // Base return. The file URL has to be added.
                     postResponse = new ResponseFormPOST(resultCreateFile.statusList);
                     urlFilesList.add(layerDao.fileWebPath);
                     postResponse.getMetadata().setDatafiles(urlFilesList);
@@ -94,11 +108,11 @@ public class LayerResourceService extends ResourceService {
                 } else {
                     return Response.status(resultCreateFile.getHttpStatus()).entity(postResponse).build();
                 }
-            } else { //On ne doit pas générer le fichier
+            } else { // The file mustn't be generated
                 String fileWebPath = layerDao.getObjectURILayerFilePath(layers.get(0).getObjectUri());
                 File f = new File(fileWebPath);
                 
-                if (f.exists()) { //S'il existe, on retourne l'url
+                if (f.exists()) { // Return the URL is existing
                     urlFilesList.add(layerDao.getObjectURILayerFileWebPath(layers.get(0).getObjectUri()));
                     List<Status> statusList = new ArrayList<>();
                     statusList.add(new Status("File exist", StatusCodeMsg.INFO, fileWebPath));
@@ -108,14 +122,14 @@ public class LayerResourceService extends ResourceService {
                     postResponse.getMetadata().setDatafiles(urlFilesList);
                     
                     return Response.status(layerFile.getHttpStatus()).entity(postResponse).build();
-                } else { //Sinon, il faut retourner une erreur comme quoi le fichier n'existe pas. 
+                } else { // Otherwise, an error has to be generated to tell the file doesn't exist
                     return Response.status(Response.Status.NOT_FOUND).build();
                 }
             }
-            //\SILEX:test
+                //\SILEX:todo
         } else {
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormPOST()).build();
         }    
-        //\SILEX:TODO
+        //\SILEX:todo
     }
 }

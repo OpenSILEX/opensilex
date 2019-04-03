@@ -14,68 +14,86 @@ package opensilex.service.model;
  */
 public class Triplet {
     
-    //subject of the triplet
-    private String s;
-    //property of the triplet 
-    //(corresponds to the relation between the subject and the object)
-    private String p;
-    //object of the triplet
-    private String o;
-    //object type. It can be equals to literal or uri
-    private String o_type;
-    //object language. Example of value : "en-US"
-    private String o_lang;
-    //graph uri of the triplet
-    private String g;
+    /**
+     * Subject of the triplet.
+     */
+    private String subject;
+    
+    /**
+     * Property of the triplet.
+     * Corresponds to the relation between the subject and the object.
+     */
+    private String property;
+    
+    /**
+     * Object of the triplet.
+     */
+    private String object;
+    
+    /**
+     * Object type. It can a literal or a URI.
+     */
+    private String objectType;
+    
+    /**
+     * Object language. 
+     * @example en-US
+     */
+    private String objectLang;
+    
+    /**
+     * Graph URI of the triplet.
+     */
+    private String graph;
 
     public Triplet() {
     }
 
-    public String getS() {
-        return s;
+    public String getSubject() {
+        return subject;
     }
 
-    public void setS(String s) {
-        this.s = s;
+    public void setSubject(String subject) {
+        this.subject = subject;
     }
 
-    public String getP() {
-        return p;
+    public String getProperty() {
+        return property;
     }
 
-    public void setP(String p) {
-        this.p = p;
+    public void setProperty(String property) {
+        this.property = property;
     }
 
-    public String getO() {
-        return o;
+    public String getObject() {
+        return object;
     }
 
-    public void setO(String o) {
-        this.o = o;
+    public void setObject(String object) {
+        this.object = object;
     }
 
-    public String getO_type() {
-        return o_type;
+    public String getObjectType() {
+        return objectType;
     }
 
-    public void setO_type(String o_type) {
-        this.o_type = o_type;
+    public void setObjectType(String objectType) {
+        this.objectType = objectType;
     }
 
-    public String getO_lang() {
-        return o_lang;
+    public String getObjectLang() {
+        return objectLang;
     }
 
-    public void setO_lang(String o_lang) {
-        this.o_lang = o_lang;
+    public void setObjectLang(String objectLang) {
+        this.objectLang = objectLang;
     }
 
-    public String getG() {
-        return g;
+    public String getGraph() {
+        return graph;
     }
 
-    public void setG(String g) {
-        this.g = g;
+    public void setG(String graph) {
+        this.graph = graph;
     }
 }

@@ -53,6 +53,13 @@ import opensilex.service.model.Unit;
 @Api("/units")
 @Path("units")
 public class UnitResourceService extends ResourceService {
+    
+    /**
+     * Unit POST service.
+     * @param units
+     * @param context
+     * @return the POST result
+     */
     @POST
     @ApiOperation(value = "Post unit(s)",
                   notes = "Register new unit(s) in the data base")
@@ -84,7 +91,7 @@ public class UnitResourceService extends ResourceService {
             POSTResultsReturn result = unitDaoSesame.checkAndInsert(units);
             
             if (result.getHttpStatus().equals(Response.Status.CREATED)) {
-                //Code 201, unités insérés
+                //Code 201: units inserted
                 postResponse = new ResponseFormPOST(result.statusList);
                 postResponse.getMetadata().setDatafiles(result.getCreatedResources());
             } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
@@ -99,6 +106,12 @@ public class UnitResourceService extends ResourceService {
         }
     }
     
+    /**
+     * Unit PUT service.
+     * @param units
+     * @param context
+     * @return thePUT result
+     */
     @PUT
     @ApiOperation(value = "Update unit")
     @ApiResponses(value = {
@@ -130,7 +143,7 @@ public class UnitResourceService extends ResourceService {
             POSTResultsReturn result = unitDaoSesame.checkAndUpdate(units);
             
             if (result.getHttpStatus().equals(Response.Status.OK)) {
-                //Code 200, unités modifiées
+                //Code 200: units updated
                 postResponse = new ResponseFormPOST(result.statusList);
             } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
                     || result.getHttpStatus().equals(Response.Status.OK)
@@ -145,26 +158,26 @@ public class UnitResourceService extends ResourceService {
     }
 
     /**
-     * Collecte les données issues d'une requête de l'utilisateur (recherche d'unités)
-     * @param unitDaoSesame
+     * Get units data.
+     * @param unitDao
      * @return la réponse pour l'utilisateur. Contient la liste des unités
      *         correspondant à la recherche
      * SILEX:TODO
      * on ne peut chercher que par uri et label. Il faudra ajouter d'autres critères
      * \SILEX:TODO
      */
-    private Response getUnitsData(UnitDAO unitDaoSesame) {
+    private Response getUnitsData(UnitDAO unitDao) {
         ArrayList<Unit> units;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Unit> getResponse;
         
-        units = unitDaoSesame.allPaginate();
+        units = unitDao.allPaginate();
         
         if (units == null) {
-            getResponse = new ResultForm<Unit>(0, 0, units, true);
+            getResponse = new ResultForm<>(0, 0, units, true);
             return noResultFound(getResponse, statusList);
         } else if (!units.isEmpty()) {
-            getResponse = new ResultForm<Unit>(unitDaoSesame.getPageSize(), unitDaoSesame.getPage(), units, false);
+            getResponse = new ResultForm<>(unitDao.getPageSize(), unitDao.getPage(), units, false);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {
@@ -172,18 +185,18 @@ public class UnitResourceService extends ResourceService {
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         } else {
-            getResponse = new ResultForm<Unit>(0, 0, units, true);
+            getResponse = new ResultForm<>(0, 0, units, true);
             return noResultFound(getResponse, statusList);
         }
     }
     
     /**
-     *
+     * Unit GET service.
      * @param limit
      * @param page
      * @param uri
      * @param label
-     * @return
+     * @return the GET result
      */
     @GET
     @ApiOperation(value = "Get all units corresponding to the searched params given",
@@ -207,27 +220,27 @@ public class UnitResourceService extends ResourceService {
         @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_UNIT_URI) @QueryParam("uri") @URL String uri,
         @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_UNIT_LABEL) @QueryParam("label") String label
     ) {
-        UnitDAO unitDaoSesame = new UnitDAO();
+        UnitDAO unitDao = new UnitDAO();
         
         if (uri != null) {
-            unitDaoSesame.uri = uri;
+            unitDao.uri = uri;
         }
         if (label != null) {
-            unitDaoSesame.label = label;
+            unitDao.label = label;
         }
         
-        unitDaoSesame.user = userSession.getUser();
-        unitDaoSesame.setPage(page);
-        unitDaoSesame.setPageSize(limit);
+        unitDao.user = userSession.getUser();
+        unitDao.setPage(page);
+        unitDao.setPageSize(limit);
         
-        return getUnitsData(unitDaoSesame);
+        return getUnitsData(unitDao);
     }
     /**
-     * 
+     * Single unit GET service from URI
      * @param unit
      * @param limit
      * @param page
-     * @return l'unité correspondant à l'uri donnée si elle existe
+     * @return the unit found
      */
     @GET
     @Path("{unit}")
@@ -256,12 +269,12 @@ public class UnitResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
         }
         
-        UnitDAO unitDaoSesame = new UnitDAO();
-        unitDaoSesame.uri = unit;
-        unitDaoSesame.setPageSize(limit);
-        unitDaoSesame.setPage(page);
-        unitDaoSesame.user = userSession.getUser();
+        UnitDAO unitDao = new UnitDAO();
+        unitDao.uri = unit;
+        unitDao.setPageSize(limit);
+        unitDao.setPage(page);
+        unitDao.user = userSession.getUser();
         
-        return getUnitsData(unitDaoSesame);
+        return getUnitsData(unitDao);
     }  
 }

@@ -14,9 +14,15 @@ import java.util.ArrayList;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class SensorProfile {
-    //uri of the sensor
+    
+    /**
+     * URI of the sensor.
+     */
     private String uri;
-    //properties of the sensor
+    
+    /**
+     * Properties.
+     */
     private ArrayList<Property> properties = new ArrayList<>();
 
     public String getUri() {

@@ -70,6 +70,7 @@ public class DataResourceService extends ResourceService {
     
     /**
      * Service to insert data. 
+     * @param data
      * @example
      * [
      *  {
@@ -79,7 +80,6 @@ public class DataResourceService extends ResourceService {
      *      "value": "0.5"
      *  }
      * ]
-     * @param rawData
      * @param context
      * @return the insertion result. 
      */
@@ -249,11 +249,11 @@ public class DataResourceService extends ResourceService {
         
         if (dataList == null) {
             // Request failure
-            getResponse = new ResultForm<DataDTO>(0, 0, list, true, 0);
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         } else if (dataList.isEmpty()) {
             // No results
-            getResponse = new ResultForm<DataDTO>(0, 0, list, true, 0);
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         } else {
             // Convert all measures object to DTO's
@@ -262,15 +262,15 @@ public class DataResourceService extends ResourceService {
             });
             
             // Return list of DTO
-            getResponse = new ResultForm<DataDTO>(dataDAO.getPageSize(), dataDAO.getPage(), list, true, totalCount);
+            getResponse = new ResultForm<>(dataDAO.getPageSize(), dataDAO.getPage(), list, true, totalCount);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }
     }     
     
     /**
-     * Save data file with its metadata and use MULTIPART_FORM_DATA for it
-     * fileContentDisposition parameter is automatically created from submited file
+     * Saves data file with its metadata and use MULTIPART_FORM_DATA for it.
+     * fileContentDisposition parameter is automatically created from submitted file.
      * No example could be provided for this kind of MediaType 
      * @param descriptionDto
      * @param file
@@ -326,8 +326,8 @@ public class DataResourceService extends ResourceService {
     }
     
     /**
-     * Return the content of the file corresponding to the uri given.
-     * No authentication on this service because image file must be accessible directly
+     * Returns the content of the file corresponding to the URI given.
+     * No authentication on this service because image file must be accessible directly.
      * @param fileUri
      * @param response
      * @return The file content or null with a 404 status if it doesn't exists
@@ -368,7 +368,7 @@ public class DataResourceService extends ResourceService {
     }
     
     /**
-     * This service return the description of a file correponding to the uri given
+     * This service returns the description of a file corresponding to the URI given.
      * @param fileUri
      * @param response
      * @return the file description
@@ -406,13 +406,14 @@ public class DataResourceService extends ResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)  
     public Response getDataFileDescription(
-        @ApiParam(value = "Search by fileUri", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI ) @PathParam("fileUri") @URL @Required String fileUri,
-            @Context HttpServletResponse response
+        @ApiParam(value = "Search by fileUri", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI ) 
+            @PathParam("fileUri") @URL @Required String fileUri,
+        @Context HttpServletResponse response
     ) {
         
-        FileDescriptionDAO dataFileDaoMongo = new FileDescriptionDAO();
+        FileDescriptionDAO fileDescriptionDao = new FileDescriptionDAO();
         
-        FileDescription description = dataFileDaoMongo.findFileDescriptionByUri(fileUri);
+        FileDescription description = fileDescriptionDao.findFileDescriptionByUri(fileUri);
         
         if (description == null) {
             return Response.status(404).build();
@@ -423,7 +424,7 @@ public class DataResourceService extends ResourceService {
     
     
     /**
-     * This service search for file descriptions according to the search parameters given.
+     * This service searches for file descriptions according to the search parameters given.
      * @param pageSize
      * @param page
      * @param rdfType
@@ -514,11 +515,11 @@ public class DataResourceService extends ResourceService {
         
         if (dataList == null) {
             // Request failure
-            getResponse = new ResultForm<FileDescriptionDTO>(0, 0, list, true, 0);
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         } else if (dataList.isEmpty()) {
             // No results
-            getResponse = new ResultForm<FileDescriptionDTO>(0, 0, list, true, 0);
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         } else {
             // Convert all measures object to DTO's
@@ -527,10 +528,9 @@ public class DataResourceService extends ResourceService {
             });
             
             // Return list of DTO
-            getResponse = new ResultForm<FileDescriptionDTO>(dataFileDaoMongo.getPageSize(), dataFileDaoMongo.getPage(), list, true, (int)totalCount);
+            getResponse = new ResultForm<>(dataFileDaoMongo.getPageSize(), dataFileDaoMongo.getPage(), list, true, (int)totalCount);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }
-
     }
 }

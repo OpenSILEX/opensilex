@@ -52,11 +52,12 @@ import opensilex.service.model.Variable;
 @Api("/variables")
 @Path("variables")
 public class VariableResourceService extends ResourceService {
+    
     /**
-     * 
-     * @param variables la liste des variables à enregistrer
+     * Variable POST service.
+     * @param variables
      * @param context
-     * @return 
+     * @return the POST result
      */
     @POST
     @ApiOperation(value = "Post variable(s)",
@@ -79,7 +80,7 @@ public class VariableResourceService extends ResourceService {
             @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         
-        //Si dans les données il y a au moins une variable
+        // At least one variable
         if (variables != null && !variables.isEmpty()) {
             VariableDAO variableDao = new VariableDAO();
             if (context.getRemoteAddr() != null) {
@@ -88,11 +89,11 @@ public class VariableResourceService extends ResourceService {
             
             variableDao.user = userSession.getUser();
             
-            //Vérification et insertion des variables
+            // Check and insert variables
             POSTResultsReturn result = variableDao.checkAndInsert(variables);
             
             if (result.getHttpStatus().equals(Response.Status.CREATED)) {
-                //Code 201, variables insérés
+                //Code 201: variables inserted
                 postResponse = new ResponseFormPOST(result.statusList);
                 postResponse.getMetadata().setDatafiles(result.getCreatedResources());
             } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
@@ -107,6 +108,12 @@ public class VariableResourceService extends ResourceService {
         }
     } 
     
+    /**
+     * Variables PUT service.
+     * @param variables
+     * @param context
+     * @return 
+     */
     @PUT
     @ApiOperation(value = "Update variable")
     @ApiResponses(value = {
@@ -153,41 +160,40 @@ public class VariableResourceService extends ResourceService {
     }
     
     /**
-     * Collecte les données issues d'une requête de l'utilisateur (recherche de traits)
-     * @param variableDaoSesame
-     * @return la réponse pour l'utilisateur. Contient la liste des traits
-     *         correspondant à la recherche
-     * SILEX:TODO
-     * on ne peut chercher que par uri et label. Il faudra ajouter d'autres critères
-     * \SILEX:TODO
+     * Get variables data.
+     * @param variableDao
+     * @return the variables found
+     * SILEX:todo
+     * Add other search criterias than URI and label
+     * \SILEX:todo
      */
-    private Response getVariablesData(VariableDAO variableDaoSesame) {
+    private Response getVariablesData(VariableDAO variableDao) {
         ArrayList<Variable> variables;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Variable> getResponse;
         
         // 1. Get number of variables corresponding to the search params
-        Integer totalCount = variableDaoSesame.count();
+        Integer totalCount = variableDao.count();
         
         //2. Get the variables to return
-        variables = variableDaoSesame.allPaginate();
+        variables = variableDao.allPaginate();
         
         //3. Return the result
         if (variables == null) { //Request error
-            getResponse = new ResultForm<Variable>(0, 0, variables, true, 0);
+            getResponse = new ResultForm<>(0, 0, variables, true, 0);
             return noResultFound(getResponse, statusList);
         } else if (variables.isEmpty()) { //No result
-            getResponse = new ResultForm<Variable>(0, 0, variables, true, 0);
+            getResponse = new ResultForm<>(0, 0, variables, true, 0);
             return noResultFound(getResponse, statusList);
         } else { //Results founded. Return the results
-            getResponse = new ResultForm<Variable>(variableDaoSesame.getPageSize(), variableDaoSesame.getPage(), variables, true, totalCount);
+            getResponse = new ResultForm<>(variableDao.getPageSize(), variableDao.getPage(), variables, true, totalCount);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }
     }
     
     /**
-     *
+     * Variable GET service.
      * @param pageSize
      * @param page
      * @param uri
@@ -195,7 +201,7 @@ public class VariableResourceService extends ResourceService {
      * @param trait
      * @param method
      * @param unit
-     * @return
+     * @return the GET result
      */
     @GET
     @ApiOperation(value = "Get all variables corresponding to the searched params given",
@@ -248,11 +254,11 @@ public class VariableResourceService extends ResourceService {
     }
     
     /**
-     * 
+     * Single variable GET service by URI.
      * @param variable
      * @param limit
      * @param page
-     * @return la variable correspondant à l'uri donnée si elle existe
+     * @return the variable found
      */
     @GET
     @Path("{variable}")
@@ -281,12 +287,12 @@ public class VariableResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
         }
         
-        VariableDAO variableDaoSesame = new VariableDAO();
-        variableDaoSesame.uri = variable;
-        variableDaoSesame.setPageSize(limit);
-        variableDaoSesame.setPage(page);
-        variableDaoSesame.user = userSession.getUser();
+        VariableDAO variableDao = new VariableDAO();
+        variableDao.uri = variable;
+        variableDao.setPageSize(limit);
+        variableDao.setPage(page);
+        variableDao.user = userSession.getUser();
         
-        return getVariablesData(variableDaoSesame);
+        return getVariablesData(variableDao);
     }
 }

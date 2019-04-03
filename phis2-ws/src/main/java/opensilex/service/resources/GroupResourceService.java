@@ -55,21 +55,14 @@ import opensilex.service.model.Group;
 @Api("/group")
 @Path("groups")
 public class GroupResourceService extends ResourceService {
+    
     /**
-     * 
      * @param limit
      * @param page
      * @param uri
      * @param name
      * @param level
-     * @return liste des groupes correspondant aux critères de recherche 
-     *                                  (ou tous les groupes si pas de critères)
-     * Le retour (dans "data") est de la forme : 
-     *          [
-     *              { description du groupe1 },
-     *              { description du groupe2 },
-     *               ...
-     *          ]
+     * @return groups found
      */
     @GET
     @ApiOperation(value = "Get all groups corresponding to the searched params given",
@@ -112,11 +105,11 @@ public class GroupResourceService extends ResourceService {
     }
     
     /**
-     * 
+     * Gets group details.
      * @param groupUri
      * @param limit
      * @param page
-     * @return le groupe correspondant au nom de groupe s'il existe
+     * @return the group found
      */
     @GET
     @Path("{groupURI}")
@@ -136,7 +129,10 @@ public class GroupResourceService extends ResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getGroupDetails(
-    @ApiParam(value = DocumentationAnnotation.GROUP_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_GROUP_URI) @PathParam("groupURI") @Required @URL String groupUri,
+    @ApiParam(value = DocumentationAnnotation.GROUP_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_GROUP_URI) 
+        @PathParam("groupURI") 
+        @Required 
+        @URL String groupUri,
     @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
     @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
         
@@ -155,10 +151,10 @@ public class GroupResourceService extends ResourceService {
     }
     
     /**
-     * permet l'enregistrement en base de données d'un nouveau groupe
+     * Group creation service.
      * @param groups
      * @param context
-     * @return le message de retour correspondant à cet ajout (erreur ou ok)
+     * @return creation result
      */
     @POST
     @ApiOperation(value = "Post a group",
@@ -182,7 +178,7 @@ public class GroupResourceService extends ResourceService {
     @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         
-        //Si dans les données envoyées il y a au moins un groupe
+        // If there is at least one group in the data sent
         if (groups != null && !groups.isEmpty()) {
             GroupDAO groupDao = new GroupDAO();
             if (groupDao.remoteUserAdress != null) {
@@ -191,10 +187,10 @@ public class GroupResourceService extends ResourceService {
             
             groupDao.user = userSession.getUser();
             
-            //Vérification des groupes et insertion en BD
+            // Check and insert groups
             POSTResultsReturn result = groupDao.checkAndInsertGroups(groups);
             
-            if (result.getHttpStatus().equals(Response.Status.CREATED)) { //201, projets insérés
+            if (result.getHttpStatus().equals(Response.Status.CREATED)) { //201: groups inserted
                 postResponse = new ResponseFormPOST(result.statusList);
                 postResponse.getMetadata().setDatafiles(result.getCreatedResources());
             } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
@@ -210,6 +206,12 @@ public class GroupResourceService extends ResourceService {
         }
     }
     
+    /**
+     * Groups update service.
+     * @param groups
+     * @param context
+     * @return the update result
+     */
     @PUT
     @ApiOperation(value = "Update groups")
     @ApiResponses(value = {
@@ -237,10 +239,10 @@ public class GroupResourceService extends ResourceService {
             }
             groupDao.user = userSession.getUser();
             
-            //Vérification des données et update de la BD
+            // Check and update groups
             POSTResultsReturn result = groupDao.checkAndUpdateList(groups);
             
-            if (result.getHttpStatus().equals(Response.Status.OK)) { //200 users modifiés
+            if (result.getHttpStatus().equals(Response.Status.OK)) { //200: groups updated
                 postResponse = new ResponseFormPOST(result.statusList);
                 return Response.status(result.getHttpStatus()).entity(postResponse).build();
             } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
@@ -249,7 +251,6 @@ public class GroupResourceService extends ResourceService {
                 postResponse = new ResponseFormPOST(result.statusList);
             }
             return Response.status(result.getHttpStatus()).entity(postResponse).build();
-            //TODO
         } else {
             postResponse = new ResponseFormPOST(new Status("Request error", StatusCodeMsg.ERR, "Empty group(s) to add"));
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
@@ -257,10 +258,9 @@ public class GroupResourceService extends ResourceService {
     }
 
     /**
-     * Collecte les données issues d'une requête de l'utilisateur (recherche de groupes)
-     * @param groupDao GroupDao
-     * @return la réponse pour l'utilisateur. 
-     *         Contient la liste des groups correspondant à la recherche
+     * Gets groups data.
+     * @param groupDao
+     * @return the groups found
      */
     private Response getGroupsData(GroupDAO groupDao) {
         ArrayList<Group> groups = new ArrayList<>();
@@ -269,16 +269,16 @@ public class GroupResourceService extends ResourceService {
         Integer groupsCount = groupDao.count();
         
         if (groupsCount != null && groupsCount == 0) {
-            getResponse = new ResultForm<Group>(groupDao.getPageSize(), groupDao.getPage(), groups, true, groupsCount);
+            getResponse = new ResultForm<>(groupDao.getPageSize(), groupDao.getPage(), groups, true, groupsCount);
             return noResultFound(getResponse, statusList);
         } else {
             groups = groupDao.allPaginate();
             
             if (groups == null || groupsCount == null) { //sql error
-                getResponse = new ResultForm<Group>(0, 0, groups, true, groupsCount);
+                getResponse = new ResultForm<>(0, 0, groups, true, groupsCount);
                 return sqlError(getResponse, statusList);
             } else if (groups.isEmpty()) { // no result found
-                getResponse = new ResultForm<Group>(groupDao.getPageSize(), groupDao.getPage(), groups, false, groupsCount);
+                getResponse = new ResultForm<>(groupDao.getPageSize(), groupDao.getPage(), groups, false, groupsCount);
                 return noResultFound(getResponse, statusList);
             } else { //results founded
                 getResponse = new ResultForm<Group>(groupDao.getPageSize(), groupDao.getPage(), groups, true, groupsCount);

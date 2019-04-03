@@ -38,11 +38,11 @@ public class TripletDTO extends AbstractVerifiedClass {
     @Override
     public Triplet createObjectFromDTO() {
         Triplet triplet = new Triplet();
-        triplet.setS(s);
-        triplet.setP(p);
-        triplet.setO(o);
-        triplet.setO_type(o_type);
-        triplet.setO_lang(o_lang);
+        triplet.setSubject(s);
+        triplet.setProperty(p);
+        triplet.setObject(o);
+        triplet.setObjectType(o_type);
+        triplet.setObjectLang(o_lang);
         triplet.setG(g);
 
         return triplet;

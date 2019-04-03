@@ -86,35 +86,38 @@ public class ImageResourceService extends ResourceService {
     
     // For the waiting annotations
     public final static ExecutorService THREAD_POOL = Executors.newCachedThreadPool();
+    
     // contains the informations abour the waiting annotations
     public final static Map<String, Boolean> WAITING_METADATA_FILE_CHECK = new HashMap<>();
+    
     // contains the informations abour the waiting annotations
     public final static Map<String, ImageMetadata> WAITING_METADATA_INFORMATION = new HashMap<>();
     
     /**
-     * check images metadata
+     * Checks images metadata.
      * @param headers
      * @param imagesMetadata 
-     * metadata wanted for each image : 
-     *              { 
-     *                  rdfType,
-     *                  concernedItems [
-     *                      {
-     *                          uri,
-     *                          typeURI
-     *                      }
-     *                  ],
-     *                  shootingConfigurations {
-     *                      date,
-     *                      position,
-     *                      sensor
-     *                  },
-     *                  storage {
-     *                      checksum,
-     *                      extension
-     *                  }
-     *              }
-     * @return the url to save the image(s) if metadata are corrects
+     * @example
+     * metadata wanted for each image: 
+     *  { 
+     *      rdfType,
+     *      concernedItems [
+     *          {
+     *              uri,
+     *              typeURI
+     *          }
+     *      ],
+     *      shootingConfigurations {
+     *          date,
+     *          position,
+     *          sensor
+     *      },
+     *      storage {
+     *          checksum,
+     *          extension
+     *     }
+     *  }
+     * @return the URL to save the image(s) if metadata is correct
      */
     @POST
     @ApiOperation(value = "Save a file", notes = DocumentationAnnotation.ADMIN_ONLY_NOTES) 
@@ -140,18 +143,21 @@ public class ImageResourceService extends ResourceService {
             
             final POSTResultsReturn checkImageMetadata = imageDaoMongo.check(imagesMetadata); 
             
-            if (checkImageMetadata.statusList == null) { //bad metadata
+            if (checkImageMetadata.statusList == null) { // bad metadata
                 postResponse = new ResponseFormPOST();
-            } else if (checkImageMetadata.getDataState()) {//metadata ok
+            } else if (checkImageMetadata.getDataState()) {// metadata ok
                 ArrayList<String> imagesUploadLinks = new ArrayList<>();
                 String lastGeneratedUri = null;
                 for (ImageMetadataDTO imageMetadata : imagesMetadata) {
                     try {
                         final UriBuilder uploadPath = uri.getBaseUriBuilder();
                         
-                        //generates the imageUri
+                        // generates the imageUri
                         UriGenerator uriGenerator = new UriGenerator();
-                        final String imageUri = uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_IMAGE.toString(), Year.now().toString(), lastGeneratedUri);
+                        final String imageUri = uriGenerator.generateNewInstanceUri(
+                                Oeso.CONCEPT_IMAGE.toString(), 
+                                Year.now().toString(), 
+                                lastGeneratedUri);
                         lastGeneratedUri = imageUri;
                         
                         final String uploadLink = uploadPath.path("images").path("upload").queryParam("uri", imageUri).toString();
@@ -161,13 +167,16 @@ public class ImageResourceService extends ResourceService {
                         ImageMetadata imageMetadataToSave = imageMetadata.createObjectFromDTO();
                         imageMetadataToSave.setUri(imageUri);
                         WAITING_METADATA_INFORMATION.put(imageUri, imageMetadataToSave);
-                        //Launch the thread for the expected file
+                        // Launch the thread for the expected file
                         THREAD_POOL.submit(new ImageWaitingCheck(imageUri));
-                    } catch (Exception ex) { //In the images case, no exception should be raised
+                    } catch (Exception ex) { // In the images case, no exception should be raised
                         java.util.logging.Logger.getLogger(ImageResourceService.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
-                final Status waitingTimeStatus = new Status(StatusCodeMsg.TIMEOUT, StatusCodeMsg.INFO, " Timeout :" + PropertiesFileManager.getConfigFileProperty("service", "waitingFileTime") + " seconds");
+                final Status waitingTimeStatus = new Status(
+                        StatusCodeMsg.TIMEOUT, 
+                        StatusCodeMsg.INFO, 
+                        " Timeout :" + PropertiesFileManager.getConfigFileProperty("service", "waitingFileTime") + " seconds");
                 checkImageMetadata.statusList.add(waitingTimeStatus);
                 postResponse = new ResponseFormPOST(checkImageMetadata.statusList);
                 postResponse.getMetadata().setDatafiles(imagesUploadLinks);
@@ -181,14 +190,14 @@ public class ImageResourceService extends ResourceService {
     }
     
     /**
-     * calculate the hash of a file
-     * @param in the file we want the hash
+     * Calculates the hash of a file.
+     * @param file the file we want the hash
      * @return the hash file
      */
-    private String getHash(File in) {
+    private String getHash(File file) {
         String hash = null;
         try {
-            hash = MD5.asHex(MD5.getHash(in)); // Ex : 106fa487baa1728083747de1c6df73e9
+            hash = MD5.asHex(MD5.getHash(file)); // e.g: 106fa487baa1728083747de1c6df73e9
         } catch (IOException ex) {
             LOGGER.error(ex.getMessage(), ex);
         }
@@ -196,10 +205,10 @@ public class ImageResourceService extends ResourceService {
     }
     
     /**
-     * calculate the server image directory for an image
+     * Calculates the server image directory for an image.
      * @return the server image directory of the image. 
      *         The images are saved by year of insertion.
-     *         (e.g http://www.phenome-fppn.fr/platform/2017/i170000000000)
+     * @example http://www.phenome-fppn.fr/platform/2017/i170000000000)
      * 
      */
     private String getServerImagesDirectory() {
@@ -209,9 +218,8 @@ public class ImageResourceService extends ResourceService {
     }
     
     /**
-     * 
      * @return the web access image directory
-     *         (e.g http://localhost/images/platform/2017/i170000000000)
+     * @example http://localhost/images/platform/2017/i170000000000)
      */
     private String getWebAccessImagesDirectory() {
         return PropertiesFileManager.getConfigFileProperty("service", "imageFileServerDirectory") + "/"
@@ -220,11 +228,10 @@ public class ImageResourceService extends ResourceService {
     }
     
     /**
-     * 
      * @param imageUri
-     * @return the image name, extracted from the image uri. 
-     *         It corresponds to the image id from the uri 
-     *         (e.g i170000000000)
+     * @return the image name, extracted from the image URI. 
+     *         It corresponds to the image id from the URI 
+     * @example i170000000000
      */
     private String getImageName(String imageUri) {
         return imageUri.substring(imageUri.lastIndexOf("/") + 1, imageUri.length());
@@ -264,7 +271,7 @@ public class ImageResourceService extends ResourceService {
         ResponseFormPOST postResponse;
         List<Status> statusList = new ArrayList<>();
         
-        //The file metadata exists
+        // The file metadata exists
         if (!WAITING_METADATA_FILE_CHECK.containsKey(imageUri)) {
             statusList.add(new Status("No waiting image", StatusCodeMsg.ERR, "No waiting file for the following uri : " + imageUri));
             postResponse = new ResponseFormPOST(statusList);
@@ -277,7 +284,7 @@ public class ImageResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
         
-        //check the checksum
+        // check the checksum
         String hash = getHash(in);
         if (hash != null && !WAITING_METADATA_INFORMATION.get(imageUri).getFileInformations().getChecksum().equals(hash)) {
             statusList.add(new Status(StatusCodeMsg.MD5_ERROR, StatusCodeMsg.ERR, "Checksum MD5 doesn't match. Corrupted File."));
@@ -312,12 +319,17 @@ public class ImageResourceService extends ResourceService {
         jsch.closeConnection();
         
         if (!fileTransfered) { //If the image has not been register
-            statusList.add(new Status("Image upload error", StatusCodeMsg.ERR, "An error occurred during file upload. Try to submit it again " + imageUri));
+            statusList.add(new Status(
+                    "Image upload error", 
+                    StatusCodeMsg.ERR, 
+                    "An error occurred during file upload. Try to submit it again " + imageUri));
             postResponse = new ResponseFormPOST(statusList);
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
         
-        WAITING_METADATA_INFORMATION.get(imageUri).getFileInformations().setServerFilePath(webAccessImagesDirectory + "/" + serverFileName);
+        WAITING_METADATA_INFORMATION.get(imageUri)
+                .getFileInformations()
+                .setServerFilePath(webAccessImagesDirectory + "/" + serverFileName);
         
         ImageMetadataMongoDAO imageMetadataDaoMongo = new ImageMetadataMongoDAO();
         imageMetadataDaoMongo.user = userSession.getUser();
@@ -341,7 +353,7 @@ public class ImageResourceService extends ResourceService {
     }
     
     /**
-     * Search images metadata corresponding to a user search
+     * Searches images metadata corresponding to a user search.
      * @param imageMetadataDaoMongo
      * @return the images corresponding to the search
      */
@@ -353,10 +365,10 @@ public class ImageResourceService extends ResourceService {
         imagesMetadata = imageMetadataDaoMongo.allPaginate();
         
         if (imagesMetadata == null) {
-            getResponse = new ResultForm<ImageMetadata>(0, 0, imagesMetadata, true);
+            getResponse = new ResultForm<>(0, 0, imagesMetadata, true);
             return noResultFound(getResponse, statusList);
         } else if (!imagesMetadata.isEmpty()) {
-            getResponse = new ResultForm<ImageMetadata>(imageMetadataDaoMongo.getPageSize(), imageMetadataDaoMongo.getPage(), imagesMetadata, false);
+            getResponse = new ResultForm<>(imageMetadataDaoMongo.getPageSize(), imageMetadataDaoMongo.getPage(), imagesMetadata, false);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {
@@ -373,37 +385,39 @@ public class ImageResourceService extends ResourceService {
      * 
      * @param pageSize
      * @param page
-     * @param uri image uri (e.g http://www.phenome-fppn.fr/phis_field/2017/i170000000000)
+     * @param uri image URI (e.g http://www.phenome-fppn.fr/phis_field/2017/i170000000000)
      * @param rdfType image type (e.g http://www.opensilex.org/vocabulary/oeso#HemisphericalImage)
-     * @param concernedItems uris of the items concerned by the searched image(s), separated by ";". (e.g http://phenome-fppn.fr/phis_field/ao1;http://phenome-fppn.fr/phis_field/ao2)
+     * @param concernedItems URIs of the items concerned by the searched image(s), separated by ";". 
+     * (e.g http://phenome-fppn.fr/phis_field/ao1;http://phenome-fppn.fr/phis_field/ao2)
      * @param startDate start date of the shooting. Format YYYY-MM-DD (e.g 2015-07-07)
      * @param endDate end date of the shooting. Format YYYY-MM-DD (e.g 2015-07-08)
-     * @param sensor uri of the sensor providing the image (e.g. http://www.phenome-fppn.fr/diaphen/2018/s18035)
-     * @return the images list corresponding to the search params given (all the images if no search param) /!\ there is a pagination 
-     *         JSON returned : 
-     *          [
-     *              { //first image description
-     *                  uri,
-     *                  rdfType,
-     *                  concernedItems [
-     *                      {
-     *                          uri,
-     *                          rdfType
-     *                      }
-     *                  ],
-     *                  shootingConfigurations {
-     *                      date,
-     *                      timestamp,
-     *                      sensorPosition
-     *                  },
-     *                  storage {
-     *                      extension,
-     *                      md5sum,
-     *                      serverFilePath
-     *                  }
-     *              },
-     *              ...
-     *          ]
+     * @param sensor URI of the sensor providing the image (e.g. http://www.phenome-fppn.fr/diaphen/2018/s18035)
+     * @return the images list corresponding to the search parameters given (all the images if no search param) 
+     * /!\ there is a pagination 
+     * JSON returned : 
+     * [
+     *    { //first image description
+     *         uri,
+     *         rdfType,
+     *         concernedItems [
+     *             {
+     *                 uri,
+     *                 rdfType
+     *             }
+     *         ],
+     *         shootingConfigurations {
+     *             date,
+     *             timestamp,
+     *             sensorPosition
+     *         },
+     *         storage {
+     *             extension,
+     *             md5sum,
+     *             serverFilePath
+     *         }
+     *     },
+     *     ...
+     * ]
      */
     @GET
     @ApiOperation(value = "Get all images corresponding to the search params given")

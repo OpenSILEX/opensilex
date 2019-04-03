@@ -56,6 +56,7 @@ import opensilex.service.model.RadiometricTarget;
 @Api("/radiometricTargets")
 @Path("/radiometricTargets")
 public class RadiometricTargetResourceService extends ResourceService {
+    
     /**
      * Generates a RadiometricTarget list from a given list of RadiometricTargetPostDTO
      * @param radiometricTargetsPostDTO
@@ -64,24 +65,24 @@ public class RadiometricTargetResourceService extends ResourceService {
     private List<RadiometricTarget> radiometricTargetPostDTOsToRadiometricTargets(List<RadiometricTargetPostDTO> radiometricTargetsPostDTO) {
         ArrayList<RadiometricTarget> radiometricTargets = new ArrayList<>();
         
-        for (RadiometricTargetPostDTO radiometricTargetPostDTO : radiometricTargetsPostDTO) {
+        radiometricTargetsPostDTO.forEach((radiometricTargetPostDTO) -> {
             radiometricTargets.add(radiometricTargetPostDTO.createObjectFromDTO());
-        }
+        });
         
         return radiometricTargets;
     }
     
     /**
-     * Generates a RadiometricTarget list from a given list of RadiometricTargetDTO
+     * Generates a RadiometricTarget list from a given list of RadiometricTargetDTO.
      * @param radiometricTargetsDTO
      * @return the list of radiometric targets
      */
     private List<RadiometricTarget> radiometricTargetDTOsToRadiometricTargets(List<RadiometricTargetDTO> radiometricTargetsDTO) {
         ArrayList<RadiometricTarget> radiometricTargets = new ArrayList<>();
         
-        for (RadiometricTargetDTO radiometricTargetPostDTO : radiometricTargetsDTO) {
+        radiometricTargetsDTO.forEach((radiometricTargetPostDTO) -> {
             radiometricTargets.add(radiometricTargetPostDTO.createRadiometricTargetFromDTO());
-        }
+        });
         
         return radiometricTargets;
     }
@@ -91,25 +92,25 @@ public class RadiometricTargetResourceService extends ResourceService {
      * @example
      * [
      *  {
-     *      "label": "rt1",
-     *      "properties": [
-     *          {
-     *              "rdfType": null,
-     *              "relation": "http://www.opensilex.org/vocabulary/oeso#hasvfcShape",
-     *              "value": "3"
-     *          },
-     *          {
-     *              "rdfType": null,
-     *              "relation": "http://www.w3.org/2000/01/rdf-schema#comment",
-     *              "value": "3"
-     *          }
-     *      ]
+     *    "label": "rt1",
+     *    "properties": [
+     *        {
+     *            "rdfType": null,
+     *            "relation": "http://www.opensilex.org/vocabulary/oeso#hasvfcShape",
+     *            "value": "3"
+     *        },
+     *        {
+     *            "rdfType": null,
+     *            "relation": "http://www.w3.org/2000/01/rdf-schema#comment",
+     *            "value": "3"
+     *        }
+     *    ]
      *  }
      * ]
      * @param radiometricTargets
      * @param context
      * @return The founded errors
-     *         The list of the uris of the created radiometric targets
+     *         The list of the URIs of the created radiometric targets
      */
     @POST
     @ApiOperation(value = "Post radiometric(s) target(s) ",
@@ -159,6 +160,12 @@ public class RadiometricTargetResourceService extends ResourceService {
         }
     }
     
+    /**
+     * Radiometric target PUT service.
+     * @param radiometricTargets
+     * @param context
+     * @return 
+     */
     @PUT
     @ApiOperation(value = "Update radiometric targets")
     @ApiResponses(value = {
@@ -201,34 +208,33 @@ public class RadiometricTargetResourceService extends ResourceService {
     }
     
     /**
-     * Search radiometric target by uri and label
-     * 
+     * Searches radiometric target by URI and label.
      * @param pageSize
      * @param page
      * @param uri
      * @param label
      * @return  list of the radiometric targets corresponding to the search params given
-     * e.g
+     * @example
      * {
-     *      "metadata": {
-     *          "pagination": {
-     *              "pageSize": 20,
-     *              "currentPage": 0,
-     *              "totalCount": 3,
-     *              "totalPages": 1
-     *          },
-     *          "status": [],
-     *          "datafiles": []
-     *      },
-     *      "result": {
-     *          "data": [
-     *              {
-     *                  "uri": "http://www.phenome-fppn.fr/id/radiometricTargets/rt001",
-     *                  "label": "radiometric target name",
-     *                  "properties": []
-     *              },
-     *          ]
-     *      }
+     *    "metadata": {
+     *        "pagination": {
+     *            "pageSize": 20,
+     *            "currentPage": 0,
+     *            "totalCount": 3,
+     *            "totalPages": 1
+     *        },
+     *        "status": [],
+     *        "datafiles": []
+     *    },
+     *    "result": {
+     *        "data": [
+     *            {
+     *                "uri": "http://www.phenome-fppn.fr/id/radiometricTargets/rt001",
+     *                "label": "radiometric target name",
+     *                "properties": []
+     *            },
+     *        ]
+     *    }
      * }
      */
     @GET
@@ -275,11 +281,11 @@ public class RadiometricTargetResourceService extends ResourceService {
         
         if (radiometricTargets == null) {
             // Request failure
-            getResponse = new ResultForm<RdfResourceDefinitionDTO>(0, 0, list, true, 0);
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         } else if (radiometricTargets.isEmpty()) {
             // No results
-            getResponse = new ResultForm<RdfResourceDefinitionDTO>(0, 0, list, true, 0);
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         } else {
             // Convert all RadiometricTarget object to DTO's
@@ -288,18 +294,17 @@ public class RadiometricTargetResourceService extends ResourceService {
             });
             
             // Return list of DTO
-            getResponse = new ResultForm<RdfResourceDefinitionDTO>(radiometricTargetDAO.getPageSize(), radiometricTargetDAO.getPage(), list, true, totalCount);
+            getResponse = new ResultForm<>(radiometricTargetDAO.getPageSize(), radiometricTargetDAO.getPage(), list, true, totalCount);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }
     }
     
     /**
-     * Search radiometric target details for a given uri
-     * 
+     * Searches radiometric target details for a given URI.
      * @param uri
      * @return list of the radiometric target's detail corresponding to the search uri
-     * e.g
+     * @example
      * {
      *   "metadata": {
      *     "pagination": null,
@@ -311,26 +316,26 @@ public class RadiometricTargetResourceService extends ResourceService {
      *       {
      *         "uri": "http://www.phenome-fppn.fr/id/radiometricTargets/rt001",
      *         "properties": [
-     *              {
-     *                "rdfType": "http://www.w3.org/2002/07/owl#Class",
-     *                "relation": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-     *                "value": "http://www.opensilex.org/vocabulary/oeso#RadiometricTarget"
-     *              },
-     *              {
-     *                "rdfType": null,
-     *                "relation": "http://www.w3.org/2000/01/rdf-schema#label",
-     *                "value": "Test circulaire"
-     *              },
-     *              {
-     *                "rdfType": null,
-     *                "relation": "http://www.opensilex.org/vocabulary/oeso#dateOfLastCalibration",
-     *                "value": "6-09-07"
-     *              },
-     *              {
-     *                "rdfType": null,
-     *                "relation": "http://www.opensilex.org/vocabulary/oeso#dateOfPurchase",
-     *                "value": "6-08-10"
-     *              }
+     *            {
+     *              "rdfType": "http://www.w3.org/2002/07/owl#Class",
+     *              "relation": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+     *              "value": "http://www.opensilex.org/vocabulary/oeso#RadiometricTarget"
+     *            },
+     *            {
+     *              "rdfType": null,
+     *              "relation": "http://www.w3.org/2000/01/rdf-schema#label",
+     *              "value": "Test circulaire"
+     *            },
+     *            {
+     *              "rdfType": null,
+     *              "relation": "http://www.opensilex.org/vocabulary/oeso#dateOfLastCalibration",
+     *              "value": "6-09-07"
+     *            },
+     *            {
+     *              "rdfType": null,
+     *              "relation": "http://www.opensilex.org/vocabulary/oeso#dateOfPurchase",
+     *              "value": "6-08-10"
+     *            }
      *         ]
      *       }
      *     ]
@@ -355,7 +360,12 @@ public class RadiometricTargetResourceService extends ResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getRadiometricTargetsDetails(
-        @ApiParam(value = DocumentationAnnotation.INFRASTRUCTURE_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_URI) @PathParam("uri") @URL @Required String uri) {            
+        @ApiParam(
+                value = DocumentationAnnotation.INFRASTRUCTURE_URI_DEFINITION, 
+                required = true, 
+                example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_URI) 
+            @PathParam("uri") @URL @Required String uri) { 
+        
         // 1. Initialize propertyDAO with parameters
         PropertyDAO propertyDAO = new PropertyDAO();
         
@@ -374,12 +384,12 @@ public class RadiometricTargetResourceService extends ResourceService {
             list.add(new RadiometricTargetDTO(radiometricTarget));
             
             // Return it
-            getResponse = new ResultForm<RdfResourceDefinitionDTO>(propertyDAO.getPageSize(), propertyDAO.getPage(), list, true, list.size());
+            getResponse = new ResultForm<>(propertyDAO.getPageSize(), propertyDAO.getPage(), list, true, list.size());
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         } else {
             // No result found
-            getResponse = new ResultForm<RdfResourceDefinitionDTO>(0, 0, list, true, 0);
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         }
     }

@@ -13,11 +13,6 @@ package opensilex.service.model;
  */
 public class Variable extends RdfResourceDefinition {
     
-    /**
-     * @attribute trait le trait 
-     * @attribute method la méthode 
-     * @attribute unit l'unité 
-     */
     protected Trait trait;
     protected Method method;
     protected Unit unit;

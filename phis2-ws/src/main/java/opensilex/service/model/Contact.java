@@ -19,7 +19,6 @@ public class Contact {
     private String type;
     
     public Contact() {
-        
     }
 
     public String getEmail() {

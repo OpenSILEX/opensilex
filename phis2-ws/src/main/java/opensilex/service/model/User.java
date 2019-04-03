@@ -16,11 +16,11 @@ import java.util.ArrayList;
  * User model.
  * @update [Arnaud Charleroy] Sept. 2016: add user attributes and user DAO 
  * implementation.
- * @update [Morgane Vidal] Apr. 2016: add phone, affiliation and orcid attributes.
+ * @update [Morgane Vidal] Apr. 2016: add phone, affiliation and ORCID attributes.
  * The deletion of isAdmin, role and type attributes impacted the 
  * UserDaoPhisBrapi class.  
  * Adding of the groups to which the user belongs (used to create a user)
- * @author tireau
+ * @author Anne Tireau <anne.tireau@inra.fr>
  */
 @ApiModel
 public class User {
@@ -32,7 +32,12 @@ public class User {
     private String address;
     private String phone;
     private String affiliation;
-    private String uri; // uri of user eg. http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy
+    
+    /**
+     * User URI.
+     * @example http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy
+     */
+    private String uri;
     private String orcid;
     private String admin;
     private String available;

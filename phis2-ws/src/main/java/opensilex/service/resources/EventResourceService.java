@@ -63,7 +63,7 @@ public class EventResourceService  extends ResourceService {
     final static Logger LOGGER = LoggerFactory.getLogger(EventResourceService.class);
     
     /**
-     * Search all events
+     * Searches events with filters.
      * @example
      * {
      *  {
@@ -108,7 +108,7 @@ public class EventResourceService  extends ResourceService {
      * @param concernedItemLabel
      * @param startDate
      * @param endDate
-     * @return  list of all events
+     * @return  list of events filtered
      */
     @GET
     @ApiOperation(value = "Get all events corresponding to the search parameters given.", 
@@ -155,10 +155,10 @@ public class EventResourceService  extends ResourceService {
         ResultForm<EventSimpleDTO> responseForm;
         
         if (events == null) { // Request failure
-            responseForm = new ResultForm<EventSimpleDTO>(0, 0, eventDTOs, true, 0);
+            responseForm = new ResultForm<>(0, 0, eventDTOs, true, 0);
             return noResultFound(responseForm, statusList);
         } else if (events.isEmpty()) { // No result
-            responseForm = new ResultForm<EventSimpleDTO>(0, 0, eventDTOs, true, 0);
+            responseForm = new ResultForm<>(0, 0, eventDTOs, true, 0);
             return noResultFound(responseForm, statusList);
         } else { // Results
             
@@ -175,7 +175,7 @@ public class EventResourceService  extends ResourceService {
                 concernedItemUri, 
                 startDate, 
                 endDate);
-            responseForm = new ResultForm<EventSimpleDTO>(eventDAO.getPageSize(), eventDAO.getPage(), eventDTOs, true, resultsCount);
+            responseForm = new ResultForm<>(eventDAO.getPageSize(), eventDAO.getPage(), eventDTOs, true, resultsCount);
             if (responseForm.getResult().dataSize() == 0) {
                 return noResultFound(responseForm, statusList);
             } else {
@@ -186,7 +186,7 @@ public class EventResourceService  extends ResourceService {
     }
     
     /**
-     * Get an event's details
+     * Gets an event from its URI.
      * @example
      * {
      *   "metadata": {
@@ -248,7 +248,7 @@ public class EventResourceService  extends ResourceService {
      *   }
      * }
      * @param uri
-     * @return an event's details
+     * @return the event found
      */
     @GET
     @Path("{uri}")
@@ -281,14 +281,14 @@ public class EventResourceService  extends ResourceService {
         ResultForm<EventDetailedDTO> responseForm;
         
         if (event == null) { // Request failure
-            responseForm = new ResultForm<EventDetailedDTO>(0, 0, eventDTOs, true, 0);
+            responseForm = new ResultForm<>(0, 0, eventDTOs, true, 0);
             return noResultFound(responseForm, statusList);
         } else { // Results
             
             // Generate DTO
             eventDTOs.add(new EventDetailedDTO(event));
             
-            responseForm = new ResultForm<EventDetailedDTO>(0, 0, eventDTOs, true, 0);
+            responseForm = new ResultForm<>(0, 0, eventDTOs, true, 0);
             if (responseForm.getResult().dataSize() == 0) {
                 return noResultFound(responseForm, statusList);
             } else {
@@ -299,7 +299,7 @@ public class EventResourceService  extends ResourceService {
     }
         
     /**
-     * Service to insert events
+     * Service to insert events.
      * @example
      * {
      *  [

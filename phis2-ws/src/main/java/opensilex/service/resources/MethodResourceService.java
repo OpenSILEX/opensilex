@@ -53,6 +53,13 @@ import opensilex.service.model.Method;
 @Api("/methods")
 @Path("methods")
 public class MethodResourceService extends ResourceService {
+    
+    /**
+     * Method POST service.
+     * @param methods
+     * @param context
+     * @return 
+     */
     @POST
     @ApiOperation(value = "Post method(s)",
                   notes = "Register new method(s) in the data base")
@@ -99,6 +106,12 @@ public class MethodResourceService extends ResourceService {
         }
     }
     
+    /**
+     * Method PUT service.
+     * @param methods
+     * @param context
+     * @return 
+     */
     @PUT
     @ApiOperation(value = "Update method")
     @ApiResponses(value = {
@@ -145,13 +158,12 @@ public class MethodResourceService extends ResourceService {
     }
 
     /**
-     * Collecte les données issues d'une requête de l'utilisateur (recherche de methodes)
+     * Gets method data.
      * @param methodDaoSesame
-     * @return la réponse pour l'utilisateur. Contient la liste des méthodess
-     *         correspondant à la recherche
-     * SILEX:TODO
-     * on ne peut chercher que par uri et label. Il faudra ajouter d'autres critères
-     * \SILEX:TODO
+     * @return the methods found
+     * SILEX:todo
+     * Add other filters than URI and label
+     * \SILEX:todo
      */
     private Response getMethodsData(MethodDAO methodDaoSesame) {
         ArrayList<Method> methods;
@@ -161,10 +173,10 @@ public class MethodResourceService extends ResourceService {
         methods = methodDaoSesame.allPaginate();
         
         if (methods == null) {
-            getResponse = new ResultForm<Method>(0, 0, methods, true);
+            getResponse = new ResultForm<>(0, 0, methods, true);
             return noResultFound(getResponse, statusList);
         } else if (!methods.isEmpty()) {
-            getResponse = new ResultForm<Method>(methodDaoSesame.getPageSize(), methodDaoSesame.getPage(), methods, false);
+            getResponse = new ResultForm<>(methodDaoSesame.getPageSize(), methodDaoSesame.getPage(), methods, false);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {
@@ -172,13 +184,13 @@ public class MethodResourceService extends ResourceService {
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         } else {
-            getResponse = new ResultForm<Method>(0, 0, methods, true);
+            getResponse = new ResultForm<>(0, 0, methods, true);
             return noResultFound(getResponse, statusList);
         }
     }
     
     /**
-     *
+     *  Method GET service.
      * @param limit
      * @param page
      * @param uri
@@ -224,11 +236,11 @@ public class MethodResourceService extends ResourceService {
     }
     
     /**
-     * 
+     * Single method GET service from URI.
      * @param method
      * @param limit
      * @param page
-     * @return la méthode correspondant à l'uri donnée si elle existe
+     * @return the method found
      */
     @GET
     @Path("{method}")

@@ -70,6 +70,7 @@ public class ExperimentResourceService extends ResourceService {
      * @param uri
      * @param limit
      * @param page
+     * @param projectUri
      * @param startDate
      * @param endDate
      * @param field
@@ -77,13 +78,7 @@ public class ExperimentResourceService extends ResourceService {
      * @param place
      * @param alias
      * @param keywords
-     * @return liste des expérimentations correspondant aux différents critères de recherche 
-     *                                                              (ou toutes les expérimentations si pas de critères)
-     *         Le retour (dans "data") est de la forme : 
-     *          [
-     *              { description de l'expérimentation1 },
-     *              { description de l'expérimentation2 },
-     *          ]
+     * @return found experiments
      */
     @GET
     @ApiOperation(value = "Get all experiments corresponding to the searched params given",
@@ -151,11 +146,11 @@ public class ExperimentResourceService extends ResourceService {
     }
 
     /**
-     *
+     * Get an experiment.
      * @param experimentURI
      * @param limit
      * @param page
-     * @return l'expérimentation correspondant à l'uri donnée si elle existe
+     * @return the experiment corresponding to the URI given
      */
     @GET
     @Path("{experiment}")
@@ -175,9 +170,20 @@ public class ExperimentResourceService extends ResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getExperimentDetail(
-            @ApiParam(value = DocumentationAnnotation.EXPERIMENT_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI, required = true) @PathParam("experiment") @URL @Required String experimentURI,
-            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
-            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
+            @ApiParam(
+                    value = DocumentationAnnotation.EXPERIMENT_URI_DEFINITION, 
+                    example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI, 
+                    required = true) 
+                @PathParam("experiment") 
+                @URL @Required String experimentURI,
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) 
+                @QueryParam("pageSize") 
+                @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) 
+                @Min(0) int limit,
+            @ApiParam(value = DocumentationAnnotation.PAGE) 
+                @QueryParam("page") 
+                @DefaultValue(DefaultBrapiPaginationValues.PAGE) 
+                @Min(0) int page) {
         if (experimentURI == null) {
             final Status status = new Status("Access error", StatusCodeMsg.ERR, "Empty Experiment URI");
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
@@ -192,10 +198,9 @@ public class ExperimentResourceService extends ResourceService {
     }
 
     /**
-     *
      * @param experiments
      * @param context
-     * @return le résultat de la requête de création de l'expérimentation
+     * @return result of the experiment creation request
      */
     @POST
     @ApiOperation(value = "Post a experiment",
@@ -219,7 +224,7 @@ public class ExperimentResourceService extends ResourceService {
             @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
 
-        //Si dans les données envoyées il y a au moins une expérimentation      
+        // If there is at least an experiment in the data sent      
         if (experiments != null
                 && !experiments.isEmpty()) {
             try {
@@ -230,7 +235,7 @@ public class ExperimentResourceService extends ResourceService {
 
                 experimentDao.user = userSession.getUser();
 
-                //Vérification des expérimentations et insertion dans la BD
+                // Check and insert the experiments
                 POSTResultsReturn result = experimentDao.checkAndInsertExperimentsList(experiments);
 
                 if (result.getHttpStatus().equals(Response.Status.CREATED)) {
@@ -252,7 +257,13 @@ public class ExperimentResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }
-
+    
+    /**
+     * Experiment update service.
+     * @param experiments
+     * @param context
+     * @return the update result
+     */
     @PUT
     @ApiOperation(value = "Update experiment")
     @ApiResponses(value = {
@@ -281,10 +292,10 @@ public class ExperimentResourceService extends ResourceService {
             }
             experimentDao.user = userSession.getUser();
 
-            //Vérification des données et update de la BD
+            // Check and update the experiments
             POSTResultsReturn result = experimentDao.checkAndUpdateList(experiments);
 
-            if (result.getHttpStatus().equals(Response.Status.OK)) { //200 users modifiés
+            if (result.getHttpStatus().equals(Response.Status.OK)) { //200: experiments updated
                 postResponse = new ResponseFormPOST(result.statusList);
                 return Response.status(result.getHttpStatus()).entity(postResponse).build();
             } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
@@ -300,7 +311,7 @@ public class ExperimentResourceService extends ResourceService {
     }
     
     /**
-     * Update the variables linked to an experiment.
+     * Updates the variables linked to an experiment.
      * @example
      * [
      *   "http://www.opensilex.fr/platform/id/variables/v001",
@@ -349,7 +360,11 @@ public class ExperimentResourceService extends ResourceService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response putVariables(
             @ApiParam(value = DocumentationAnnotation.LINK_VARIABLES_DEFINITION) @URL ArrayList<String> variables,
-            @ApiParam(value = DocumentationAnnotation.EXPERIMENT_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI, required = true) @PathParam("uri") @Required @URL String uri,
+            @ApiParam(
+                    value = DocumentationAnnotation.EXPERIMENT_URI_DEFINITION, 
+                    example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI, 
+                    required = true) 
+                @PathParam("uri") @Required @URL String uri,
             @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         
@@ -375,7 +390,7 @@ public class ExperimentResourceService extends ResourceService {
     }
     
     /**
-     * Update the sensors linked to an experiment.
+     * Updates the sensors linked to an experiment.
      * @example
      * [
      *      "http://www.phenome-fppn.fr/opensilex/2018/s18001"
@@ -423,7 +438,10 @@ public class ExperimentResourceService extends ResourceService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response putSensors(
         @ApiParam(value = DocumentationAnnotation.LINK_SENSORS_DEFINITION) @URL ArrayList<String> sensors,
-        @ApiParam(value = DocumentationAnnotation.EXPERIMENT_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI, required = true) @PathParam("uri") @Required @URL String uri,
+        @ApiParam(value = DocumentationAnnotation.EXPERIMENT_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI, required = true) 
+            @PathParam("uri") 
+            @Required 
+            @URL String uri,
         @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         
@@ -449,33 +467,30 @@ public class ExperimentResourceService extends ResourceService {
     }
 
     /**
-     * Collecte les données issues d'une requête de l'utilisateur (recherche
-     * d'expérimentations)
-     *
-     * @param experimentDao ExperimentDao
-     * @return la réponse pour l'utilisateur. Contient la liste des
-     * expérimentations correspondant à la recherche
+     * Gets experiment data.
+     * @param experimentSQLDao
+     * @return experiments found
      */
-    private Response getExperimentsData(ExperimentSQLDAO experimentDao) {
+    private Response getExperimentsData(ExperimentSQLDAO experimentSQLDao) {
         ArrayList<Experiment> experiments = new ArrayList<>();
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Experiment> getResponse;
-        Integer experimentsCount = experimentDao.count();
+        Integer experimentsCount = experimentSQLDao.count();
 
         if (experimentsCount != null && experimentsCount == 0) {
-            getResponse = new ResultForm<Experiment>(experimentDao.getPageSize(), experimentDao.getPage(), experiments, true, experimentsCount);
+            getResponse = new ResultForm<>(experimentSQLDao.getPageSize(), experimentSQLDao.getPage(), experiments, true, experimentsCount);
             return noResultFound(getResponse, statusList);
         } else {
-            experiments = experimentDao.allPaginate();
+            experiments = experimentSQLDao.allPaginate();
             
             if (experiments == null || experimentsCount == null) { //sql error
-                getResponse = new ResultForm<Experiment>(0, 0, experiments, true, experimentsCount);
+                getResponse = new ResultForm<>(0, 0, experiments, true, experimentsCount);
                 return sqlError(getResponse, statusList);
             } else if (experiments.isEmpty()) { // no result found
-                getResponse = new ResultForm<Experiment>(experimentDao.getPageSize(), experimentDao.getPage(), experiments, false, experimentsCount);
+                getResponse = new ResultForm<>(experimentSQLDao.getPageSize(), experimentSQLDao.getPage(), experiments, false, experimentsCount);
                 return noResultFound(getResponse, statusList);
             } else { //results founded
-                getResponse = new ResultForm<Experiment>(experimentDao.getPageSize(), experimentDao.getPage(), experiments, true, experimentsCount);
+                getResponse = new ResultForm<>(experimentSQLDao.getPageSize(), experimentSQLDao.getPage(), experiments, true, experimentsCount);
                 getResponse.setStatus(statusList);
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }

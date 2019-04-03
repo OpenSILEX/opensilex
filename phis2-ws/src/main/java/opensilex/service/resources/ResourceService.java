@@ -22,15 +22,15 @@ import opensilex.service.result.ResultForm;
  */
 public class ResourceService {
     
-    //The default language of the application
+    // The default language of the application
     protected static final String DEFAULT_LANGUAGE = PropertiesFileManager.getConfigFileProperty("service", "defaultLanguage");
     
-    //user session
+    // User session
     @SessionInject
     protected Session userSession;
     
     /**
-     * Generic reponse for no result found
+     * Generic response for no result found.
      * @param getResponse
      * @param insertStatusList
      * @return the Response with the error message
@@ -42,7 +42,7 @@ public class ResourceService {
     }
 
     /**
-     * Generic method for sql error message
+     * Generic method for SQL error message.
      * @param getResponse
      * @param insertStatusList
      * @return the Response with the error message

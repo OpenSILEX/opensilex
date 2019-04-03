@@ -27,17 +27,15 @@ import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.UserDAO;
 import opensilex.service.dao.TripletDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
-import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.resources.dto.TripletDTO;
 import opensilex.service.resources.validation.interfaces.Required;
 import opensilex.service.utils.POSTResultsReturn;
-import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 
 /**
  * RDF Triplet resource service.
- * for the moment, the following keys have been implemented :
+ * For the moment, the following keys have been implemented:
  * "s"
  * "p"
  * "o"
@@ -49,27 +47,27 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 @Path("/triplets")
 public class TripletsResourceService extends ResourceService {
     /**
-     * insert given triplets in the triplestore
-     * @param triplets triplets list to save. triplets is a list of list of triplets.
-     * Each list corresponds to a set of triplets linked each other. 
-     * If the uri of the subject is unknown, the "s" field must be equals to "?"
-     * the post service will generate an uri for the subject. 
-     * e.g of query : 
+     * Inserts triplets.
+     * @param triplets triplets list to save. 
+     * Triplets is a list of sets of triplets linked to each other. 
+     * If the URI of the subject is unknown, the "s" field must be equals to "?".
+     * The post service will generate an URI for the subject. 
+     * @example of list : 
      * [
-     *      {
-     *          "s": "?",
-     *          "p": "rdf:type",
-     *          "o": "http://www.opensilex.org/vocabulary/oeso#Experiment",
-     *          "o_type": "uri",
-     *          "g": "http://www.phenome-fppn.fr/phis_field/DIA2017-2"
-     *      },
-     *      {
+     *    {
      *        "s": "?",
-     *        "p": "http://www.opensilex.org/vocabulary/oeso#hasDocument",
-     *        "o": "http://www.phenome-fppn.fr/phis_field/documents/documente597f57ba71d421a86277d830f4b9885",
-     *        "o_type": "uri" ,
+     *        "p": "rdf:type",
+     *        "o": "http://www.opensilex.org/vocabulary/oeso#Experiment",
+     *        "o_type": "uri",
      *        "g": "http://www.phenome-fppn.fr/phis_field/DIA2017-2"
-     *      }
+     *    },
+     *    {
+     *      "s": "?",
+     *      "p": "http://www.opensilex.org/vocabulary/oeso#hasDocument",
+     *      "o": "http://www.phenome-fppn.fr/phis_field/documents/documente597f57ba71d421a86277d830f4b9885",
+     *      "o_type": "uri" ,
+     *      "g": "http://www.phenome-fppn.fr/phis_field/DIA2017-2"
+     *    }
      * ]
      * @param context
      * @return 
@@ -92,8 +90,9 @@ public class TripletsResourceService extends ResourceService {
     public Response postTriplets(
             @ApiParam(value = DocumentationAnnotation.TRIPLET_POST_DATA_DEFINITION, required = true) @Required @Valid ArrayList<ArrayList<TripletDTO>> triplets,
             @Context HttpServletRequest context) {
+        
         //SILEX:warning
-        //blank nodes are not implemented yet
+        // blank nodes are not implemented yet
         //\SILEX:warning
 
         AbstractResultForm postResponse = null;
@@ -101,15 +100,16 @@ public class TripletsResourceService extends ResourceService {
         //If there are at least one list of triplets
         if (triplets != null && !triplets.isEmpty()) {
             if (canUserAddTriplets()) { //If the user has the rights to insert triplets
-                TripletDAO tripletDAOSesame = new TripletDAO();
+                TripletDAO tripletDao = new TripletDAO();
                 if (context.getRemoteAddr() != null) {
-                    tripletDAOSesame.remoteUserAdress = context.getRemoteAddr();
+                    tripletDao.remoteUserAdress = context.getRemoteAddr();
                 }
-                tripletDAOSesame.user = userSession.getUser();
+                tripletDao.user = userSession.getUser();
                 
-                String graphUri = PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "baseURI") + Long.toString(new Timestamp(System.currentTimeMillis()).getTime());
+                String graphUri = PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "baseURI") 
+                        + Long.toString(new Timestamp(System.currentTimeMillis()).getTime());
                 
-                POSTResultsReturn insertResult = tripletDAOSesame.checkAndInsert(triplets, graphUri);
+                POSTResultsReturn insertResult = tripletDao.checkAndInsert(triplets, graphUri);
                 
                 //triplets inserted
                 if (insertResult.getHttpStatus().equals(Response.Status.CREATED)){
@@ -122,19 +122,17 @@ public class TripletsResourceService extends ResourceService {
                 }
                 return Response.status(insertResult.getHttpStatus()).entity(postResponse).build();
             } else {
-                postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.ACCESS_DENIED, StatusCodeMsg.ERR, StatusCodeMsg.ADMINISTRATOR_ONLY));
                 return Response.status(Response.Status.FORBIDDEN).entity(new ResponseFormPOST()).build();
             }
             
         } else {
-            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty triplets to add"));
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormPOST()).build();
         }
     }
     
     /**
-     * check if the user can insert triplets in the triplestore. Only admins can
-     * insert triplets
+     * Checks if the user can insert triplets in the triplestore. 
+     * Only admins can insert triplets.
      * @return true if the user can insert triplets, 
      *         false if user cannot insert triplets
      */

@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Brapi study model.
+ * BrAPI study model.
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class StudyDetails {
@@ -28,11 +28,43 @@ public class StudyDetails {
     private String endDate;
     private Boolean active; 
     private String license;
-    private String location; //TODO class Location
+    
+    /**
+     * //SILEX:todo
+     * Create location class
+     */
+    private String location;
+    /*
+     * //\SILEX:todo
+     */
+    
     private ArrayList<ContactBrapi> contacts = new ArrayList<ContactBrapi>();
-    private ArrayList<String> dataLinks; //TODO class Datalink
-    private ArrayList<String> lastUpdate; //TODO 
-    private HashMap<String,String> additionalInfo; //TODO
+    
+    /**
+     * //SILEX:todo
+     * Create DataLink class
+     */
+    private ArrayList<String> dataLinks;
+    /*
+     * //\SILEX:todo
+     */
+    
+    /**
+     * //SILEX:todo
+     */
+    private ArrayList<String> lastUpdate;
+    /*
+     * //\SILEX:todo
+     */
+    
+    /**
+     * //SILEX:todo
+     */
+    private HashMap<String,String> additionalInfo;
+    /**
+     * //\SILEX:todo
+     */
+    
     private String documentationURL;
 
     public StudyDetails() {
@@ -201,6 +233,5 @@ public class StudyDetails {
     public void setDocumentationURL(String documentationURL) {
         this.documentationURL = documentationURL;
     }
-    
 }
 

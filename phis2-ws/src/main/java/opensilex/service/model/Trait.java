@@ -14,11 +14,9 @@ package opensilex.service.model;
 public class Trait extends RdfResourceDefinition {
 
     public Trait() {
-      
     }
     
     public Trait(String uri) {
         super(uri);
     }
-    
 } 

@@ -54,9 +54,10 @@ public class ScientificObjectResourceService extends ResourceService {
     final static Logger LOGGER = LoggerFactory.getLogger(ScientificObjectResourceService.class);
   
     /**
-     * Enter a set of scientific objects into the triplestore and associate them to an experiment if it is given
+     * Enters a set of scientific objects into the storage and associate them to 
+     * an experiment if given.
      * @param scientificObjectsDTO scientific objects to save
-     * @param context query context element to get the ip address information of the user
+     * @param context query context element to get the IP address information of the user
      * @example 
      * [
         {
@@ -70,8 +71,7 @@ public class ScientificObjectResourceService extends ResourceService {
            }
           ]
         }
-     * 
-     * @return 
+     * @return the creation result
      */
     @POST
     @ApiOperation(value = "Post scientific object(s)",
@@ -97,15 +97,15 @@ public class ScientificObjectResourceService extends ResourceService {
         //if there is at least one scientific object
         if (!scientificObjectsDTO.isEmpty()) {
             try {
-                ScientificObjectSparqlDAO scientificObjectDaoSesame = new ScientificObjectSparqlDAO();
+                ScientificObjectSparqlDAO scientificObjectDao = new ScientificObjectSparqlDAO();
                 if (context.getRemoteAddr() != null) {
-                    scientificObjectDaoSesame.remoteUserAdress = context.getRemoteAddr();
+                    scientificObjectDao.remoteUserAdress = context.getRemoteAddr();
                 }
                 
-                scientificObjectDaoSesame.user = userSession.getUser();
+                scientificObjectDao.user = userSession.getUser();
                 
                 //Check the scientific objects and insert them in triplestore
-                POSTResultsReturn resultSesame = scientificObjectDaoSesame.checkAndInsert(scientificObjectsDTO);
+                POSTResultsReturn resultSesame = scientificObjectDao.checkAndInsert(scientificObjectsDTO);
                 if (resultSesame.getHttpStatus().equals(Response.Status.CREATED)) {
                     //scientific objects inserted (201)
                     postResponse = new ResponseFormPOST(resultSesame.statusList);
@@ -128,22 +128,22 @@ public class ScientificObjectResourceService extends ResourceService {
     }
     
     /**
-     * Collect data corresponding to the user query (scientific objects research)
-     * @param scientificObjectDaoSesame
+     * Collects data corresponding to the user query (scientific objects research)
+     * @param scientificObjectDao
      * @return the response for the user. Contains the list of scientific objects
      */
-    private Response getScientificObjectsData(ScientificObjectSparqlDAO scientificObjectDaoSesame) {
+    private Response getScientificObjectsData(ScientificObjectSparqlDAO scientificObjectDao) {
         ArrayList<ScientificObject> scientificObjects;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<ScientificObject> getResponse;
         
-        scientificObjects = scientificObjectDaoSesame.allPaginate();
+        scientificObjects = scientificObjectDao.allPaginate();
         
         if (scientificObjects == null) {
-            getResponse = new ResultForm<ScientificObject>(0, 0, scientificObjects, true);
+            getResponse = new ResultForm<>(0, 0, scientificObjects, true);
             return noResultFound(getResponse, statusList);
         } else if (!scientificObjects.isEmpty()) {
-            getResponse = new ResultForm<ScientificObject>(scientificObjectDaoSesame.getPageSize(), scientificObjectDaoSesame.getPage(), scientificObjects, false);
+            getResponse = new ResultForm<>(scientificObjectDao.getPageSize(), scientificObjectDao.getPage(), scientificObjects, false);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {
@@ -151,7 +151,7 @@ public class ScientificObjectResourceService extends ResourceService {
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         } else {
-            getResponse = new ResultForm<ScientificObject>(0, 0, scientificObjects, true);
+            getResponse = new ResultForm<>(0, 0, scientificObjects, true);
             return noResultFound(getResponse, statusList);
         }
     }
@@ -180,25 +180,25 @@ public class ScientificObjectResourceService extends ResourceService {
         @ApiParam(value = "Search by alias", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_ALIAS) @QueryParam("alias") String alias,
         @ApiParam(value = "Search by rdfType", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_TYPE) @QueryParam("rdfType") @URL String rdfType
     ) {
-        ScientificObjectSparqlDAO scientificObjectDaoSesame = new ScientificObjectSparqlDAO();
+        ScientificObjectSparqlDAO scientificObjectDao = new ScientificObjectSparqlDAO();
         
         if (uri != null) {
-            scientificObjectDaoSesame.uri = uri;
+            scientificObjectDao.uri = uri;
         }
         if (experimentURI != null) {
-            scientificObjectDaoSesame.experiment = experimentURI;
+            scientificObjectDao.experiment = experimentURI;
         }
         if (alias != null) {
-            scientificObjectDaoSesame.alias = alias;
+            scientificObjectDao.alias = alias;
         }
         if (rdfType != null) {
-            scientificObjectDaoSesame.rdfType = rdfType;
+            scientificObjectDao.rdfType = rdfType;
         }
         
-        scientificObjectDaoSesame.user = userSession.getUser();
-        scientificObjectDaoSesame.setPage(page);
-        scientificObjectDaoSesame.setPageSize(limit);
+        scientificObjectDao.user = userSession.getUser();
+        scientificObjectDao.setPage(page);
+        scientificObjectDao.setPageSize(limit);
         
-        return getScientificObjectsData(scientificObjectDaoSesame);
+        return getScientificObjectsData(scientificObjectDao);
     }
 }

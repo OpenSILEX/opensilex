@@ -16,7 +16,6 @@ public class WasGeneratedBy {
     private String wasGeneratedByDescription;
     
     public WasGeneratedBy() {
-        
     }
 
     public String getWasGeneratedBy() {

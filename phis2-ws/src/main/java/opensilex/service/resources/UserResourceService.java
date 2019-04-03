@@ -57,8 +57,9 @@ import opensilex.service.result.ResultForm;
 @Api("/user")
 @Path("users")
 public class UserResourceService extends ResourceService {
+    
     /**
-     * 
+     * User GET service.
      * @param limit
      * @param page
      * @param email
@@ -71,14 +72,7 @@ public class UserResourceService extends ResourceService {
      * @param admin
      * @param available
      * @param uri
-     * @return liste des utilisateurs correspondant aux critères de recherche 
-     *                                  (ou tous les utilisateurs si pas de critères)
-     * Le retour (dans "data") est de la forme : 
-     *          [
-     *              { description du utilisateur1 },
-     *              { description du utilisateur2 },
-     *               ...
-     *          ]
+     * @return the users found
      */
     @GET
     @ApiOperation(value = "Get all users corresponding to the searched params given",
@@ -149,11 +143,11 @@ public class UserResourceService extends ResourceService {
     }
     
     /**
-     * 
+     * Single user GET service by email
      * @param userEmail
      * @param limit
      * @param page
-     * @return l'utilisateur correspondant à l'email s'il existe
+     * @return the user found
      */
     @GET
     @Path("{userEmail}")
@@ -190,6 +184,12 @@ public class UserResourceService extends ResourceService {
         return getUsersData(userDao);
     }
     
+    /**
+     * User POST service.
+     * @param users
+     * @param context
+     * @return the POST result
+     */
     @POST
     @ApiOperation(value = "Post a user",
                   notes = "Register a new user in the database")
@@ -212,7 +212,7 @@ public class UserResourceService extends ResourceService {
     @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         
-        //Si dans les données envoyées il y a au moins un user
+        // At least one user in the data sent
         if (users != null && !users.isEmpty()) {
             UserDAO userDao = new UserDAO();
             if (userDao.remoteUserAdress != null) {
@@ -221,10 +221,10 @@ public class UserResourceService extends ResourceService {
             
             userDao.user = userSession.getUser();
             
-            //Vérification des users et insertion en BD
+            // Check and insert users
             POSTResultsReturn result = userDao.checkAndInsertList(users);
             
-            if (result.getHttpStatus().equals(Response.Status.CREATED)) { //201, projets insérés
+            if (result.getHttpStatus().equals(Response.Status.CREATED)) { //201: users inserted
                 postResponse = new ResponseFormPOST(result.statusList);
                 return Response.status(result.getHttpStatus()).entity(postResponse).build();
             } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
@@ -239,6 +239,12 @@ public class UserResourceService extends ResourceService {
         }
     }
     
+    /**
+     * User PUT service.
+     * @param users
+     * @param context
+     * @return 
+     */
     @PUT
     @ApiOperation(value = "Update users")
     @ApiResponses(value = {
@@ -267,10 +273,10 @@ public class UserResourceService extends ResourceService {
             }
             userDao.user = userSession.getUser();
             
-            //Vérification des données et update de la BD
+            // Check and update users
             POSTResultsReturn result = userDao.checkAndUpdateList(users);
             
-            if (result.getHttpStatus().equals(Response.Status.OK)) { //200 users modifiés
+            if (result.getHttpStatus().equals(Response.Status.OK)) { //200: users updated
                 postResponse = new ResponseFormPOST(result.statusList);
                 return Response.status(result.getHttpStatus()).entity(postResponse).build();
             } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
@@ -286,10 +292,9 @@ public class UserResourceService extends ResourceService {
     }
     
     /**
-     * Collecte les données issues d'une requête de l'utilisateur (recherche de users)
-     * @param userDao UserDaoPhisBrapi
-     * @return  la réponse pour l'utilisateur.
-     *          Contient la liste des users correspondant à la recherce
+     * Get users data.
+     * @param userDao
+     * @return the users found
      */
     private Response getUsersData(UserDAO userDao) {
         ArrayList<User> users = new ArrayList<>();
@@ -298,16 +303,16 @@ public class UserResourceService extends ResourceService {
         Integer usersCount = userDao.count();
         
         if (usersCount != null && usersCount == 0) {
-            getResponse = new ResultForm<User>((userDao.getPageSize()), userDao.getPage(), users, false);
+            getResponse = new ResultForm<>((userDao.getPageSize()), userDao.getPage(), users, false);
             return noResultFound(getResponse, statusList);
         } else {
             users = userDao.allPaginate();
             if (users == null) {
                 users = new ArrayList<>();
-                getResponse = new ResultForm<User>(0, 0, users, true);
+                getResponse = new ResultForm<>(0, 0, users, true);
                 return sqlError(getResponse, statusList);
             } else if (!users.isEmpty() && usersCount != null) {
-                getResponse = new ResultForm<User>(userDao.getPageSize(), userDao.getPage(), users, true, usersCount);
+                getResponse = new ResultForm<>(userDao.getPageSize(), userDao.getPage(), users, true, usersCount);
                 if (getResponse.getResult().dataSize() == 0) {
                     return noResultFound(getResponse, statusList);
                 } else {
@@ -315,7 +320,7 @@ public class UserResourceService extends ResourceService {
                     return Response.status(Response.Status.OK).entity(getResponse).build();
                 }
             } else {
-                getResponse = new ResultForm<User>(0, 0, users, true);
+                getResponse = new ResultForm<>(0, 0, users, true);
                 return noResultFound(getResponse, statusList);
             }
         }

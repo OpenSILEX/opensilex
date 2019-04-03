@@ -53,10 +53,9 @@ import opensilex.service.model.Dataset;
 @Path("/datasets") 
 public class DatasetResourceService extends ResourceService {
     /**
-     * 
      * @param datasets dataset to save. If in the provance there is only the uri
      *                 it meens that the provenance is supposed to already exist
-     * example : 
+     * @example 
      * [{
      *	"variableUri": "http://www.phenome-fppn.fr/phis_field/id/variables/v001",
      * 	"provenance": {
@@ -96,7 +95,7 @@ public class DatasetResourceService extends ResourceService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response postDatasetData(@ApiParam(value = DocumentationAnnotation.RAW_DATA_POST_DATA_DEFINITION, required = true) @Valid ArrayList<DatasetDTO> datasets,
             @Context HttpServletRequest context) {
-        AbstractResultForm postResponse = null;
+        AbstractResultForm postResponse;
         
         //If there are at least one provenance (and dataset) in the sended data
         if (datasets != null && !datasets.isEmpty()) {
@@ -122,17 +121,17 @@ public class DatasetResourceService extends ResourceService {
      * @return the user answer with the results
      */
     private Response getDatasetsData(DatasetDAO datasetDAOMongo) {
-        ArrayList<Dataset> datasets = new ArrayList<>();
+        ArrayList<Dataset> datasets;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Dataset> getResponse;
         
         datasets = datasetDAOMongo.allPaginate();
         
         if (datasets == null) {
-            getResponse = new ResultForm<Dataset>(0, 0, datasets, true);
+            getResponse = new ResultForm<>(0, 0, datasets, true);
             return noResultFound(getResponse, statusList);
         } else if (!datasets.isEmpty()) {
-            getResponse = new ResultForm<Dataset>(datasetDAOMongo.getPageSize(), datasetDAOMongo.getPage(), datasets, false);
+            getResponse = new ResultForm<>(datasetDAOMongo.getPageSize(), datasetDAOMongo.getPage(), datasets, false);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {
@@ -140,13 +139,12 @@ public class DatasetResourceService extends ResourceService {
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         } else {
-            getResponse = new ResultForm<Dataset>(0, 0, datasets, true);
+            getResponse = new ResultForm<>(0, 0, datasets, true);
             return noResultFound(getResponse, statusList);
         }
     }
     
     /**
-     * 
      * @param pageSize
      * @param page
      * @param experiment the experiment's uri from whom the user wants data 
@@ -164,7 +162,7 @@ public class DatasetResourceService extends ResourceService {
      *                 (e.g. http://www.phenome-fppn.fr/diaphen/2018/s18001)
      * @param incertitude the incertitude of the data
      *                  (e.g. 0.4)
-     * @see phis2ws.service.json.DatasetsSerializer
+     * @see opensilex.service.json.DatasetsSerializer
      * @return data corresponding to the search params. Every data if no search 
      *         params.
      *         returned JSON : 
@@ -206,34 +204,34 @@ public class DatasetResourceService extends ResourceService {
         @ApiParam(value = "Search by sensor", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("sensor")  @URL String sensor,
         @ApiParam(value = "Search by incertitude", example = DocumentationAnnotation.EXAMPLE_DATA_INCERTITUDE) @QueryParam("incertitude") String incertitude) {
         
-        DatasetDAO datasetDAOMongo = new DatasetDAO();
+        DatasetDAO datasetDAO = new DatasetDAO();
         
         if (experiment != null) {
-            datasetDAOMongo.experiment = experiment;
+            datasetDAO.experiment = experiment;
         }
         if (variable != null) {
-            datasetDAOMongo.variable = variable;
+            datasetDAO.variable = variable;
         }
         if (startDate != null && endDate != null) {
-            datasetDAOMongo.startDate = startDate;
-            datasetDAOMongo.endDate = endDate;
+            datasetDAO.startDate = startDate;
+            datasetDAO.endDate = endDate;
         }
         if (agronomicalObjects != null) {
             //the agronomical object's uri must be separated by ","
             String[] agronomicalObjectsURIs = agronomicalObjects.split(",");
-            datasetDAOMongo.scientificObjects.addAll(Arrays.asList(agronomicalObjectsURIs));
+            datasetDAO.scientificObjects.addAll(Arrays.asList(agronomicalObjectsURIs));
         }
         if (sensor != null) {
-            datasetDAOMongo.sensor = sensor;
+            datasetDAO.sensor = sensor;
         }
         if (incertitude != null) {
-            datasetDAOMongo.incertitude = incertitude;
+            datasetDAO.incertitude = incertitude;
         }
         
-        datasetDAOMongo.user = userSession.getUser();
-        datasetDAOMongo.setPage(page);
-        datasetDAOMongo.setPageSize(pageSize);
+        datasetDAO.user = userSession.getUser();
+        datasetDAO.setPage(page);
+        datasetDAO.setPageSize(pageSize);
         
-        return getDatasetsData(datasetDAOMongo);
+        return getDatasetsData(datasetDAO);
     }
 }

@@ -43,12 +43,11 @@ import opensilex.service.model.Property;
 @Api("/vocabularies")
 @Path("/vocabularies")
 public class VocabularyResourceService extends ResourceService {
+    
     /**
-     * get the list of rdfs properties that can be used, for the clients
-     * interfaces
-     *
+     * Gets the list of RDFs properties that can be used.
      * @param vocabularyDAO
-     * @return the list of the rdfs properties, with their labels
+     * @return the list of the RDFs properties, with their labels
      */
     private Response getRdfsData(VocabularyDAO vocabularyDAO) {
         ArrayList<PropertyVocabularyDTO> properties;
@@ -58,13 +57,13 @@ public class VocabularyResourceService extends ResourceService {
         properties = vocabularyDAO.allPaginateRdfsProperties();
 
         if (properties == null) {
-            getResponse = new ResultForm<PropertyVocabularyDTO>(0, 0, properties, true);
+            getResponse = new ResultForm<>(0, 0, properties, true);
             return noResultFound(getResponse, statusList);
         } else if (properties.isEmpty()) {
-            getResponse = new ResultForm<PropertyVocabularyDTO>(0, 0, properties, true);
+            getResponse = new ResultForm<>(0, 0, properties, true);
             return noResultFound(getResponse, statusList);
         } else {
-            getResponse = new ResultForm<PropertyVocabularyDTO>(vocabularyDAO.getPageSize(), vocabularyDAO.getPage(), properties, false);
+            getResponse = new ResultForm<>(vocabularyDAO.getPageSize(), vocabularyDAO.getPage(), properties, false);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {
@@ -75,13 +74,11 @@ public class VocabularyResourceService extends ResourceService {
     }
 
     /**
-     * get the list of rdfs properties that can be used, for the clients
-     * interfaces
-     *
+     * Gets the list of RDFs properties that can be used.
      * @param pageSize
      * @param page
-     * @return list of the rdfs properties, with their labels 
-     * e.g. 
+     * @return list of the RDFs properties, with their labels 
+     * @example
      * { 
      *  "metadata":
      * { 
@@ -146,8 +143,7 @@ public class VocabularyResourceService extends ResourceService {
     }
 
     /**
-     * get the list of contact properties that can be added to a given concept
-     *
+     * Gets the list of contact properties that can be added to a given concept.
      * @param vocabularyDAO
      * @return the list of the contact properties, with their labels
      */
@@ -159,13 +155,13 @@ public class VocabularyResourceService extends ResourceService {
         properties = vocabularyDAO.allPaginateContactProperties();
 
         if (properties == null) {
-            getResponse = new ResultForm<PropertyVocabularyDTO>(0, 0, properties, true);
+            getResponse = new ResultForm<>(0, 0, properties, true);
             return noResultFound(getResponse, statusList);
         } else if (properties.isEmpty()) {
-            getResponse = new ResultForm<PropertyVocabularyDTO>(0, 0, properties, true);
+            getResponse = new ResultForm<>(0, 0, properties, true);
             return noResultFound(getResponse, statusList);
         } else {
-            getResponse = new ResultForm<PropertyVocabularyDTO>(vocabularyDAO.getPageSize(), vocabularyDAO.getPage(), properties, false);
+            getResponse = new ResultForm<>(vocabularyDAO.getPageSize(), vocabularyDAO.getPage(), properties, false);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {
@@ -176,29 +172,30 @@ public class VocabularyResourceService extends ResourceService {
     }
 
     /**
-     * get the list of contact properties that can be associated to a given
-     * rdfType
-     *
+     * Gets the list of contact properties that can be associated to a given rdfType
      * @param rdfType
      * @param pageSize
      * @param page
-     * @return the list of the properties, with their labels e.g. { "metadata":
+     * @return the list of the properties, with their labels
+     * @example
      * { 
-     *  "pagination": null, 
-     *  "status": [], 
-     *  "datafiles": [] 
-     *  }, 
-     *  "result": {
-     *      "data": [ 
-     *          { 
-     *              "relation": "http://www.opensilex.org/vocabulary/oeso#hasTechnicalContact",
-     *              "labels": { 
-     *                  "en": "technical contact", 
-     *                  "fr": "contact technique" 
-     *              } 
+     *   "metadata":
+     *   { 
+     *     "pagination": null, 
+     *     "status": [], 
+     *     "datafiles": [] 
+     *   }, 
+     *   "result": {
+     *     "data": [ 
+     *       { 
+     *          "relation": "http://www.opensilex.org/vocabulary/oeso#hasTechnicalContact",
+     *          "labels": { 
+     *            "en": "technical contact", 
+     *            "fr": "contact technique" 
      *          } 
-     *      ] 
-     *  }
+     *       } 
+     *     ] 
+     *   }
      * }
      */
     @GET
@@ -240,8 +237,7 @@ public class VocabularyResourceService extends ResourceService {
     }
 
     /**
-     * get the list of device properties that can be added to a given concept
-     *
+     * Gets the list of device properties that can be added to a given concept.
      * @param vocabularyDAO
      * @return the list of the device properties, with their labels
      */
@@ -253,13 +249,13 @@ public class VocabularyResourceService extends ResourceService {
         properties = vocabularyDAO.allPaginateDeviceProperties();
 
         if (properties == null) {
-            getResponse = new ResultForm<PropertyVocabularyDTO>(0, 0, properties, true);
+            getResponse = new ResultForm<>(0, 0, properties, true);
             return noResultFound(getResponse, statusList);
         } else if (properties.isEmpty()) {
-            getResponse = new ResultForm<PropertyVocabularyDTO>(0, 0, properties, true);
+            getResponse = new ResultForm<>(0, 0, properties, true);
             return noResultFound(getResponse, statusList);
         } else {
-            getResponse = new ResultForm<PropertyVocabularyDTO>(vocabularyDAO.getPageSize(), vocabularyDAO.getPage(), properties, false);
+            getResponse = new ResultForm<>(vocabularyDAO.getPageSize(), vocabularyDAO.getPage(), properties, false);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {
@@ -270,13 +266,12 @@ public class VocabularyResourceService extends ResourceService {
     }
 
     /**
-     * get the list of device properties that can be associated to a given
-     * rdfType
-     *
+     * Gets the list of device properties that can be associated to a given rdfType.
      * @param rdfType
      * @param pageSize
      * @param page
-     * @return the list of the properties, with their labels e.g. 
+     * @return the list of the properties, with their labels
+     * @example
      * { "metadata":
      *  { 
      *  "pagination": 
@@ -290,19 +285,20 @@ public class VocabularyResourceService extends ResourceService {
      *      "datafiles": [] 
      *  }, 
      *  "result": { 
-     *      "data": [
-     *              { 
-     *                  "relation": "http://www.opensilex.org/vocabulary/oeso#dateOfLastCalibration",
-     *                  "labels": { 
-     *                      "en": "date of last calibration", 
-     *                      "fr": "date de la dernière calibration" } 
-     *              }, 
-     *              { 
-     *                  "relation": "http://www.opensilex.org/vocabulary/oeso#dateOfPurchase",
-     *                  "labels": {
-     *                      "en": "date of purchase",
-     *                      "fr": "date d'achat" } 
-     *              }, ... ] 
+     *    "data": [
+     *       { 
+     *           "relation": "http://www.opensilex.org/vocabulary/oeso#dateOfLastCalibration",
+     *           "labels": { 
+     *               "en": "date of last calibration", 
+     *               "fr": "date de la dernière calibration" } 
+     *       }, 
+     *       { 
+     *           "relation": "http://www.opensilex.org/vocabulary/oeso#dateOfPurchase",
+     *           "labels": {
+     *               "en": "date of purchase",
+     *               "fr": "date d'achat" } 
+     *       }, ... 
+     *     ] 
      *   } 
      * }
      */
@@ -344,11 +340,11 @@ public class VocabularyResourceService extends ResourceService {
     }
 
     /**
-     * Get the list of triplestore namespaces
-     *
+     * Gets the list of triplestore namespaces.
      * @param pageSize
      * @param page
-     * @return the list of the namespaces, with their prefix e.g. 
+     * @return the list of the namespaces, with their prefix
+     * @example
      * { 
      * "metadata":
      *  { 
@@ -413,10 +409,8 @@ public class VocabularyResourceService extends ResourceService {
     }
 
     /**
-     * Get the list of namespaces
-     *
+     * Gets the list of namespaces.
      * @param vocabularyDAO
-     * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
      * @return the list of namespaces
      */
     private Response getNamespaces(VocabularyDAO vocabularyDAO) {
@@ -427,13 +421,13 @@ public class VocabularyResourceService extends ResourceService {
         namespaces = vocabularyDAO.allNamespacesProperties();
 
         if (namespaces == null) {
-            getResponse = new ResultForm<Namespace> (0, 0, namespaces, true);
+            getResponse = new ResultForm<> (0, 0, namespaces, true);
             return noResultFound(getResponse, statusList);
         } else if (namespaces.isEmpty()) {
-            getResponse = new ResultForm<Namespace> (0, 0, namespaces, true);
+            getResponse = new ResultForm<> (0, 0, namespaces, true);
             return noResultFound(getResponse, statusList);
         } else {
-            getResponse = new ResultForm<Namespace> (vocabularyDAO.getPageSize(), vocabularyDAO.getPage(), namespaces, false);
+            getResponse = new ResultForm<> (vocabularyDAO.getPageSize(), vocabularyDAO.getPage(), namespaces, false);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {

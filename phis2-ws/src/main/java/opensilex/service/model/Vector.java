@@ -12,21 +12,45 @@ package opensilex.service.model;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class Vector {
-    //sensor uri
+    
+    /**
+     * URI.
+     */
     private String uri;
-    //sensor type
+    
+    /**
+     * Type.
+     */
     private String rdfType;
-    //sensor alias
+    
+    /**
+     * Alias.
+     */
     private String label;
-    //sensor brand
+    
+    /**
+     * Brand.
+     */
     private String brand;
-    //serial number of the vector
+    
+    /**
+     * Serial number.
+     */
     private String serialNumber;
-    //first date of vector service
+    
+    /**
+     * Dismissing date.
+     */
     private String inServiceDate;
-    //purchase date of the vector
+    
+    /**
+     * Purchase date.
+     */
     private String dateOfPurchase;
-    //email of the person in charge of the vector
+    
+    /**
+     * Email of the person in charge.
+     */
     private String personInCharge;
 
     public String getUri() {

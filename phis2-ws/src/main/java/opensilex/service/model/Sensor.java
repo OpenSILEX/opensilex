@@ -15,25 +15,54 @@ import java.util.HashMap;
  */
 public class Sensor {
     
-    //sensor uri
+    /**
+     * Sensor URI.
+     */
     private String uri;
-    //sensor type
+    
+    /**
+     * Sensor type.
+     */
     private String rdfType;
-    //sensor alias
+    
+    /**
+     * Sensor alias.
+     */
     private String label;
-    //sensor brand
+    
+    /**
+     * Brand.
+     */
     private String brand;
-    //serial number of the sensor
+    
+    /**
+     * Serial number.
+     */
     private String serialNumber;
-    //first date of sensor service
+    
+    /**
+     * Commissioning date.
+     */
     private String inServiceDate;
-    //purchase date of the sensor
+    
+    /**
+     * Purchase date.
+     */
     private String dateOfPurchase;
-    //date of the last calibration of the sensor
+    
+    /**
+     * Last calibration date.
+     */
     private String dateOfLastCalibration;
-    //email of the person in charge of the sensor
+    
+    /**
+     * Email of the person in charge.
+     */
     private String personInCharge;
-    //variables mesured by the sensor
+    
+    /**
+     * Variables measured by the sensor.
+     */
     private HashMap<String, String>  variables;
     
     public String getUri() {

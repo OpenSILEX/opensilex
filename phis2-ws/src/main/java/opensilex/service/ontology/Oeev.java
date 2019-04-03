@@ -33,7 +33,8 @@ public class Oeev {
     }
 
     /**
-     * These will use ResourceFactory which creates Resource etc without a specific model
+     * These will use ResourceFactory which creates Resource etc without a 
+     * specific model.
      * This is safer for complex initialization paths.
      * @param uri
      * @return
@@ -43,7 +44,7 @@ public class Oeev {
     }
 
     /**
-     * Get a property object from a URI
+     * Gets a property object from a URI.
      * @param uri
      * @return
      */
@@ -52,12 +53,12 @@ public class Oeev {
     }
 
     /**
-     * The RDF model that holds the vocabulary terms
+     * The RDF model that holds the vocabulary terms.
      */
     private static final Model MODEL = ModelFactory.createDefaultModel();
     
     /** 
-     * The namespace of the vocabulary as a resource 
+     * The namespace of the vocabulary as a resource.
      */
     public static final Resource NAMESPACE = MODEL.createResource(NAMESPACE_STRING);
     

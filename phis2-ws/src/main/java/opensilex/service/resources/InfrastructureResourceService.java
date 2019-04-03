@@ -47,15 +47,14 @@ import opensilex.service.model.Infrastructure;
 public class InfrastructureResourceService extends ResourceService {
     
     /**
-     * Search infrastructures by uri, rdfType. 
-     * 
+     * Searches infrastructures by URI, rdfType. 
      * @param pageSize
      * @param page
      * @param uri
      * @param rdfType
      * @param label
      * @param language
-     * @return list of the infrastructures corresponding to the search params given
+     * @return list of the infrastructures corresponding to the search parameters given
      * @example
      * {
      *      "metadata": {
@@ -138,11 +137,11 @@ public class InfrastructureResourceService extends ResourceService {
         
         if (infrastructures == null) {
             // Request failure
-            getResponse = new ResultForm<RdfResourceDefinitionDTO>(0, 0, list, true, 0);
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         } else if (infrastructures.isEmpty()) {
             // No results
-            getResponse = new ResultForm<RdfResourceDefinitionDTO>(0, 0, list, true, 0);
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         } else {
             // Convert all Infrastructure object to DTO's
@@ -151,21 +150,20 @@ public class InfrastructureResourceService extends ResourceService {
             });
             
             // Return list of DTO
-            getResponse = new ResultForm<RdfResourceDefinitionDTO>(infrastructureDAO.getPageSize(), infrastructureDAO.getPage(), list, true, totalCount);
+            getResponse = new ResultForm<>(infrastructureDAO.getPageSize(), infrastructureDAO.getPage(), list, true, totalCount);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }
     }
     
     /**
-     * Search infrastructure details for a given uri
-     * 
+     * Searches infrastructure details for a given URI
      * @param language
      * @param pageSize
      * @param page
      * @param uri
      * @return list of the infrastructure's detail corresponding to the search uri
-     * e.g
+     * @example
      * {
      *   "metadata": {
      *     "pagination": null,
@@ -251,12 +249,12 @@ public class InfrastructureResourceService extends ResourceService {
             list.add(new InfrastructureDTO(infrastructure));
             
             // Return it
-            getResponse = new ResultForm<RdfResourceDefinitionDTO>(propertyDAO.getPageSize(), propertyDAO.getPage(), list, true, list.size());
+            getResponse = new ResultForm<>(propertyDAO.getPageSize(), propertyDAO.getPage(), list, true, list.size());
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         } else {
             // No result found
-            getResponse = new ResultForm<RdfResourceDefinitionDTO>(0, 0, list, true, 0);
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
         }
     }

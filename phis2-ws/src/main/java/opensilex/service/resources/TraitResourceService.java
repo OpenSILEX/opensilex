@@ -53,6 +53,13 @@ import opensilex.service.model.Trait;
 @Api("/traits")
 @Path("traits")
 public class TraitResourceService extends ResourceService {
+    
+    /**
+     * Trait POST service.
+     * @param traits
+     * @param context
+     * @return POST result
+     */
     @POST
     @ApiOperation(value = "Post trait(s)",
                   notes = "Register new trait(s) in the data base")
@@ -74,14 +81,14 @@ public class TraitResourceService extends ResourceService {
                               @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         if (traits != null && !traits.isEmpty()) {
-            TraitDAO traitDaoSesame = new TraitDAO();
+            TraitDAO traitDao = new TraitDAO();
             if (context.getRemoteAddr() != null) {
-                traitDaoSesame.remoteUserAdress = context.getRemoteAddr();
+                traitDao.remoteUserAdress = context.getRemoteAddr();
             }
             
-            traitDaoSesame.user = userSession.getUser();
+            traitDao.user = userSession.getUser();
             
-            POSTResultsReturn result = traitDaoSesame.checkAndInsert(traits);
+            POSTResultsReturn result = traitDao.checkAndInsert(traits);
             
             if (result.getHttpStatus().equals(Response.Status.CREATED)) {
                 //Code 201, traits insérés
@@ -99,6 +106,12 @@ public class TraitResourceService extends ResourceService {
         }
     }
     
+    /**
+     * Trait PUT service.
+     * @param traits
+     * @param context
+     * @return PUT result
+     */
     @PUT
     @ApiOperation(value = "Update trait")
     @ApiResponses(value = {
@@ -120,14 +133,14 @@ public class TraitResourceService extends ResourceService {
         @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         if (traits != null && !traits.isEmpty()) {
-            TraitDAO traitDaoSesame = new TraitDAO();
+            TraitDAO traitDao = new TraitDAO();
             if (context.getRemoteAddr() != null) {
-                traitDaoSesame.remoteUserAdress = context.getRemoteAddr();
+                traitDao.remoteUserAdress = context.getRemoteAddr();
             }
             
-            traitDaoSesame.user = userSession.getUser();
+            traitDao.user = userSession.getUser();
             
-            POSTResultsReturn result = traitDaoSesame.checkAndUpdate(traits);
+            POSTResultsReturn result = traitDao.checkAndUpdate(traits);
             
             if (result.getHttpStatus().equals(Response.Status.OK)) {
                 //Code 200, traits modifiés
@@ -145,13 +158,12 @@ public class TraitResourceService extends ResourceService {
     }
     
     /**
-     * Collecte les données issues d'une requête de l'utilisateur (recherche de traits)
+     * Gets trait data.
      * @param traitDaoSesame
-     * @return la réponse pour l'utilisateur. Contient la liste des traits
-     *         correspondant à la recherche
-     * SILEX:TODO
-     * on ne peut chercher que par uri et label. Il faudra ajouter d'autres critères
-     * \SILEX:TODO
+     * @return the traits found
+     * SILEX:todo
+     * Add other filters than URI and label
+     * \SILEX:todo
      */
     private Response getTraitsData(TraitDAO traitDaoSesame) {
         ArrayList<Trait> traits;
@@ -161,10 +173,10 @@ public class TraitResourceService extends ResourceService {
         traits = traitDaoSesame.allPaginate();
         
         if (traits == null) {
-            getResponse = new ResultForm<Trait>(0, 0, traits, true);
+            getResponse = new ResultForm<>(0, 0, traits, true);
             return noResultFound(getResponse, statusList);
         } else if (!traits.isEmpty()) {
-            getResponse = new ResultForm<Trait>(traitDaoSesame.getPageSize(), traitDaoSesame.getPage(), traits, false);
+            getResponse = new ResultForm<>(traitDaoSesame.getPageSize(), traitDaoSesame.getPage(), traits, false);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {
@@ -172,7 +184,7 @@ public class TraitResourceService extends ResourceService {
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         } else {
-            getResponse = new ResultForm<Trait>(0, 0, traits, true);
+            getResponse = new ResultForm<>(0, 0, traits, true);
             return noResultFound(getResponse, statusList);
         }
     }
@@ -199,28 +211,28 @@ public class TraitResourceService extends ResourceService {
         @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_TRAIT_URI) @QueryParam("uri") @URL String uri,
         @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_TRAIT_LABEL) @QueryParam("label") String label
     ) {
-        TraitDAO traitDaoSesame = new TraitDAO();
+        TraitDAO traitDao = new TraitDAO();
         
         if (uri != null) {
-            traitDaoSesame.uri = uri;
+            traitDao.uri = uri;
         }
         if (label != null) {
-            traitDaoSesame.label = label;
+            traitDao.label = label;
         }
         
-        traitDaoSesame.user = userSession.getUser();
-        traitDaoSesame.setPage(page);
-        traitDaoSesame.setPageSize(limit);
+        traitDao.user = userSession.getUser();
+        traitDao.setPage(page);
+        traitDao.setPageSize(limit);
         
-        return getTraitsData(traitDaoSesame);
+        return getTraitsData(traitDao);
     }
     
     /**
-     * 
+     * Trait GET service.
      * @param trait
      * @param limit
      * @param page
-     * @return le trait correspondant à l'uri donnée si elle existe
+     * @return the trait found
      */
     @GET
     @Path("{trait}")
@@ -249,12 +261,12 @@ public class TraitResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
         }
         
-        TraitDAO traitDaoSesame = new TraitDAO();
-        traitDaoSesame.uri = trait;
-        traitDaoSesame.setPageSize(limit);
-        traitDaoSesame.setPage(page);
-        traitDaoSesame.user = userSession.getUser();
+        TraitDAO traitDao = new TraitDAO();
+        traitDao.uri = trait;
+        traitDao.setPageSize(limit);
+        traitDao.setPage(page);
+        traitDao.user = userSession.getUser();
         
-        return getTraitsData(traitDaoSesame);
+        return getTraitsData(traitDao);
     }
 }

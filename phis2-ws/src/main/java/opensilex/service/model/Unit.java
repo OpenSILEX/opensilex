@@ -12,6 +12,7 @@ package opensilex.service.model;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class Unit extends RdfResourceDefinition {
+    
     public Unit() {
         
     }

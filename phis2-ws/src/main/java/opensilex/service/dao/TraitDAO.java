@@ -58,11 +58,11 @@ public class TraitDAO extends SparqlDAO<Trait> {
     
     private static final String VAR_URI = "varUri";
 
-    public TraitDAO(String uri) {
-        this.uri = uri;
+    public TraitDAO() {
     }
 
-    TraitDAO() {
+    public TraitDAO(String uri) {
+        this.uri = uri;
     }
     
     protected SPARQLQueryBuilder prepareSearchQuery() {

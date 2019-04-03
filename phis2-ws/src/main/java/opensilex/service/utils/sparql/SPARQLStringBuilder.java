@@ -12,8 +12,7 @@ import java.util.List;
 import opensilex.service.resources.validation.validators.URLValidator;
 
 /**
- * Abstract class which provides common methods and attributes 
- * to manipulate SPARQL query.
+ * Abstract class to manipulate SPARQL query.
  * @update [Arnaud Charleroy] 10 Sept. 2018: Add "And" and "Or" filter choices
  * @update [Vincent Migot] 03 Oct. 2018: Create isLink method to check URIs 
  * instead of only testing "http://" prefix
@@ -24,8 +23,8 @@ public abstract class SPARQLStringBuilder {
     protected String prefix;
     protected String select;
     protected String from = null;
-    protected String body; // corps de la requête
-    protected String parameters; // textes additionnels
+    protected String body; // body request
+    protected String parameters; // additionnal text
     protected int blankNodeCounter = 0;
 
     protected String filter = "";
@@ -46,8 +45,7 @@ public abstract class SPARQLStringBuilder {
     }
 
     /**
-     * Ajouts des préfix en amont
-     *
+     * Append a prefix.
      * @param localName
      * @param prefixUri
      */
@@ -59,8 +57,8 @@ public abstract class SPARQLStringBuilder {
     }
 
     /**
-     * Paramètres supplémentaires (Exemple LIMIT)
-     *
+     * Appends an additional parameter.
+     * @example LIMIT
      * @param parameters
      */
     public void appendParameters(String parameters) {
@@ -150,8 +148,7 @@ public abstract class SPARQLStringBuilder {
     }
     
     /**
-     * Ajout du corps de la requête possibilité de mettre des semi colon
-     *
+     * Appends a triplet. Semicolons enabled.
      * @param subject
      * @param predicate
      * @param object
@@ -309,10 +306,7 @@ public abstract class SPARQLStringBuilder {
             }
         }
     }
-
-    /**
-     *
-     */
+    
     protected void clearBuilder() {
         blankNodeCounter = 0;
         body = "";

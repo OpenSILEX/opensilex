@@ -14,17 +14,33 @@ import java.util.HashMap;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class Provenance {
-    //Provenance uri
-    //@example http://www.opensilex.org/demo/2019/pvx355chdo34pger464565
+    
+    /**
+     * Provenance URI.
+     * @example http://www.opensilex.org/demo/2019/pvx355chdo34pger464565
+     */
     protected String uri;
-    //Label of the provenance
-    //@example PROV2018-EAR
+    
+    /**
+     * Label.
+     * @example PROV2018-EAR
+     */
     protected String label;
-    //Comment of the provenance
+    
+    /**
+     * Comment.
+     */
     protected String comment;
-    //Additional informations for the provenance. Its containt depends of the type of provenance. 
-    //@example [ "SensingDevice" => "http://www.opensilex.org/demo/s001",
-    //           "Vector" => "http://www.opensilex.org/demo/v001"]
+    
+    /**
+     * Additional information for the provenance. 
+     * Its content depends on the type of the provenance. 
+     * @example 
+     * [ 
+     *   "SensingDevice" => "http://www.opensilex.org/demo/s001",
+     *   "Vector" => "http://www.opensilex.org/demo/v001"
+     * ]
+     */
     protected Object metadata = new HashMap<>();
 
     public String getUri() {

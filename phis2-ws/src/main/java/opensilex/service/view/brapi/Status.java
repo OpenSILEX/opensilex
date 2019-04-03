@@ -28,6 +28,5 @@ public class Status {
         this.exception = new StatusException(code, details);
         this.message = message;
     }
-
 }
 

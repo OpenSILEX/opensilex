@@ -13,103 +13,58 @@ package opensilex.service.view.brapi;
  */
 public class Pagination {
 
-    private Integer pageSize, currentPage, totalCount, totalPages;
+    private Integer pageSize;
+    private Integer currentPage;
+    private Integer totalCount;
+    private Integer totalPages;
 
     public Pagination() {
     }
 
-    
-    
     /**
-     * Pagination() - Constructeur de la classe Pagination: Attribue une valeur
-     * à chaque champ d'un objet Pagination.
-     *
-     * @param pageSize nombre d'éléments par page
-     * @param currentPage page actuelle
-     * @param sizeList nombre d'éléments total
-     *
-     * @date 03/12/2015
-     * @update 08/2016
+     * Constructor.
+     * @param pageSize
+     * @param currentPage
+     * @param listSize
      */
-    public Pagination(Integer pageSize, Integer currentPage, Integer sizeList) {
+    public Pagination(Integer pageSize, Integer currentPage, Integer listSize) {
         if (pageSize <= 0) {
             this.pageSize = 1;
         } else {
             this.pageSize = pageSize;
         }
         if (currentPage <= 0) {
-//            this.currentPage = 1; Modif AC * MAJ BRAPI (page 0 = 0 )
             this.currentPage = 0;
         } else {
             this.currentPage = currentPage;
         }
+        
+        totalCount = listSize;
+        
         /**
-         * Si le nombre d'éléments total est inférieur au nombre d'éléments par
-         * * page, attribuer la valeur du nombre d'éléments par page au nombre *
-         * d'éléments (norme)
-         * MAJ BRAPI  Modif AC * MAJ BRAPI si (pageSize > sizeList ) pageSize = sizeList
+         * Add a page if the the total number of elements divided by the page
+         * size has a rest.
          */
-//        if (sizeList < this.pageSize) {
-//            totalCount = this.pageSize; 
-//        } else {
-            totalCount = sizeList;
-//        }
-        /**
-         * Pour avoir le nombre de pages totales il faut diviser le nombre de
-         * résutats par le nombre de résultats par page mais comme il s'agit de
-         * deux entiers, il peut y avoir un reste à cette division et si il y en
-         * a un alors il faut le prendre en compte et rajouter une page au
-         * nombre total de pages
-         */
-//        System.err.println(totalCount);
-//        System.err.println(pageSize);
         if (totalCount % this.pageSize == 0) {
             totalPages = totalCount / this.pageSize;
         } else {
             totalPages = (totalCount / this.pageSize) + 1;
         }
-//        System.err.println(totalPages);
     }
-
-    /**
-     * Getteur du champ pageSize correspondant au nombre de résultats par page
-     *
-     * @return la valeur de pageSize
-     * @date 03/12/2015
-     */
+    
     public Integer getPageSize() {
         return pageSize;
     }
-
-    /**
-     * Getteur du champ currentPage correspondant à la page actuelle
-     *
-     * @return la valeur de currentPage
-     * @date 03/12/2015
-     */
+    
     public Integer getCurrentPage() {
         return currentPage;
     }
-
-    /**
-     * Getteur du champ totalCount correspondant au nombre total de resultats
-     *
-     * @return la valeur de totalCount
-     * @date 03/12/2015
-     */
+    
     public Integer getTotalCount() {
         return totalCount;
     }
-
-    /**
-     * Getteur du champ totalPages correspondant au nombre total de pages
-     *
-     * @return la valeur de totalPages
-     * @date 03/12/2015
-     */
+    
     public Integer getTotalPages() {
         return totalPages;
     }
-    
-    
 }

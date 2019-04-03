@@ -27,24 +27,17 @@ public abstract class AbstractResultForm {
        metadata = new Metadata(status);
     }
    
-   
     public AbstractResultForm(List<Status> statusList) {
         metadata = new Metadata(statusList);
     }
-    
 
     public void setMetadata(Metadata metadata) {
         this.metadata = metadata;
     }
-
 
     public Metadata getMetadata() {
         return metadata;
     }
     
     abstract int resultSize();
-
-
-    
-    
 }

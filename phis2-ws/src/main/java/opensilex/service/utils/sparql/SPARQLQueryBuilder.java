@@ -10,7 +10,7 @@ package opensilex.service.utils.sparql;
 
 /**
  * SPARQL query builder.
- * @author Arnaud Charleroy
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class SPARQLQueryBuilder extends SPARQLStringBuilder {
 
@@ -23,7 +23,9 @@ public class SPARQLQueryBuilder extends SPARQLStringBuilder {
     private String graph = null;
     private String optional = null;
     private String ask = null;
-    private String groupBy = null; // Permits to concatenate a list of values in sparql without repeating data.
+    
+    // Permits to concatenate a list of values in sparql without repeating data.
+    private String groupBy = null;
     
     public final static String GROUP_CONCAT_SEPARATOR = ",";
 
@@ -68,8 +70,7 @@ public class SPARQLQueryBuilder extends SPARQLStringBuilder {
     }
 
     /**
-     * Ajout du sélect
-     *
+     * Appends a SELECT value.
      * @param values
      */
     public void appendSelect(String values) {
@@ -78,7 +79,7 @@ public class SPARQLQueryBuilder extends SPARQLStringBuilder {
         }
     }
     /**
-     * Use to groupby for paramters that not used in group concatenate function
+     * Appends a groupby for parameters not used in group concatenate function.
      * @param values 
      */
     public void appendGroupBy(String values) {
@@ -91,10 +92,11 @@ public class SPARQLQueryBuilder extends SPARQLStringBuilder {
     }
     
     /**
-     * Add select group_concat values.
+     * Adds group_concat values to SELECT.
      * Concatenate a list of values in sparql without repeating data.
      * @see https://en.wikibooks.org/wiki/SPARQL/Aggregate_functions
-     * .e.g (GROUP_CONCAT(DISTINCT ?bodyValue; SEPARATOR=",") AS ?bodyValues)
+     * @example
+     * (GROUP_CONCAT(DISTINCT ?bodyValue; SEPARATOR=",") AS ?bodyValues)
      * BodyValues 
      * "test,test2"
      * @param values the value name to separate
@@ -107,7 +109,6 @@ public class SPARQLQueryBuilder extends SPARQLStringBuilder {
         }
     }
     
-
     @Override
     public String toString() {
         String queryResource = "";

@@ -21,6 +21,4 @@ public class ResponseUnique {
         this.metadata = new Metadata();
         this.result = result;
     }
-    
-    
 }

@@ -83,7 +83,7 @@ public class SQLQueryBuilder {
     }
 
     /**
-     * SELECT adding
+     * SELECT adding.
      * @param values
      */
     public void appendSelect(String values) {
@@ -114,7 +114,7 @@ public class SQLQueryBuilder {
     }
 
     /**
-     * FROM adding
+     * FROM adding.
      * @param table
      * @param alias
      */
@@ -131,7 +131,7 @@ public class SQLQueryBuilder {
         }
     }
 
-public void appendORWhereConditions(String attribute, String value, String operator, String type, String tableAlias) {
+    public void appendORWhereConditions(String attribute, String value, String operator, String type, String tableAlias) {
         if (attribute != null && value != null) {
             if (CONTAINS_OPERATOR.equals(operator)) {
                 operator = "ILIKE";
@@ -240,7 +240,7 @@ public void appendORWhereConditions(String attribute, String value, String opera
     }
     
     /**
-     * @action Add WHERE (OR) condition if the value to test is not null
+     * Adds WHERE (OR) condition if the value to test is not null.
      * @param attribute attribute name to test
      * @param value attribute value to test
      * @param operator comparison operator
@@ -255,7 +255,7 @@ public void appendORWhereConditions(String attribute, String value, String opera
     }
     
     /**
-     * @action Add WHERE (AND) cp,dition if the value to test is not null
+     * Adds WHERE (AND) condition if the value to test is not null.
      * @param attribute attribute name to test
      * @param value attribute value to test
      * @param operator comparison operator
@@ -271,7 +271,7 @@ public void appendORWhereConditions(String attribute, String value, String opera
     }
     
     /**
-     * Adds a LIMIT clause to the query
+     * Adds a LIMIT clause to the query.
      * @author Morgane Vidal, 21 Feb., 2017
      * @param limit limit value
      */

@@ -51,18 +51,13 @@ public class Metadata {
     }
 
     /**
-     * Metadata() - Constructeur de la classe Metadata Initialise les champs
-     * status et pagination, l'objet pagination est un objet vide si le résultat
-     * sur lequle porte la pagination n'est composé que d'un seul élément
-     *
-     * @param pageSize Nombre de résultat par page
-     * @param currentPage Page actuelle
-     * @param sizeList nombre d'éléments du résultat
-     *
+     * Constructor.
+     * @param pageSize
+     * @param currentPage
+     * @param sizeList result element count
      * @see Pagination
-     * @date 03/12/2015
-     * @note la liste status est toujours vide car il n'y a pas d'informations
-     * particulières concernant le status
+     * @note the status list is always empty because there is no particular 
+     * information about the status
      */
     public Metadata(int pageSize, int currentPage, int sizeList) {
         if (sizeList > 1) {
@@ -95,14 +90,7 @@ public class Metadata {
         this.status = statusList;
         datafiles = new ArrayList<>();
     }
-
-    /**
-     * getPagination() - Getteur classique Récupère le champ pagination qui est
-     * un Objet et le cast en Pagination
-     *
-     * @return la pagination sous forme d'objet Pagination
-     * @date 03/12/2015
-     */
+    
     @ApiModelProperty(position = 1, required = true)
     public Pagination getPagination() {
         return pagination;
@@ -124,10 +112,8 @@ public class Metadata {
         this.status.add(status);
     }
 
-
     @ApiModelProperty(position = 3, required = true)
     public List<String> getDatafiles() {
         return datafiles;
     }
-
 }

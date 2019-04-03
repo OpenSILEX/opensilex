@@ -20,7 +20,7 @@ public class BrapiMultiResponseForm<T> {
     protected BrapiMultiResult result;
     
     /**
-     * Initialize metadata and result fields when there are several elements
+     * Initializes metadata and result fields when there are several elements.
      * @param pageSize the number of results per page
      * @param currentPage the requested page
      * @param data list of results
@@ -28,49 +28,49 @@ public class BrapiMultiResponseForm<T> {
      *                 false : needs pagination
      * @example 
      * {
-        "metadata": {
-          "pagination": {
-            "pageSize": 20,
-            "currentPage": 0,
-            "totalCount": 3,
-            "totalPages": 1
-          },
-          "status": [],
-          "datafiles": []
-        },
-        "result": {
-          "data": [
-            {
-              "defaultValue": null,
-              "description": "",
-              "name": "Leaf_Area_Index",
-              "observationVariables": [
-                "http://www.phenome-fppn.fr/platform/id/variables/v001"
-              ],
-              "traitDbId": "http://www.phenome-fppn.fr/platform/id/traits/t001",
-              "traitId": null
-            },
-            {
-              "defaultValue": null,
-              "description": "",
-              "name": "NDVI",
-              "observationVariables": [
-                "http://www.phenome-fppn.fr/platform/id/variables/v002"
-              ],
-              "traitDbId": "http://www.phenome-fppn.fr/platform/id/traits/t002",
-              "traitId": null
-            },
-            {
-              "defaultValue": null,
-              "description": null,
-              "name": "myTrait",
-              "observationVariables": null,
-              "traitDbId": "http://www.phenome-fppn.fr/platform/id/traits/t003",
-              "traitId": null
-            }
-          ]
-        }
-      }
+     *  "metadata": {
+     *    "pagination": {
+     *      "pageSize": 20,
+     *      "currentPage": 0,
+     *      "totalCount": 3,
+     *      "totalPages": 1
+     *    },
+     *    "status": [],
+     *    "datafiles": []
+     *  },
+     *  "result": {
+     *    "data": [
+     *      {
+     *        "defaultValue": null,
+     *        "description": "",
+     *        "name": "Leaf_Area_Index",
+     *        "observationVariables": [
+     *          "http://www.phenome-fppn.fr/platform/id/variables/v001"
+     *        ],
+     *        "traitDbId": "http://www.phenome-fppn.fr/platform/id/traits/t001",
+     *        "traitId": null
+     *      },
+     *      {
+     *        "defaultValue": null,
+     *        "description": "",
+     *        "name": "NDVI",
+     *        "observationVariables": [
+     *          "http://www.phenome-fppn.fr/platform/id/variables/v002"
+     *        ],
+     *        "traitDbId": "http://www.phenome-fppn.fr/platform/id/traits/t002",
+     *        "traitId": null
+     *      },
+     *      {
+     *        "defaultValue": null,
+     *        "description": null,
+     *        "name": "myTrait",
+     *        "observationVariables": null,
+     *        "traitDbId": "http://www.phenome-fppn.fr/platform/id/traits/t003",
+     *        "traitId": null
+     *      }
+     *    ]
+     *  }
+     *}
      */
     public BrapiMultiResponseForm(int pageSize, int currentPage, ArrayList<T> data, boolean paginate) {
         metadata = new BrapiMetadata(pageSize, currentPage, data.size());

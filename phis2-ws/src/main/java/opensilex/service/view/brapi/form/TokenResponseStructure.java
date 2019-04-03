@@ -16,21 +16,16 @@ import opensilex.service.view.brapi.Metadata;
 public class TokenResponseStructure {
 
     private final Metadata metadata;
-    //@note session_token n'est pas conforme aux norme de nomination Java
+    
     private final String session_token;
 
     /**
-     * ResultForm() - Prepare l'objet métadata vide et associe l'identifiant de
-     * session à la variable session_token
-     *
-     * @param id L'identifiant de session
-     *
-     * @see result_output.Metadata
-     * @date 25/11/2015
+     * Adds the session id to a new metadata object.
+     * @param sessionId
      */
-    public TokenResponseStructure(String id) {
+    public TokenResponseStructure(String sessionId) {
         this.metadata = new Metadata(0, 0, 1);
-        this.session_token = id;
+        this.session_token = sessionId;
     }
 
     public Metadata getMetadata() {
@@ -40,5 +35,4 @@ public class TokenResponseStructure {
     public String getSession_token() {
         return session_token;
     }
-
 }

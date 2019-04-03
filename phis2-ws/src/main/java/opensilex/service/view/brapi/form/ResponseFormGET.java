@@ -32,8 +32,4 @@ public class ResponseFormGET extends AbstractResultForm{
     public int resultSize() {
             return 0;
     }
-
-
-    
-    
 }

@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                 Session.java 
+//                                SessionThread.java 
 // SILEX-PHIS
 // Copyright © INRA 2015
 // Creation date: 25 November 2015
@@ -34,15 +34,15 @@ public class SessionThread extends Thread {
     }
     
     private void setTimeSession(){
-            try {
-                this.sessionTime = Integer.valueOf(PropertiesFileManager.getConfigFileProperty(propsFileName, "sessionTime")) * 1000;
-            } catch (NumberFormatException e) {
-                LOGGER.error("Error : No session time defined or file parsing error for "+ propsFileName +" properties file", e);
-            }
+        try {
+            this.sessionTime = Integer.valueOf(PropertiesFileManager.getConfigFileProperty(propsFileName, "sessionTime")) * 1000;
+        } catch (NumberFormatException e) {
+            LOGGER.error("Error : No session time defined or file parsing error for "+ propsFileName +" properties file", e);
+        }
     }
 
     /**
-     * Run the current thread. It is paused is paused for a certain amoun of 
+     * Runs the current thread. It is paused is paused for a certain amoun of 
      * time which can be extended according to the user's behaviour.
      * Delete the session corresponding to the active sessions.
      * @see phenomeapi.service.model.brapi.authentication.TokenDaoPhisBraphi,TokenManager.removeSession()
@@ -64,7 +64,7 @@ public class SessionThread extends Thread {
     }
 
     /**
-     * Increases a user connection time. It pauses the thread which delay the 
+     * Increases a user connection time. It pauses the thread which delays the 
      * session end.
      */
     public void addTime() {

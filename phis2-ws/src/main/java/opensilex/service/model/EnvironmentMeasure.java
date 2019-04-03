@@ -15,21 +15,34 @@ import java.util.Date;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class EnvironmentMeasure {
-    //The uri of the sensor which has provide the measured value.
-    //e.g. http://www.phenome-fppn.fr/mtp/2018/s18003
+    /**
+     * URI of the sensor which provided the measured value.
+     * @example http://www.phenome-fppn.fr/mtp/2018/s18003
+     */
     protected String sensorUri;
-    //The uri of the measured variable
-    //e.g. http://www.phenome-fppn.fr/mtp/id/variables/v002
+    
+    /**
+     * URI of the measured variable.
+     * @example http://www.phenome-fppn.fr/mtp/id/variables/v002
+     */
     protected String variableUri;
-    //The date corresponding to the given value. The format should be yyyy-MM-ddTHH:mm:ssZ
-    //e.g. 2018-06-25T15:13:59+0200
+    
+    /** 
+     * Value date. The format should be yyyy-MM-ddTHH:mm:ssZ.
+     *  @example 2018-06-25T15:13:59+0200
+     */
     protected Date date;
-    //The measured value.
-    //e.g. 1.2
-    //SILEX:info
-    //We use BigDecimal here because this value represent scientific data, so we need to keep the exact precision
-    //float or double type are subject to rounded errors: @see https://floating-point-gui.de/basic/
-    //\SILEX:info
+    
+    /** 
+     * The measured value.
+     * @example  1.2
+     * //SILEX:info
+     * We use BigDecimal here because this value represent scientific data, so 
+     * we need to keep the exact precision float or double type are subject to 
+     * errors of rounding 
+     * @see https://floating-point-gui.de/basic/
+     * //\SILEX:info
+     */
     protected BigDecimal value;
 
     public String getSensorUri() {

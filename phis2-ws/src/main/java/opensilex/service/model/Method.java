@@ -12,9 +12,11 @@ package opensilex.service.model;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class Method extends RdfResourceDefinition {
+    
     public Method() {
         
     }
+    
     public Method(String uri) {
         super(uri);
     }

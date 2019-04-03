@@ -23,17 +23,17 @@ public class Event extends RdfResourceDefinition {
     private String type;
     
     /**
-     * Concerned items
+     * Concerned items.
      */
     private ArrayList<ConcernedItem> concernedItems;
     
     /**
-     * DateTime
+     * DateTime.
      */
     private DateTime dateTime;
     
     /**
-     * Annotations 
+     * Annotations.
      */
     private ArrayList<Annotation> annotations;
 

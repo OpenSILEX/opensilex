@@ -16,22 +16,38 @@ import java.util.ArrayList;
  */
 public class ScientificObject {
     
-    //scientific object uri
+    /**
+     * Scientific object URI.
+     */
     private String uri;
-    //type of the scientific object
+    
+    /**
+     * Type.
+     */
     private String rdfType;
-    //geometry of the scientific object
+    
+    /**
+     * Geometry of the scientific object.
+     */
     private String geometry;
-    //experiment of the scientific object
+    
+    /**
+     * Experiment of the scientific object.
+     */
     private String experiment;
-    //object which has part the scientific object
+    
+    /**
+     * Object which has part the scientific object
+     */
     private String isPartOf;
     
-    //SILEX:INFO
-    //Pour l'instant je l'ai mis en attribut pour aller plus vite et avancer le reste (dans le get ao)
-    //Il faudra modifier le getAO (search) en récupérant toutes les propriétés, alias inclu
+    /**
+     * //SILEX:todo
+     * For the moment it is an attribute.
+     * Modify getAO (search) getting all properties, alias included
+     */
     private String alias;
-    //\SILEX:INFO
+       //\SILEX:todo
     
     private ArrayList<Property> properties = new ArrayList<>();
 
@@ -40,7 +56,6 @@ public class ScientificObject {
     }
 
     public ScientificObject() {
-       
     }
     
     public String getUri() {

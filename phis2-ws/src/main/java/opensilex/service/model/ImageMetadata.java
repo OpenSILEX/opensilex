@@ -17,15 +17,29 @@ import java.util.ArrayList;
  */
 public class ImageMetadata {
     
-    //image uri
+    /**
+     * Image URI.
+     */
     private String uri;
-    //image type (in the ontology)
+    
+    /**
+     * Image type (in the ontology).
+     */
     private String rdfType;
-    //elements concerned by the image
+    
+    /**
+     * Elements concerned by the image.
+     */
     private ArrayList<ConcernedItem> concernedItems = new ArrayList<>();
-    //shooting configuration
+    
+    /**
+     * Shooting configuration.
+     */
     private ShootingConfiguration configuration;
-    //informations about the image file
+    
+    /** 
+     * Information about the image file.
+     */
     private FileInformations fileInformations;
 
     public ImageMetadata() {

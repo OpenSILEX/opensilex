@@ -12,5 +12,4 @@ package opensilex.service.model;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class RadiometricTarget extends RdfResourceDefinition {
-    
 }

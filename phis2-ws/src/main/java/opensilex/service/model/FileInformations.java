@@ -13,11 +13,20 @@ package opensilex.service.model;
  */
 public class FileInformations {
     
-    //md5sum of the file
+    /**
+     * md5sum of the file.
+     */
     private String checksum;
-    //extension of the file (e.g. PNG)
+    
+    /**
+     * Extension of the file.
+     * @example PNG
+     */
     private String extension;
-    //file path of the file on the server
+    
+    /**
+     * File path on the server.
+     */
     private String serverFilePath;
 
     public FileInformations() {

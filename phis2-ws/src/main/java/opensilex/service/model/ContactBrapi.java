@@ -69,6 +69,4 @@ public class ContactBrapi {
     public void setOrcid(String orcid) {
         this.orcid = orcid;
     }
-    
-    
 }

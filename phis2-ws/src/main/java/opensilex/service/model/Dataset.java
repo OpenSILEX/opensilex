@@ -21,7 +21,6 @@ public class Dataset {
     private ArrayList<AgronomicalData> data = new ArrayList<>();
     
     public Dataset() {
-        
     }
 
     public String getVariableURI() {

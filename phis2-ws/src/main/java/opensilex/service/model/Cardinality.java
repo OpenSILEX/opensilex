@@ -13,9 +13,15 @@ package opensilex.service.model;
  */
 public class Cardinality {
     
-    //type of the cardinality (owl:cardinality, owl:minCardinality, owl:maxCardinality)
+    /**
+     * Type of the cardinality 
+     * @example owl:cardinality, owl:minCardinality, owl:maxCardinality
+     */ 
     private String rdfType;
-    //value of the cardinality (integer)
+    
+    /**
+     * Value of the cardinality.
+     */
     private int cardinaity;
 
     public String getRdfType() {

@@ -174,9 +174,9 @@ public class Experiment {
     }
     
     /**
-     * Compare les deux experimentations (compare les attributs un à un)
-     * @param experiment Experiment à comparer à this
-     * @return true s'ils sont égaux, false sinon
+     * Compares to another experiment. Compares attributes one by one.
+     * @param experiment Experiment to compare
+     * @return true if equal, false otherwise.
      */
     public boolean equals(Experiment experiment) {
         return this.uri.equals(experiment.uri)

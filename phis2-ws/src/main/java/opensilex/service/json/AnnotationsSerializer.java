@@ -26,8 +26,10 @@ import opensilex.service.model.Annotation;
  */
 public class AnnotationsSerializer implements JsonSerializer<Annotation> {
 
-    // labels that replace each attribute corresponding name
-    // of an annotation instance when it is serialized into json
+    /** 
+     * Labels that replace each attribute corresponding name of an annotation 
+     * instance when it is serialized into JSON
+    */
     public final static String CREATED_LABEL = "creationDate";
     public final static String TARGETS_LABEL = "targets";
     public final static String URI_LABEL = "uri";
@@ -36,8 +38,11 @@ public class AnnotationsSerializer implements JsonSerializer<Annotation> {
     public final static String MOTIVATION_LABEL = "motivatedBy";
 
     /**
-     * This function convert an annotation into a json specific representation.
-     * e.g. 
+     * This function convert an annotation into a JSON specific representation.
+     * @param src
+     * @param typeOfSrc
+     * @return the JSON result
+     * @example 
      * {
      *  "uri": "http://www.phenome-fppn.fr/platform/id/annotation/361ac1e4-dc5a-4fdb-95a3-3f65556b1d32",
      *  "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy",
@@ -73,9 +78,9 @@ public class AnnotationsSerializer implements JsonSerializer<Annotation> {
         annotationJson.add(BODYVALUE_LABEL, bodyJsonArray);
         
         JsonArray targetJsonArray = new JsonArray();
-        for (String target : src.getTargets()) {
+        src.getTargets().forEach((target) -> {
             targetJsonArray.add(target);
-        }
+        });
         annotationJson.add(TARGETS_LABEL, targetJsonArray);
 
         return annotationJson;

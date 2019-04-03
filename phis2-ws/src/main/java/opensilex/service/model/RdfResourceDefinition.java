@@ -16,21 +16,35 @@ import java.util.ArrayList;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class RdfResourceDefinition {
-    // Instance uri. e.g. http://www.phenome-fppn.fr/diaphen/id/variable/v001
+    
+    /**
+     * Instance URI.
+     * @example http://www.phenome-fppn.fr/diaphen/id/variable/v001
+     */
     protected String uri;
-    // The rdfs:label of the instance. e.g. sf1
+    
+    /**
+     * The rdfs:label of the instance. 
+     * @example sf1
+     */
     protected String label;
-    // Comment on the instance
+    
+    /**
+     * Comment on the instance.
+     */
     protected String comment;
     
-    // List of the ontologies references associated to the instance
+    /**
+     * List of the ontology references associated to the instance.
+     */
     protected ArrayList<OntologyReference> ontologiesReferences = new ArrayList<>();
     
-    //List of the properties associated to the instance
+    /**
+     * List of the properties associated to the instance
+     */
     protected ArrayList<Property> properties = new ArrayList<>();
     
     public RdfResourceDefinition() {
-        
     }
     
     public RdfResourceDefinition(String uri) {

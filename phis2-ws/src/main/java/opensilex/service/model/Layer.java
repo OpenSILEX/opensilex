@@ -16,17 +16,30 @@ import java.util.HashMap;
 public class Layer {
     
     /**
-     * @param objectURI URI de l'objet auquel la couche correspond
-     * @param objectType type de l'objet (ex : http://www.opensilex.org/vocabulary/oeso/Experiment)
-     * @param depth true si la couche a tous les descendants de objectURI
-     *              false si on elle n'a que les enfants directs
-     * @param filePath le chemin du fichier geoJSON correspondant à la couche
-     * @param children la liste des descendants de objectURI. Clé : URI, valeur : type
+     * URI of the object the layer corresponds to.
      */
     private String objectURI;
+    
+    /**
+     * Object type.
+     * @example http://www.opensilex.org/vocabulary/oeso/Experiment
+     */
     private String objectType;
+    
+    /**
+     * True if the layer has all its corresponding object's descendants, false 
+     * if it has only its direct children.
+     */
     private String depth;
+    
+    /**
+     * Path of the GeoSON file corresponding to the layer.
+     */
     private String filePath;
+    
+    /**
+     * The corresponding object's descendants. Key: URI, value: type.
+     */
     private HashMap<String,String> children; 
 
     public String getObjectURI() {

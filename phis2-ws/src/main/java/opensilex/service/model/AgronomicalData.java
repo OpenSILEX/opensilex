@@ -20,7 +20,6 @@ public class AgronomicalData {
     private String incertitude;
     
     public AgronomicalData() {
-        
     }
     
     public AgronomicalData(AgronomicalData data) {

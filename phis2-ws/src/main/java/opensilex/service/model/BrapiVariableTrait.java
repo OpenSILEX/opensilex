@@ -11,18 +11,31 @@ import com.google.gson.annotations.SerializedName;
 import java.util.ArrayList;
 
 /**
- * Brapi variable trait model.
+ * BrAPI variable trait model.
  * @See https://brapi.docs.apiary.io/#reference/observation-variables
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class BrapiVariableTrait {
-    //The id of the trait in the triplestore e.g. http://www.phenome-fppn.fr/platform/id/traits/t001
+    
+    /**
+     * The id of the trait.
+     * @example http://www.phenome-fppn.fr/platform/id/traits/t001
+     */
     private String traitDbId;
-    //The label of the trait in the triplestore e.g. Leaf_Area_Index
+    
+    /**
+     * The label of the trait.
+     * @example Leaf_Area_Index
+     */
     private String traitName;
+    
     @SerializedName("class")
     private String brapiclass;
-    //The comment of the trait in the triplestore e.g. "one-sided green leaf area per unit ground surface area"
+    
+    /**
+     * The comment of the trait in the triplestore
+     * @example one-sided green leaf area per unit ground surface area
+     */
     private String description;
     private ArrayList<String> synonyms;
     private String mainAbbreviation;
@@ -131,5 +144,4 @@ public class BrapiVariableTrait {
     public void setOntologyReference(String ontologyReference) {
         this.ontologyReference = ontologyReference;
     }
-    
 }

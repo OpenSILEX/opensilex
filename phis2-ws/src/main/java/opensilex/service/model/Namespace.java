@@ -13,8 +13,17 @@ package opensilex.service.model;
  */
 public class Namespace implements Comparable<Namespace>{
 
-    private String prefix; // The prefix of the namespace .e.g oa
-    private String namespace; // The namespace .e.g https://www.w3.org/ns/oa
+    /**
+     * Prefix of the namespace.
+     * @example oa
+     */
+    private String prefix;
+    
+    /**
+     * Namespace name.
+     * @example https://www.w3.org/ns/oa
+     */
+    private String namespace;
 
     public Namespace(String prefix, String namespace) {
         this.prefix = prefix;
@@ -38,9 +47,9 @@ public class Namespace implements Comparable<Namespace>{
     }
 
     /**
-     * Used to compare two namespace.
+     * Compares two namespaces.
      * Compares the two prefix strings lexicographically.
-     * Use to sort Arraylist<Namespace> in VocabularyDao
+     * Used to sort Arraylist<Namespace> in VocabularyDao
      * e.g. Collections.sort(arraylist)
      * @param namespaceCompared
      * @return 

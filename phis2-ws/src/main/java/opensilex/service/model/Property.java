@@ -17,25 +17,42 @@ import java.util.LinkedList;
  * @author Migot Vincent <vincent.migot@inra.fr>
  */
 public class Property {
-    //type of the range (if needed)
-    //(e.g. http://www.opensilex.org/vocabulary/oeso#Variety)
+    
+    /**
+     * Type of the range (if needed).
+     * @example http://www.opensilex.org/vocabulary/oeso#Variety
+     */
     private String rdfType;
     private LinkedList<String> rdfTypeLabels = new LinkedList<>();
-    //relation name 
-    //(e.g. http://www.opensilex.org/vocabulary/oeso#hasVariety)
+    
+    /**
+     * Relation name.
+     * @example http://www.opensilex.org/vocabulary/oeso#hasVariety
+     */
     private String relation;
     private LinkedList<String> relationLabels = new LinkedList<>();
-    //value
-    //(e.g. plot alias, or the uri of the variety)
+    
+    /**
+     * Value.
+     * @example plot alias, or the URI of the variety
+     */
     private String value;
     private LinkedList<String> valueLabels = new LinkedList<>();
-    //the domain of the property. For the first version, it is only a single string.
-    //then, the union and others will be added
-    //(e.g. http://www.opensilex.org/vocabulary/oeso#MultispectralCamera)
+    
+    /** 
+     * Domain of the property. 
+     * //SILEX:todo
+     * For the first version, it is only a single string. Then, the union and 
+     * others will be added.
+     * //\SILEX:todo
+     * @example http://www.opensilex.org/vocabulary/oeso#MultispectralCamera
+     */
     private String domain;
-    //the list of the labels of the property. Hash Map with the languages if needed
-    //it is a hash map with the language and the label
-    //if there is no language for a label, the key is equals to none (?)
+    
+    /**
+     * List of the labels of the property. Hash Map with the languages if needed.
+     * If there is no language for a label, the key is equals to none (?).
+     */
     private HashMap<String, String> labels = new HashMap<>();
     
     public Property() {

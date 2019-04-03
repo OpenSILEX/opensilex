@@ -14,23 +14,40 @@ import java.util.Date;
  * @auhor Vincent Migot <vincent.migot@inra.fr>
  */
 public class Data {
-    //The uri of the data.
-    //e.g. http://www.opensilex.org/1e9eb2fbacc7222d3868ae96149a8a16b32b2a1870c67d753376381ebcbb5937/e78da502-ee3f-42d3-828e-aa8cab237f93
+    /**
+     * URI
+     * @example http://www.opensilex.org/1e9eb2fbacc7222d3868ae96149a8a16b32b2a1870c67d753376381ebcbb5937/e78da502-ee3f-42d3-828e-aa8cab237f93
+     */
     protected String uri;
-    //The uri of the provenance from which data come.
-    //e.g. http://www.phenome-fppn.fr/mtp/2018/s18003
+    
+    /**
+     * Provenance URI from which data comes.
+     * @example http://www.phenome-fppn.fr/mtp/2018/s18003
+     */
     protected String provenanceUri;
-    //The uri of the scientific object on which data is related.
-    //e.g. http://www.phenome-fppn.fr/mtp/2018/s18003
+    
+    /**
+     * Related scientific object URI.
+     * @example http://www.phenome-fppn.fr/mtp/2018/s18003
+     */
     protected String objectUri;
-    //The uri of the measured variable
-    //e.g. http://www.phenome-fppn.fr/mtp/id/variables/v002
+    
+    /**
+     * Measured variable URI.
+     * @example http://www.phenome-fppn.fr/mtp/id/variables/v002
+     */
     protected String variableUri;
-    //The date corresponding to the given value. The format should be yyyy-MM-ddTHH:mm:ssZ
-    //e.g. 2018-06-25T15:13:59+0200
+    
+    /**
+     * Date of the value. The format should be yyyy-MM-ddTHH:mm:ssZ
+     * @example 2018-06-25T15:13:59+0200
+     */
     protected Date date;
-    //The measured value.
-    //e.g. 1.2
+    
+    /** 
+     * The measured value.
+     * @example 1.2
+     */
     protected Object value;
 
     public String getObjectUri() {

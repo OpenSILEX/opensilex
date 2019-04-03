@@ -13,7 +13,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation about the current session information. * 
+ * Annotation about the current session information. 
  * @see https://jersey.java.net/documentation/latest/ioc.html
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */

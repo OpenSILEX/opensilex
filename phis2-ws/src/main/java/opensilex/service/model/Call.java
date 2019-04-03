@@ -21,17 +21,15 @@ public class Call {
 
     //Default constructor
     public Call() {
-        
     }    
 
-    //Constructor with param
+    //Constructor with parameters
     public Call(String call, ArrayList<String> dataTypes, ArrayList<String> methods, ArrayList<String> versions) {
         this.call = call;
         this.dataTypes = dataTypes;
         this.methods = methods;
         this.versions = versions;
     }
-
 
     public String getCall() {
         return call;

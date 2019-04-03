@@ -17,21 +17,14 @@ import java.util.Map;
  */
 public class FileDescription {
 
-    String uri;
-    
-    String filename;
-    
-    String path;
-        
-    String rdfType;
-    
-    Date date;
-    
-    List<ConcernedItem> concernedItems;
-    
-    String provenanceUri;
-    
-    Map<String, Object> metadata;
+    private String uri;
+    private String filename;
+    private String path;
+    private String rdfType;
+    private Date date;
+    private List<ConcernedItem> concernedItems;
+    private String provenanceUri;
+    private Map<String, Object> metadata;
     
     public String getUri() {
         return uri;
@@ -97,7 +90,4 @@ public class FileDescription {
     public void setMetadata(Map<String, Object> metadata) {
         this.metadata = metadata;
     }
-    
-    
-    
 }

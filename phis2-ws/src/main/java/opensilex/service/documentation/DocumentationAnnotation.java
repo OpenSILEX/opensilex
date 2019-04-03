@@ -293,7 +293,7 @@ public final class DocumentationAnnotation {
   
     public static final String EXAMPLE_EXPERIMENT_CROP_SPECIES = "maize";
 
-    // API global parameter
+    // API global parameters
     public static final String EXAMPLE_SORTING_ALLOWABLE_VALUES = "asc,desc";
 
     public static final String EXAMPLE_INFRASTRUCTURE_URI = "http://www.phenome-fppn.fr/diaphen";

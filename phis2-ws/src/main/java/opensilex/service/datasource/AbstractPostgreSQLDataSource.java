@@ -17,9 +17,10 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractPostgreSQLDataSource extends DataSource {
 
-    // Récupération des logs
+    // Get logs
     final static Logger LOGGER = LoggerFactory.getLogger(AbstractPostgreSQLDataSource.class);
-    // Fichier de configuration
+    
+    // onfiguration file
     protected static String propertyFileName;
 
     public static String getPropertyFileName() {
@@ -29,5 +30,4 @@ public abstract class AbstractPostgreSQLDataSource extends DataSource {
     public static void setPropertyFileName(String propertyFileName) {
         AbstractPostgreSQLDataSource.propertyFileName = propertyFileName;
     }
-
 }

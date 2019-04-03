@@ -13,13 +13,22 @@ package opensilex.service.model;
  */
 public class Infrastructure extends RdfResourceDefinition {
     
-    //infrastructure type eg. http://www.opensilex.org/vocabulary/oeso#LocalInfrastructure
+    /**
+     * Infrastructure type.
+     * @example http://www.opensilex.org/vocabulary/oeso#LocalInfrastructure
+     */
     private String rdfType;
 
-    //infrastructure type label eg. European Infrastructure
+    /**
+     * Infrastructure type label.
+     * @example European Infrastructure
+     */
     private String rdfTypeLabel;
     
-    //uri of the parent infrastructure if exists eg. https://emphasis.plant-phenotyping.eu 
+    /**
+     * URI of the parent infrastructure if it exists. 
+     * @example https://emphasis.plant-phenotyping.eu 
+     */
     private String parent;
     
     public String getRdfType() {
@@ -45,5 +54,4 @@ public class Infrastructure extends RdfResourceDefinition {
     public void setParent(String parent) {
         this.parent = parent;
     }
-    
 }

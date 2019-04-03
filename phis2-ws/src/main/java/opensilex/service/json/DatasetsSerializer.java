@@ -25,60 +25,65 @@ import opensilex.service.model.Dataset;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class DatasetsSerializer implements JsonSerializer<Dataset> {
-    /* 
-            {
-                agronomicalObject: "http://.....",
-                experiment: "http://....",
-                data: [
-                    {
-                        date: "....",
-                        value: "...",
-                        variable: "http://...."
-                    }
-                ]
+    /**
+     * @param src
+     * @param typeOfSrc
+     * @param context
+     * @return the JSON created
+     * @example
+     * {
+     *   scientificObject: "http://.....",
+     *   experiment: "http://....",
+     *   data: [
+     *     {
+     *       date: "....",
+     *       value: "...",
+     *       variable: "http://...."
+     *     }
+     *   ]
     }*/
     @Override
     public JsonElement serialize(Dataset src, Type typeOfSrc, JsonSerializationContext context) {
         Map<String, JsonArray> phenotypesDataToReturn = new HashMap<>();
-        for (AgronomicalData d : src.getData()) {
-            if (phenotypesDataToReturn.containsKey(d.getAgronomicalObject())) {
+        src.getData().forEach((data) -> {
+            if (phenotypesDataToReturn.containsKey(data.getAgronomicalObject())) {
                 JsonObject agronomicalObjectData = new JsonObject();
-                 if (src.getVariableURI() != null) {
+                if (src.getVariableURI() != null) {
                     agronomicalObjectData.add("variable", new JsonPrimitive(src.getVariableURI()));
                 } else {
-                    agronomicalObjectData.add("variable", new JsonPrimitive(d.getVariable()));
+                    agronomicalObjectData.add("variable", new JsonPrimitive(data.getVariable()));
                 }
-                agronomicalObjectData.add("date", new JsonPrimitive(d.getDate()));
-                agronomicalObjectData.add("value", new JsonPrimitive(d.getValue()));
-                if (d.getSensor() != null) {
-                    agronomicalObjectData.add("sensor", new JsonPrimitive(d.getSensor()));
+                agronomicalObjectData.add("date", new JsonPrimitive(data.getDate()));
+                agronomicalObjectData.add("value", new JsonPrimitive(data.getValue()));
+                if (data.getSensor() != null) {
+                    agronomicalObjectData.add("sensor", new JsonPrimitive(data.getSensor()));
                 }
-                if (d.getIncertitude() != null) {
-                    agronomicalObjectData.add("incertitude", new JsonPrimitive(d.getIncertitude()));
+                if (data.getIncertitude() != null) {
+                    agronomicalObjectData.add("incertitude", new JsonPrimitive(data.getIncertitude()));
                 }
                 
-                phenotypesDataToReturn.get(d.getAgronomicalObject()).add(agronomicalObjectData);
+                phenotypesDataToReturn.get(data.getAgronomicalObject()).add(agronomicalObjectData);
             } else {
-                    JsonObject agronomicalObjectData = new JsonObject();
-                    if (src.getVariableURI() != null) {
-                        agronomicalObjectData.add("variable", new JsonPrimitive(src.getVariableURI()));
-                    } else {
-                        agronomicalObjectData.add("variable", new JsonPrimitive(d.getVariable()));
-                    }
-                    agronomicalObjectData.add("date", new JsonPrimitive(d.getDate()));
-                    agronomicalObjectData.add("value", new JsonPrimitive(d.getValue()));
-                    if (d.getSensor() != null) {
-                        agronomicalObjectData.add("sensor", new JsonPrimitive(d.getSensor()));
-                    }
-                    if (d.getIncertitude() != null) {
-                        agronomicalObjectData.add("incertitude", new JsonPrimitive(d.getIncertitude()));
-                    }
-
-                    JsonArray agronomicalObjectPhenotypes = new JsonArray();
-                    agronomicalObjectPhenotypes.add(agronomicalObjectData);
-                    phenotypesDataToReturn.put(d.getAgronomicalObject(), agronomicalObjectPhenotypes);
+                JsonObject agronomicalObjectData = new JsonObject();
+                if (src.getVariableURI() != null) {
+                    agronomicalObjectData.add("variable", new JsonPrimitive(src.getVariableURI()));
+                } else {
+                    agronomicalObjectData.add("variable", new JsonPrimitive(data.getVariable()));
+                }
+                agronomicalObjectData.add("date", new JsonPrimitive(data.getDate()));
+                agronomicalObjectData.add("value", new JsonPrimitive(data.getValue()));
+                if (data.getSensor() != null) {
+                    agronomicalObjectData.add("sensor", new JsonPrimitive(data.getSensor()));
+                }
+                if (data.getIncertitude() != null) {
+                    agronomicalObjectData.add("incertitude", new JsonPrimitive(data.getIncertitude()));
+                }
+                
+                JsonArray agronomicalObjectPhenotypes = new JsonArray();
+                agronomicalObjectPhenotypes.add(agronomicalObjectData);
+                phenotypesDataToReturn.put(data.getAgronomicalObject(), agronomicalObjectPhenotypes);
             }
-        }
+        });
         
         JsonArray finalJson = new JsonArray();
         

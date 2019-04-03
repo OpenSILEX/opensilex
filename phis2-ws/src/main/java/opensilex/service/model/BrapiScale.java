@@ -13,16 +13,25 @@ package opensilex.service.model;
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class BrapiScale {
-    //The id of the unit in the triplestore e.g. http://www.phenome-fppn.fr/platform/id/units/u001
+    
+    /**The id of the unit.
+     * @example http://www.phenome-fppn.fr/platform/id/units/u001
+     */
     private String scaleDbid;
-    //The scaleName of the unit in the triplestore e.g. "m2.m2"
+    
+    /**
+     * The scaleName of the unit.
+     * @example "m2.m2"
+     */
     private String scaleName;
     private String dataType;
     private String decimalPlaces;
+    
     //SILEX:todo
     //class ontologyReference and get info
     private String ontologyReference;
     //\SILEX
+    
     private String xref;
     private String validValues;
 
@@ -84,5 +93,4 @@ public class BrapiScale {
     public void setValidValues(String validValues) {
         this.validValues = validValues;
     }  
-    
 }

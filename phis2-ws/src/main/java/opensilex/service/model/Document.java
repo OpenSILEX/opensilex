@@ -114,9 +114,9 @@ public class Document {
     }
     
     /**
-     * Compare les deux documents (compare les attributs un à un)
-     * @param document Document à comparer à this
-     * @return true s'ils sont égaux, false sinon
+     * Compares to another document. It compares attributes one by one.
+     * @param document Document to compare
+     * @return true if equal. False otherwise.
      */
     public boolean equals(Document document) {
         return this.uri.equals(document.uri)

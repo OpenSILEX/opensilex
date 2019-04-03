@@ -15,15 +15,28 @@ import com.google.gson.annotations.SerializedName;
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class BrapiMethod {
-    //The id of the method in the triplestore e.g. http://www.phenome-fppn.fr/platform/id/methods/m001
+    
+    /**
+     * The id of the method.
+     * @example http://www.phenome-fppn.fr/platform/id/methods/m001
+     */
     private String methodDbId;
-    //The label of the method in the triplestore e.g. "LAI_Computation"
+    
+    /**
+     * The label of the method.
+     * @example "LAI_Computation"
+     */
     private String methodName;
+    
     @SerializedName("class")
     private String brapiClass;
     private String description;
-    //The comment of the method in the triplestore
+    
+    /**
+     * The comment of the method.
+     */ 
     private String formula;
+    
     //SILEX:todo
     //Create a brapiOntologyReference class to follow this format
     //    "ontologyReference": {
@@ -41,7 +54,8 @@ public class BrapiMethod {
     //and see if we can use the ontologyReference of variableDAO to fill the attributes 
     //but in the case where there are several references, which one should we get ?
     private String ontologyReference;
-    //\SILEX
+    //\SILEX:todo
+    
     private String reference;
 
     public BrapiMethod() {

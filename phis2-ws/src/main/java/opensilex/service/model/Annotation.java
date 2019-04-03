@@ -17,37 +17,37 @@ import org.joda.time.DateTime;
 public class Annotation {
 
     /**
-     * URI of the annotation
+     * URI of the annotation.
      * @example http://www.phenome-fppn.fr/platform/id/annotation/8247af37-769c-495b-8e7e-78b1141176c2
      */
     private String uri;
 
     /** 
-     * Creation date of this annotation format yyyy-MM-ddTHH:mm:ssZ
+     * Creation date of this annotation format yyyy-MM-ddTHH:mm:ssZ.
      * @example 2018-06-25T15:13:59+0200
      */
     private DateTime created;
 
     /** 
-     * Creator of the annotations
+     * Creator of the annotations.
      * @example http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy
      */
      private String creator;
 
     /** 
-     * Text that describes the annotation
+     * Text that describes the annotation.
      * @example Ustilago maydis infection
      */
     private ArrayList<String> bodyValues;
 
     /**
-     * Motivation instance URI that describes the purpose of the annotation
+     * Motivation instance URI that describes the purpose of the annotation.
      * @example http://www.w3.org/ns/oa#commenting
      */
     private String motivatedBy;
 
     /**
-     * URIs that are the objects of the annotation
+     * URIs that are the objects of the annotation.
      * @example http://www.phenome-fppn.fr/diaphen/2017/o1032481
      */
     private ArrayList<String> targets;

@@ -26,6 +26,4 @@ public class Ask {
     public void setExist(Boolean exist) {
         this.exist = exist;
     }
-
-
 }

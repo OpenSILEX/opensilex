@@ -31,7 +31,6 @@ public class Project {
     private ArrayList<Contact> contacts = new ArrayList<>();
     
     public Project() {
-        
     }
     
     public Project(String uri) {
@@ -151,9 +150,9 @@ public class Project {
     }
     
     /**
-     * Compare les deux projets (compare les attributs un à un)
-     * @param project Project à comparer à this
-     * @return true s'ils sont les mêmes, false sinon
+     * Compares to another project. Compares attributes one by one.
+     * @param project Project to compare with
+     * @return true if equal, false otherwise
      */
     public boolean equals(Project project) {
         return this.uri.equals(project.uri)

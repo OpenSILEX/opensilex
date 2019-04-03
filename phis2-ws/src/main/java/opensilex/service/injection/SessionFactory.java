@@ -17,7 +17,7 @@ import opensilex.service.authentication.TokenManager;
 import opensilex.service.configuration.GlobalWebserviceValues;
 
 /**
- * Link user information to session injection.
+ * Links user information to session injection.
  * @see https://jersey.java.net/documentation/latest/ioc.html
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */

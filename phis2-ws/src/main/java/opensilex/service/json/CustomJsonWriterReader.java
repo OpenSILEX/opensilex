@@ -24,6 +24,8 @@ import javax.ws.rs.ext.Provider;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonSyntaxException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -49,13 +51,12 @@ public final class CustomJsonWriterReader<T> implements MessageBodyWriter<T>,
         MessageBodyReader<T> {
 
     /**
-     * Récupération des erreurs
+     * Logs
      */
     final static Logger LOGGER = LoggerFactory.getLogger(CustomJsonWriterReader.class);
 
     /**
-     * Permet de filtrer les classes qui sont lisibles
-     *
+     * Permits to filter visible classes.
      * @param type
      * @param genericType
      * @param annotations
@@ -69,8 +70,7 @@ public final class CustomJsonWriterReader<T> implements MessageBodyWriter<T>,
     }
 
     /**
-     * Définit la façon de lire les éléments
-     *
+     * Defines the way to read the elements.
      * @param type
      * @param genericType
      * @param annotations
@@ -89,22 +89,26 @@ public final class CustomJsonWriterReader<T> implements MessageBodyWriter<T>,
         try {
             final BufferedReader reader = new BufferedReader(new InputStreamReader(entityStream));
             return g.fromJson(reader, genericType);
-        } catch (Exception e) {
+        } catch (JsonIOException | JsonSyntaxException e) {
             LOGGER.warn(e.getMessage(), e);
-            final ResponseFormPOST postResponse = new ResponseFormPOST(new Status("Unexpected JSON format", StatusCodeMsg.ERR, e.getMessage()));
-            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build());
+            final ResponseFormPOST postResponse = new ResponseFormPOST(new Status(
+                    "Unexpected JSON format", 
+                    StatusCodeMsg.ERR, 
+                    e.getMessage()));
+            throw new WebApplicationException(Response
+                    .status(Response.Status.BAD_REQUEST)
+                    .entity(postResponse)
+                    .build());
         }
     }
 
     /**
-     * Indique si une classe peut être sérialisee par défaut elles le sont
-     * toutes !
-     *
+     * Tells if a class is serializable. By default, they all are.
      * @param type
      * @param genericType
      * @param annotations
      * @param mediaType
-     * @return
+     * @return true if serializable. False otherwise.
      */
     @Override
     public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
@@ -117,8 +121,7 @@ public final class CustomJsonWriterReader<T> implements MessageBodyWriter<T>,
     }
 
     /**
-     * Définit comment sérialiser les classes
-     *
+     * Defines how to serialize the classes.
      * @param t
      * @param type
      * @param genericType
@@ -141,44 +144,16 @@ public final class CustomJsonWriterReader<T> implements MessageBodyWriter<T>,
                     // specific serializer for Annotation
                     .registerTypeAdapter(opensilex.service.model.Annotation.class, new AnnotationsSerializer())
                    
-                    .serializeNulls() // Pour serialiser les variables null en nulll json
-                    //                    see https://github.com/plantbreeding/documentation/wiki/Best-Practices-and-Conventions
+                    .serializeNulls() // To serialize null values in JSON null values
+                    //@see https://github.com/plantbreeding/documentation/wiki/Best-Practices-and-Conventions
                     .create();
-
-            //                          //Suppression de champs non voulus
-            // Put @Expose on field that you don't want serialize
-            //                        .addSerializationExclusionStrategy(new ExclusionStrategy() {
-            //                            @Override
-            //                            public boolean shouldSkipField(FieldAttributes fieldAttributes) {
-            //                                final Expose expose = fieldAttributes.getAnnotation(Expose.class);
-            //                                return expose != null && !expose.serialize();
-            //                            }
-            //
-            //                            @Override
-            //                            public boolean shouldSkipClass(Class<?> aClass) {
-            //                                return false;
-            //                            }
-            //                        })
-            //                        .addDeserializationExclusionStrategy(new ExclusionStrategy() {
-            //                            @Override
-            //                            public boolean shouldSkipField(FieldAttributes fieldAttributes) {
-            //                                final Expose expose = fieldAttributes.getAnnotation(Expose.class);
-            //                                return expose != null && !expose.deserialize();
-            //                            }
-            //
-            //                            @Override
-            //                            public boolean shouldSkipClass(Class<?> aClass) {
-            //                                return false;
-            //                            }
-            //                        })
             try (OutputStreamWriter writer = new OutputStreamWriter(entityStream, UTF_8)) {
                 g.toJson(t, genericType, writer);
             }
-        } catch (Exception gsonEx) {
+        } catch (JsonIOException | IOException gsonEx) {
             LOGGER.error(gsonEx.getMessage(), gsonEx);
             throw new ProcessingException(
                     "Error serializing a " + type + " to the output stream", gsonEx);
         }
     }
-
 }

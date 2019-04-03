@@ -21,7 +21,6 @@ public class Group {
     private ArrayList<User> users = new ArrayList<>();
     
     public Group() {
-        
     }
     
     public Group(String uri) {

@@ -29,9 +29,9 @@ public class Provenance {
         wasGeneratedBy = prov.getWasGeneratedBy();
         
         if (prov.getDocumentsUris() != null) {
-            for (String docUri : prov.getDocumentsUris()) {
+            prov.getDocumentsUris().forEach((docUri) -> {
                 documentsUris.add(docUri);
-            }
+            });
         }
     }
 

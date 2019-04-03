@@ -15,17 +15,23 @@ import opensilex.service.resources.validation.interfaces.URL;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class OntologyReference {
+    
     /**
-     * @param property ex. skos:exactMatch
-     * @param object ex. http://www.cropontology.org/rdf/CO_715:0000139
-     * @param seeAlso ex. http://www.cropontology.org/ontology/CO_715/
+     * @example skos:exactMatch
      */
     private String property;
+    
+    /***
+     * @example http://www.cropontology.org/rdf/CO_715:0000139
+     */
     private String object;
+    
+    /**
+     * @example http://www.cropontology.org/ontology/CO_715/
+     */
     private String seeAlso;
     
     public OntologyReference() {
-        
     }
 
     @URL

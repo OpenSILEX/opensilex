@@ -11,19 +11,29 @@ import java.util.ArrayList;
 import org.joda.time.DateTime;
 
 /**
- * Brapi variable model.
+ * BrAPI variable model.
  * @See https://brapi.docs.apiary.io/#reference/observation-variables
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class BrapiVariable {
-    //The id of the variable in the triplestore e.g. http://www.phenome-fppn.fr/platform/id/variables/v001
+    
+    /**
+     * The id of the variable.
+     * @example http://www.phenome-fppn.fr/platform/id/variables/v001
+     */
     private String ObservationVariableDbId;
-    //The label of the variable in the triplestore e.g. "Leaf-Area_Index_m2.m2"   
+    
+    /**
+     * The label of the variable.
+     * @example "Leaf-Area_Index_m2.m2"   
+     */
     private String ObservationVariableName;
+    
     //SILEX:todo
     //class ontologyReference and get info
     private String ontologyReference;
     //\SILEX
+    
     private ArrayList<String> synonyms;
     private ArrayList<String> contextOfUse;
     private String growthStage;
@@ -34,11 +44,23 @@ public class BrapiVariable {
     private DateTime submissionTimesTamp;
     private String language;
     private String crop;
-    //The id of the trait in the triplestore e.g. http://www.phenome-fppn.fr/platform/id/traits/t001
+    
+    /**
+     * The id of the trait.
+     * @example http://www.phenome-fppn.fr/platform/id/traits/t001
+     */
     private BrapiVariableTrait trait;
-    //The id of the method in the triplestore e.g. http://www.phenome-fppn.fr/platform/id/methods/m001
+    
+    /**
+     * The id of the method.
+     * @example http://www.phenome-fppn.fr/platform/id/methods/m001
+     */
     private BrapiMethod method;
-    //The id of the unit in the triplestore e.g. http://www.phenome-fppn.fr/platform/id/units/u001
+    
+    /**
+     * The id of the unit.
+     * @example http://www.phenome-fppn.fr/platform/id/units/u001
+     */
     private BrapiScale scale;
     private String defaultValue;    
     private String documentationURL;
@@ -189,5 +211,4 @@ public class BrapiVariable {
     public void setDocumentationURL(String documentationURL) {
         this.documentationURL = documentationURL;
     }
-    
 }

@@ -64,7 +64,7 @@ public abstract class SparqlDAO<T> extends DAO<T> {
     /**
      * Page size max value used to get the highest number of results of an 
      * object when getting a list within a list (e.g to get all the concerned
-     * items of all the events)
+     * items of all the events).
      * //SILEX:todo 
      * Pagination should be handled in this case too (i.e when getting a list
      * within a list)
@@ -79,7 +79,7 @@ public abstract class SparqlDAO<T> extends DAO<T> {
     protected static final String REPOSITORY_ID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "repositoryID");
     //\SILEX:test
 
-    // used for logger
+    // Used for logger
     protected static final String SPARQL_QUERY = "SPARQL query: ";
     
     protected static final String COUNT_ELEMENT_QUERY = "count";
@@ -121,7 +121,7 @@ public abstract class SparqlDAO<T> extends DAO<T> {
             rep = new HTTPRepository(sesameServer, repositoryID); //Stockage triplestore Sesame
             rep.initialize();
             setConnection(rep.getConnection());
-        } catch (Exception e) {
+        } catch (RepositoryException e) {
             ResponseFormPOST postForm = new ResponseFormPOST(new Status("Can't connect to triplestore", StatusCodeMsg.ERR, e.getMessage()));
             throw new WebApplicationException(Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postForm).build());
         }
@@ -135,10 +135,10 @@ public abstract class SparqlDAO<T> extends DAO<T> {
     public SparqlDAO(String repositoryID) {
         try {
             String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
-            rep = new HTTPRepository(sesameServer, repositoryID); //Stockage triplestore Sesame
+            rep = new HTTPRepository(sesameServer, repositoryID);
             rep.initialize();
             setConnection(rep.getConnection());
-        } catch (Exception e) {
+        } catch (RepositoryException e) {
             ResponseFormPOST postForm = new ResponseFormPOST(new Status("Can't connect to triplestore", StatusCodeMsg.ERR, e.getMessage()));
             throw new WebApplicationException(Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postForm).build());
         }
@@ -157,7 +157,7 @@ public abstract class SparqlDAO<T> extends DAO<T> {
     }
 
     /**
-     * Brapi API page starts at 0
+     * BrAPI page starts at 0.
      * @return current page number
      */
     public Integer getPage() {
@@ -168,7 +168,7 @@ public abstract class SparqlDAO<T> extends DAO<T> {
     }
 
     /**
-     * Brapi page to be used for pagination in database
+     * BrAPI page to be used for pagination in database.
      * @return current page number + 1
      */
     public Integer getPageForDBQuery() {
@@ -179,7 +179,7 @@ public abstract class SparqlDAO<T> extends DAO<T> {
     }
 
     /**
-     * Page parameter
+     * Page parameter.
      * @param page
      */
     public void setPage(Integer page) {
@@ -190,7 +190,7 @@ public abstract class SparqlDAO<T> extends DAO<T> {
     }
 
     /**
-     * Page size parameter
+     * Page size parameter.
      * @return
      */
     public Integer getPageSize() {
@@ -201,7 +201,7 @@ public abstract class SparqlDAO<T> extends DAO<T> {
     }
 
     /**
-     * Set page size parameter
+     * Sets page size parameter.
      * @param pageSize
      */
     public void setPageSize(Integer pageSize) {
@@ -209,7 +209,7 @@ public abstract class SparqlDAO<T> extends DAO<T> {
     }
 
     /**
-     * Existence test method of a subject by triplet
+     * Existence test method of a subject by triplet.
      * @param subject
      * @param predicate
      * @param object
@@ -231,8 +231,7 @@ public abstract class SparqlDAO<T> extends DAO<T> {
     }
 
     /**
-     * 
-     * @param uri the uri to test
+     * @param uri the URI to test
      * @example
      * ASK {
      *  VALUES (?r) { (<http://www.w3.org/2000/01/rdf-schema#Literal>) }
@@ -264,13 +263,13 @@ public abstract class SparqlDAO<T> extends DAO<T> {
             LOGGER.debug(SPARQL_QUERY + query.toString());
             BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
             return booleanQuery.evaluate();
-        } catch (Exception e) {
+        } catch (MalformedQueryException | QueryEvaluationException | RepositoryException e) {
             return false;
         }
     }
 
     /**
-     * Existence element recovery method by triplet
+     * Existence element recovery method by triplet.
      * @param subject
      * @param predicate
      * @return
@@ -312,21 +311,21 @@ public abstract class SparqlDAO<T> extends DAO<T> {
     }
 
     /**
-     * Define of user object from an id
-     * @param id
+     * Sets a user object from a session id.
+     * @param sessionId
      */
-    public void setUser(String id) {
-        if (TokenManager.Instance().getSession(id).getUser() == null) {
+    public void setUser(String sessionId) {
+        if (TokenManager.Instance().getSession(sessionId).getUser() == null) {
             throw new WebApplicationException(Response.status(Response.Status.UNAUTHORIZED).build());
         } else {
-            this.user = TokenManager.Instance().getSession(id).getUser();
+            this.user = TokenManager.Instance().getSession(sessionId).getUser();
         }
     }
     
     /**
-     * Add object properties to a given object.
-     * @param subjectUri the subject uri which will have the object properties uris
-     * @param predicateUri the uri of the predicates
+     * Adds object properties to a given object.
+     * @param subjectUri the subject URI which will have the object properties URIs
+     * @param predicateUri the URI of the predicates
      * @param objectPropertiesUris the list of the object properties to link to the subject
      * @param graphUri
      * @example
@@ -365,7 +364,7 @@ public abstract class SparqlDAO<T> extends DAO<T> {
     }
     
     /**
-     * Delete the given object properties.
+     * Deletes the given object properties.
      * @param subjectUri
      * @param predicateUri
      * @param objectPropertiesUris
@@ -377,7 +376,7 @@ public abstract class SparqlDAO<T> extends DAO<T> {
      *         false if the delete has not been done.
      */
     protected boolean deleteObjectProperties(String subjectUri, String predicateUri, List<String> objectPropertiesUris) {
-        //1. Generates delete query
+        // 1. Generates delete query
         UpdateBuilder query = new UpdateBuilder();
         
         Resource subject = ResourceFactory.createResource(subjectUri);
@@ -391,7 +390,7 @@ public abstract class SparqlDAO<T> extends DAO<T> {
         UpdateDeleteWhere request = query.buildDeleteWhere();
         LOGGER.debug(request.toString());
         
-        //2. Delete data in the triplestore
+        // 2. Delete data in the triplestore
         Update prepareDelete = getConnection().prepareUpdate(QueryLanguage.SPARQL, request.toString());
         try {
             prepareDelete.execute();
@@ -404,7 +403,7 @@ public abstract class SparqlDAO<T> extends DAO<T> {
     }
     
     /**
-     * Get the value of a name in the SELECT statement from a binding set
+     * Gets the value of a name in the SELECT statement from a binding set.
      * @param selectName 
      * @param bindingSet 
      * @return  the string value of the "selectName" variable in the binding set

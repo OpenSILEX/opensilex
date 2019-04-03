@@ -25,7 +25,7 @@ public class BrapiObservationDTO {
     //The level of an observation unit. ex. \"plot\", \"plant\
     private String observationLevel;
     //The date and time  when this observation was made
-    private Date observationTimeStamp;
+    private String observationTimeStamp;
     //The ID which uniquely identifies an observation unit = scientific object
     private String observationUnitDbId;
     //A human readable name for an observation unit
@@ -85,11 +85,11 @@ public class BrapiObservationDTO {
     }
 
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_DATETIME)
-    public Date getObservationTimeStamp() {
+    public String getObservationTimeStamp() {
         return observationTimeStamp;
     }
 
-    public void setObservationTimeStamp(Date observationTimeStamp) {
+    public void setObservationTimeStamp(String observationTimeStamp) {
         this.observationTimeStamp = observationTimeStamp;
     }
 

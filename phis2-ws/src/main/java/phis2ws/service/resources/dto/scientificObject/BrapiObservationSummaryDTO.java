@@ -21,7 +21,7 @@ public class BrapiObservationSummaryDTO {
     //The ID which uniquely identifies an observation
     private String observationDbId; 
     //The date and time  when this observation was made
-    private Date observationTimeStamp;
+    private String observationTimeStamp;
     //The ID which uniquely identifies an observation unit = scientific object
     private String observationVariableDbId;
     //A human readable name for an observation variable
@@ -54,11 +54,11 @@ public class BrapiObservationSummaryDTO {
     }
 
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_DATETIME)
-    public Date getObservationTimeStamp() {
+    public String getObservationTimeStamp() {
         return observationTimeStamp;
     }
 
-    public void setObservationTimeStamp(Date observationTimeStamp) {
+    public void setObservationTimeStamp(String observationTimeStamp) {
         this.observationTimeStamp = observationTimeStamp;
     }
 

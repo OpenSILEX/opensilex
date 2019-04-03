@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,6 +29,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import phis2ws.service.authentication.Session;
+import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.mongo.DataDAOMongo;
@@ -640,6 +642,7 @@ public class StudiesResourceService implements BrapiCall {
      * @return observations list 
      */
     private ArrayList<BrapiObservationDTO> getObservationsFromData(ArrayList<Data> dataList, Variable variable, ScientificObject object) {
+        SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
         ArrayList<BrapiObservationDTO> observations = new ArrayList();
 
         for (Data data:dataList){            
@@ -651,7 +654,7 @@ public class StudiesResourceService implements BrapiCall {
             observation.setObservationVariableDbId(variable.getUri());
             observation.setObservationVariableName(variable.getLabel());    
             observation.setObservationDbId(data.getUri());
-            observation.setObservationTimeStamp(data.getDate());
+            observation.setObservationTimeStamp(df.format(data.getDate()));
             observation.setValue(data.getValue());
             observations.add(observation);
         }
@@ -666,9 +669,9 @@ public class StudiesResourceService implements BrapiCall {
      * @return observationUnits list 
      */
     private ArrayList<BrapiObservationUnitDTO> getObservationUnitsResult(ArrayList<ScientificObject> scientificObjects, Experiment experiment) {
+        SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
         VariableDaoSesame variableDaoSesame = new VariableDaoSesame();
         ArrayList<Variable> variablesList = variableDaoSesame.allPaginate(); 
-
         ArrayList<BrapiObservationUnitDTO> observationUnitsList = new ArrayList();
 
         for (ScientificObject object:scientificObjects) {
@@ -688,7 +691,7 @@ public class StudiesResourceService implements BrapiCall {
                 for (Data data:dataList) {
                     BrapiObservationSummaryDTO obs = new BrapiObservationSummaryDTO();
                     obs.setObservationDbId(data.getUri());
-                    obs.setObservationTimeStamp(data.getDate());
+                    obs.setObservationTimeStamp(df.format(data.getDate()));
                     obs.setObservationVariableDbId(variable.getUri());
                     obs.setObservationVariableName(variable.getLabel());
                     obs.setValue(data.getValue());

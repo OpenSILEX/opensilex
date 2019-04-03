@@ -21,16 +21,11 @@ import opensilex.service.resources.validation.interfaces.GroupLevel;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class GroupLevelValidator implements ConstraintValidator<GroupLevel, String> {
-    /**
-     * {@inheritDoc}
-     */
+  
     @Override
     public void initialize(GroupLevel constraintAnnotation) {
     }
-
-    /**
-     * {@inheritDoc}
-     */
+    
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
         if (value == null) {
@@ -41,10 +36,10 @@ public class GroupLevelValidator implements ConstraintValidator<GroupLevel, Stri
     }
     
     /**
-     * Check if the given group level is one of the existings levels 
-     * from GroupLevels (guest or owner)
+     * Checks if the given group level is one of the existing levels from 
+     * GroupLevels (guest or owner).
      * @param groupLevel
-     * @return true if the group exist
+     * @return true if the group exists
      *         false if it does not exist
      */
     public boolean validateGroupLevel(String groupLevel) {

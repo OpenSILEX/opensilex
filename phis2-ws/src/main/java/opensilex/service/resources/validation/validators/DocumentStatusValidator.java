@@ -20,16 +20,11 @@ import opensilex.service.resources.validation.interfaces.DocumentStatus;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class DocumentStatusValidator implements ConstraintValidator<DocumentStatus, String> {
-    /**
-     * {@inheritDoc}
-     */
+    
     @Override
     public void initialize(DocumentStatus constraintAnnotation) {
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
         if (value == null) {
@@ -40,10 +35,10 @@ public class DocumentStatusValidator implements ConstraintValidator<DocumentStat
     }
     
     /**
-     * Check if the given document status is one of the existings document's status
-     * from DocumentStatus (linked or unlinked)
+     * Checks if the given document status is one of the existing document's status 
+     * from DocumentStatus (linked or unlinked).
      * @param documentStatus
-     * @return true if the document status exist
+     * @return true if the document status exists
      *         false if it does not exist
      */
     public boolean validateDocumentStatus(String documentStatus) {

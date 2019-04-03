@@ -21,16 +21,11 @@ import opensilex.service.resources.validation.interfaces.GrantType;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class GrantTypeValidator implements ConstraintValidator<GrantType, String> {
-    /**
-     * {@inheritDoc}
-     */
+   
     @Override
     public void initialize(GrantType constraintAnnotation) {
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
         if (value == null) {
@@ -41,8 +36,8 @@ public class GrantTypeValidator implements ConstraintValidator<GrantType, String
     }
     
     /**
-     * Check if the given grant type level is one of the existings grant types 
-     * from GrantTypes (jwt or password)
+     * Checks if the given grant type level is one of the existing grant types 
+     * from GrantTypes (JWT or password).
      * @param grantType
      * @return true if the grant type exist
      *         false if it does not exist

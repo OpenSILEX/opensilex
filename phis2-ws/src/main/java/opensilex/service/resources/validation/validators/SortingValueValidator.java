@@ -21,16 +21,11 @@ import opensilex.service.resources.validation.interfaces.SortingValue;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class SortingValueValidator implements ConstraintValidator<SortingValue, String> {
-    /**
-     * {@inheritDoc}
-     */
+
     @Override
     public void initialize(SortingValue constraintAnnotation) {
     }
-
-    /**
-     * {@inheritDoc}
-     */
+    
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
         if (value == null) {
@@ -41,10 +36,10 @@ public class SortingValueValidator implements ConstraintValidator<SortingValue, 
     }
     
     /**
-     * Check if the sort parameter is one of these provide by
- SortingValues (asc or desc)
+     * Checks if the sort parameter is one of those provide by SortingValues.
+     * @example asc or desc
      * @param order
-     * @return true if the sort parameter exist
+     * @return true if the sort parameter exists
      *         false if it does not exist
      */
     public boolean validateOrder(String order) {

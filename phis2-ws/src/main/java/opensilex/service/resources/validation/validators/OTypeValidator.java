@@ -21,16 +21,11 @@ import opensilex.service.resources.validation.interfaces.OType;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class OTypeValidator implements ConstraintValidator<OType, String> {
-    /**
-     * {@inheritDoc}
-     */
+
     @Override
     public void initialize(OType constraintAnnotation) {
     }
-
-    /**
-     * {@inheritDoc}
-     */
+    
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
         if (value == null) {
@@ -41,8 +36,8 @@ public class OTypeValidator implements ConstraintValidator<OType, String> {
     }
     
     /**
-     * Check if the given "o" type is one of the existings "o" type 
-     * from OType (literal or uri)
+     * Checks if the given "o" type is one of the existing "o" type from OType 
+     * (literal or URI).
      * @param oType
      * @return true if the "o" type exist
      *         false if it does not exist

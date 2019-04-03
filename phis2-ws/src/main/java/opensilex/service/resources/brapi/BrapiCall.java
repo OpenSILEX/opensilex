@@ -15,7 +15,7 @@ import opensilex.service.model.Call;
  * @update [Alice Boizet] 24 Sept. 2018: the input of the method callInfo is now 
  * a List because there can be several calls defined in the same class (see 
  * TraitsResourceService as an example)
- * @author Alice Boizet alice.boizet@inra.fr
+ * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public interface BrapiCall {
 

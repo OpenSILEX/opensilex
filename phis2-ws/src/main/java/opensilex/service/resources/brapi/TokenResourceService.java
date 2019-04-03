@@ -87,13 +87,14 @@ public class TokenResourceService implements BrapiCall{
         temporaryMap.put("Phis", "phisPublicKeyFileName");
         ISSUERS_PUBLICKEY = Collections.unmodifiableMap(temporaryMap);
     }
+    
     //SILEX:conception
     // To keep jwt claimset information during the loggin
     private JWTClaimsSet jwtClaimsSet = null;
     
 
-    /**Overriding BrapiCall method
-     * @date 27 July, 2018 
+    /**
+     * Overriding BrapiCall method
      * @return Token call information
      */
     @Override
@@ -114,41 +115,10 @@ public class TokenResourceService implements BrapiCall{
     //\SILEX:conception
 
     /**
-     * getToken() - Méthode appelé par la requête HTTP GET suivi de l'URI de la
-     * classe TokenResourceService Crée un identifiant de session avec
-     * createId(), ou le récupère si il existe déja après avoir vérifié la
-     * validité des identifiants grâce à la méthode checkAuthentification
-     *
-     * exemple GET brapi/v1/jsonToken?username=true&password=true
-     *
-     * @param jsonToken body json
+     * POST identifiers to get a session id.
+     * @param jsonToken body JSON
      * @param ui
-     * @return un objet Response contenant le résultat en JSON ou une erreur de
-     * type BAD_REQUEST
-     *
-     * @see
-     * createId(),checkConnectionIds(),TokenManager.searchSession(),Sessionb
-     * @date 26/11/2015
-     * @note La méthode GET doit être remplacée par POST pour des raisons de
-     * sécurité
-     * @update AC 05/2016 Ajout TokenDAO et modification des fichiers de
-     * propriétés
-     * @update AC 07/2016 Ajout JWT et modification des fichiers de propriétés +
-     * ajout DAO
-     * @update AC 08/2016 Change BRAPI API class example Token
-     * @update AC 03/2018 Cleaning usage of jwt
-     * JWT EXAMPLE 
-     * HEADER { "typ": "JWT", "alg": "RS256" } 
-     * PAYLOAD { "iss": "Phis", "sub": "arnaud.charleroy@supagro.inra.fr",
-     * "iat": 1520261602, "exp": 1583420358 } 
-     * PUBLIC KEY
-     * eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJQaGlzIiwic3ViIjoibW9yZ2Fu
-     * ZS52aWRhbEBzdXBhZ3JvLmlucmEuZnIiLCJpYXQiOjE1MjAyNjE5NTgsImV4cCI6MTU4MzQyMD
-     * M1OH0.gbN40oHVLjowFiYFDnKw_vUQGFZBaRXmIRykBzuqavfYZnWHeFOTNd8J5k20dzuRrTCrLa
-     * dMVsDk1fw-E6DbA19IMQlGRnqMPjjsK9r36W42WyQ70GxloKMNFqFWBFfhs2CV3ND_UrSquXmDRwp
-     * wAtz4wXVna0isAuuSyqaub41AjkomG6XhpDxtJUXYESHFWvRurmu06OzILSMVNWUDJRPelzBeVSx
-     * iNGOrp56lGqBK2g4CUImVZsTaucSvWjSsu74E_HtOCA-UB0scaEwStrqsW_iwRJxyFTLWBxc6cXg1
-     * 6034hCqP5f_d9u4OmvhpKc_9CLb8oQVbmuflv52iOQ
+     * @return the POST result.
      */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -164,7 +134,8 @@ public class TokenResourceService implements BrapiCall{
         @ApiResponse(code = 200, message = "Access token already exist and send again to user")})
     public Response getToken(@ApiParam(value = "JSON object needed to login") @Valid TokenDTO jsonToken, @Context UriInfo ui) {
         ArrayList<Status> statusList = new ArrayList<>();
-//        Verification of grant type
+        
+        // Check grant type
         String grantType = jsonToken.getGrant_type();
         if (grantType == null || grantType.isEmpty() || !GRANTTYPE_AUTHORIZED.contains(grantType)) {
             statusList.add(new Status("Wrong grant type", StatusCodeMsg.ERR, "Authorized grant type : " + GRANTTYPE_AUTHORIZED.toString()));
@@ -176,7 +147,8 @@ public class TokenResourceService implements BrapiCall{
         String password = null;
 
         boolean validJWTToken = false;
-        // cas JWT
+        
+        // JWT case
         if (grantType.equals("jwt") && jsonToken.getClient_id() != null) {
             isJWT = true;
             validJWTToken = validJWTToken(jsonToken, statusList);
@@ -194,9 +166,9 @@ public class TokenResourceService implements BrapiCall{
                 // we trust the client
                 //\SILEX:info
                 if (isJWT && validJWTToken) {
-                    user = checkAuthentification(user, false);
+                    user = checkAuthentication(user, false);
                 } else {
-                    user = checkAuthentification(user, true);
+                    user = checkAuthentication(user, true);
                 }
 
                 // No user found
@@ -224,7 +196,7 @@ public class TokenResourceService implements BrapiCall{
                             int expiration = Integer.valueOf(PropertiesFileManager.getConfigFileProperty("service", "sessionTime")) - secondsBetween.getSeconds();
                             //SILEX:info
                             //sometimes token expiration time become negative and crash the webapp
-                            //this code force regeneration of a new token in this case
+                            //this code forces regeneration of a new token in this case
                             if (expiration <= 0) {
                                 TokenManager.Instance().removeSession(userSessionId);
                                 TokenManager.Instance().createToken(session);
@@ -248,7 +220,7 @@ public class TokenResourceService implements BrapiCall{
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(new ResponseFormPOST(statusList)).build();
             }
         } else {
-            // if an error has occurred
+            // if an error occurred
             if (!isJWT && password == null) {
                 statusList.add(new Status("Empty password", StatusCodeMsg.ERR, null));
             }
@@ -260,6 +232,12 @@ public class TokenResourceService implements BrapiCall{
         return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormPOST(statusList)).build();
     }
 
+    /**
+     * Token DELETE service.
+     * @param logout
+     * @param ui
+     * @return the DELETE result
+     */
     @DELETE
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -267,10 +245,8 @@ public class TokenResourceService implements BrapiCall{
             notes = "Disconnect a logged user",
             response = ResponseUnique.class)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Access token created by user")
-        ,
-        @ApiResponse(code = 400, message = "Bad informations send by user")
-        ,
+        @ApiResponse(code = 201, message = "Access token created by user"),
+        @ApiResponse(code = 400, message = "Bad informations send by user"),
         @ApiResponse(code = 200, message = "Access token already exist and send again to user")})
     public Response logOut(@ApiParam(value = "JSON object needed to login" ,required = true) @Valid @Required LogoutDTO logout, @Context UriInfo ui) {
         ArrayList<Status> statusList = new ArrayList<>();
@@ -296,44 +272,23 @@ public class TokenResourceService implements BrapiCall{
     }
 
     /**
-     * createId() - Méthode privée appelée dans getToken() Crée un chaine de
-     * caractère encodée et qui sera utilisé comme nouvel identifiant de session
-     *
-     * @param username Nom de l'utilisateur, utilisé pour l'encodage
-     * @return un objet String correspondant à l'identifiant
-     *
-     * @throws NoSuchAlgorithmException Dans le cas ou l'algorithme d'encodage
-     * n'existe pas ou plus
-     * @throws SQLException Dans le cas d'un probleme dans la colonne session de
-     * la BDD
-     *
-     * @see getConnection()
-     * @date 26/11/2015
-     *
-     * @update AT 11/02/2016 fonction cré et renvoi un ID crypté (pas besoin de
-     * vérifier)
+     * Create a session id.
+     * @param username
+     * @return the session id
+     * @throws NoSuchAlgorithmException
+     * @throws SQLException
      */
     private String createId(String username) throws NoSuchAlgorithmException, SQLException {
-//        SqlRequest sqlr = new SqlRequest();
-//        boolean brk = false;
-        String id = null;
-//        while (brk == false) {
-        id = new String(Hex.encodeHex((MessageDigest.getInstance("MD5").digest((username + new Date().toString()).getBytes()))));
-//            ResultSet res = sqlr.getSQLRequest("SELECT * FROM session WHERE userSessionId = '" + userSessionId + "'", "phis");
-//            if (!res.first()) {
-//                brk = true;
-//            }
-//        }
-        return id;
+        return new String(Hex.encodeHex((MessageDigest.getInstance("MD5").digest((username + new Date().toString()).getBytes()))));
     }
 
     /**
-     *
+     * Checks authentication.
      * @param user user instance to check
      * @param verifPassword if we need to verify the password
      * @return User|null an instance of user or null
      */
-    private User checkAuthentification(User user, boolean verifPassword) {
+    private User checkAuthentication(User user, boolean verifPassword) {
         UserDAO uspb = new UserDAO();
         // choose the database with payload information
         if (this.jwtClaimsSet != null) {
@@ -344,10 +299,7 @@ public class TokenResourceService implements BrapiCall{
 
         try {
             if (uspb.existInDB(user)) {
-                // Fixes #12 issue fill user name instead of just 
-                // fill password user.setPassword(uspb.getPasswordFromDb(user.getEmail()));
                 uspb.find(user);
-//              
             } else {
                 user = null;
             }
@@ -367,9 +319,8 @@ public class TokenResourceService implements BrapiCall{
     }
 
     /**
-     * Verify and validate JWT
-     *
-     * @param jsonToken json body
+     * Verifies and validates JWT.
+     * @param jsonToken
      * @param statusList return status list
      * @return boolean valid JWT or invalid
      */
@@ -377,7 +328,7 @@ public class TokenResourceService implements BrapiCall{
         boolean validJWTToken = false;
         String clientId = jsonToken.getClient_id();
         String username = jsonToken.getUsername();
-        SignedJWT signedJWT = null;
+        SignedJWT signedJWT;
 
         try {
             signedJWT = SignedJWT.parse(clientId);

@@ -55,8 +55,7 @@ public class VariableResourceService implements BrapiCall {
     final static Logger LOGGER = LoggerFactory.getLogger(BrapiVariable.class);
 
     /**
-     * Overriding BrapiCall method
-     * @date 28 Aug 2018
+     * Overriding BrapiCall method.
      * @return variable call information
      */
     @Override
@@ -95,73 +94,72 @@ public class VariableResourceService implements BrapiCall {
      * Retrieve all the variables available in the system
      * @param limit
      * @param page
-     * @param traitClass
      * @return the information of all the variable
+     * @throws java.sql.SQLException
      * @example
      *  {
-          "metadata": {
-            "pagination": {
-              "pageSize": 20,
-              "currentPage": 0,
-              "totalCount": 1,
-              "totalPages": 1
-            },
-            "status": [],
-            "datafiles": []
-          },
-          "result": {
-            "data": [
-              {
-                "ObservationVariableDbId": "http://www.phenome-fppn.fr/platform/id/variables/v001",
-                "name": "Leaf-Area_Index_m2.m2",
-                "ontologyDbId": null,
-                "ontologyName": null,
-                "synonyms": null,
-                "contextOfUse": null,
-                "growthStage": null,
-                "status": null,
-                "xref": null,
-                "institution": null,
-                "scientist": null,
-                "submissionTimesTamp": null,
-                "language": null,
-                "crop": null,
-                "trait": {
-                  "traitDbId": "http://www.phenome-fppn.fr/platform/id/traits/t001",
-                  "name": "Leaf_Area_Index",
-                  "class": null,
-                  "description": "",
-                  "synonyms": null,
-                  "mainAbbreviation": null,
-                  "alternativeAbbreviations": null,
-                  "entity": null,
-                  "attribute": null,
-                  "status": null,
-                  "xref": null
-                },
-                "method": {
-                  "methodDbId": "http://www.phenome-fppn.fr/platform/id/methods/m001",
-                  "name": "LAI_Computation",
-                  "class": null,
-                  "description": "",
-                  "formula": null,
-                  "reference": null
-                },
-                "scale": {
-                  "scaleDbid": "http://www.phenome-fppn.fr/platform/id/units/u001",
-                  "name": "m2.m2",
-                  "datatype": null,
-                  "decimalPlaces": null,
-                  "xref": null,
-                  "validValues": null
-                },
-                "defaultValue": null
-              }
-            ]
-          }
-        }
+     *    "metadata": {
+     *      "pagination": {
+     *        "pageSize": 20,
+     *        "currentPage": 0,
+     *        "totalCount": 1,
+     *        "totalPages": 1
+     *      },
+     *      "status": [],
+     *      "datafiles": []
+     *    },
+     *    "result": {
+     *      "data": [
+     *        {
+     *          "ObservationVariableDbId": "http://www.phenome-fppn.fr/platform/id/variables/v001",
+     *          "name": "Leaf-Area_Index_m2.m2",
+     *          "ontologyDbId": null,
+     *          "ontologyName": null,
+     *          "synonyms": null,
+     *          "contextOfUse": null,
+     *          "growthStage": null,
+     *          "status": null,
+     *          "xref": null,
+     *          "institution": null,
+     *          "scientist": null,
+     *          "submissionTimesTamp": null,
+     *          "language": null,
+     *          "crop": null,
+     *          "trait": {
+     *            "traitDbId": "http://www.phenome-fppn.fr/platform/id/traits/t001",
+     *            "name": "Leaf_Area_Index",
+     *            "class": null,
+     *            "description": "",
+     *            "synonyms": null,
+     *            "mainAbbreviation": null,
+     *            "alternativeAbbreviations": null,
+     *            "entity": null,
+     *            "attribute": null,
+     *            "status": null,
+     *            "xref": null
+     *          },
+     *          "method": {
+     *            "methodDbId": "http://www.phenome-fppn.fr/platform/id/methods/m001",
+     *            "name": "LAI_Computation",
+     *            "class": null,
+     *            "description": "",
+     *            "formula": null,
+     *            "reference": null
+     *          },
+     *          "scale": {
+     *            "scaleDbid": "http://www.phenome-fppn.fr/platform/id/units/u001",
+     *            "name": "m2.m2",
+     *            "datatype": null,
+     *            "decimalPlaces": null,
+     *            "xref": null,
+     *            "validValues": null
+     *          },
+     *          "defaultValue": null
+     *        }
+     *      ]
+     *    }
+     *  }
      */
-    
     @GET
     @ApiOperation(value = DocumentationAnnotation.VARIABLE_CALL_MESSAGE,
                        notes = DocumentationAnnotation.VARIABLE_CALL_MESSAGE)
@@ -193,9 +191,10 @@ public class VariableResourceService implements BrapiCall {
     }
     
     /**
-     * Retrieve the detail of one variable (the variable id is given by the user)
-     * @param observationVariableDbId 
+     * Retrieves the detail of one variable from the URI given.
+     * @param variableUri 
      * @return the variable information
+     * @throws java.sql.SQLException
      */
     @GET
     @Path("{observationVariableDbId}")
@@ -214,10 +213,10 @@ public class VariableResourceService implements BrapiCall {
     })
     @Produces(MediaType.APPLICATION_JSON)    
     public Response getVariableDetails ( 
-        @ApiParam(value = DocumentationAnnotation.VARIABLE_URI_DEFINITION, required = true, example=DocumentationAnnotation.EXAMPLE_VARIABLE_URI) @PathParam("observationVariableDbId") @Required @URL String observationVariableDbId
+        @ApiParam(value = DocumentationAnnotation.VARIABLE_URI_DEFINITION, required = true, example=DocumentationAnnotation.EXAMPLE_VARIABLE_URI) @PathParam("observationVariableDbId") @Required @URL String variableUri
     ) throws SQLException {        
         VariableDAO varDAO = new VariableDAO();
-        varDAO.uri = observationVariableDbId;
+        varDAO.uri = variableUri;
         return getOneVariableData(varDAO);
     }    
     
@@ -228,7 +227,7 @@ public class VariableResourceService implements BrapiCall {
     }        
     
     /**
-     * Return variable data for the service GET observationVariable with a list of elements in the result
+     * Gets a variables data list.
      * @param varDAO
      * @return the response with the variables data list 
      */
@@ -245,8 +244,9 @@ public class VariableResourceService implements BrapiCall {
             return noResultFound(getResponse, statusList);
         }
     }
+    
     /**
-     * Return variable data for the service  GET observationVariable/observationVariableDbId: only one element in the result
+     * Gets a variable data.
      * @param varDAO
      * @return the response with one variable data
      */
@@ -266,9 +266,9 @@ public class VariableResourceService implements BrapiCall {
     }    
     
     /**
-     * Get the list of brapi variables from the the DAO corresponding to the user search query
+     * Gets the list of BrAPI variables from the the DAO corresponding to the search query
      * @param varDAO
-     * @return the list of brapi variables
+     * @return the list of BrAPI variables
      */
     private ArrayList<BrapiVariable> getBrapiVarData(VariableDAO varDAO) {
         ArrayList<Variable> variablesList = varDAO.allPaginate();
@@ -307,5 +307,4 @@ public class VariableResourceService implements BrapiCall {
         }
         return varList;        
     }
-    
 }

@@ -55,7 +55,6 @@ public class TraitsResourceService implements BrapiCall {
     
     /**
      * Overriding BrapiCall method
-     * @date 28 Aug 2018
      * @return traits call information
      */
     @Override
@@ -91,49 +90,49 @@ public class TraitsResourceService implements BrapiCall {
     }
     
     /**
-     * retrieve the list of traits
+     * Retrieves the list of traits.
      * @param limit
      * @param page 
      * @return list of the traits corresponding to the search params given
+     * @throws java.sql.SQLException
      * @example
      * {
-        "metadata": {
-          "pagination": {
-            "pageSize": 20,
-            "currentPage": 0,
-            "totalCount": 2,
-            "totalPages": 1
-          },
-          "status": [],
-          "datafiles": []
-        },
-        "result": {
-          "data": [
-            {
-              "defaultValue": null,
-              "description": "",
-              "traitName": "Leaf_Area_Index",
-              "observationVariables": [
-                "http://www.phenome-fppn.fr/platform/id/variables/v001"
-              ],
-              "traitDbId": "http://www.phenome-fppn.fr/platform/id/traits/t001",
-              "traitId": null
-            },
-            {
-              "defaultValue": null,
-              "description": "",
-              "traitName": "NDVI",
-              "observationVariables": [
-                "http://www.phenome-fppn.fr/platform/id/variables/v002"
-              ],
-              "traitDbId": "http://www.phenome-fppn.fr/platform/id/traits/t002",
-              "traitId": null
-            }
-          ]
-        }
-      }
+     * "metadata": {
+     *    "pagination": {
+     *      "pageSize": 20,
+     *      "currentPage": 0,
+     *      "totalCount": 2,
+     *      "totalPages": 1
+     *    },
+     *    "status": [],
+     *    "datafiles": []
+     *  },
+     *  "result": {
+     *    "data": [
+     *      {
+     *        "defaultValue": null,
+     *        "description": "",
+     *        "traitName": "Leaf_Area_Index",
+     *        "observationVariables": [
+     *          "http://www.phenome-fppn.fr/platform/id/variables/v001"
+     *        ],
+     *        "traitDbId": "http://www.phenome-fppn.fr/platform/id/traits/t001",
+     *        "traitId": null
+     *      },
+     *      {
+     *        "defaultValue": null,
+     *        "description": "",
+     *        "traitName": "NDVI",
+     *        "observationVariables": [
+     *          "http://www.phenome-fppn.fr/platform/id/variables/v002"
+     *        ],
+     *        "traitDbId": "http://www.phenome-fppn.fr/platform/id/traits/t002",
+     *        "traitId": null
+     *      }
+     *    ]
+     *  }
+     *}
      */
-    
     @GET
     @ApiOperation(value = DocumentationAnnotation.TRAIT_CALL_MESSAGE,
                        notes = DocumentationAnnotation.TRAIT_CALL_MESSAGE)
@@ -160,32 +159,33 @@ public class TraitsResourceService implements BrapiCall {
     }
     
     /**
-     * Retrieve the detail of one trait (the trait id is given by the user)
-     * @param traitDbId trait uri
+     * Retrieve the detail of one trait from the URI given..
+     * @param traitUri
      * @return the trait information
+     * @throws java.sql.SQLException
      * @example 
      * {
-        "metadata": {
-          "pagination": {
-            "pageSize": 0,
-            "currentPage": 0,
-            "totalCount": 0,
-            "totalPages": 0
-          },
-          "status": [],
-          "datafiles": []
-        },
-        "result": {
-          "data": {
-            "defaultValue": null,
-            "description": null,
-            "traitName": "myTrait",
-            "observationVariables": null,
-            "traitDbId": "http://www.phenome-fppn.fr/platform/id/traits/t003",
-            "traitId": null
-          }
-        }
-      }
+     *  "metadata": {
+     *    "pagination": {
+     *     "pageSize": 0,
+     *     "currentPage": 0,
+     *      "totalCount": 0,
+     *      "totalPages": 0
+     *    },
+     *    "status": [],
+     *    "datafiles": []
+     *  },
+     *  "result": {
+     *    "data": {
+     *      "defaultValue": null,
+     *      "description": null,
+     *      "traitName": "myTrait",
+     *      "observationVariables": null,
+     *      "traitDbId": "http://www.phenome-fppn.fr/platform/id/traits/t003",
+     *      "traitId": null
+     *    }
+     *  }
+     *}
      */
     @GET
     @Path("{traitDbId}")
@@ -204,14 +204,14 @@ public class TraitsResourceService implements BrapiCall {
     })
     @Produces(MediaType.APPLICATION_JSON)    
     public Response getTraitDetails ( 
-        @ApiParam(value = DocumentationAnnotation.TRAIT_URI_DEFINITION, required = true, example=DocumentationAnnotation.EXAMPLE_TRAIT_URI) @PathParam("traitDbId") @Required @URL String traitDbId
+        @ApiParam(value = DocumentationAnnotation.TRAIT_URI_DEFINITION, required = true, example=DocumentationAnnotation.EXAMPLE_TRAIT_URI) @PathParam("traitDbId") @Required @URL String traitUri
     ) throws SQLException {        
-        TraitDAO traitDAO = new TraitDAO(traitDbId);           
+        TraitDAO traitDAO = new TraitDAO(traitUri);           
         return getOneTraitData(traitDAO);
     }    
     
     /**
-     * Return a generic response when no result are found
+     * Returns a generic response when no result are found.
      * @param getResponse
      * @param insertStatusList
      * @return the response "no result found" for the service
@@ -221,8 +221,9 @@ public class TraitsResourceService implements BrapiCall {
         getResponse.getMetadata().setStatus(insertStatusList);
         return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
     }
-        /**
-     * Return variable data for the service GET traits with a list of elements in the result
+        
+    /**
+     * Return a list of variable data.
      * @param traitDAO
      * @return the response with the traits data list 
      */
@@ -241,7 +242,7 @@ public class TraitsResourceService implements BrapiCall {
     }
     
     /**
-     * Return trait data for the service  GET traits/traitDbId: only one element in the result
+     * Returns a trait data.
      * @param traitDAO
      * @return the response with one trait data
      */
@@ -261,7 +262,7 @@ public class TraitsResourceService implements BrapiCall {
     } 
     
     /**
-     * Get list of brapi traits from the TraitDAO corresponding to the user search query
+     * Gets list of BrAPI traits from the TraitDAO corresponding to the search query
      * @param BrapiTraitDAO
      * @return the traits available in the system
      */

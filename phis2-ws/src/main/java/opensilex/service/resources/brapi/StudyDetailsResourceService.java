@@ -50,8 +50,7 @@ public class StudyDetailsResourceService implements BrapiCall{
     final static Logger LOGGER = LoggerFactory.getLogger(StudyDetailsResourceService.class);  
     
      /**
-     * Overriding BrapiCall method
-     * @date 27 Aug 2018
+     * Overriding BrapiCall method.
      * @return Calls call information
      */
     @Override
@@ -72,6 +71,12 @@ public class StudyDetailsResourceService implements BrapiCall{
     @SessionInject
     Session userSession;
     
+    /**
+     * Study details GET service.
+     * @param studyDbId
+     * @return the study details found
+     * @throws SQLException 
+     */
     @GET
     @Path("{studyDbId}")
     @ApiOperation(value = "Retrieve study details", notes = "Retrieve study details")
@@ -90,6 +95,9 @@ public class StudyDetailsResourceService implements BrapiCall{
     
     @Produces(MediaType.APPLICATION_JSON)   
     
+    /**
+     * Get study details.
+     */
     public Response getStudyDetails (
         @ApiParam(value = "Search by studyDbId", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI ) @PathParam("studyDbId") @URL @Required String studyDbId
         ) throws SQLException {               
@@ -111,15 +119,9 @@ public class StudyDetailsResourceService implements BrapiCall{
         getResponse.getMetadata().setStatus(insertStatusList);
         return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
     }
-    
-    private Response sqlError(BrapiMultiResponseForm getResponse, ArrayList<Status> insertStatusList) {
-         insertStatusList.add(new Status("SQL error" ,StatusCodeMsg.ERR, "can't fetch result"));
-         getResponse.getMetadata().setStatus(insertStatusList);
-         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(getResponse).build();
-    }
      
      /**
-     * Collect data from a user query
+     * Collects data from a user query.
      * @param studyDao StudyDAO
      * @return Response for the user: contains study corresponding to the query 
      */

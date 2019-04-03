@@ -45,8 +45,7 @@ public class CallsResourceService implements BrapiCall {
     final static Logger LOGGER = LoggerFactory.getLogger(CallsResourceService.class);
 
     /**
-     * Overriding BrapiCall method
-     * @date 27 Aug 2018
+     * Overriding BrapiCall method.
      * @return Calls call information
      */
     @Override
@@ -63,17 +62,27 @@ public class CallsResourceService implements BrapiCall {
         return calls;
     }
 
-    /* Dependency injection to get all BrapiCalls callInfo() outputs
+    /**
+     * Dependency injection to get all BrapiCalls callInfo() outputs.
      */
     @Inject
     IterableProvider<BrapiCall> brapiCallsList;
 
     /**
+     * Calls GET service.
      * @param dataType
      * @param limit
      * @param page
-     * @return brapi calls list returns in "data" is like this : [ { call1
-     * description }, { call2 description }, ]
+     * @return BrAPI calls list
+     * @example
+     * [ 
+     *   { 
+     *     call1 description 
+     *   }, 
+     *   { 
+     *     call2 description
+     *   }, 
+     * ]
      */
     @GET
     @ApiOperation(value = "Check the available brapi calls",
@@ -93,14 +102,14 @@ public class CallsResourceService implements BrapiCall {
         ArrayList<Status> statusList = new ArrayList();
         ArrayList<Call> callsInfoList = new ArrayList();
 
-        for (BrapiCall bc : brapiCallsList) {            
-            ArrayList<Call> callinfo = bc.callInfo();
+        for (BrapiCall brapiCall : brapiCallsList) {            
+            ArrayList<Call> calls = brapiCall.callInfo();
             ArrayList<String> datatypesList = new ArrayList();
-            for (Call c : callinfo) {
-                datatypesList.addAll(c.getDataTypes());
-            }            
+            calls.forEach((call) -> {
+                datatypesList.addAll(call.getDataTypes());
+            });            
             if (dataType == null || datatypesList.contains(dataType) == true) {
-                callsInfoList.addAll(callinfo);
+                callsInfoList.addAll(calls);
             }
         }
 

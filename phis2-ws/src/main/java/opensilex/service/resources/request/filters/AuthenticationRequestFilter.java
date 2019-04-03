@@ -44,8 +44,7 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
     private ResourceInfo resourceInfo;
         
     /**
-     * Filtre le token de session
-     *
+     * Filters the session token.
      * @param requestContext
      * @throws IOException
      */
@@ -61,23 +60,22 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
         
         final UriInfo uriInfo = requestContext.getUriInfo();
         final String resourcePath = uriInfo.getPath();
-//        logger.debug(resourcePath);
         // Swagger.json and token authorized
         if (resourcePath != null 
                 && !resourcePath.contains("token") 
                 && !resourcePath.contains("calls") 
                 && !resourcePath.contains("swagger.json")
                 && !(resourceInfo.getResourceClass() == DataResourceService.class && resourceInfo.getResourceMethod().getName().equals("getDataFile"))) {
-            //Get request headers
+            // Get request headers
             final MultivaluedMap<String, String> headers = requestContext.getHeaders();
             if (headers != null && !headers.containsKey(GlobalWebserviceValues.AUTHORIZATION_PROPERTY)) {
                 throw new WebApplicationException(accessDenied);
             }
-            //Fetch authorization header
-//            logger.debug(headers.toString());
+            // Fetch authorization header
+            
             String authorization = requestContext.getHeaderString(GlobalWebserviceValues.AUTHORIZATION_PROPERTY);
-//            logger.debug(authorization.toString());
-            //If no authorization information present; block access
+            
+            // If no authorization information present; block access
             if (authorization == null || authorization.isEmpty()) {
                 throw new WebApplicationException(accessDenied);
             }
@@ -91,9 +89,6 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
 
             //Get session id
             String userToken = authorization.replace("Bearer ", "");
-//            logger.debug(authorization);
-//            logger.debug(userToken);
-//            logger.debug(Boolean.toString(TokenManager.Instance().checkAuthentification(userToken)));
             if (!TokenManager.Instance().checkAuthentication(userToken)) {
                 throw new WebApplicationException(accessDenied);
             }

@@ -44,7 +44,7 @@ public class SessionThread extends Thread {
     /**
      * Runs the current thread. It is paused for a certain amount of time which 
      * can be extended according to the user's behaviour.
-     * Deletes the session corresponding to the active sessions.
+     * Deletes the corresponding session from the active sessions list.
      * @see phenomeapi.service.model.brapi.authentication.TokenDaoPhisBraphi,TokenManager.removeSession()
      * @update [Arnaud Charleroy] 9 Feb. 2016: doesn't update the database 
      * anymore. Moved to the manager + session time properties.

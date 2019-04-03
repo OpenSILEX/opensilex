@@ -24,10 +24,9 @@ import opensilex.service.configuration.DateFormats;
 public class MongoDates extends Dates {
     
     /**
-     * generate a date parser using the list of formats defined for mongo
-     * @author Arnaud Charleroy
+     * Generates a date parser using the list of formats defined for MongoDB.
      * @see opensilex.service.configuration.DateFormats DATETIME_MONGO_FORMAT
-     * @return the mongodb dates parser
+     * @return the MongoDB dates parser
      */
     protected static DateTimeParser[] getParsers() {
         DateTimeParser[] parsers = new DateTimeParser[DateFormats.DATETIME_MONGO_FORMAT.size()];
@@ -40,9 +39,8 @@ public class MongoDates extends Dates {
     }
     
     /**
-     * generate a date parser using the list of formats defined which are 
-     * expected to be used for data saved in mongodb 
-     * @author Arnaud Charleroy
+     * Generates a date parser using the list of formats expected to be used for 
+     * data saved in MongoDB.
      * @see opensilex.service.configuration.DateFormats AUTHORIZED_USER_MONGO_DATE_FORMATS
      * @return the dates parser
      */
@@ -57,9 +55,8 @@ public class MongoDates extends Dates {
     }
     
     /**
-     * try to parse the given date in one of the dates formats defined which are 
-     * expected to be recieved
-     * @author Arnaud Charleroy
+     * Tries to parse the given date in one of the dates formats expected to be 
+     * received.
      * @see opensilex.service.configuration.DateFormats AUTHORIZED_USER_MONGO_DATE_FORMATS
      * @param date the date string to parse
      * @return true if the date format is correct
@@ -69,7 +66,7 @@ public class MongoDates extends Dates {
     public static boolean isUsedDate(String date) {
         DateTimeFormatter formatter = new DateTimeFormatterBuilder().append(null, getUsedParsers()).toFormatter();
         try {
-            DateTime d = formatter.parseDateTime(date);
+            DateTime dateTime = formatter.parseDateTime(date);
         } catch (Exception ex) {
             return false;
         }
@@ -77,9 +74,8 @@ public class MongoDates extends Dates {
     }
      
      /**
-     * Convert a string in DateTime by using the default parsers of the 
-     * Joda library
-     * @author Arnaud Charleroy
+     * Converts a string in DateTime by using the default parsers of the 
+     * Joda library.
      * @see org.joda.time.format.DateTimeFormatter
      * @see opensilex.service.configuration.DateFormats DATETIME_MONGO_FORMAT
      * @param date the date string to parse
@@ -87,20 +83,19 @@ public class MongoDates extends Dates {
      *         null if the date could not be converted
      */
     public static DateTime stringToMongoJodaDateTime(String date) {
-        DateTime d = null;
+        DateTime dateTime;
         final DateTimeFormatter formatter = new DateTimeFormatterBuilder().append(null, getParsers()).toFormatter();
         try {
-            d = formatter.parseDateTime(date);
+            dateTime = formatter.parseDateTime(date);
         } catch (Exception ex) {
             return null;
         }
-        return d;
+        return dateTime;
     }
     
     /**
-     * Convert a string date in DateTime if the date format corresponds to one 
-     * of the used date format specified in the mongodb used dates formats
-     * @author Arnaud Charleroy
+     * Converts a string date in DateTime if the date format corresponds to one 
+     * of the used date format specified in the usable MongoDB dates formats.
      * @see opensilex.service.configuration.DateFormats AUTHORIZED_USER_MONGO_DATE_FORMATS
      * @param stringDate the date to be converted
      * @return DateTime the DateTime corresponding to the date string given. 

@@ -16,11 +16,19 @@ import javax.ws.rs.core.Response;
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class POSTResultsReturn {
-    private Boolean resultState; // Le résultat de insert et data (bon si les 2 snt ok et faux sinon)
-    private Boolean insertState; // Si l'insertion a été réussie
-    private Boolean dataState; //état des données (si elles sont correctes)
-    private Response.Status httpStatus; //status qui sera renvoyé au client avec l'insertion
-    public List statusList; //Si je veux rajouter d'autres status
+    private Boolean resultState;
+    private Boolean insertState;
+    private Boolean dataState;
+    
+    /**
+     * Status to return.
+     */
+    private Response.Status httpStatus;
+    
+    /**
+     * Custom supplementary status.
+     */
+    public List statusList;
     public Boolean AlreadyExist; 
     public String errorMsg;
     public List<String> createdResources = new ArrayList<>();
@@ -79,7 +87,6 @@ public class POSTResultsReturn {
     }
 
     public void setResultState(Boolean resultState) {
-            
         this.resultState = resultState;
     }
 

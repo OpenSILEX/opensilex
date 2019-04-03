@@ -29,8 +29,10 @@ public class ImageWaitingCheck implements Callable<Boolean> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(ImageWaitingCheck.class);
     final static String PROPS_FILE_NAME = "service";
+    
     //Waiting file time default
     final static int DEFAUT_WAITING_FILE_TIME = 30;
+    
     //The uris of the image metadata
     final private String annotationsUri;
 
@@ -48,6 +50,7 @@ public class ImageWaitingCheck implements Callable<Boolean> {
         } catch (NumberFormatException e) {
             LOGGER.info("Can't parse waitingFileTime properties in " + PROPS_FILE_NAME + " properties file. Default value is "+ DEFAUT_WAITING_FILE_TIME +" seconds.", e);
         }
+        
         //If the image uri is unknown or if it's value is false (no file sending)
         //it is deleted
         //else do nothing
@@ -57,7 +60,7 @@ public class ImageWaitingCheck implements Callable<Boolean> {
             if(!running){
                 // Delete the waiting array
                 ImageResourceService.WAITING_METADATA_FILE_CHECK.remove(annotationsUri);
-                //Delete the information
+                // Delete the information
                 ImageResourceService.WAITING_METADATA_INFORMATION.remove(annotationsUri);
             } 
         }

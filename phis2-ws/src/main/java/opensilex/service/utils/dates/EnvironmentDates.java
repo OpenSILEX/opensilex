@@ -24,9 +24,8 @@ import opensilex.service.configuration.DateFormats;
 public class EnvironmentDates extends Dates {
     
     /**
-     * generate a date parser using the list of formats defined which are 
-     * expected to be used for environment data 
-     * @author Arnaud Charleroy
+     * Generates a date parser using the list of formats expected to be used 
+     * for environmental data.
      * @see opensilex.service.configuration.DateFormats AUTHORIZED_USER_ENVIRONMENT_DATE_FORMATS
      * @return the dates parser
      */
@@ -41,9 +40,8 @@ public class EnvironmentDates extends Dates {
     }
     
     /**
-     * Convert a string date in DateTime if the date format corresponds to one 
-     * of the used date format specified in the environment used dates formats
-     * @author Arnaud Charleroy
+     * Converts a string date in DateTime if the date format corresponds to one 
+     * of the used date format specified in the environment usable date formats.
      * @see opensilex.service.configuration.DateFormats AUTHORIZED_USER_ENVIRONMENT_DATE_FORMATS
      * @param stringDate the date to be converted
      * @return DateTime the DateTime corresponding to the date string given. 
@@ -59,9 +57,8 @@ public class EnvironmentDates extends Dates {
     }    
     
     /**
-     * try to parse the given date in one of the dates formats defined which are 
-     * expected to be recieved
-     * @author Arnaud Charleroy
+     * Tries to parse the given date in one of the date formats expected to be 
+     * received.
      * @see opensilex.service.configuration.DateFormats AUTHORIZED_USER_ENVIRONMENT_DATE_FORMATS
      * @param date the date string to parse
      * @return true if the date format is correct

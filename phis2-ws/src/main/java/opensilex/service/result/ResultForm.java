@@ -24,7 +24,7 @@ public class ResultForm<T> {
     protected Result result;
 
     /**
-     * Initialize fields metadata and result
+     * Initializes metadata and result fields.
      * @param pageSize results per page
      * @param currentPage current page
      * @param list results list
@@ -33,14 +33,14 @@ public class ResultForm<T> {
     public ResultForm(int pageSize, int currentPage, ArrayList<T> list, boolean paginate) {
         metadata = new Metadata(pageSize, currentPage, list.size());
         if (list.size() > 1) {
-            result = new Result<T>(list, metadata.getPagination(), paginate);
+            result = new Result<>(list, metadata.getPagination(), paginate);
         } else {
-            result = new Result<T>(list);
+            result = new Result<>(list);
         }
     }
     
     /**
-     * Initialize fields metadata and result
+     * Initializes metadata and result fields.
      * @param pageSize results per page
      * @param currentPage current page
      * @param list results list
@@ -50,19 +50,12 @@ public class ResultForm<T> {
     public ResultForm(int pageSize, int currentPage, ArrayList<T> list, boolean paginate, int totalCount) {
         metadata = new Metadata(pageSize, currentPage, totalCount);
         if (list.size() > 1) {
-            result = new Result<T>(list, metadata.getPagination(), paginate);
+            result = new Result<>(list, metadata.getPagination(), paginate);
         } else {
-            result = new Result<T>(list);
+            result = new Result<>(list);
         }
     }
-    /**
-     * resultSize() - Récupère le nombre d'éléments de la liste data qui est
- un champ de result
-     *
-     * @return le nombre d'éléments de la liste
-     * @see Result
-     * @date 04/12/2015
-     */
+    
     public int resultSize() {
         return result.dataSize();
     }

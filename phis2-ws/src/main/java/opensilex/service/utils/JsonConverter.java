@@ -21,68 +21,54 @@ import org.slf4j.LoggerFactory;
 public final class JsonConverter {
 
     /**
-     * Récupération des erreurs
+     * Get logger.
      */
     final static Logger LOGGER = LoggerFactory.getLogger(JsonConverter.class);
 
     /**
-     * ConvertToPrettyJson() - Méthode de classe qui permet de convertir un
-     * objet quelconque en une chaine de caractère au format JSON qui sera
-     * lisible par un utilisateur
-     *
-     * @param o L'objet à convertir
-     *
-     * @return La chaine de caractère au format JSON
-     * @date 03/12/2015
+     * Converts an object to a pretty JSON format.
+     * @param object
+     * @return the JSON object
      */
-    public static String ConvertToPrettyJson(Object o) {
+    public static String ConvertToPrettyJson(Object object) {
         final Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        final String jsonObject = gson.toJson(o);
+        final String jsonObject = gson.toJson(object);
         return jsonObject;
     }
 
     /**
-     * ConvertToJson() - Méthode de classe qui permet de onvertir un objet
-     * quelconque en une chaine de caractère au format JSON
-     *
-     * @param o l'objet à convertir
-     *
-     * @return La chaine de caractère au format JSON
-     * @date 03/12/2015
-     * @update 06/2016 AC Récupération des exceptions de sérialization
+     * Converts an object to a JSON format.
+     * @param object
+     * @return the JSON object
      */
-    public static String ConvertToJson(Object o) {
+    public static String ConvertToJson(Object object) {
         final Gson gson = new GsonBuilder().create();
         String jsonObject = null;
         try {
-            jsonObject = gson.toJson(o);
+            jsonObject = gson.toJson(object);
         } catch (Exception e) {
-//            e.printStackTrace();
             LOGGER.error(e.getMessage(), e);
-
         }
-
         return jsonObject;
     }
 
     /**
-     * @author Arnaud Charleroy
-     * @param j Chaîne à convertir
-     * @param c Classe de l'objet dans lequel la chaîne doit être convertie
-     * @return Objet du converti du JSON
+     * Converts from JSON.
+     * @param stringToConvert
+     * @param classToConvertIn
+     * @return object converted
      *
      */
-    public static Object ConvertFromJson(String j, Class c) {
+    public static Object ConvertFromJson(String stringToConvert, Class classToConvertIn) {
         final Gson gson = new GsonBuilder().create();
         Object jsonObject;
         try {
-            jsonObject = c.newInstance();
+            jsonObject = classToConvertIn.newInstance();
         } catch (InstantiationException | IllegalAccessException ex) {
             LOGGER.error(ex.getMessage(), ex);
         }
-        jsonObject = gson.fromJson(j, c);
+        jsonObject = gson.fromJson(stringToConvert, classToConvertIn);
 
         return jsonObject;
     }
-
 }

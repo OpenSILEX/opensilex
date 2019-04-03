@@ -87,10 +87,10 @@ public class UriGenerator {
 
 
     /**
-     * Generate a new vector URI. a vector URI has the following pattern:
+     * Generates a new vector URI. a vector URI has the following pattern:
      * <prefix>:<year>/<unic_code>
      * <unic_code> = 1 letter type + 2 numbers year + auto incremented number
-     * with 3 digits (per year)
+     * with 3 digits (per year).
      * @example http://www.phenome-fppn.fr/diaphen/2017/v1702
      * @param year the insertion year of the vector.
      * @return the new vector URI
@@ -115,11 +115,11 @@ public class UriGenerator {
     }
 
     /**
-     * Generate a new sensor URI. A sensor URI has the following pattern:
+     * Generates a new sensor URI. A sensor URI has the following pattern:
      * <prefix>:<year>/<unic_code>
      * <unic_code> = 1 letter type + 2 numbers year + auto incremented number
      * with 2 digits (per year) the year corresponds to the year of insertion in
-     * the triplestore
+     * the triplestore.
      * @example http://www.phenome-fppn.fr/diaphen/2017/s17002
      * @param year the insertion year of the sensor.
      * @return the new sensor URI
@@ -148,12 +148,12 @@ public class UriGenerator {
     }
 
     /**
-     * Generate a new agronomical object URI. A sensor URI has the following
+     * Generates a new agronomical object URI. A sensor URI has the following
      * form:
      * <prefix>:<year>/<unic_code>
      * <unic_code> = 1 letter type + 2 numbers year + auto incremented number
      * with 6 digits (per year) the year corresponds to the year of insertion in
-     * the triplestore 
+     * the triplestore.
      * @example http://www.phenome-fppn.fr/diaphen/2017/o17000001
      * @param year the insertion year of the agronomical object.
      * @return the new agronomical object URI
@@ -176,9 +176,9 @@ public class UriGenerator {
     }
 
     /**
-     * Generate a new variable URI. A variable URI follows the pattern:
+     * Generates a new variable URI. A variable URI follows the pattern:
      * <prefix>:id/variables/<unic_code>
-     * <unic_code> = 1 letter type + auto incremented number with 3 digits e.g.
+     * <unic_code> = 1 letter type + auto incremented number with 3 digits.
      * @example http://www.phenome-fppn.fr/diaphen/id/variables/v001
      * @return the new variable URI
      */
@@ -199,9 +199,9 @@ public class UriGenerator {
     }
 
     /**
-     * Generate a new trait URI. A trait URI follows the pattern:
+     * Generates a new trait URI. A trait URI follows the pattern:
      * <prefix>:id/traits/<unic_code>
-     * <unic_code> = 1 letter type + auto incremented number with 3 digits e.g.
+     * <unic_code> = 1 letter type + auto incremented number with 3 digits.
      * @example http://www.phenome-fppn.fr/diaphen/id/traits/t001
      * @return the new trait URI
      */
@@ -222,9 +222,9 @@ public class UriGenerator {
     }
 
     /**
-     * Generate a new method URI. A method URI follows the pattern:
+     * Generates a new method URI. A method URI follows the pattern:
      * <prefix>:id/methods/<unic_code>
-     * <unic_code> = 1 letter type + auto incremented number with 3 digits e.g.
+     * <unic_code> = 1 letter type + auto incremented number with 3 digits.
      * @example http://www.phenome-fppn.fr/diaphen/id/methods/m001
      * @return the new method URI
      */
@@ -245,9 +245,9 @@ public class UriGenerator {
     }
 
     /**
-     * Generate a new unit URI. A unit URI follows the pattern:
+     * Generates a new unit URI. A unit URI follows the pattern:
      * <prefix>:id/units/<unic_code>
-     * <unic_code> = 1 letter type + auto incremented number with 3 digits
+     * <unic_code> = 1 letter type + auto incremented number with 3 digits.
      * @example http://www.phenome-fppn.fr/diaphen/id/units/m001
      * @return the new unit URI
      */
@@ -268,9 +268,9 @@ public class UriGenerator {
     }
     
     /**
-     * Generate a new radiometric target URI. A radiometric target URI follows the pattern: 
+     * Generates a new radiometric target URI. A radiometric target URI follows the pattern: 
      * <prefix>:id/radiometricTargets/<unic_code>
-     * <unic_code> = 2 letters type (rt) + auto incremented number with 3 digits
+     * <unic_code> = 2 letters type (rt) + auto incremented number with 3 digits.
      * @example http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt001
      * @return The new radiometric target URI
      */
@@ -292,7 +292,7 @@ public class UriGenerator {
     }
 
     /**
-     * Generate a new variety URI. A variety URI follows the pattern:
+     * Generates a new variety URI. A variety URI follows the pattern:
      * <prefix>:v/<varietynameinlowercase>
      * @example http://www.phenome-fppn.fr/diaphen/v/dkc4814
      * @param variety the variety name
@@ -303,7 +303,7 @@ public class UriGenerator {
     }
 
     /**
-     * Generate a new agent uri. A agent URI follows the pattern:
+     * Generates a new agent URI. A agent URI follows the pattern:
      * <prefix>:id/agent/<unic_code>
      * <unic_code> = firstnames concat with lastnames in lowercase
      * @example http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy
@@ -317,7 +317,7 @@ public class UriGenerator {
     }
 
     /**
-     * Generate a new annotation URI. A unit annotation follows the pattern:
+     * Generates a new annotation URI. A unit annotation follows the pattern:
      * <prefix>:id/annotation/<unic_code>
      * <unic_code> = 1 letter type + java.util.UUID.randomUUID(); 
      * @example http://www.phenome-fppn.fr/diaphen/id/annotation/e073961b-e766-4493-b98f-74a8b2846893
@@ -335,7 +335,7 @@ public class UriGenerator {
     }
 
     /**
-     * Generate a new event URI. an event URI follows the pattern:
+     * Generates a new event URI. an event URI follows the pattern:
      * <prefix>:id/event/<unic_code>
      * <unic_code> = java.util.UUID.randomUUID();
      * @example http://www.phenome-fppn.fr/diaphen/id/event/e073961b-e766-4493-b98f-74a8b2846893
@@ -353,7 +353,7 @@ public class UriGenerator {
     }
 
     /**
-     * Generate a new Instant URI. The URI follows the pattern:
+     * Generates a new Instant URI. The URI follows the pattern:
      * <prefix>:id/instant/<unic_code>
      * <unic_code> = java.util.UUID.randomUUID();
      * @example http://www.phenome-fppn.fr/diaphen/id/instant/e073961b-e766-4493-b98f-74a8b2846893
@@ -371,15 +371,15 @@ public class UriGenerator {
     }
 
     /**
-     * generates a new image uri. an image uri follows the pattern :
+     * Generates a new image URI. an image URI follows the pattern :
      * <prefix>:yyyy/<unic_code>
-     * <unic_code> = 1 letter type (i) + 2 digits year + auto incremet with 10
+     * <unic_code> = 1 letter type (i) + 2 digits year + auto increment with 10
      * digit
      * @example http://www.phenome-fppn.fr/diaphen/2018/i180000000001
      * @param year the year of insertion of the image
-     * @param lastGeneratedUri if a few uri has been generated but not inserted,
-     * corresponds to the last generated uri
-     * @return the new uri
+     * @param lastGeneratedUri if a few URI has been generated but not inserted,
+     * corresponds to the last generated URI
+     * @return the new URI
      */
     private String generateImageUri(String year, String lastGeneratedUri) {
         if (lastGeneratedUri == null) {
@@ -409,7 +409,7 @@ public class UriGenerator {
     }
     
     /**
-     * Generates a new project uri. A project uri follows the patter:
+     * Generates a new project URI. A project URI follows the pattern:
      * <prefix>:<projectAcronyme>
      * @example http://www.opensilex.org/demo/PA
      * @param projectAcronyme the project acronym
@@ -429,7 +429,7 @@ public class UriGenerator {
     }
     
     /**
-     * Generate a new experiment URI. An experiment URI follows this pattern:
+     * Generates a new experiment URI. An experiment URI follows this pattern:
      * <prefix>:<unic_code>
      * <unic_code> = infrastructure code + 4 digits year + auto increment digit (per year)
      * @example http://www.opensilex.org/demo/DMO2019-1
@@ -475,7 +475,7 @@ public class UriGenerator {
     }
     
     /**
-     * Generates a new provenance uri. A provenance uri follows the pattern :
+     * Generates a new provenance URI. A provenance URI follows the pattern :
      * <prefix>:id/provenance/<timestamp>
      * @example http://www.opensilex.org/demo/id/provenance/019275849
      * @return the new generated uri
@@ -490,7 +490,7 @@ public class UriGenerator {
 
 
     /**
-     * Generates a new data uri.
+     * Generates a new data URI.
      * @example http://www.opensilex.org/id/data/1e9eb2fbacc7222d3868ae96149a8a16b32b2a1870c67d753376381ebcbb5937e78da502ee3f42d3828eaa8cab237f93
      * @param additionalInformation the key of the data
      * @return the new generated uri
@@ -504,7 +504,7 @@ public class UriGenerator {
     }
     
     /**
-     * Generates a new data file uri.
+     * Generates a new data file URI.
      * @example http://www.opensilex.org/id/dataFile/1e9eb2fbacc7222d3868ae96149a8a16b32b2a1870c67d753376381ebcbb5937e78da502ee3f42d3828eaa8cab237f93
      * @param additionalInformation the key of the data file
      * @return the new generated uri
@@ -533,7 +533,7 @@ public class UriGenerator {
     }
 
     /**
-     * Generate the URI of a new instance of instanceType
+     * Generates the URI of a new instance of instanceType.
      * @param instanceType the RDF type of the instance (a concept URI)
      * @param year year of the creation of the element. If it is null, it will
      * be the current year

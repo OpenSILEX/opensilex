@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 import opensilex.service.PropertiesFileManager;
  
 /**
- * File Uploader. Enables simple SFTP calls in Java.
+ * File uploader. Enables simple SFTP calls in Java.
  * @update [Andréas Garcia] 23 Jan. 2019: Add generic function to create nested 
  * directories from a complete path
  * @author Arnaud Charleroy
@@ -40,7 +40,7 @@ public class FileUploader extends JSch{
     private ChannelSftp channelSftp = null;
     
     public FileUploader() {
-        // Paramtères de connexion
+        // Connection parameters
         SFTPHost = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILE_NAME, "uploadFileServerIP");
         SFTPUser = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILE_NAME, "uploadFileServerUsername");
         SFTPPass = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILE_NAME, "uploadFileServerPassword");
@@ -55,13 +55,11 @@ public class FileUploader extends JSch{
             channel = session.openChannel("sftp");
             channel.connect();
             channelSftp = (ChannelSftp) channel;
-            //Changement de dossier
+            // Folder changing
             channelSftp.cd(SFTPWorkingDirectory);
             
-        } catch (SftpException ex) {
+        } catch (SftpException | JSchException ex) {
             LOGGER.error(ex.getMessage(), ex);        
-        } catch (JSchException ex) {
-            LOGGER.error(ex.getMessage(), ex);  
         }
     }
     
@@ -71,9 +69,6 @@ public class FileUploader extends JSch{
         try {
             fStream = new FileInputStream(f);
             channelSftp.put(new FileInputStream(f), filename);
-        } catch (FileNotFoundException ex) {
-            LOGGER.error(ex.getMessage(), ex);
-            return false;
         } catch (SftpException | IOException ex) {
             LOGGER.error(ex.getMessage(), ex);  
             return false;
@@ -91,8 +86,8 @@ public class FileUploader extends JSch{
     }
     
     /**
-     * Create nested directories from a given path.
-     * The mkdir function of the ChannelSftp object can only create one 
+     * Creates nested directories from a given path.
+     * The "mkdir" function of the ChannelSftp object can only create one 
      * directory in the current folder. If a path with several folders is given, 
      * an exception is thrown.
      * So we have to manually implement the behaviour desired.
@@ -123,7 +118,7 @@ public class FileUploader extends JSch{
     }
     
     /**
-     * Fermeture des ressources
+     * Closes connection.
      */
     public void closeConnection(){
         channelSftp.exit();
@@ -186,18 +181,6 @@ public class FileUploader extends JSch{
 
     public void setChannelSftp(ChannelSftp channelSftp) {
         this.channelSftp = channelSftp;
-    }
-    
-    
+    } 
 }
-
-//public static void main(String[] args) {
-//    FileUploader jsch = new FileUploader();
-//    File f = new File("/home/Arnaud Charleroy/Documents/1.jpg");
-//    boolean fileTransfer = jsch.fileTransfer(f, "tranféréee.jpg");
-//    System.err.println(fileTransfer);
-//    jsch.closeConnection();
-//    }
-// 
-//}
 

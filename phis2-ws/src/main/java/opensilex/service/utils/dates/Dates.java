@@ -26,8 +26,7 @@ import opensilex.service.configuration.DateFormats;
 public class Dates {
     
     /**
-     * Get a parser list with all the authorized formats. 
-     * @author Arnaud Charleroy
+     * Gets a parser list with all the authorized formats. 
      * @see opensilex.service.configuration.DateFormats AUTHORIZED_DATE_FORMATS
      * @return DateTimeParser the list of the dates parsers
      */
@@ -42,10 +41,8 @@ public class Dates {
     }
     
     /**
-     * Check if a date is valid and if the date format corresponds to one of the authorized 
+     * Checks if a date is valid and if the date format corresponds to one of the authorized 
      * date formats
-     * @author Arnaud Charleroy
-     * @see getParsers()
      * @param date the string date to check
      * @return boolean true if the date is valid and has an authorized format
      *                 false if the date is not valid
@@ -61,9 +58,8 @@ public class Dates {
     }
 
     /**
-     * Check if a date is valid and if the date format corresponds to DateFormats.YMD_FORMAT
-     * date formats
-     * @author Arnaud Charleroy
+     * Checks if a date is valid and if the date format corresponds to the 
+     * DateFormats.YMD_FORMAT date format.
      * @see opensilex.service.configuration.DateFormats YMD_FORMAT
      * @param date the string date to check
      * @return boolean true if the date is valid and has the authorized format
@@ -73,7 +69,7 @@ public class Dates {
         DateTimeParser parser = DateTimeFormat.forPattern(DateFormats.YMD_FORMAT).getParser();
         DateTimeFormatter formatter = new DateTimeFormatterBuilder().append(parser).toFormatter();
         try {
-            DateTime d = formatter.parseDateTime(date);
+            DateTime dateTime = formatter.parseDateTime(date);
         } catch (Exception ex) {
             return false;
         }
@@ -81,31 +77,28 @@ public class Dates {
     }
     
     /**
-     * Convert a given string date into a Date object, the date format must be 
-     * one of those in the Dates.getParsers() (AUTHORIZED_DATE_FORMATS)
-     * @author Arnaud Charleroy
-     * @see getParsers()
+     * Converts a given string date into a Date object, the date format must be 
+     * one of those in the Dates.getParsers() (AUTHORIZED_DATE_FORMATS).
      * @see opensilex.service.configuration.DateFormats AUTHORIZED_DATE_FORMATS
      * @param date the date to convert
-     * @return Date the date corresponding to the string date param if the format 
+     * @return Date the date corresponding to the string date parameter if the format 
      *              is one of the AUTHORIZED_DATE_FORMATS
      *              null if the date could not be converted
      */
     public static Date stringToDate(String date) {
-        DateTime d = null;
+        DateTime dateTime;
         DateTimeFormatter formatter = new DateTimeFormatterBuilder().append(null, getParsers()).toFormatter();
         try {
-            d = formatter.parseDateTime(date);
+            dateTime = formatter.parseDateTime(date);
         } catch (Exception ex) {
             return null;
         }
-        return d.toDate();
+        return dateTime.toDate();
     }
 
     /**
-     * Convert a string to a DateTime object, the date format must be 
-     * one of those in the Dates.getParsers() (AUTHORIZED_DATE_FORMATS)
-     * @author Arnaud Charleroy
+     * Converts a string to a DateTime object, the date format must be 
+     * one of those in the Dates.getParsers() (AUTHORIZED_DATE_FORMATS).
      * @see getParsers()
      * @see opensilex.service.configuration.DateFormats AUTHORIZED_DATE_FORMATS
      * @param date the date to convert
@@ -114,21 +107,20 @@ public class Dates {
      *              null if the date could not be converted
      */
     public static DateTime stringToDateTime(String date) {
-        DateTime d = null;
+        DateTime dateTime;
         DateTimeFormatter formatter = new DateTimeFormatterBuilder().append(null, getParsers()).toFormatter();
         try {
-            d = formatter.parseDateTime(date);
+            dateTime = formatter.parseDateTime(date);
         } catch (Exception ex) {
             return null;
         }
-        return d;
+        return dateTime;
     }
 
     /**
-     * Convert a string to a TimeStamp object. 
+     * Converts a string to a TimeStamp object. 
      * @param stringDate the date to convert. It must has the format defined by
      * DateFormats.YMDHMSZ_FORMAT
-     * @author Arnaud Charleroy
      * @see opensilex.service.configuration.DateFormats YMDHMSZ_FORMAT
      * @return the Timestamp if it has been generated
      * @throws ParseException
@@ -141,8 +133,7 @@ public class Dates {
     }
     
     /**
-     * Convert a date to date time with it's given pattern
-     * @author Arnaud Charleroy
+     * Converts a date into a date time with its given pattern.
      * @param stringDate the date to convert
      * @param pattern the stringDate's pattern
      * @return the date converted in DateTime
@@ -159,22 +150,20 @@ public class Dates {
     }
     
     /**
-     * Convert a given timestamp to the datetime of paris
-     * @author Arnaud Charleroy
+     * Converts a given timestamp to the datetime of Paris.
      * @see opensilex.service.configuration.DateFormats TIMEZONE_EU_PARIS
      * @param timestamp the timestamp to convert
      * @return DateTime representing the timestamp, converted in the Paris
      * timezone
      */
     public static DateTime timestampToDatetimeParis(Timestamp timestamp) {
-        DateTime dt = new DateTime(timestamp, DateTimeZone.forID(DateFormats.TIMEZONE_EU_PARIS));
-        return dt;
+        DateTime dateTime = new DateTime(timestamp, DateTimeZone.forID(DateFormats.TIMEZONE_EU_PARIS));
+        return dateTime;
     }
     
     
     /**
-     * Convert a string to joda datetime according to a given pattern 
-     *
+     * Converts a string to Joda datetime according to a given pattern.
      * @param stringDate date
      * @param pattern pattern
      * @return null|DateTime
@@ -187,6 +176,5 @@ public class Dates {
             e.printStackTrace();
             return null;
         }
-
     }
 }

@@ -21,10 +21,7 @@ import java.util.UUID;
 public class ResourcesUtils {
 
     /**
-     * generates a unique string of 32 caracters
-     *
-     * @author Arnaud Charleroy
-     * @see java.util.UUID randomUUID()
+     * Generates a unique string of 32 characters.
      * @return the UUID
      */
     public static String getUniqueID() {
@@ -32,34 +29,28 @@ public class ResourcesUtils {
     }
 
     /**
-     * return the boolean value of the given string
-     *
+     * Returns the boolean value of the given string.
      * @param bool String
      * @author Arnaud Charleroy
      * @return true if the string is equals to "true" or "t" (it is not case
      * sensitive) false if the string is not equals to the precedent strings
-     *
      */
     public static boolean getStringBooleanValue(String bool) {
         return (bool.equalsIgnoreCase("true") || bool.equalsIgnoreCase("t"));
     }
 
     /**
-     * Capitalize the first Letter of the string
-     *
-     * @author Arnaud Charleroy
+     * Capitalizes the first Letter of the string.
      * @param original the string for which we wants the first letter to be
      * capitalized
-     * @return the given string with the first lettre capitalized
+     * @return the given string with the first letter capitalized
      */
     public static String capitalizeFirstLetter(String original) {
         return (original == null || original.length() == 0) ? original : original.substring(0, 1).toUpperCase() + original.substring(1).toLowerCase();
     }
 
     /**
-     * split a string using the given separator
-     *
-     * @author Arnaud Charleroy
+     * Splits a string using the given separator.
      * @param values
      * @param separator
      * @return the list of elements separated by the given separator in the
@@ -77,14 +68,13 @@ public class ResourcesUtils {
     }
 
     /**
-     * extentY to plantHeight width to plantWidth
-     *
+     * ExtentY to plantHeight width to plantWidth.
      * @author Arnaud Charleroy
      * @param mongoUserVariable
      * @return
      */
     public static String formatMongoImageAnalysisVariableForDB(String mongoUserVariable) {
-        String tmpMongoUserVariable = null;
+        String tmpMongoUserVariable;
         String variableFormatMongo = "";
         // elcom special case
         if (mongoUserVariable.contains("parallelBoudingBox")) {
@@ -107,11 +97,11 @@ public class ResourcesUtils {
     }
 
     /**
-     * @author Arnaud Charleroy
+     * Gets the value of a URI.
      * @param uri
      * @return
      */
-    public static String getValueOfAnURI(String uri) {
+    public static String getValueOfURI(String uri) {
         final String[] parts = uri.split("#");
         if ((uri.contains(">") && uri.contains("<"))) {
             return parts[1].substring(0, parts[1].length() - 1);
@@ -121,11 +111,11 @@ public class ResourcesUtils {
     }
 
     /**
-     * generates a new agent uri suffix.
-     *
+     * Generates a new agent URI suffix.
      * @param firstName .e.g Arnaud
      * @param familiyName .e.g Charleroy
-     * @return the agent suffix e.g. arnaud_charleroy
+     * @return the agent suffix
+     * @example arnaud_charleroy
      */
     public static String createUserUriSuffix(String firstName, String familiyName) {
         String trimmedFirstName = firstName.trim();
@@ -134,5 +124,4 @@ public class ResourcesUtils {
         String checkedFirstName = trimmedFirstName.replace(" ", "-");
         return checkedFirstName.toLowerCase() + "_" + checkedFamilyName.toLowerCase();
     }
-
 }

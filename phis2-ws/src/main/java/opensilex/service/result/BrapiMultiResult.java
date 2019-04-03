@@ -13,6 +13,7 @@ import opensilex.service.view.brapi.BrapiPagination;
 /**
  * Provides the format of Result when there is a list of several elements.
  * @author Alice Boizet <alice.boizet@inra.fr>
+ * @param <T>
  */
 public class BrapiMultiResult<T>{
     ArrayList<T> data;
@@ -22,35 +23,36 @@ public class BrapiMultiResult<T>{
     }
 
     /**
-     * Constructor with the pagination
+     * Constructor with the pagination.
+     * @param list
      * @param pagination pagination to sort the list
      * @param paginate
      * @see copyList()
      * @example 
      * "result": {
-        "data": [
-          {
-            "defaultValue": null,
-            "description": "",
-            "name": "Leaf_Area_Index",
-            "observationVariables": [
-              "http://www.phenome-fppn.fr/platform/id/variables/v001"
-            ],
-            "traitDbId": "http://www.phenome-fppn.fr/platform/id/traits/t001",
-            "traitId": null
-          },
-          {
-            "defaultValue": null,
-            "description": "",
-            "name": "NDVI",
-            "observationVariables": [
-              "http://www.phenome-fppn.fr/platform/id/variables/v002"
-            ],
-            "traitDbId": "http://www.phenome-fppn.fr/platform/id/traits/t002",
-            "traitId": null
-          }
-         ]
-        }
+     *  "data": [
+     *    {
+     *      "defaultValue": null,
+     *      "description": "",
+     *      "name": "Leaf_Area_Index",
+     *      "observationVariables": [
+     *        "http://www.phenome-fppn.fr/platform/id/variables/v001"
+     *      ],
+     *      "traitDbId": "http://www.phenome-fppn.fr/platform/id/traits/t001",
+     *      "traitId": null
+     *    },
+     *    {
+     *      "defaultValue": null,
+     *      "description": "",
+     *      "name": "NDVI",
+     *      "observationVariables": [
+     *        "http://www.phenome-fppn.fr/platform/id/variables/v002"
+     *      ],
+     *      "traitDbId": "http://www.phenome-fppn.fr/platform/id/traits/t002",
+     *      "traitId": null
+     *    }
+     *   ]
+     *  }
      */
     public BrapiMultiResult(ArrayList<T> list, BrapiPagination pagination, boolean paginate) {
         if(paginate){
@@ -61,7 +63,7 @@ public class BrapiMultiResult<T>{
     }
 
     /**
-     * Sort a list using the wanted page and the number of results per page
+     * Sorts a list using the wanted page and the number of results per page.
      * @param list unsorted elements
      * @param pagination the information of the pagination. This is used to sort the list.
      * @return the elements with the pagination
@@ -87,5 +89,4 @@ public class BrapiMultiResult<T>{
     public void setData(ArrayList<T> data) {
         this.data = data;
     }
-    
 }

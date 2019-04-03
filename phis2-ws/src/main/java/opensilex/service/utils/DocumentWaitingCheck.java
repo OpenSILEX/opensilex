@@ -30,8 +30,8 @@ public class DocumentWaitingCheck implements Callable<Boolean> {
     
     @Override
     public Boolean call() {
-//        logger.debug("start");
-        // Temps d'attente
+        
+        // Waiting time
         int waitingFileTime = DEFAUT_WAITING_FILE_TIME;
         try{
             waitingFileTime = Integer.valueOf(PropertiesFileManager.getConfigFileProperty(PROPS_FILE_NAME, "waitingFileTime"));
@@ -44,24 +44,21 @@ public class DocumentWaitingCheck implements Callable<Boolean> {
         } catch (InterruptedException ex) {
              LOGGER.error(ex.getMessage(), ex);
         }
-        // Si l'uri n'est pas présente dans la Map ou si sa valeur est à false 
-//        (aucun envoi de fichier en cours), on la supprime.
-//         Sinon on ne fait rien
         
-  
+        /*
+        If the URI isn't in the map or its value is false (no running file 
+        sending), it is deleted. Otherwise, nothing is done.
+        */  
         boolean find = DocumentResourceService.WAITING_ANNOT_FILE_CHECK.containsKey(annotationsUri);
         if(find){
             final Boolean running = DocumentResourceService.WAITING_ANNOT_FILE_CHECK.get(annotationsUri);
             if(!running){
-                // Suppression tableau d'attente
+                // Delete waiting list
                 DocumentResourceService.WAITING_ANNOT_FILE_CHECK.remove(annotationsUri);
-                //Suppression de l'information
+                // Delete information
                 DocumentResourceService.WAITING_ANNOT_INFORMATION.remove(annotationsUri);
-//                logger.debug("Remove : " + annotationsUri);
             } 
-//            logger.debug("sending : " + annotationsUri);
         }
-//        logger.debug("thread Stopped : " + annotationsUri);
         return null;
     }
 }

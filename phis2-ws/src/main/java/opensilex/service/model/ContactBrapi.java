@@ -8,7 +8,7 @@
 package opensilex.service.model;
 
 /**
- * Brapi contact model.
+ * BrAPI contact model.
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class ContactBrapi {

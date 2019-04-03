@@ -12,7 +12,7 @@ import java.util.ArrayList;
 
 /**
  * Abstract class which provides a model to format the web service returns to be
- * Brapi compatible.
+ * BrAPI compatible.
  * @see Pagination
  * @see https://brapi.docs.apiary.io
  * @param <T> The type of the objects of the data list attribute.

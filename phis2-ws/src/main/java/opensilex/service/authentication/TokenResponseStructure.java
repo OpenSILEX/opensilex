@@ -11,7 +11,7 @@ import opensilex.service.PropertiesFileManager;
 import opensilex.service.view.brapi.Metadata;
 
 /**
- * Structure of a response representing a token corresponding to the Brapi 
+ * Structure of a response representing a token corresponding to the BrAPI 
  * prerequisites. 
  * @author Samuël Chérimont
  */

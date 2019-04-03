@@ -85,10 +85,10 @@ public class CallsResourceService implements BrapiCall {
      * ]
      */
     @GET
-    @ApiOperation(value = "Check the available brapi calls",
-            notes = "Check the available brapi calls")
+    @ApiOperation(value = "Check the available BrAPI calls",
+            notes = "Check the available BrAPI calls")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve brapi calls", response = Call.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Retrieve BrAPI calls", response = Call.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})

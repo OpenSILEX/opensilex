@@ -32,7 +32,7 @@ import opensilex.service.view.brapi.form.ResponseFormGET;
 /**
  * Authentication request filter.
  * Filters web service requests according to the header and other parameters.
- * @update [Arnaud Charleroy] Oct. 2016: Brapi v1
+ * @update [Arnaud Charleroy] Oct. 2016: BrAPI v1
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 @Provider

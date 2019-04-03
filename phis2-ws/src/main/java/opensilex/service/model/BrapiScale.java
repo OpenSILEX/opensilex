@@ -8,7 +8,7 @@
 package opensilex.service.model;
 
 /**
- * Brapi scale model.
+ * BrAPI scale model.
  * @See https://brapi.docs.apiary.io/#reference/observation-variables
  * @author Alice Boizet <alice.boizet@inra.fr>
  */

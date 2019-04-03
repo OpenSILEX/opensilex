@@ -138,10 +138,10 @@ public class ImageResourceService extends ResourceService {
             @ApiParam(value = "JSON Image metadata", required = true) @Valid List<ImageMetadataDTO> imagesMetadata) {
         AbstractResultForm postResponse;
         if (imagesMetadata != null && !imagesMetadata.isEmpty()) {
-            ImageMetadataMongoDAO imageDaoMongo = new ImageMetadataMongoDAO();
-            imageDaoMongo.user = userSession.getUser();
+            ImageMetadataMongoDAO imageMongoDao = new ImageMetadataMongoDAO();
+            imageMongoDao.user = userSession.getUser();
             
-            final POSTResultsReturn checkImageMetadata = imageDaoMongo.check(imagesMetadata); 
+            final POSTResultsReturn checkImageMetadata = imageMongoDao.check(imagesMetadata); 
             
             if (checkImageMetadata.statusList == null) { // bad metadata
                 postResponse = new ResponseFormPOST();
@@ -331,10 +331,10 @@ public class ImageResourceService extends ResourceService {
                 .getFileInformations()
                 .setServerFilePath(webAccessImagesDirectory + "/" + serverFileName);
         
-        ImageMetadataMongoDAO imageMetadataDaoMongo = new ImageMetadataMongoDAO();
-        imageMetadataDaoMongo.user = userSession.getUser();
+        ImageMetadataMongoDAO imageMetadataMongoDao = new ImageMetadataMongoDAO();
+        imageMetadataMongoDao.user = userSession.getUser();
         
-        final POSTResultsReturn insertMetadata = imageMetadataDaoMongo.insert(Arrays.asList(WAITING_METADATA_INFORMATION.get(imageUri)));
+        final POSTResultsReturn insertMetadata = imageMetadataMongoDao.insert(Arrays.asList(WAITING_METADATA_INFORMATION.get(imageUri)));
         postResponse = new ResponseFormPOST(insertMetadata.statusList);
         
         if (insertMetadata.getDataState()) {
@@ -354,21 +354,21 @@ public class ImageResourceService extends ResourceService {
     
     /**
      * Searches images metadata corresponding to a user search.
-     * @param imageMetadataDaoMongo
+     * @param imageMetadataMongoDao
      * @return the images corresponding to the search
      */
-    private Response getImagesData(ImageMetadataMongoDAO imageMetadataDaoMongo) {
+    private Response getImagesData(ImageMetadataMongoDAO imageMetadataMongoDao) {
         ArrayList<ImageMetadata> imagesMetadata;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<ImageMetadata> getResponse;
         
-        imagesMetadata = imageMetadataDaoMongo.allPaginate();
+        imagesMetadata = imageMetadataMongoDao.allPaginate();
         
         if (imagesMetadata == null) {
             getResponse = new ResultForm<>(0, 0, imagesMetadata, true);
             return noResultFound(getResponse, statusList);
         } else if (!imagesMetadata.isEmpty()) {
-            getResponse = new ResultForm<>(imageMetadataDaoMongo.getPageSize(), imageMetadataDaoMongo.getPage(), imagesMetadata, false);
+            getResponse = new ResultForm<>(imageMetadataMongoDao.getPageSize(), imageMetadataMongoDao.getPage(), imagesMetadata, false);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {
@@ -444,36 +444,36 @@ public class ImageResourceService extends ResourceService {
         @ApiParam(value = "Search by interval - end date", example = DocumentationAnnotation.EXAMPLE_IMAGE_DATE) @QueryParam("endDate") @opensilex.service.resources.validation.interfaces.Date(DateFormat.YMDHMSZ) String endDate,
         @ApiParam(value = "Search by sensor", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("sensor") @URL String sensor) {
         
-        ImageMetadataMongoDAO imageMetadataDaoMongo = new ImageMetadataMongoDAO();
+        ImageMetadataMongoDAO imageMetadataMongoDao = new ImageMetadataMongoDAO();
         
         if (uri != null) {
-            imageMetadataDaoMongo.uri = uri;
+            imageMetadataMongoDao.uri = uri;
         }
         if (rdfType != null) {
-            imageMetadataDaoMongo.rdfType = rdfType;
+            imageMetadataMongoDao.rdfType = rdfType;
         }
         if (concernedItems != null) {
-            imageMetadataDaoMongo.concernedItems = new ArrayList<>(Arrays.asList(concernedItems.split(";")));
+            imageMetadataMongoDao.concernedItems = new ArrayList<>(Arrays.asList(concernedItems.split(";")));
         }
         if (startDate != null) {
             //SILEX:todo
             //check date format
-            imageMetadataDaoMongo.startDate = startDate;
+            imageMetadataMongoDao.startDate = startDate;
             //\SILEX:todo
             if (endDate != null) {
-                imageMetadataDaoMongo.endDate = endDate;
+                imageMetadataMongoDao.endDate = endDate;
             } else {
-                imageMetadataDaoMongo.endDate = new SimpleDateFormat(DateFormat.YMD.toString()).format(new Date());
+                imageMetadataMongoDao.endDate = new SimpleDateFormat(DateFormat.YMD.toString()).format(new Date());
             }
         }
         if (sensor != null) {
-            imageMetadataDaoMongo.sensor = sensor;
+            imageMetadataMongoDao.sensor = sensor;
         }
         
-        imageMetadataDaoMongo.user = userSession.getUser();
-        imageMetadataDaoMongo.setPage(page);
-        imageMetadataDaoMongo.setPageSize(pageSize);
+        imageMetadataMongoDao.user = userSession.getUser();
+        imageMetadataMongoDao.setPage(page);
+        imageMetadataMongoDao.setPageSize(pageSize);
         
-        return getImagesData(imageMetadataDaoMongo);
+        return getImagesData(imageMetadataMongoDao);
     }
 }

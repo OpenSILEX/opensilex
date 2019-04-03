@@ -348,9 +348,9 @@ public class DataResourceService extends ResourceService {
             @Context HttpServletResponse response
     ) {
         
-        FileDescriptionDAO dataFileDaoMongo = new FileDescriptionDAO();
+        FileDescriptionDAO dataFileDao = new FileDescriptionDAO();
         
-        FileDescription description = dataFileDaoMongo.findFileDescriptionByUri(fileUri);
+        FileDescription description = dataFileDao.findFileDescriptionByUri(fileUri);
         
         if (description == null) {
             return Response.status(404).build();
@@ -479,15 +479,15 @@ public class DataResourceService extends ResourceService {
         @ApiParam(value = "Date search result order ('true' for ascending and 'false' for descending)", example = "true") @QueryParam("dateSortAsc") boolean dateSortAsc
     ) {
         
-        FileDescriptionDAO dataFileDaoMongo = new FileDescriptionDAO();
+        FileDescriptionDAO fileDescriptionDao = new FileDescriptionDAO();
         
         // 1. Set all varaibles corresponding to the search
-        dataFileDaoMongo.user = userSession.getUser();
-        dataFileDaoMongo.setPage(page);
-        dataFileDaoMongo.setPageSize(pageSize);
+        fileDescriptionDao.user = userSession.getUser();
+        fileDescriptionDao.setPage(page);
+        fileDescriptionDao.setPageSize(pageSize);
         
         // 2. Get data count
-        long totalCount = dataFileDaoMongo.count(
+        long totalCount = fileDescriptionDao.count(
             rdfType,
             startDate,
             endDate,
@@ -498,7 +498,7 @@ public class DataResourceService extends ResourceService {
         );
         
         // 3. Get data page list
-        ArrayList<FileDescription> dataList = dataFileDaoMongo.search(
+        ArrayList<FileDescription> dataList = fileDescriptionDao.search(
             rdfType,
             startDate,
             endDate,
@@ -528,7 +528,7 @@ public class DataResourceService extends ResourceService {
             });
             
             // Return list of DTO
-            getResponse = new ResultForm<>(dataFileDaoMongo.getPageSize(), dataFileDaoMongo.getPage(), list, true, (int)totalCount);
+            getResponse = new ResultForm<>(fileDescriptionDao.getPageSize(), fileDescriptionDao.getPage(), list, true, (int)totalCount);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }

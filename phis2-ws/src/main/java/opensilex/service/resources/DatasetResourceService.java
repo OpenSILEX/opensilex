@@ -99,11 +99,11 @@ public class DatasetResourceService extends ResourceService {
         
         //If there are at least one provenance (and dataset) in the sended data
         if (datasets != null && !datasets.isEmpty()) {
-            DatasetDAO datasetDAOMongo = new DatasetDAO();
-            datasetDAOMongo.user = userSession.getUser();
+            DatasetDAO datasetDAO = new DatasetDAO();
+            datasetDAO.user = userSession.getUser();
             
             //check data and insert in the mongo database
-            POSTResultsReturn result = datasetDAOMongo.checkAndInsert(datasets);
+            POSTResultsReturn result = datasetDAO.checkAndInsert(datasets);
             
             postResponse = new ResponseFormPOST(result.statusList);
             postResponse.getMetadata().setDatafiles(result.createdResources);
@@ -117,21 +117,21 @@ public class DatasetResourceService extends ResourceService {
     
     /**
      * Collect data from a user query (search data)
-     * @param datasetDAOMongo
+     * @param datasetDAO
      * @return the user answer with the results
      */
-    private Response getDatasetsData(DatasetDAO datasetDAOMongo) {
+    private Response getDatasetsData(DatasetDAO datasetDAO) {
         ArrayList<Dataset> datasets;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Dataset> getResponse;
         
-        datasets = datasetDAOMongo.allPaginate();
+        datasets = datasetDAO.allPaginate();
         
         if (datasets == null) {
             getResponse = new ResultForm<>(0, 0, datasets, true);
             return noResultFound(getResponse, statusList);
         } else if (!datasets.isEmpty()) {
-            getResponse = new ResultForm<>(datasetDAOMongo.getPageSize(), datasetDAOMongo.getPage(), datasets, false);
+            getResponse = new ResultForm<>(datasetDAO.getPageSize(), datasetDAO.getPage(), datasets, false);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {

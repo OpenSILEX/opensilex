@@ -577,8 +577,8 @@ public class DocumentResourceService extends ResourceService {
      * @return The response containing the document if existing
      */
     private Response getFile(String documentURI) {
-        DocumentMongoDAO documentDaoMongo = new DocumentMongoDAO();
-        File file = documentDaoMongo.getDocument(documentURI);
+        DocumentMongoDAO documentMongoDao = new DocumentMongoDAO();
+        File file = documentMongoDao.getDocument(documentURI);
         
         if (file == null) {
             return Response.noContent().build();

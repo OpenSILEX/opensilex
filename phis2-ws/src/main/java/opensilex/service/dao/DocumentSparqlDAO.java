@@ -162,8 +162,8 @@ public class DocumentSparqlDAO extends SparqlDAO<Document> {
      *         false an error occurred
      */
     private POSTResultsReturn saveFileInMongoDB(String filePath, String fileURI) {
-        DocumentMongoDAO documentDaoMongo = new DocumentMongoDAO();
-        return documentDaoMongo.insertFile(filePath, fileURI);
+        DocumentMongoDAO documentMongoDao = new DocumentMongoDAO();
+        return documentMongoDao.insertFile(filePath, fileURI);
     }
     
     /**

@@ -383,8 +383,8 @@ public class UriGenerator {
      */
     private String generateImageUri(String year, String lastGeneratedUri) {
         if (lastGeneratedUri == null) {
-            ImageMetadataMongoDAO imageDaoMongo = new ImageMetadataMongoDAO();
-            long imagesNumber = imageDaoMongo.getNbImagesYear();
+            ImageMetadataMongoDAO imageMongoDao = new ImageMetadataMongoDAO();
+            long imagesNumber = imageMongoDao.getNbImagesYear();
             imagesNumber++;
 
             //calculate the number of 0 to add before the number of the image

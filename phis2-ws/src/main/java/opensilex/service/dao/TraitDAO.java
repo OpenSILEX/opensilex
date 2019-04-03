@@ -61,6 +61,9 @@ public class TraitDAO extends SparqlDAO<Trait> {
     public TraitDAO(String uri) {
         this.uri = uri;
     }
+
+    TraitDAO() {
+    }
     
     protected SPARQLQueryBuilder prepareSearchQuery() {
         //SILEX:todo

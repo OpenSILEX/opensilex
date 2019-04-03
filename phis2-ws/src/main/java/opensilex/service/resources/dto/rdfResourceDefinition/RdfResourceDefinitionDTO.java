@@ -28,8 +28,10 @@ public class RdfResourceDefinitionDTO extends AbstractVerifiedClass {
 
     //uri of the rdf resource
     protected String uri;
+    
     //label of the rdf resource
     protected String label;
+    
     //list of the properties of the rdf resource
     protected ArrayList<PropertyDTO> properties = new ArrayList<>();
 
@@ -40,8 +42,7 @@ public class RdfResourceDefinitionDTO extends AbstractVerifiedClass {
     }
      
     /**
-     * Constructor to instanciate DTO from a Model
-     * 
+     * Constructor to instantiate DTO from a Model.
      * @param definition 
      */
     public RdfResourceDefinitionDTO(RdfResourceDefinition definition) {
@@ -57,8 +58,8 @@ public class RdfResourceDefinitionDTO extends AbstractVerifiedClass {
     }
 
     /**
-     * Return an instance of PropertyDTO from a property
-     * Cuold be implemented by subclass to return differents DTO depending on proeprty
+     * Returns an instance of PropertyDTO from a property
+     * Could be implemented by subclasses to return different DTO depending on property
      * @param property
      * @return 
      */
@@ -71,9 +72,9 @@ public class RdfResourceDefinitionDTO extends AbstractVerifiedClass {
         RdfResourceDefinition resource = new RdfResourceDefinition();
         resource.setUri(uri);
 
-        for (PropertyDTO property : getProperties()) {
+        getProperties().forEach((property) -> {
             resource.addProperty(property.createObjectFromDTO());
-        }
+        });
 
         return resource;
     }

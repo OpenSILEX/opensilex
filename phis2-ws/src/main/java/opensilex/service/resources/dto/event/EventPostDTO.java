@@ -46,7 +46,7 @@ public class EventPostDTO extends AbstractVerifiedClass {
     }
 
     /**
-     * Generates an event model from de DTO
+     * Generates an event model from de DTO.
      * @return the Event model
      */
     @Override

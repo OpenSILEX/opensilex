@@ -20,22 +20,28 @@ import opensilex.service.resources.validation.interfaces.URL;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class LayerDTO extends AbstractVerifiedClass {
-    final static Logger LOGGER = LoggerFactory.getLogger(LayerDTO.class);
     
     /**
-     * @param objectUri l'uri de l'objet pour lequel on veut une couche
-     * @param objectType type de l'objet (ex : http://www.opensilex.org/vocabulary/oeso/Experiment)
-     * @param depth true si on souhaite avoir tous les déscendants représentés dans
-     *                   la couche,
-     *              false si on veut juste l'objet et ses enfants directs
-     * @param generateFile true si on génère le geojson, false si on ne génère pas le geojson
+     * The object linked to the layer.
      */
-    private String objectUri; 
+    private String objectUri;
+    
+    /**
+     * @example http://www.opensilex.org/vocabulary/oeso/Experiment
+     */
     private String objectType;
+    
+    /**
+     * @example true if the layer has all descendants, false if only the direct
+     * ones
+     */
     private String depth; 
+    
+    /**
+     * @example true if the file has to be generated, false otherwise
+     */
     private String generateFile;
     
-
     @Override
     public Object createObjectFromDTO() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.

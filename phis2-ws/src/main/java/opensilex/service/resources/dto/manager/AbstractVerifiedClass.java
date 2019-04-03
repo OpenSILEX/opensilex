@@ -28,7 +28,7 @@ public abstract class AbstractVerifiedClass implements VerifiedClassInterface {
     public final static String EMPTY = "empty";
 
     /**
-     * Allows to transfom an object in a HashMap. 
+     * Allows to transform an object in a HashMap. 
      * Useful for object transformation.
      * @return object in hashmap form
      */

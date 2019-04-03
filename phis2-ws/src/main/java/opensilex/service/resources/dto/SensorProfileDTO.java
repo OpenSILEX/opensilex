@@ -28,6 +28,7 @@ public class SensorProfileDTO extends AbstractVerifiedClass {
 
     //uri of the sensor concerned by the properties
     private String uri;
+    
     //list of the properties of the sensor
     private ArrayList<PropertyPostDTO> properties = new ArrayList<>();
 

@@ -17,7 +17,7 @@ import opensilex.service.model.RadiometricTarget;
 public class RadiometricTargetDTO extends RdfResourceDefinitionDTO {
     
     /**
-     * Constructor to create DTO from a Radiometric target Model
+     * Constructor to create DTO from a Radiometric target Model.
      * @param radiometricTarget 
      */
     public RadiometricTargetDTO(RadiometricTarget radiometricTarget) {
@@ -25,7 +25,7 @@ public class RadiometricTargetDTO extends RdfResourceDefinitionDTO {
     }
     
     /**
-     * Generates a RadiometricTarget model with the information of this
+     * Generates a RadiometricTarget model with the information of this.
      * @return the model RadiometricTarget
      */
     public RadiometricTarget createRadiometricTargetFromDTO() {

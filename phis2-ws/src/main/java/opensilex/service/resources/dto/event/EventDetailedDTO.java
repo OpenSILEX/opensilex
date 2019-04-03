@@ -20,7 +20,7 @@ public class EventDetailedDTO extends EventSimpleDTO {
     protected ArrayList<AnnotationDTO> annotations = new ArrayList<>();
     
     /**
-     * Constructor to create a DTO from an Event model
+     * Constructor to create a DTO from an Event model.
      * @param event 
      */
     public EventDetailedDTO(Event event) {

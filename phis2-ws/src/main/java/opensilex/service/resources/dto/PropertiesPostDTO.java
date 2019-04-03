@@ -22,13 +22,13 @@ import opensilex.service.resources.validation.interfaces.Required;
 public class PropertiesPostDTO extends AbstractVerifiedClass {
     
     /**
-     * Label of the object concerned by the properties
+     * Label of the object concerned by the properties.
      * @example rt01
      */
     protected String label;
     
     /**
-     * List of the properties of the object
+     * List of the properties of the object.
      */
     protected ArrayList<PropertyPostDTO> properties = new ArrayList<>();
 

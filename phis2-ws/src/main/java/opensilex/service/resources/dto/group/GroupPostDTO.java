@@ -28,7 +28,6 @@ public class GroupPostDTO extends AbstractVerifiedClass {
     
     private ArrayList<String> usersEmails = new ArrayList<>();
 
- 
     @Override
     public Group createObjectFromDTO() {
         Group group = new Group();
@@ -42,7 +41,6 @@ public class GroupPostDTO extends AbstractVerifiedClass {
                 group.addUser(u);
             }
         }
-        
         return group;
     }
     

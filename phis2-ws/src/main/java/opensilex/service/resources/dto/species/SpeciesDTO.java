@@ -14,8 +14,10 @@ import opensilex.service.model.Species;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class SpeciesDTO {
+    
     //uri of the rdf resource
     protected String uri;
+    
     //label of the rdf resource
     protected String label;
     

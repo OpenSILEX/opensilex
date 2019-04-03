@@ -23,15 +23,18 @@ import opensilex.service.model.Property;
  */
 public class PropertyVocabularyDTO extends AbstractVerifiedClass {
     
-    //relation name 
-    //(e.g. http://www.opensilex.org/vocabulary/oeso#hasVariety)
+    /**
+     * Relation name 
+     * @example http://www.opensilex.org/vocabulary/oeso#hasVariety)
+     */
     private String relation;
-    //the list of the labels of the property. Hash Map with the languages if needed
-    //it is a hash map with the language and the label
-    //if there is no language for a label, the key is equals to none (?)
     private Map<String, Collection<String>> labels = new HashMap<>();
-    //the list of the comments of the property. Map with the languages if knowned. 
-    //if there is no language, the key will be "none"
+    
+    /**
+     * The list of the comments of the property. 
+     * Map with the languages if known. 
+     * if there is no language, the key will be "none".
+     */
     private Map<String, Collection<String>> comments = new HashMap<>();
 
     @Override

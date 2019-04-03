@@ -22,22 +22,23 @@ import opensilex.service.model.Dataset;
 public class DatasetDTO extends AbstractVerifiedClass {
 
     private String variableUri;
-    //Provenance is the dataset provenance. It is composed of the creation date 
-    //of the dataset, the script which has generate the dataset and a description
-    //of the generation (if possible)
+    
+    /**
+     * Provenance is the dataset provenance. It is composed of the creation date 
+     * of the dataset, the script which has generate the dataset and a description
+     * of the generation (if possible)
+     */
     private ProvenanceDTO provenance;
     private ArrayList<AgronomicalDataDTO> data;
     
-    
-
     @Override
     public Dataset createObjectFromDTO() {
        Dataset phenotypes = new Dataset();
        phenotypes.setVariableURI(variableUri);       
        phenotypes.setProvenance(provenance.createObjectFromDTO());
-       for (AgronomicalDataDTO d : data) {
+       data.forEach((d) -> {
            phenotypes.addData(d.createObjectFromDTO());
-       }
+        });
        
        return phenotypes;
     }   

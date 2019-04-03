@@ -55,9 +55,9 @@ public class ProjectPostDTO extends AbstractVerifiedClass {
         project.setWebsite(website);
 
         if (contacts != null && !contacts.isEmpty()) {
-            for (Contact contact : contacts) {
+            contacts.forEach((contact) -> {
                 project.addContact(contact);
-            }
+            });
         }
 
         return project;

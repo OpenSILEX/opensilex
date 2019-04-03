@@ -16,21 +16,36 @@ import opensilex.service.model.Trait;
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class BrapiTraitDTO {
+    
     private String defaultValue;
-    //The comment of the trait in the triplestore e.g. "one-sided green leaf area per unit ground surface area"
+    
+    /**
+     * Comment of the trait.
+     * @example one-sided green leaf area per unit ground surface area
+     */
     private String description;
-    //The label of the trait in the triplestore e.g. Leaf_Area_Index
+    
+    /**
+     * Label of the trait.
+     * @example Leaf_Area_Index
+     */
     private String traitName;
+    
     private ArrayList<String> observationVariables;
-    //The id of the trait in the triplestore e.g. http://www.phenome-fppn.fr/platform/id/traits/t001
-    private String traitDbId;
+    
+    /**
+     * URI of the trait.
+     * @example http://www.phenome-fppn.fr/platform/id/traits/t001
+     */
+    private String uri;
+    
     private String traitId; 
 
     public BrapiTraitDTO() {
     }
     
     public BrapiTraitDTO(Trait trait) {
-        this.traitDbId = trait.getUri();
+        this.uri = trait.getUri();
         this.traitName = trait.getLabel();
         this.description = trait.getComment();
     }    
@@ -68,11 +83,11 @@ public class BrapiTraitDTO {
     }
 
     public String getTraitDbId() {
-        return traitDbId;
+        return uri;
     }
 
     public void setTraitDbId(String traitDbId) {
-        this.traitDbId = traitDbId;
+        this.uri = traitDbId;
     }
 
     public String getTraitId() {

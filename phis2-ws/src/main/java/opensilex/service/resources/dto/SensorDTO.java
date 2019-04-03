@@ -42,7 +42,6 @@ public class SensorDTO extends AbstractVerifiedClass {
     //email of the person in charge of the sensor
     private String personInCharge;
 
-
     @Override
     public Sensor createObjectFromDTO() {
         Sensor sensor = new Sensor();

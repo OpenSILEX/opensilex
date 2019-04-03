@@ -21,8 +21,10 @@ public class PropertyLabelsDTO extends PropertyDTO {
 
     // Labels list for the value "rdfType" of the property
     private LinkedList<String> rdfTypeLabels = new LinkedList<>();
+    
     // Labels list for the value "relation" of the property
     private LinkedList<String> relationLabels = new LinkedList<>();
+    
     // Labels list for the value "value" of the property
     private LinkedList<String> valueLabels = new LinkedList<>();
 

@@ -17,23 +17,41 @@ import opensilex.service.model.Data;
  * @author Vincent Migot <vincent.migot@inra.fr>
  */
 public class DataDTO {
-    //The uri of the data.
-    //e.g. http://www.opensilex.org/1e9eb2fbacc7222d3868ae96149a8a16b32b2a1870c67d753376381ebcbb5937/e78da502-ee3f-42d3-828e-aa8cab237f93
+    
+    /**
+     * URI of the data.
+     * @example http://www.opensilex.org/1e9eb2fbacc7222d3868ae96149a8a16b32b2a1870c67d753376381ebcbb5937/e78da502-ee3f-42d3-828e-aa8cab237f93
+     */
     protected String uri;
-    //The uri of the provenance from which data come.
-    //e.g. http://www.phenome-fppn.fr/mtp/2018/s18003
+    
+    /**
+     * URI of the provenance from which data come.
+     * @example http://www.phenome-fppn.fr/mtp/2018/s18003
+     */
     protected String provenanceUri;
-    //The uri of the scientific object on which data is related.
-    //e.g. http://www.phenome-fppn.fr/mtp/2018/s18003
+    
+    /**
+     * URI of the scientific object on which data is related.
+     * @example http://www.phenome-fppn.fr/mtp/2018/s18003
+     */
     protected String objectUri;
-    //The uri of the measured variable
-    //e.g. http://www.phenome-fppn.fr/mtp/id/variables/v002
+    
+    /**
+     * URI of the measured variable
+     * @example http://www.phenome-fppn.fr/mtp/id/variables/v002
+     */
     protected String variableUri;
-    //The date corresponding to the given value. The format should be yyyy-MM-ddTHH:mm:ssZ
-    //e.g. 2018-06-25T15:13:59+0200
+    
+    /**
+     * Date corresponding to the given value. The format should be yyyy-MM-ddTHH:mm:ssZ
+     * @example 2018-06-25T15:13:59+0200
+     */
     protected String date;
-    //The data value.
-    //e.g. 1.2
+    
+    /**
+     * The data value.
+     * @example 1.2
+     */
     protected Object value;
 
     public DataDTO(Data data) {

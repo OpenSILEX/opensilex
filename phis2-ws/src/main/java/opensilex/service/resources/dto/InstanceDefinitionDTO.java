@@ -23,11 +23,14 @@ import opensilex.service.model.OntologyReference;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class InstanceDefinitionDTO extends AbstractVerifiedClass {
-    //SILEX:info
-    //Pour l'instant, on ne prend qu'un label et un comment. 
-    //Il faudra pouvoir en avoir plusieurs (ex. labels par langue).
-    //Il faudra donc modifier les req d'insertion/recherche/suppression/modification
-    //\SILEX:info
+    
+    /*
+    SILEX:info
+    For the moment, only a label and a comment. Other properties should be 
+    added (e.g labels per language).
+    /SILEX:info
+    */
+    
     protected String uri;
     protected String label;
     protected String comment;
@@ -41,9 +44,9 @@ public class InstanceDefinitionDTO extends AbstractVerifiedClass {
         instanceDefinition.setComment(comment);
         
         if (ontologiesReferences != null  && !ontologiesReferences.isEmpty()) {
-            for (OntologyReference ontologyReference : ontologiesReferences) {
+            ontologiesReferences.forEach((ontologyReference) -> {
                 instanceDefinition.addOntologyReference(ontologyReference);
-            }
+            });
         }
         
         return instanceDefinition;

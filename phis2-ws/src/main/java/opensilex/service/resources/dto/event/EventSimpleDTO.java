@@ -33,11 +33,11 @@ public class EventSimpleDTO extends AbstractVerifiedClass {
     private String uri;
     
     /**
-     * //SILEX:info
+     * SILEX:info
      * "type" can not be used as a field name in DTOs due to XML interpretation
      * issues.
      * @see https://stackoverflow.com/questions/33104232/eclipselink-missing-class-for-indicator-field-value-of-typ
-     * //\
+     * SILEX:info
      */
     @URL
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EVENT_TYPE)
@@ -51,7 +51,7 @@ public class EventSimpleDTO extends AbstractVerifiedClass {
     protected ArrayList<PropertyDTO> properties = new ArrayList<>();
     
     /**
-     * Constructor to create a DTO from an Event model
+     * Constructor to create a DTO from an Event model.
      * @param event 
      */
     public EventSimpleDTO(Event event) {
@@ -76,7 +76,7 @@ public class EventSimpleDTO extends AbstractVerifiedClass {
     }
 
     /**
-     * Generates an event model from de DTO
+     * Generates an event model from de DTO.
      * @return the Event model
      */
     @Override

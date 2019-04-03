@@ -35,7 +35,6 @@ public class GroupDTO extends AbstractVerifiedClass {
     
     private ArrayList<String> usersEmails = new ArrayList<>();
 
- 
     @Override
     public Group createObjectFromDTO() {
         Group group = new Group(uri);

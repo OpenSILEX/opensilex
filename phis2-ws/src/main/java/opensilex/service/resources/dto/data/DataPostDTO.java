@@ -24,20 +24,35 @@ import opensilex.service.model.Data;
  * @author Vincent Migot <vincent.migot@inra.fr>
  */
 public class DataPostDTO extends AbstractVerifiedClass {
-    //The uri of the provenance from which data come.
-    //e.g. http://www.phenome-fppn.fr/mtp/2018/s18003
+    
+    /**
+     * URI of the provenance from which data come.
+     * @example http://www.phenome-fppn.fr/mtp/2018/s18003
+     */
     protected String provenanceUri;
-    //The uri of the scientific object on which data is related.
-    //e.g. http://www.phenome-fppn.fr/mtp/2018/s18003
+    
+    /**
+     * URI of the scientific object on which data is related.
+     * @example http://www.phenome-fppn.fr/mtp/2018/s18003
+     */
     protected String objectUri;
-    //The uri of the measured variable
-    //e.g. http://www.phenome-fppn.fr/mtp/id/variables/v002
+    
+    /**
+     * URI of the measured variable
+     * @example http://www.phenome-fppn.fr/mtp/id/variables/v002
+     */
     protected String variableUri;
-    //The date corresponding to the given value. The format should be yyyy-MM-ddTHH:mm:ssZ
-    //e.g. 2018-06-25T15:13:59+0200
+    
+    /**
+     * Date corresponding to the given value. The format should be yyyy-MM-ddTHH:mm:ssZ
+     * @example 2018-06-25T15:13:59+0200
+     */
     protected String date;
-    //The measured value.
-    //e.g. 1.2
+    
+    /**
+     * The measured value.
+     * @example 1.2
+     */
     protected Object value;
     
     @URL

@@ -24,8 +24,10 @@ public class ShootingConfigurationDTO extends AbstractVerifiedClass {
     
     //date of the shooting
     private String date;
+    
     //position of the sensor
     private String position;
+    
     //uri of the sensor used to take the images
     private String sensor;
     

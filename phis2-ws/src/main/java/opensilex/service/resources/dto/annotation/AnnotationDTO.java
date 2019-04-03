@@ -20,20 +20,20 @@ import opensilex.service.model.Annotation;
 public class AnnotationDTO extends AnnotationPostDTO {
 
     /**
-     * URI
+     * URI.
      * @example http://www.phenome-fppn.fr/platform/id/annotation/8247af37-769c-495b-8e7e-78b1141176c2
      */
     @URL
     private String uri;
 
     /** 
-     * Creation date string format yyyy-MM-ddTHH:mm:ssZ
+     * Creation date string format yyyy-MM-ddTHH:mm:ssZ.
      * @example 2018-06-25T15:13:59+0200
      */
     private String creationDate;
     
     /**
-     * Constructor to create a DTO from an annotation model
+     * Constructor to create a DTO from an annotation model.
      * @param annotation 
      */
     public AnnotationDTO(Annotation annotation) {

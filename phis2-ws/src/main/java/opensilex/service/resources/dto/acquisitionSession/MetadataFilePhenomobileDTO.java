@@ -14,28 +14,46 @@ import com.google.gson.annotations.SerializedName;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class MetadataFilePhenomobileDTO extends MetadataFileDTO {
-       // The current installation uri. 
-    // e.g. http://www.phenome-fppn.fr/diaphen
+    
+    /**
+     * The current installation URI. 
+     * @example http://www.phenome-fppn.fr/diaphen
+     */
     @SerializedName("Installation")
     protected String installation;
-    // The group plot type, associated to groupPlotAlias, groupPlotUri, groupPlotSpecies
-    // e.g. http://www.opensilex.org/vocabulary/oeso#Experiment
+    
+    /**
+     * The group plot type, associated to groupPlotAlias, groupPlotUri, groupPlotSpecies.
+     * @example http://www.opensilex.org/vocabulary/oeso#Experiment
+     * */
     @SerializedName("GroupPlot_type")
     protected String groupPlotType;
-    // The alias of the group plot, associated to groupPlotType, groupPlotUri, groupPlotSpecies 
-    // e.g. BBlee_2018
+    
+    /**
+     * The alias of the group plot, associated to groupPlotType, groupPlotUri, groupPlotSpecies 
+     * @example BBlee_2018
+     */
     @SerializedName("GroupPlot_alias")
     protected String groupPlotAlias;
-    // The group plot uri, associated to groupPlotType, grouPlotAlias, groupPlotSpecies
-    // e.g. http://www.phenome-fppn.fr/diaphen/DIA2017-2
+    
+    /**
+     * The group plot uri, associated to groupPlotType, grouPlotAlias, groupPlotSpecies
+     * @example http://www.phenome-fppn.fr/diaphen/DIA2017-2
+     */
     @SerializedName("GroupPlot_uri")
     protected String groupPlotUri;
-    // The species of the group plot, associated to groupPlotType, groupPlotUri, groupPlotAlias
-    // e.g. Maize
+    
+    /** 
+     * The species of the group plot, associated to groupPlotType, groupPlotUri, groupPlotAlias
+     * @example Maize
+     */
     @SerializedName("GroupPlot_species")
     protected String groupPlotSpecies;
-    // A pilot email
-    // e.g. john.doe@email.fr
+    
+    /**
+     * A pilot email
+     * @example john.doe@email.fr
+     */
     @SerializedName("Pilot")
     protected String pilot;
 

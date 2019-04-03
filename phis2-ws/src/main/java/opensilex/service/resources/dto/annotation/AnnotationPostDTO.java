@@ -24,32 +24,32 @@ import opensilex.service.model.Annotation;
 public class AnnotationPostDTO extends AbstractVerifiedClass {
 
     /** 
-     * URI that represents the author 
+     * URI that represents the author.
      * @example http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy
      */
     private String creator;
 
     /** 
-     * Motivation instance URI that describe the purpose of this annotation 
+     * Motivation instance URI that describe the purpose of this annotation.
      * @example http://www.w3.org/ns/oa#commenting
      */ 
     private String motivatedBy;
 
     /**
-     * Represents the annotation's body values
+     * Represents the annotation's body values.
      * @link https://www.w3.org/TR/annotation-model/#cardinality-of-bodies-and-targets
      */
     private ArrayList<String> bodyValues;
 
     /**
-     * URIs concerned by this annotation 
+     * URIs concerned by this annotation.
      * @example http://www.phenome-fppn.fr/diaphen/2017/o1032481
      * @link https://www.w3.org/TR/annotation-model/#cardinality-of-bodies-and-targets
      */
     private ArrayList<String> targets;
     
     /**
-     * Constructor to create a DTO from an annotation model
+     * Constructor to create a DTO from an annotation model.
      * @param annotation 
      */
     public AnnotationPostDTO(Annotation annotation) {        

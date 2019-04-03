@@ -23,14 +23,21 @@ public class TripletDTO extends AbstractVerifiedClass {
 
     //subject of the triplet
     private String s;
+    
     //property of the triplet 
     //(corresponds to the relation between the subject and the object)
     private String p;
+    
     //object of the triplet
     private String o;
+    
     //object type. It can be equals to literal or uri
     private String o_type;
-    //object language. Example of value : "en-US"
+    
+    /**
+     * Language. 
+     * @example en-US
+     */
     private String o_lang;
     //graph of the triplet
     private String g;

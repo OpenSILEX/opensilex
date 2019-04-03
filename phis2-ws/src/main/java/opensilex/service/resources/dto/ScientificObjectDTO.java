@@ -25,21 +25,40 @@ import opensilex.service.resources.validation.interfaces.URL;
  */
 public class ScientificObjectDTO extends AbstractVerifiedClass {
     
-    //the scientific object type 
-    //(e.g. http://www.opensilex.org/vocabulary/oeso#Plot)
+    /**
+     * Scientific object type.
+     * @example http://www.opensilex.org/vocabulary/oeso#Plot)
+     */
     private String rdfType;
-    //The WKT geometry (WGS84 EPSG4326) of the scientific object
-    //(e.g. POLYGON(0 1, 1 2, 2 3, 3 0, 0 1)
+    
+    /**
+     * The WKT geometry (WGS84 EPSG4326).
+     * @example POLYGON(0 1, 1 2, 2 3, 3 0, 0 1)
+     */
     private String geometry;
-    //the concerned experiment (e.g. http://www.phenome-fppn.fr/diaphen/DIA2018-2)
+    
+    /** 
+     * Concerned experiment.
+     * @example http://www.phenome-fppn.fr/diaphen/DIA2018-2)
+     */
     private String experiment;
-    //the object which as part the scientific object 
-    //(e.g. http://www.phenome-fppn.fr/mtp/2017/o1032491)
+    
+    /**
+     * Object which the scientific object is part of.
+     * @example http://www.phenome-fppn.fr/mtp/2017/o1032491)
+     */
     private String isPartOf;
-    //the year used to generated the scientific object. If it is not given, this is the actual year
-    //(e.g. 2017)
+    
+    /**
+     * Year used to generated the scientific object. 
+     * If it is not given, this is the actual year.
+     * @example 2017
+     */
     private String year;
-    //the properties of the scientific object
+    
+    /**
+     * Properties
+     */
     private ArrayList<PropertyPostDTO> properties;
 
     @Override

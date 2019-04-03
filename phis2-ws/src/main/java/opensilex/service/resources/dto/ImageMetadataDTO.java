@@ -32,9 +32,9 @@ public class ImageMetadataDTO extends AbstractVerifiedClass {
     public ImageMetadata createObjectFromDTO() {
        ImageMetadata imageMetadata = new ImageMetadata();
        imageMetadata.setRdfType(rdfType);
-       for (ConcernedItemDTO concernedItemDTO : concernedItems) {
+       concernedItems.forEach((concernedItemDTO) -> {
            imageMetadata.addConcernedItem(concernedItemDTO.createObjectFromDTO());
-       }
+        });
        
        imageMetadata.setConfiguration(configuration.createObjectFromDTO());
        imageMetadata.setFileInformations(fileInfo.createObjectFromDTO());

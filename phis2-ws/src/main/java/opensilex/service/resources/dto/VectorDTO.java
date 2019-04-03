@@ -23,22 +23,45 @@ import opensilex.service.model.Vector;
  */
 public class VectorDTO extends AbstractVerifiedClass {
 
-    //uri of the vector
+    /**
+     * URI of the vector.
+     */
     private String uri;
-    //type of the vector. Uri of the concept (must be subclass of Vector)
-    //(e.g. http://www.phenome-fppn.fr/vocabulary/2018#UAV)
+    
+    /**
+     * Type URI of the vector.
+     * @example http://www.phenome-fppn.fr/vocabulary/2018#UAV)
+     */
     private String rdfType;
-    //label of the vector
+    
+    /**
+     * Label.
+     */
     private String label;
-    //brand of the vector
+    
+    /**
+     * Brand.
+     */
     private String brand;
-    //serial number of the vector
+    
+    /**
+     * Serial number.
+     */
     private String serialNumber;
-    //in service date of the vector
+    
+    /**
+     * Commissioning date.
+     */
     private String inServiceDate;
-    //date of purchase of the vector
+    
+    /**
+     * Purchase date.
+     */
     private String dateOfPurchase;
-    //email of the person in charge of the vector
+    
+    /**
+     * Email of the person in charge.
+     */
     private String personInCharge;
 
     @Override

@@ -19,17 +19,26 @@ import opensilex.service.model.Property;
  */
 public class InfrastructureDTO extends RdfResourceDefinitionDTO {
     
-    //infrastructure type eg. http://www.opensilex.org/vocabulary/oeso#LocalInfrastructure
+    /**
+     * Infrastructure type.
+     * @example http://www.opensilex.org/vocabulary/oeso#LocalInfrastructure
+     */
     private String rdfType;
 
-    //infrastructure type label eg. European Infrastructure
+    /**
+     * Infrastructure type label.
+     * @example European Infrastructure
+     */
     private String rdfTypeLabel;
     
-    //uri of the parent infrastructure if exists eg. https://emphasis.plant-phenotyping.eu 
+    /**
+     * URI of the parent infrastructure.
+     * @example https://emphasis.plant-phenotyping.eu 
+     */
     private String parent;
         
     /**
-     * Constructor to create DTO from an Infrastructure Model
+     * Constructor to create DTO from an Infrastructure Model.
      * @param infrastructure 
      */
     public InfrastructureDTO(Infrastructure infrastructure) {

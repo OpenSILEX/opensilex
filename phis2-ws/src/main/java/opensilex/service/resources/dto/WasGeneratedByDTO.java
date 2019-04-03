@@ -19,12 +19,17 @@ import opensilex.service.model.WasGeneratedBy;
  */
 public class WasGeneratedByDTO extends AbstractVerifiedClass {
     
-    //a document uri corresponding to a script used to generate a dataset for 
-    //example. 
-    //e.g. http://www.phenome-fppn.fr/phis_field/documents/documente597f57ba71d421a86277d830f4b9885
+    /**
+     * The data generator URI.
+     * @example a script that calculated data 
+     * http://www.phenome-fppn.fr/phis_field/documents/documente597f57ba71d421a86277d830f4b9885
+     */
     private String wasGeneratedByDocument;
-    //a description of how the dataset was generated.
-    //e.g Phenoscript v1.3
+    
+    /**
+     * Description of how the dataset was generated.
+     * @example Phenoscript v1.3
+     */
     private String wasGeneratedByDescription;
 
     @Override

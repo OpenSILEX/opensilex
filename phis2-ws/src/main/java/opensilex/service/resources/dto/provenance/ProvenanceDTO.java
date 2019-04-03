@@ -18,18 +18,33 @@ import opensilex.service.view.model.provenance.Provenance;
  */
 public class ProvenanceDTO extends AbstractVerifiedClass {
     
-    //The uri of the provenance.
-    //@example http://www.opensilex.org/id/provenance/02465464
+    /**
+     * URI of the provenance.
+     * @example http://www.opensilex.org/id/provenance/02465464
+     */
     protected String uri;
-    //The label of the provenance. 
-    //@example PROV2019-LEAF
+    
+    /**
+     * Label of the provenance. 
+     * @example PROV2019-LEAF
+     */
     protected String label;
-    //A comment associated to the provenance
-    //@example In this provenance we have count the number of leaf per plant.
+    
+    /**
+     * Comment associated to the provenance.
+     * @example In this provenance we have count the number of leaf per plant.
+     */
     protected String comment;
-    //Additional informations for the provenance. Its containt depends of the type of provenance. 
-    //@example [ "SensingDevice" => "http://www.opensilex.org/demo/s001",
-    //           "Vector" => "http://www.opensilex.org/demo/v001"]
+    
+    /**
+     * Additional information for the provenance. 
+     * Its content depends on the type of provenance. 
+     * @example 
+     * [ 
+     *   "SensingDevice" => "http://www.opensilex.org/demo/s001",
+     *   "Vector" => "http://www.opensilex.org/demo/v001"
+     * ]
+     */
     protected Object metadata;
 
     public ProvenanceDTO(Provenance provenance) {

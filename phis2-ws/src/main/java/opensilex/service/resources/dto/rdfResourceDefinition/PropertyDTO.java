@@ -22,20 +22,20 @@ import opensilex.service.model.Property;
 public class PropertyDTO extends AbstractVerifiedClass {
 
     /**
-     * Property type
-     * null if it is a string (so not an URI)
+     * Property type.
+     * null if it is a string (so not an URI).
      * @example http://www.opensilex.org/vocabulary/oeso#Variety
      */
     protected String rdfType; 
 
     /**
-     * Relation name
+     * Relation name.
      * @example http://www.opensilex.org/vocabulary/oeso#hasVariety)
      */
     protected String relation;
 
     /**
-     * Value
+     * Value.
      * @example http://www.phenome-fppn.fr/id/species/maize
      */
     protected String value;

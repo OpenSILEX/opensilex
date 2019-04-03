@@ -25,14 +25,6 @@ public class VariableDTO extends InstanceDefinitionDTO {
 
     final static Logger LOGGER = LoggerFactory.getLogger(VariableDTO.class);
 
-    /**
-     * @param trait l'uri du trait (ex.
-     * http://www.phenome-fppn.fr/diaphen/id/trait/t001)
-     * @param method l'uri de la méthode (ex.
-     * http://www.phenome-fppn.fr/diaphen/id/method/m001)
-     * @param unit l'uri de l'unité (ex.
-     * http://www.phenome-fppn.fr/diaphen/id/unit/u001)
-     */
     private String trait;
     private String method;
     private String unit;

@@ -25,14 +25,27 @@ import opensilex.service.model.Provenance;
 @ProvenanceDate
 public class ProvenanceDTO extends AbstractVerifiedClass {
     
-    //Provenance uri (e.g. http://www.phenome-fppn.fr/mtp/2018/pv181515071552)
+    /**
+     * Provenance URI
+     * @example http://www.phenome-fppn.fr/mtp/2018/pv181515071552)
+     */
     private String uri; 
-    //date of the dataset creation (e.g. 2017-06-14)
+    
+    /**
+     * Date of the dataset creation
+     * @example 2017-06-14
+     */
     private String creationDate;
-    //the way the dataset was generated (script, script version, 
-    //acquisition method)
+    
+    /**
+     * The way the dataset was generated (script, script version, acquisition 
+     * method).
+     */
     private WasGeneratedByDTO wasGeneratedBy;
-    //The liste of the documents associated to the dataset
+    
+    /**
+     * The list of the documents associated with the dataset.
+     */
     private ArrayList<String> documentsUris = new ArrayList<>();
 
     @Override

@@ -32,23 +32,37 @@ import opensilex.service.model.FileDescription;
  */
 public class FileDescriptionPostDTO extends AbstractVerifiedClass {
     
-    //Rdf type of the data file
-    //e.g. http://www.opensilex.org/vocabulary/oeso#HemisphericalImage
+    /**
+     * RDF type of the data file.
+     * @example http://www.opensilex.org/vocabulary/oeso#HemisphericalImage
+     */
     String rdfType;
-    //The date corresponding to the given value. The format should be yyyy-MM-ddTHH:mm:ssZ
-    //e.g. 2018-06-25T15:13:59+0200  
+    
+    /**
+     * Date corresponding to the given value. The format should be yyyy-MM-ddTHH:mm:ssZ.
+     * @example 2018-06-25T15:13:59+0200  
+     */
     String date;
-    //A List of concerned items related to the data file
+    
+    /**
+     * List of concerned items related to the data file.
+     */
     List<ConcernedItemDTO> concernedItems;
-    //The uri of the provenance from which data file come.
-    //e.g. http://www.phenome-fppn.fr/diaphen/id/provenance/1552404943020
+    
+    /**
+     * URI of the provenance from which data file come.
+     * @example http://www.phenome-fppn.fr/diaphen/id/provenance/1552404943020
+     */
     String provenanceUri;
-    //Additional informations for the file description. Its containt depends of the type of file. 
-    //e.g. 
-    // {
-    //   "SensingDevice" => "http://www.opensilex.org/demo/s001",
-    //   "Vector" => "http://www.opensilex.org/demo/v001"
-    // }
+    
+    /**
+     * Additional information for the file description. Its content depends on the type of file. 
+     * @example 
+     *{
+     *  "SensingDevice" => "http://www.opensilex.org/demo/s001",
+     *  "Vector" => "http://www.opensilex.org/demo/v001"
+     *}
+     */
     Map<String, Object> metadata;
 
     @URL
@@ -122,7 +136,8 @@ public class FileDescriptionPostDTO extends AbstractVerifiedClass {
     }
     
     /**
-     * Method to unserialize FileDescriptionPostDTO, required because this data is received as @FormDataParam
+     * Method to unserialize FileDescriptionPostDTO.
+     * Required because this data is received as @FormDataParam.
      * @param param
      * @return
      * @throws IOException 

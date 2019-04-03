@@ -221,23 +221,23 @@ public class ImageMetadataMongoDAO extends MongoDAO<ImageMetadata> {
         
         for (ImageMetadataDTO imageMetadata : imagesMetadata) {
             //1. Check if the image type exist
-            opensilex.service.dao.ImageMetadataSparqlDAO imageMetadataDaoSesame = new opensilex.service.dao.ImageMetadataSparqlDAO();
-            if (!imageMetadataDaoSesame.existUri(imageMetadata.getRdfType())) {
+            opensilex.service.dao.ImageMetadataSparqlDAO imageMetadataDao = new opensilex.service.dao.ImageMetadataSparqlDAO();
+            if (!imageMetadataDao.existUri(imageMetadata.getRdfType())) {
                 dataOk = false;
                 checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Wrong image type given : " + imageMetadata.getRdfType()));
             }
 
             //2. Check if the concerned items exist in the triplestore
             for (ConcernedItemDTO concernedItem : imageMetadata.getConcernedItems()) {
-                if (!imageMetadataDaoSesame.existUri(concernedItem.getUri())) {
+                if (!imageMetadataDao.existUri(concernedItem.getUri())) {
                     dataOk = false;
                     checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Unknown concerned item given : " + concernedItem.getUri()));
                 }
             }
 
             //3. Check if the sensor exist
-            SensorDAO sensorDAOSesame = new SensorDAO();
-            if (!sensorDAOSesame.existAndIsSensor(imageMetadata.getConfiguration().getSensor())) {
+            SensorDAO sensorDAO = new SensorDAO();
+            if (!sensorDAO.existAndIsSensor(imageMetadata.getConfiguration().getSensor())) {
                 dataOk = false;
                 checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Unknown sensor given : " + imageMetadata.getConfiguration().getSensor()));
             }

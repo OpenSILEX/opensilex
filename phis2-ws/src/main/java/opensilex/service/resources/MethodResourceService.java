@@ -81,14 +81,14 @@ public class MethodResourceService extends ResourceService {
                               @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         if (methods != null && !methods.isEmpty()) {
-            MethodDAO methodDaoSesame = new MethodDAO();
+            MethodDAO methodDao = new MethodDAO();
             if (context.getRemoteAddr() != null) {
-                methodDaoSesame.remoteUserAdress = context.getRemoteAddr();
+                methodDao.remoteUserAdress = context.getRemoteAddr();
             }
             
-            methodDaoSesame.user = userSession.getUser();
+            methodDao.user = userSession.getUser();
             
-            POSTResultsReturn result = methodDaoSesame.checkAndInsert(methods);
+            POSTResultsReturn result = methodDao.checkAndInsert(methods);
             
             if (result.getHttpStatus().equals(Response.Status.CREATED)) {
                 //Code 201, methodes insérées
@@ -133,14 +133,14 @@ public class MethodResourceService extends ResourceService {
         @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         if (methods != null && !methods.isEmpty()) {
-            MethodDAO methodDaoSesame = new MethodDAO();
+            MethodDAO methodDao = new MethodDAO();
             if (context.getRemoteAddr() != null) {
-                methodDaoSesame.remoteUserAdress = context.getRemoteAddr();
+                methodDao.remoteUserAdress = context.getRemoteAddr();
             }
             
-            methodDaoSesame.user = userSession.getUser();
+            methodDao.user = userSession.getUser();
             
-            POSTResultsReturn result = methodDaoSesame.checkAndUpdate(methods);
+            POSTResultsReturn result = methodDao.checkAndUpdate(methods);
             
             if (result.getHttpStatus().equals(Response.Status.OK)) {
                 //Code 200, traits modifiés
@@ -159,24 +159,24 @@ public class MethodResourceService extends ResourceService {
 
     /**
      * Gets method data.
-     * @param methodDaoSesame
+     * @param methodDao
      * @return the methods found
      * SILEX:todo
      * Add other filters than URI and label
      * \SILEX:todo
      */
-    private Response getMethodsData(MethodDAO methodDaoSesame) {
+    private Response getMethodsData(MethodDAO methodDao) {
         ArrayList<Method> methods;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Method> getResponse;
         
-        methods = methodDaoSesame.allPaginate();
+        methods = methodDao.allPaginate();
         
         if (methods == null) {
             getResponse = new ResultForm<>(0, 0, methods, true);
             return noResultFound(getResponse, statusList);
         } else if (!methods.isEmpty()) {
-            getResponse = new ResultForm<>(methodDaoSesame.getPageSize(), methodDaoSesame.getPage(), methods, false);
+            getResponse = new ResultForm<>(methodDao.getPageSize(), methodDao.getPage(), methods, false);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {
@@ -219,20 +219,20 @@ public class MethodResourceService extends ResourceService {
         @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_METHOD_URI) @QueryParam("uri") @URL String uri,
         @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_METHOD_LABEL) @QueryParam("label") String label
     ) {
-        MethodDAO methodDaoSesame = new MethodDAO();
+        MethodDAO methodDao = new MethodDAO();
         
         if (uri != null) {
-            methodDaoSesame.uri = uri;
+            methodDao.uri = uri;
         }
         if (label != null) {
-            methodDaoSesame.label = label;
+            methodDao.label = label;
         }
         
-        methodDaoSesame.user = userSession.getUser();
-        methodDaoSesame.setPage(page);
-        methodDaoSesame.setPageSize(limit);
+        methodDao.user = userSession.getUser();
+        methodDao.setPage(page);
+        methodDao.setPageSize(limit);
         
-        return getMethodsData(methodDaoSesame);
+        return getMethodsData(methodDao);
     }
     
     /**
@@ -269,12 +269,12 @@ public class MethodResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
         }
         
-        MethodDAO methodDaoSesame = new MethodDAO();
-        methodDaoSesame.uri = method;
-        methodDaoSesame.setPageSize(limit);
-        methodDaoSesame.setPage(page);
-        methodDaoSesame.user = userSession.getUser();
+        MethodDAO methodDao = new MethodDAO();
+        methodDao.uri = method;
+        methodDao.setPageSize(limit);
+        methodDao.setPage(page);
+        methodDao.user = userSession.getUser();
         
-        return getMethodsData(methodDaoSesame);
+        return getMethodsData(methodDao);
     }
 }

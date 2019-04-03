@@ -135,14 +135,14 @@ public class VariableResourceService extends ResourceService {
         @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         if (variables != null && !variables.isEmpty()) {
-            VariableDAO variableDaoSesame = new VariableDAO();
+            VariableDAO variableDao = new VariableDAO();
             if (context.getRemoteAddr() != null) {
-                variableDaoSesame.remoteUserAdress = context.getRemoteAddr();
+                variableDao.remoteUserAdress = context.getRemoteAddr();
             }
             
-            variableDaoSesame.user = userSession.getUser();
+            variableDao.user = userSession.getUser();
             
-            POSTResultsReturn result = variableDaoSesame.checkAndUpdate(variables);
+            POSTResultsReturn result = variableDao.checkAndUpdate(variables);
             
             if (result.getHttpStatus().equals(Response.Status.OK)) {
                 //Code 200, traits modifiés
@@ -228,29 +228,29 @@ public class VariableResourceService extends ResourceService {
         @ApiParam(value = "Search by method", example = DocumentationAnnotation.EXAMPLE_METHOD_URI) @QueryParam("method") @URL String method,
         @ApiParam(value = "Search by unit", example = DocumentationAnnotation.EXAMPLE_UNIT_URI) @QueryParam("unit") @URL String unit
     ) {
-        VariableDAO variableDaoSesame = new VariableDAO();
+        VariableDAO variableDao = new VariableDAO();
         
         if (uri != null) {
-            variableDaoSesame.uri = uri;
+            variableDao.uri = uri;
         }
         if (label != null) {
-            variableDaoSesame.label = label;
+            variableDao.label = label;
         }
         if (trait != null) {
-            variableDaoSesame.trait = trait;
+            variableDao.trait = trait;
         }
         if (method != null) {
-            variableDaoSesame.method = method;
+            variableDao.method = method;
         }
         if (unit != null) {
-            variableDaoSesame.unit = unit;
+            variableDao.unit = unit;
         }
         
-        variableDaoSesame.user = userSession.getUser();
-        variableDaoSesame.setPage(page);
-        variableDaoSesame.setPageSize(pageSize);
+        variableDao.user = userSession.getUser();
+        variableDao.setPage(page);
+        variableDao.setPageSize(pageSize);
         
-        return getVariablesData(variableDaoSesame);
+        return getVariablesData(variableDao);
     }
     
     /**

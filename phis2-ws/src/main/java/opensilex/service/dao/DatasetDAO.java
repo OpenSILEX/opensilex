@@ -294,8 +294,8 @@ public class DatasetDAO extends MongoDAO<Dataset> {
             }
 
             // does variable exist ? 
-            VariableDAO variableDaoSesame = new VariableDAO();
-            if (!variableDaoSesame.existUri(datasetDTO.getVariableUri())) {
+            VariableDAO variableDao = new VariableDAO();
+            if (!variableDao.existUri(datasetDTO.getVariableUri())) {
                 dataState = false;
                 insertStatusList.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Unknown Variable : " + datasetDTO.getVariableUri()));
             }

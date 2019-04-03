@@ -461,15 +461,18 @@ public class SensorDAO extends SparqlDAO<Sensor> {
             for (SensorDTO sensor : sensors) {
                 try {
                     //2.1 check type (subclass of SensingDevice)
-                    UriDAO uriDaoSesame = new UriDAO();
-                    if (!uriDaoSesame.isSubClassOf(sensor.getRdfType(), Oeso.CONCEPT_SENSING_DEVICE.toString())) {
+                    UriDAO uriDao = new UriDAO();
+                    if (!uriDao.isSubClassOf(sensor.getRdfType(), Oeso.CONCEPT_SENSING_DEVICE.toString())) {
                         dataOk = false;
-                        checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Bad sensor type given. Must be sublass of SensingDevice concept"));
+                        checkStatus.add(new Status(
+                                StatusCodeMsg.DATA_ERROR, 
+                                StatusCodeMsg.ERR, 
+                                "Bad sensor type given. Must be sublass of SensingDevice concept"));
                     }
 
                     //2.2 check if person in charge exist
-                    User u = new User(sensor.getPersonInCharge());
-                    if (!userDao.existInDB(u)) {
+                    User user = new User(sensor.getPersonInCharge());
+                    if (!userDao.existInDB(user)) {
                         dataOk = false;
                         checkStatus.add(new Status(StatusCodeMsg.UNKNOWN_URI, StatusCodeMsg.ERR, "Unknown person in charge email"));
                     }
@@ -840,11 +843,11 @@ public class SensorDAO extends SparqlDAO<Sensor> {
         
         //1. Check if the sensorUri is a sensor in the triplestore
         if (existAndIsSensor(sensorUri)) {
-            VariableDAO variableDaoSesame = new VariableDAO();
+            VariableDAO variableDao = new VariableDAO();
             
             for (String variableUri : variables) {
                 //2. Check for each variable uri given if it exist and if it is really a variable
-                if (!variableDaoSesame.existAndIsVariable(variableUri)) {
+                if (!variableDao.existAndIsVariable(variableUri)) {
                     dataOk = false;
                     checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
                         "Unknwon variable : " + variableUri));

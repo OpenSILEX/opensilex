@@ -181,9 +181,9 @@ public class VariableDAO extends SparqlDAO<Variable> {
         //SILEX:test
         //All the triplestore connection has to been checked and updated
         //This is an unclean hot fix
-        String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
+        String tripleStoreServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
         String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "repositoryID");
-        rep = new HTTPRepository(sesameServer, repositoryID); //Stockage triplestore Sesame
+        rep = new HTTPRepository(tripleStoreServer, repositoryID); //Stockage triplestore Sesame
         rep.initialize();
         this.setConnection(rep.getConnection());
         this.getConnection().begin();
@@ -382,9 +382,9 @@ public class VariableDAO extends SparqlDAO<Variable> {
             try {
                 //SILEX:todo
                 // storage connection to review: dirty hotfix
-                String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
+                String tripleStoreServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
                 String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "repositoryID");
-                rep = new HTTPRepository(sesameServer, repositoryID); //Stockage triplestore Sesame
+                rep = new HTTPRepository(tripleStoreServer, repositoryID); //Stockage triplestore Sesame
                 rep.initialize();
                 this.setConnection(rep.getConnection());
                 this.getConnection().begin();
@@ -502,18 +502,18 @@ public class VariableDAO extends SparqlDAO<Variable> {
                     traitDao.uri = bindingSet.getValue(TRAIT).stringValue();
                 }
                 
-                MethodDAO methodDaoSesame = new MethodDAO();
+                MethodDAO methodDao = new MethodDAO();
                 if (method != null) {
-                    methodDaoSesame.uri = method;
+                    methodDao.uri = method;
                 } else {
-                    methodDaoSesame.uri = bindingSet.getValue(METHOD).stringValue();
+                    methodDao.uri = bindingSet.getValue(METHOD).stringValue();
                 }
                 
-                UnitDAO unitDaoSesame = new UnitDAO();
+                UnitDAO unitDao = new UnitDAO();
                 if (unit != null) {
-                    unitDaoSesame.uri = unit;
+                    unitDao.uri = unit;
                 } else {
-                    unitDaoSesame.uri = bindingSet.getValue(UNIT).stringValue();
+                    unitDao.uri = bindingSet.getValue(UNIT).stringValue();
                 }
                 
                 //Get ontology references 
@@ -537,8 +537,8 @@ public class VariableDAO extends SparqlDAO<Variable> {
                 
                 // Get the trait, method and unit information
                 ArrayList<Trait> traits = traitDao.allPaginate();
-                ArrayList<Method> methods = methodDaoSesame.allPaginate();
-                ArrayList<Unit> units = unitDaoSesame.allPaginate();
+                ArrayList<Method> methods = methodDao.allPaginate();
+                ArrayList<Unit> units = unitDao.allPaginate();
                 variable.setTrait(traits.get(0));
                 variable.setMethod(methods.get(0));
                 variable.setUnit(units.get(0));

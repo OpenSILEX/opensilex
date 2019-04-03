@@ -475,8 +475,8 @@ public class VectorDAO extends SparqlDAO<Vector> {
             for (VectorDTO vectorDTO : vectorsDTO) {
                 try {
                     //2.1 check type (subclass of Vector)
-                    UriDAO uriDaoSesame = new UriDAO();
-                    if (!uriDaoSesame.isSubClassOf(vectorDTO.getRdfType(), Oeso.CONCEPT_VECTOR.toString())) {
+                    UriDAO uriDao = new UriDAO();
+                    if (!uriDao.isSubClassOf(vectorDTO.getRdfType(), Oeso.CONCEPT_VECTOR.toString())) {
                         dataOk = false;
                         checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Bad vector type given"));
                     }

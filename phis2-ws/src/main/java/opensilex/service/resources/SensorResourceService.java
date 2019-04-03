@@ -410,15 +410,15 @@ public class SensorResourceService extends ResourceService {
         AbstractResultForm postResponse = null;
         
         if (sensors != null && !sensors.isEmpty()) {
-            SensorDAO sensorDAOSesame = new SensorDAO();
+            SensorDAO sensorDAO = new SensorDAO();
             
             if (context.getRemoteAddr() != null) {
-                sensorDAOSesame.remoteUserAdress = context.getRemoteAddr();
+                sensorDAO.remoteUserAdress = context.getRemoteAddr();
             }
             
-            sensorDAOSesame.user = userSession.getUser();
+            sensorDAO.user = userSession.getUser();
             
-            POSTResultsReturn result = sensorDAOSesame.checkAndInsert(sensors);
+            POSTResultsReturn result = sensorDAO.checkAndInsert(sensors);
             
             if (result.getHttpStatus().equals(Response.Status.CREATED)) {
                 postResponse = new ResponseFormPOST(result.statusList);
@@ -475,14 +475,14 @@ public class SensorResourceService extends ResourceService {
         AbstractResultForm postResponse = null;
         
         if (sensors != null && !sensors.isEmpty()) {
-            SensorDAO sensorDAOSesame = new SensorDAO();
+            SensorDAO sensorDAO = new SensorDAO();
             if (context.getRemoteAddr() != null) {
-                sensorDAOSesame.remoteUserAdress = context.getRemoteAddr();
+                sensorDAO.remoteUserAdress = context.getRemoteAddr();
             }
             
-            sensorDAOSesame.user = userSession.getUser();
+            sensorDAO.user = userSession.getUser();
             
-            POSTResultsReturn result = sensorDAOSesame.checkAndUpdate(sensors);
+            POSTResultsReturn result = sensorDAO.checkAndUpdate(sensors);
             
             if (result.getHttpStatus().equals(Response.Status.OK)
                     || result.getHttpStatus().equals(Response.Status.CREATED)) {

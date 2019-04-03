@@ -209,9 +209,9 @@ public class PropertyDAO extends SparqlDAO<Property> {
     /**
      * Checks if a given relation can be linked to a given rdfType. 
      * Check if there is a domain and if the rdfType corresponds to the domain.
-     * /!\ The PropertyDAOSesame#relation must contain the relation which domain is checked
+     * /!\ relation must contain the relation which domain is checked.
      * @param relationUri
-     * @param rdfType the rdf type. e.g. http://www.opensilex.org/vocabulary/oeso#RadiometricTarget
+     * @param rdfType the RDF type. e.g. http://www.opensilex.org/vocabulary/oeso#RadiometricTarget
      * @return true if the given property can be linked to the given rdfType
      *         false if the given rdfType is not part of the domain of the property.
      */
@@ -235,7 +235,7 @@ public class PropertyDAO extends SparqlDAO<Property> {
     /**
      * Checks if a given relation can be linked to a given rdfType. 
      * Checks if there is a domain and if the rdfType corresponds to the domain.
-     * /!\ The PropertyDAOSesame#relation must contain the relation which domain is checked
+     * /!\ relation must contain the relation which domain is checked.
      * @param relationUri
      * @param rdfType the rdf type. e.g. http://www.opensilex.org/vocabulary/oeso#RadiometricTarget
      * @return true if the given property can be linked to the given rdfType
@@ -903,7 +903,7 @@ public class PropertyDAO extends SparqlDAO<Property> {
      * /!\ Prerequisite: data must have been checked before calling this method
      * @param objectResource
      * @param graph
-     * @see EventDAOSesame#check(java.util.List) 
+     * @see check(java.util.List) 
      * @param properties
      * @return the insertion result, with the error list or the URI of the 
      *         events inserted

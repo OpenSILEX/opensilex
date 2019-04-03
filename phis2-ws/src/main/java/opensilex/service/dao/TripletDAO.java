@@ -63,15 +63,15 @@ public class TripletDAO extends SparqlDAO<Triplet> {
         
         //check triplets
         for (TripletDTO tripletDTO : tripletsGroup) {
-            UriDAO uriDaoSesame = new UriDAO();
+            UriDAO uriDao = new UriDAO();
 
             //1. check if triplet.s is exist
-            if (!uriDaoSesame.existUri(tripletDTO.getS())) { //unknown uri
+            if (!uriDao.existUri(tripletDTO.getS())) { //unknown uri
                 dataOk = false;
                 checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, StatusCodeMsg.UNKNOWN_URI + " " + tripletDTO.getS()));
             }
             //2. check if triplet.p is an existing relation
-            if (!uriDaoSesame.existUri(tripletDTO.getP())
+            if (!uriDao.existUri(tripletDTO.getP())
                     && !tripletDTO.getP().equals(Rdf.RELATION_TYPE.toString())
                     && !tripletDTO.getP().equals(Rdfs.RELATION_LABEL.toString())) {
                 dataOk = false;
@@ -82,7 +82,7 @@ public class TripletDAO extends SparqlDAO<Triplet> {
             //   and check the value of triplet.o
             if (tripletDTO.getO_type().equals(OType.URI.toString())) { //if value is supposed to be an uri
                 //if the uri does not exist in the triplestore, error
-                if (!uriDaoSesame.existUri(tripletDTO.getO())) {
+                if (!uriDao.existUri(tripletDTO.getO())) {
                     dataOk = false;
                     checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, StatusCodeMsg.UNKNOWN_URI + " " + tripletDTO.getO()));
                 }

@@ -45,19 +45,19 @@ public class AcquisitionSessionResourceService extends ResourceService {
     
     /**
      * Searches acquisition session metadata file metadata corresponding to the given type of file wanted.
-     * @param acquisitionSessionDAOSesame
+     * @param acquisitionSessionDAO
      * @return the acquisition session file metadata content for the hiddenPhis 
      *         part of the acquisition session file used for 4P.
      */
-    private Response getAcquisitionSessionMetadataFile(AcquisitionSessionDAO acquisitionSessionDAOSesame) {       
+    private Response getAcquisitionSessionMetadataFile(AcquisitionSessionDAO acquisitionSessionDAO) {       
         ArrayList<MetadataFileDTO> fileMetadata;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<MetadataFileDTO> getResponse;
         
         //Retrieve file format.
-        fileMetadata = acquisitionSessionDAOSesame.allPaginateFileMetadata();
+        fileMetadata = acquisitionSessionDAO.allPaginateFileMetadata();
         
-        Integer count = acquisitionSessionDAOSesame.countFileMetadataRows();
+        Integer count = acquisitionSessionDAO.countFileMetadataRows();
         
         if (fileMetadata == null) {
             getResponse = new ResultForm<>(0, 0, new ArrayList<>(), true);
@@ -69,7 +69,7 @@ public class AcquisitionSessionResourceService extends ResourceService {
             //SILEX:info
             //In this service, the total count is equals to the number of rows
             //\SILEX:info
-            getResponse = new ResultForm<>(acquisitionSessionDAOSesame.getPageSize(), acquisitionSessionDAOSesame.getPage(), fileMetadata, true, count);
+            getResponse = new ResultForm<>(acquisitionSessionDAO.getPageSize(), acquisitionSessionDAO.getPage(), fileMetadata, true, count);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }

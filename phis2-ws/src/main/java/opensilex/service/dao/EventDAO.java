@@ -50,8 +50,8 @@ import opensilex.service.model.Property;
  * @update [Andreas Garcia] 14 Feb. 2019: Add event detail service
  * @update [Andreas Garcia] 5 March 2019: Add events insertion service
  * @update [Andréas Garcia] 5 March 2019: 
- *      Move the generic function to get a string value from a binding set to DAOSesame
- *      Move concerned items accesses handling into a new ConcernedItemDAOSesame class
+ *      Move the generic function to get a string value from a binding set to mother class
+ *      Move concerned items accesses handling into a new ConcernedItemDAO class
  * @author Andreas Garcia <andreas.garcia@inra.fr>
  */
 public class EventDAO extends SparqlDAO<Event> {

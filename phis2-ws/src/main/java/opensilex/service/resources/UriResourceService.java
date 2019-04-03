@@ -286,15 +286,15 @@ public class UriResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
 
-        UriDAO uriDaoSesame = new UriDAO();
+        UriDAO uriDao = new UriDAO();
         if (uri != null) {
-            uriDaoSesame.uri = uri;
+            uriDao.uri = uri;
         }
-        uriDaoSesame.setPageSize(limit);
-        uriDaoSesame.setPage(page);
-        uriDaoSesame.user = userSession.getUser();
+        uriDao.setPageSize(limit);
+        uriDao.setPage(page);
+        uriDao.user = userSession.getUser();
 
-        return getAncestorsMetaData(uriDaoSesame);
+        return getAncestorsMetaData(uriDao);
     }
 
     /**

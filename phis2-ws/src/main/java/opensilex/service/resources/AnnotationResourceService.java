@@ -235,7 +235,7 @@ public class AnnotationResourceService extends ResourceService {
 
     /**
      * Searches annotations corresponding to search parameters given by the user.
-     * @param annotationDAOSesame
+     * @param annotationDAO
      * @return the annotations corresponding to the search
      */
     private Response getAnnotations(String uri, String creator, String target, String bodyValue, String motivatedBy, int page, int pageSize) {

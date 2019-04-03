@@ -711,10 +711,10 @@ public class DocumentSparqlDAO extends SparqlDAO<Document> {
         for (DocumentMetadataDTO documentMetadata : documentsMetadata) {
             //1. Delete actual metadata
             //1.1 Get informations which will be updated (to remove triplets)
-            DocumentSparqlDAO docDaoSesame = new DocumentSparqlDAO();
-            docDaoSesame.user = user;
-            docDaoSesame.uri = documentMetadata.getUri();
-            ArrayList<Document> documentsCorresponding = docDaoSesame.allPaginate();
+            DocumentSparqlDAO documentSparqlDao = new DocumentSparqlDAO();
+            documentSparqlDao.user = user;
+            documentSparqlDao.uri = documentMetadata.getUri();
+            ArrayList<Document> documentsCorresponding = documentSparqlDao.allPaginate();
 
             UpdateRequest deleteQuery = null;
             //1.2 Delete metatada associated to the URI

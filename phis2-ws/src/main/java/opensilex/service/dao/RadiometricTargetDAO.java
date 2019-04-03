@@ -421,9 +421,9 @@ public class RadiometricTargetDAO extends SparqlDAO<RadiometricTarget> {
      * @return the Radiometric Target information
      */
     public RadiometricTarget getRadiometricTarget(String radiometricTargetUri) {
-        PropertyDAO propertyDAOSesame = new PropertyDAO();
+        PropertyDAO propertyDAO = new PropertyDAO();
         RadiometricTarget radiometricTarget = new RadiometricTarget();
-        propertyDAOSesame.getAllPropertiesWithLabels(radiometricTarget, null);
+        propertyDAO.getAllPropertiesWithLabels(radiometricTarget, null);
         return radiometricTarget;
     }
     

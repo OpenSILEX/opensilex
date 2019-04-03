@@ -65,12 +65,12 @@ public class LayerDAO extends DAO<LayerDTO>{
         ScientificObjectSparqlDAO agronomicalObjectDao = new ScientificObjectSparqlDAO();
         ScientificObjectSQLDAO agronomicalObject = new ScientificObjectSQLDAO();
         
-        HashMap<String, ScientificObject> childrendAgronomicalObjectDaoSesame = agronomicalObjectDao.searchChildren(layerDTO);
+        HashMap<String, ScientificObject> scientificObjectChildren = agronomicalObjectDao.searchChildren(layerDTO);
         
-        ArrayList<String> childrenURIs = new ArrayList<>(childrendAgronomicalObjectDaoSesame.keySet());
+        ArrayList<String> childrenURIs = new ArrayList<>(scientificObjectChildren.keySet());
         HashMap<String,String> childrenAgronomicalObjectsGeometries = agronomicalObject.getGeometries(childrenURIs);
         
-        childrendAgronomicalObjectDaoSesame.entrySet().forEach((child) -> {
+        scientificObjectChildren.entrySet().forEach((child) -> {
             ScientificObject ao = child.getValue();
             ao.setGeometry(childrenAgronomicalObjectsGeometries.get(child.getKey()));
             children.put(child.getKey(), ao);

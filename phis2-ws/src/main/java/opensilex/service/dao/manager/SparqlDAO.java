@@ -50,7 +50,7 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
  * @update [Morgane Vidal] 4 Oct. 2018: Rename existObject to existUri and change the query of the method existUri.
  * @update [Andréas Garcia] 11 Jan. 2019: Add generic date time stamp comparison SparQL filter.
  * @update [Andréas Garcia] 5 Mar. 2019: 
- *   Move date related functions in TimeDAOSesame.java
+ *   Move date related functions in TimeDAO.java
  *   Add a generic function to get a string value from a binding set
  *   Add the max value of a page (to get all results of a service)
  * @param <T>
@@ -110,15 +110,15 @@ public abstract class SparqlDAO<T> extends DAO<T> {
     protected Integer pageSize;
     
     /**
-     * User IP address
+     * User IP address.
      */
     public String remoteUserAdress;
 
     public SparqlDAO() {
         try {
-            String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
+            String tripleStoreServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
             String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "repositoryID");
-            rep = new HTTPRepository(sesameServer, repositoryID); //Stockage triplestore Sesame
+            rep = new HTTPRepository(tripleStoreServer, repositoryID); //Stockage triplestore Sesame
             rep.initialize();
             setConnection(rep.getConnection());
         } catch (RepositoryException e) {
@@ -134,8 +134,8 @@ public abstract class SparqlDAO<T> extends DAO<T> {
 
     public SparqlDAO(String repositoryID) {
         try {
-            String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
-            rep = new HTTPRepository(sesameServer, repositoryID);
+            String tripleStore = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
+            rep = new HTTPRepository(tripleStore, repositoryID);
             rep.initialize();
             setConnection(rep.getConnection());
         } catch (RepositoryException e) {

@@ -548,11 +548,11 @@ public class UriGenerator {
             year = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
         }
 
-        UriDAO uriDaoSesame = new UriDAO();
+        UriDAO uriDao = new UriDAO();
 
-        if (uriDaoSesame.isSubClassOf(instanceType, Oeso.CONCEPT_VECTOR.toString())) {
+        if (uriDao.isSubClassOf(instanceType, Oeso.CONCEPT_VECTOR.toString())) {
             return generateVectorUri(year);
-        } else if (uriDaoSesame.isSubClassOf(instanceType, Oeso.CONCEPT_SENSING_DEVICE.toString())) {
+        } else if (uriDao.isSubClassOf(instanceType, Oeso.CONCEPT_SENSING_DEVICE.toString())) {
             return generateSensorUri(year);
         } else if (Oeso.CONCEPT_VARIABLE.toString().equals(instanceType)) {
             return generateVariableUri();
@@ -562,13 +562,13 @@ public class UriGenerator {
             return generateMethodUri();
         } else if (Oeso.CONCEPT_UNIT.toString().equals(instanceType)) {
             return generateUnitUri();
-        } else if (uriDaoSesame.isSubClassOf(instanceType, Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString())) {
+        } else if (uriDao.isSubClassOf(instanceType, Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString())) {
             return generateAgronomicalObjectUri(year);
         } else if (Oeso.CONCEPT_VARIETY.toString().equals(instanceType)) {
             return generateVarietyUri(additionalInformation);
-        } else if (uriDaoSesame.isSubClassOf(instanceType, Oeso.CONCEPT_IMAGE.toString())) {
+        } else if (uriDao.isSubClassOf(instanceType, Oeso.CONCEPT_IMAGE.toString())) {
             return generateImageUri(year, additionalInformation);
-        } else if (instanceType.equals(Foaf.CONCEPT_AGENT.toString()) || uriDaoSesame.isSubClassOf(instanceType, Foaf.CONCEPT_AGENT.toString())) {
+        } else if (instanceType.equals(Foaf.CONCEPT_AGENT.toString()) || uriDao.isSubClassOf(instanceType, Foaf.CONCEPT_AGENT.toString())) {
             return generateAgentUri(additionalInformation);
         } else if (instanceType.equals(Oeso.CONCEPT_ANNOTATION.toString())) {
             return generateAnnotationUri();
@@ -584,7 +584,7 @@ public class UriGenerator {
             return generateProvenanceUri();
         } else if (instanceType.equals(Oeso.CONCEPT_DATA.toString())) {
             return generateDataUri(additionalInformation);
-        } else if (uriDaoSesame.isSubClassOf(instanceType, Oeev.Event.getURI())) {
+        } else if (uriDao.isSubClassOf(instanceType, Oeev.Event.getURI())) {
             return generateEventUri();
         } else if (instanceType.equals(Time.Instant.toString())) {
             return generateInstantUri();

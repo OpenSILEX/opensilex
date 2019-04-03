@@ -272,7 +272,7 @@ public class DataFileDAO extends MongoDAO<FileDescription> {
                 "Unknwon provenance : " + fileDescription.getProvenanceUri()));
         } else if (!scientificObjectDao.existUri(fileDescription.getRdfType())) {
             // 2. Check if the rdf type uri exist, 
-            // we use scientificObjectDao for convenience to access DaoSesame.existUri method
+            // we use scientificObjectDao for convenience to access existUri method
             dataOk = false;
             checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
                 "Unknwon file rdf type : " + fileDescription.getRdfType()));

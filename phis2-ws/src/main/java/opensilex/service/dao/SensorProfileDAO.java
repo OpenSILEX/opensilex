@@ -83,16 +83,16 @@ public class SensorProfileDAO extends SparqlDAO<SensorProfile> {
         //1. check if the user is an administrator
         UserDAO userDAO = new UserDAO();
         if (userDAO.isAdmin(user)) {
-            UriDAO uriDaoSesame = new UriDAO();
+            UriDAO uriDao = new UriDAO();
             PropertyDAO propertyDAO = new PropertyDAO();
             for (SensorProfileDTO sensorProfile : sensorProfiles) {
                 //2. check if the given uri exist and is a sensor and keep the rdfType
-                uriDaoSesame.uri = sensorProfile.getUri();
-                ArrayList<Uri> urisTypes = uriDaoSesame.getAskTypeAnswer();
+                uriDao.uri = sensorProfile.getUri();
+                ArrayList<Uri> urisTypes = uriDao.getAskTypeAnswer();
                 if (urisTypes.size() > 0) {
                     String rdfType = urisTypes.get(0).getRdfType();
                     
-                    if (!uriDaoSesame.isSubClassOf(rdfType, Oeso.CONCEPT_SENSING_DEVICE.toString())) {
+                    if (!uriDao.isSubClassOf(rdfType, Oeso.CONCEPT_SENSING_DEVICE.toString())) {
                         validData = false;
                         checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "The type of the given uri is not a Sensing Device"));
                     }
@@ -100,8 +100,8 @@ public class SensorProfileDAO extends SparqlDAO<SensorProfile> {
                     //3. check the given properties 
                     for (PropertyPostDTO propertyDTO : sensorProfile.getProperties()) {
                         //3.1 check if the property exist
-                        uriDaoSesame.uri = propertyDTO.getRelation();
-                        ArrayList<Ask> uriExistance = uriDaoSesame.askUriExistance();
+                        uriDao.uri = propertyDTO.getRelation();
+                        ArrayList<Ask> uriExistance = uriDao.askUriExistance();
                         if (uriExistance.get(0).getExist()) {
                             //3.2 check the domain of the property
                             String propertyRelationUri = propertyDTO.getRelation();
@@ -111,7 +111,7 @@ public class SensorProfileDAO extends SparqlDAO<SensorProfile> {
                             if (propertyDomains != null && propertyDomains.size() > 0) { //the property has a specific domain
                                 boolean domainOk = false;
                                 for (String propertyDomain : propertyDomains) {
-                                    if (uriDaoSesame.isSubClassOf(rdfType, propertyDomain)) {
+                                    if (uriDao.isSubClassOf(rdfType, propertyDomain)) {
                                         domainOk = true;
                                         }
                                 }

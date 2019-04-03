@@ -294,11 +294,11 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
             }
             
             // Gets experiments variables
-            ExperimentSparqlDAO experimentDAOSesame = new ExperimentSparqlDAO();
+            ExperimentSparqlDAO experimentDAO = new ExperimentSparqlDAO();
             for (Experiment experiment : experiments) {
-                HashMap<String, String> variables = experimentDAOSesame.getVariables(experiment.getUri());
+                HashMap<String, String> variables = experimentDAO.getVariables(experiment.getUri());
                 experiment.setVariables(variables);
-                HashMap<String, String> sensors = experimentDAOSesame.getSensors(experiment.getUri());
+                HashMap<String, String> sensors = experimentDAO.getSensors(experiment.getUri());
                 experiment.setSensors(sensors);
             }
             
@@ -606,8 +606,8 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
                     } else { // If non existing data and inserted
                         insertStatusList.add(new Status("Data inserted", StatusCodeMsg.INFO, String.valueOf(inserted) + " experiments inserted"));
                         //Add the experiments in the triplestore
-                        ExperimentSparqlDAO experimentDAOSesame = new ExperimentSparqlDAO();
-                        POSTResultsReturn insertTriplestore = experimentDAOSesame.insertExperiments(experiments);
+                        ExperimentSparqlDAO experimentDAO = new ExperimentSparqlDAO();
+                        POSTResultsReturn insertTriplestore = experimentDAO.insertExperiments(experiments);
                         if (!insertTriplestore.getDataState()) { //An error occurred
                             insertStatusList.addAll(insertTriplestore.getStatusList());
                             insertionState = false;
@@ -1028,9 +1028,9 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
                 //2. Check if the user has the rigth to update the experiment
                 if (canUserUpdateExperiment(experiment)) {
                     //3. Check for each variable uri given if it exist and is a variable.
-                    VariableDAO variableDaoSesame = new VariableDAO();
+                    VariableDAO variableDao = new VariableDAO();
                     for (String variableUri : variables) {
-                        if (!variableDaoSesame.existAndIsVariable(variableUri)) {
+                        if (!variableDao.existAndIsVariable(variableUri)) {
                             dataOk = false;
                             checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
                                 StatusCodeMsg.UNKNOWN_URI + " " + variableUri));
@@ -1075,9 +1075,9 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
                 //2. Check if the user has the rigth to update the experiment
                 if (canUserUpdateExperiment(experiment)) {
                     //3. Check for each sensor uri given if it exist and is a sensor.
-                    SensorDAO sensorDAOSesame = new SensorDAO();
+                    SensorDAO sensorDAO = new SensorDAO();
                     for (String sensorUri : sensors) {
-                        if (!sensorDAOSesame.existAndIsSensor(sensorUri)) {
+                        if (!sensorDAO.existAndIsSensor(sensorUri)) {
                             dataOk = false;
                             checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
                                 StatusCodeMsg.UNKNOWN_URI + " " + sensorUri));
@@ -1112,8 +1112,8 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
      * @return the update result.
      */
     private POSTResultsReturn updateLinkedVariables(String experimentUri, List<String> variables) {
-        ExperimentSparqlDAO experimentDAOSesame = new ExperimentSparqlDAO();
-        return experimentDAOSesame.updateLinkedVariables(experimentUri, variables);
+        ExperimentSparqlDAO experimentDAO = new ExperimentSparqlDAO();
+        return experimentDAO.updateLinkedVariables(experimentUri, variables);
     }
     
     /**
@@ -1126,8 +1126,8 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
      * @return the update result.
      */
     private POSTResultsReturn updateLinkedSensors(String experimentUri, List<String> sensors) {
-        ExperimentSparqlDAO experimentDAOSesame = new ExperimentSparqlDAO();
-        return experimentDAOSesame.updateLinkedSensors(experimentUri, sensors);
+        ExperimentSparqlDAO experimentDAO = new ExperimentSparqlDAO();
+        return experimentDAO.updateLinkedSensors(experimentUri, sensors);
     }
     
     /**

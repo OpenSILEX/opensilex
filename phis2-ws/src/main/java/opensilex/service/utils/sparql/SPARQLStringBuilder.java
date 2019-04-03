@@ -28,16 +28,15 @@ public abstract class SPARQLStringBuilder {
     protected int blankNodeCounter = 0;
 
     protected String filter = "";
-    Boolean sesameUriFormSubject = null;
-    Boolean sesameUriFormPredicat = null;
-    Boolean sesameUriFormObject = null;
+    Boolean tripleStoreUriFormSubject = null;
+    Boolean tripleStoreUriFormPredicat = null;
+    Boolean tripleStoreUriFormObject = null;
 
     public SPARQLStringBuilder() {
         prefix ="";
         select = "";
         body = "";
         parameters = "";
-
     }
 
     public void appendToBody(String queryPart) {
@@ -77,39 +76,39 @@ public abstract class SPARQLStringBuilder {
     }
 
     public void forceSubjectUriForm() {
-        sesameUriFormSubject = true;
+        tripleStoreUriFormSubject = true;
     }
 
     public void normalSubjectUriForm() {
-        sesameUriFormSubject = null;
+        tripleStoreUriFormSubject = null;
     }
 
     public void stringifySubjectForm() {
-        sesameUriFormSubject = false;
+        tripleStoreUriFormSubject = false;
     }
 
     public void forcePredicatUriForm() {
-        sesameUriFormPredicat = true;
+        tripleStoreUriFormPredicat = true;
     }
 
     public void normalPredicatUriForm() {
-        sesameUriFormPredicat = null;
+        tripleStoreUriFormPredicat = null;
     }
 
     public void stringifyPredicatForm() {
-        sesameUriFormPredicat = false;
+        tripleStoreUriFormPredicat = false;
     }
 
     public void forceObjectUriForm() {
-        sesameUriFormObject = true;
+        tripleStoreUriFormObject = true;
     }
 
     public void normalObjectUriForm() {
-        sesameUriFormObject = null;
+        tripleStoreUriFormObject = null;
     }
 
     public void stringifyObjectForm() {
-        sesameUriFormObject = false;
+        tripleStoreUriFormObject = false;
     }
 
     /**
@@ -162,7 +161,7 @@ public abstract class SPARQLStringBuilder {
         if (subject == null) {
             body += " ?" + blankNodeCounter + " ";
             blankNodeCounter++;
-        } else if (sesameUriFormSubject == null) {
+        } else if (tripleStoreUriFormSubject == null) {
             if (subject.contains(":") && !isLink(subject)) {
                 body += " " + subject + " ";
             }
@@ -173,7 +172,7 @@ public abstract class SPARQLStringBuilder {
             } else {
                 body += " <" + subject + "> ";
             }
-        } else if (sesameUriFormSubject) {
+        } else if (tripleStoreUriFormSubject) {
             body += " <" + subject + "> ";
         } else {
             body += " \"" + subject + "\" ";
@@ -182,7 +181,7 @@ public abstract class SPARQLStringBuilder {
         if (predicate == null) {
             body += " ?" + blankNodeCounter + " ";
             blankNodeCounter++;
-        } else if (sesameUriFormPredicat == null) {
+        } else if (tripleStoreUriFormPredicat == null) {
             if (predicate.contains(":") && !isLink(predicate)) {
                 body += " " + predicate + " ";
             } else if (predicate.contains("\"")) {
@@ -192,7 +191,7 @@ public abstract class SPARQLStringBuilder {
             } else {
                 body += " <" + predicate + "> ";
             }
-        } else if (sesameUriFormPredicat) {
+        } else if (tripleStoreUriFormPredicat) {
             body += " <" + predicate + "> ";
         } else {
             body += " \"" + predicate + "\" ";
@@ -201,7 +200,7 @@ public abstract class SPARQLStringBuilder {
         if (object == null) {
             body += " ?" + blankNodeCounter + " ";
             blankNodeCounter++;
-        } else if (sesameUriFormObject == null) {
+        } else if (tripleStoreUriFormObject == null) {
             if (object.contains(":") && !isLink(object)) {
                 body += " " + object + " ";
             } else if (object.contains("'")){
@@ -214,7 +213,7 @@ public abstract class SPARQLStringBuilder {
             } else {
                 body += " <" + object + ">";
             }
-        } else if (sesameUriFormObject) {
+        } else if (tripleStoreUriFormObject) {
             body += " <" + object + "> ";
         } else {
             body += " \"" + object + "\" ";
@@ -243,7 +242,7 @@ public abstract class SPARQLStringBuilder {
             if (subject == null) {
                 body += " ?" + blankNodeCounter + " ";
                 blankNodeCounter++;
-            } else if (sesameUriFormSubject == null) {
+            } else if (tripleStoreUriFormSubject == null) {
                 if (subject.contains(":") && !isLink(subject)) {
                     body += " " + subject + " ";
                 } else if (subject.contains("\"")) {
@@ -253,7 +252,7 @@ public abstract class SPARQLStringBuilder {
                 } else {
                     body += " <" + subject + "> ";
                 }
-            } else if (sesameUriFormSubject) {
+            } else if (tripleStoreUriFormSubject) {
                 body += " <" + subject + "> ";
             } else {
                 body += " \"" + subject + "\" ";
@@ -262,7 +261,7 @@ public abstract class SPARQLStringBuilder {
             if (predicate == null) {
                 body += " ?" + blankNodeCounter + " ";
                 blankNodeCounter++;
-            } else if (sesameUriFormPredicat == null) {
+            } else if (tripleStoreUriFormPredicat == null) {
                 if (predicate.contains(":") && !isLink(predicate)) {
                     body += " " + predicate + " ";
                 } else if (predicate.contains("\"")) {
@@ -272,7 +271,7 @@ public abstract class SPARQLStringBuilder {
                 } else {
                     body += " <" + predicate + "> ";
                 }
-            } else if (sesameUriFormPredicat) {
+            } else if (tripleStoreUriFormPredicat) {
                 body += " <" + predicate + "> ";
             } else {
                 body += " \"" + predicate + "\" ";
@@ -281,7 +280,7 @@ public abstract class SPARQLStringBuilder {
             if (union == null) {
                 body += " ?" + blankNodeCounter + " ";
                 blankNodeCounter++;
-            } else if (sesameUriFormObject == null) {
+            } else if (tripleStoreUriFormObject == null) {
                 if (union.contains(":") && !isLink(union)) {
                     body += " " + union + " ";
                 } else if (union.contains("\"")) {
@@ -291,7 +290,7 @@ public abstract class SPARQLStringBuilder {
                 } else {
                     body += " <" + union + ">";
                 }
-            } else if (sesameUriFormObject) {
+            } else if (tripleStoreUriFormObject) {
                 body += " <" + union + "> ";
             } else {
                 body += " \"" + union + "\" ";
@@ -314,9 +313,9 @@ public abstract class SPARQLStringBuilder {
         parameters = "";
         prefix = "";
         select = "";
-        sesameUriFormObject = null;
-        sesameUriFormPredicat = null;
-        sesameUriFormSubject = null;
+        tripleStoreUriFormObject = null;
+        tripleStoreUriFormPredicat = null;
+        tripleStoreUriFormSubject = null;
     }
     
     private boolean isLink(String link) {

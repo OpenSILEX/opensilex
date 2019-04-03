@@ -159,24 +159,24 @@ public class TraitResourceService extends ResourceService {
     
     /**
      * Gets trait data.
-     * @param traitDaoSesame
+     * @param traitDao
      * @return the traits found
      * SILEX:todo
      * Add other filters than URI and label
      * \SILEX:todo
      */
-    private Response getTraitsData(TraitDAO traitDaoSesame) {
+    private Response getTraitsData(TraitDAO traitDao) {
         ArrayList<Trait> traits;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Trait> getResponse;
         
-        traits = traitDaoSesame.allPaginate();
+        traits = traitDao.allPaginate();
         
         if (traits == null) {
             getResponse = new ResultForm<>(0, 0, traits, true);
             return noResultFound(getResponse, statusList);
         } else if (!traits.isEmpty()) {
-            getResponse = new ResultForm<>(traitDaoSesame.getPageSize(), traitDaoSesame.getPage(), traits, false);
+            getResponse = new ResultForm<>(traitDao.getPageSize(), traitDao.getPage(), traits, false);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {
@@ -189,6 +189,14 @@ public class TraitResourceService extends ResourceService {
         }
     }
     
+    /**
+     * Trait GET method.
+     * @param limit
+     * @param page
+     * @param uri
+     * @param label
+     * @return GET result
+     */
     @GET
     @ApiOperation(value = "Get all Traits corresponding to the searched params given",
                   notes = "Retrieve all traits authorized for the user corresponding to the user corresponding to the searched params given")

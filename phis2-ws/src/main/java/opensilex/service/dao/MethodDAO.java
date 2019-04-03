@@ -1,5 +1,5 @@
 //******************************************************************************
-//                            MethodDaoSesame.java 
+//                               MethodDAO.java 
 // SILEX-PHIS
 // Copyright © INRA 2017
 // Creation date: 17 November 2017

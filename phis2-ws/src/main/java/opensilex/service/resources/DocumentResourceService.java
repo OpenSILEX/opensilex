@@ -514,14 +514,14 @@ public class DocumentResourceService extends ResourceService {
         AbstractResultForm postResponse = null;
         
         if (documentsMetadata != null && !documentsMetadata.isEmpty()) {
-            DocumentSparqlDAO documentDaoSesame = new DocumentSparqlDAO();
-            if (documentDaoSesame.remoteUserAdress != null) {
-                documentDaoSesame.remoteUserAdress = context.getRemoteAddr();
+            DocumentSparqlDAO documentDao = new DocumentSparqlDAO();
+            if (documentDao.remoteUserAdress != null) {
+                documentDao.remoteUserAdress = context.getRemoteAddr();
             }
-            documentDaoSesame.user = userSession.getUser();
+            documentDao.user = userSession.getUser();
             
             // Check data and update database
-            POSTResultsReturn result = documentDaoSesame.checkAndUpdateList(documentsMetadata);
+            POSTResultsReturn result = documentDao.checkAndUpdateList(documentsMetadata);
             
             if (result.getHttpStatus().equals(Response.Status.OK)) { // 200: users updated
                 postResponse = new ResponseFormPOST(result.statusList);

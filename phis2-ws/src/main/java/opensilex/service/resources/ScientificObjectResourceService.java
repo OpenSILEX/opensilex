@@ -105,18 +105,18 @@ public class ScientificObjectResourceService extends ResourceService {
                 scientificObjectDao.user = userSession.getUser();
                 
                 //Check the scientific objects and insert them in triplestore
-                POSTResultsReturn resultSesame = scientificObjectDao.checkAndInsert(scientificObjectsDTO);
-                if (resultSesame.getHttpStatus().equals(Response.Status.CREATED)) {
+                POSTResultsReturn result = scientificObjectDao.checkAndInsert(scientificObjectsDTO);
+                if (result.getHttpStatus().equals(Response.Status.CREATED)) {
                     //scientific objects inserted (201)
-                    postResponse = new ResponseFormPOST(resultSesame.statusList);
-                    postResponse.getMetadata().setDatafiles(resultSesame.getCreatedResources());
-                    return Response.status(resultSesame.getHttpStatus()).entity(postResponse).build();
-                } else if (resultSesame.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                        || resultSesame.getHttpStatus().equals(Response.Status.OK)
-                        || resultSesame.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                    postResponse = new ResponseFormPOST(resultSesame.statusList);
+                    postResponse = new ResponseFormPOST(result.statusList);
+                    postResponse.getMetadata().setDatafiles(result.getCreatedResources());
+                    return Response.status(result.getHttpStatus()).entity(postResponse).build();
+                } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                        || result.getHttpStatus().equals(Response.Status.OK)
+                        || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                    postResponse = new ResponseFormPOST(result.statusList);
                 }
-                return Response.status(resultSesame.getHttpStatus()).entity(postResponse).build();
+                return Response.status(result.getHttpStatus()).entity(postResponse).build();
             } catch (Exception e) {
                 LOGGER.error(e.getMessage(), e);
                 return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();

@@ -81,14 +81,14 @@ public class UnitResourceService extends ResourceService {
                               @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         if (units != null && !units.isEmpty()) {
-            UnitDAO unitDaoSesame = new UnitDAO();
+            UnitDAO unitDao = new UnitDAO();
             if (context.getRemoteAddr() != null) {
-                unitDaoSesame.remoteUserAdress = context.getRemoteAddr();
+                unitDao.remoteUserAdress = context.getRemoteAddr();
             }
             
-            unitDaoSesame.user = userSession.getUser();
+            unitDao.user = userSession.getUser();
             
-            POSTResultsReturn result = unitDaoSesame.checkAndInsert(units);
+            POSTResultsReturn result = unitDao.checkAndInsert(units);
             
             if (result.getHttpStatus().equals(Response.Status.CREATED)) {
                 //Code 201: units inserted
@@ -133,14 +133,14 @@ public class UnitResourceService extends ResourceService {
         @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         if (units != null && !units.isEmpty()) {
-            UnitDAO unitDaoSesame = new UnitDAO();
+            UnitDAO unitDao = new UnitDAO();
             if (context.getRemoteAddr() != null) {
-                unitDaoSesame.remoteUserAdress = context.getRemoteAddr();
+                unitDao.remoteUserAdress = context.getRemoteAddr();
             }
             
-            unitDaoSesame.user = userSession.getUser();
+            unitDao.user = userSession.getUser();
             
-            POSTResultsReturn result = unitDaoSesame.checkAndUpdate(units);
+            POSTResultsReturn result = unitDao.checkAndUpdate(units);
             
             if (result.getHttpStatus().equals(Response.Status.OK)) {
                 //Code 200: units updated

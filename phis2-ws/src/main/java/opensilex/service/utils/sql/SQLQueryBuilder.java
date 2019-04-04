@@ -14,8 +14,7 @@ import java.util.List;
 /**
  * SQL query builder.
  * @update [Andréas Garcia] 28 Feb. 2019: Add max clause handling
- * @author Morgane Vidal <morgane.vidal@inra.fr>
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * @author Morgane Vidal <morgane.vidal@inra.fr>, Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class SQLQueryBuilder {
 
@@ -246,7 +245,6 @@ public class SQLQueryBuilder {
      * @param operator comparison operator
      * @param type
      * @param tableAlias
-     * @author Morgane Vidal: 31 Aug., 2017
      */
     public void appendORWhereConditionIfNeeded(String attribute, String value, String operator, String  type, String tableAlias) {
         if (value != null) {
@@ -261,7 +259,6 @@ public class SQLQueryBuilder {
      * @param operator comparison operator
      * @param type
      * @param tableAlias
-     * @author Morgane Vidal, le 21 février 2017
      *
      */
     public void appendANDWhereConditionIfNeeded(String attribute, String value, String operator, String  type, String tableAlias) {
@@ -272,7 +269,6 @@ public class SQLQueryBuilder {
     
     /**
      * Adds a LIMIT clause to the query.
-     * @author Morgane Vidal, 21 Feb., 2017
      * @param limit limit value
      */
     public void appendLimit(String limit) {

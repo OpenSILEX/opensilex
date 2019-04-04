@@ -48,7 +48,7 @@ import opensilex.service.model.Experiment;
  * total number of experiment by making it return the last experiment URI 
  * because the experiment URI generator now use the last inserted experiment
  * number (instead of total number of experiment) to calculate a new 
- * experiment's number
+ * experiment's number.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {

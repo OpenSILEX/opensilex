@@ -16,7 +16,6 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +25,7 @@ import opensilex.service.PropertiesFileManager;
  * File uploader. Enables simple SFTP calls in Java.
  * @update [Andréas Garcia] 23 Jan. 2019: Add generic function to create nested 
  * directories from a complete path
- * @author Arnaud Charleroy
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class FileUploader extends JSch{
     final static Logger LOGGER = LoggerFactory.getLogger(FileUploader.class);

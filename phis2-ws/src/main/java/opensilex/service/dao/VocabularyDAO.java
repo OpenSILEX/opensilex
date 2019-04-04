@@ -27,8 +27,7 @@ import opensilex.service.model.Namespace;
 
 /**
  * Vocabulary DAO.
- * @author Morgane Vidal <morgane.vidal@inra.fr>
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * @author Morgane Vidal <morgane.vidal@inra.fr>, Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class VocabularyDAO extends SparqlDAO<PropertyVocabularyDTO> {
 

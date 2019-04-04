@@ -22,8 +22,7 @@ import opensilex.service.resources.validation.interfaces.Date;
  * {@code null} elements are considered valid.
  * @see Date
  * @see DateFormat
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class DateFormatValidator implements ConstraintValidator<Date, String> {
 

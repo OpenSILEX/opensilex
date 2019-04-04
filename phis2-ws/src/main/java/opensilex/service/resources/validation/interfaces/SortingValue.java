@@ -24,8 +24,7 @@ import opensilex.service.resources.validation.validators.SortingValueValidator;
 /**
  * Interface to check that the given sorting value is one of those expected.
  * @see SortingValueValidator
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Target(value={METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER})
 @Retention(RUNTIME)

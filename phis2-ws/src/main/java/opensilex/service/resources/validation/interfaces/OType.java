@@ -25,8 +25,7 @@ import opensilex.service.resources.validation.validators.OTypeValidator;
  * Interface to check that the given o type is one of those expected.
  * @see OTypeValidator
  * @see https://www.w3.org/wiki/JSON_Triple_Sets
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Target(value={METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER})
 @Retention(RUNTIME)

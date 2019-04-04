@@ -45,8 +45,7 @@ import opensilex.service.model.Project;
  * @update [Andreas Garcia] 14 Feb. 2019: use the last inserted experiment
  * number instead of total number of experiment to calculate the number of a
  * new experiment
- * @author Morgane Vidal <morgane.vidal@inra.fr>
- * @author Arnaud Charleroy <arnaud.charleory@inra.fr>
+ * @author Morgane Vidal <morgane.vidal@inra.fr>, Arnaud Charleroy <arnaud.charleory@inra.fr>
  * SILEX:todo: 
  *       - Element: User agent uri
  *         Purpose: For now, generated user agent uris are not unic. 
@@ -307,7 +306,6 @@ public class UriGenerator {
      * <prefix>:id/agent/<unic_code>
      * <unic_code> = firstnames concat with lastnames in lowercase
      * @example http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy
-     * @author Arnaud Charleroy
      * @param agentSuffixe the agent suffix e.g. arnaud_charleroy
      * @return the new agent URI
      */

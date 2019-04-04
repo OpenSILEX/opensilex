@@ -19,8 +19,7 @@ import opensilex.service.resources.validation.interfaces.ProvenanceDate;
  * {@code null} elements are considered valid.
  * @update [Morgane Vidal] 10 Oct. 2018: remove the date validation (the @Date 
  * must already be used on the date field). 
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ProvenanceDateValidator implements ConstraintValidator<ProvenanceDate, ProvenanceDTO> {
 

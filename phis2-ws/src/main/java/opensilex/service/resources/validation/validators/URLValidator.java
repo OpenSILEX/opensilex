@@ -17,8 +17,7 @@ import opensilex.service.resources.validation.interfaces.URL;
  * Used by URL annotation to validate that a string value is an URL.
  * {@code null} elements are considered valid.
  * @see  opensilex.service.resources.validation.interfaces.URL
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class URLValidator implements ConstraintValidator<URL, String> {
 

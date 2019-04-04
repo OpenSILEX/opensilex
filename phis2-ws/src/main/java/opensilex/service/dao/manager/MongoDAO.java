@@ -25,7 +25,7 @@ import opensilex.service.model.User;
 
 /**
  * DAO for MongoDB querying.
- * @author Arnaud Charleroy
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  * @param <T>
  */
 public abstract class MongoDAO<T> extends DAO<T> {

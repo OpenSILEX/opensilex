@@ -12,8 +12,7 @@ import javax.inject.Singleton;
 /**
  * Web service return messages.
  * @see phenomeapi.service.view.brapi.Status
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Singleton
 public final class StatusCodeMsg {

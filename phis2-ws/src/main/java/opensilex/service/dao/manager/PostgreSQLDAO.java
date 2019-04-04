@@ -173,11 +173,11 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
      * @throws SQLException
      */
     public ResultSet selectQueryFromDAO(String query) throws SQLException {
-        Connection con;
-        Statement stat;
-        con = dataSource.getConnection();
-        stat = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-        return stat.executeQuery(query);
+        Connection connection;
+        Statement statement;
+        connection = dataSource.getConnection();
+        statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+        return statement.executeQuery(query);
     }
 
     /**
@@ -205,11 +205,11 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
      *
      */
     public static String formatMultipleValueQuery(String variables, String column, String request) {
-        StringTokenizer st = new StringTokenizer(variables, ",");
+        StringTokenizer stringTokenizer = new StringTokenizer(variables, ",");
         String result = "(";
-        result = result + column + " = '" + st.nextToken() + "'";
-        while (st.hasMoreTokens()) {
-            result = result + " OR " + column + " = '" + st.nextToken() + "'";
+        result = result + column + " = '" + stringTokenizer.nextToken() + "'";
+        while (stringTokenizer.hasMoreTokens()) {
+            result = result + " OR " + column + " = '" + stringTokenizer.nextToken() + "'";
         }
         result = result + ")";
         return request + " AND " + result;
@@ -228,17 +228,17 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
                 .append("\"").append(table).append("\"")
                 .append(" WHERE ")
                 .append(makeFindSQLConditionQuery(objectToSearch, false)).toString();
-        ResultSet rs = null;
+        ResultSet resultSet = null;
         PreparedStatement statement = null;
-        Connection con = null;
+        Connection connection = null;
 
         LOGGER.debug(query);
         try {
-            con = dataSource.getConnection();
-            statement = con.prepareStatement(query);
-            rs = statement.executeQuery();
-            if (rs != null) {
-                return rs.next();
+            connection = dataSource.getConnection();
+            statement = connection.prepareStatement(query);
+            resultSet = statement.executeQuery();
+            if (resultSet != null) {
+                return resultSet.next();
             }
             return false;
         } catch (SQLException e) {
@@ -247,14 +247,14 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
             return false;
         } finally {
             try {
-                if (rs != null) {
-                    rs.close();
+                if (resultSet != null) {
+                    resultSet.close();
                 }
                 if (statement != null) {
                     statement.close();
                 }
-                if (con != null) {
-                    con.close();
+                if (connection != null) {
+                    connection.close();
                 }
             } catch (SQLException ex) {
                 LOGGER.error(ex.getMessage());
@@ -279,37 +279,37 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
                 .append(makeFindSQLConditionQuery(objectToFind, false));
         LOGGER.debug(strSQLBuilder.toString());
         Statement Statement = null;
-        ResultSet rs = null;
-        Connection con = null;
+        ResultSet resultSet = null;
+        Connection connection = null;
         Map<String, String> objectFields = relationFieldsJavaSQLObject();
         final Field[] attributes = objectToFind.getClass().getDeclaredFields();
         LOGGER.debug(JsonConverter.ConvertToJson(objectToFind));
         try {
-            con = dataSource.getConnection();
-            Statement = con.createStatement(
+            connection = dataSource.getConnection();
+            Statement = connection.createStatement(
                     ResultSet.TYPE_SCROLL_INSENSITIVE, 
                     ResultSet.CONCUR_READ_ONLY, 
                     ResultSet.HOLD_CURSORS_OVER_COMMIT);
-            rs = Statement.executeQuery(strSQLBuilder.toString());
-            if (rs != null && rs.first()) {
+            resultSet = Statement.executeQuery(strSQLBuilder.toString());
+            if (resultSet != null && resultSet.first()) {
                 for (Field field : attributes) {
                     field.setAccessible(true);
                     if (objectFields.containsKey(field.getName())
-                            && rs.getObject(objectFields.get(field.getName())) != null) {
-                        if (rs.getObject(objectFields.get(field.getName())) instanceof Date) {
+                            && resultSet.getObject(objectFields.get(field.getName())) != null) {
+                        if (resultSet.getObject(objectFields.get(field.getName())) instanceof Date) {
                             if (field.getType() == String.class) {
-                                LocalDate fromDateFields = LocalDate.fromDateFields((Date)rs.getObject(objectFields.get(field.getName())));
+                                LocalDate fromDateFields = LocalDate.fromDateFields((Date)resultSet.getObject(objectFields.get(field.getName())));
                                 field.set(objectToFind, fromDateFields.toString("yyyy-MM-dd"));
                             } else if (field.getType() == DateTime.class) {
-                                Timestamp ts = new Timestamp(((Date) rs.getObject(objectFields.get(field.getName()))).getTime());
+                                Timestamp ts = new Timestamp(((Date) resultSet.getObject(objectFields.get(field.getName()))).getTime());
                                 field.set(objectToFind, new DateTime(ts));
                             }
-                        } else if (rs.getObject(objectFields.get(field.getName())) instanceof Geometry) {
+                        } else if (resultSet.getObject(objectFields.get(field.getName())) instanceof Geometry) {
                             if (field.getType() == String.class) {
                                 field.set(objectToFind, field.toString());
                             }
                         } else {
-                            field.set(objectToFind, rs.getObject(objectFields.get(field.getName()).replaceAll("\"", "")).toString());
+                            field.set(objectToFind, resultSet.getObject(objectFields.get(field.getName()).replaceAll("\"", "")).toString());
                         }
                     }
                 }
@@ -327,11 +327,11 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
                     LOGGER.error(ex.getMessage());
                 }
             }
-            if (rs != null) {
-                rs.close();
+            if (resultSet != null) {
+                resultSet.close();
             }
-            if (con != null) {
-                con.close();
+            if (connection != null) {
+                connection.close();
             }
         }
     }
@@ -393,40 +393,40 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
 
     /**
      * Creates a query to get an element in a database from its primary key.
-     * @param obj
+     * @param object
      * @param like
      * @return the query built
      */
-    public String makeFindSQLConditionQuery(T obj, boolean like) {
+    public String makeFindSQLConditionQuery(T object, boolean like) {
         final Map<String, String> pkeyLink = this.pkeySQLFieldLink();
-        StringBuilder strBuilder = new StringBuilder();
+        StringBuilder stringBuilder = new StringBuilder();
         List<Field> attributes = new ArrayList<>();
-        for (Class<?> c = obj.getClass(); c != null; c = c.getSuperclass()) {
-            attributes.addAll(Arrays.asList(c.getDeclaredFields()));
+        for (Class<?> objectClass = object.getClass(); objectClass != null; objectClass = objectClass.getSuperclass()) {
+            attributes.addAll(Arrays.asList(objectClass.getDeclaredFields()));
         }
         try {
             for (Field field : attributes) {
                 field.setAccessible(true);
-                Object fieldObject = field.get(obj);
+                Object fieldObject = field.get(object);
                 if (pkeyLink.containsKey(field.getName()) && fieldObject != null) {
-                    if (strBuilder.length() > 0) {
-                        strBuilder.append(" AND ");
+                    if (stringBuilder.length() > 0) {
+                        stringBuilder.append(" AND ");
                     }
                     String sqlField = "\"" + pkeyLink.get(field.getName()) + "\"";
                     if (fieldObject instanceof DateTime) {
                         if (like) {
                             final DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
                             final String finalDate = fmt.print((DateTime) fieldObject);
-                            strBuilder.append(sqlField).append("::text LIKE '").append(finalDate).append("%'");
+                            stringBuilder.append(sqlField).append("::text LIKE '").append(finalDate).append("%'");
                         } else {
                             final DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ssZ");
                             final String finalDate = fmt.print((DateTime) fieldObject).substring(0, 22);
-                            strBuilder.append(sqlField).append("='").append(finalDate).append("'");
+                            stringBuilder.append(sqlField).append("='").append(finalDate).append("'");
                         }
                     } else if (like) {
-                        strBuilder.append(sqlField).append(" LIKE '").append(fieldObject).append("%'");
+                        stringBuilder.append(sqlField).append(" LIKE '").append(fieldObject).append("%'");
                     } else {
-                        strBuilder.append(sqlField).append("='").append(fieldObject).append("'");
+                        stringBuilder.append(sqlField).append("='").append(fieldObject).append("'");
                     }
                 }
             }
@@ -434,7 +434,7 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
             LOGGER.error(ex.getMessage(), ex);
             return null;
         }
-        return strBuilder.toString();
+        return stringBuilder.toString();
     }
 
     /**

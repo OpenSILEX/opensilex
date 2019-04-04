@@ -20,8 +20,7 @@ import opensilex.service.configuration.DateFormats;
 
 /**
  * Dates formats and manipulations
- * @author Arnaud Charleroy <arnaud.charleory@inra.fr>
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleory@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class Dates {
     

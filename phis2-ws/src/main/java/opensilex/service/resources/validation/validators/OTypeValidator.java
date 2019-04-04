@@ -17,8 +17,7 @@ import opensilex.service.resources.validation.interfaces.OType;
  * {@code null} elements are considered valid.
  * @see OType
  * @see https://www.w3.org/wiki/JSON_Triple_Sets
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class OTypeValidator implements ConstraintValidator<OType, String> {
 

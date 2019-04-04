@@ -16,8 +16,7 @@ import java.util.ArrayList;
  * @see Pagination
  * @see https://brapi.docs.apiary.io
  * @param <T> The type of the objects of the data list attribute.
- * @author Samuël Chérimont
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * @author Samuël Chérimont, Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class Result<T> {
 

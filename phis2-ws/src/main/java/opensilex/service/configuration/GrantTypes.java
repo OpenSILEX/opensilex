@@ -13,8 +13,7 @@ package opensilex.service.configuration;
 
 /**
  * List of authorized grant type formats.
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */
 public enum GrantTypes {
     

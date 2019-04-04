@@ -17,8 +17,7 @@ import opensilex.service.resources.validation.interfaces.GroupLevel;
  * Validator used to validate group levels.
  * {@code null} elements are considered valid.
  * @see GroupLevel
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class GroupLevelValidator implements ConstraintValidator<GroupLevel, String> {
   

@@ -17,8 +17,7 @@ import opensilex.service.resources.validation.interfaces.GrantType;
  * Validator used to validate grant types.
  * {@code null} elements are considered valid.
  * @see GrantType
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class GrantTypeValidator implements ConstraintValidator<GrantType, String> {
    

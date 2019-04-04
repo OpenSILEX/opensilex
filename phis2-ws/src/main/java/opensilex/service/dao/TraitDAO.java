@@ -504,7 +504,6 @@ public class TraitDAO extends SparqlDAO<Trait> {
     
     /**
      * Gets the variables associated to the traits.
-     * @author Alice Boizet <alice.boizet@inra.fr>
      * @param trait 
      * @return traits list of traits
      */    

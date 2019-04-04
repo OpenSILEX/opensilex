@@ -29,8 +29,7 @@ import opensilex.service.model.Vector;
 /**
  * Acquisition sessions DAO.
  * @update [Arnaud Charleroy] 10 September 2018: minor fix on vector data gathering
- * @author Morgane Vidal <morgane.vidal@inra.fr>
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * @author Morgane Vidal <morgane.vidal@inra.fr>, Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class AcquisitionSessionDAO extends SparqlDAO<MetadataFileDTO> {
     

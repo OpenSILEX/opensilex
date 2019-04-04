@@ -10,7 +10,7 @@ package opensilex.service.configuration;
 /**
  * Web service default values according to BrAPI.
  * @see http://docs.brapi.apiary.io/#
- * @author Arnaud Charleroy
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public final class DefaultBrapiPaginationValues {
 

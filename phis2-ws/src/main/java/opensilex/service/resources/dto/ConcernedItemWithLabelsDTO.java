@@ -15,7 +15,7 @@ import opensilex.service.model.ConcernedItem;
 
 /**
  * Concerned item with labels DTO.
- * @author andreas
+ * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
 public class ConcernedItemWithLabelsDTO extends ConcernedItemDTO {
     

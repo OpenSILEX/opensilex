@@ -8,7 +8,7 @@
 package opensilex.service.configuration;
 
 /**
- * o_type values in TripletDTO.
+ * Object type values in the triplet DTO.
  * @see TripletDTO
  * @see https://www.w3.org/wiki/JSON_Triple_Sets
  * @author Morgane Vidal <morgane.vidal@inra.fr>

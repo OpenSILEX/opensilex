@@ -18,8 +18,7 @@ import opensilex.service.configuration.DateFormats;
 /**
  * Triplestore dates manager.
  * @see opensilex.service.utils.dates.Dates
- * @author Arnaud Charleroy <arnaud.charleory@inra.fr>
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleory@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class TriplestoreDates extends Dates {
     
@@ -42,7 +41,6 @@ public class TriplestoreDates extends Dates {
     /**
      * Tries to parse the given date in one of the dates formats defined which are 
      * expected to be received.
-     * @author Arnaud Charleroy
      * @see opensilex.service.configuration.DateFormats AUTHORIZED_USER_TRIPLESTORE_DATE_FORMATS
      * @param date the date string to parse
      * @return true if the date format is correct
@@ -62,7 +60,6 @@ public class TriplestoreDates extends Dates {
     /**
      * Converts a string date in DateTime if the date format corresponds to one 
      * of usable triplestore date format.
-     * @author Arnaud Charleroy
      * @see opensilex.service.configuration.DateFormats AUTHORIZED_USER_TRIPLESTORE_DATE_FORMATS
      * @param stringDate the date to be converted
      * @return DateTime the DateTime corresponding to the date string given. 

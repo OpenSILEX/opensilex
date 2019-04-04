@@ -85,8 +85,7 @@ import opensilex.service.result.ResultForm;
  * @update [Arnaud Charleroy] 7 Sept. 2018: add sort feature, query optimization (limit , offset, group_concat)
  *                                                 add comments and CONSTANTS to the code
  * @update [Andréas Garcia] 15 Jan. 2019 : Replace "concern" occurences by "concernedItem"
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Api("/documents")
 @Path("/documents")

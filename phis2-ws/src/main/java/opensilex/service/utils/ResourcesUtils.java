@@ -15,8 +15,7 @@ import java.util.UUID;
 
 /**
  * Resource useful functions.
- * @author Morgane Vidal <morgane.vidal@inra.fr>
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * @author Morgane Vidal <morgane.vidal@inra.fr>, Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class ResourcesUtils {
 
@@ -31,7 +30,6 @@ public class ResourcesUtils {
     /**
      * Returns the boolean value of the given string.
      * @param bool String
-     * @author Arnaud Charleroy
      * @return true if the string is equals to "true" or "t" (it is not case
      * sensitive) false if the string is not equals to the precedent strings
      */
@@ -69,7 +67,6 @@ public class ResourcesUtils {
 
     /**
      * ExtentY to plantHeight width to plantWidth.
-     * @author Arnaud Charleroy
      * @param mongoUserVariable
      * @return
      */

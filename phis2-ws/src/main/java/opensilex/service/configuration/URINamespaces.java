@@ -15,8 +15,7 @@ import java.util.Map;
  * Specific namespaces.
  * @update [Morgane Vidal] 12 Sept. 2018: remove ontology references (moved in 
  * the ontology package)
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class URINamespaces {
     

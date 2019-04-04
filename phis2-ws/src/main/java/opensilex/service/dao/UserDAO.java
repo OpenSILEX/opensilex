@@ -42,7 +42,7 @@ import opensilex.service.model.Group;
  * @update [Arnaud Charleroy] Jul. 2018: Add URI generation from e-mail
  * @update [Arnaud Charleroy] Sept. 2018: Pagination fixed
  * @update [Morgane Vidal] 8 Nov. 2018: fix users update (orcid) 
- * @author Arnaud Charleroy
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class UserDAO extends PhisDAO<User, UserDTO> {
 

@@ -16,8 +16,7 @@ import opensilex.service.resources.validation.interfaces.DocumentStatus;
  * Validator used to validate document's status.
  * {@code null} elements are considered valid.
  * @see DocumentStatus
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class DocumentStatusValidator implements ConstraintValidator<DocumentStatus, String> {
     

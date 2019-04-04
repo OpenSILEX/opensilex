@@ -12,13 +12,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Contains methods to verify automatically class's attributes from rules defined by user.
+ * Verifier of attributes from defined rues.
  * Allows to apply rules defined in DTO objects.
- * @update [Arnaud Charleroy] 18 Jul. 2018: Renforce string empty value 
+ * @update [Arnaud Charleroy] 18 Jul. 2018: Re-enforce string empty value 
  * verification and check rules on every object of a list
  * @update [Arnaud Charleroy, Morgane Vidal] 30 Aug. 2018: Refactoring rules and
  * modify conception
- * @author Arnaud Charleroy
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public abstract class AbstractVerifiedClass implements VerifiedClassInterface {
 

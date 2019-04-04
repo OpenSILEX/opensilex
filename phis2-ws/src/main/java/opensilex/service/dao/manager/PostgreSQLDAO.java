@@ -55,7 +55,7 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
     protected static final String PHIS_MODEL_DB_LOCATION = "Phis";
     protected static final String GNPIS_MODEL_DB_LOCATION = "GnpIS";
 
-    // to manage multiple database switch 
+    // To manage multiple database switch 
     static {
         Map<String, DataSource> tmpMap = new HashMap<>();
         tmpMap.put(PhisDAO.PHIS_MODEL_DB_LOCATION, PostgreSQLDataSource.getInstance());
@@ -66,9 +66,6 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
     // For query logging
     protected static final String SQL_SELECT_QUERY = "SQL query : ";
     
-    /**
-     * User
-     */
     public User user;
     protected Integer page;
     protected Integer pageSize;
@@ -80,10 +77,6 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
      */
     protected String table;
     protected String tableAlias;
-
-    /**
-     * Data source
-     */
     protected DataSource dataSource;
 
     /**
@@ -109,7 +102,7 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
 
     /**
      * @return current page number
-     * BrApi page starts at 0
+     * BrApi page starts at 0.
      */
     public Integer getPage() {
         if (page == null || pageSize < 0) {
@@ -172,74 +165,69 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
     }
 
     /**
-     * Not practical the resources (statement and resultset) stay open.Execute a search request from a DAO linked to a relational database.
+     * Not practical the resources (statement and resultset) stay open. 
+     * Execute a search request from a DAO linked to a relational database.
      * @param query
      * @return 
      * @deprecated
      * @throws SQLException
      */
     public ResultSet selectQueryFromDAO(String query) throws SQLException {
-        Connection con = null;
-        Statement stat = null;
+        Connection con;
+        Statement stat;
         con = dataSource.getConnection();
         stat = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
         return stat.executeQuery(query);
     }
 
     /**
-     * Runs a query from a DAO
+     * Runs a query from a DAO.
      * @param query
      * @return 
      * @throws SQLException
      */
     public Integer insertOrUpdateOrDeleteQueryFromDAO(String query) throws SQLException {
-        Connection con = dataSource.getConnection();
-        Statement stat = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+        Connection connection = dataSource.getConnection();
+        Statement stat = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
         Integer executeUpdate = stat.executeUpdate(query);
         stat.close();
-        con.close();
+        connection.close();
         return executeUpdate;
     }
 
     /**
-     * Prepare une requete sql en utilisant une chaine de variables sous forme
-     * variable1,variable2
-     * @author Samuel Cherimon
+     * Prepares a SQL query using a string with the following format: 
+     * "variable1, variable2".
      * @param variables
      * @param request
-     * @update AC 05/16 Rendre la méthode générique
-     * @param column column pour laquelle les variables seront ajoutées
-     * @return La chaine correspondant a la requete complète
+     * @param column column to which the variables will be added
+     * @return The complete query string
      *
      */
     public static String formatMultipleValueQuery(String variables, String column, String request) {
         StringTokenizer st = new StringTokenizer(variables, ",");
         String result = "(";
         result = result + column + " = '" + st.nextToken() + "'";
-//        result = result + "mm.\"codeVariable\" = '" + st.nextToken() + "'";
         while (st.hasMoreTokens()) {
             result = result + " OR " + column + " = '" + st.nextToken() + "'";
-//            result = result + " OR mm.\"codeVariable\" = '" + st.nextToken() + "'";
         }
         result = result + ")";
         return request + " AND " + result;
     }
 
     /**
-     * Construit et exécute la requête qui permet de savoir si un objet de type
-     * T est présent dans la base dans une base de données relationnelle à
-     * partir des informations d'un objet T
-     *
-     * @param obj l'objet à chercher
-     * @return
+     * Constructs and execute the query the permits to know if a T type object 
+     * exists in the database
+     * @param objectToSearch
+     * @return true if exists, false otherwise
      * @throws Exception
      */
-    public boolean existInDB(T obj) throws Exception {
+    public boolean existInDB(T objectToSearch) throws Exception {
         String query = new StringBuilder("SELECT * ")
                 .append("FROM ")
                 .append("\"").append(table).append("\"")
                 .append(" WHERE ")
-                .append(makeFindSQLConditionQuery(obj, false)).toString();
+                .append(makeFindSQLConditionQuery(objectToSearch, false)).toString();
         ResultSet rs = null;
         PreparedStatement statement = null;
         Connection con = null;
@@ -259,7 +247,6 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
             return false;
         } finally {
             try {
-
                 if (rs != null) {
                     rs.close();
                 }
@@ -276,33 +263,33 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
     }
 
     /**
-     * Construit et exécute la requête qui permet de trouver un objet de type T
-     * dans une base de données relationnelle à partir des informations d'un
-     * objet T, Cette fonction retourne un objet de type T
-     *
-     * @param obj l'objet à chercher
-     * @return
+     * Runs a query to find a T type object in a relational database.
+     * @param objectToFind
+     * @return the object found
      * @throws Exception
      */
     @Override
-    public T find(T obj) throws Exception {
+    public T find(T objectToFind) throws Exception {
         StringBuilder strSQLBuilder = new StringBuilder();
         // Requete SELECT préparée
         strSQLBuilder.append("SELECT * ")
                 .append("FROM ")
                 .append("\"").append(table).append("\"")
                 .append(" WHERE ")
-                .append(makeFindSQLConditionQuery(obj, false));
+                .append(makeFindSQLConditionQuery(objectToFind, false));
         LOGGER.debug(strSQLBuilder.toString());
         Statement Statement = null;
         ResultSet rs = null;
         Connection con = null;
         Map<String, String> objectFields = relationFieldsJavaSQLObject();
-        final Field[] attributes = obj.getClass().getDeclaredFields();
-        LOGGER.debug(JsonConverter.ConvertToJson(obj));
+        final Field[] attributes = objectToFind.getClass().getDeclaredFields();
+        LOGGER.debug(JsonConverter.ConvertToJson(objectToFind));
         try {
             con = dataSource.getConnection();
-            Statement = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+            Statement = con.createStatement(
+                    ResultSet.TYPE_SCROLL_INSENSITIVE, 
+                    ResultSet.CONCUR_READ_ONLY, 
+                    ResultSet.HOLD_CURSORS_OVER_COMMIT);
             rs = Statement.executeQuery(strSQLBuilder.toString());
             if (rs != null && rs.first()) {
                 for (Field field : attributes) {
@@ -311,27 +298,26 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
                             && rs.getObject(objectFields.get(field.getName())) != null) {
                         if (rs.getObject(objectFields.get(field.getName())) instanceof Date) {
                             if (field.getType() == String.class) {
-                                LocalDate fromDateFields = LocalDate.fromDateFields((Date) rs.getObject(objectFields.get(field.getName())));
-                                field.set(obj, fromDateFields.toString("yyyy-MM-dd"));
+                                LocalDate fromDateFields = LocalDate.fromDateFields((Date)rs.getObject(objectFields.get(field.getName())));
+                                field.set(objectToFind, fromDateFields.toString("yyyy-MM-dd"));
                             } else if (field.getType() == DateTime.class) {
                                 Timestamp ts = new Timestamp(((Date) rs.getObject(objectFields.get(field.getName()))).getTime());
-                                field.set(obj, new DateTime(ts));
+                                field.set(objectToFind, new DateTime(ts));
                             }
                         } else if (rs.getObject(objectFields.get(field.getName())) instanceof Geometry) {
                             if (field.getType() == String.class) {
-                                field.set(obj, field.toString());
+                                field.set(objectToFind, field.toString());
                             }
                         } else {
-                            field.set(obj, rs.getObject(objectFields.get(field.getName()).replaceAll("\"", "")).toString());
+                            field.set(objectToFind, rs.getObject(objectFields.get(field.getName()).replaceAll("\"", "")).toString());
                         }
                     }
                 }
             }
-            return obj;
+            return objectToFind;
         } catch (SQLException e) {
             LOGGER.error("SQL error Exist Request ", e);
             LOGGER.error(strSQLBuilder.toString());
-//            e.printStackTrace();
             return null;
         } finally {
             if (Statement != null) {
@@ -351,22 +337,19 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
     }
 
     /**
-     * Construit et exécute la requête qui permet d'inserér un objet de type T
-     * dans une base de données relationnelle à partir des informations d'un
-     * objet T
-     *
-     * @param obj l'objet à inserér
-     * @return
+     * Runs a query to insert a T type object in a relational database.
+     * @param objectToInsert
+     * @return the insertion result
      * @throws Exception
      */
-    public Boolean create(T obj) throws Exception {
+    public Boolean create(T objectToInsert) throws Exception {
         String query = new StringBuilder("INSERT INTO ")
                 .append("\"").append(table).append("\" ").toString();
         Connection con = null;
         PreparedStatement preparedStatement = null;
         try {
             con = dataSource.getConnection();
-            preparedStatement = makeCreatePreparedSQLConditionQuery(con, query, obj);
+            preparedStatement = makeCreatePreparedSQLConditionQuery(con, query, objectToInsert);
             preparedStatement.executeUpdate();
             String log = "";
             if (remoteUserAdress != null) {
@@ -395,28 +378,24 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
     }
 
     /**
-     * HashMap qui décrit les attributs qui correspondent à la clé primaire de
-     * l'objet et leur label dans la BD
-     *
+     * HashMap describing the attributes corresponding to the primary key
+     * of the object and their label in the database.
      * @return Map<String,String>
      */
     public abstract Map<String, String> pkeySQLFieldLink();
 
     /**
-     * HashMap qui décrit les attributs qui correspondent à l'objet et leur
-     * label dans la BD
-     *
+     * HashMap describing the attributes corresponding to the object and their 
+     * label in the database.
      * @return Map<String,String>
      */
     public abstract Map<String, String> relationFieldsJavaSQLObject();
 
     /**
-     * Crée automatiquement une requête pour récupérer un élément dans une base
-     * de données à partir de sa clé primaire
-     *
+     * Creates a query to get an element in a database from its primary key.
      * @param obj
      * @param like
-     * @return String requête SQL
+     * @return the query built
      */
     public String makeFindSQLConditionQuery(T obj, boolean like) {
         final Map<String, String> pkeyLink = this.pkeySQLFieldLink();
@@ -459,21 +438,19 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
     }
 
     /**
-     * Crée automatiquement une requête pour insérer un élément dans une base de
-     * données à partir de sa clé primaire
-     *
-     * @param obj l'objet à inserér
+     * Builds a query to insert an element in a database from its primary key.
+     * @param objectToInsert
      * @return
      */
-    public String makeCreateSQLConditionQuery(T obj) {
+    public String makeCreateSQLConditionQuery(T objectToInsert) {
         final Map<String, String> createSQLField = this.relationFieldsJavaSQLObject();
         StringBuilder attributesBuilder = new StringBuilder();
         StringBuilder valuesBuilder = new StringBuilder();
-        final Field[] attributes = obj.getClass().getDeclaredFields();
+        final Field[] attributes = objectToInsert.getClass().getDeclaredFields();
         try {
             for (Field field : attributes) {
                 field.setAccessible(true);
-                Object fieldObject = field.get(obj);
+                Object fieldObject = field.get(objectToInsert);
                 if (createSQLField.containsKey(field.getName())) {
                     if (attributesBuilder.length() > 0) {
                         attributesBuilder.append(", ");
@@ -505,20 +482,18 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
     }
 
     /**
-     * Crée automatiquement une requête préparée pour insérer un élément dans
-     * une base de données à partir de sa clé primaire
-     *
-     * @param con
-     * @param query L'endroit de l'insertion
-     * @param obj l'objet à inserér
+     * Builds a query to insert an element in a database from its primary key.
+     * @param connection
+     * @param query
+     * @param objectToInsert
      * @return
      */
-    public PreparedStatement makeCreatePreparedSQLConditionQuery(Connection con, String query, T obj) {
+    public PreparedStatement makeCreatePreparedSQLConditionQuery(Connection connection, String query, T objectToInsert) {
         PreparedStatement preparedStatement = null;
         final Map<String, String> createSQLField = this.relationFieldsJavaSQLObject();
         StringBuilder attributesBuilder = new StringBuilder();
         StringBuilder valuesBuilder = new StringBuilder();
-        final Field[] attributes = obj.getClass().getDeclaredFields();
+        final Field[] attributes = objectToInsert.getClass().getDeclaredFields();
 
         try {
             for (Field field : attributes) {
@@ -538,14 +513,13 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
             }
             final String createSQLValuesQuery = query + "(" + attributesBuilder.toString() + ")"
                     + " VALUES (" + valuesBuilder.toString() + ")";
-//            System.err.println(createSQLValuesQuery);
 
-            con = dataSource.getConnection();
-            preparedStatement = con.prepareStatement(createSQLValuesQuery);
+            connection = dataSource.getConnection();
+            preparedStatement = connection.prepareStatement(createSQLValuesQuery);
             int fieldCount = 1;
             for (Field field : attributes) {
                 field.setAccessible(true);
-                Object fieldObject = field.get(obj);
+                Object fieldObject = field.get(objectToInsert);
                 if (createSQLField.containsKey(field.getName())) {
                     if (fieldObject == null) {
                         preparedStatement.setObject(fieldCount, null);
@@ -573,50 +547,42 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
     public abstract ArrayList<T> all();
 
     /**
-     * Transforme un objet ResulSet en objet défini T
-     *
-     * @param result Données retournées par la BD
-     * @return un objet de type défini T
+     * Transforms a ResultSet object in a T type object.
+     * @param resultReturnedFromDatabase
+     * @return a T type object
      * @throws SQLException
      */
-    public abstract T get(ResultSet result) throws SQLException;
+    public abstract T get(ResultSet resultReturnedFromDatabase) throws SQLException;
 
     /**
-     * Retourne les élements retournés par la requête en prenant en compte la
-     * pagination de l'utilisateur
-     *
-     * @return
+     * Gets the paginated results from the query.
+     * @return the list of the objects found
      */
     public abstract ArrayList<T> allPaginate();
 
     /**
-     * Compte le nombre d'élement retournés par la requête
-     *
+     * Counts the results returned by the query.
      * @return Integer
      */
     public abstract Integer count();
 
     /**
-     * Compare deux objet du type T
-     *
-     * @param fromDB Premier objet à comparer
-     * @param object Deuxième objet à comparer
-     * @return un objet avec les informations des deux objets
+     * Compares and merges two T objects.
+     * @param firstObject
+     * @param secondObject
+     * @return a T object which is the result of the merge
      */
-    protected abstract T compareAndMergeObjects(T fromDB, T object);
+    protected abstract T compareAndMergeObjects(T firstObject, T secondObject);
 
     /**
-     * Fonction qui permet de créer la partie commune d'une requête à la fois
-     * pour lister les éléments et les récupérés
-     *
+     * Prepares a search query.
      * @return SQLQueryBuilder
      */
     protected abstract SQLQueryBuilder prepareSearchQuery();
 
     /**
-     * Switch database according to jwt payload information
-     *
-     * @param jwtClaimsSet set of claims in the jwt payload
+     * Switch database according to JWT payload information.
+     * @param jwtClaimsSet set of claims in the JWT payload
      */
     public void setDataSourceFromJwtClaimsSet(JWTClaimsSet jwtClaimsSet) {
         if (jwtClaimsSet != null) {

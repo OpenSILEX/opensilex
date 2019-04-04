@@ -64,8 +64,7 @@ import opensilex.service.model.Experiment;
  * Documents metadata DAO for a triplestore.
  * @update [Morgane Vidal] 12 Oct. 2017: add status on documents : linked/unlinked
  * @update [Andréas Garcia] 15 Jan. 2019: Replace "concern" occurences by "concernedItem"
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class DocumentSparqlDAO extends SparqlDAO<Document> {
     final static Logger LOGGER = LoggerFactory.getLogger(DocumentSparqlDAO.class);

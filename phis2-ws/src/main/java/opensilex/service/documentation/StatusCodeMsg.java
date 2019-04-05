@@ -56,6 +56,7 @@ public final class StatusCodeMsg {
     public static final String UNKNOWN_EVENT_URI = "Unknown event URI";
     public static final String UNKNOWN_CONCERNED_ITEM_URI = "Unknown concerned item's URI %s";
     public static final String VALUE_TYPE_URI_NOT_IN_RANGE_OF_RELATION = "the type %s of the value %s is not in the range of the relation %s";
-    public static final String WRONG_VALUE = "Wrong value";
+    public static final String WRONG_VALUE = "Wrong value";    
+    public static final String WRONG_TYPE = "Wrong type";
     public static final String INVALID_INPUT_PARAMETERS = "Wrong format parameter(s)";
 }

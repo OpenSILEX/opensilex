@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                 PropertyDA.java
+//                                 PropertyDAO.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 29 May 2018
@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import opensilex.service.dao.exception.UnknownUriException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -57,31 +58,41 @@ import opensilex.service.model.Property;
 public class PropertyDAO extends SparqlDAO<Property> {
     final static Logger LOGGER = LoggerFactory.getLogger(PropertyDAO.class);
         
-    // This attribute is used to restrict available uri to a specific set of subclass
+    // This attribute is used to restrict available uri to a specific set of subclass.
     private Oeso subClassOf;
 
-    //The following attributes are used to search properties in the Triplestore
-    //the property relation name. 
-    //the relation term is used because it only represents the "vocabulary:property" 
-    //and it does not represents everything around such as domain, range, etc. 
-    //which is represented by the "Property" label
+    /* 
+    The following attributes are used to search properties in the Triplestore
+     the property relation name. 
+     the relation term is used because it only represents the "vocabulary:property" 
+     and it does not represents everything around such as domain, range, etc. 
+     which is represented by the "Property" label.
+    */
     private String relation;
     
-    //the domain label used to query Triplestore
+    // the domain label used to query Triplestore.
     private final String DOMAIN = "domain";
-    //the range label used to query Triplestore
+    
+    // the range label used to query Triplestore.
     private final String RANGE = "range";
-    //the cardinality between a property and a concept, used to query the Triplestore
+    
+    // the cardinality between a property and a concept, used to query the Triplestore.
     private final String CARDINALITY = "cardinality";
-    //the restriction between a property and a concept, used to query the Triplestore
+    
+    // the restriction between a property and a concept, used to query the Triplestore.
     private final String RESTRICTION = "restriction";
-    //a blank node, used to query the Triplestore
+    
+    // a blank node, used to query the Triplestore.
     private final String BLANCK_NODE = "_:x";
-    //a property, used to query the Triplestore
+    
+    // a property, used to query the Triplestore.
+    
     protected final String PROPERTY = "property";
-    //a count result, used to query the Triplestore (count properties)
+    
+    // a count result, used to query the Triplestore (count properties).
     private final String COUNT = "count";
-    //the relation, used to query the Triplestore (cardinalities)
+    
+    // the relation, used to query the Triplestore (cardinalities).
     protected final String RELATION = "relation";
     
     protected final String PROPERTY_TYPE = "propertyType";
@@ -116,7 +127,10 @@ public class PropertyDAO extends SparqlDAO<Property> {
         query.appendTriplet("<" + searchUri + ">", "<" + Rdf.RELATION_TYPE.toString() + ">", "?" + RDF_TYPE, null);
         
         if (subClassOf != null) {
-            query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", "<" + subClassOf + ">", null);
+            query.appendTriplet("?" + RDF_TYPE, 
+                    "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", 
+                    "<" + subClassOf + ">", 
+                    null);
         }
         
         LOGGER.debug(SPARQL_QUERY + query.toString());
@@ -136,9 +150,11 @@ public class PropertyDAO extends SparqlDAO<Property> {
     private SPARQLQueryBuilder prepareGetDomainQuery(String relationUri) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendSelect("?" + DOMAIN);
-        query.appendTriplet(relationUri, 
-                "<" + Rdfs.RELATION_DOMAIN.toString() + "> "
-                        + "/( <" + Owl.RELATION_UNION_OF.toString() + "> / <" + Rdf.RELATION_REST.toString() + ">*/ <" + Rdf.RELATION_FIRST.toString() + ">)*" , "?" + DOMAIN, null);
+        query.appendTriplet(
+                relationUri, 
+                "<" + Rdfs.RELATION_DOMAIN.toString() + "> /( <" + Owl.RELATION_UNION_OF.toString() + "> "
+                    + "/ <" + Rdf.RELATION_REST.toString() + ">*/ <" + Rdf.RELATION_FIRST.toString() + ">)*" ,
+                "?" + DOMAIN, null);
         
         LOGGER.debug(SPARQL_QUERY + " " + query.toString());
         
@@ -157,9 +173,12 @@ public class PropertyDAO extends SparqlDAO<Property> {
     private SPARQLQueryBuilder prepareGetRangeQuery(String relationUri) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendSelect("?" + RANGE);
-        query.appendTriplet(relationUri, 
-                "<" + Rdfs.RELATION_RANGE.toString() + "> "
-                        + "/( <" + Owl.RELATION_UNION_OF.toString() + "> / <" + Rdf.RELATION_REST.toString() + ">*/ <" + Rdf.RELATION_FIRST.toString() + ">)*" , "?" + RANGE, null);
+        query.appendTriplet(
+                relationUri, 
+                "<" + Rdfs.RELATION_RANGE.toString() + "> /( <" + Owl.RELATION_UNION_OF.toString() + "> "
+                    + "/ <" + Rdf.RELATION_REST.toString() + ">*/ <" + Rdf.RELATION_FIRST.toString() + ">)*" , 
+                "?" + RANGE, 
+                null);
         
         LOGGER.debug(SPARQL_QUERY + " " + query.toString());
         
@@ -237,7 +256,7 @@ public class PropertyDAO extends SparqlDAO<Property> {
      * Checks if there is a domain and if the rdfType corresponds to the domain.
      * /!\ relation must contain the relation which domain is checked.
      * @param relationUri
-     * @param rdfType the rdf type. e.g. http://www.opensilex.org/vocabulary/oeso#RadiometricTarget
+     * @param rdfType the RDF type. e.g. http://www.opensilex.org/vocabulary/oeso#RadiometricTarget
      * @return true if the given property can be linked to the given rdfType
      *         false if the given rdfType is not part of the domain of the property.
      */
@@ -434,14 +453,14 @@ public class PropertyDAO extends SparqlDAO<Property> {
      */
     private HashMap<String, ArrayList<PropertyPostDTO>> orderPropertiesByRelation(ArrayList<PropertyPostDTO> properties) {
         HashMap<String, ArrayList<PropertyPostDTO>> propertiesByRelation = new HashMap<>();
-        for (PropertyPostDTO propertyDTO : properties) {
+        properties.forEach((propertyDTO) -> {
             ArrayList<PropertyPostDTO> propertiesOfRelation = new ArrayList<>();
             if (propertiesByRelation.containsKey(propertyDTO.getRelation())) {
                 propertiesOfRelation = propertiesByRelation.get(propertyDTO.getRelation());
             }
             propertiesOfRelation.add(propertyDTO);
             propertiesByRelation.put(propertyDTO.getRelation(), propertiesOfRelation);
-        }
+        });
         
         return propertiesByRelation;
     }
@@ -462,33 +481,54 @@ public class PropertyDAO extends SparqlDAO<Property> {
                     if (cardinality.getRdfType().equals(Owl.RELATION_CARDINALITY.toString())) {
                         if (!numberOfRelations.containsKey(entry.getKey())) { //missing property
                             dataOk = false;
-                            checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.BAD_CARDINALITY + " missing " + entry.getKey()));
+                            checkStatus.add(new Status(
+                                    StatusCodeMsg.DATA_ERROR, 
+                                    StatusCodeMsg.ERR, 
+                                    StatusCodeMsg.BAD_CARDINALITY + " missing " + entry.getKey()));
                         } else if (numberOfRelations.get(entry.getKey()) != cardinality.getCardinaity()) { //there is not the required number of properties
                             dataOk = false;
-                            checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.BAD_CARDINALITY + " for " + entry.getKey()));
+                            checkStatus.add(new Status(
+                                    StatusCodeMsg.DATA_ERROR, 
+                                    StatusCodeMsg.ERR, 
+                                    StatusCodeMsg.BAD_CARDINALITY + " for " + entry.getKey()));
                         }
                     } else if (cardinality.getRdfType().equals(Owl.RELATION_MIN_CARDINALITY.toString())) {
                         if (!numberOfRelations.containsKey(entry.getKey())) { //missing property
                             dataOk = false;
-                            checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.BAD_CARDINALITY + " not enought " + entry.getKey()));
+                            checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, 
+                                    StatusCodeMsg.BAD_CARDINALITY + " not enought " + entry.getKey()));
                         } else if (numberOfRelations.get(entry.getKey()) < cardinality.getCardinaity()) {
                             dataOk = false;
-                            checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.BAD_CARDINALITY + " " + "not enought " + entry.getKey()));
+                            checkStatus.add(new Status(
+                                    StatusCodeMsg.DATA_ERROR, 
+                                    StatusCodeMsg.ERR, 
+                                    StatusCodeMsg.BAD_CARDINALITY + " " + "not enought " + entry.getKey()));
                         }
                     } else if (cardinality.getRdfType().equals(Owl.RELATION_MAX_CARDINALITY.toString())) {
                         if ((numberOfRelations.get(entry.getKey()) != null) 
                                 && (numberOfRelations.get(entry.getKey()) > cardinality.getCardinaity())) {
                             //error, bad cardinality
                             dataOk = false;
-                            checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.BAD_CARDINALITY + " " + "too many " + relation));
+                            checkStatus.add(new Status(
+                                    StatusCodeMsg.DATA_ERROR, 
+                                    StatusCodeMsg.ERR, 
+                                    StatusCodeMsg.BAD_CARDINALITY + " " + "too many " + relation));
                         }
                     } else if (cardinality.getRdfType().equals(Owl.RELATION_QUALIFIED_CARDINALITY.toString())) {
                         if (!numberOfRelations.containsKey(entry.getKey())) { //missing property
                             dataOk = false;
-                            checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.BAD_CARDINALITY + " missing " + entry.getKey()));
-                        } else if (numberOfRelations.get(entry.getKey()) != cardinality.getCardinaity()) { //there is not the required number of properties
+                            checkStatus.add(new Status(
+                                    StatusCodeMsg.DATA_ERROR, 
+                                    StatusCodeMsg.ERR, 
+                                    StatusCodeMsg.BAD_CARDINALITY + " missing " + entry.getKey()));
+                        } else if (numberOfRelations.get(entry.getKey()) != cardinality.getCardinaity()) { 
+                            //there is not the required number of properties
                             dataOk = false;
-                            checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.BAD_CARDINALITY + " for " + entry.getKey() + " expected " + cardinality.getCardinaity()));
+                            checkStatus.add(new Status(
+                                    StatusCodeMsg.DATA_ERROR, 
+                                    StatusCodeMsg.ERR, 
+                                    StatusCodeMsg.BAD_CARDINALITY + " for " + entry.getKey() + " expected " 
+                                            + cardinality.getCardinaity()));
                         }
                     }
                 }
@@ -507,16 +547,12 @@ public class PropertyDAO extends SparqlDAO<Property> {
      * @throws opensilex.service.dao.exception.UnknownUriException
      */
     public void checkExistenceRangeDomain(ArrayList<Property> properties, String ownerType) throws UnknownUriException {
-        POSTResultsReturn checkResult;
-        List<Status> status = new ArrayList<>();
         for (Property property : properties) {
             // If URI, check value existence with type
             if (property.getRdfType() != null) {
                 if (!exist(property.getValue(), RDF.type.getURI(), property.getRdfType())) {
                     throw new UnknownUriException(StatusCodeMsg.DATA_ERROR + ": " + String.format(
                             StatusCodeMsg.UNKNOWN_URI_OF_TYPE, property.getValue(), property.getRdfType()));
-                        StatusCodeMsg.ERR, 
-                        String.format(StatusCodeMsg.UNKNOWN_URI_OF_TYPE, property.getValue(), property.getRdfType())));
                 }
             }
             
@@ -544,10 +580,6 @@ public class PropertyDAO extends SparqlDAO<Property> {
                         + " " + property.getRelation());
             }
         }
-        boolean dataIsValid = status.isEmpty();
-        checkResult = new POSTResultsReturn(dataIsValid, null, dataIsValid);
-        checkResult.statusList = status;
-        return checkResult;  
     }
     
     /**
@@ -680,28 +712,32 @@ public class PropertyDAO extends SparqlDAO<Property> {
         optional +=" OPTIONAL {";
         optional += "?" + PROPERTY + " <" + Rdfs.RELATION_LABEL + "> ?" + PROPERTY_LABEL;
         if (language != null) {
-            optional += " . FILTER(LANG(?" + PROPERTY_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + PROPERTY_LABEL + "), \"" + language + "\"))";   
+            optional += " . FILTER(LANG(?" + PROPERTY_LABEL + ") = \"\" || LANGMATCHES(LANG(?" 
+                    + PROPERTY_LABEL + "), \"" + language + "\"))";   
         }
         optional += "}";
         // 3. Select property prefered label in the requested language if exists
         optional += " OPTIONAL {";
         optional += " ?" + PROPERTY + " <" + Skos.RELATION_PREF_LABEL + "> ?" + PROPERTY_PREF_LABEL;
         if (language != null) {
-            optional += " . FILTER(LANG(?" + PROPERTY_PREF_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + PROPERTY_PREF_LABEL + "), \"" + language + "\"))";
+            optional += " . FILTER(LANG(?" + PROPERTY_PREF_LABEL + ") = \"\" || LANGMATCHES(LANG(?" 
+                    + PROPERTY_PREF_LABEL + "), \"" + language + "\"))";
         }
         optional += "}";
         // 4. Select relation label in the requested language if exists
         optional += " OPTIONAL {";
         optional += "?" + RELATION + " <" + Rdfs.RELATION_LABEL + "> ?" + RELATION_LABEL;
         if (language != null) {
-            optional += " . FILTER(LANG(?" + RELATION_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + RELATION_LABEL + "), \"" + language + "\"))";
+            optional += " . FILTER(LANG(?" + RELATION_LABEL + ") = \"\" || LANGMATCHES(LANG(?" 
+                    + RELATION_LABEL + "), \"" + language + "\"))";
         }
         optional += "}"; 
         // 5. Select relation prefered label in the requested language if exists
         optional += " OPTIONAL {";
         optional += " ?" + RELATION + " <" + Skos.RELATION_PREF_LABEL + "> ?" + RELATION_PREF_LABEL;
         if (language != null) {
-            optional += " . FILTER(LANG(?" + RELATION_PREF_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + RELATION_PREF_LABEL + "), \"" + language + "\"))";        
+            optional += " . FILTER(LANG(?" + RELATION_PREF_LABEL + ") = \"\" || LANGMATCHES(LANG(?" 
+                    + RELATION_PREF_LABEL + "), \"" + language + "\"))";        
         }
         optional += "}";
         // 6. Select property type (rdf type of the property) if exists
@@ -711,14 +747,16 @@ public class PropertyDAO extends SparqlDAO<Property> {
         optional += " . OPTIONAL {";
         optional += "?" + PROPERTY_TYPE + " <" + Rdfs.RELATION_LABEL + "> ?" + PROPERTY_TYPE_LABEL;
         if (language != null) {
-            optional += " . FILTER(LANG(?" + PROPERTY_TYPE_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + PROPERTY_TYPE_LABEL + "), \"" + language + "\"))";
+            optional += " . FILTER(LANG(?" + PROPERTY_TYPE_LABEL + ") = \"\" || LANGMATCHES(LANG(?" 
+                    + PROPERTY_TYPE_LABEL + "), \"" + language + "\"))";
         }
         optional += "}";        
         // 7. Select property type prefered label in the requested language if exists
         optional += " . OPTIONAL {";
         optional += " ?" + PROPERTY_TYPE + " <" + Skos.RELATION_PREF_LABEL + "> ?" + PROPERTY_TYPE_PREF_LABEL;
         if (language != null) {
-            optional += " . FILTER(LANG(?" + PROPERTY_TYPE_PREF_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + PROPERTY_TYPE_PREF_LABEL + "), \"" + language + "\"))";
+            optional += " . FILTER(LANG(?" + PROPERTY_TYPE_PREF_LABEL + ") = \"\" || LANGMATCHES(LANG(?" 
+                    + PROPERTY_TYPE_PREF_LABEL + "), \"" + language + "\"))";
         }
         optional += "}";
         optional += "}";
@@ -728,7 +766,10 @@ public class PropertyDAO extends SparqlDAO<Property> {
         // 8. If subClassOf is specified, add filter on uri rdf:type
         if (subClassOf != null) {
             query.appendTriplet("<" + objectUri + ">", Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
-            query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", "<" + subClassOf + ">", null);
+            query.appendTriplet(
+                    "?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", 
+                    "<" + subClassOf + ">", 
+                    null);
         }
         
         if (relationsToIgnore != null)
@@ -826,12 +867,14 @@ public class PropertyDAO extends SparqlDAO<Property> {
                         property.addLastRdfTypeLabel(bindingSet.getValue(PROPERTY_TYPE_LABEL).stringValue());
                     }
 
-                    // 7. If definition already own the property, add current property labels to the existing property otherwise define prefered labels and add property to definition
+                    /* 7. If definition already own the property, add current property labels to the existing property 
+                    otherwise define prefered labels and add property to definition */
                     if (definition.hasProperty(property)) {
                         // Retrieve the existing property
                         Property existingProperty = definition.getProperty(property);
 
-                        // Prefered label are ignored in this case because they already are defined in the existing property
+                        /* Prefered label are ignored in this case because they already are defined in the existing 
+                        property */
                         
                         // Merge new labels with previous existing
                         existingProperty.addRdfTypeLabels(property.getRdfTypeLabels());
@@ -878,7 +921,8 @@ public class PropertyDAO extends SparqlDAO<Property> {
         Node graph = NodeFactory.createURI(graphString);
         for (Property property : properties) {
             if (property.getValue() != null) {
-                org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
+                org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory
+                        .createProperty(property.getRelation());
 
                 if (property.getRdfType() != null) {
                     Node propertyValue = NodeFactory.createURI(property.getValue());
@@ -918,7 +962,11 @@ public class PropertyDAO extends SparqlDAO<Property> {
         boolean linksInserted = true;
         
         getConnection().begin();
-        UpdateRequest query = prepareInsertLinksBetweenObjectAndPropertiesQuery(objectResource, properties, graph, createProperties);
+        UpdateRequest query = prepareInsertLinksBetweenObjectAndPropertiesQuery(
+                objectResource, 
+                properties, 
+                graph, 
+                createProperties);
 
         try {
             Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
@@ -950,7 +998,10 @@ public class PropertyDAO extends SparqlDAO<Property> {
         results.setCreatedResources(createdResourcesUris);
         if (resultState && !createdResourcesUris.isEmpty()) {
             results.createdResources = createdResourcesUris;
-            results.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, createdResourcesUris.size() + " " + StatusCodeMsg.RESOURCES_CREATED));
+            results.statusList.add(new Status(
+                    StatusCodeMsg.RESOURCES_CREATED, 
+                    StatusCodeMsg.INFO, 
+                    createdResourcesUris.size() + " " + StatusCodeMsg.RESOURCES_CREATED));
         }
         
         return results;

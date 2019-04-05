@@ -10,6 +10,7 @@ package opensilex.service.dao;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
@@ -202,77 +203,38 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
     }
 
     /**
-     * Checks and inserts the given annotations in the triplestore.
-     * @param annotations
-     * @return the insertion resultAnnotationUri. Message error if errors
-     * found in data the list of the generated URI of the annotations if the
-     * insertion has been done
-     */
-    public POSTResultsReturn checkAndInsert(List<Annotation> annotations) {
-        POSTResultsReturn checkResult = check(annotations);
-        if (checkResult.getDataState()) {
-            return insert(annotations);
-        } else { //errors found in data
-            return checkResult;
-        }
-    }
-
-    /**
      * Inserts the given annotations in the triplestore.
      * @param annotations
      * @return the insertion resultAnnotationUri, with the errors list or the
      * URI of the inserted annotations
+     * @throws opensilex.service.dao.exception.SemanticInconsistencyException
+     * @throws opensilex.service.dao.exception.UnknownUriException
      */
-    public POSTResultsReturn insert(List<Annotation> annotations) {
-        List<Status> insertStatus = new ArrayList<>();
-        List<String> createdResourcesUri = new ArrayList<>();
-
-        POSTResultsReturn results;
-        boolean resultState = false;
-        boolean annotationInsert = true;
+    @Override
+    public List<Annotation> create(List<Annotation> annotations) throws SemanticInconsistencyException, UnknownUriException, Exception {
+        check(annotations);
 
         UriGenerator uriGenerator = new UriGenerator();
 
         //SILEX:test
         //Triplestore connection has to be checked (this is kind of a hot fix)
-        this.getConnection().begin();
+        getConnection().begin();
         //\SILEX:test
 
         for (Annotation annotation : annotations) {
             try {
                 annotation.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_ANNOTATION.toString(), null, null));
-            } catch (Exception ex) { //In the annotations case, no exception should be raised
-                annotationInsert = false;
+                UpdateRequest query = prepareInsertQuery(annotation);
+                getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString()).execute();
+            } catch (Exception ex) {
+                getConnection().rollback();
+                getConnection().close();
+                throw ex;
             }
-
-            UpdateRequest query = prepareInsertQuery(annotation);
-            Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
-            prepareUpdate.execute();
-
-            createdResourcesUri.add(annotation.getUri());
         }
-
-        if (annotationInsert) {
-            resultState = true;
-            getConnection().commit();
-        } else {
-            getConnection().rollback();
-        }
-
-        results = new POSTResultsReturn(resultState, annotationInsert, true);
-        results.statusList = insertStatus;
-        results.setCreatedResources(createdResourcesUri);
-        if (resultState && !createdResourcesUri.isEmpty()) {
-            results.createdResources = createdResourcesUri;
-            results.statusList.add(new Status(
-                    StatusCodeMsg.RESOURCES_CREATED, 
-                    StatusCodeMsg.INFO, 
-                    createdResourcesUri.size() + " new resource(s) created"));
-        }
-        if (getConnection() != null) {
-            getConnection().close();
-        }
-        return results;
+        getConnection().commit();
+        getConnection().close();
+        return annotations;
     }
 
     /**
@@ -478,11 +440,6 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
             }
         }
         return annotations;
-    }
-
-    @Override
-    public List<Annotation> create(List<Annotation> objects) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override

@@ -348,16 +348,18 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
         // 1. check data
         for (Annotation annotation : annotations) {
             // 1.1 check motivation
-            if (!uriDao.existUri(annotation.getMotivatedBy())
-                    || !uriDao.isInstanceOf(annotation.getMotivatedBy(), Oa.CONCEPT_MOTIVATION.toString())) {
+            if (!uriDao.existUri(annotation.getMotivatedBy())) {
+                throw new UnknownUriException(StatusCodeMsg.DATA_ERROR + ": " 
+                        + StatusCodeMsg.UNKNOWN_URI + " for the motivatedBy field");
+            }
+            if (!uriDao.isInstanceOf(annotation.getMotivatedBy(), Oa.CONCEPT_MOTIVATION.toString())) {
                 throw new SemanticInconsistencyException(StatusCodeMsg.DATA_ERROR + ": " 
-                        + StatusCodeMsg.WRONG_VALUE + " for the motivatedBy field");
+                        + StatusCodeMsg.WRONG_TYPE + " for the motivatedBy field");
             }
 
             // 1.2 check if person exist
             if (!userDao.existUserUri(annotation.getCreator())) {
-                throw new UnknownUriException(StatusCodeMsg.UNKNOWN_URI + ": " +
-                        StatusCodeMsg.WRONG_VALUE + " for the person URI");
+                throw new UnknownUriException(StatusCodeMsg.UNKNOWN_URI + " for the person");
             }
         }
     }

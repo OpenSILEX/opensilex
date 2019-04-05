@@ -35,6 +35,8 @@ import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.configuration.DateFormats;
+import opensilex.service.dao.exception.SemanticInconsistencyException;
+import opensilex.service.dao.exception.UnknownUriException;
 import opensilex.service.dao.manager.SparqlDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.User;
@@ -336,47 +338,28 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
     /**
      * Checks the given annotations metadata.
      * @param annotations
-     * @return the resultAnnotationUri with the list of the errors found
-     * (empty if no error found)
+     * @throws opensilex.service.dao.exception.SemanticInconsistencyException
+     * @throws opensilex.service.dao.exception.UnknownUriException
      */
-    public POSTResultsReturn check(List<Annotation> annotations) {
-        POSTResultsReturn check;
-        // list of the returned results
-        List<Status> checkStatus = new ArrayList<>();
-        boolean dataOk = true;
-
+    public void check(List<Annotation> annotations) throws SemanticInconsistencyException, UnknownUriException {
         UriDAO uriDao = new UriDAO();
         UserDAO userDao = new UserDAO();
 
         // 1. check data
         for (Annotation annotation : annotations) {
-            try {
-                // 1.1 check motivation
-                if (!uriDao.existUri(annotation.getMotivatedBy())
-                        || !uriDao.isInstanceOf(annotation.getMotivatedBy(), Oa.CONCEPT_MOTIVATION.toString())) {
-                    dataOk = false;
-                    checkStatus.add(new Status(
-                            StatusCodeMsg.DATA_ERROR, 
-                            StatusCodeMsg.ERR, 
-                            StatusCodeMsg.WRONG_VALUE + " for the motivatedBy field"));
-                }
+            // 1.1 check motivation
+            if (!uriDao.existUri(annotation.getMotivatedBy())
+                    || !uriDao.isInstanceOf(annotation.getMotivatedBy(), Oa.CONCEPT_MOTIVATION.toString())) {
+                throw new SemanticInconsistencyException(StatusCodeMsg.DATA_ERROR + ": " 
+                        + StatusCodeMsg.WRONG_VALUE + " for the motivatedBy field");
+            }
 
-                // 1.2 check if person exist // PostgresQL
-                if (!userDao.existUserUri(annotation.getCreator())) {
-                    dataOk = false;
-                    checkStatus.add(new Status(
-                            StatusCodeMsg.UNKNOWN_URI, 
-                            StatusCodeMsg.ERR, 
-                            StatusCodeMsg.WRONG_VALUE + " for the person URI"));
-                }
-            } catch (Exception ex) {
-                LOGGER.error(StatusCodeMsg.INVALID_INPUT_PARAMETERS, ex);
+            // 1.2 check if person exist
+            if (!userDao.existUserUri(annotation.getCreator())) {
+                throw new UnknownUriException(StatusCodeMsg.UNKNOWN_URI + ": " +
+                        StatusCodeMsg.WRONG_VALUE + " for the person URI");
             }
         }
-
-        check = new POSTResultsReturn(dataOk, null, dataOk);
-        check.statusList = checkStatus;
-        return check;
     }
 
     /**

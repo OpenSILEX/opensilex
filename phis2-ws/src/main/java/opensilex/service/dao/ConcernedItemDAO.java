@@ -10,6 +10,7 @@ package opensilex.service.dao;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import opensilex.service.dao.exception.UnknownUriException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -237,30 +238,21 @@ public class ConcernedItemDAO extends SparqlDAO<ConcernedItem> {
     /**
      * Checks the existence of the given list of concerned items.
      * @param concernedItems
-     * @return the result with the list of the found errors (empty if no error)
+     * @throws opensilex.service.dao.exception.UnknownUriException
      */
-    public POSTResultsReturn check(List<ConcernedItem> concernedItems) {
-        POSTResultsReturn checkResult;
-        List<Status> status = new ArrayList<>();
-        
+    public void check(List<ConcernedItem> concernedItems) throws UnknownUriException {        
         for (ConcernedItem concernedItem : concernedItems) {
             String concernedItemUri = concernedItem.getUri();
             if (concernedItemUri != null) {
 
                 // Check the URI if given (in case of an update)
                 if (!existUri(concernedItem.getUri())){
-                    status.add(new Status(
-                            StatusCodeMsg.UNKNOWN_URI, 
-                            StatusCodeMsg.ERR, 
-                            String.format(StatusCodeMsg.UNKNOWN_CONCERNED_ITEM_URI, concernedItemUri)));
+                    throw new UnknownUriException(
+                            StatusCodeMsg.UNKNOWN_URI + ": " 
+                            + String.format(StatusCodeMsg.UNKNOWN_CONCERNED_ITEM_URI, concernedItemUri));
                 }
             } 
         }
-            
-        boolean dataIsValid = status.isEmpty();
-        checkResult = new POSTResultsReturn(dataIsValid, null, dataIsValid);
-        checkResult.statusList = status;
-        return checkResult;   
     }
     
     /**

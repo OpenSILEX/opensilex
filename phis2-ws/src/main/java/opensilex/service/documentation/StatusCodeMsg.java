@@ -19,7 +19,7 @@ public final class StatusCodeMsg {
     
     public static final String ACCESS_DENIED = "Access denied";
     public static final String ACCESS_ERROR = "Access error";
-    public static final String ADMINISTRATOR_ONLY = "Request only for administrators";
+    public static final String ADMINISTRATOR_ONLY = "Resource only available for administrators";
     public static final String UNEXPECTED_ERROR = "Unexpected error";
     public static final String ALREADY_EXISTING_DATA = "Already existing data";
     public static final String BAD_CARDINALITY = "Bad cardinality";

@@ -114,7 +114,11 @@ public class EventResourceService  extends ResourceService {
     @ApiOperation(value = "Get all events corresponding to the search parameters given.", 
             notes = "Retrieve all events authorized for the user corresponding to the " + "search parameters given")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve all events", response = EventDTO.class, responseContainer = "List"),
+        @ApiResponse(
+                code = 200, 
+                message = "Retrieve all events", 
+                response = EventDTO.class, 
+                responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
@@ -127,14 +131,38 @@ public class EventResourceService  extends ResourceService {
             example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")})
     @Produces(MediaType.APPLICATION_JSON)
     public Response getEventsBySearch(
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize, 
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page, 
-        @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_EVENT_URI) @QueryParam("uri") @URL String uri, 
-        @ApiParam(value = "Search by type", example = DocumentationAnnotation.EXAMPLE_EVENT_TYPE) @QueryParam("type") @URL String type, 
-        @ApiParam(value = "Search by concerned item uri", example = DocumentationAnnotation.EXAMPLE_EVENT_CONCERNED_ITEM_URI) @QueryParam("concernedItemUri") @URL String concernedItemUri, 
-        @ApiParam(value = "Search by concerned item label", example = DocumentationAnnotation.EXAMPLE_EVENT_CONCERNED_ITEM_LABEL) @QueryParam("concernedItemLabel") String concernedItemLabel, 
-        @ApiParam(value = "Search by date - start of the range", example = DocumentationAnnotation.EXAMPLE_EVENT_SEARCH_START_DATE) @QueryParam("startDate") @Date(DateFormat.YMDTHMSZZ) String startDate, 
-        @ApiParam(value = "Search by date - end of the range", example = DocumentationAnnotation.EXAMPLE_EVENT_SEARCH_END_DATE) @QueryParam("endDate") @Date(DateFormat.YMDTHMSZZ) String endDate
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) 
+            @QueryParam(GlobalWebserviceValues.PAGE_SIZE) 
+            @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) 
+            @Min(0) int pageSize, 
+        @ApiParam(value = DocumentationAnnotation.PAGE) 
+            @QueryParam(GlobalWebserviceValues.PAGE) 
+            @DefaultValue(DefaultBrapiPaginationValues.PAGE)
+            @Min(0) int page, 
+        @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_EVENT_URI) 
+            @QueryParam("uri") 
+            @URL String uri, 
+        @ApiParam(value = "Search by type", example = DocumentationAnnotation.EXAMPLE_EVENT_TYPE) 
+            @QueryParam("type") 
+            @URL String type, 
+        @ApiParam(
+                value = "Search by concerned item uri", 
+                example = DocumentationAnnotation.EXAMPLE_EVENT_CONCERNED_ITEM_URI) 
+            @QueryParam("concernedItemUri") @URL String concernedItemUri, 
+        @ApiParam(
+                value = "Search by concerned item label", 
+                example = DocumentationAnnotation.EXAMPLE_EVENT_CONCERNED_ITEM_LABEL) 
+            @QueryParam("concernedItemLabel") String concernedItemLabel, 
+        @ApiParam(
+                value = "Search by date - start of the range", 
+                example = DocumentationAnnotation.EXAMPLE_EVENT_SEARCH_START_DATE) 
+            @QueryParam("startDate") 
+            @Date(DateFormat.YMDTHMSZZ) String startDate, 
+        @ApiParam(
+                value = "Search by date - end of the range", 
+                example = DocumentationAnnotation.EXAMPLE_EVENT_SEARCH_END_DATE) 
+            @QueryParam("endDate") 
+            @Date(DateFormat.YMDTHMSZZ) String endDate
     ) {
         EventDAO eventDAO = new EventDAO(userSession.getUser());
         
@@ -243,7 +271,11 @@ public class EventResourceService  extends ResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getEvent(
-        @ApiParam(value = DocumentationAnnotation.EVENT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_EVENT_URI) @PathParam("uri") @URL @Required String uri) {
+        @ApiParam(
+                value = DocumentationAnnotation.EVENT_URI_DEFINITION, 
+                required = true, 
+                example = DocumentationAnnotation.EXAMPLE_EVENT_URI) 
+            @PathParam("uri") @URL @Required String uri) {
         
         EventDAO eventDAO = new EventDAO(userSession.getUser());
         
@@ -273,7 +305,7 @@ public class EventResourceService  extends ResourceService {
     }
     
     /**
-     * Gets an event's annotations
+     * Gets an event's annotations.
      * @param pageSize
      * @param page
      * @example
@@ -299,7 +331,10 @@ public class EventResourceService  extends ResourceService {
     @ApiOperation(value = "Get an event's annotations",
                   notes = "Get an event's annotations")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Get an event's annotations", response = RdfResourceDefinitionDTO.class, responseContainer = "List"),
+        @ApiResponse(
+                code = 200, message = "Get an event's annotations", 
+                response = RdfResourceDefinitionDTO.class, 
+                responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
@@ -312,9 +347,17 @@ public class EventResourceService  extends ResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getEventAnnotations(
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
-        @ApiParam(value = DocumentationAnnotation.EVENT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_EVENT_URI) @PathParam("uri") @URL @Required String uri) {
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) 
+        @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+        @ApiParam(value = DocumentationAnnotation.PAGE) 
+            @QueryParam(GlobalWebserviceValues.PAGE) 
+            @DefaultValue(DefaultBrapiPaginationValues.PAGE) 
+            @Min(0) int page,
+        @ApiParam(
+                value = DocumentationAnnotation.EVENT_URI_DEFINITION, 
+                required = true, 
+                example = DocumentationAnnotation.EXAMPLE_EVENT_URI) 
+            @PathParam("uri") @URL @Required String uri) {
         
         AnnotationResourceService annotationResourceService = new AnnotationResourceService();
         annotationResourceService.userSession = userSession;

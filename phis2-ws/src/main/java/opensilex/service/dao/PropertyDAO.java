@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import opensilex.service.dao.exception.SemanticInconsistencyException;
 import opensilex.service.dao.exception.UnknownUriException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
@@ -546,7 +547,7 @@ public class PropertyDAO extends SparqlDAO<Property> {
      * @param ownerType
      * @throws opensilex.service.dao.exception.UnknownUriException
      */
-    public void checkExistenceRangeDomain(ArrayList<Property> properties, String ownerType) throws UnknownUriException {
+    public void checkExistenceRangeDomain(ArrayList<Property> properties, String ownerType) throws UnknownUriException, SemanticInconsistencyException {
         for (Property property : properties) {
             // If URI, check value existence with type
             if (property.getRdfType() != null) {
@@ -560,14 +561,14 @@ public class PropertyDAO extends SparqlDAO<Property> {
             if (existUri(property.getRelation())) {
                 // Check domain
                 if (!isRelationDomainCompatibleWithRdfType(property.getRelation(), ownerType)) {
-                    throw new UnknownUriException(StatusCodeMsg.DATA_ERROR + ": " + String.format(
+                    throw new SemanticInconsistencyException(StatusCodeMsg.DATA_ERROR + ": " + String.format(
                             StatusCodeMsg.URI_TYPE_NOT_IN_DOMAIN_OF_RELATION, 
                             ownerType, 
                             property.getRelation()));
                 }
                 // Check range
                 if (!isRelationRangeCompatibleWithRdfType(property.getRelation(), property.getRdfType())) {
-                    throw new UnknownUriException(StatusCodeMsg.DATA_ERROR + ": " + String.format(
+                    throw new SemanticInconsistencyException(StatusCodeMsg.DATA_ERROR + ": " + String.format(
                             StatusCodeMsg.VALUE_TYPE_URI_NOT_IN_RANGE_OF_RELATION, 
                             property.getRdfType(), 
                             property.getValue(), 

@@ -75,17 +75,27 @@ public class ConcernedItemDAO extends SparqlDAO<ConcernedItem> {
      */
     public static void prepareQueryWithConcernedItemFilters(SPARQLQueryBuilder query, String objectUriSelectNameSparql, String concernsRelationUri, String searchConcernedItemUri, String searchConcernedItemLabel) {
         if (objectUriSelectNameSparql != null) {
-            query.appendTriplet(objectUriSelectNameSparql, concernsRelationUri, CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, null);
+            query.appendTriplet(
+                    objectUriSelectNameSparql, 
+                    concernsRelationUri, 
+                    CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, 
+                    null);
         }
 
         if (searchConcernedItemLabel != null) {
-            query.appendTriplet(CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, Rdfs.RELATION_LABEL.toString(), CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL, null);
+            query.appendTriplet(
+                    CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, 
+                    Rdfs.RELATION_LABEL.toString(), 
+                    CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL, 
+                    null);
 
-            query.appendAndFilter("regex(" + CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL + ", \"" + searchConcernedItemLabel + "\", \"i\")");
+            query.appendAndFilter("regex(" + CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL + ", " 
+                    + "\"" + searchConcernedItemLabel + "\", \"i\")");
         }
 
         if (searchConcernedItemUri != null) {
-            query.appendAndFilter("regex (str(" + CONCERNED_ITEM_URI_SELECT_NAME_SPARQL + ")" + ", \"" + searchConcernedItemUri + "\", \"i\")");
+            query.appendAndFilter("regex (str(" + CONCERNED_ITEM_URI_SELECT_NAME_SPARQL + "), " 
+                    + "\"" + searchConcernedItemUri + "\", \"i\")");
         }
     }
     
@@ -140,11 +150,22 @@ public class ConcernedItemDAO extends SparqlDAO<ConcernedItem> {
         //     - migrate these properties into the triplestore
         ///SILEX:todo
         query.beginBodyOptional();
-        query.appendTriplet(CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, Rdf.RELATION_TYPE.toString(), CONCERNED_ITEM_TYPE_SELECT_NAME_SPARQL, null);
-        query.appendTriplet(CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, Rdfs.RELATION_LABEL.toString(), CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL, null);
+        query.appendTriplet(
+                CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, 
+                Rdf.RELATION_TYPE.toString(), 
+                CONCERNED_ITEM_TYPE_SELECT_NAME_SPARQL, 
+                null);
+        query.appendTriplet(
+                CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, 
+                Rdfs.RELATION_LABEL.toString(), 
+                CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL, 
+                null);
         query.endBodyOptional();
         
-        query.appendSelectConcat(CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL, SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR, CONCERNED_ITEM_LABELS_SELECT_NAME_SPARQL);
+        query.appendSelectConcat(
+                CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL, 
+                SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR, 
+                CONCERNED_ITEM_LABELS_SELECT_NAME_SPARQL);
         
         LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
@@ -167,8 +188,14 @@ public class ConcernedItemDAO extends SparqlDAO<ConcernedItem> {
         setPageSize(pageSize);
         
         ArrayList<ConcernedItem> concernedItems = new ArrayList<>();
-        SPARQLQueryBuilder concernedItemsQuery = prepareConcernedItemsSearchQuery(objectUri, concernsRelationUri, searchUri, searchLabel);
-        TupleQuery concernedItemsTupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, concernedItemsQuery.toString());
+        SPARQLQueryBuilder concernedItemsQuery = prepareConcernedItemsSearchQuery(
+                objectUri, 
+                concernsRelationUri, 
+                searchUri, 
+                searchLabel);
+        TupleQuery concernedItemsTupleQuery = getConnection().prepareTupleQuery(
+                QueryLanguage.SPARQL, 
+                concernedItemsQuery.toString());
 
         try (TupleQueryResult concernedItemsTupleQueryResult = concernedItemsTupleQuery.evaluate()) {
             ConcernedItem concernedItem;
@@ -291,7 +318,10 @@ public class ConcernedItemDAO extends SparqlDAO<ConcernedItem> {
         results.setCreatedResources(createdResourcesUris);
         if (resultState && !createdResourcesUris.isEmpty()) {
             results.createdResources = createdResourcesUris;
-            results.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, createdResourcesUris.size() + " " + StatusCodeMsg.RESOURCES_CREATED));
+            results.statusList.add(new Status(
+                    StatusCodeMsg.RESOURCES_CREATED, 
+                    StatusCodeMsg.INFO, 
+                    createdResourcesUris.size() + " " + StatusCodeMsg.RESOURCES_CREATED));
         }
         
         return results;
@@ -304,13 +334,16 @@ public class ConcernedItemDAO extends SparqlDAO<ConcernedItem> {
      */
     private ConcernedItem getConcernedItemFromBindingSet(BindingSet bindingSet) {
                 
-        String concernedItemUri = getStringValueOfSelectNameFromBindingSet(CONCERNED_ITEM_URI_SELECT_NAME, bindingSet);
-        String concernedItemType = getStringValueOfSelectNameFromBindingSet(CONCERNED_ITEM_TYPE_SELECT_NAME, bindingSet);
+        String uri = getStringValueOfSelectNameFromBindingSet(CONCERNED_ITEM_URI_SELECT_NAME, bindingSet);
+        String type = getStringValueOfSelectNameFromBindingSet(CONCERNED_ITEM_TYPE_SELECT_NAME, bindingSet);
         
-        String concernedItemLabelsConcatenated = getStringValueOfSelectNameFromBindingSet(CONCERNED_ITEM_LABELS_SELECT_NAME, bindingSet);
-        ArrayList<String> concernedItemLabels = new ArrayList<>(Arrays.asList(concernedItemLabelsConcatenated.split(SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR)));
+        String labelsConcatenated = getStringValueOfSelectNameFromBindingSet(
+                CONCERNED_ITEM_LABELS_SELECT_NAME, 
+                bindingSet);
+        ArrayList<String> labels = new ArrayList<>(Arrays.asList(labelsConcatenated.split(
+                SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR)));
 
-        return new ConcernedItem(concernedItemUri, concernedItemType, concernedItemLabels);
+        return new ConcernedItem(uri, type, labels);
     }
 
     @Override

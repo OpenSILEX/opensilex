@@ -211,7 +211,8 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
      * @throws opensilex.service.dao.exception.UnknownUriException
      */
     @Override
-    public List<Annotation> create(List<Annotation> annotations) throws SemanticInconsistencyException, UnknownUriException, Exception {
+    public List<Annotation> create(List<Annotation> annotations) 
+            throws SemanticInconsistencyException, UnknownUriException, Exception {
         check(annotations);
 
         UriGenerator uriGenerator = new UriGenerator();

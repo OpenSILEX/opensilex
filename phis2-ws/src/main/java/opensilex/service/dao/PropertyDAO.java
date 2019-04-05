@@ -501,20 +501,20 @@ public class PropertyDAO extends SparqlDAO<Property> {
     }
     
     /**
-     * Checks the existence and domain of the given list of properties.
+     * Checks the existence, the domain and range of the given list of properties.
      * @param properties
      * @param ownerType
-     * @return the result with the list of the found errors (empty if no error)
+     * @throws opensilex.service.dao.exception.UnknownUriException
      */
-    public POSTResultsReturn checkExistenceRangeDomain(ArrayList<Property> properties, String ownerType) {
+    public void checkExistenceRangeDomain(ArrayList<Property> properties, String ownerType) throws UnknownUriException {
         POSTResultsReturn checkResult;
         List<Status> status = new ArrayList<>();
         for (Property property : properties) {
             // If URI, check value existence with type
             if (property.getRdfType() != null) {
                 if (!exist(property.getValue(), RDF.type.getURI(), property.getRdfType())) {
-                    status.add(new Status(
-                        StatusCodeMsg.DATA_ERROR, 
+                    throw new UnknownUriException(StatusCodeMsg.DATA_ERROR + ": " + String.format(
+                            StatusCodeMsg.UNKNOWN_URI_OF_TYPE, property.getValue(), property.getRdfType()));
                         StatusCodeMsg.ERR, 
                         String.format(StatusCodeMsg.UNKNOWN_URI_OF_TYPE, property.getValue(), property.getRdfType())));
                 }
@@ -524,25 +524,26 @@ public class PropertyDAO extends SparqlDAO<Property> {
             if (existUri(property.getRelation())) {
                 // Check domain
                 if (!isRelationDomainCompatibleWithRdfType(property.getRelation(), ownerType)) {
-                    status.add(new Status(
-                        StatusCodeMsg.DATA_ERROR, 
-                        StatusCodeMsg.ERR, 
-                        String.format(StatusCodeMsg.URI_TYPE_NOT_IN_DOMAIN_OF_RELATION, ownerType, property.getRelation())));
+                    throw new UnknownUriException(StatusCodeMsg.DATA_ERROR + ": " + String.format(
+                            StatusCodeMsg.URI_TYPE_NOT_IN_DOMAIN_OF_RELATION, 
+                            ownerType, 
+                            property.getRelation()));
                 }
                 // Check range
                 if (!isRelationRangeCompatibleWithRdfType(property.getRelation(), property.getRdfType())) {
-                    status.add(new Status(
-                        StatusCodeMsg.DATA_ERROR, 
-                        StatusCodeMsg.ERR, 
-                        String.format(StatusCodeMsg.VALUE_TYPE_URI_NOT_IN_RANGE_OF_RELATION, property.getRdfType(), property.getValue(), property.getRelation())));
+                    throw new UnknownUriException(StatusCodeMsg.DATA_ERROR + ": " + String.format(
+                            StatusCodeMsg.VALUE_TYPE_URI_NOT_IN_RANGE_OF_RELATION, 
+                            property.getRdfType(), 
+                            property.getValue(), 
+                            property.getRelation()));
                 }
             } else {
-                status.add(new Status(
-                        StatusCodeMsg.DATA_ERROR, 
-                        StatusCodeMsg.ERR, 
-                        StatusCodeMsg.UNKNOWN_URI + " " + property.getRelation()));
+                throw new UnknownUriException(
+                        StatusCodeMsg.DATA_ERROR
+                        + ": " + StatusCodeMsg.UNKNOWN_URI 
+                        + " " + property.getRelation());
             }
-        } 
+        }
         boolean dataIsValid = status.isEmpty();
         checkResult = new POSTResultsReturn(dataIsValid, null, dataIsValid);
         checkResult.statusList = status;

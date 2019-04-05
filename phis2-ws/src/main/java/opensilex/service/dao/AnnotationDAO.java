@@ -152,7 +152,12 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
      */
     public Integer count(String searchUri, String searchCreator, String searchTarget, String searchBodyValue, String searchMotivatedBy) 
             throws RepositoryException, MalformedQueryException, QueryEvaluationException {
-        SPARQLQueryBuilder prepareCount = prepareCount(searchUri, searchCreator, searchTarget, searchBodyValue, searchMotivatedBy);
+        SPARQLQueryBuilder prepareCount = prepareCount(
+                searchUri, 
+                searchCreator, 
+                searchTarget, 
+                searchBodyValue, 
+                searchMotivatedBy);
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
         Integer count = 0;
         try (TupleQueryResult result = tupleQuery.evaluate()) {
@@ -179,7 +184,12 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
      * @return query generated with the searched parameters
      */
     private SPARQLQueryBuilder prepareCount(String searchUri, String searchCreator, String searchTarget, String searchBodyValue, String searchMotivatedBy) {
-        SPARQLQueryBuilder query = this.prepareSearchQuery(searchUri, searchCreator, searchTarget, searchBodyValue, searchMotivatedBy);
+        SPARQLQueryBuilder query = this.prepareSearchQuery(
+                searchUri, 
+                searchCreator, 
+                searchTarget, 
+                searchBodyValue, 
+                searchMotivatedBy);
         query.clearSelect();
         query.clearLimit();
         query.clearOffset();
@@ -252,7 +262,10 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
         results.setCreatedResources(createdResourcesUri);
         if (resultState && !createdResourcesUri.isEmpty()) {
             results.createdResources = createdResourcesUri;
-            results.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, createdResourcesUri.size() + " new resource(s) created"));
+            results.statusList.add(new Status(
+                    StatusCodeMsg.RESOURCES_CREATED, 
+                    StatusCodeMsg.INFO, 
+                    createdResourcesUri.size() + " new resource(s) created"));
         }
         if (getConnection() != null) {
             getConnection().close();
@@ -282,7 +295,9 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
         spql.addInsert(graph, annotationUri, RDF.type, annotationConcept);
         
         DateTimeFormatter formatter = DateTimeFormat.forPattern(DateFormats.YMDTHMSZ_FORMAT);
-        Literal creationDate = ResourceFactory.createTypedLiteral(annotation.getCreated().toString(formatter), XSDDatatype.XSDdateTime);
+        Literal creationDate = ResourceFactory.createTypedLiteral(
+                annotation.getCreated().toString(formatter), 
+                XSDDatatype.XSDdateTime);
         spql.addInsert(graph, annotationUri, DCTerms.created, creationDate);
         
         Node creator =  NodeFactory.createURI(annotation.getCreator());
@@ -340,13 +355,19 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
                 if (!uriDao.existUri(annotation.getMotivatedBy())
                         || !uriDao.isInstanceOf(annotation.getMotivatedBy(), Oa.CONCEPT_MOTIVATION.toString())) {
                     dataOk = false;
-                    checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.WRONG_VALUE + " for the motivatedBy field"));
+                    checkStatus.add(new Status(
+                            StatusCodeMsg.DATA_ERROR, 
+                            StatusCodeMsg.ERR, 
+                            StatusCodeMsg.WRONG_VALUE + " for the motivatedBy field"));
                 }
 
                 // 1.2 check if person exist // PostgresQL
                 if (!userDao.existUserUri(annotation.getCreator())) {
                     dataOk = false;
-                    checkStatus.add(new Status(StatusCodeMsg.UNKNOWN_URI, StatusCodeMsg.ERR, StatusCodeMsg.WRONG_VALUE + " for person uri"));
+                    checkStatus.add(new Status(
+                            StatusCodeMsg.UNKNOWN_URI, 
+                            StatusCodeMsg.ERR, 
+                            StatusCodeMsg.WRONG_VALUE + " for the person URI"));
                 }
             } catch (Exception ex) {
                 LOGGER.error(StatusCodeMsg.INVALID_INPUT_PARAMETERS, ex);
@@ -374,7 +395,12 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
         setPageSize(searchPageSize);
 
         // retreve uri list
-        SPARQLQueryBuilder query = prepareSearchQuery(searchUri, searchCreator, searchTarget, searchBodyValue, searchMotivatedBy);
+        SPARQLQueryBuilder query = prepareSearchQuery(
+                searchUri, 
+                searchCreator, 
+                searchTarget, 
+                searchBodyValue, 
+                searchMotivatedBy);
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         ArrayList<Annotation> annotations;
         // Retreive all informations
@@ -435,7 +461,10 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
                     //SILEX:info
                     // concat query return a list with comma separated value in one column
                     //\SILEX:info
-                    annotationBodyValues = new ArrayList<>(Arrays.asList(bindingSet.getValue(BODY_VALUES).stringValue().split(SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR)));
+                    annotationBodyValues = new ArrayList<>(Arrays.asList(bindingSet
+                            .getValue(BODY_VALUES)
+                            .stringValue()
+                            .split(SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR)));
                 }
 
                 String annotationMotivation;
@@ -449,9 +478,18 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
                 // concat query return a list with comma separated value in one column.
                 // An annotation has a least one target.
                 //\SILEX:info
-                ArrayList<String> annotationTargets = new ArrayList<>(Arrays.asList(bindingSet.getValue(TARGETS).stringValue().split(SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR)));
+                ArrayList<String> annotationTargets = new ArrayList<>(Arrays.asList(bindingSet
+                        .getValue(TARGETS)
+                        .stringValue()
+                        .split(SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR)));
 
-                annotations.add(new Annotation(annotationUri, annotationCreated, annotationCreator, annotationBodyValues, annotationMotivation, annotationTargets));
+                annotations.add(new Annotation(
+                        annotationUri, 
+                        annotationCreated, 
+                        annotationCreator, 
+                        annotationBodyValues, 
+                        annotationMotivation, 
+                        annotationTargets));
             }
         }
         return annotations;

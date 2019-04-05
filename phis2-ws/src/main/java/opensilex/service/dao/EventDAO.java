@@ -28,6 +28,9 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.configuration.DateFormat;
+import opensilex.service.dao.exception.AccessDeniedException;
+import opensilex.service.dao.exception.SemanticInconsistencyException;
+import opensilex.service.dao.exception.UnknownUriException;
 import opensilex.service.dao.manager.SparqlDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.User;
@@ -193,7 +196,12 @@ public class EventDAO extends SparqlDAO<Event> {
         
         String uriSelectNameSparql = prepareSearchQueryUri(query, uri, true);
         prepareSearchQueryType(query, uriSelectNameSparql, type, true); 
-        ConcernedItemDAO.prepareQueryWithConcernedItemFilters(query, uriSelectNameSparql, Oeev.concerns.getURI(), searchConcernedItemUri, searchConcernedItemLabel); 
+        ConcernedItemDAO.prepareQueryWithConcernedItemFilters(
+                query, 
+                uriSelectNameSparql, 
+                Oeev.concerns.getURI(), 
+                searchConcernedItemUri, 
+                searchConcernedItemLabel); 
         prepareSearchQueryDateTime(query, uriSelectNameSparql, dateRangeStartString, dateRangeEndString, true); 
         
         query.appendLimit(getPageSize());
@@ -222,7 +230,12 @@ public class EventDAO extends SparqlDAO<Event> {
         
         String uriSelectNameSparql = prepareSearchQueryUri(query, searchUri, false);
         prepareSearchQueryType(query, uriSelectNameSparql, null, false);  
-        ConcernedItemDAO.prepareQueryWithConcernedItemFilters(query, uriSelectNameSparql, Oeev.concerns.getURI(), null, null); 
+        ConcernedItemDAO.prepareQueryWithConcernedItemFilters(
+                query, 
+                uriSelectNameSparql, 
+                Oeev.concerns.getURI(), 
+                null, 
+                null); 
         prepareSearchQueryDateTime(query, uriSelectNameSparql, null, null, false); 
         
         LOGGER.debug(SPARQL_QUERY + query.toString());
@@ -266,7 +279,13 @@ public class EventDAO extends SparqlDAO<Event> {
         setPage(searchPage);
         setPageSize(searchPageSize);
         
-        SPARQLQueryBuilder eventsQuery = prepareSearchQueryEvents(searchUri, searchType, searchConcernedItemLabel, searchConcernedItemUri, dateRangeStartString, dateRangeEndString);
+        SPARQLQueryBuilder eventsQuery = prepareSearchQueryEvents(
+                searchUri, 
+                searchType, 
+                searchConcernedItemLabel, 
+                searchConcernedItemUri, 
+                dateRangeStartString, 
+                dateRangeEndString);
         
         // get events from storage
         TupleQuery eventsTupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, eventsQuery.toString());
@@ -279,7 +298,13 @@ public class EventDAO extends SparqlDAO<Event> {
                 Event event = getEventFromBindingSet(eventsResult.next());
                 searchEventPropertiesAndSetThemToIt(event);
                 ConcernedItemDAO concernedItemDao = new ConcernedItemDAO(user);
-                event.setConcernedItems(concernedItemDao.searchConcernedItems(event.getUri(), Oeev.concerns.getURI(), null, null, 0, pageSizeMaxValue));
+                event.setConcernedItems(concernedItemDao.searchConcernedItems(
+                        event.getUri(), 
+                        Oeev.concerns.getURI(), 
+                        null, 
+                        null, 
+                        0, 
+                        pageSizeMaxValue));
                 events.add(event);
             }
         }
@@ -296,7 +321,9 @@ public class EventDAO extends SparqlDAO<Event> {
         SPARQLQueryBuilder eventDetailedQuery = prepareSearchQueryEventDetailed(searchUri);
         
         // get events from storage
-        TupleQuery eventsTupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, eventDetailedQuery.toString());
+        TupleQuery eventsTupleQuery = getConnection().prepareTupleQuery(
+                QueryLanguage.SPARQL, 
+                eventDetailedQuery.toString());
         
         Event event = null;
         try (TupleQueryResult eventsResult = eventsTupleQuery.evaluate()) {
@@ -305,10 +332,23 @@ public class EventDAO extends SparqlDAO<Event> {
                 searchEventPropertiesAndSetThemToIt(event);
                 
                 ConcernedItemDAO concernedItemDao = new ConcernedItemDAO(user);
-                event.setConcernedItems(concernedItemDao.searchConcernedItems(event.getUri(), Oeev.concerns.getURI(), null, null, 0, pageSizeMaxValue));
+                event.setConcernedItems(concernedItemDao.searchConcernedItems(
+                        event.getUri(), 
+                        Oeev.concerns.getURI(), 
+                        null, 
+                        null, 
+                        0, 
+                        pageSizeMaxValue));
                 
                 AnnotationDAO annotationDAO = new AnnotationDAO(this.user);
-                ArrayList<Annotation> annotations = annotationDAO.searchAnnotations(null, null, event.getUri(), null, null, 0, pageSizeMaxValue);
+                ArrayList<Annotation> annotations = annotationDAO.searchAnnotations(
+                        null, 
+                        null, 
+                        event.getUri(), 
+                        null, 
+                        null, 
+                        0, 
+                        pageSizeMaxValue);
                 event.setAnnotations(annotations);
             }
         }
@@ -383,7 +423,11 @@ public class EventDAO extends SparqlDAO<Event> {
                 Resource eventResource = ResourceFactory.createResource(event.getUri());
 
                 // Insert concerned items links
-                concernedItemDao.insertLinksWithObject(Contexts.EVENTS.toString(), eventResource, Oeev.concerns.getURI(), event.getConcernedItems());
+                concernedItemDao.insertLinksWithObject(
+                        Contexts.EVENTS.toString(), 
+                        eventResource, 
+                        Oeev.concerns.getURI(), 
+                        event.getConcernedItems());
         
                 // The annotation
                 ArrayList<String> annotationTargets = new ArrayList<>();
@@ -391,12 +435,16 @@ public class EventDAO extends SparqlDAO<Event> {
                 event.getAnnotations().forEach(annotation -> {
                     annotation.setTargets(annotationTargets);
                 });
-                annotationDao.insert(event.getAnnotations());
+                event.setAnnotations(annotationDao.create(event.getAnnotations()));
 
                 // The properties links
                 ArrayList<Property> properties = event.getProperties();
                 if (!properties.isEmpty()) {
-                    propertyDao.insertLinksBetweenObjectAndProperties(eventResource, properties, Contexts.EVENTS.toString(), false);
+                    propertyDao.insertLinksBetweenObjectAndProperties(
+                            eventResource, 
+                            properties, 
+                            Contexts.EVENTS.toString(), 
+                            false);
                 }
             } catch (RepositoryException ex) {
                     LOGGER.error(StatusCodeMsg.ERROR_WHILE_COMMITTING_OR_ROLLING_BACK_TRIPLESTORE_STATEMENT, ex);
@@ -430,36 +478,22 @@ public class EventDAO extends SparqlDAO<Event> {
         results.setCreatedResources(createdResourcesUris);
         if (resultState && !createdResourcesUris.isEmpty()) {
             results.createdResources = createdResourcesUris;
-            results.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, createdResourcesUris.size() + " " + StatusCodeMsg.RESOURCES_CREATED));
+            results.statusList.add(new Status(
+                    StatusCodeMsg.RESOURCES_CREATED, 
+                    StatusCodeMsg.INFO, 
+                    createdResourcesUris.size() + " " + StatusCodeMsg.RESOURCES_CREATED));
         }
         
         return results;
     }
     
     /**
-     * Checks and eventually inserts events in the storage.
-     * @param events
-     * @return the insertion result :
-     *           Error message if errors found in data
-     *           The list of the generated URIs events is inserted
-     */
-    public POSTResultsReturn checkAndInsert(List<Event> events) {
-        POSTResultsReturn checkResult = check(events);
-        if (checkResult.getDataState()) {
-            return insert(events);
-        } else {
-            return checkResult;
-        }
-    }
-    
-    /**
      * Checks the given list of events.
      * @param events
-     * @return the result with the list of the found errors (empty if no error)
+     * @throws opensilex.service.dao.exception.AccessDeniedException
+     * @throws opensilex.service.dao.exception.UnknownUriException
      */
-    public POSTResultsReturn check(List<Event> events) {
-        POSTResultsReturn checkResult;
-        List<Status> status = new ArrayList<>();
+    public void check(List<Event> events) throws AccessDeniedException, UnknownUriException, SemanticInconsistencyException {
         
         // 1. Check if user is admin
         UserDAO userDAO = new UserDAO();
@@ -473,44 +507,33 @@ public class EventDAO extends SparqlDAO<Event> {
                 // Check the event URI if given (in case of an update)
                 if (eventUri != null) {
                     if (searchEvents(eventUri, null, null, null, null, null, 0, pageSizeMaxValue).isEmpty()){
-                        status.add(new Status(
-                                StatusCodeMsg.UNKNOWN_URI, 
-                                StatusCodeMsg.ERR, 
-                                StatusCodeMsg.UNKNOWN_EVENT_URI + " " + eventUri));
+                        throw new UnknownUriException(StatusCodeMsg.UNKNOWN_URI+ ": " 
+                                + StatusCodeMsg.UNKNOWN_EVENT_URI + " " + event.getType());
                     }
                 }
                 
                 // Check Type
                 if (!existUri(event.getType())) {
-                    status.add(new Status(
-                            StatusCodeMsg.UNKNOWN_URI, 
-                            StatusCodeMsg.ERR, 
-                            StatusCodeMsg.UNKNOWN_TYPE + " " + event.getType()));
+                    throw new UnknownUriException(StatusCodeMsg.UNKNOWN_URI+ ": " 
+                            + StatusCodeMsg.UNKNOWN_TYPE + " " + event.getType());
                 }
                 
                 // Check concerned items
-                status.addAll(concernedItemDAO.check(event.getConcernedItems()).getStatusList());
+                concernedItemDAO.check(event.getConcernedItems());
                 
                 // Check properties
-                ArrayList<Property> properties = event.getProperties();
-                POSTResultsReturn propertiesResult = propertyDAO.checkExistenceRangeDomain(properties, event.getType());
-                status.addAll(propertiesResult.getStatusList());
+                propertyDAO.checkExistenceRangeDomain(event.getProperties(), event.getType());
                 
                 // Check annotations
-                POSTResultsReturn annotationsResult = annotationDao.check(event.getAnnotations());
-                status.addAll(annotationsResult.getStatusList());
+                annotationDao.check(event.getAnnotations());
             }
         } else {
-            status.add(new Status(
-                    StatusCodeMsg.ACCESS_DENIED, 
-                    StatusCodeMsg.ERR, 
-                    StatusCodeMsg.ADMINISTRATOR_ONLY));
+            throw new AccessDeniedException(StatusCodeMsg.ACCESS_DENIED+ ": " + StatusCodeMsg.ADMINISTRATOR_ONLY);
         }
         
         boolean dataIsValid = status.isEmpty();
         checkResult = new POSTResultsReturn(dataIsValid, null, dataIsValid);
         checkResult.statusList = status;
-        return checkResult;   
     }
     
     /**
@@ -600,9 +623,20 @@ public class EventDAO extends SparqlDAO<Event> {
         return count;
     }
 
+    /**
+     * Creates event in the storage.
+     * @param events
+     * @return
+     * @throws Exception 
+     */
     @Override
-    public List<Event> create(List<Event> objects) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public List<Event> create(List<Event> events) throws Exception {
+        POSTResultsReturn checkResult = check(events);
+        if (checkResult.getDataState()) {
+            return insert(events);
+        } else {
+            return checkResult;
+        }
     }
 
     @Override

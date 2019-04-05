@@ -110,7 +110,7 @@ public class AnnotationResourceService extends ResourceService {
             annotationsDtos.forEach((annotationDTO) -> {
                 annotations.add(annotationDTO.createObjectFromDTO());
             });
-            POSTResultsReturn insertResult = annotationDao.checkAndInsert(annotations);
+            POSTResultsReturn insertResult = annotationDao.checkAndCreate(annotations);
             
             // annotations inserted
             if (insertResult.getHttpStatus().equals(Response.Status.CREATED)) {

@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import java.util.logging.Level;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -427,6 +428,12 @@ public class EventResourceService  extends ResourceService {
             eventsDtos.forEach((eventDto) -> {
                 events.add(eventDto.createObjectFromDTO());
             });
+            
+            try {
+                eventDao.create(events);
+            } catch (Exception ex) {
+                java.util.logging.Logger.getLogger(EventResourceService.class.getName()).log(Level.SEVERE, null, ex);
+            }
             POSTResultsReturn result = eventDao.checkAndInsert(events);
             Response.Status httpStatus = result.getHttpStatus();
             

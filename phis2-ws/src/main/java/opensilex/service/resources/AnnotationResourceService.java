@@ -15,6 +15,9 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -31,6 +34,8 @@ import javax.ws.rs.core.Response;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.AnnotationDAO;
+import opensilex.service.dao.exception.SemanticInconsistencyException;
+import opensilex.service.dao.exception.UnknownUriException;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.utils.POSTResultsReturn;
@@ -45,12 +50,8 @@ import opensilex.service.result.ResultForm;
 import opensilex.service.model.Annotation;
 
 /**
-<<<<<<< HEAD:phis2-ws/src/main/java/phis2ws/service/resources/AnnotationResourceService.java
- * Represents the annotation service.
- * @update [Arnaud Charleroy] 23 August, 2018: update coding style.
-=======
  * Annotation resource service.
->>>>>>> global-coding-style:phis2-ws/src/main/java/opensilex/service/resources/AnnotationResourceService.java
+ * @update [Arnaud Charleroy] 23 August, 2018: update coding style.
  * @update [Andréas Garcia] 15 Feb. 2019: search parameters are no longer DAO 
  * class attributes but parameters sent through the search functions
  * @update [Andreas Garcia] 19 March, 2019: make getAnnotations public to be 
@@ -60,6 +61,9 @@ import opensilex.service.model.Annotation;
 @Api("/annotations")
 @Path("/annotations")
 public class AnnotationResourceService extends ResourceService {
+    
+    public final static String EMPTY_ANNOTATION_LIST_MESSAGE = "the annotation list to add is empty";
+    
     /**
      * Inserts the given annotations in the triplestore.
      * @example
@@ -98,9 +102,18 @@ public class AnnotationResourceService extends ResourceService {
         @ApiParam(value = DocumentationAnnotation.ANNOTATION_POST_DATA_DEFINITION) @Valid ArrayList<AnnotationPostDTO> annotationsDtos,
         @Context HttpServletRequest context) {
 
-        AbstractResultForm postResponse = null;
+        AbstractResultForm postResponse;
+        Response.Status responseStatus;
+        
         //If there are at least one list of annotations
-        if (annotationsDtos != null && !annotationsDtos.isEmpty()) {
+        if (annotationsDtos == null || annotationsDtos.isEmpty()) {
+            postResponse = new ResponseFormPOST(new Status(
+                    StatusCodeMsg.REQUEST_ERROR, 
+                    StatusCodeMsg.ERR, 
+                    EMPTY_ANNOTATION_LIST_MESSAGE));
+            responseStatus = Response.Status.BAD_REQUEST;
+        }
+        else {
             AnnotationDAO annotationDao = new AnnotationDAO(userSession.getUser());
             if (context.getRemoteAddr() != null) {
                 annotationDao.remoteUserAdress = context.getRemoteAddr();
@@ -110,22 +123,50 @@ public class AnnotationResourceService extends ResourceService {
             annotationsDtos.forEach((annotationDTO) -> {
                 annotations.add(annotationDTO.createObjectFromDTO());
             });
-            POSTResultsReturn insertResult = annotationDao.checkAndCreate(annotations);
             
-            // annotations inserted
-            if (insertResult.getHttpStatus().equals(Response.Status.CREATED)) {
-                postResponse = new ResponseFormPOST(insertResult.statusList);
-                postResponse.getMetadata().setDatafiles(insertResult.getCreatedResources());
-            } else if (insertResult.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                    || insertResult.getHttpStatus().equals(Response.Status.OK)
-                    || insertResult.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                postResponse = new ResponseFormPOST(insertResult.statusList);
+            List<Status> insertStatusList = new ArrayList<>();
+            ArrayList<Annotation> annotationsCreated;
+            ArrayList<String> urisCreated = new ArrayList<>();
+            
+            boolean creationError = true;
+            try {
+                annotationsCreated = (ArrayList<Annotation>) annotationDao.create(annotations);
+                creationError = false;
+                annotationsCreated.forEach(annotation -> {
+                    urisCreated.add(annotation.getUri());
+                });
+                insertStatusList.add(new Status(
+                        StatusCodeMsg.RESOURCES_CREATED, 
+                        StatusCodeMsg.INFO, 
+                        String.format(POSTResultsReturn.NEW_RESOURCES_CREATED_MESSAGE, urisCreated.size())));
+                responseStatus = Response.Status.CREATED;
+                
+            } catch (UnknownUriException ex) {
+                insertStatusList.add(new Status(
+                        UnknownUriException.GENERIC_MESSAGE, 
+                        StatusCodeMsg.ERR, 
+                        ex.getMessage()));
+                responseStatus = Response.Status.BAD_REQUEST;
+            } catch (SemanticInconsistencyException ex) {
+                insertStatusList.add(new Status(
+                        SemanticInconsistencyException.GENERIC_MESSAGE, 
+                        StatusCodeMsg.ERR, 
+                        ex.getMessage()));
+                responseStatus = Response.Status.BAD_REQUEST;
+            } catch (Exception ex) {
+                insertStatusList.add(new Status(StatusCodeMsg.ERR, StatusCodeMsg.ERR, ex.getMessage()));
+                responseStatus = Response.Status.INTERNAL_SERVER_ERROR;
             }
-            return Response.status(insertResult.getHttpStatus()).entity(postResponse).build();
-        } else {
-            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty annotations to add"));
-            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+                    
+            // annotations inserted
+            if (!creationError) {
+                postResponse = new ResponseFormPOST(insertStatusList);
+                postResponse.getMetadata().setDatafiles(urisCreated);
+            } else {
+                postResponse = new ResponseFormPOST(insertStatusList);
+            }
         }
+        return Response.status(responseStatus).entity(postResponse).build();
     }
 
     /**

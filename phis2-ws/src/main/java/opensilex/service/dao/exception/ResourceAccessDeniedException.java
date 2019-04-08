@@ -1,5 +1,5 @@
 //******************************************************************************
-//                       SemanticInconsistencyException.java
+//                                       AccessDeniedException.java
 // SILEX-PHIS
 // Copyright © INRA 2019
 // Creation date: 5 Apr. 2019
@@ -8,26 +8,25 @@
 package opensilex.service.dao.exception;
 
 /**
- * Semantic inconsistency exception.
+ * Resource access denied exception.
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
-public class SemanticInconsistencyException extends DAOException {
-    public final static String GENERIC_MESSAGE = 
-            "A semantic inconsistency prevented the operation to continue";
+public class ResourceAccessDeniedException extends DAOException {
+    public static String GENERIC_MESSAGE = "The resource access is denied for this user";
     
-    public SemanticInconsistencyException() {
+    public ResourceAccessDeniedException() {
         super(GENERIC_MESSAGE);
     }
     
-    public SemanticInconsistencyException(Throwable throwableCause) {
+    public ResourceAccessDeniedException(Throwable throwableCause) {
         super(GENERIC_MESSAGE, throwableCause);
     }
     
-    public SemanticInconsistencyException(String message) {
+    public ResourceAccessDeniedException(String message) {
         super(message);
     }
     
-    public SemanticInconsistencyException(String message, Throwable throwableCause) {
+    public ResourceAccessDeniedException(String message, Throwable throwableCause) {
         super(message, throwableCause);
     }
 }

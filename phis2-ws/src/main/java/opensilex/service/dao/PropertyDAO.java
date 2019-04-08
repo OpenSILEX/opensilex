@@ -12,7 +12,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import opensilex.service.dao.exception.SemanticInconsistencyException;
+import opensilex.service.dao.exception.TypeNotInDomainException;
 import opensilex.service.dao.exception.UnknownUriException;
+import opensilex.service.dao.exception.UnknownUriOfTypeException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -546,14 +548,16 @@ public class PropertyDAO extends SparqlDAO<Property> {
      * @param properties
      * @param ownerType
      * @throws opensilex.service.dao.exception.UnknownUriException
+     * @throws opensilex.service.dao.exception.UnknownUriOfTypeException
+     * @throws opensilex.service.dao.exception.TypeNotInDomainException
      */
-    public void checkExistenceRangeDomain(ArrayList<Property> properties, String ownerType) throws UnknownUriException, SemanticInconsistencyException {
+    public void checkExistenceRangeDomain(ArrayList<Property> properties, String ownerType) 
+            throws UnknownUriException, UnknownUriOfTypeException, TypeNotInDomainException {
         for (Property property : properties) {
             // If URI, check value existence with type
             if (property.getRdfType() != null) {
                 if (!exist(property.getValue(), RDF.type.getURI(), property.getRdfType())) {
-                    throw new UnknownUriException(StatusCodeMsg.DATA_ERROR + ": " + String.format(
-                            StatusCodeMsg.UNKNOWN_URI_OF_TYPE, property.getValue(), property.getRdfType()));
+                    throw new UnknownUriOfTypeException(property.getValue(), property.getRdfType(), "the property's value");
                 }
             }
             
@@ -561,24 +565,14 @@ public class PropertyDAO extends SparqlDAO<Property> {
             if (existUri(property.getRelation())) {
                 // Check domain
                 if (!isRelationDomainCompatibleWithRdfType(property.getRelation(), ownerType)) {
-                    throw new SemanticInconsistencyException(StatusCodeMsg.DATA_ERROR + ": " + String.format(
-                            StatusCodeMsg.URI_TYPE_NOT_IN_DOMAIN_OF_RELATION, 
-                            ownerType, 
-                            property.getRelation()));
+                    throw new TypeNotInDomainException(ownerType, property.getRelation());
                 }
                 // Check range
                 if (!isRelationRangeCompatibleWithRdfType(property.getRelation(), property.getRdfType())) {
-                    throw new SemanticInconsistencyException(StatusCodeMsg.DATA_ERROR + ": " + String.format(
-                            StatusCodeMsg.VALUE_TYPE_URI_NOT_IN_RANGE_OF_RELATION, 
-                            property.getRdfType(), 
-                            property.getValue(), 
-                            property.getRelation()));
+                    throw new TypeNotInDomainException(property.getRdfType(), property.getRelation());
                 }
             } else {
-                throw new UnknownUriException(
-                        StatusCodeMsg.DATA_ERROR
-                        + ": " + StatusCodeMsg.UNKNOWN_URI 
-                        + " " + property.getRelation());
+                throw new UnknownUriException(property.getRelation(), "the property relation");
             }
         }
     }

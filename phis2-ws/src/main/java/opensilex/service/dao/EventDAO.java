@@ -9,7 +9,6 @@ package opensilex.service.dao;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -29,11 +28,11 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.configuration.DateFormat;
+import opensilex.service.dao.exception.NotAnAdminException;
 import opensilex.service.dao.exception.ResourceAccessDeniedException;
 import opensilex.service.dao.exception.SemanticInconsistencyException;
 import opensilex.service.dao.exception.UnknownUriException;
 import opensilex.service.dao.manager.SparqlDAO;
-import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.User;
 import opensilex.service.ontology.Contexts;
 import opensilex.service.ontology.Oeev;
@@ -49,11 +48,13 @@ import opensilex.service.model.Property;
 
 /**
  * Events DAO.
- * @update [Andreas Garcia] 14 Feb. 2019: Add event detail service
- * @update [Andreas Garcia] 5 March 2019: Add events insertion service
- * @update [Andréas Garcia] 5 March 2019: 
- *      Move the generic function to get a string value from a binding set to mother class
- *      Move concerned items accesses handling into a new ConcernedItemDAO class
+ * @update [Andreas Garcia] 14 Feb. 2019: Add event detail service.
+ * @update [Andreas Garcia] 5 Mar. 2019: Add events insertion service.
+ * @update [Andréas Garcia] 5 Mar. 2019: 
+ *      Move the generic function to get a string value from a binding set to mother class.
+ *      Move concerned items accesses handling into a new ConcernedItemDAO class.
+ * @update [Andréas Garcia] 8 Apr. 2019: Use DAO generic function create and update 
+ * and use exceptions to handle errors.
  * @author Andreas Garcia <andreas.garcia@inra.fr>
  */
 public class EventDAO extends SparqlDAO<Event> {
@@ -471,17 +472,17 @@ public class EventDAO extends SparqlDAO<Event> {
     /**
      * Checks the given list of events.
      * @param events
-     * @throws opensilex.service.dao.exception.ResourceAccessDeniedException
+     * @throws opensilex.service.dao.exception.NotAnAdminException
      * @throws opensilex.service.dao.exception.UnknownUriException
      * @throws opensilex.service.dao.exception.SemanticInconsistencyException
      */
     public void validate(List<Event> events) 
-            throws ResourceAccessDeniedException, UnknownUriException, SemanticInconsistencyException {
+            throws NotAnAdminException, UnknownUriException, SemanticInconsistencyException {
         
         // 1. Check if user is admin
         UserDAO userDAO = new UserDAO();
         if (!userDAO.isAdmin(user)) {
-            throw new ResourceAccessDeniedException(StatusCodeMsg.ACCESS_DENIED+ ": " + StatusCodeMsg.ADMINISTRATOR_ONLY);
+            throw new NotAnAdminException();
         }
         else {
             ConcernedItemDAO concernedItemDAO = new ConcernedItemDAO(user);

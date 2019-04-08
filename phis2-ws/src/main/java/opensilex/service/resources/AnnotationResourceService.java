@@ -62,7 +62,7 @@ import opensilex.service.model.Annotation;
 @Path("/annotations")
 public class AnnotationResourceService extends ResourceService {
     
-    public final static String EMPTY_ANNOTATION_LIST_MESSAGE = "the annotation list to add is empty";
+    public final static String EMPTY_ANNOTATION_LIST = "the annotation list to add is empty";
     
     /**
      * Inserts the given annotations in the triplestore.
@@ -110,7 +110,7 @@ public class AnnotationResourceService extends ResourceService {
             postResponse = new ResponseFormPOST(new Status(
                     StatusCodeMsg.REQUEST_ERROR, 
                     StatusCodeMsg.ERR, 
-                    EMPTY_ANNOTATION_LIST_MESSAGE));
+                    EMPTY_ANNOTATION_LIST));
             responseStatus = Response.Status.BAD_REQUEST;
         }
         else {

@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -36,6 +37,9 @@ import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.EventDAO;
+import opensilex.service.dao.exception.NotAnAdminException;
+import opensilex.service.dao.exception.ResourceAccessDeniedException;
+import opensilex.service.dao.exception.SemanticInconsistencyException;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.resources.dto.event.EventPostDTO;
@@ -415,11 +419,17 @@ public class EventResourceService  extends ResourceService {
     public Response postEvents(
         @ApiParam(value = DocumentationAnnotation.EVENT_POST_DEFINITION) @Valid ArrayList<EventPostDTO> eventsDtos,
         @Context HttpServletRequest context) {
-        AbstractResultForm postResponse = null;
+        AbstractResultForm postResponse;
+        Response.Status responseStatus;
         
-        if (eventsDtos != null && !eventsDtos.isEmpty()) {
+        if (eventsDtos == null || eventsDtos.isEmpty()) {
+            postResponse = new ResponseFormPOST(new Status(
+                    StatusCodeMsg.REQUEST_ERROR, 
+                    StatusCodeMsg.ERR, 
+                    StatusCodeMsg.EMPTY_EVENT_LIST));
+            responseStatus = Response.Status.BAD_REQUEST;
+        } else {
             EventDAO eventDao = new EventDAO(userSession.getUser());
-            
             if (context.getRemoteAddr() != null) {
                 eventDao.remoteUserAdress = context.getRemoteAddr();
             }
@@ -429,29 +439,48 @@ public class EventResourceService  extends ResourceService {
                 events.add(eventDto.createObjectFromDTO());
             });
             
-            try {
-                eventDao.create(events);
-            } catch (Exception ex) {
-                java.util.logging.Logger.getLogger(EventResourceService.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            POSTResultsReturn result = eventDao.checkAndInsert(events);
-            Response.Status httpStatus = result.getHttpStatus();
             
-            if (httpStatus.equals(Response.Status.CREATED)) {
-                postResponse = new ResponseFormPOST(result.statusList);
-                postResponse.getMetadata().setDatafiles(result.getCreatedResources());
-            } else if (httpStatus.equals(Response.Status.BAD_REQUEST)
-                    || httpStatus.equals(Response.Status.OK)
-                    || httpStatus.equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                postResponse = new ResponseFormPOST(result.statusList);
+            List<Status> insertStatusList = new ArrayList<>();
+            ArrayList<Event> eventsCreated;
+            ArrayList<String> urisCreated = new ArrayList<>();
+            
+            boolean creationError = true;
+            try {
+                eventsCreated = (ArrayList<Event>) eventDao.create(events);
+                creationError = false;
+                eventsCreated.forEach(annotation -> {
+                    urisCreated.add(annotation.getUri());
+                });
+                insertStatusList.add(new Status(
+                        StatusCodeMsg.RESOURCES_CREATED, 
+                        StatusCodeMsg.INFO, 
+                        String.format(POSTResultsReturn.NEW_RESOURCES_CREATED_MESSAGE, urisCreated.size())));
+                responseStatus = Response.Status.CREATED;
+            } catch (NotAnAdminException ex) {
+                insertStatusList.add(new Status(
+                        ResourceAccessDeniedException.GENERIC_MESSAGE, 
+                        StatusCodeMsg.ERR, 
+                        ex.getMessage()));
+                responseStatus = Response.Status.BAD_REQUEST;
+            } catch (SemanticInconsistencyException ex) {
+                insertStatusList.add(new Status(
+                        SemanticInconsistencyException.GENERIC_MESSAGE, 
+                        StatusCodeMsg.ERR, 
+                        ex.getMessage()));
+                responseStatus = Response.Status.BAD_REQUEST;
+            } catch (Exception ex) {
+                insertStatusList.add(new Status(StatusCodeMsg.ERR, StatusCodeMsg.ERR, ex.getMessage()));
+                responseStatus = Response.Status.INTERNAL_SERVER_ERROR;
             }
-            return Response.status(httpStatus).entity(postResponse).build();
-        } else {
-            postResponse = new ResponseFormPOST(new Status(
-                    StatusCodeMsg.REQUEST_ERROR, 
-                    StatusCodeMsg.ERR, 
-                    StatusCodeMsg.EVENT_TO_ADD_IS_EMPTY));
-            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+                    
+            // annotations inserted
+            if (!creationError) {
+                postResponse = new ResponseFormPOST(insertStatusList);
+                postResponse.getMetadata().setDatafiles(urisCreated);
+            } else {
+                postResponse = new ResponseFormPOST(insertStatusList);
+            }
         }
+        return Response.status(responseStatus).entity(postResponse).build();
     }
 }

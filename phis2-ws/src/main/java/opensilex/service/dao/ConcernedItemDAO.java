@@ -247,7 +247,7 @@ public class ConcernedItemDAO extends SparqlDAO<ConcernedItem> {
 
                 // Check the URI if given (in case of an update)
                 if (!existUri(concernedItem.getUri())){
-                    throw new UnknownUriException(concernedItemUri);
+                    throw new UnknownUriException(concernedItemUri, "the concerned item");
                 }
             } 
         }

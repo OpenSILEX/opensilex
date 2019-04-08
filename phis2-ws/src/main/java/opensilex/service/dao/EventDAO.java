@@ -9,6 +9,7 @@ package opensilex.service.dao;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -28,7 +29,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.configuration.DateFormat;
-import opensilex.service.dao.exception.AccessDeniedException;
+import opensilex.service.dao.exception.ResourceAccessDeniedException;
 import opensilex.service.dao.exception.SemanticInconsistencyException;
 import opensilex.service.dao.exception.UnknownUriException;
 import opensilex.service.dao.manager.SparqlDAO;
@@ -39,11 +40,9 @@ import opensilex.service.ontology.Oeev;
 import opensilex.service.ontology.Rdf;
 import opensilex.service.ontology.Rdfs;
 import opensilex.service.ontology.Time;
-import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.utils.dates.Dates;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
-import opensilex.service.view.brapi.Status;
 import opensilex.service.model.Annotation;
 import opensilex.service.model.Event;
 import opensilex.service.model.Property;
@@ -389,115 +388,102 @@ public class EventDAO extends SparqlDAO<Event> {
     }
     
     /**
-     * Inserts the given events in the storage.
-     * /!\ Prerequisite: data must have been checked before calling this method
-     * @param events
-     * @return the insertion result, with the error list or the URI of the 
-     *         events inserted
+     * Inserts the given event in the storage.
+     * @param event
+     * @return the event completed with its new URI.
+     * @throws java.lang.Exception
      */
-    private POSTResultsReturn insert(List<Event> events) {
-        List<Status> status = new ArrayList<>();
-        List<String> createdResourcesUris = new ArrayList<>();
+    public Event create(Event event) throws Exception {
         
-        POSTResultsReturn results;
-        boolean resultState = false;
-        boolean noInsertionError = true;
-        
+        UriGenerator uriGenerator = new UriGenerator();
         ConcernedItemDAO concernedItemDao = new ConcernedItemDAO(user);
         AnnotationDAO annotationDao = new AnnotationDAO(user);
         PropertyDAO propertyDao = new PropertyDAO();
+
+        // Generate uri
+        event.setUri(uriGenerator.generateNewInstanceUri(Oeev.Event.getURI(), null, null));
         
-        UriGenerator uriGenerator = new UriGenerator();
+        // Insert event
+        UpdateRequest query = prepareInsertQuery(event);
+
+        Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
+        prepareUpdate.execute();
+
+        Resource eventResource = ResourceFactory.createResource(event.getUri());
+
+        // Insert concerned items links
+        concernedItemDao.insertLinksWithObject(
+                Contexts.EVENTS.toString(),
+                eventResource,
+                Oeev.concerns.getURI(), 
+                event.getConcernedItems());
+
+        // The annotation
+        ArrayList<String> annotationTargets = new ArrayList<>();
+        annotationTargets.add(event.getUri());
+        event.getAnnotations().forEach(annotation -> {
+            annotation.setTargets(annotationTargets);
+        });
+        event.setAnnotations((ArrayList<Annotation>) annotationDao.create(event.getAnnotations()));
+
+        // The properties links
+        ArrayList<Property> properties = event.getProperties();
+        if (!properties.isEmpty()) {
+            propertyDao.insertLinksBetweenObjectAndProperties(
+                    eventResource,
+                    properties,
+                    Contexts.EVENTS.toString(), 
+                    false);
+        }
+        
+        return event;
+    }
+    
+    /**
+     * Inserts the given events in the storage.
+     * @param events
+     * @return the insertion result, with the error list or the URI of the 
+     *         events inserted
+     * @throws opensilex.service.dao.exception.ResourceAccessDeniedException
+     * @throws opensilex.service.dao.exception.UnknownUriException
+     * @throws opensilex.service.dao.exception.SemanticInconsistencyException
+     */
+    @Override
+    public List<Event> create(List<Event> events) 
+            throws ResourceAccessDeniedException, SemanticInconsistencyException, Exception {
+        validate(events);
+        
         getConnection().begin();
-        for (Event event : events) {
-            try {
-                // Generate uri
-                event.setUri(uriGenerator.generateNewInstanceUri(Oeev.Event.getURI(), null, null));
-                // Insert event
-                UpdateRequest query = prepareInsertQuery(event);
-
-                Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
-                prepareUpdate.execute();
-                createdResourcesUris.add(event.getUri());
-                
-                Resource eventResource = ResourceFactory.createResource(event.getUri());
-
-                // Insert concerned items links
-                concernedItemDao.insertLinksWithObject(
-                        Contexts.EVENTS.toString(), 
-                        eventResource, 
-                        Oeev.concerns.getURI(), 
-                        event.getConcernedItems());
-        
-                // The annotation
-                ArrayList<String> annotationTargets = new ArrayList<>();
-                annotationTargets.add(event.getUri());
-                event.getAnnotations().forEach(annotation -> {
-                    annotation.setTargets(annotationTargets);
-                });
-                event.setAnnotations(annotationDao.create(event.getAnnotations()));
-
-                // The properties links
-                ArrayList<Property> properties = event.getProperties();
-                if (!properties.isEmpty()) {
-                    propertyDao.insertLinksBetweenObjectAndProperties(
-                            eventResource, 
-                            properties, 
-                            Contexts.EVENTS.toString(), 
-                            false);
-                }
-            } catch (RepositoryException ex) {
-                    LOGGER.error(StatusCodeMsg.ERROR_WHILE_COMMITTING_OR_ROLLING_BACK_TRIPLESTORE_STATEMENT, ex);
-                    noInsertionError = false;
-            } catch (MalformedQueryException e) {
-                    LOGGER.error(e.getMessage(), e);
-                    noInsertionError = false;
-                    status.add(new Status(
-                            StatusCodeMsg.QUERY_ERROR, 
-                            StatusCodeMsg.ERR, 
-                            StatusCodeMsg.MALFORMED_CREATE_QUERY + " " + e.getMessage()));
-            } catch (Exception ex) {
-                LOGGER.error(ex.getMessage());
-                noInsertionError = false;
+        try {
+            for (Event event : events) {
+                create(event);
             }
-        }
-        
-        if (noInsertionError) {
-            resultState = true;
             getConnection().commit();
-        } else {
+        } catch (Exception ex) {
             getConnection().rollback();
+            throw ex;
         }
+        getConnection().close();
         
-        if (getConnection() != null) {
-            getConnection().close();
-        }
-        
-        results = new POSTResultsReturn(resultState, noInsertionError, true);
-        results.statusList = status;
-        results.setCreatedResources(createdResourcesUris);
-        if (resultState && !createdResourcesUris.isEmpty()) {
-            results.createdResources = createdResourcesUris;
-            results.statusList.add(new Status(
-                    StatusCodeMsg.RESOURCES_CREATED, 
-                    StatusCodeMsg.INFO, 
-                    createdResourcesUris.size() + " " + StatusCodeMsg.RESOURCES_CREATED));
-        }
-        
-        return results;
+        return events;
     }
     
     /**
      * Checks the given list of events.
      * @param events
-     * @throws opensilex.service.dao.exception.AccessDeniedException
+     * @throws opensilex.service.dao.exception.ResourceAccessDeniedException
      * @throws opensilex.service.dao.exception.UnknownUriException
+     * @throws opensilex.service.dao.exception.SemanticInconsistencyException
      */
-    public void check(List<Event> events) throws AccessDeniedException, UnknownUriException, SemanticInconsistencyException {
+    public void validate(List<Event> events) 
+            throws ResourceAccessDeniedException, UnknownUriException, SemanticInconsistencyException {
         
         // 1. Check if user is admin
         UserDAO userDAO = new UserDAO();
-        if (userDAO.isAdmin(user)) {
+        if (!userDAO.isAdmin(user)) {
+            throw new ResourceAccessDeniedException(StatusCodeMsg.ACCESS_DENIED+ ": " + StatusCodeMsg.ADMINISTRATOR_ONLY);
+        }
+        else {
             ConcernedItemDAO concernedItemDAO = new ConcernedItemDAO(user);
             PropertyDAO propertyDAO = new PropertyDAO();
             AnnotationDAO annotationDao = new AnnotationDAO();
@@ -527,13 +513,7 @@ public class EventDAO extends SparqlDAO<Event> {
                 // Check annotations
                 annotationDao.check(event.getAnnotations());
             }
-        } else {
-            throw new AccessDeniedException(StatusCodeMsg.ACCESS_DENIED+ ": " + StatusCodeMsg.ADMINISTRATOR_ONLY);
         }
-        
-        boolean dataIsValid = status.isEmpty();
-        checkResult = new POSTResultsReturn(dataIsValid, null, dataIsValid);
-        checkResult.statusList = status;
     }
     
     /**
@@ -621,22 +601,6 @@ public class EventDAO extends SparqlDAO<Event> {
             }
         }
         return count;
-    }
-
-    /**
-     * Creates event in the storage.
-     * @param events
-     * @return
-     * @throws Exception 
-     */
-    @Override
-    public List<Event> create(List<Event> events) throws Exception {
-        POSTResultsReturn checkResult = check(events);
-        if (checkResult.getDataState()) {
-            return insert(events);
-        } else {
-            return checkResult;
-        }
     }
 
     @Override

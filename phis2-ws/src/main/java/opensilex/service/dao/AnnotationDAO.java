@@ -212,7 +212,7 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
      */
     @Override
     public List<Annotation> create(List<Annotation> annotations) 
-            throws SemanticInconsistencyException, UnknownUriException, Exception {
+            throws UnknownUriException, SemanticInconsistencyException, Exception {
         check(annotations);
 
         UriGenerator uriGenerator = new UriGenerator();
@@ -222,18 +222,17 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
         getConnection().begin();
         //\SILEX:test
 
-        for (Annotation annotation : annotations) {
-            try {
-                annotation.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_ANNOTATION.toString(), null, null));
-                UpdateRequest query = prepareInsertQuery(annotation);
-                getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString()).execute();
-            } catch (Exception ex) {
-                getConnection().rollback();
-                getConnection().close();
-                throw ex;
+        try {
+            for (Annotation annotation : annotations) {
+                    annotation.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_ANNOTATION.toString(), null, null));
+                    UpdateRequest query = prepareInsertQuery(annotation);
+                    getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString()).execute();
             }
+            getConnection().commit();
+        } catch (Exception ex) {
+            getConnection().rollback();
+            throw ex;
         }
-        getConnection().commit();
         getConnection().close();
         return annotations;
     }
@@ -312,8 +311,7 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
         for (Annotation annotation : annotations) {
             // 1.1 check motivation
             if (!uriDao.existUri(annotation.getMotivatedBy())) {
-                throw new UnknownUriException(StatusCodeMsg.DATA_ERROR + ": " 
-                        + StatusCodeMsg.UNKNOWN_URI + " for the motivatedBy field");
+                throw new UnknownUriException(annotation.getMotivatedBy(), "the motivatedBy field");
             }
             if (!uriDao.isInstanceOf(annotation.getMotivatedBy(), Oa.CONCEPT_MOTIVATION.toString())) {
                 throw new SemanticInconsistencyException(StatusCodeMsg.DATA_ERROR + ": " 
@@ -322,7 +320,7 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
 
             // 1.2 check if person exist
             if (!userDao.existUserUri(annotation.getCreator())) {
-                throw new UnknownUriException(StatusCodeMsg.UNKNOWN_URI + " for the person");
+                throw new UnknownUriException(annotation.getCreator(), "the person");
             }
         }
     }

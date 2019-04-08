@@ -141,7 +141,7 @@ public class ConcernedItemDAO extends SparqlDAO<ConcernedItem> {
         query.appendGroupBy(CONCERNED_ITEM_TYPE_SELECT_NAME_SPARQL);
         
         //\SILEX:todo 
-        // concerned items' labels and type are made optional FOR THE MOMENT
+        // concerned items labels and type are made optional FOR THE MOMENT
         // because various objects (like experiments, users, groups etc.) are 
         // stored in the triplestore and PostgreSQL. Types and labels are
         // currently stored in PostgreSQL and therefore are inaccessible
@@ -173,7 +173,7 @@ public class ConcernedItemDAO extends SparqlDAO<ConcernedItem> {
     }
     
     /**
-     * Searches an object's concerned items with filters.
+     * Searches an object concerned items with filters.
      * @param objectUri 
      * @param concernsRelationUri since "concerns" can designate various
      * relations in various vocabularies (e.g OESO or OEEV), the URI of the 
@@ -247,9 +247,7 @@ public class ConcernedItemDAO extends SparqlDAO<ConcernedItem> {
 
                 // Check the URI if given (in case of an update)
                 if (!existUri(concernedItem.getUri())){
-                    throw new UnknownUriException(
-                            StatusCodeMsg.UNKNOWN_URI + ": " 
-                            + String.format(StatusCodeMsg.UNKNOWN_CONCERNED_ITEM_URI, concernedItemUri));
+                    throw new UnknownUriException(concernedItemUri);
                 }
             } 
         }

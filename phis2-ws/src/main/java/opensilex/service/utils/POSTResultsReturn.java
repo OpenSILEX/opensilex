@@ -16,6 +16,9 @@ import javax.ws.rs.core.Response;
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class POSTResultsReturn {
+    
+    public final static String NEW_RESOURCES_CREATED_MESSAGE = "%d new resource(s) created";
+    
     private Boolean resultState;
     private Boolean insertState;
     private Boolean dataState;

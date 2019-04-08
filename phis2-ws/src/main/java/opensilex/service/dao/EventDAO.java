@@ -488,20 +488,17 @@ public class EventDAO extends SparqlDAO<Event> {
             PropertyDAO propertyDAO = new PropertyDAO();
             AnnotationDAO annotationDao = new AnnotationDAO();
             for (Event event : events) {
-                String eventUri = event.getUri();
                 
                 // Check the event URI if given (in case of an update)
-                if (eventUri != null) {
-                    if (searchEvents(eventUri, null, null, null, null, null, 0, pageSizeMaxValue).isEmpty()){
-                        throw new UnknownUriException(StatusCodeMsg.UNKNOWN_URI+ ": " 
-                                + StatusCodeMsg.UNKNOWN_EVENT_URI + " " + event.getType());
+                if (event.getUri() != null) {
+                    if (searchEvents(event.getUri(), null, null, null, null, null, 0, pageSizeMaxValue).isEmpty()){
+                        throw new UnknownUriException(event.getUri(), "the event");
                     }
                 }
                 
                 // Check Type
                 if (!existUri(event.getType())) {
-                    throw new UnknownUriException(StatusCodeMsg.UNKNOWN_URI+ ": " 
-                            + StatusCodeMsg.UNKNOWN_TYPE + " " + event.getType());
+                    throw new UnknownUriException(event.getType(), "the event type");
                 }
                 
                 // Check concerned items

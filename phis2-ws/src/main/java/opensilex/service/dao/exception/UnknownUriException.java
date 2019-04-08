@@ -24,8 +24,8 @@ public class UnknownUriException extends SemanticInconsistencyException {
         super(DETAILS, throwableCause);
     }
     
-    public UnknownUriException(String uri, String uriObject) {
-        super(String.format(DETAILS, uri, uriObject));
+    public UnknownUriException(String uri, String objectWhoseUriIsUnknown) {
+        super(String.format(DETAILS, uri, objectWhoseUriIsUnknown));
     }
     
     public UnknownUriException(String uri, String uriObject, Throwable throwableCause) {

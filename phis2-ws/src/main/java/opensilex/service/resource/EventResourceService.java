@@ -36,8 +36,8 @@ import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.EventDAO;
+import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.NotAnAdminException;
-import opensilex.service.dao.exception.ResourceAccessDeniedException;
 import opensilex.service.dao.exception.SemanticInconsistencyException;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
@@ -47,7 +47,6 @@ import opensilex.service.resource.dto.rdfResourceDefinition.RdfResourceDefinitio
 import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
-import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
@@ -391,7 +390,7 @@ public class EventResourceService  extends ResourceService {
      *   }
      *  ]
      * }
-     * @param eventsDtos
+     * @param objectsDtos
      * @param context
      * @return  The found errors
      *          The list of the URIs of the created events
@@ -416,70 +415,45 @@ public class EventResourceService  extends ResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postEvents(
-        @ApiParam(value = DocumentationAnnotation.EVENT_POST_DEFINITION) @Valid ArrayList<EventPostDTO> eventsDtos,
+        @ApiParam(value = DocumentationAnnotation.EVENT_POST_DEFINITION) @Valid ArrayList<EventPostDTO> objectsDtos,
         @Context HttpServletRequest context) {
-        AbstractResultForm postResponse;
-        Response.Status responseStatus;
         
-        if (eventsDtos == null || eventsDtos.isEmpty()) {
-            postResponse = new ResponseFormPOST(new Status(
-                    StatusCodeMsg.REQUEST_ERROR, 
-                    StatusCodeMsg.ERR, 
-                    StatusCodeMsg.EMPTY_EVENT_LIST));
-            responseStatus = Response.Status.BAD_REQUEST;
-        } else {
-            EventDAO eventDao = new EventDAO(userSession.getUser());
+        if (objectsDtos == null || objectsDtos.isEmpty()) {
+            // Empty object list
+            return getPostResponseWhenEmptyListGiven(StatusCodeMsg.EMPTY_EVENT_LIST);
+        } 
+        else {
+            // Set DAO user
+            EventDAO objectDao = new EventDAO(userSession.getUser());
             if (context.getRemoteAddr() != null) {
-                eventDao.remoteUserAdress = context.getRemoteAddr();
+                objectDao.remoteUserAdress = context.getRemoteAddr();
             }
             
-            ArrayList<Event> events = new ArrayList<>();
-            eventsDtos.forEach((eventDto) -> {
-                events.add(eventDto.createObjectFromDTO());
+            // Generate objects from DTOs
+            ArrayList<Event> objectsToCreate = new ArrayList<>();
+            objectsDtos.forEach((objectDto) -> {
+                objectsToCreate.add(objectDto.createObjectFromDTO());
             });
             
+            ArrayList<Event> createdObjects;
+            ArrayList<String> createdUris = new ArrayList<>();
             
-            List<Status> insertStatusList = new ArrayList<>();
-            ArrayList<Event> eventsCreated;
-            ArrayList<String> urisCreated = new ArrayList<>();
-            
-            boolean creationError = true;
+            // Handle operation results
             try {
-                eventsCreated = (ArrayList<Event>) eventDao.create(events);
-                creationError = false;
-                eventsCreated.forEach(annotation -> {
-                    urisCreated.add(annotation.getUri());
+                createdObjects = (ArrayList<Event>) objectDao.checkAndCreate(objectsToCreate);
+                
+                createdObjects.forEach(object -> {
+                    createdUris.add(object.getUri());
                 });
-                insertStatusList.add(new Status(
-                        StatusCodeMsg.RESOURCES_CREATED, 
-                        StatusCodeMsg.INFO, 
-                        String.format(POSTResultsReturn.NEW_RESOURCES_CREATED_MESSAGE, urisCreated.size())));
-                responseStatus = Response.Status.CREATED;
+                return getPostResponseWhenSuccess(createdUris);
+                
             } catch (NotAnAdminException ex) {
-                insertStatusList.add(new Status(
-                        ResourceAccessDeniedException.GENERIC_MESSAGE, 
-                        StatusCodeMsg.ERR, 
-                        ex.getMessage()));
-                responseStatus = Response.Status.BAD_REQUEST;
-            } catch (SemanticInconsistencyException ex) {
-                insertStatusList.add(new Status(
-                        SemanticInconsistencyException.GENERIC_MESSAGE, 
-                        StatusCodeMsg.ERR, 
-                        ex.getMessage()));
-                responseStatus = Response.Status.BAD_REQUEST;
+                return getPostResponseWhenResourceAccessDenied(ex);
+            } catch (DAODataErrorAggregateException ex) {
+                return getPOSTResponseFromDAODataErrorExceptions(ex);
             } catch (Exception ex) {
-                insertStatusList.add(new Status(StatusCodeMsg.ERR, StatusCodeMsg.ERR, ex.getMessage()));
-                responseStatus = Response.Status.INTERNAL_SERVER_ERROR;
-            }
-                    
-            // annotations inserted
-            if (!creationError) {
-                postResponse = new ResponseFormPOST(insertStatusList);
-                postResponse.getMetadata().setDatafiles(urisCreated);
-            } else {
-                postResponse = new ResponseFormPOST(insertStatusList);
-            }
+                return getPostResponseWhenInternalError(ex);
+            }  
         }
-        return Response.status(responseStatus).entity(postResponse).build();
     }
 }

@@ -8,13 +8,19 @@
 package opensilex.service.resource;
 
 import java.util.ArrayList;
+import java.util.List;
 import javax.ws.rs.core.Response;
 import opensilex.service.PropertiesFileManager;
 import opensilex.service.authentication.Session;
+import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.ResourceAccessDeniedException;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.injection.SessionInject;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.result.ResultForm;
+import opensilex.service.utils.POSTResultsReturn;
+import opensilex.service.view.brapi.form.AbstractResultForm;
+import opensilex.service.view.brapi.form.ResponseFormPOST;
 
 /**
  * Resource service mother class.
@@ -51,5 +57,84 @@ public class ResourceService {
         insertStatusList.add(new Status("SQL error", StatusCodeMsg.ERR, "can't fetch result"));
         getResponse.setStatus(insertStatusList);
         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(getResponse).build();
+    }
+
+    /**
+     * Gets a response for a POST operation in success.
+     * @param urisCreated
+     * @return 
+     */
+    protected Response getPostResponseWhenSuccess(ArrayList<String> urisCreated) {
+        ResponseFormPOST postResponse = new ResponseFormPOST(new Status(
+                StatusCodeMsg.RESOURCES_CREATED, 
+                StatusCodeMsg.INFO, 
+                String.format(POSTResultsReturn.NEW_RESOURCES_CREATED_MESSAGE, urisCreated.size())));
+        postResponse.getMetadata().setDatafiles(urisCreated);
+        return buildResponse(Response.Status.CREATED, postResponse);
+    }
+
+    /**
+     * Get a response from data exceptions thrown by a DAO.
+     * @param aggregateException
+     * @return 
+     */
+    protected Response getPOSTResponseFromDAODataErrorExceptions(DAODataErrorAggregateException aggregateException) {
+        List<Status> statusList = new ArrayList<>();
+        aggregateException.getExceptions().forEach((ex) -> {
+            statusList.add(new Status(
+                    ex.getGenericMessage(), 
+                    StatusCodeMsg.DATA_ERROR, 
+                    ex.getMessage()));
+        });
+        return buildResponse(Response.Status.BAD_REQUEST, new ResponseFormPOST(statusList));
+    }
+
+    /**
+     * Gets a response when an empty list is received by a POST.
+     * @param statusMessageDetails
+     * @return 
+     */
+    protected Response getPostResponseWhenEmptyListGiven(String statusMessageDetails) {
+        ResponseFormPOST postResponse = new ResponseFormPOST(new Status(
+                StatusCodeMsg.REQUEST_ERROR, 
+                StatusCodeMsg.ERR, statusMessageDetails));
+        Response.Status responseStatus = Response.Status.BAD_REQUEST;
+        return buildResponse(Response.Status.BAD_REQUEST, postResponse);
+    }
+
+    /**
+     * Gets a response when an internal error occured during the operation.
+     * @param exception
+     * @return 
+     */
+    protected Response getPostResponseWhenInternalError(Exception exception) {
+        ResponseFormPOST postResponse = new ResponseFormPOST(new Status(
+                StatusCodeMsg.ERR, 
+                StatusCodeMsg.ERR, 
+                exception.getMessage()));
+        return buildResponse(Response.Status.INTERNAL_SERVER_ERROR, postResponse);
+    }
+
+    /**
+     * Gets a response when an empty list is received by a POST.
+     * @param exception
+     * @return 
+     */
+    protected Response getPostResponseWhenResourceAccessDenied(ResourceAccessDeniedException exception) {
+        ResponseFormPOST postResponse = new ResponseFormPOST(new Status(
+                        ResourceAccessDeniedException.GENERIC_MESSAGE, 
+                        StatusCodeMsg.ERR, 
+                        exception.getMessage()));
+        return buildResponse(Response.Status.BAD_REQUEST, postResponse);
+    }
+    
+    /**
+     * Builds a response from a status and a form result form.
+     * @param status
+     * @param resultForm
+     * @return 
+     */
+    protected Response buildResponse(Response.Status status, AbstractResultForm resultForm) {
+        return Response.status(status).entity(resultForm).build();
     }
 }

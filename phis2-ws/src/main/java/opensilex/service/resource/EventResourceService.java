@@ -393,8 +393,7 @@ public class EventResourceService  extends ResourceService {
      *          The list of the URIs of the created events
      */
     @POST
-    @ApiOperation(value = "POST event(s)", 
-                  notes = "Register event(s)")
+    @ApiOperation(value = "POST event(s)", notes = "Register event(s)")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Event(s) saved", response = ResponseFormPOST.class),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),

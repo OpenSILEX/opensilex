@@ -67,7 +67,13 @@ public class EventPostDTO extends AbstractVerifiedClass {
         ArrayList<String> annotationBodyValues = new ArrayList();
         annotationBodyValues.add(description);
         String annotationMotivation = EVENT_POST_DEFAULT_ANNOTATION_MOTIVATION_INSTANCE;
-        Annotation eventAnnotation = new Annotation(null, DateTime.now(), creator, annotationBodyValues, annotationMotivation, null);
+        Annotation eventAnnotation = new Annotation(
+                null, 
+                DateTime.now(), 
+                creator, 
+                annotationBodyValues, 
+                annotationMotivation, 
+                new ArrayList<>());
         
         ArrayList<Annotation> eventAnnotations = new ArrayList<>();
         eventAnnotations.add(eventAnnotation);

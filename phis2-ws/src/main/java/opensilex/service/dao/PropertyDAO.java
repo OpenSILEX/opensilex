@@ -556,13 +556,12 @@ public class PropertyDAO extends SparqlDAO<Property> {
         ArrayList<DAODataErrorException> exceptions = new ArrayList<>();
         for (Property property : properties) {
             // If URI, check value existence with type
-            if (property.getRdfType() != null) {
-                if (!exist(property.getValue(), RDF.type.getURI(), property.getRdfType())) {
-                    exceptions.add(new UnknownUriOfTypeException(
-                            property.getValue(), 
-                            property.getRdfType(), 
-                            "the property's value"));
-                }
+            if (property.getRdfType() != null 
+                    && !exist(property.getValue(), RDF.type.getURI(), property.getRdfType())) {
+                exceptions.add(new UnknownUriOfTypeException(
+                        property.getValue(), 
+                        property.getRdfType(), 
+                        "the property's value"));
             }
             
             // Check relation existence

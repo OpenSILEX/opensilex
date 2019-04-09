@@ -305,8 +305,7 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
         UserDAO userDao = new UserDAO();
         ArrayList<DAODataErrorException> exceptions = new ArrayList<>();
 
-        // check data
-        for (Annotation annotation : annotations) {
+        annotations.forEach((annotation) -> {
             // check motivation
             if (!uriDao.existUri(annotation.getMotivatedBy())) {
                 exceptions.add(new UnknownUriException(annotation.getMotivatedBy(), "the motivation"));
@@ -321,12 +320,12 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
             }
 
             // check target
-            for (String targetUri : annotation.getTargets()) {
+            annotation.getTargets().forEach((targetUri) -> {
                 if (!uriDao.existUri(targetUri)) {
                     exceptions.add(new UnknownUriException(targetUri, "the target"));
                 }
-            }
-        }
+            });
+        });
         
         if (exceptions.size() > 0) {
             throw new DAODataErrorAggregateException(exceptions);

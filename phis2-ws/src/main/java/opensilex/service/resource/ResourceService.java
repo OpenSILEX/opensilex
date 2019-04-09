@@ -18,6 +18,7 @@ import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.injection.SessionInject;
 import opensilex.service.resource.dto.annotation.AnnotationDTO;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
+import opensilex.service.resource.dto.manager.VerifiedClassInterface;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.result.ResultForm;
 import opensilex.service.utils.POSTResultsReturn;
@@ -42,7 +43,22 @@ public abstract class ResourceService {
      * @param objects
      * @return 
      */
-    protected ArrayList<? extends AbstractVerifiedClass> getObjectsFromDTOs (ArrayList<? extends Object> objects) {
+    protected ArrayList<AbstractVerifiedClass> getDTOsFromObjects (List<? extends Object> objects) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    /**
+     * Gets a list of objects from a list of DTOs.
+     * //SILEX:todo 
+     * This function should be abstract but we would need to implement it on all the resource service classes.
+     * We focus on event and annotation for the moment.
+     * \SILEX
+     * @param dtos
+     * @throws java.lang.Exception 
+     * @return the objects list.
+     */
+    protected List<? extends Object> getObjectsFromDTOs (List<? extends AbstractVerifiedClass> dtos) 
+            throws Exception {
         throw new UnsupportedOperationException("Not supported yet.");
     }
     
@@ -83,8 +99,9 @@ public abstract class ResourceService {
      * @return the response.
      */
     protected Response getGETResponseWhenSuccess(ArrayList<? extends Object> objects, int pageSize, int page, int totalCount) {
-        return Response.status(Response.Status.OK)
-                .entity(new ResultForm<>(pageSize, page, getObjectsFromDTOs(objects), true, totalCount))
+        return Response
+                .status(Response.Status.OK)
+                .entity(new ResultForm<>(pageSize, page, getDTOsFromObjects(objects), true, totalCount))
                 .build();
     }
 

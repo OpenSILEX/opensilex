@@ -20,7 +20,7 @@ import java.util.Map;
  * modify conception
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
-public abstract class AbstractVerifiedClass extends VerifiedClassInterface {
+public abstract class AbstractVerifiedClass implements VerifiedClassInterface {
 
     // Represents the state label for the data state
     public final static String STATE = "state";

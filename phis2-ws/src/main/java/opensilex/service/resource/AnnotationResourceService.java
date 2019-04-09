@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -41,7 +42,6 @@ import opensilex.service.resource.dto.annotation.AnnotationDTO;
 import opensilex.service.resource.dto.annotation.AnnotationPostDTO;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.view.brapi.form.ResponseFormGET;
-import opensilex.service.result.ResultForm;
 import opensilex.service.model.Annotation;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 
@@ -109,19 +109,12 @@ public class AnnotationResourceService extends ResourceService {
                 objectDao.remoteUserAdress = context.getRemoteAddr();
             }
             
-            // Generate objects from DTOs
-            ArrayList<Annotation> objectsToCreate = new ArrayList<>();
-            annotationsDtos.forEach((objectDto) -> {
-                objectsToCreate.add(objectDto.createObjectFromDTO());
-            });
-            
-            ArrayList<Annotation> createdObjects;
-            ArrayList<String> createdUris = new ArrayList<>();
-            
             // Handle operation results
             try {
-                createdObjects = (ArrayList<Annotation>) objectDao.checkAndCreate(objectsToCreate);
+                List<Annotation> objectsToCreate = (List<Annotation>) getObjectsFromDTOs(annotationsDtos);
+                List<Annotation> createdObjects = objectDao.checkAndCreate(objectsToCreate);
                 
+                ArrayList<String> createdUris = new ArrayList<>();
                 createdObjects.forEach(object -> {
                     createdUris.add(object.getUri());
                 });
@@ -129,8 +122,10 @@ public class AnnotationResourceService extends ResourceService {
                 
             } catch (ResourceAccessDeniedException ex) {
                 return getPostResponseWhenResourceAccessDenied(ex);
+                
             } catch (DAODataErrorAggregateException ex) {
                 return getPostResponseFromDAODataErrorExceptions(ex);
+                
             } catch (Exception ex) {
                 return getPostResponseWhenInternalError(ex);
             }  
@@ -278,12 +273,22 @@ public class AnnotationResourceService extends ResourceService {
     }
 
     @Override
-    protected ArrayList<? extends AbstractVerifiedClass> getObjectsFromDTOs(ArrayList<? extends Object> objects) {
-        ArrayList<AnnotationDTO> dtos = new ArrayList();
+    protected ArrayList<AbstractVerifiedClass> getDTOsFromObjects(List<? extends Object> objects) {
+        ArrayList<AbstractVerifiedClass> dtos = new ArrayList();
         // Generate DTOs
         objects.forEach((object) -> {
             dtos.add(new AnnotationDTO((Annotation)object));
         });
         return dtos;
+    }
+    
+    @Override
+    protected List<? extends Object> getObjectsFromDTOs (List<? extends AbstractVerifiedClass> dtos)
+            throws Exception {
+        List<Object> objects = new ArrayList<>();
+        for (AbstractVerifiedClass objectDto : dtos) {
+            objects.add((Annotation)objectDto.createObjectFromDTO());
+        }
+        return objects;
     }
 }

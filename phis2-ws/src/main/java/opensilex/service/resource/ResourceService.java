@@ -90,15 +90,11 @@ public abstract class ResourceService {
 
     /**
      * Gets a response for a GET operation returns no result.
-     * @param objects
-     * @param pageSize
-     * @param page
-     * @param totalCount
      * @return the response.
      */
-    protected Response getGETResponseWhenNoResult(ArrayList<? extends Object> objects, int pageSize, int page, int totalCount) {
+    protected Response getGETResponseWhenNoResult() {
         ResultForm<? extends AbstractVerifiedClass> getResponse = new ResultForm<>(0, 0, new ArrayList(), true);
-        return noResultFound(getResponse, statusList);
+        return noResultFound(getResponse, new ArrayList<>());
     }
 
     /**

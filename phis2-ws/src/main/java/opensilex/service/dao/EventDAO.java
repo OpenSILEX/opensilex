@@ -343,7 +343,7 @@ public class EventDAO extends SparqlDAO<Event> {
                         pageSizeMaxValue));
                 
                 AnnotationDAO annotationDAO = new AnnotationDAO(this.user);
-                ArrayList<Annotation> annotations = annotationDAO.searchAnnotations(
+                ArrayList<Annotation> annotations = annotationDAO.find(
                         null, 
                         null, 
                         event.getUri(), 

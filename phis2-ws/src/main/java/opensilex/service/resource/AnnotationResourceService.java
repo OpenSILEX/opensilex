@@ -264,14 +264,8 @@ public class AnnotationResourceService extends ResourceService {
         AnnotationDAO annotationDao = new AnnotationDAO(userSession.getUser());
         
         // Retrieve all annotations
-        ArrayList<Annotation> annotations = annotationDao.searchAnnotations(
-                uri, 
-                creator, 
-                target, 
-                bodyValue, 
-                motivatedBy, 
-                page, 
-                pageSize);
+        ArrayList<Annotation> annotations 
+                = annotationDao.find(uri, creator, target, bodyValue, motivatedBy, page, pageSize);
 
         if (annotations == null) {
             return getGETResponseWhenNoResult();

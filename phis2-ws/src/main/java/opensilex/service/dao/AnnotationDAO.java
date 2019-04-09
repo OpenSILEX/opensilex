@@ -343,7 +343,7 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
      * @param searchPageSize
      * @return the list of the annotations found
      */
-    public ArrayList<Annotation> searchAnnotations(String searchUri, String searchCreator, String searchTarget, String searchBodyValue, String searchMotivatedBy, int searchPage, int searchPageSize) {
+    public ArrayList<Annotation> find(String searchUri, String searchCreator, String searchTarget, String searchBodyValue, String searchMotivatedBy, int searchPage, int searchPageSize) {
         setPage(searchPage);
         setPageSize(searchPageSize);
 

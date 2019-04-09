@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 import opensilex.service.dao.exception.UnknownUriException;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAODataErrorException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -239,18 +240,22 @@ public class ConcernedItemDAO extends SparqlDAO<ConcernedItem> {
     /**
      * Checks the existence of the given list of concerned items.
      * @param concernedItems
-     * @throws opensilex.service.dao.exception.UnknownUriException
+     * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
      */
-    public void check(List<ConcernedItem> concernedItems) throws UnknownUriException {        
-        for (ConcernedItem concernedItem : concernedItems) {
+    @Override
+    public void checkBeforeCreation(List<ConcernedItem> concernedItems) throws DAODataErrorAggregateException {       
+        ArrayList<DAODataErrorException> exceptions = new ArrayList<>(); 
+        concernedItems.forEach((concernedItem) -> {
             String concernedItemUri = concernedItem.getUri();
             if (concernedItemUri != null) {
-
-                // Check the URI if given (in case of an update)
-                if (!existUri(concernedItem.getUri())){
-                    throw new UnknownUriException(concernedItemUri, "the concerned item");
+                if (!existUri(concernedItem.getUri())) {
+                    exceptions.add(new UnknownUriException(concernedItemUri, "the concerned item"));
                 }
-            } 
+            }
+        });
+        
+        if (exceptions.size() > 0) {
+            throw new DAODataErrorAggregateException(exceptions);
         }
     }
     
@@ -359,11 +364,6 @@ public class ConcernedItemDAO extends SparqlDAO<ConcernedItem> {
 
     @Override
     public ConcernedItem findById(String id) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void checkBeforeCreation(List<ConcernedItem> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

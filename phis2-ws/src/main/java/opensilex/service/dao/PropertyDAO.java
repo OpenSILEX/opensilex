@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAODataErrorException;
 import opensilex.service.dao.exception.SemanticInconsistencyException;
 import opensilex.service.dao.exception.TypeNotInDomainException;
 import opensilex.service.dao.exception.UnknownUriException;
@@ -548,17 +549,19 @@ public class PropertyDAO extends SparqlDAO<Property> {
      * Checks the existence, the domain and range of the given list of properties.
      * @param properties
      * @param ownerType
-     * @throws opensilex.service.dao.exception.UnknownUriException
-     * @throws opensilex.service.dao.exception.UnknownUriOfTypeException
-     * @throws opensilex.service.dao.exception.TypeNotInDomainException
+     * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
      */
     public void checkExistenceRangeDomain(ArrayList<Property> properties, String ownerType) 
-            throws UnknownUriException, UnknownUriOfTypeException, TypeNotInDomainException {
+            throws DAODataErrorAggregateException {
+        ArrayList<DAODataErrorException> exceptions = new ArrayList<>();
         for (Property property : properties) {
             // If URI, check value existence with type
             if (property.getRdfType() != null) {
                 if (!exist(property.getValue(), RDF.type.getURI(), property.getRdfType())) {
-                    throw new UnknownUriOfTypeException(property.getValue(), property.getRdfType(), "the property's value");
+                    exceptions.add(new UnknownUriOfTypeException(
+                            property.getValue(), 
+                            property.getRdfType(), 
+                            "the property's value"));
                 }
             }
             
@@ -566,15 +569,19 @@ public class PropertyDAO extends SparqlDAO<Property> {
             if (existUri(property.getRelation())) {
                 // Check domain
                 if (!isRelationDomainCompatibleWithRdfType(property.getRelation(), ownerType)) {
-                    throw new TypeNotInDomainException(ownerType, property.getRelation());
+                    exceptions.add(new TypeNotInDomainException(ownerType, property.getRelation()));
                 }
                 // Check range
                 if (!isRelationRangeCompatibleWithRdfType(property.getRelation(), property.getRdfType())) {
-                    throw new TypeNotInDomainException(property.getRdfType(), property.getRelation());
+                    exceptions.add(new TypeNotInDomainException(property.getRdfType(), property.getRelation()));
                 }
             } else {
-                throw new UnknownUriException(property.getRelation(), "the property relation");
+                exceptions.add(new UnknownUriException(property.getRelation(), "the property relation"));
             }
+        }
+        
+        if (exceptions.size() > 0) {
+            throw new DAODataErrorAggregateException(exceptions);
         }
     }
     

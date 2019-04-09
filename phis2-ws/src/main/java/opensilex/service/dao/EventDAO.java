@@ -9,7 +9,6 @@ package opensilex.service.dao;
 
 import java.util.ArrayList;
 import java.util.List;
-import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -30,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAODataErrorException;
 import opensilex.service.dao.exception.NotAnAdminException;
 import opensilex.service.dao.exception.ResourceAccessDeniedException;
 import opensilex.service.dao.exception.SemanticInconsistencyException;
@@ -474,17 +474,12 @@ public class EventDAO extends SparqlDAO<Event> {
      * Checks the given list of events.
      * @param events
      * @throws opensilex.service.dao.exception.NotAnAdminException
-     * @throws opensilex.service.dao.exception.UnknownUriException
      * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
-     * @throws opensilex.service.dao.exception.UnknownUriOfTypeException
-     * @throws opensilex.service.dao.exception.TypeNotInDomainException
      */
-    public void check(List<Event> events) throws 
-            DAODataErrorAggregateException, 
-            NotAnAdminException, 
-            UnknownUriException, 
-            UnknownUriOfTypeException, 
-            TypeNotInDomainException {
+    @Override
+    public void checkBeforeCreation(List<Event> events) throws DAODataErrorAggregateException, NotAnAdminException {
+        
+        ArrayList<DAODataErrorException> exceptions = new ArrayList<>();
         
         // 1. Check if user is admin
         UserDAO userDAO = new UserDAO();
@@ -500,23 +495,38 @@ public class EventDAO extends SparqlDAO<Event> {
                 // Check the event URI if given (in case of an update)
                 if (event.getUri() != null) {
                     if (searchEvents(event.getUri(), null, null, null, null, null, 0, pageSizeMaxValue).isEmpty()){
-                        throw new UnknownUriException(event.getUri(), "the event");
+                        exceptions.add(new UnknownUriException(event.getUri(), "the event"));
                     }
                 }
                 
                 // Check Type
                 if (!existUri(event.getType())) {
-                    throw new UnknownUriException(event.getType(), "the event type");
+                    exceptions.add(new UnknownUriException(event.getType(), "the event type"));
                 }
                 
                 // Check concerned items
-                concernedItemDAO.check(event.getConcernedItems());
+                try {
+                    concernedItemDAO.checkBeforeCreation(event.getConcernedItems());
+                }
+                catch (DAODataErrorAggregateException ex) {
+                    exceptions.addAll(ex.getExceptions());
+                }
                 
                 // Check properties
-                propertyDAO.checkExistenceRangeDomain(event.getProperties(), event.getType());
+                try {
+                    propertyDAO.checkExistenceRangeDomain(event.getProperties(), event.getType());
+                }
+                catch (DAODataErrorAggregateException ex) {
+                    exceptions.addAll(ex.getExceptions());
+                }
                 
                 // Check annotations
-                annotationDao.check(event.getAnnotations());
+                try {
+                    annotationDao.checkBeforeCreation(event.getAnnotations());
+                }
+                catch (DAODataErrorAggregateException ex) {
+                    exceptions.addAll(ex.getExceptions());
+                }
             }
         }
     }
@@ -625,11 +635,6 @@ public class EventDAO extends SparqlDAO<Event> {
 
     @Override
     public Event findById(String id) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void checkBeforeCreation(List<Event> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

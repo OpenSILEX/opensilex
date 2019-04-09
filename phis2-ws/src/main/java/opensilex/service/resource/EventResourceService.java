@@ -53,8 +53,8 @@ import opensilex.service.model.Event;
 /**
  * Service to handle events
  * @update [Andréas Garcia] 14 Feb., 2019: Add GET detail service
- * @update [Andréas Garcia] 5 March, 2019: Add POST service
- * @update [Andréas Garcia] 15 March, 2019: Add GET {uri}/annotations service
+ * @update [Andréas Garcia] 5 Mar., 2019: Add POST service
+ * @update [Andréas Garcia] 15 Mar., 2019: Add GET {uri}/annotations service
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
 @Api("/events")
@@ -108,7 +108,7 @@ public class EventResourceService  extends ResourceService {
      * @param concernedItemLabel
      * @param startDate
      * @param endDate
-     * @return  list of events filtered
+     * @return  list of events filtered.
      */
     @GET
     @ApiOperation(value = "Get all events corresponding to the search parameters given.", 

@@ -9,6 +9,7 @@ package opensilex.service.dao;
 
 import java.util.ArrayList;
 import java.util.List;
+import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
@@ -193,6 +194,11 @@ public class SpeciesDAO extends SparqlDAO<Species> {
 
     @Override
     public Species findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void checkBeforeCreation(List<Species> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

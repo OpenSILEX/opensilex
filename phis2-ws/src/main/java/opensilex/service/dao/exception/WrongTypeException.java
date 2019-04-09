@@ -11,24 +11,29 @@ package opensilex.service.dao.exception;
  * Unknown URI exception.
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
-public class UnknownUriException extends SemanticInconsistencyException {
+public class WrongTypeException extends SemanticInconsistencyException {
     
-    public final static String GENERIC_MESSAGE = "Unknown URI";
-    public final static String DETAILS = "The URI %s of %s is unknown";
+    public final static String GENERIC_MESSAGE = "An URI is of the wrong type";
+    public final static String DETAILS = "The URI %s of the object %s has not the right type";
     
-    public UnknownUriException() {
+    public WrongTypeException() {
         super(DETAILS);
     }
     
-    public UnknownUriException(Throwable throwableCause) {
+    public WrongTypeException(Throwable throwableCause) {
         super(DETAILS, throwableCause);
     }
     
-    public UnknownUriException(String uri, String objectWhoseUriIsUnknown) {
-        super(String.format(DETAILS, uri, objectWhoseUriIsUnknown));
+    public WrongTypeException(String uriOfWhichTypeIsIncorrect, String objectConcerned) {
+        super(String.format(DETAILS, uriOfWhichTypeIsIncorrect, objectConcerned));
     }
     
-    public UnknownUriException(String uri, String uriObject, Throwable throwableCause) {
-        super(String.format(DETAILS, uri, uriObject), throwableCause);
+    public WrongTypeException(String uriOfWhichTypeIsIncorrect, String objectConcerned, Throwable throwableCause) {
+        super(String.format(DETAILS, uriOfWhichTypeIsIncorrect, objectConcerned), throwableCause);
+    }
+
+    @Override
+    public String getGenericMessage() {
+        return GENERIC_MESSAGE;
     }
 }

@@ -28,10 +28,13 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.configuration.DateFormat;
+import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.NotAnAdminException;
 import opensilex.service.dao.exception.ResourceAccessDeniedException;
 import opensilex.service.dao.exception.SemanticInconsistencyException;
+import opensilex.service.dao.exception.TypeNotInDomainException;
 import opensilex.service.dao.exception.UnknownUriException;
+import opensilex.service.dao.exception.UnknownUriOfTypeException;
 import opensilex.service.dao.manager.SparqlDAO;
 import opensilex.service.model.User;
 import opensilex.service.ontology.Contexts;
@@ -443,17 +446,14 @@ public class EventDAO extends SparqlDAO<Event> {
     /**
      * Inserts the given events in the storage.
      * @param events
-     * @return the insertion result, with the error list or the URI of the 
-     *         events inserted
+     * @return the insertion result, with the error list or the URI of the events inserted
      * @throws opensilex.service.dao.exception.ResourceAccessDeniedException
      * @throws opensilex.service.dao.exception.UnknownUriException
      * @throws opensilex.service.dao.exception.SemanticInconsistencyException
      */
     @Override
     public List<Event> create(List<Event> events) 
-            throws ResourceAccessDeniedException, SemanticInconsistencyException, Exception {
-        validate(events);
-        
+            throws ResourceAccessDeniedException, SemanticInconsistencyException, Exception {        
         getConnection().begin();
         try {
             for (Event event : events) {
@@ -474,10 +474,16 @@ public class EventDAO extends SparqlDAO<Event> {
      * @param events
      * @throws opensilex.service.dao.exception.NotAnAdminException
      * @throws opensilex.service.dao.exception.UnknownUriException
-     * @throws opensilex.service.dao.exception.SemanticInconsistencyException
+     * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
+     * @throws opensilex.service.dao.exception.UnknownUriOfTypeException
+     * @throws opensilex.service.dao.exception.TypeNotInDomainException
      */
-    public void validate(List<Event> events) 
-            throws NotAnAdminException, UnknownUriException, SemanticInconsistencyException {
+    public void check(List<Event> events) throws 
+            DAODataErrorAggregateException, 
+            NotAnAdminException, 
+            UnknownUriException, 
+            UnknownUriOfTypeException, 
+            TypeNotInDomainException {
         
         // 1. Check if user is admin
         UserDAO userDAO = new UserDAO();

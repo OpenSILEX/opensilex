@@ -280,7 +280,6 @@ public class AnnotationResourceService extends ResourceService {
     }
 
     /**
-<<<<<<< HEAD:phis2-ws/src/main/java/phis2ws/service/resources/AnnotationResourceService.java
      * Searches annotations corresponding to search parameters
      * @param uri
      * @param creator
@@ -289,10 +288,6 @@ public class AnnotationResourceService extends ResourceService {
      * @param motivatedBy
      * @param page
      * @param pageSize
-=======
-     * Searches annotations corresponding to search parameters given by the user.
-     * @param annotationDAO
->>>>>>> global-coding-style:phis2-ws/src/main/java/opensilex/service/resources/AnnotationResourceService.java
      * @return the annotations corresponding to the search
      */
     public Response getAnnotations(String uri, String creator, String target, String bodyValue, String motivatedBy, int page, int pageSize) {

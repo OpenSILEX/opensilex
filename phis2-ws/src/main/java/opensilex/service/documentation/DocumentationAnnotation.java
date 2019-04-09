@@ -12,11 +12,7 @@ import javax.inject.Singleton;
 import opensilex.service.PropertiesFileManager;
 
 /**
-<<<<<<< HEAD:phis2-ws/src/main/java/phis2ws/service/documentation/DocumentationAnnotation.java
- * A class which groups the documentation information
-=======
  * Documentation annotations.
->>>>>>> global-coding-style:phis2-ws/src/main/java/opensilex/service/documentation/DocumentationAnnotation.java
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Singleton

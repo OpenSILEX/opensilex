@@ -65,7 +65,7 @@ public class ApplicationInitConfig extends ResourceConfig {
         beanConfig.setHost(PropertiesFileManager.getConfigFileProperty("service", "host"));
         beanConfig.setBasePath(PropertiesFileManager.getConfigFileProperty("service", "basePath"));
        
-        beanConfig.setResourcePackage("opensilex.service.resources");
+        beanConfig.setResourcePackage("opensilex.service.resource");
         beanConfig.setScan(true);
         
         register(MultiPartFeature.class);

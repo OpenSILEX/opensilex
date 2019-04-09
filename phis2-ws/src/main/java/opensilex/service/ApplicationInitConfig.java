@@ -71,19 +71,22 @@ public class ApplicationInitConfig extends ResourceConfig {
         register(MultiPartFeature.class);
         register(JacksonFeature.class);
         
-        // Annotation SessionInject pour obtenir la session en cours et l'utilisateur
-        // Liaison entre le createur d'objet a partir de la requete du client et l'application
-        // @see https://jersey.java.net/documentation/latest/ioc.html
+        /* Annotation SessionInject to get current session and user
+        Link between the object creator from the client request and the application 
+        @see https://jersey.java.net/documentation/latest/ioc.html */
         register(new AbstractBinder() {
             @Override
             protected void configure() {
-                // cree la session a partir du sessionId reçu
+                
+                // create session from given session id
                 bindFactory(SessionFactory.class).to(Session.class);
-                // Injection de la session grace au type definit dans SessionInjectResolver
+                
+                // Session injection from the defined type in SessionInjectResolver
                 bind(SessionInjectResolver.class)
                         .to(new TypeLiteral<InjectionResolver<SessionInject>>() {
                         })
-                        .in(Singleton.class); 
+                        .in(Singleton.class);
+                
                 // BrAPI services injection
                 bind(CallsResourceService.class).to(BrapiCall.class);
                 bind(TokenResourceService.class).to(BrapiCall.class);
@@ -95,7 +98,7 @@ public class ApplicationInitConfig extends ResourceConfig {
     }
     
     /**
-     * Initializes application
+     * Initializes application.
      */
     @PostConstruct
     public static void initialize() {
@@ -107,10 +110,12 @@ public class ApplicationInitConfig extends ResourceConfig {
                     LOGGER.error("Can't create log directory");
                     throw new WebApplicationException(
                             Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                            .entity(new ResponseFormPOST(new Status("Can't create log directory", StatusCodeMsg.ERR, null))).build());
+                            .entity(new ResponseFormPOST(
+                                    new Status("Can't create log directory", StatusCodeMsg.ERR, null))).build());
                 }
             }
         }
+        
         // apply the right rights on the log directory on the remote server
         try {
             Runtime.getRuntime().exec("chmod -R 755 " + logDirectory);

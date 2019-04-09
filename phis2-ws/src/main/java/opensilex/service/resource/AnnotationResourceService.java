@@ -15,7 +15,6 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
-import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -34,13 +33,9 @@ import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.AnnotationDAO;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.ResourceAccessDeniedException;
-import opensilex.service.dao.exception.SemanticInconsistencyException;
-import opensilex.service.dao.exception.UnknownUriException;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
-import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.view.brapi.Status;
-import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.resource.dto.annotation.AnnotationDTO;
 import opensilex.service.resource.dto.annotation.AnnotationPostDTO;
@@ -48,6 +43,7 @@ import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.view.brapi.form.ResponseFormGET;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Annotation;
+import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 
 /**
  * Annotation resource service.
@@ -265,32 +261,35 @@ public class AnnotationResourceService extends ResourceService {
      * @return the annotations corresponding to the search
      */
     public Response getAnnotations(String uri, String creator, String target, String bodyValue, String motivatedBy, int page, int pageSize) {
-        ArrayList<Status> statusList = new ArrayList<>();
-        ResultForm<AnnotationDTO> getResponse;
         AnnotationDAO annotationDao = new AnnotationDAO(userSession.getUser());
-
-        // Count all annotations for this specific request
-        Integer totalCount = annotationDao.count(uri, creator, target, bodyValue, motivatedBy);
         
-        // Retreive all annotations returned by the query
-        ArrayList<Annotation> annotations = annotationDao.searchAnnotations(uri, creator, target, bodyValue, motivatedBy, page, pageSize);
-        
-        ArrayList<AnnotationDTO> annotationDTOs = new ArrayList();
+        // Retrieve all annotations
+        ArrayList<Annotation> annotations = annotationDao.searchAnnotations(
+                uri, 
+                creator, 
+                target, 
+                bodyValue, 
+                motivatedBy, 
+                page, 
+                pageSize);
 
         if (annotations == null) {
-            getResponse = new ResultForm<>(0, 0, annotationDTOs, true);
-            return noResultFound(getResponse, statusList);
+            return getGETResponseWhenNoResult();
         } else if (annotations.isEmpty()) {
-            getResponse = new ResultForm<>(0, 0, annotationDTOs, true);
-            return noResultFound(getResponse, statusList);
+            return getGETResponseWhenNoResult();
         } else {
-            // Generate DTOs
-            annotations.forEach((annotation) -> {
-                annotationDTOs.add(new AnnotationDTO(annotation));
-            });
-            getResponse = new ResultForm<>(annotationDao.getPageSize(), annotationDao.getPage(), annotationDTOs, true, totalCount);
-            getResponse.setStatus(statusList);
-            return Response.status(Response.Status.OK).entity(getResponse).build();
+            Integer totalCount = annotationDao.count(uri, creator, target, bodyValue, motivatedBy);
+            return getGETResponseWhenSuccess(annotations, pageSize, page, totalCount);
         }
+    }
+
+    @Override
+    protected ArrayList<? extends AbstractVerifiedClass> getObjectsFromDTOs(ArrayList<? extends Object> objects) {
+        ArrayList<AnnotationDTO> dtos = new ArrayList();
+        // Generate DTOs
+        objects.forEach((object) -> {
+            dtos.add(new AnnotationDTO((Annotation)object));
+        });
+        return dtos;
     }
 }

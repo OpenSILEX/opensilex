@@ -16,6 +16,8 @@ import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.ResourceAccessDeniedException;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.injection.SessionInject;
+import opensilex.service.resource.dto.annotation.AnnotationDTO;
+import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.result.ResultForm;
 import opensilex.service.utils.POSTResultsReturn;
@@ -26,10 +28,23 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
  * Resource service mother class.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class ResourceService {
+public abstract class ResourceService {
     
     // The default language of the application
     protected static final String DEFAULT_LANGUAGE = PropertiesFileManager.getConfigFileProperty("service", "defaultLanguage");
+    
+    /**
+     * Gets a DTO list from a list of objects.
+     * //SILEX:todo
+     * This function should be abstract but we would need to implement it on all the resource service classes.
+     * We focus on event and annotation for the moment.
+     * \SILEX
+     * @param objects
+     * @return 
+     */
+    protected ArrayList<? extends AbstractVerifiedClass> getObjectsFromDTOs (ArrayList<? extends Object> objects) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
     
     // User session
     @SessionInject
@@ -60,9 +75,36 @@ public class ResourceService {
     }
 
     /**
+     * Gets a response for a GET operation in success.
+     * @param objects
+     * @param pageSize
+     * @param page
+     * @param totalCount
+     * @return the response.
+     */
+    protected Response getGETResponseWhenSuccess(ArrayList<? extends Object> objects, int pageSize, int page, int totalCount) {
+        return Response.status(Response.Status.OK)
+                .entity(new ResultForm<>(pageSize, page, getObjectsFromDTOs(objects), true, totalCount))
+                .build();
+    }
+
+    /**
+     * Gets a response for a GET operation returns no result.
+     * @param objects
+     * @param pageSize
+     * @param page
+     * @param totalCount
+     * @return the response.
+     */
+    protected Response getGETResponseWhenNoResult(ArrayList<? extends Object> objects, int pageSize, int page, int totalCount) {
+        ResultForm<? extends AbstractVerifiedClass> getResponse = new ResultForm<>(0, 0, new ArrayList(), true);
+        return noResultFound(getResponse, statusList);
+    }
+
+    /**
      * Gets a response for a POST operation in success.
      * @param urisCreated
-     * @return 
+     * @return the response. 
      */
     protected Response getPostResponseWhenSuccess(ArrayList<String> urisCreated) {
         ResponseFormPOST postResponse = new ResponseFormPOST(new Status(
@@ -76,7 +118,7 @@ public class ResourceService {
     /**
      * Gets a response from data exceptions thrown by a DAO.
      * @param aggregateException
-     * @return 
+     * @return the response. 
      */
     protected Response getPostResponseFromDAODataErrorExceptions(DAODataErrorAggregateException aggregateException) {
         List<Status> statusList = new ArrayList<>();
@@ -92,7 +134,7 @@ public class ResourceService {
     /**
      * Gets a response when an empty list is received by a POST.
      * @param statusMessageDetails
-     * @return 
+     * @return the response. 
      */
     protected Response getPostResponseWhenEmptyListGiven(String statusMessageDetails) {
         return getPostResponseFromSingleOperationStatus(
@@ -105,7 +147,7 @@ public class ResourceService {
     /**
      * Gets a response when an internal error occured during the operation.
      * @param exception
-     * @return 
+     * @return the response. 
      */
     protected Response getPostResponseWhenInternalError(Exception exception) {
         return getPostResponseFromSingleOperationStatus(
@@ -118,7 +160,7 @@ public class ResourceService {
     /**
      * Gets a response when an empty list is received by a POST.
      * @param exception
-     * @return 
+     * @return the response. 
      */
     protected Response getPostResponseWhenResourceAccessDenied(ResourceAccessDeniedException exception) {
         return getPostResponseFromSingleOperationStatus(
@@ -134,7 +176,7 @@ public class ResourceService {
      * @param responseFormMessage
      * @param responseFormCode
      * @param responseFormDetails
-     * @return 
+     * @return the response. 
      */
     private Response getPostResponseFromSingleOperationStatus (Response.Status httpStatus, String responseFormMessage, String responseFormCode, String responseFormDetails) {
         return buildResponse(httpStatus, new ResponseFormPOST(
@@ -145,7 +187,7 @@ public class ResourceService {
      * Gets a response with the HTTP status given and a list of operation status.
      * @param httpStatus
      * @param statusList
-     * @return 
+     * @return the response. 
      */
     private Response getPostResponseFromMultipleOperationStatus (Response.Status httpStatus, List<Status> statusList) {
         return buildResponse(httpStatus, new ResponseFormPOST(statusList));
@@ -155,7 +197,7 @@ public class ResourceService {
      * Builds a response from a status and a form result form.
      * @param status
      * @param resultForm
-     * @return 
+     * @return the response. 
      */
     private Response buildResponse(Response.Status status, AbstractResultForm resultForm) {
         return Response.status(status).entity(resultForm).build();

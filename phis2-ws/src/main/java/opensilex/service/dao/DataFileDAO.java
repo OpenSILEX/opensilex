@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.PropertiesFileManager;
 import opensilex.service.configuration.DateFormat;
+import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.manager.MongoDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.ontology.Oeso;
@@ -497,6 +498,11 @@ public class DataFileDAO extends MongoDAO<FileDescription> {
 
     @Override
     public FileDescription findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void checkBeforeCreation(List<FileDescription> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

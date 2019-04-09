@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
+import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.PropertiesFileManager;
@@ -246,6 +247,11 @@ public class LayerDAO extends DAO<LayerDTO>{
 
     @Override
     public LayerDTO findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void checkBeforeCreation(List<LayerDTO> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

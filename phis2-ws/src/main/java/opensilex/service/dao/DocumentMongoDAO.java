@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import org.apache.commons.io.IOUtils;
 import opensilex.service.PropertiesFileManager;
 import opensilex.service.dao.manager.MongoDAO;
@@ -111,6 +112,11 @@ public class DocumentMongoDAO extends MongoDAO<Document> {
 
     @Override
     public Document findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void checkBeforeCreation(List<Document> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

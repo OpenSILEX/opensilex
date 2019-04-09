@@ -9,7 +9,7 @@ package opensilex.service.utils.sparql;
 
 import java.util.Iterator;
 import java.util.List;
-import opensilex.service.resources.validation.validators.URLValidator;
+import opensilex.service.resource.validation.validator.URLValidator;
 
 /**
  * Abstract class to manipulate SPARQL query.

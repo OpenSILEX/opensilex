@@ -46,7 +46,7 @@ import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.utils.JsonConverter;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.UriGenerator;
-import opensilex.service.utils.dates.Dates;
+import opensilex.service.utils.date.Dates;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.model.Annotation;
 

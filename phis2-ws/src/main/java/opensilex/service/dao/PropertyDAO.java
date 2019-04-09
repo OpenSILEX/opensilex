@@ -37,7 +37,7 @@ import opensilex.service.ontology.Rdf;
 import opensilex.service.ontology.Rdfs;
 import opensilex.service.ontology.Skos;
 import opensilex.service.ontology.Oeso;
-import opensilex.service.resources.dto.rdfResourceDefinition.PropertyPostDTO;
+import opensilex.service.resource.dto.rdfResourceDefinition.PropertyPostDTO;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.view.brapi.Status;

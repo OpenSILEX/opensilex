@@ -30,12 +30,12 @@ import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.injection.SessionFactory;
 import opensilex.service.injection.SessionInject;
 import opensilex.service.injection.SessionInjectResolver;
-import opensilex.service.resources.brapi.BrapiCall;
-import opensilex.service.resources.brapi.CallsResourceService;
-import opensilex.service.resources.brapi.StudyDetailsResourceService;
-import opensilex.service.resources.brapi.TokenResourceService;
-import opensilex.service.resources.brapi.VariableResourceService;
-import opensilex.service.resources.brapi.TraitsResourceService;
+import opensilex.service.resource.brapi.BrapiCall;
+import opensilex.service.resource.brapi.CallsResourceService;
+import opensilex.service.resource.brapi.StudyDetailsResourceService;
+import opensilex.service.resource.brapi.TokenResourceService;
+import opensilex.service.resource.brapi.VariableResourceService;
+import opensilex.service.resource.brapi.TraitsResourceService;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 

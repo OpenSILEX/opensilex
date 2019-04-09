@@ -468,9 +468,4 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
     public Annotation findById(String id) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-
-    @Override
-    public void checkBeforeCreation(List<Annotation> objects) throws DAODataErrorAggregateException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 }

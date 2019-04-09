@@ -12,11 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import opensilex.service.configuration.DateFormat;
-<<<<<<< HEAD:phis2-ws/src/main/java/opensilex/service/resources/dto/data/FileDescriptionDTO.java
-import opensilex.service.resources.dto.ConcernedItemDTO;
-=======
-import opensilex.service.resource.dto.ConcernItemDTO;
->>>>>>> reorganize-packages:phis2-ws/src/main/java/opensilex/service/resource/dto/data/FileDescriptionDTO.java
+import opensilex.service.resource.dto.ConcernedItemDTO;
 import opensilex.service.model.ConcernedItem;
 import opensilex.service.model.FileDescription;
 

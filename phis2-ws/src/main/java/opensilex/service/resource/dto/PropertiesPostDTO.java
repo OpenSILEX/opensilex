@@ -5,12 +5,7 @@
 // Creation date: 26 Sept. 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-<<<<<<< HEAD:phis2-ws/src/main/java/opensilex/service/resources/dto/PropertiesPostDTO.java
-package opensilex.service.resources.dto;
-=======
-
 package opensilex.service.resource.dto;
->>>>>>> reorganize-packages:phis2-ws/src/main/java/opensilex/service/resource/dto/PropertiesPostDTO.java
 
 import java.util.ArrayList;
 import javax.validation.Valid;

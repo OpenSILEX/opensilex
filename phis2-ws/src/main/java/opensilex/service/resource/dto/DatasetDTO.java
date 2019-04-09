@@ -4,15 +4,8 @@
 // Copyright © INRA 2017
 // Creation date: September 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-<<<<<<< HEAD:phis2-ws/src/main/java/opensilex/service/resources/dto/DatasetDTO.java
 //******************************************************************************
-package opensilex.service.resources.dto;
-=======
-// Last modification date:  September, 13 2017
-// Subject: Represents the JSON submitted for the datasets
-//***********************************************************************************************
 package opensilex.service.resource.dto;
->>>>>>> reorganize-packages:phis2-ws/src/main/java/opensilex/service/resource/dto/DatasetDTO.java
 
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;

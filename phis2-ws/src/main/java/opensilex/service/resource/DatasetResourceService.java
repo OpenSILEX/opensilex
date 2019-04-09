@@ -4,16 +4,8 @@
 // Copyright © INRA 2017
 // Creation date: September 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-<<<<<<< HEAD:phis2-ws/src/main/java/opensilex/service/resources/DatasetResourceService.java
 //******************************************************************************
-package opensilex.service.resources;
-=======
-// Last modification date:  January, 12 2018 Update POST datasets : add 
-// possibility to post a dataset with an already existing provenance                             
-// Subject: Represents the dataset service
-//***********************************************************************************************
 package opensilex.service.resource;
->>>>>>> reorganize-packages:phis2-ws/src/main/java/opensilex/service/resource/DatasetResourceService.java
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;

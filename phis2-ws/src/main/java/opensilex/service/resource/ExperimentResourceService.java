@@ -4,13 +4,8 @@
 // Copyright © INRA 2018
 // Creation date: January 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-<<<<<<< HEAD:phis2-ws/src/main/java/opensilex/service/resources/ExperimentResourceService.java
 //******************************************************************************
-package opensilex.service.resources;
-=======
-//***********************************************************************************************
 package opensilex.service.resource;
->>>>>>> reorganize-packages:phis2-ws/src/main/java/opensilex/service/resource/ExperimentResourceService.java
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;

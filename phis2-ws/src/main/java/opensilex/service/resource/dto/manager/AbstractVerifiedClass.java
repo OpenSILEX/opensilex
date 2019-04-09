@@ -5,12 +5,7 @@
 // Creation date: 21 Jun 2018
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-<<<<<<< HEAD:phis2-ws/src/main/java/opensilex/service/resources/dto/manager/AbstractVerifiedClass.java
-package opensilex.service.resources.dto.manager;
-=======
-
 package opensilex.service.resource.dto.manager;
->>>>>>> reorganize-packages:phis2-ws/src/main/java/opensilex/service/resource/dto/manager/AbstractVerifiedClass.java
 
 import java.lang.reflect.Field;
 import java.util.LinkedHashMap;

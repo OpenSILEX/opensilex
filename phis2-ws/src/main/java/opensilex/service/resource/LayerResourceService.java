@@ -4,15 +4,8 @@
 // Copyright © INRA 2017
 // Creation date: August 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-<<<<<<< HEAD:phis2-ws/src/main/java/opensilex/service/resources/LayerResourceService.java
 //******************************************************************************
-package opensilex.service.resources;
-=======
-// Last modification date:  September, 6 2017
-// Subject: Represents the layer data service
-//***********************************************************************************************
 package opensilex.service.resource;
->>>>>>> reorganize-packages:phis2-ws/src/main/java/opensilex/service/resource/LayerResourceService.java
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;

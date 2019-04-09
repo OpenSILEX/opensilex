@@ -4,15 +4,8 @@
 // Copyright © INRA 2017
 // Creation date: 18 November 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-<<<<<<< HEAD:phis2-ws/src/main/java/opensilex/service/resources/UnitResourceService.java
 //******************************************************************************
-package opensilex.service.resources;
-=======
-// Last modification date:  November, 18 2017
-// Subject: Represents the method data service
-//***********************************************************************************************
 package opensilex.service.resource;
->>>>>>> reorganize-packages:phis2-ws/src/main/java/opensilex/service/resource/UnitResourceService.java
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;

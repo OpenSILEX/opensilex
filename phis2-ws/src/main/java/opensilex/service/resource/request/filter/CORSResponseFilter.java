@@ -1,4 +1,3 @@
-<<<<<<< HEAD:phis2-ws/src/main/java/opensilex/service/resources/request/filters/CORSResponseFilter.java
 //******************************************************************************
 //                            CORSResponseFilter.java
 // SILEX-PHIS
@@ -6,15 +5,7 @@
 // Creation date: May 2016
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package opensilex.service.resources.request.filters;
-=======
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package opensilex.service.resource.request.filter;
->>>>>>> reorganize-packages:phis2-ws/src/main/java/opensilex/service/resource/request/filter/CORSResponseFilter.java
 
 import java.io.IOException;
 import javax.ws.rs.container.ContainerRequestContext;

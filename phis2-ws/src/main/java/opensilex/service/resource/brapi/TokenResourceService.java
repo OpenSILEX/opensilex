@@ -1,4 +1,3 @@
-<<<<<<< HEAD:phis2-ws/src/main/java/opensilex/service/resources/brapi/TokenResourceService.java
 //******************************************************************************
 //                           TokenResourceService.java 
 // SILEX-PHIS
@@ -6,21 +5,7 @@
 // Creation date: 26 November 2015
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package opensilex.service.resources.brapi;
-=======
-//**********************************************************************************************
-//                                       TokenResourceService.java 
-//
-// Author(s): Samuel Cherimont, Arnaud Charleroy
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2015
-// Creation date: november 2015
-// Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  March, 2018
-// Subject: Represents the token data service
-//***********************************************************************************************
 package opensilex.service.resource.brapi;
->>>>>>> reorganize-packages:phis2-ws/src/main/java/opensilex/service/resource/brapi/TokenResourceService.java
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSVerifier;

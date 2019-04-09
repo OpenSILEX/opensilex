@@ -4,15 +4,8 @@
 // Copyright © INRA 2017
 // Creation date: April 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-<<<<<<< HEAD:phis2-ws/src/main/java/opensilex/service/resources/GroupResourceService.java
 //******************************************************************************
-package opensilex.service.resources;
-=======
-// Last modification date:  April, 2017
-// Subject: Represents the group data service
-//***********************************************************************************************
 package opensilex.service.resource;
->>>>>>> reorganize-packages:phis2-ws/src/main/java/opensilex/service/resource/GroupResourceService.java
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;

@@ -27,15 +27,8 @@ import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.UserDAO;
 import opensilex.service.dao.TripletDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
-<<<<<<< HEAD:phis2-ws/src/main/java/opensilex/service/resources/TripletsResourceService.java
-import opensilex.service.resources.dto.TripletDTO;
-import opensilex.service.resources.validation.interfaces.Required;
-=======
-import opensilex.service.documentation.StatusCodeMsg;
-import opensilex.service.injection.SessionInject;
 import opensilex.service.resource.dto.TripletDTO;
 import opensilex.service.resource.validation.interfaces.Required;
->>>>>>> reorganize-packages:phis2-ws/src/main/java/opensilex/service/resource/TripletsResourceService.java
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;

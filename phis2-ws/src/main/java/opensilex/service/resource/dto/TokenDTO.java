@@ -1,20 +1,11 @@
-<<<<<<< HEAD:phis2-ws/src/main/java/opensilex/service/resources/dto/TokenDTO.java
 //******************************************************************************
-//                        ShootingConfigurationDTO.java 
+//                                      TokenDTO.java 
 // SILEX-PHIS
 // Copyright © INRA 2017
 // Creation date: 8 December 2017
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package opensilex.service.resources.dto;
-=======
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package opensilex.service.resource.dto;
->>>>>>> reorganize-packages:phis2-ws/src/main/java/opensilex/service/resource/dto/TokenDTO.java
 
 import io.swagger.annotations.ApiModelProperty;
 import opensilex.service.documentation.DocumentationAnnotation;

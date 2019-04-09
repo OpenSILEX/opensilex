@@ -4,15 +4,8 @@
 // Copyright © INRA 2017
 // Creation date: 8 December 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-<<<<<<< HEAD:phis2-ws/src/main/java/opensilex/service/resources/dto/ShootingConfigurationDTO.java
 //******************************************************************************
-package opensilex.service.resources.dto;
-=======
-// Last modification date:  December, 8 2017
-// Subject: Represents the JSON submitted for the images shooting configuration 
-//***********************************************************************************************
 package opensilex.service.resource.dto;
->>>>>>> reorganize-packages:phis2-ws/src/main/java/opensilex/service/resource/dto/ShootingConfigurationDTO.java
 
 import io.swagger.annotations.ApiModelProperty;
 import opensilex.service.configuration.DateFormat;

@@ -18,19 +18,11 @@ import java.util.Map;
 import javax.validation.Valid;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.documentation.DocumentationAnnotation;
-<<<<<<< HEAD:phis2-ws/src/main/java/opensilex/service/resources/dto/data/FileDescriptionPostDTO.java
-import opensilex.service.resources.dto.ConcernedItemDTO;
-import opensilex.service.resources.dto.manager.AbstractVerifiedClass;
-import opensilex.service.resources.validation.interfaces.Date;
-import opensilex.service.resources.validation.interfaces.Required;
-import opensilex.service.resources.validation.interfaces.URL;
-=======
-import opensilex.service.resource.dto.ConcernItemDTO;
+import opensilex.service.resource.dto.ConcernedItemDTO;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
->>>>>>> reorganize-packages:phis2-ws/src/main/java/opensilex/service/resource/dto/data/FileDescriptionPostDTO.java
 import opensilex.service.model.ConcernedItem;
 import opensilex.service.model.FileDescription;
 

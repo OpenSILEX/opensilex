@@ -4,14 +4,8 @@
 // Copyright © INRA 2017
 // Creation date: 8 Dec. 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-<<<<<<< HEAD:phis2-ws/src/main/java/opensilex/service/resources/dto/ImageMetadataDTO.java
 //******************************************************************************
-package opensilex.service.resources.dto;
-=======
-// Subject: Represents the submitted JSON for the images
-//***********************************************************************************************
 package opensilex.service.resource.dto;
->>>>>>> reorganize-packages:phis2-ws/src/main/java/opensilex/service/resource/dto/ImageMetadataDTO.java
 
 import io.swagger.annotations.ApiModelProperty;
 import java.util.List;

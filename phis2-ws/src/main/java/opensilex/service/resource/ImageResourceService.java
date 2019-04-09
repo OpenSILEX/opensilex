@@ -4,14 +4,8 @@
 // Copyright © INRA 2017
 // Creation date: 8 Dec.. 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-<<<<<<< HEAD:phis2-ws/src/main/java/opensilex/service/resources/ImageResourceService.java
 //******************************************************************************
-package opensilex.service.resources;
-=======
-// Subject: Represents the images data service
-//***********************************************************************************************
 package opensilex.service.resource;
->>>>>>> reorganize-packages:phis2-ws/src/main/java/opensilex/service/resource/ImageResourceService.java
 
 import com.jcraft.jsch.SftpException;
 import com.twmacinta.util.MD5;

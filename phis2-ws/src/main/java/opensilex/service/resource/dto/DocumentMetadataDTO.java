@@ -1,20 +1,12 @@
 //******************************************************************************
-//                                       DocumentMetadataDTO.java 
+//                            DocumentMetadataDTO.java 
 // SILEX-PHIS
 // Copyright © INRA 2017
 // Creation date: March 2017
-<<<<<<< HEAD:phis2-ws/src/main/java/opensilex/service/resources/dto/DocumentMetadataDTO.java
 // Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, 
 //          pascal.neveu@inra.fr
 //******************************************************************************
-package opensilex.service.resources.dto;
-=======
-// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  October, 12 2017 (Ajout du status de documents)
-// Subject: Represents the submitted JSON for the documents
-//***********************************************************************************************
 package opensilex.service.resource.dto;
->>>>>>> reorganize-packages:phis2-ws/src/main/java/opensilex/service/resource/dto/DocumentMetadataDTO.java
 
 import io.swagger.annotations.ApiModelProperty;
 import java.util.List;

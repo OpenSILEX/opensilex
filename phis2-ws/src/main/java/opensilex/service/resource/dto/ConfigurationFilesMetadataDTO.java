@@ -3,18 +3,10 @@
 // SILEX-PHIS
 // Copyright © INRA 2017
 // Creation date: March 2017
-<<<<<<< HEAD:phis2-ws/src/main/java/opensilex/service/resources/dto/ConfigurationFilesMetadataDTO.java
 // Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, 
 //          pascal.neveu@inra.fr
 //******************************************************************************
-package opensilex.service.resources.dto;
-=======
-// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  March, 2017
-// Subject: Represents the submitted JSON for the file metadata
-//***********************************************************************************************
 package opensilex.service.resource.dto;
->>>>>>> reorganize-packages:phis2-ws/src/main/java/opensilex/service/resource/dto/ConfigurationFilesMetadataDTO.java
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

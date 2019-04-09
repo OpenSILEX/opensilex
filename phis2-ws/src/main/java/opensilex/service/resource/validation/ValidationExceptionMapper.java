@@ -5,12 +5,7 @@
 // Creation date: 25 June 2018
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-<<<<<<< HEAD:phis2-ws/src/main/java/opensilex/service/resources/validation/ValidationExceptionMapper.java
-package opensilex.service.resources.validation;
-=======
-
 package opensilex.service.resource.validation;
->>>>>>> reorganize-packages:phis2-ws/src/main/java/opensilex/service/resource/validation/ValidationExceptionMapper.java
 
 import java.util.ArrayList;
 import javax.validation.ConstraintViolation;

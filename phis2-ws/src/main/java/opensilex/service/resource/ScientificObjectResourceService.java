@@ -4,15 +4,8 @@
 // Copyright © INRA 2017
 // Creation date: August 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-<<<<<<< HEAD:phis2-ws/src/main/java/opensilex/service/resources/ScientificObjectResourceService.java
 //******************************************************************************
-package opensilex.service.resources;
-=======
-// Last modification date:  August, 30 2017 - update post - génération des uris
-// Subject: Represents the scientific object data service
-//***********************************************************************************************
 package opensilex.service.resource;
->>>>>>> reorganize-packages:phis2-ws/src/main/java/opensilex/service/resource/ScientificObjectResourceService.java
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;

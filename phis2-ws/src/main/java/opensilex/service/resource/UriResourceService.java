@@ -3,18 +3,10 @@
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 26 Feb 2018
-<<<<<<< HEAD:phis2-ws/src/main/java/opensilex/service/resources/UriResourceService.java
 // Contact: eloan.lagier@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, 
 //          pascal.neveu@inra.fr
 //******************************************************************************
-package opensilex.service.resources;
-=======
-// Contact: eloan.lagier@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  20 June, 2018
-// Subject: Represents the Uri Resource Service
-//***********************************************************************************************
 package opensilex.service.resource;
->>>>>>> reorganize-packages:phis2-ws/src/main/java/opensilex/service/resource/UriResourceService.java
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;

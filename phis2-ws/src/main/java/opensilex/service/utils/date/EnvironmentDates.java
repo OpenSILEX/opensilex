@@ -16,16 +16,9 @@ import org.joda.time.format.DateTimeParser;
 import opensilex.service.configuration.DateFormats;
 
 /**
-<<<<<<< HEAD:phis2-ws/src/main/java/opensilex/service/utils/dates/EnvironmentDates.java
  * Environmental measure dates manager.
  * @see opensilex.service.utils.dates.Dates
  * @author Arnaud Charleroy <arnaud.charleory@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
-=======
- * represents the environment dates. Manipulates thoses dates (e.g. check formats)
- * @see opensilex.service.utils.date.Dates
- * @author Arnaud Charleroy
- * @author Morgane Vidal <morgane.vidal@inra.fr>
->>>>>>> reorganize-packages:phis2-ws/src/main/java/opensilex/service/utils/date/EnvironmentDates.java
  */
 public class EnvironmentDates extends Dates {
     

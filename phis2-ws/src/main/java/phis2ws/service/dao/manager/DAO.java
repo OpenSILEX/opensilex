@@ -5,7 +5,7 @@
 // Creation date: August 2016
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package opensilex.service.dao.manager;
+package phis2ws.service.dao.manager;
 
 import java.util.List;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
@@ -71,6 +71,7 @@ public abstract class DAO<T> {
      * @param annotations
      * @return the annotations created.
      * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
+     * @throws opensilex.service.dao.exception.ResourceAccessDeniedException
      */
     public List<T> checkAndCreate(List<T> annotations) 
             throws DAODataErrorAggregateException, ResourceAccessDeniedException, Exception {

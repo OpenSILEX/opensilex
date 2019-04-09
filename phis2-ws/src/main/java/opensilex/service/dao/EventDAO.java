@@ -527,6 +527,10 @@ public class EventDAO extends SparqlDAO<Event> {
                 }
             }
         }
+        
+        if (exceptions.size() > 0) {
+            throw new DAODataErrorAggregateException(exceptions);
+        }
     }
     
     /**

@@ -42,7 +42,7 @@ import opensilex.service.ontology.Rdf;
 import opensilex.service.ontology.Rdfs;
 import opensilex.service.ontology.Time;
 import opensilex.service.utils.UriGenerator;
-import opensilex.service.utils.dates.Dates;
+import opensilex.service.utils.date.Dates;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.model.Annotation;
 import opensilex.service.model.Event;

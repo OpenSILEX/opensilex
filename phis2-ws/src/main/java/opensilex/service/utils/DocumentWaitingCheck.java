@@ -12,7 +12,7 @@ import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.PropertiesFileManager;
-import opensilex.service.resources.DocumentResourceService;
+import opensilex.service.resource.DocumentResourceService;
 
 /**
  * Permits to start a thread for document sending.

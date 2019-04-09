@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 import opensilex.service.authentication.TokenManager;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.documentation.StatusCodeMsg;
-import opensilex.service.resources.DataResourceService;
+import opensilex.service.resource.DataResourceService;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.ResponseFormGET;
 

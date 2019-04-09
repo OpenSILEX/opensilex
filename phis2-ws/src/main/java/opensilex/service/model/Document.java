@@ -9,7 +9,7 @@
 package opensilex.service.model;
 
 import java.util.ArrayList;
-import opensilex.service.resources.dto.ConcernedItemDTO;
+import opensilex.service.resource.dto.ConcernedItemDTO;
 
 /**
  * Document model.

@@ -11,7 +11,7 @@ import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.PropertiesFileManager;
-import opensilex.service.resources.ImageResourceService;
+import opensilex.service.resource.ImageResourceService;
 
 /**
  * Allows to start a thread for image sending. 

@@ -22,7 +22,7 @@ import opensilex.service.configuration.URINamespaces;
 import opensilex.service.dao.manager.SparqlDAO;
 import opensilex.service.ontology.Rdfs;
 import opensilex.service.ontology.Oeso;
-import opensilex.service.resources.dto.PropertyVocabularyDTO;
+import opensilex.service.resource.dto.PropertyVocabularyDTO;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.model.Namespace;
 

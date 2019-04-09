@@ -41,7 +41,7 @@ import opensilex.service.ontology.Rdf;
 import opensilex.service.ontology.Rdfs;
 import opensilex.service.ontology.Skos;
 import opensilex.service.ontology.Oeso;
-import opensilex.service.resources.dto.VariableDTO;
+import opensilex.service.resource.dto.VariableDTO;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;

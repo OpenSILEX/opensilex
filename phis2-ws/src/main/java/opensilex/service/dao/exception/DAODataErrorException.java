@@ -11,22 +11,24 @@ package opensilex.service.dao.exception;
  * DAO exception.
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
-public class DAOException extends Exception {
+public abstract class DAODataErrorException extends Exception {
     public static String GENERIC_MESSAGE = "A DAO issue occured";
     
-    public DAOException() {
+    public DAODataErrorException() {
         super(GENERIC_MESSAGE);
     }
     
-    public DAOException(Throwable throwableCause) {
+    public DAODataErrorException(Throwable throwableCause) {
         super(GENERIC_MESSAGE, throwableCause);
     }
     
-    public DAOException(String errorMessage) {
+    public DAODataErrorException(String errorMessage) {
         super(errorMessage);
     }
     
-    public DAOException(String message, Throwable throwableCause) {
+    public DAODataErrorException(String message, Throwable throwableCause) {
         super(message, throwableCause);
     }
+    
+    public abstract String getGenericMessage();
 }

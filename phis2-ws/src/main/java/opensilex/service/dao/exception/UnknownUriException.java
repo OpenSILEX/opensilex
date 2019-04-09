@@ -31,4 +31,9 @@ public class UnknownUriException extends SemanticInconsistencyException {
     public UnknownUriException(String uri, String uriObject, Throwable throwableCause) {
         super(String.format(DETAILS, uri, uriObject), throwableCause);
     }
+
+    @Override
+    public String getGenericMessage() {
+        return GENERIC_MESSAGE;
+    }
 }

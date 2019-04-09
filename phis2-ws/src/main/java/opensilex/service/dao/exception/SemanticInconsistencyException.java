@@ -11,7 +11,7 @@ package opensilex.service.dao.exception;
  * Semantic inconsistency exception.
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
-public class SemanticInconsistencyException extends DAOException {
+public class SemanticInconsistencyException extends DAODataErrorException {
     public final static String GENERIC_MESSAGE = 
             "A semantic inconsistency prevented the operation to continue";
     
@@ -29,5 +29,10 @@ public class SemanticInconsistencyException extends DAOException {
     
     public SemanticInconsistencyException(String message, Throwable throwableCause) {
         super(message, throwableCause);
+    }
+
+    @Override
+    public String getGenericMessage() {
+        return GENERIC_MESSAGE;
     }
 }

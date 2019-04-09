@@ -29,4 +29,9 @@ public class NotAnAdminException extends ResourceAccessDeniedException {
     public NotAnAdminException(String message, Throwable throwableCause) {
         super(message, throwableCause);
     }
+
+    @Override
+    public String getGenericMessage() {
+        return GENERIC_MESSAGE;
+    }
 }

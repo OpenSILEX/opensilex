@@ -11,7 +11,7 @@ package opensilex.service.dao.exception;
  * Resource access denied exception.
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
-public class ResourceAccessDeniedException extends DAOException {
+public class ResourceAccessDeniedException extends DAODataErrorException {
     public static String GENERIC_MESSAGE = "The resource access is denied for this user";
     
     public ResourceAccessDeniedException() {
@@ -28,5 +28,10 @@ public class ResourceAccessDeniedException extends DAOException {
     
     public ResourceAccessDeniedException(String message, Throwable throwableCause) {
         super(message, throwableCause);
+    }
+
+    @Override
+    public String getGenericMessage() {
+        return GENERIC_MESSAGE;
     }
 }

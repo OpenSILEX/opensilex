@@ -40,4 +40,9 @@ public class TypeNotInRangeException extends SemanticInconsistencyException {
     public TypeNotInRangeException(String valueType, String propertyName, Throwable throwableCause) {
         super(String.format(DETAILS, valueType, propertyName), throwableCause);
     }
+
+    @Override
+    public String getGenericMessage() {
+        return GENERIC_MESSAGE;
+    }
 }

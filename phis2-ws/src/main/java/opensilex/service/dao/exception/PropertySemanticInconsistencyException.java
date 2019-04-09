@@ -30,4 +30,9 @@ public class PropertySemanticInconsistencyException extends SemanticInconsistenc
     public PropertySemanticInconsistencyException(String message, Throwable throwableCause) {
         super(message, throwableCause);
     }
+
+    @Override
+    public String getGenericMessage() {
+        return GENERIC_MESSAGE;
+    }
 }

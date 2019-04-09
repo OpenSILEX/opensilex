@@ -40,4 +40,9 @@ public class TypeNotInDomainException extends SemanticInconsistencyException {
     public TypeNotInDomainException(String objectType, String propertyName, Throwable throwableCause) {
         super(String.format(DETAILS, objectType, propertyName), throwableCause);
     }
+
+    @Override
+    public String getGenericMessage() {
+        return GENERIC_MESSAGE;
+    }
 }

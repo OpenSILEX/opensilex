@@ -24,15 +24,20 @@ public class UnknownUriOfTypeException extends SemanticInconsistencyException {
         super(DETAILS, throwableCause);
     }
     
-    public UnknownUriOfTypeException(String uri, String objectWhoseUriIsUnknown, String typeOfObject) {
-        super(String.format(DETAILS, uri, objectWhoseUriIsUnknown, typeOfObject));
+    public UnknownUriOfTypeException(String uri, String objectOfWhichUriIsUnknown, String typeOfObject) {
+        super(String.format(DETAILS, uri, objectOfWhichUriIsUnknown, typeOfObject));
     }
     
     public UnknownUriOfTypeException(String uri, String uriObject, Throwable throwableCause) {
         super(String.format(DETAILS, uri, uriObject), throwableCause);
     }
     
-    public UnknownUriOfTypeException(String uri, String uriObject, String typeOfObject, Throwable throwableCause) {
-        super(String.format(DETAILS, uri, uriObject, typeOfObject), throwableCause);
+    public UnknownUriOfTypeException(String uri, String uriObject, String objectOfWhichUriIsUnknown, Throwable throwableCause) {
+        super(String.format(DETAILS, uri, uriObject, objectOfWhichUriIsUnknown), throwableCause);
+    }
+
+    @Override
+    public String getGenericMessage() {
+        return GENERIC_MESSAGE;
     }
 }

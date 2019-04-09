@@ -10,6 +10,7 @@ package phis2ws.service.dao.sesame;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -254,6 +255,11 @@ public class VocabularyDAOSesame extends DAOSesame<PropertyVocabularyDTO> {
 
     @Override
     public PropertyVocabularyDTO findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void checkBeforeCreation(List<PropertyVocabularyDTO> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

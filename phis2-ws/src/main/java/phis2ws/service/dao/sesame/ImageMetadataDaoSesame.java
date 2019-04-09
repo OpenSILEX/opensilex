@@ -12,6 +12,7 @@
 package phis2ws.service.dao.sesame;
 
 import java.util.List;
+import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.repository.RepositoryException;
@@ -56,6 +57,11 @@ public class ImageMetadataDaoSesame extends DAOSesame<ImageMetadata> {
 
     @Override
     public ImageMetadata findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void checkBeforeCreation(List<ImageMetadata> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

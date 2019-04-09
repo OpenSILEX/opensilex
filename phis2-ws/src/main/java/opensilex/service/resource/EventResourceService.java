@@ -257,7 +257,7 @@ public class EventResourceService  extends ResourceService {
         EventDAO eventDAO = new EventDAO(userSession.getUser());
         
         // 1. Search an event's details with its URI
-        Event event = eventDAO.searchEvent(uri);
+        Event event = eventDAO.findById(uri);
         
         // 2. Analyse result
         ArrayList<EventDTO> eventDTOs = new ArrayList();

@@ -74,11 +74,11 @@ public class ResourceService {
     }
 
     /**
-     * Get a response from data exceptions thrown by a DAO.
+     * Gets a response from data exceptions thrown by a DAO.
      * @param aggregateException
      * @return 
      */
-    protected Response getPOSTResponseFromDAODataErrorExceptions(DAODataErrorAggregateException aggregateException) {
+    protected Response getPostResponseFromDAODataErrorExceptions(DAODataErrorAggregateException aggregateException) {
         List<Status> statusList = new ArrayList<>();
         aggregateException.getExceptions().forEach((ex) -> {
             statusList.add(new Status(
@@ -86,7 +86,7 @@ public class ResourceService {
                     StatusCodeMsg.DATA_ERROR, 
                     ex.getMessage()));
         });
-        return buildResponse(Response.Status.BAD_REQUEST, new ResponseFormPOST(statusList));
+        return getPostResponseFromMultipleOperationStatus(Response.Status.BAD_REQUEST, statusList);
     }
 
     /**
@@ -95,11 +95,11 @@ public class ResourceService {
      * @return 
      */
     protected Response getPostResponseWhenEmptyListGiven(String statusMessageDetails) {
-        ResponseFormPOST postResponse = new ResponseFormPOST(new Status(
-                StatusCodeMsg.REQUEST_ERROR, 
-                StatusCodeMsg.ERR, statusMessageDetails));
-        Response.Status responseStatus = Response.Status.BAD_REQUEST;
-        return buildResponse(Response.Status.BAD_REQUEST, postResponse);
+        return getPostResponseFromSingleOperationStatus(
+                Response.Status.BAD_REQUEST,
+                StatusCodeMsg.REQUEST_ERROR,
+                StatusCodeMsg.ERR,
+                statusMessageDetails);
     }
 
     /**
@@ -108,11 +108,11 @@ public class ResourceService {
      * @return 
      */
     protected Response getPostResponseWhenInternalError(Exception exception) {
-        ResponseFormPOST postResponse = new ResponseFormPOST(new Status(
-                StatusCodeMsg.ERR, 
-                StatusCodeMsg.ERR, 
-                exception.getMessage()));
-        return buildResponse(Response.Status.INTERNAL_SERVER_ERROR, postResponse);
+        return getPostResponseFromSingleOperationStatus(
+                Response.Status.INTERNAL_SERVER_ERROR,
+                StatusCodeMsg.ERR,
+                StatusCodeMsg.ERR,
+                exception.getMessage());
     }
 
     /**
@@ -121,11 +121,34 @@ public class ResourceService {
      * @return 
      */
     protected Response getPostResponseWhenResourceAccessDenied(ResourceAccessDeniedException exception) {
-        ResponseFormPOST postResponse = new ResponseFormPOST(new Status(
-                        ResourceAccessDeniedException.GENERIC_MESSAGE, 
-                        StatusCodeMsg.ERR, 
-                        exception.getMessage()));
-        return buildResponse(Response.Status.BAD_REQUEST, postResponse);
+        return getPostResponseFromSingleOperationStatus(
+                Response.Status.BAD_REQUEST,
+                ResourceAccessDeniedException.GENERIC_MESSAGE,
+                StatusCodeMsg.ERR,
+                exception.getMessage());
+    }
+    
+    /**
+     * Gets a response with the HTTP status given and a single operation status.
+     * @param httpStatus
+     * @param responseFormMessage
+     * @param responseFormCode
+     * @param responseFormDetails
+     * @return 
+     */
+    private Response getPostResponseFromSingleOperationStatus (Response.Status httpStatus, String responseFormMessage, String responseFormCode, String responseFormDetails) {
+        return buildResponse(httpStatus, new ResponseFormPOST(
+                new Status(responseFormMessage, responseFormCode, responseFormDetails)));
+    }
+    
+    /**
+     * Gets a response with the HTTP status given and a list of operation status.
+     * @param httpStatus
+     * @param statusList
+     * @return 
+     */
+    private Response getPostResponseFromMultipleOperationStatus (Response.Status httpStatus, List<Status> statusList) {
+        return buildResponse(httpStatus, new ResponseFormPOST(statusList));
     }
     
     /**
@@ -134,7 +157,7 @@ public class ResourceService {
      * @param resultForm
      * @return 
      */
-    protected Response buildResponse(Response.Status status, AbstractResultForm resultForm) {
+    private Response buildResponse(Response.Status status, AbstractResultForm resultForm) {
         return Response.status(status).entity(resultForm).build();
     }
 }

@@ -15,7 +15,6 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
-import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -38,7 +37,6 @@ import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.EventDAO;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.NotAnAdminException;
-import opensilex.service.dao.exception.SemanticInconsistencyException;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.resources.dto.event.EventDTO;
@@ -48,7 +46,6 @@ import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.view.brapi.Status;
-import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Event;
@@ -450,7 +447,7 @@ public class EventResourceService  extends ResourceService {
             } catch (NotAnAdminException ex) {
                 return getPostResponseWhenResourceAccessDenied(ex);
             } catch (DAODataErrorAggregateException ex) {
-                return getPOSTResponseFromDAODataErrorExceptions(ex);
+                return getPostResponseFromDAODataErrorExceptions(ex);
             } catch (Exception ex) {
                 return getPostResponseWhenInternalError(ex);
             }  

@@ -10,7 +10,6 @@ package opensilex.service.dao;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
@@ -28,7 +27,6 @@ import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
-import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -36,20 +34,19 @@ import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.configuration.DateFormats;
-import opensilex.service.dao.exception.SemanticInconsistencyException;
+import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAODataErrorException;
 import opensilex.service.dao.exception.UnknownUriException;
+import opensilex.service.dao.exception.WrongTypeException;
 import opensilex.service.dao.manager.SparqlDAO;
-import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.User;
 import opensilex.service.ontology.Contexts;
 import opensilex.service.ontology.Oa;
 import opensilex.service.ontology.Oeso;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.utils.JsonConverter;
-import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.utils.dates.Dates;
-import opensilex.service.view.brapi.Status;
 import opensilex.service.model.Annotation;
 
 /**
@@ -203,7 +200,8 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
     }
 
     /**
-     * Inserts the given annotations in the triplestore.
+     * Inserts the given annotations in the storage.
+     * @note annotations have to be checked before calling this function.
      * @param annotations
      * @return the insertion resultAnnotationUri, with the errors list or the
      * URI of the inserted annotations
@@ -211,9 +209,7 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
      * @throws opensilex.service.dao.exception.UnknownUriException
      */
     @Override
-    public List<Annotation> create(List<Annotation> annotations) 
-            throws UnknownUriException, SemanticInconsistencyException, Exception {
-        check(annotations);
+    public List<Annotation> create(List<Annotation> annotations) throws Exception {
 
         UriGenerator uriGenerator = new UriGenerator();
 
@@ -298,30 +294,41 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
     }
 
     /**
-     * Checks the given annotations metadata.
+     * Checks the given annotations.
      * @param annotations
-     * @throws opensilex.service.dao.exception.SemanticInconsistencyException
-     * @throws opensilex.service.dao.exception.UnknownUriException
+     * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
      */
-    public void check(List<Annotation> annotations) throws SemanticInconsistencyException, UnknownUriException {
+    @Override
+    public void checkBeforeCreation(List<Annotation> annotations) throws DAODataErrorAggregateException {
         UriDAO uriDao = new UriDAO();
         UserDAO userDao = new UserDAO();
+        ArrayList<DAODataErrorException> exceptions = new ArrayList<>();
 
-        // 1. check data
+        // check data
         for (Annotation annotation : annotations) {
-            // 1.1 check motivation
+            // check motivation
             if (!uriDao.existUri(annotation.getMotivatedBy())) {
-                throw new UnknownUriException(annotation.getMotivatedBy(), "the motivatedBy field");
+                exceptions.add(new UnknownUriException(annotation.getMotivatedBy(), "the motivation"));
             }
             if (!uriDao.isInstanceOf(annotation.getMotivatedBy(), Oa.CONCEPT_MOTIVATION.toString())) {
-                throw new SemanticInconsistencyException(StatusCodeMsg.DATA_ERROR + ": " 
-                        + StatusCodeMsg.WRONG_TYPE + " for the motivatedBy field");
+                exceptions.add(new WrongTypeException(annotation.getMotivatedBy(), "the motivation"));
             }
 
-            // 1.2 check if person exist
+            // check person
             if (!userDao.existUserUri(annotation.getCreator())) {
-                throw new UnknownUriException(annotation.getCreator(), "the person");
+                exceptions.add(new UnknownUriException(annotation.getCreator(), "the person"));
             }
+
+            // check target
+            for (String targetUri : annotation.getTargets()) {
+                if (!uriDao.existUri(targetUri)) {
+                    exceptions.add(new UnknownUriException(targetUri, "the target"));
+                }
+            }
+        }
+        
+        if (exceptions.size() > 0) {
+            throw new DAODataErrorAggregateException(exceptions);
         }
     }
 

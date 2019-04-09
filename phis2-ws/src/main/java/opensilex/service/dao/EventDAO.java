@@ -1,15 +1,14 @@
 //******************************************************************************
-//                          EventDAOSesame.java
+//                               EventDAO.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 12  nov. 2018
+// Creation date: 12 Nov. 2018
 // Contact: andreas.garcia@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.dao;
 
 import java.util.ArrayList;
 import java.util.List;
-import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -29,31 +28,35 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.configuration.DateFormat;
+import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAODataErrorException;
+import opensilex.service.dao.exception.NotAnAdminException;
+import opensilex.service.dao.exception.ResourceAccessDeniedException;
+import opensilex.service.dao.exception.SemanticInconsistencyException;
+import opensilex.service.dao.exception.UnknownUriException;
 import opensilex.service.dao.manager.SparqlDAO;
-import opensilex.service.dao.UserDAO;
-import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.User;
 import opensilex.service.ontology.Contexts;
 import opensilex.service.ontology.Oeev;
 import opensilex.service.ontology.Rdf;
 import opensilex.service.ontology.Rdfs;
 import opensilex.service.ontology.Time;
-import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.UriGenerator;
-import opensilex.service.utils.dates.Dates;
+import opensilex.service.utils.date.Dates;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
-import opensilex.service.view.brapi.Status;
 import opensilex.service.model.Annotation;
 import opensilex.service.model.Event;
 import opensilex.service.model.Property;
 
 /**
- * DAO for Events
- * @update [Andreas Garcia] 14 Feb., 2019: Add event detail service
- * @update [Andreas Garcia] 5 March, 2019: Add events insertion service
- * @update [Andréas Garcia] 5 March, 2019: 
- *      Move the generic function to get a string value from a binding set to DAOSesame
- *      Move concerned items accesses handling into a new ConcernedItemDAOSesame class
+ * Events DAO.
+ * @update [Andreas Garcia] 14 Feb. 2019: Add event detail service.
+ * @update [Andreas Garcia] 5 Mar. 2019: Add events insertion service.
+ * @update [Andréas Garcia] 5 Mar. 2019: 
+ *      Move the generic function to get a string value from a binding set to mother class.
+ *      Move concerned items accesses handling into a new ConcernedItemDAO class.
+ * @update [Andréas Garcia] 8 Apr. 2019: Use DAO generic function create and update 
+ * and use exceptions to handle errors.
  * @author Andreas Garcia <andreas.garcia@inra.fr>
  */
 public class EventDAO extends SparqlDAO<Event> {
@@ -70,8 +73,7 @@ public class EventDAO extends SparqlDAO<Event> {
     }
     
     /**
-     * Sets a search query to select an URI and adds a filter according to it 
-     * if necessary
+     * Sets a search query to select an URI and adds a filter according to it if necessary.
      * @example SparQL filter added:
      *  SELECT DISTINCT  ?uri
      *  WHERE {
@@ -96,8 +98,7 @@ public class EventDAO extends SparqlDAO<Event> {
     }
     
     /**
-     * Sets a search query to select a type and to filter according to it 
-     * if necessary
+     * Sets a search query to select a type and to filter according to it if necessary.
      * @example SparQL filter added:
      *  SELECT DISTINCT ?rdfType
      *  WHERE {
@@ -162,7 +163,7 @@ public class EventDAO extends SparqlDAO<Event> {
     }
     
     /**
-     * Prepares the event search query
+     * Prepares the event search query.
      * @param uri
      * @param type
      * @example
@@ -197,7 +198,12 @@ public class EventDAO extends SparqlDAO<Event> {
         
         String uriSelectNameSparql = prepareSearchQueryUri(query, uri, true);
         prepareSearchQueryType(query, uriSelectNameSparql, type, true); 
-        ConcernedItemDAO.prepareQueryWithConcernedItemFilters(query, uriSelectNameSparql, Oeev.concerns.getURI(), searchConcernedItemUri, searchConcernedItemLabel); 
+        ConcernedItemDAO.prepareQueryWithConcernedItemFilters(
+                query, 
+                uriSelectNameSparql, 
+                Oeev.concerns.getURI(), 
+                searchConcernedItemUri, 
+                searchConcernedItemLabel); 
         prepareSearchQueryDateTime(query, uriSelectNameSparql, dateRangeStartString, dateRangeEndString, true); 
         
         query.appendLimit(getPageSize());
@@ -208,7 +214,7 @@ public class EventDAO extends SparqlDAO<Event> {
     }
     
     /**
-     * Prepares the event search query
+     * Prepares the event search query.
      * @example
      * SELECT  ?uri ?rdfType ?dateTimeStamp 
      * WHERE {
@@ -226,7 +232,12 @@ public class EventDAO extends SparqlDAO<Event> {
         
         String uriSelectNameSparql = prepareSearchQueryUri(query, searchUri, false);
         prepareSearchQueryType(query, uriSelectNameSparql, null, false);  
-        ConcernedItemDAO.prepareQueryWithConcernedItemFilters(query, uriSelectNameSparql, Oeev.concerns.getURI(), null, null); 
+        ConcernedItemDAO.prepareQueryWithConcernedItemFilters(
+                query, 
+                uriSelectNameSparql, 
+                Oeev.concerns.getURI(), 
+                null, 
+                null); 
         prepareSearchQueryDateTime(query, uriSelectNameSparql, null, null, false); 
         
         LOGGER.debug(SPARQL_QUERY + query.toString());
@@ -254,7 +265,7 @@ public class EventDAO extends SparqlDAO<Event> {
     }
     
     /**
-     * Searches events stored
+     * Searches events.
      * @param searchUri
      * @param searchType
      * @param searchConcernedItemLabel
@@ -270,7 +281,13 @@ public class EventDAO extends SparqlDAO<Event> {
         setPage(searchPage);
         setPageSize(searchPageSize);
         
-        SPARQLQueryBuilder eventsQuery = prepareSearchQueryEvents(searchUri, searchType, searchConcernedItemLabel, searchConcernedItemUri, dateRangeStartString, dateRangeEndString);
+        SPARQLQueryBuilder eventsQuery = prepareSearchQueryEvents(
+                searchUri, 
+                searchType, 
+                searchConcernedItemLabel, 
+                searchConcernedItemUri, 
+                dateRangeStartString, 
+                dateRangeEndString);
         
         // get events from storage
         TupleQuery eventsTupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, eventsQuery.toString());
@@ -283,7 +300,13 @@ public class EventDAO extends SparqlDAO<Event> {
                 Event event = getEventFromBindingSet(eventsResult.next());
                 searchEventPropertiesAndSetThemToIt(event);
                 ConcernedItemDAO concernedItemDao = new ConcernedItemDAO(user);
-                event.setConcernedItems(concernedItemDao.searchConcernedItems(event.getUri(), Oeev.concerns.getURI(), null, null, 0, pageSizeMaxValue));
+                event.setConcernedItems(concernedItemDao.searchConcernedItems(
+                        event.getUri(), 
+                        Oeev.concerns.getURI(), 
+                        null, 
+                        null, 
+                        0, 
+                        pageSizeMaxValue));
                 events.add(event);
             }
         }
@@ -291,16 +314,18 @@ public class EventDAO extends SparqlDAO<Event> {
     }
     
     /**
-     * Searches an event detailed
+     * Searches an event.
      * @param searchUri
      * @return events
      */
-    public Event searchEventDetailed(String searchUri) {
+    public Event searchEvent(String searchUri) {
         
         SPARQLQueryBuilder eventDetailedQuery = prepareSearchQueryEventDetailed(searchUri);
         
         // get events from storage
-        TupleQuery eventsTupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, eventDetailedQuery.toString());
+        TupleQuery eventsTupleQuery = getConnection().prepareTupleQuery(
+                QueryLanguage.SPARQL, 
+                eventDetailedQuery.toString());
         
         Event event = null;
         try (TupleQueryResult eventsResult = eventsTupleQuery.evaluate()) {
@@ -309,10 +334,23 @@ public class EventDAO extends SparqlDAO<Event> {
                 searchEventPropertiesAndSetThemToIt(event);
                 
                 ConcernedItemDAO concernedItemDao = new ConcernedItemDAO(user);
-                event.setConcernedItems(concernedItemDao.searchConcernedItems(event.getUri(), Oeev.concerns.getURI(), null, null, 0, pageSizeMaxValue));
+                event.setConcernedItems(concernedItemDao.searchConcernedItems(
+                        event.getUri(), 
+                        Oeev.concerns.getURI(), 
+                        null, 
+                        null, 
+                        0, 
+                        pageSizeMaxValue));
                 
                 AnnotationDAO annotationDAO = new AnnotationDAO(this.user);
-                ArrayList<Annotation> annotations = annotationDAO.searchAnnotations(null, null, event.getUri(), null, null, 0, pageSizeMaxValue);
+                ArrayList<Annotation> annotations = annotationDAO.searchAnnotations(
+                        null, 
+                        null, 
+                        event.getUri(), 
+                        null, 
+                        null, 
+                        0, 
+                        pageSizeMaxValue);
                 event.setAnnotations(annotations);
             }
         }
@@ -320,7 +358,7 @@ public class EventDAO extends SparqlDAO<Event> {
     }
     
     /**
-     * Generates an insert query for the given event
+     * Generates an insert query for the given event.
      * @param event
      * @return the query
      * @example
@@ -353,173 +391,146 @@ public class EventDAO extends SparqlDAO<Event> {
     }
     
     /**
-     * Inserts the given events in the storage.
-     * /!\ Prerequisite: data must have been checked before calling this method
-     * @see EventDAO#check(java.util.List) 
-     * @param events
-     * @return the insertion result, with the error list or the URI of the 
-     *         events inserted
+     * Inserts the given event in the storage.
+     * @param event
+     * @return the event completed with its new URI.
+     * @throws java.lang.Exception
      */
-    private POSTResultsReturn insert(List<Event> events) {
-        List<Status> status = new ArrayList<>();
-        List<String> createdResourcesUris = new ArrayList<>();
+    public Event create(Event event) throws Exception {
         
-        POSTResultsReturn results;
-        boolean resultState = false;
-        boolean noInsertionError = true;
-        
+        UriGenerator uriGenerator = new UriGenerator();
         ConcernedItemDAO concernedItemDao = new ConcernedItemDAO(user);
         AnnotationDAO annotationDao = new AnnotationDAO(user);
         PropertyDAO propertyDao = new PropertyDAO();
+
+        // Generate uri
+        event.setUri(uriGenerator.generateNewInstanceUri(Oeev.Event.getURI(), null, null));
         
-        UriGenerator uriGenerator = new UriGenerator();
+        // Insert event
+        UpdateRequest query = prepareInsertQuery(event);
+
+        Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
+        prepareUpdate.execute();
+
+        Resource eventResource = ResourceFactory.createResource(event.getUri());
+
+        // Insert concerned items links
+        concernedItemDao.insertLinksWithObject(
+                Contexts.EVENTS.toString(),
+                eventResource,
+                Oeev.concerns.getURI(), 
+                event.getConcernedItems());
+
+        // The annotation
+        ArrayList<String> annotationTargets = new ArrayList<>();
+        annotationTargets.add(event.getUri());
+        event.getAnnotations().forEach(annotation -> {
+            annotation.setTargets(annotationTargets);
+        });
+        event.setAnnotations((ArrayList<Annotation>) annotationDao.create(event.getAnnotations()));
+
+        // The properties links
+        ArrayList<Property> properties = event.getProperties();
+        if (!properties.isEmpty()) {
+            propertyDao.insertLinksBetweenObjectAndProperties(
+                    eventResource,
+                    properties,
+                    Contexts.EVENTS.toString(), 
+                    false);
+        }
+        
+        return event;
+    }
+    
+    /**
+     * Inserts the given events in the storage.
+     * @param events
+     * @return the insertion result, with the error list or the URI of the events inserted
+     * @throws opensilex.service.dao.exception.ResourceAccessDeniedException
+     * @throws opensilex.service.dao.exception.UnknownUriException
+     * @throws opensilex.service.dao.exception.SemanticInconsistencyException
+     */
+    @Override
+    public List<Event> create(List<Event> events) 
+            throws ResourceAccessDeniedException, SemanticInconsistencyException, Exception {        
         getConnection().begin();
-        for (Event event : events) {
-            try {
-                // Generate uri
-                event.setUri(uriGenerator.generateNewInstanceUri(Oeev.Event.getURI(), null, null));
-                // Insert event
-                UpdateRequest query = prepareInsertQuery(event);
-
-                Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
-                prepareUpdate.execute();
-                createdResourcesUris.add(event.getUri());
-                
-                Resource eventResource = ResourceFactory.createResource(event.getUri());
-
-                // Insert concerned items links
-                concernedItemDao.insertLinksWithObject(Contexts.EVENTS.toString(), eventResource, Oeev.concerns.getURI(), event.getConcernedItems());
-        
-                // The annotation
-                ArrayList<String> annotationTargets = new ArrayList<>();
-                annotationTargets.add(event.getUri());
-                event.getAnnotations().forEach(annotation -> {
-                    annotation.setTargets(annotationTargets);
-                });
-                annotationDao.insert(event.getAnnotations());
-
-                // The properties links
-                ArrayList<Property> properties = event.getProperties();
-                if (!properties.isEmpty()) {
-                    propertyDao.insertLinksBetweenObjectAndProperties(eventResource, properties, Contexts.EVENTS.toString(), false);
-                }
-            } catch (RepositoryException ex) {
-                    LOGGER.error(StatusCodeMsg.ERROR_WHILE_COMMITTING_OR_ROLLING_BACK_TRIPLESTORE_STATEMENT, ex);
-                    noInsertionError = false;
-            } catch (MalformedQueryException e) {
-                    LOGGER.error(e.getMessage(), e);
-                    noInsertionError = false;
-                    status.add(new Status(
-                            StatusCodeMsg.QUERY_ERROR, 
-                            StatusCodeMsg.ERR, 
-                            StatusCodeMsg.MALFORMED_CREATE_QUERY + " " + e.getMessage()));
-            } catch (Exception ex) {
-                LOGGER.error(ex.getMessage());
-                noInsertionError = false;
+        try {
+            for (Event event : events) {
+                create(event);
             }
-        }
-        
-        if (noInsertionError) {
-            resultState = true;
             getConnection().commit();
-        } else {
+        } catch (Exception ex) {
             getConnection().rollback();
+            throw ex;
         }
+        getConnection().close();
         
-        if (getConnection() != null) {
-            getConnection().close();
-        }
-        
-        results = new POSTResultsReturn(resultState, noInsertionError, true);
-        results.statusList = status;
-        results.setCreatedResources(createdResourcesUris);
-        if (resultState && !createdResourcesUris.isEmpty()) {
-            results.createdResources = createdResourcesUris;
-            results.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, createdResourcesUris.size() + " " + StatusCodeMsg.RESOURCES_CREATED));
-        }
-        
-        return results;
+        return events;
     }
     
     /**
-     * Checks and eventually inserts events in the storage
+     * Checks the given list of events.
      * @param events
-     * @return the insertion result :
-     *           Error message if errors found in data
-     *           The list of the generated URIs events is inserted
+     * @throws opensilex.service.dao.exception.NotAnAdminException
+     * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
      */
-    public POSTResultsReturn checkAndInsert(List<Event> events) {
-        POSTResultsReturn checkResult = check(events);
-        if (checkResult.getDataState()) {
-            return insert(events);
-        } else {
-            return checkResult;
-        }
-    }
-    
-    /**
-     * Checks the given list of events
-     * @param events
-     * @return the result with the list of the found errors (empty if no error)
-     */
-    public POSTResultsReturn check(List<Event> events) {
-        POSTResultsReturn checkResult;
-        List<Status> status = new ArrayList<>();
+    @Override
+    public void checkBeforeCreation(List<Event> events) throws DAODataErrorAggregateException, NotAnAdminException {
+        
+        ArrayList<DAODataErrorException> exceptions = new ArrayList<>();
         
         // 1. Check if user is admin
         UserDAO userDAO = new UserDAO();
-        if (userDAO.isAdmin(user)) {
+        if (!userDAO.isAdmin(user)) {
+            throw new NotAnAdminException();
+        }
+        else {
             ConcernedItemDAO concernedItemDAO = new ConcernedItemDAO(user);
             PropertyDAO propertyDAO = new PropertyDAO();
             AnnotationDAO annotationDao = new AnnotationDAO();
             for (Event event : events) {
-                String eventUri = event.getUri();
                 
                 // Check the event URI if given (in case of an update)
-                if (eventUri != null) {
-                    if (searchEvents(eventUri, null, null, null, null, null, 0, pageSizeMaxValue).isEmpty()){
-                        status.add(new Status(
-                                StatusCodeMsg.UNKNOWN_URI, 
-                                StatusCodeMsg.ERR, 
-                                StatusCodeMsg.UNKNOWN_EVENT_URI + " " + eventUri));
+                if (event.getUri() != null) {
+                    if (searchEvents(event.getUri(), null, null, null, null, null, 0, pageSizeMaxValue).isEmpty()){
+                        exceptions.add(new UnknownUriException(event.getUri(), "the event"));
                     }
                 }
                 
                 // Check Type
                 if (!existUri(event.getType())) {
-                    status.add(new Status(
-                            StatusCodeMsg.UNKNOWN_URI, 
-                            StatusCodeMsg.ERR, 
-                            StatusCodeMsg.UNKNOWN_TYPE + " " + event.getType()));
+                    exceptions.add(new UnknownUriException(event.getType(), "the event type"));
                 }
                 
                 // Check concerned items
-                status.addAll(concernedItemDAO.check(event.getConcernedItems()).getStatusList());
+                try {
+                    concernedItemDAO.checkBeforeCreation(event.getConcernedItems());
+                }
+                catch (DAODataErrorAggregateException ex) {
+                    exceptions.addAll(ex.getExceptions());
+                }
                 
                 // Check properties
-                ArrayList<Property> properties = event.getProperties();
-                POSTResultsReturn propertiesResult = propertyDAO.checkExistenceRangeDomain(properties, event.getType());
-                status.addAll(propertiesResult.getStatusList());
+                try {
+                    propertyDAO.checkExistenceRangeDomain(event.getProperties(), event.getType());
+                }
+                catch (DAODataErrorAggregateException ex) {
+                    exceptions.addAll(ex.getExceptions());
+                }
                 
                 // Check annotations
-                POSTResultsReturn annotationsResult = annotationDao.check(event.getAnnotations());
-                status.addAll(annotationsResult.getStatusList());
+                try {
+                    annotationDao.checkBeforeCreation(event.getAnnotations());
+                }
+                catch (DAODataErrorAggregateException ex) {
+                    exceptions.addAll(ex.getExceptions());
+                }
             }
-        } else {
-            status.add(new Status(
-                    StatusCodeMsg.ACCESS_DENIED, 
-                    StatusCodeMsg.ERR, 
-                    StatusCodeMsg.ADMINISTRATOR_ONLY));
         }
-        
-        boolean dataIsValid = status.isEmpty();
-        checkResult = new POSTResultsReturn(dataIsValid, null, dataIsValid);
-        checkResult.statusList = status;
-        return checkResult;   
     }
     
     /**
-     * Searches event properties and set them to it
+     * Searches event properties and set them to it.
      * @param event 
      */
     private void searchEventPropertiesAndSetThemToIt(Event event) {
@@ -534,8 +545,7 @@ public class EventDAO extends SparqlDAO<Event> {
     }
 
     /**
-     * Generates a query to count the results of the research with the 
-     * searched parameters. 
+     * Generates a query to count the results of the research with the searched parameters. 
      * @example 
      * SELECT DISTINCT  (COUNT(DISTINCT ?uri) AS ?count) 
      * WHERE {
@@ -572,7 +582,7 @@ public class EventDAO extends SparqlDAO<Event> {
     }
 
     /**
-     * Counts the total number of events filtered with the search fields
+     * Counts the total number of events filtered with the search fields.
      * @param searchUri
      * @param searchType
      * @param searchConcernedItemLabel
@@ -607,11 +617,6 @@ public class EventDAO extends SparqlDAO<Event> {
     }
 
     @Override
-    public List<Event> create(List<Event> objects) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public void delete(List<Event> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -628,11 +633,6 @@ public class EventDAO extends SparqlDAO<Event> {
 
     @Override
     public Event findById(String id) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void checkBeforeCreation(List<Event> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

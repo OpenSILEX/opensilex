@@ -15,7 +15,7 @@ import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.PropertiesFileManager;
-import opensilex.service.resources.DocumentResourceService;
+import opensilex.service.resource.DocumentResourceService;
 
 public class DocumentWaitingCheck implements Callable<Boolean> {
     final static Logger LOGGER = LoggerFactory.getLogger(DocumentWaitingCheck.class);

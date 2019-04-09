@@ -37,7 +37,7 @@ import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.ontology.Rdf;
 import opensilex.service.ontology.Oeso;
 import opensilex.service.ontology.Rdfs;
-import opensilex.service.resources.dto.LayerDTO;
+import opensilex.service.resource.dto.LayerDTO;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.model.ScientificObject;

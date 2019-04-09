@@ -29,7 +29,7 @@ import opensilex.service.model.User;
 import opensilex.service.ontology.Time;
 import opensilex.service.ontology.Xsd;
 import opensilex.service.utils.UriGenerator;
-import opensilex.service.utils.dates.Dates;
+import opensilex.service.utils.date.Dates;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.utils.sparql.SPARQLStringBuilder;
 

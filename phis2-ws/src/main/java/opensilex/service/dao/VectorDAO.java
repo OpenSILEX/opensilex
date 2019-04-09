@@ -43,7 +43,7 @@ import opensilex.service.ontology.Contexts;
 import opensilex.service.ontology.Rdf;
 import opensilex.service.ontology.Rdfs;
 import opensilex.service.ontology.Oeso;
-import opensilex.service.resources.dto.VectorDTO;
+import opensilex.service.resource.dto.VectorDTO;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;

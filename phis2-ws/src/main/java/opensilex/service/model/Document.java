@@ -12,7 +12,7 @@
 package opensilex.service.model;
 
 import java.util.ArrayList;
-import opensilex.service.resources.dto.ConcernedItemDTO;
+import opensilex.service.resource.dto.ConcernedItemDTO;
 
 /**
  * @update [Andréas Garcia] 15 Jan. 2019 : Replace "concern" occurences by "concernedItem"

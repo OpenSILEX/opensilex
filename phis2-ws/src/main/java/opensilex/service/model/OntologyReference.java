@@ -12,7 +12,7 @@
 package opensilex.service.model;
 
 import io.swagger.annotations.ApiModelProperty;
-import opensilex.service.resources.validation.interfaces.URL;
+import opensilex.service.resource.validation.interfaces.URL;
 
 public class OntologyReference {
     /**

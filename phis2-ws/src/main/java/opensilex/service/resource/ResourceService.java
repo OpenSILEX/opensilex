@@ -110,7 +110,7 @@ public class ResourceService {
     protected Response getPostResponseWhenInternalError(Exception exception) {
         return getPostResponseFromSingleOperationStatus(
                 Response.Status.INTERNAL_SERVER_ERROR,
-                StatusCodeMsg.ERR,
+                StatusCodeMsg.INTERNAL_ERROR,
                 StatusCodeMsg.ERR,
                 exception.getMessage());
     }

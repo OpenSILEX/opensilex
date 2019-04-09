@@ -9,6 +9,7 @@ package opensilex.service.dao.manager;
 
 import java.util.List;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.ResourceAccessDeniedException;
 
 /**
  * DAO mother class.
@@ -57,11 +58,13 @@ public abstract class DAO<T> {
     public abstract T findById(String id) throws Exception;
     
     /**
-     * Checks the objects can be correctly created. Throws an aggregate exception to handle multiple exceptions.
+     * Checks the objects can be correctly created.Throws an aggregate exception to handle multiple exceptions.
      * @param objects
      * @throws DAODataErrorAggregateException 
+     * @throws opensilex.service.dao.exception.ResourceAccessDeniedException 
      */
-    public abstract void checkBeforeCreation(List<T> objects) throws DAODataErrorAggregateException;
+    public abstract void checkBeforeCreation(List<T> objects) 
+            throws DAODataErrorAggregateException, ResourceAccessDeniedException;
     
     /**
      * Checks and create objects.

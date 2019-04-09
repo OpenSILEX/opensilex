@@ -32,6 +32,8 @@ import javax.ws.rs.core.Response;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.AnnotationDAO;
+import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.ResourceAccessDeniedException;
 import opensilex.service.dao.exception.SemanticInconsistencyException;
 import opensilex.service.dao.exception.UnknownUriException;
 import opensilex.service.documentation.DocumentationAnnotation;
@@ -64,6 +66,7 @@ public class AnnotationResourceService extends ResourceService {
     
     /**
      * Inserts the given annotations in the triplestore.
+     * @param annotationsDtos annotationsDtos
      * @example
      * [
      *   {
@@ -77,13 +80,11 @@ public class AnnotationResourceService extends ResourceService {
      *     ]
      *   }
      * ]
-     * @param annotationsDtos annotations list to save.
      * @param context
      * @return
      */
     @POST
-    @ApiOperation(value = "Post annotations",
-            notes = "Register new annotations in the triplestore")
+    @ApiOperation(value = "Post annotations", notes = "Register new annotations in the triplestore")
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Annotations saved", response = ResponseFormPOST.class),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
@@ -97,74 +98,47 @@ public class AnnotationResourceService extends ResourceService {
             example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     public Response postAnnotations(
-        @ApiParam(value = DocumentationAnnotation.ANNOTATION_POST_DATA_DEFINITION) @Valid ArrayList<AnnotationPostDTO> annotationsDtos,
+        @ApiParam(value = DocumentationAnnotation.ANNOTATION_POST_DATA_DEFINITION) 
+            @Valid ArrayList<AnnotationPostDTO> annotationsDtos,
         @Context HttpServletRequest context) {
-
-        AbstractResultForm postResponse;
-        Response.Status responseStatus;
         
-        //If there are at least one list of annotations
         if (annotationsDtos == null || annotationsDtos.isEmpty()) {
-            postResponse = new ResponseFormPOST(new Status(
-                    StatusCodeMsg.REQUEST_ERROR, 
-                    StatusCodeMsg.ERR, 
-                    EMPTY_ANNOTATION_LIST));
-            responseStatus = Response.Status.BAD_REQUEST;
-        }
+            // Empty object list
+            return getPostResponseWhenEmptyListGiven(StatusCodeMsg.EMPTY_EVENT_LIST);
+        } 
         else {
-            AnnotationDAO annotationDao = new AnnotationDAO(userSession.getUser());
+            // Set DAO user
+            AnnotationDAO objectDao = new AnnotationDAO(userSession.getUser());
             if (context.getRemoteAddr() != null) {
-                annotationDao.remoteUserAdress = context.getRemoteAddr();
+                objectDao.remoteUserAdress = context.getRemoteAddr();
             }
             
-            ArrayList<Annotation> annotations = new ArrayList<>();
-            annotationsDtos.forEach((annotationDTO) -> {
-                annotations.add(annotationDTO.createObjectFromDTO());
+            // Generate objects from DTOs
+            ArrayList<Annotation> objectsToCreate = new ArrayList<>();
+            annotationsDtos.forEach((objectDto) -> {
+                objectsToCreate.add(objectDto.createObjectFromDTO());
             });
             
-            List<Status> insertStatusList = new ArrayList<>();
-            ArrayList<Annotation> annotationsCreated;
-            ArrayList<String> urisCreated = new ArrayList<>();
+            ArrayList<Annotation> createdObjects;
+            ArrayList<String> createdUris = new ArrayList<>();
             
-            boolean creationError = true;
+            // Handle operation results
             try {
-                annotationsCreated = (ArrayList<Annotation>) annotationDao.create(annotations);
-                creationError = false;
-                annotationsCreated.forEach(annotation -> {
-                    urisCreated.add(annotation.getUri());
-                });
-                insertStatusList.add(new Status(
-                        StatusCodeMsg.RESOURCES_CREATED, 
-                        StatusCodeMsg.INFO, 
-                        String.format(POSTResultsReturn.NEW_RESOURCES_CREATED_MESSAGE, urisCreated.size())));
-                responseStatus = Response.Status.CREATED;
+                createdObjects = (ArrayList<Annotation>) objectDao.checkAndCreate(objectsToCreate);
                 
-            } catch (UnknownUriException ex) {
-                insertStatusList.add(new Status(
-                        UnknownUriException.GENERIC_MESSAGE, 
-                        StatusCodeMsg.ERR, 
-                        ex.getMessage()));
-                responseStatus = Response.Status.BAD_REQUEST;
-            } catch (SemanticInconsistencyException ex) {
-                insertStatusList.add(new Status(
-                        SemanticInconsistencyException.GENERIC_MESSAGE, 
-                        StatusCodeMsg.ERR, 
-                        ex.getMessage()));
-                responseStatus = Response.Status.BAD_REQUEST;
+                createdObjects.forEach(object -> {
+                    createdUris.add(object.getUri());
+                });
+                return getPostResponseWhenSuccess(createdUris);
+                
+            } catch (ResourceAccessDeniedException ex) {
+                return getPostResponseWhenResourceAccessDenied(ex);
+            } catch (DAODataErrorAggregateException ex) {
+                return getPostResponseFromDAODataErrorExceptions(ex);
             } catch (Exception ex) {
-                insertStatusList.add(new Status(StatusCodeMsg.ERR, StatusCodeMsg.ERR, ex.getMessage()));
-                responseStatus = Response.Status.INTERNAL_SERVER_ERROR;
-            }
-                    
-            // annotations inserted
-            if (!creationError) {
-                postResponse = new ResponseFormPOST(insertStatusList);
-                postResponse.getMetadata().setDatafiles(urisCreated);
-            } else {
-                postResponse = new ResponseFormPOST(insertStatusList);
-            }
+                return getPostResponseWhenInternalError(ex);
+            }  
         }
-        return Response.status(responseStatus).entity(postResponse).build();
     }
 
     /**

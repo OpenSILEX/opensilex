@@ -310,7 +310,7 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
             if (!uriDao.existUri(annotation.getMotivatedBy())) {
                 exceptions.add(new UnknownUriException(annotation.getMotivatedBy(), "the motivation"));
             }
-            if (!uriDao.isInstanceOf(annotation.getMotivatedBy(), Oa.CONCEPT_MOTIVATION.toString())) {
+            else if (!uriDao.isInstanceOf(annotation.getMotivatedBy(), Oa.CONCEPT_MOTIVATION.toString())) {
                 exceptions.add(new WrongTypeException(annotation.getMotivatedBy(), "the motivation"));
             }
 

@@ -14,7 +14,7 @@ package opensilex.service.dao.exception;
 public class WrongTypeException extends SemanticInconsistencyException {
     
     public final static String GENERIC_MESSAGE = "An URI is of the wrong type";
-    public final static String DETAILS = "The URI %s of the object %s has not the right type";
+    public final static String DETAILS = "The URI %s of %s has not the right type";
     
     public WrongTypeException() {
         super(DETAILS);

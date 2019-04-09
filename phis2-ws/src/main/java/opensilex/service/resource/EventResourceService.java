@@ -36,7 +36,7 @@ import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.EventDAO;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
-import opensilex.service.dao.exception.NotAnAdminException;
+import opensilex.service.dao.exception.ResourceAccessDeniedException;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.resource.dto.event.EventDTO;
@@ -387,7 +387,7 @@ public class EventResourceService  extends ResourceService {
      *   }
      *  ]
      * }
-     * @param objectsDtos
+     * @param eventsDtos
      * @param context
      * @return  The found errors
      *          The list of the URIs of the created events
@@ -411,10 +411,10 @@ public class EventResourceService  extends ResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postEvents(
-        @ApiParam(value = DocumentationAnnotation.EVENT_POST_DEFINITION) @Valid ArrayList<EventPostDTO> objectsDtos,
+        @ApiParam(value = DocumentationAnnotation.EVENT_POST_DEFINITION) @Valid ArrayList<EventPostDTO> eventsDtos,
         @Context HttpServletRequest context) {
         
-        if (objectsDtos == null || objectsDtos.isEmpty()) {
+        if (eventsDtos == null || eventsDtos.isEmpty()) {
             // Empty object list
             return getPostResponseWhenEmptyListGiven(StatusCodeMsg.EMPTY_EVENT_LIST);
         } 
@@ -427,7 +427,7 @@ public class EventResourceService  extends ResourceService {
             
             // Generate objects from DTOs
             ArrayList<Event> objectsToCreate = new ArrayList<>();
-            objectsDtos.forEach((objectDto) -> {
+            eventsDtos.forEach((objectDto) -> {
                 objectsToCreate.add(objectDto.createObjectFromDTO());
             });
             
@@ -443,7 +443,7 @@ public class EventResourceService  extends ResourceService {
                 });
                 return getPostResponseWhenSuccess(createdUris);
                 
-            } catch (NotAnAdminException ex) {
+            } catch (ResourceAccessDeniedException ex) {
                 return getPostResponseWhenResourceAccessDenied(ex);
             } catch (DAODataErrorAggregateException ex) {
                 return getPostResponseFromDAODataErrorExceptions(ex);

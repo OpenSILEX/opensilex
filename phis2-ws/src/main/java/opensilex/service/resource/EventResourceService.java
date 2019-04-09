@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -49,6 +50,7 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Event;
+import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 
 /**
  * Service to handle events
@@ -167,7 +169,7 @@ public class EventResourceService  extends ResourceService {
         EventDAO eventDAO = new EventDAO(userSession.getUser());
         
         // 1. Search events with parameters
-        ArrayList<Event> events = eventDAO.searchEvents(
+        ArrayList<Event> events = eventDAO.find(
                 uri,
                 type,
                 concernedItemLabel, 
@@ -176,39 +178,14 @@ public class EventResourceService  extends ResourceService {
                 endDate, 
                 page, 
                 pageSize);
-        
-        // 2. Analyse result
-        ArrayList<EventDTO> eventDTOs = new ArrayList();
-        ArrayList<Status> statusList = new ArrayList<>();
-        ResultForm<EventDTO> responseForm;
-        
-        if (events == null) { // Request failure
-            responseForm = new ResultForm<>(0, 0, eventDTOs, true, 0);
-            return noResultFound(responseForm, statusList);
-        } else if (events.isEmpty()) { // No result
-            responseForm = new ResultForm<>(0, 0, eventDTOs, true, 0);
-            return noResultFound(responseForm, statusList);
-        } else { // Results
-            
-            // Generate DTOs
-            events.forEach((event) -> {
-                eventDTOs.add(new EventDTO(event));
-            });
-            
-            int eventsCount =  eventDAO.count(
-                uri,
-                type,
-                concernedItemLabel, 
-                concernedItemUri, 
-                startDate, 
-                endDate);
-            responseForm = new ResultForm<>(eventDAO.getPageSize(), eventDAO.getPage(), eventDTOs, true, eventsCount);
-            if (responseForm.getResult().dataSize() == 0) {
-                return noResultFound(responseForm, statusList);
-            } else {
-                responseForm.setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(responseForm).build();
-            }
+
+        if (events == null) {
+            return getGETResponseWhenNoResult();
+        } else if (events.isEmpty()) {
+            return getGETResponseWhenNoResult();
+        } else {
+            int totalCount = eventDAO.count(uri, type, concernedItemLabel, concernedItemUri, startDate, endDate);
+            return getGETResponseWhenSuccess(events, pageSize, page, totalCount);
         }
     }
     
@@ -451,5 +428,25 @@ public class EventResourceService  extends ResourceService {
                 return getPostResponseWhenInternalError(ex);
             }  
         }
+    }
+
+    @Override
+    protected ArrayList<AbstractVerifiedClass> getDTOsFromObjects(List<? extends Object> objects) {
+        ArrayList<AbstractVerifiedClass> dtos = new ArrayList();
+        // Generate DTOs
+        objects.forEach((object) -> {
+            dtos.add(new EventDTO((Event)object));
+        });
+        return dtos;
+    }
+    
+    @Override
+    protected List<? extends Object> getObjectsFromDTOs (List<? extends AbstractVerifiedClass> dtos)
+            throws Exception {
+        List<Object> objects = new ArrayList<>();
+        for (AbstractVerifiedClass objectDto : dtos) {
+            objects.add((Event)objectDto.createObjectFromDTO());
+        }
+        return objects;
     }
 }

@@ -276,7 +276,7 @@ public class EventDAO extends SparqlDAO<Event> {
      * @param searchPageSize
      * @return events
      */
-    public ArrayList<Event> searchEvents(String searchUri, String searchType, String searchConcernedItemLabel, String searchConcernedItemUri, String dateRangeStartString, String dateRangeEndString, int searchPage, int searchPageSize) {
+    public ArrayList<Event> find(String searchUri, String searchType, String searchConcernedItemLabel, String searchConcernedItemUri, String dateRangeStartString, String dateRangeEndString, int searchPage, int searchPageSize) {
         
         setPage(searchPage);
         setPageSize(searchPageSize);
@@ -492,7 +492,7 @@ public class EventDAO extends SparqlDAO<Event> {
                 
                 // Check the event URI if given (in case of an update)
                 if (event.getUri() != null) {
-                    if (searchEvents(event.getUri(), null, null, null, null, null, 0, pageSizeMaxValue).isEmpty()){
+                    if (find(event.getUri(), null, null, null, null, null, 0, pageSizeMaxValue).isEmpty()){
                         exceptions.add(new UnknownUriException(event.getUri(), "the event"));
                     }
                 }

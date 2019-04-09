@@ -5,7 +5,7 @@
 // Creation date: 13 nov. 2018
 // Contact: andreas.garcia@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package opensilex.service.resources.dto.event;
+package opensilex.service.resource.dto.event;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;

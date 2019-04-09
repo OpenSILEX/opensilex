@@ -39,7 +39,7 @@ import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.NotAnAdminException;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
-import opensilex.service.resources.dto.event.EventDTO;
+import opensilex.service.resource.dto.event.EventDTO;
 import opensilex.service.resource.dto.event.EventPostDTO;
 import opensilex.service.resource.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
 import opensilex.service.resource.validation.interfaces.Date;

@@ -10,9 +10,8 @@ package opensilex.service.dao.exception;
 import java.util.ArrayList;
 
 /**
- * Exception aggregator. Permits to handle multiple exceptions at once, for 
- * example when we don't want a function to stop when the first exception
- * is thrown.
+ * Exception aggregator. Permits to handle multiple exceptions at once, for example 
+ * when we don't want a function to stop when the first exception is thrown.
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
 public class AggregateException extends Exception {

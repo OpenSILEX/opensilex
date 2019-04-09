@@ -8,6 +8,7 @@
 package opensilex.service.dao.manager;
 
 import java.util.List;
+import opensilex.service.dao.exception.DAODataErrorAggregateException;
 
 /**
  * DAO mother class.
@@ -54,4 +55,22 @@ public abstract class DAO<T> {
      * @throws java.lang.Exception
      */
     public abstract T findById(String id) throws Exception;
+    
+    /**
+     * Checks the objects can be correctly created. Throws an aggregate exception to handle multiple exceptions.
+     * @param objects
+     * @throws DAODataErrorAggregateException 
+     */
+    public abstract void checkBeforeCreation(List<T> objects) throws DAODataErrorAggregateException;
+    
+    /**
+     * Checks and create objects.
+     * @param annotations
+     * @return the annotations created.
+     * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
+     */
+    public List<T> checkAndCreate(List<T> annotations) throws DAODataErrorAggregateException, Exception{
+        checkBeforeCreation(annotations);
+        return create(annotations);
+    }
 }

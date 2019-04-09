@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                DAOException.java
+//                           DAODataErrorException.java
 // SILEX-PHIS
 // Copyright © INRA 2019
 // Creation date: 5 Apr. 2019
@@ -8,7 +8,7 @@
 package opensilex.service.dao.exception;
 
 /**
- * DAO exception.
+ * Exception thrown by a DAO when detecting a data error.
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
 public abstract class DAODataErrorException extends Exception {

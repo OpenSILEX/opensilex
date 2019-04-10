@@ -40,14 +40,8 @@ public abstract class MongoDAO<T> extends DAO<T> {
     protected MongoDatabase database;
     protected MongoCollection<Document> collection;
 
-    public User user;
     protected Integer page;
     protected Integer pageSize;
-    
-    /**
-     * User ip adress
-     */
-    protected String remoteUserAdress;
     
     //The _id json data key in the mongodb documents
     public final static String DB_FIELD_ID = "_id";

@@ -39,14 +39,8 @@ public abstract class MongoDAO<T> extends DAO<T> {
     protected MongoDatabase database;
     protected MongoCollection<Document> collection;
 
-    public User user;
     protected Integer page;
     protected Integer pageSize;
-    
-    /**
-     * User IP address
-     */
-    protected String remoteUserAdress;
     
     //The _id json data key in the mongodb documents
     public final static String DB_FIELD_ID = "_id";
@@ -134,21 +128,6 @@ public abstract class MongoDAO<T> extends DAO<T> {
             return Integer.valueOf(DefaultBrapiPaginationValues.PAGE_SIZE);
         }
         return pageSize;
-    }
-
-    /**
-     * @return traceability logs
-     */
-    protected String getTraceabilityLogs() {
-        String log = "";
-        if (remoteUserAdress != null) {
-            log += "IP Address " + remoteUserAdress + " - ";
-        }
-        if (user != null) {
-            log += "User : " + user.getEmail() + " - ";
-        }
-        
-        return log;
     }
     
     /**

@@ -45,19 +45,4 @@ public abstract class PhisDAO<T, D> extends PostgreSQLDAO<T> {
      * @return 
      */
     public abstract POSTResultsReturn checkAndUpdateList(List<D> newObjects);
-    
-     /**
-     * @return the traceability logs
-     */
-    protected String getTraceabilityLogs() {
-        String log = "";
-        if (remoteUserAdress != null) {
-            log += "IP Address " + remoteUserAdress + " - ";
-        }
-        if (user != null) {
-            log += "User : " + user.getEmail() + " - ";
-        }
-        
-        return log;
-    }
 }

@@ -313,7 +313,7 @@ public class EventResourceService  extends ResourceService {
         
         AnnotationResourceService annotationResourceService = new AnnotationResourceService();
         annotationResourceService.userSession = userSession;
-        return annotationResourceService.getAnnotations(null, null, uri, null, null, page, pageSize);
+        return annotationResourceService.getAnnotationsBySearch(pageSize, page, null, null, uri, null, null);
     }
         
     /**

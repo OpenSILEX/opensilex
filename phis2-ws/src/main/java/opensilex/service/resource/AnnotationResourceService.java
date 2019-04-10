@@ -165,7 +165,18 @@ public class AnnotationResourceService extends ResourceService {
             @ApiParam(value = "Search by comment", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_BODY_VALUE) @QueryParam("description") String bodyValue,
             @ApiParam(value = "Search by motivation", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_MOTIVATED_BY) @QueryParam("motivatedBy") @URL String motivatedBy) {
 
-        return getAnnotations(uri, creator, target, bodyValue, motivatedBy, page, pageSize);
+        AnnotationDAO annotationDao = new AnnotationDAO(userSession.getUser());
+        ArrayList<Annotation> annotations 
+                = annotationDao.find(uri, creator, target, bodyValue, motivatedBy, page, pageSize);
+
+        if (annotations == null) {
+            return getGETResponseWhenNoResult();
+        } else if (annotations.isEmpty()) {
+            return getGETResponseWhenNoResult();
+        } else {
+            Integer totalCount = annotationDao.count(uri, creator, target, bodyValue, motivatedBy);
+            return getGETResponseWhenSuccess(annotations, pageSize, page, totalCount);
+        }
     }
 
     /**
@@ -217,34 +228,6 @@ public class AnnotationResourceService extends ResourceService {
                 @URL @PathParam("uri") String uri) {
         
         return getGETByUriResponseFromDAOResults(new AnnotationDAO(userSession.getUser()), uri);
-    }
-
-    /**
-     * Searches annotations corresponding to search parameters
-     * @param uri
-     * @param creator
-     * @param target
-     * @param bodyValue
-     * @param motivatedBy
-     * @param page
-     * @param pageSize
-     * @return the annotations corresponding to the search
-     */
-    public Response getAnnotations(String uri, String creator, String target, String bodyValue, String motivatedBy, int page, int pageSize) {
-        AnnotationDAO annotationDao = new AnnotationDAO(userSession.getUser());
-        
-        // Retrieve all annotations
-        ArrayList<Annotation> annotations 
-                = annotationDao.find(uri, creator, target, bodyValue, motivatedBy, page, pageSize);
-
-        if (annotations == null) {
-            return getGETResponseWhenNoResult();
-        } else if (annotations.isEmpty()) {
-            return getGETResponseWhenNoResult();
-        } else {
-            Integer totalCount = annotationDao.count(uri, creator, target, bodyValue, motivatedBy);
-            return getGETResponseWhenSuccess(annotations, pageSize, page, totalCount);
-        }
     }
 
     @Override

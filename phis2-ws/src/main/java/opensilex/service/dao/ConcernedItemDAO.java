@@ -186,7 +186,7 @@ public class ConcernedItemDAO extends SparqlDAO<ConcernedItem> {
      * @param pageSize 
      * @return  the object's concerned items
      */
-    public ArrayList<ConcernedItem> searchConcernedItems(String objectUri, String concernsRelationUri, String searchUri, String searchLabel, int page, int pageSize) {
+    public ArrayList<ConcernedItem> find(String objectUri, String concernsRelationUri, String searchUri, String searchLabel, int page, int pageSize) {
         setPage(page);
         setPageSize(pageSize);
         
@@ -271,7 +271,7 @@ public class ConcernedItemDAO extends SparqlDAO<ConcernedItem> {
      * @return the insertion result, with the error list or the URI of the 
      * concerned item link inserted
      */
-    public POSTResultsReturn insertLinksWithObject(String graph, Resource objectResource, String concernsRelationUri, ArrayList<ConcernedItem> concernedItems) {
+    public POSTResultsReturn createLinksWithObject(String graph, Resource objectResource, String concernsRelationUri, ArrayList<ConcernedItem> concernedItems) {
         List<Status> status = new ArrayList<>();
         List<String> createdResourcesUris = new ArrayList<>();
         

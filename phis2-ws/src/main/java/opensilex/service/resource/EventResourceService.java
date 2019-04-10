@@ -16,7 +16,6 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -48,9 +47,7 @@ import opensilex.service.resource.dto.rdfResourceDefinition.RdfResourceDefinitio
 import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
-import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
-import opensilex.service.result.ResultForm;
 import opensilex.service.model.Event;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 
@@ -370,41 +367,13 @@ public class EventResourceService  extends ResourceService {
         @ApiParam(value = DocumentationAnnotation.EVENT_POST_DEFINITION) @Valid ArrayList<EventPostDTO> eventsDtos,
         @Context HttpServletRequest context) {
         
-        if (eventsDtos == null || eventsDtos.isEmpty()) {
-            // Empty object list
-            return getPostResponseWhenEmptyListGiven(StatusCodeMsg.EMPTY_EVENT_LIST);
-        } 
-        else {
-            // Set DAO user
-            EventDAO objectDao = new EventDAO(userSession.getUser());
-            if (context.getRemoteAddr() != null) {
-                objectDao.remoteUserAdress = context.getRemoteAddr();
-            }
-            try {
-                // Generate objects from DTOs
-                List<Event> objectsToCreate = (List<Event>) getObjectsFromDTOs(eventsDtos);
-
-                ArrayList<Event> createdObjects;
-                ArrayList<String> createdUris = new ArrayList<>();
-
-                // Handle operation results
-                createdObjects = (ArrayList<Event>) objectDao.checkAndCreate(objectsToCreate);
-                
-                createdObjects.forEach(object -> {
-                    createdUris.add(object.getUri());
-                });
-                return getPostResponseWhenSuccess(createdUris);
-                
-            } catch (ResourceAccessDeniedException ex) {
-                return getPostResponseWhenResourceAccessDenied(ex);
-                
-            } catch (DAODataErrorAggregateException ex) {
-                return getPostResponseFromDAODataErrorExceptions(ex);
-                
-            } catch (Exception ex) {
-                return getResponseWhenInternalError(ex);
-            }  
+        // Set DAO
+        EventDAO objectDao = new EventDAO(userSession.getUser());
+        if (context.getRemoteAddr() != null) {
+            objectDao.remoteUserAdress = context.getRemoteAddr();
         }
+        
+        return getPostResponse(objectDao, eventsDtos, context.getRemoteAddr(), StatusCodeMsg.EMPTY_EVENT_LIST);
     }
 
     @Override
@@ -425,5 +394,14 @@ public class EventResourceService  extends ResourceService {
             objects.add((Event)objectDto.createObjectFromDTO());
         }
         return objects;
+    }
+    
+    @Override
+    protected List<String> getUrisCreatedFromObjects (List<? extends Object> createdObjects) {
+        List<String> createdUris = new ArrayList<>();
+        createdObjects.forEach(object -> {
+            createdUris.add(((Event)object).getUri());
+        });
+        return createdUris;
     }
 }

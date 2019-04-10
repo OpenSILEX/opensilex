@@ -17,9 +17,7 @@ import opensilex.service.dao.exception.ResourceAccessDeniedException;
 import opensilex.service.dao.manager.DAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.injection.SessionInject;
-import opensilex.service.resource.dto.annotation.AnnotationDTO;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
-import opensilex.service.resource.dto.manager.VerifiedClassInterface;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.result.ResultForm;
 import opensilex.service.utils.POSTResultsReturn;
@@ -63,6 +61,15 @@ public abstract class ResourceService {
         throw new UnsupportedOperationException("Not supported yet.");
     }
     
+    /**
+     * Gets a URI list from a list of objects created.
+     * @param objects
+     * @return the objects list.
+     */
+    protected List<String> getUrisCreatedFromObjects (List<? extends Object> objects) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
     // User session
     @SessionInject
     protected Session userSession;
@@ -89,6 +96,41 @@ public abstract class ResourceService {
         insertStatusList.add(new Status("SQL error", StatusCodeMsg.ERR, "can't fetch result"));
         getResponse.setStatus(insertStatusList);
         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(getResponse).build();
+    }
+    
+    /**
+     * Gets a response for a POST request.
+     * @param objectDao DAO of the manipulated object.
+     * @param objectsDtos DTOs sent through the POST.
+     * @param userIpAddress
+     * @param statusMessageIfEmptyDtosSent
+     * @return 
+     */
+    protected Response getPostResponse (DAO objectDao, ArrayList<? extends AbstractVerifiedClass> objectsDtos, String userIpAddress, String statusMessageIfEmptyDtosSent) {
+        if (objectsDtos == null || objectsDtos.isEmpty()) {
+            // Empty object list
+            return getPostResponseWhenEmptyListGiven(statusMessageIfEmptyDtosSent);
+        } 
+        else {
+            try {
+                // Process operation
+                objectDao.remoteUserAdress = userIpAddress;
+                List<? extends Object> createdObjects = objectDao.checkAndCreate(getObjectsFromDTOs(objectsDtos));
+                
+                // Return according to operation results
+                List<String> createdUris = getUrisCreatedFromObjects(createdObjects);
+                return getPostResponseWhenSuccess(createdUris);
+                
+            } catch (ResourceAccessDeniedException ex) {
+                return getPostResponseWhenResourceAccessDenied(ex);
+                
+            } catch (DAODataErrorAggregateException ex) {
+                return getPostResponseFromDAODataErrorExceptions(ex);
+                
+            } catch (Exception ex) {
+                return getResponseWhenInternalError(ex);
+            }  
+        }
     }
 
     /**
@@ -120,7 +162,7 @@ public abstract class ResourceService {
      * @param urisCreated
      * @return the response. 
      */
-    protected Response getPostResponseWhenSuccess(ArrayList<String> urisCreated) {
+    protected Response getPostResponseWhenSuccess(List<String> urisCreated) {
         ResponseFormPOST postResponse = new ResponseFormPOST(new Status(
                 StatusCodeMsg.RESOURCES_CREATED, 
                 StatusCodeMsg.INFO, 

@@ -30,7 +30,8 @@ public final class StatusCodeMsg {
     public static final String DATA_REJECTED = "Data rejected";
     public static final String ERR = "Error";
     public static final String ERROR_WHILE_COMMITTING_OR_ROLLING_BACK_TRIPLESTORE_STATEMENT = "Error while committing or rolling back Triplestore statements: ";
-    public static final String EMPTY_EVENT_LIST = "The event to add is empty";
+    public static final String EMPTY_EVENT_LIST = "The event list to create is empty";
+    public static final String EMPTY_ANNOTATION_LIST = "The annotation list to create is empty";
     public static final String EXPECTED_DATE_FORMAT_YMD = "Expected date format : YYYY-MM-DD";
     public static final String FILE_ERROR = "File error";
     public static final String INFO = "Info";

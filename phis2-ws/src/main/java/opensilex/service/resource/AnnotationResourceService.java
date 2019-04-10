@@ -98,38 +98,13 @@ public class AnnotationResourceService extends ResourceService {
             @Valid ArrayList<AnnotationPostDTO> annotationsDtos,
         @Context HttpServletRequest context) {
         
-        if (annotationsDtos == null || annotationsDtos.isEmpty()) {
-            // Empty object list
-            return getPostResponseWhenEmptyListGiven(StatusCodeMsg.EMPTY_EVENT_LIST);
-        } 
-        else {
-            // Set DAO user
-            AnnotationDAO objectDao = new AnnotationDAO(userSession.getUser());
-            if (context.getRemoteAddr() != null) {
-                objectDao.remoteUserAdress = context.getRemoteAddr();
-            }
-            
-            // Handle operation results
-            try {
-                List<Annotation> objectsToCreate = (List<Annotation>) getObjectsFromDTOs(annotationsDtos);
-                List<Annotation> createdObjects = objectDao.checkAndCreate(objectsToCreate);
-                
-                ArrayList<String> createdUris = new ArrayList<>();
-                createdObjects.forEach(object -> {
-                    createdUris.add(object.getUri());
-                });
-                return getPostResponseWhenSuccess(createdUris);
-                
-            } catch (ResourceAccessDeniedException ex) {
-                return getPostResponseWhenResourceAccessDenied(ex);
-                
-            } catch (DAODataErrorAggregateException ex) {
-                return getPostResponseFromDAODataErrorExceptions(ex);
-                
-            } catch (Exception ex) {
-                return getResponseWhenInternalError(ex);
-            }  
+        // Set DAO
+        AnnotationDAO objectDao = new AnnotationDAO(userSession.getUser());
+        if (context.getRemoteAddr() != null) {
+            objectDao.remoteUserAdress = context.getRemoteAddr();
         }
+        
+        return getPostResponse(objectDao, annotationsDtos, context.getRemoteAddr(), StatusCodeMsg.EMPTY_ANNOTATION_LIST);
     }
 
     /**
@@ -294,5 +269,14 @@ public class AnnotationResourceService extends ResourceService {
             objects.add((Annotation)objectDto.createObjectFromDTO());
         }
         return objects;
+    }
+    
+    @Override
+    protected List<String> getUrisCreatedFromObjects (List<? extends Object> createdObjects) {
+        List<String> createdUris = new ArrayList<>();
+        createdObjects.forEach(object -> {
+            createdUris.add(((Annotation)object).getUri());
+        });
+        return createdUris;
     }
 }

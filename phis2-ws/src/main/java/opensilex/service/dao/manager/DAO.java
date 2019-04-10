@@ -10,7 +10,7 @@ package opensilex.service.dao.manager;
 import java.util.List;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.ResourceAccessDeniedException;
-import phis2ws.service.model.User;
+import opensilex.service.model.User;
 
 /**
  * DAO mother class.

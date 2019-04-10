@@ -300,7 +300,7 @@ public class EventDAO extends SparqlDAO<Event> {
                 Event event = getEventFromBindingSet(eventsResult.next());
                 searchEventPropertiesAndSetThemToIt(event);
                 ConcernedItemDAO concernedItemDao = new ConcernedItemDAO(user);
-                event.setConcernedItems(concernedItemDao.searchConcernedItems(
+                event.setConcernedItems(concernedItemDao.find(
                         event.getUri(), 
                         Oeev.concerns.getURI(), 
                         null, 
@@ -335,7 +335,7 @@ public class EventDAO extends SparqlDAO<Event> {
                 searchEventPropertiesAndSetThemToIt(event);
                 
                 ConcernedItemDAO concernedItemDao = new ConcernedItemDAO(user);
-                event.setConcernedItems(concernedItemDao.searchConcernedItems(
+                event.setConcernedItems(concernedItemDao.find(
                         event.getUri(), 
                         Oeev.concerns.getURI(), 
                         null, 
@@ -416,7 +416,7 @@ public class EventDAO extends SparqlDAO<Event> {
         Resource eventResource = ResourceFactory.createResource(event.getUri());
 
         // Insert concerned items links
-        concernedItemDao.insertLinksWithObject(
+        concernedItemDao.createLinksWithObject(
                 Contexts.EVENTS.toString(),
                 eventResource,
                 Oeev.concerns.getURI(), 

@@ -14,6 +14,7 @@ import opensilex.service.PropertiesFileManager;
 import opensilex.service.authentication.Session;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.ResourceAccessDeniedException;
+import opensilex.service.dao.manager.DAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.injection.SessionInject;
 import opensilex.service.resource.dto.annotation.AnnotationDTO;
@@ -162,7 +163,7 @@ public abstract class ResourceService {
      * @param exception
      * @return the response. 
      */
-    protected Response getPostResponseWhenInternalError(Exception exception) {
+    protected Response getResponseWhenInternalError(Exception exception) {
         return getPostResponseFromSingleOperationStatus(
                 Response.Status.INTERNAL_SERVER_ERROR,
                 StatusCodeMsg.INTERNAL_ERROR,
@@ -214,5 +215,29 @@ public abstract class ResourceService {
      */
     private Response buildResponse(Response.Status status, AbstractResultForm resultForm) {
         return Response.status(status).entity(resultForm).build();
+    }
+    
+    /**
+     * Gets a response according to the object returned by a DAO search by URI.
+     * @param dao
+     * @param uri
+     * @return 
+     */
+    protected Response getGETByUriResponseFromDAOResults(DAO dao, String uri) {
+        ArrayList<Object> objects = new ArrayList();
+        try {
+            Object object = dao.findById(uri);
+            objects.add(dao.findById(uri));
+            // Analyse results
+            if (object == null) { // Request failure
+                return getGETResponseWhenNoResult();
+            } else if (objects.isEmpty()) {
+                    return getGETResponseWhenNoResult();
+            } else {
+                return getGETResponseWhenSuccess(objects, 0, 0, 0);
+            }
+        } catch (Exception ex) {
+            return getResponseWhenInternalError(ex);
+        }
     }
 }

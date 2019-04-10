@@ -16,6 +16,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -38,6 +39,7 @@ import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.EventDAO;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.ResourceAccessDeniedException;
+import opensilex.service.dao.manager.DAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.resource.dto.event.EventDTO;
@@ -132,7 +134,7 @@ public class EventResourceService  extends ResourceService {
             value = DocumentationAnnotation.ACCES_TOKEN, 
             example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getEventsBySearch(
+    public Response getEvents(
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) 
             @QueryParam(GlobalWebserviceValues.PAGE_SIZE) 
             @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) 
@@ -247,38 +249,15 @@ public class EventResourceService  extends ResourceService {
             example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getEvent(
+    public Response getEventByUri(
         @ApiParam(
                 value = DocumentationAnnotation.EVENT_URI_DEFINITION, 
                 required = true, 
                 example = DocumentationAnnotation.EXAMPLE_EVENT_URI) 
             @PathParam("uri") @URL @Required String uri) {
         
-        EventDAO eventDAO = new EventDAO(userSession.getUser());
-        
-        // 1. Search an event's details with its URI
-        Event event = eventDAO.findById(uri);
-        
-        // 2. Analyse result
-        ArrayList<EventDTO> eventDTOs = new ArrayList();
-        ArrayList<Status> statusList = new ArrayList<>();
-        ResultForm<EventDTO> responseForm;
-        
-        if (event == null) { // Request failure
-            responseForm = new ResultForm<>(0, 0, eventDTOs, true, 0);
-            return noResultFound(responseForm, statusList);
-        } else { // Results
-            
-            eventDTOs.add(new EventDTO(event));
-            
-            responseForm = new ResultForm<>(0, 0, eventDTOs, true, 0);
-            if (responseForm.getResult().dataSize() == 0) {
-                return noResultFound(responseForm, statusList);
-            } else {
-                responseForm.setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(responseForm).build();
-            }
-        }
+        DAO eventDao = new EventDAO(userSession.getUser());
+        return getGETByUriResponseFromDAOResults(eventDao, uri);
     }
     
     /**
@@ -401,18 +380,14 @@ public class EventResourceService  extends ResourceService {
             if (context.getRemoteAddr() != null) {
                 objectDao.remoteUserAdress = context.getRemoteAddr();
             }
-            
-            // Generate objects from DTOs
-            ArrayList<Event> objectsToCreate = new ArrayList<>();
-            eventsDtos.forEach((objectDto) -> {
-                objectsToCreate.add(objectDto.createObjectFromDTO());
-            });
-            
-            ArrayList<Event> createdObjects;
-            ArrayList<String> createdUris = new ArrayList<>();
-            
-            // Handle operation results
             try {
+                // Generate objects from DTOs
+                List<Event> objectsToCreate = (List<Event>) getObjectsFromDTOs(eventsDtos);
+
+                ArrayList<Event> createdObjects;
+                ArrayList<String> createdUris = new ArrayList<>();
+
+                // Handle operation results
                 createdObjects = (ArrayList<Event>) objectDao.checkAndCreate(objectsToCreate);
                 
                 createdObjects.forEach(object -> {
@@ -422,10 +397,12 @@ public class EventResourceService  extends ResourceService {
                 
             } catch (ResourceAccessDeniedException ex) {
                 return getPostResponseWhenResourceAccessDenied(ex);
+                
             } catch (DAODataErrorAggregateException ex) {
                 return getPostResponseFromDAODataErrorExceptions(ex);
+                
             } catch (Exception ex) {
-                return getPostResponseWhenInternalError(ex);
+                return getResponseWhenInternalError(ex);
             }  
         }
     }

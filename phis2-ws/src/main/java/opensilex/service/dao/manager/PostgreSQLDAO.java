@@ -37,7 +37,6 @@ import org.postgis.Geometry;
 import opensilex.service.authentication.TokenManager;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.datasource.PostgreSQLDataSource;
-import opensilex.service.model.User;
 import opensilex.service.utils.JsonConverter;
 import opensilex.service.utils.sql.SQLQueryBuilder;
 

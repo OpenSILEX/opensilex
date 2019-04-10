@@ -372,13 +372,13 @@ public class EventResourceService  extends ResourceService {
             objectDao.remoteUserAdress = context.getRemoteAddr();
         }
         
+        // Get POST response
         return getPostResponse(objectDao, eventsDtos, context.getRemoteAddr(), StatusCodeMsg.EMPTY_EVENT_LIST);
     }
 
     @Override
     protected ArrayList<AbstractVerifiedClass> getDTOsFromObjects(List<? extends Object> objects) {
         ArrayList<AbstractVerifiedClass> dtos = new ArrayList();
-        // Generate DTOs
         objects.forEach((object) -> {
             dtos.add(new EventDTO((Event)object));
         });

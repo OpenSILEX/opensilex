@@ -140,22 +140,6 @@ public abstract class DAOMongo<T> extends DAO<T> {
         }
         return pageSize;
     }
-
-    /**
-     * 
-     * @return Les logs qui seront utilisés pour la traçabilité
-     */
-    protected String getTraceabilityLogs() {
-        String log = "";
-        if (remoteUserAdress != null) {
-            log += "IP Address " + remoteUserAdress + " - ";
-        }
-        if (user != null) {
-            log += "User : " + user.getEmail() + " - ";
-        }
-        
-        return log;
-    }
     
     /**
      * Définit le paramètre taille de page

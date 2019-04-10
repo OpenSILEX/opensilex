@@ -105,14 +105,8 @@ public abstract class DAOSesame<T> extends DAO<T> {
 
     protected static String resourceType;
 
-    public User user;
     protected Integer page;
     protected Integer pageSize;
-    
-    /**
-     * User IP address
-     */
-    public String remoteUserAdress;
 
     public DAOSesame() {
         try {
@@ -295,20 +289,6 @@ public abstract class DAOSesame<T> extends DAO<T> {
             LOGGER.trace(value);
         }
         return value;
-    }
-
-    /**
-     * @return logs for traceability
-     */
-    protected String getTraceabilityLogs() {
-        String log = "";
-        if (remoteUserAdress != null) {
-            log += "IP Address " + remoteUserAdress + " - ";
-        }
-        if (user != null) {
-            log += "User : " + user.getEmail() + " - ";
-        }
-        return log;
     }
 
     /**

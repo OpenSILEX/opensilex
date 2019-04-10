@@ -142,9 +142,9 @@ public abstract class ResourceService {
      * @return the response.
      */
     protected Response getGETResponseWhenSuccess(ArrayList<? extends Object> objects, int pageSize, int page, int totalCount) {
-        return Response
-                .status(Response.Status.OK)
-                .entity(new ResultForm<>(pageSize, page, getDTOsFromObjects(objects), true, totalCount))
+        ResultForm resultForm = new ResultForm<>(pageSize, page, getDTOsFromObjects(objects), true, totalCount);
+        resultForm.setStatus(new ArrayList<Status>());
+        return Response.status(Response.Status.OK).entity(resultForm).build();
                 .build();
     }
 

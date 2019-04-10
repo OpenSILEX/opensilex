@@ -10,7 +10,6 @@ package opensilex.service.model;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
-import opensilex.service.resources.dto.rdfResourceDefinition.PropertyDTO;
 
 /**
  * Represents the view of the properties in the triplestore. 

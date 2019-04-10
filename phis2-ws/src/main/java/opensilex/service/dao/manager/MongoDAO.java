@@ -135,21 +135,6 @@ public abstract class MongoDAO<T> extends DAO<T> {
         }
         return pageSize;
     }
-
-    /**
-     * @return traceability logs
-     */
-    protected String getTraceabilityLogs() {
-        String log = "";
-        if (remoteUserAdress != null) {
-            log += "IP Address " + remoteUserAdress + " - ";
-        }
-        if (user != null) {
-            log += "User : " + user.getEmail() + " - ";
-        }
-        
-        return log;
-    }
     
     /**
      * Sets page size.

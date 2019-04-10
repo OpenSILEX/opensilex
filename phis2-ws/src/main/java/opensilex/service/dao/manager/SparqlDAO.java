@@ -105,14 +105,8 @@ public abstract class SparqlDAO<T> extends DAO<T> {
 
     protected static String resourceType;
 
-    public User user;
     protected Integer page;
     protected Integer pageSize;
-    
-    /**
-     * User IP address.
-     */
-    public String remoteUserAdress;
 
     public SparqlDAO() {
         try {
@@ -297,22 +291,8 @@ public abstract class SparqlDAO<T> extends DAO<T> {
     }
 
     /**
-     * @return logs for traceability
-     */
-    protected String getTraceabilityLogs() {
-        String log = "";
-        if (remoteUserAdress != null) {
-            log += "IP Address " + remoteUserAdress + " - ";
-        }
-        if (user != null) {
-            log += "User : " + user.getEmail() + " - ";
-        }
-        return log;
-    }
-
-    /**
-     * Sets a user object from a session id.
-     * @param sessionId
+     * Define of user object from an id
+     * @param id
      */
     public void setUser(String sessionId) {
         if (TokenManager.Instance().getSession(sessionId).getUser() == null) {

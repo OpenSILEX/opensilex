@@ -226,7 +226,7 @@ public class EventDAO extends SparqlDAO<Event> {
      * @param searchUri
      * @return query
      */
-    protected SPARQLQueryBuilder prepareSearchQueryEventDetailed(String searchUri) {
+    protected SPARQLQueryBuilder prepareSearchQueryEvent(String searchUri) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
         
@@ -319,14 +319,11 @@ public class EventDAO extends SparqlDAO<Event> {
      * @return events
      */
     @Override
-    public Event findById(String searchUri) {
+    public Event findById(String searchUri) {        
+        SPARQLQueryBuilder eventQuery = prepareSearchQueryEvent(searchUri);
         
-        SPARQLQueryBuilder eventDetailedQuery = prepareSearchQueryEventDetailed(searchUri);
-        
-        // get events from storage
-        TupleQuery eventsTupleQuery = getConnection().prepareTupleQuery(
-                QueryLanguage.SPARQL, 
-                eventDetailedQuery.toString());
+        // Get event from storage
+        TupleQuery eventsTupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, eventQuery.toString());
         
         Event event = null;
         try (TupleQueryResult eventsResult = eventsTupleQuery.evaluate()) {

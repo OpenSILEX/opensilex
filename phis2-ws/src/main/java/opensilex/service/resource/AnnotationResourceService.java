@@ -34,6 +34,7 @@ import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.AnnotationDAO;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.ResourceAccessDeniedException;
+import opensilex.service.dao.manager.DAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.view.brapi.Status;
@@ -219,8 +220,9 @@ public class AnnotationResourceService extends ResourceService {
             final Status status = new Status(StatusCodeMsg.ACCESS_ERROR, StatusCodeMsg.ERR, "Empty annotation uri");
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
         }
-
-        return getAnnotations(uri, null, null, null, null, 0, 0);
+        
+        DAO annotationDAO = new AnnotationDAO(userSession.getUser());
+        return getGETByUriResponseFromDAOResults(annotationDAO, uri);
     }
 
     /**

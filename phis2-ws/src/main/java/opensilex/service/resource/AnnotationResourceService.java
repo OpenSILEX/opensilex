@@ -127,7 +127,7 @@ public class AnnotationResourceService extends ResourceService {
                 return getPostResponseFromDAODataErrorExceptions(ex);
                 
             } catch (Exception ex) {
-                return getPostResponseWhenInternalError(ex);
+                return getResponseWhenInternalError(ex);
             }  
         }
     }
@@ -210,8 +210,6 @@ public class AnnotationResourceService extends ResourceService {
      *    ] 
      * } ] } }
      * @param uri
-     * @param pageSize
-     * @param page
      * @return the information about the annotation if it exists
      */
     @GET
@@ -219,7 +217,11 @@ public class AnnotationResourceService extends ResourceService {
     @ApiOperation(value = "Get a annotation",
             notes = "Retrieve a annotation. Need URL encoded annotation URI")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve a annotation", response = AnnotationDTO.class, responseContainer = "List"),
+        @ApiResponse(
+                code = 200, 
+                message = "Retrieve a annotation", 
+                response = AnnotationDTO.class, 
+                responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
@@ -232,16 +234,18 @@ public class AnnotationResourceService extends ResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAnnotationByUri(
-            @ApiParam(value = DocumentationAnnotation.SENSOR_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @URL @PathParam("uri") String uri,
-            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
-            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
+            @ApiParam(
+                    value = DocumentationAnnotation.SENSOR_URI_DEFINITION, 
+                    required = true, 
+                    example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) 
+                @URL @PathParam("uri") String uri) {
 
         if (uri == null) {
             final Status status = new Status(StatusCodeMsg.ACCESS_ERROR, StatusCodeMsg.ERR, "Empty annotation uri");
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
         }
 
-        return getAnnotations(uri, null, null, null, null, page, pageSize);
+        return getAnnotations(uri, null, null, null, null, 0, 0);
     }
 
     /**

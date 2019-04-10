@@ -43,7 +43,7 @@ public abstract class ResourceService {
      * @return 
      */
     protected ArrayList<AbstractVerifiedClass> getDTOsFromObjects (List<? extends Object> objects) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet: getDTOsFromObjects getDTOsFromObjects.");
     }
     
     /**
@@ -58,7 +58,7 @@ public abstract class ResourceService {
      */
     protected List<? extends Object> getObjectsFromDTOs (List<? extends AbstractVerifiedClass> dtos) 
             throws Exception {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet: getObjectsFromDTOs function.");
     }
     
     /**
@@ -67,7 +67,7 @@ public abstract class ResourceService {
      * @return the objects list.
      */
     protected List<String> getUrisCreatedFromObjects (List<? extends Object> objects) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet: getUrisCreatedFromObjects function.");
     }
     
     // User session
@@ -145,7 +145,6 @@ public abstract class ResourceService {
         ResultForm resultForm = new ResultForm<>(pageSize, page, getDTOsFromObjects(objects), true, totalCount);
         resultForm.setStatus(new ArrayList<Status>());
         return Response.status(Response.Status.OK).entity(resultForm).build();
-                .build();
     }
 
     /**

@@ -10,7 +10,6 @@ package opensilex.service.dao;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
@@ -334,32 +333,32 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
 
     /**
      * Searches all the annotations corresponding to the search parameters
-     * @param searchUri
-     * @param searchCreator
-     * @param searchTarget
-     * @param searchPage
-     * @param searchBodyValue
-     * @param searchMotivatedBy
-     * @param searchPageSize
+     * @param uri
+     * @param creator
+     * @param target
+     * @param page
+     * @param bodyValue
+     * @param motivatedBy
+     * @param pageSize
      * @return the list of the annotations found
      */
-    public ArrayList<Annotation> find(String searchUri, String searchCreator, String searchTarget, String searchBodyValue, String searchMotivatedBy, int searchPage, int searchPageSize) {
-        setPage(searchPage);
-        setPageSize(searchPageSize);
+    public ArrayList<Annotation> find(String uri, String creator, String target, String bodyValue, String motivatedBy, int page, int pageSize) {
+        setPage(page);
+        setPageSize(pageSize);
 
-        // retreve uri list
+        // retrieve URI list
         SPARQLQueryBuilder query = prepareSearchQuery(
-                searchUri, 
-                searchCreator, 
-                searchTarget, 
-                searchBodyValue, 
-                searchMotivatedBy);
+                uri, 
+                creator, 
+                target, 
+                bodyValue, 
+                motivatedBy);
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         ArrayList<Annotation> annotations;
-        // Retreive all informations
-        // for each uri
+        
+        // Retreive all information for each URI
         try (TupleQueryResult resultAnnotationUri = tupleQuery.evaluate()) {
-            annotations = getAnnotationsFromResult(resultAnnotationUri, searchUri, searchCreator, searchMotivatedBy);
+            annotations = getAnnotationsFromResult(resultAnnotationUri, uri, creator, motivatedBy);
         }
         LOGGER.debug(JsonConverter.ConvertToJson(annotations));
         return annotations;
@@ -465,6 +464,12 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
 
     @Override
     public Annotation findById(String id) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        List<Annotation> annotations = find(id, null, null, null, null, 0, 1);
+        if(!annotations.isEmpty()) {
+            return annotations.get(0);
+        }
+        else {
+            return null;
+        }
     }
 }

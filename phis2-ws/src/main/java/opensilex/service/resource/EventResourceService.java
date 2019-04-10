@@ -23,6 +23,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -46,6 +47,7 @@ import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.model.Event;
+import opensilex.service.resource.dto.event.EventPutDTO;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 
 /**
@@ -362,6 +364,41 @@ public class EventResourceService  extends ResourceService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response postEvents(
         @ApiParam(value = DocumentationAnnotation.EVENT_POST_DEFINITION) @Valid ArrayList<EventPostDTO> eventsDtos,
+        @Context HttpServletRequest context) {
+        
+        // Set DAO
+        EventDAO objectDao = new EventDAO(userSession.getUser());
+        if (context.getRemoteAddr() != null) {
+            objectDao.remoteUserAdress = context.getRemoteAddr();
+        }
+        
+        // Get POST response
+        return getPostResponse(objectDao, eventsDtos, context.getRemoteAddr(), StatusCodeMsg.EMPTY_EVENT_LIST);
+    }
+    
+    /**
+     * Radiometric target PUT service.
+     * @param radiometricTargets
+     * @param context
+     * @return 
+     */
+    @PUT
+    @ApiOperation(value = "Update events")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Event(s) updated", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 404, message = "Event(s) not found"),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response put(
+        @ApiParam(value = DocumentationAnnotation.RADIOMETRIC_TARGET_POST_DEFINITION) @Valid ArrayList<EventPutDTO> radiometricTargets,
         @Context HttpServletRequest context) {
         
         // Set DAO

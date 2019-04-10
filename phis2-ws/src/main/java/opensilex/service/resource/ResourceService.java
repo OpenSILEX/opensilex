@@ -66,7 +66,7 @@ public abstract class ResourceService {
      * @param objects
      * @return the objects list.
      */
-    protected List<String> getUrisCreatedFromObjects (List<? extends Object> objects) {
+    protected List<String> getUrisFromObjects (List<? extends Object> objects) {
         throw new UnsupportedOperationException("Not supported yet: getUrisCreatedFromObjects function.");
     }
     
@@ -118,7 +118,7 @@ public abstract class ResourceService {
                 List<? extends Object> createdObjects = objectDao.checkAndCreate(getObjectsFromDTOs(objectsDtos));
                 
                 // Return according to operation results
-                List<String> createdUris = getUrisCreatedFromObjects(createdObjects);
+                List<String> createdUris = getUrisFromObjects(createdObjects);
                 return getPostResponseWhenSuccess(createdUris);
                 
             } catch (ResourceAccessDeniedException ex) {

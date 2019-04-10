@@ -274,7 +274,7 @@ public class AnnotationResourceService extends ResourceService {
     }
     
     @Override
-    protected List<String> getUrisCreatedFromObjects (List<? extends Object> createdObjects) {
+    protected List<String> getUrisFromObjects (List<? extends Object> createdObjects) {
         List<String> createdUris = new ArrayList<>();
         createdObjects.forEach(object -> {
             createdUris.add(((Annotation)object).getUri());

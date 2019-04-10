@@ -253,8 +253,7 @@ public class EventResourceService  extends ResourceService {
                 example = DocumentationAnnotation.EXAMPLE_EVENT_URI) 
             @PathParam("uri") @URL @Required String uri) {
         
-        DAO eventDao = new EventDAO(userSession.getUser());
-        return getGETByUriResponseFromDAOResults(eventDao, uri);
+        return getGETByUriResponseFromDAOResults(new EventDAO(userSession.getUser()), uri);
     }
     
     /**
@@ -397,7 +396,7 @@ public class EventResourceService  extends ResourceService {
     }
     
     @Override
-    protected List<String> getUrisCreatedFromObjects (List<? extends Object> createdObjects) {
+    protected List<String> getUrisFromObjects (List<? extends Object> createdObjects) {
         List<String> createdUris = new ArrayList<>();
         createdObjects.forEach(object -> {
             createdUris.add(((Event)object).getUri());

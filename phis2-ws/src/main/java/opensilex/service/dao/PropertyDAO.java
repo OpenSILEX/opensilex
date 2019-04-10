@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAODataErrorException;
-import opensilex.service.dao.exception.SemanticInconsistencyException;
 import opensilex.service.dao.exception.TypeNotInDomainException;
 import opensilex.service.dao.exception.UnknownUriException;
 import opensilex.service.dao.exception.UnknownUriOfTypeException;
@@ -435,7 +434,7 @@ public class PropertyDAO extends SparqlDAO<Property> {
      * @example
      * SELECT DISTINCT (count(distinct ?property) as ?count) 
      * WHERE {
-     *  <http://www.phenome-fppn.fr/diaphen/2018/s18523>  <http://www.opensilex.org/vocabulary/oeso#hasLens>  ?property  . 
+     *  <http://www.phenome-fppn.fr/diaphen/2018/s18523>  <http://www.opensilex.org/vocabulary/oeso#hasLens>  ?property. 
      * }
      */
     private SPARQLQueryBuilder prepareGetProperties(String objectUri, String relationUri) {
@@ -490,7 +489,8 @@ public class PropertyDAO extends SparqlDAO<Property> {
                                     StatusCodeMsg.DATA_ERROR, 
                                     StatusCodeMsg.ERR, 
                                     StatusCodeMsg.BAD_CARDINALITY + " missing " + entry.getKey()));
-                        } else if (numberOfRelations.get(entry.getKey()) != cardinality.getCardinaity()) { //there is not the required number of properties
+                        } else if (numberOfRelations.get(entry.getKey()) != cardinality.getCardinaity()) { 
+                        //there is not the required number of properties
                             dataOk = false;
                             checkStatus.add(new Status(
                                     StatusCodeMsg.DATA_ERROR, 

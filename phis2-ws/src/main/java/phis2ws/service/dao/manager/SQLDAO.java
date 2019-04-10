@@ -66,14 +66,9 @@ public abstract class SQLDAO<T> extends DAO<T> {
     // For query logging
     protected static final String SQL_SELECT_QUERY = "SQL query : ";
     
-    /**
-     * user c'est l'objet qui représente l'utilisateur
-     */
-    public User user;
     protected Integer page;
     protected Integer pageSize;
-
-    public String remoteUserAdress;
+    
     /**
      * Nom de la table du dao (table principale)
      */

@@ -215,14 +215,8 @@ public class AnnotationResourceService extends ResourceService {
                     required = true, 
                     example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) 
                 @URL @PathParam("uri") String uri) {
-
-        if (uri == null) {
-            final Status status = new Status(StatusCodeMsg.ACCESS_ERROR, StatusCodeMsg.ERR, "Empty annotation uri");
-            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
-        }
         
-        DAO annotationDAO = new AnnotationDAO(userSession.getUser());
-        return getGETByUriResponseFromDAOResults(annotationDAO, uri);
+        return getGETByUriResponseFromDAOResults(new AnnotationDAO(userSession.getUser()), uri);
     }
 
     /**

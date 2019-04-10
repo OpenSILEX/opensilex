@@ -53,6 +53,8 @@ import opensilex.service.model.Annotation;
  * Annotations DAO.
  * @update [Andréas Garcia] 15 Feb. 2019: search parameters are no longer class 
  * attributes but parameters sent through search functions
+ * @update [Andréas Garcia] 8 Apr. 2019: Use DAO generic function create, update, checkBeforeCreation and use exceptions 
+ * to handle errors.
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class AnnotationDAO extends SparqlDAO<Annotation> {
@@ -77,7 +79,7 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
     }
     
     /**
-     * Query generated with the searched parameters
+     * Query generated with the searched parameters.
      * @param uri
      * @param creator
      * @param target
@@ -332,7 +334,7 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
     }
 
     /**
-     * Searches all the annotations corresponding to the search parameters
+     * Searches all the annotations corresponding to the search parameters.
      * @param uri
      * @param creator
      * @param target

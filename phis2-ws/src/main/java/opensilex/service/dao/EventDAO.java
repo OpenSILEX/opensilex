@@ -55,8 +55,8 @@ import opensilex.service.model.Property;
  * @update [Andréas Garcia] 5 Mar. 2019: 
  *      Move the generic function to get a string value from a binding set to mother class.
  *      Move concerned items accesses handling into a new ConcernedItemDAO class.
- * @update [Andréas Garcia] 8 Apr. 2019: Use DAO generic function create and update 
- * and use exceptions to handle errors.
+ * @update [Andréas Garcia] 8 Apr. 2019: Use DAO generic function create, update, checkBeforeCreation and use exceptions 
+ * to handle errors.
  * @author Andreas Garcia <andreas.garcia@inra.fr>
  */
 public class EventDAO extends SparqlDAO<Event> {

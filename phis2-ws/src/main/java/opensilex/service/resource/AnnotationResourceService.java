@@ -32,27 +32,22 @@ import javax.ws.rs.core.Response;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.AnnotationDAO;
-import opensilex.service.dao.exception.DAODataErrorAggregateException;
-import opensilex.service.dao.exception.ResourceAccessDeniedException;
-import opensilex.service.dao.manager.DAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
-import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.resource.dto.annotation.AnnotationDTO;
 import opensilex.service.resource.dto.annotation.AnnotationPostDTO;
 import opensilex.service.resource.validation.interfaces.URL;
-import opensilex.service.view.brapi.form.ResponseFormGET;
 import opensilex.service.model.Annotation;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 
 /**
  * Annotation resource service.
- * @update [Arnaud Charleroy] 23 August, 2018: update coding style.
  * @update [Andréas Garcia] 15 Feb. 2019: search parameters are no longer DAO 
- * class attributes but parameters sent through the search functions
- * @update [Andreas Garcia] 19 March, 2019: make getAnnotations public to be 
- * able to use it from another service
+ * class attributes but parameters sent through the search functions.
+ * @update [Andreas Garcia] 19 Mar. 2019: make getAnnotations public to be 
+ * able to use it from another service.
+ * @update [Andréas Garcia] 8 Apr. 2019: Refactor generic functions into the ResourceService class
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 @Api("/annotations")

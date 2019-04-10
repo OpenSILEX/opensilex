@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                       ResourceService.java
+//                            ResourceService.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 3 Dec. 2018
@@ -26,11 +26,18 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 
 /**
  * Resource service mother class.
+ * @update [Andréas Garcia] 8 Apr. 2019: Refactor resource service classes generic functions (get a response from a GET
+ * request, get responses from POST requests, etc.). Add unimplemented functions (as getDTOsFromObjects) to make them
+ * implemented by the child classes to permit specific behaviours.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public abstract class ResourceService {
     
-    // The default language of the application
+    // User session.
+    @SessionInject
+    protected Session userSession;
+    
+    // The default language of the application.
     protected static final String DEFAULT_LANGUAGE = PropertiesFileManager.getConfigFileProperty("service", "defaultLanguage");
     
     /**
@@ -62,20 +69,16 @@ public abstract class ResourceService {
     }
     
     /**
-     * Gets a URI list from a list of objects created.
-     * @param objects
+     * Gets a URI list from a list of objects having a URI.
+     * @param objectsWithUris
      * @return the objects list.
      */
-    protected List<String> getUrisFromObjects (List<? extends Object> objects) {
+    protected List<String> getUrisFromObjects (List<? extends Object> objectsWithUris) {
         throw new UnsupportedOperationException("Not supported yet: getUrisCreatedFromObjects function.");
     }
     
-    // User session
-    @SessionInject
-    protected Session userSession;
-    
     /**
-     * Generic response for no result found.
+     * Gets the response when no result found.
      * @param getResponse
      * @param insertStatusList
      * @return the Response with the error message
@@ -87,7 +90,7 @@ public abstract class ResourceService {
     }
 
     /**
-     * Generic method for SQL error message.
+     * Gets the response when a SQL error message occured.
      * @param getResponse
      * @param insertStatusList
      * @return the Response with the error message
@@ -97,14 +100,30 @@ public abstract class ResourceService {
         getResponse.setStatus(insertStatusList);
         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(getResponse).build();
     }
+
+    /**
+     * Gets a response when an internal error occured during the operation.
+     * @param exception
+     * @return the response. 
+     */
+    protected Response getResponseWhenInternalError(Exception exception) {
+        return getPostResponseFromSingleOperationStatus(
+                Response.Status.INTERNAL_SERVER_ERROR,
+                StatusCodeMsg.INTERNAL_ERROR,
+                StatusCodeMsg.ERR,
+                exception.getMessage());
+    }
     
     /**
-     * Gets a response for a POST request.
+     * Gets a response for a POST request depending on the results.
      * @param objectDao DAO of the manipulated object.
      * @param objectsDtos DTOs sent through the POST.
      * @param userIpAddress
      * @param statusMessageIfEmptyDtosSent
-     * @return 
+     * @return a success response when success.
+     *         an internal error response when an non handled exception occured.
+     *         an access denied response when the resource isn't available for the user.
+     *         a data error response when the data sent is incorrect.
      */
     protected Response getPostResponse (DAO objectDao, ArrayList<? extends AbstractVerifiedClass> objectsDtos, String userIpAddress, String statusMessageIfEmptyDtosSent) {
         if (objectsDtos == null || objectsDtos.isEmpty()) {
@@ -200,19 +219,6 @@ public abstract class ResourceService {
     }
 
     /**
-     * Gets a response when an internal error occured during the operation.
-     * @param exception
-     * @return the response. 
-     */
-    protected Response getResponseWhenInternalError(Exception exception) {
-        return getPostResponseFromSingleOperationStatus(
-                Response.Status.INTERNAL_SERVER_ERROR,
-                StatusCodeMsg.INTERNAL_ERROR,
-                StatusCodeMsg.ERR,
-                exception.getMessage());
-    }
-
-    /**
      * Gets a response when an empty list is received by a POST.
      * @param exception
      * @return the response. 
@@ -249,7 +255,7 @@ public abstract class ResourceService {
     }
     
     /**
-     * Builds a response from a status and a form result form.
+     * Builds a response from a status and a result form.
      * @param status
      * @param resultForm
      * @return the response. 
@@ -259,7 +265,7 @@ public abstract class ResourceService {
     }
     
     /**
-     * Gets a response according to the object returned by a DAO search by URI.
+     * Gets a response from a search by URI using a DAO.
      * @param dao
      * @param uri
      * @return 

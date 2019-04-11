@@ -362,7 +362,7 @@ public class EventResourceService  extends ResourceService {
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response postEvents(
+    public Response post(
         @ApiParam(value = DocumentationAnnotation.EVENT_POST_DEFINITION) @Valid ArrayList<EventPostDTO> eventsDtos,
         @Context HttpServletRequest context) {
         

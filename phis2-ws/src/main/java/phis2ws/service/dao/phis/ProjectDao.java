@@ -1,14 +1,10 @@
-//**********************************************************************************************
-//                                       ProjectDao.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
+//******************************************************************************
+//                                ProjectDao.java 
+// SILEX-PHIS
+// Copyright © INRA 2017
 // Creation date: March 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  March, 2017
-// Subject: A Dao specific to retrieve project data
-//***********************************************************************************************
+//******************************************************************************
 package phis2ws.service.dao.phis;
 
 import java.sql.Connection;
@@ -622,6 +618,26 @@ public class ProjectDao extends DAOPhisBrapi<Project, ProjectDTO> {
 
     @Override
     public POSTResultsReturn checkAndInsertList(List<ProjectDTO> newObjects) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<Project> create(List<Project> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List<Project> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<Project> update(List<Project> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Project findById(String id) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -31,6 +31,7 @@ import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
+import phis2ws.service.dao.manager.DAO;
 import phis2ws.service.dao.sesame.ScientificObjectDAOSesame;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.ontologies.Rdf;
@@ -43,7 +44,7 @@ import phis2ws.service.view.model.phis.ScientificObject;
 import phis2ws.service.view.model.phis.Property;
 
 
-public class LayerDao {
+public class LayerDao extends DAO<LayerDTO>{
     
     /**
      * @param objectURI URI de l'objet auquel la couche correspond
@@ -222,5 +223,30 @@ public class LayerDao {
         createLayerFile = new POSTResultsReturn(createLayerFileOk, createLayerFileOk, createLayerFileOk);
         createLayerFile.statusList = createStatusList;
         return createLayerFile;
+    }
+
+    @Override
+    public List<LayerDTO> create(List<LayerDTO> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List<LayerDTO> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<LayerDTO> update(List<LayerDTO> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public LayerDTO find(LayerDTO object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public LayerDTO findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -14,7 +14,6 @@ package phis2ws.service.dao.sesame;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -62,7 +61,6 @@ public class MethodDaoSesame extends DAOSesame<Method> {
     public MethodDaoSesame() {
     }
 
-    @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
         //SILEX:todo
         //Ajouter la recherche par référence vers d'autres ontologies aussi
@@ -100,11 +98,6 @@ public class MethodDaoSesame extends DAOSesame<Method> {
         LOGGER.debug(SPARQL_QUERY + query.toString());
 
         return query;
-    }
-
-    @Override
-    public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
     /**
@@ -422,7 +415,7 @@ public class MethodDaoSesame extends DAOSesame<Method> {
         return spql.buildRequest();        
     }
     
-    private POSTResultsReturn update(List<MethodDTO> methodsDTO) {
+    private POSTResultsReturn updateAndReturnPOSTResultsReturn(List<MethodDTO> methodsDTO) {
         List<Status> updateStatusList = new ArrayList<>();
         List<String> updatedResourcesURIList = new ArrayList<>();
         POSTResultsReturn results;
@@ -496,9 +489,34 @@ public class MethodDaoSesame extends DAOSesame<Method> {
     public POSTResultsReturn checkAndUpdate(List<MethodDTO> methodsDTO) {
         POSTResultsReturn checkResult = check(methodsDTO);
         if (checkResult.getDataState()) {
-            return update(methodsDTO);
+            return updateAndReturnPOSTResultsReturn(methodsDTO);
         } else { //Les données ne sont pas bonnes
             return checkResult;
         }
+    }
+
+    @Override
+    public List<Method> create(List<Method> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List<Method> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<Method> update(List<Method> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Method find(Method object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Method findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

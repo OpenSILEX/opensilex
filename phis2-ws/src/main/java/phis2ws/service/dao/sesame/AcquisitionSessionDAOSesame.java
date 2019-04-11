@@ -9,6 +9,7 @@ package phis2ws.service.dao.sesame;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.repository.RepositoryException;
@@ -34,7 +35,7 @@ import phis2ws.service.view.model.phis.Vector;
  * @update [Arnaud Charleroy] 10 September, 2018 : minor fix on vector data gathering
  * @author Morgane Vidal <morgane.vidal@inra.fr>, Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
-public class AcquisitionSessionDAOSesame extends DAOSesame<Object> {
+public class AcquisitionSessionDAOSesame extends DAOSesame<MetadataFileDTO> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(AcquisitionSessionDAOSesame.class);
     
@@ -42,16 +43,6 @@ public class AcquisitionSessionDAOSesame extends DAOSesame<Object> {
     //Used in the GET fileMetadata to generate the informations for the file of definition the acquisition session for 4P.
     //e.g. http://www.opensilex.org/vocabulary/oeso#UAV
     public String vectorRdfType;
-
-    @Override
-    protected SPARQLQueryBuilder prepareSearchQuery() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
     
     /**
      * Count the number of rows for the metadata file
@@ -81,7 +72,6 @@ public class AcquisitionSessionDAOSesame extends DAOSesame<Object> {
             if (uriDaoSesame.isSubClassOf(vectorRdfType, Oeso.CONCEPT_UAV.toString())) {
                 //3. get the number of cameras
                 SensorDAOSesame sensorDAO = new SensorDAOSesame();
-                sensorDAO.rdfType = Oeso.CONCEPT_CAMERA.toString();
                 sizes.add(sensorDAO.countCameras());
 
                 //4. get the number of vectors
@@ -242,5 +232,30 @@ public class AcquisitionSessionDAOSesame extends DAOSesame<Object> {
         } else {
             return null;
         }
+    }
+
+    @Override
+    public List<MetadataFileDTO> create(List<MetadataFileDTO> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List<MetadataFileDTO> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<MetadataFileDTO> update(List<MetadataFileDTO> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public MetadataFileDTO find(MetadataFileDTO object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public MetadataFileDTO findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

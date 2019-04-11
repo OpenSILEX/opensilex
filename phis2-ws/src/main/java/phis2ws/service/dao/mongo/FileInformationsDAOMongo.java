@@ -1,23 +1,18 @@
 //******************************************************************************
-//                                       FileInformationsDAOMongo.java
-//
-// Author(s): Morgane Vidal <morgane.vidal@inra.fr>
-// PHIS-SILEX version 1.0
+//                           FileInformationsDAOMongo.java
+// SILEX-PHIS
 // Copyright © - INRA - 2018
 // Creation date: 5 févr. 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  5 févr. 2018
-// Subject: A dao specific to images metadata file informations
 //******************************************************************************
 package phis2ws.service.dao.mongo;
 
 import com.mongodb.BasicDBObject;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.List;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.configuration.DateFormats;
 import phis2ws.service.dao.manager.DAOMongo;
 import phis2ws.service.view.model.phis.FileInformations;
 
@@ -41,11 +36,6 @@ public class FileInformationsDAOMongo extends DAOMongo<FileInformations> {
     protected BasicDBObject prepareSearchQuery() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-
-    @Override
-    public ArrayList<FileInformations> allPaginate() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
     
     /**
      * get a Document corresponding to an image shooting configuration and 
@@ -60,5 +50,30 @@ public class FileInformationsDAOMongo extends DAOMongo<FileInformations> {
         fileInformations.setServerFilePath(fileInformationsDocument.getString(FileInformationsDAOMongo.DB_FIELDS_SERVER_FILE_PATH));
         
         return fileInformations;
+    }
+
+    @Override
+    public List<FileInformations> create(List<FileInformations> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List<FileInformations> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<FileInformations> update(List<FileInformations> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public FileInformations find(FileInformations object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public FileInformations findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -19,6 +19,7 @@ package phis2ws.service.dao.sesame;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
@@ -68,7 +69,6 @@ public class UriDaoSesame extends DAOSesame<Uri> {
      * <http://www.opensilex.org/vocabulary/oeso#Document> ?class ?type . 
      * }
      */
-    @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
@@ -153,11 +153,6 @@ public class UriDaoSesame extends DAOSesame<Uri> {
         query.appendTriplet("?class", Rdfs.RELATION_SUBCLASS_OF.toString(), "?parent", null);
         LOGGER.debug(query.toString());
         return query;
-    }
-
-    @Override
-    public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     /**
@@ -699,5 +694,30 @@ public class UriDaoSesame extends DAOSesame<Uri> {
             }
         }
         return comments;
+    }
+
+    @Override
+    public List<Uri> create(List<Uri> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List<Uri> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<Uri> update(List<Uri> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Uri find(Uri object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Uri findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

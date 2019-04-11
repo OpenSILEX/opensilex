@@ -56,7 +56,7 @@ import phis2ws.service.view.brapi.form.ResponseFormPOST;
  * @param <T>
  * @author Arnaud Charleroy
  */
-public abstract class DAOSesame<T> {
+public abstract class DAOSesame<T> extends DAO<T> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(DAOSesame.class);
     protected static final String PROPERTY_FILENAME = "sesame_rdf_config";
@@ -296,18 +296,6 @@ public abstract class DAOSesame<T> {
         }
         return value;
     }
-
-    /**
-     * Create the base of a query to list and recover elements
-     * @return SPARQLQueryBuilder
-     */
-    abstract protected SPARQLQueryBuilder prepareSearchQuery();
-
-    /**
-     * Count the number of elements returned by the execution of a query
-     * @return Integer
-     */
-    public abstract Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException;
 
     /**
      * @return logs for traceability

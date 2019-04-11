@@ -145,7 +145,6 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
      *          ?uri <http://www.opensilex.org/vocabulary/oeso#dateOfPurchase> ?dateOfPurchase . 
      * }}
      */
-    @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
@@ -264,7 +263,6 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
      * @return The number of vectors 
      * @inheritdoc
      */
-    @Override
     public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
         SPARQLQueryBuilder prepareCount = prepareCount();
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
@@ -674,7 +672,7 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
      * @param vectors
      * @return the update results
      */
-    private POSTResultsReturn update(List<VectorDTO> vectors) {
+    private POSTResultsReturn updateAndReturnPOSTResultsReturn(List<VectorDTO> vectors) {
         List<Status> updateStatus = new ArrayList<>();
         List<String> updatedResourcesUri = new ArrayList<>();
         POSTResultsReturn results;
@@ -759,7 +757,7 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
     /**
      * check and update the given vectors in the triplestore
      * @see VectorDAOSesame#check(java.util.List) 
-     * @see VectorDAOSesame#update(java.util.List) 
+     * @see VectorDAOSesame#updateAndReturnPOSTResultsReturn(java.util.List) 
      * @param vectors 
      * @return the update result. Message error if errors founded in data,
      *         the list of the updated vector's uri if the updated has been correcty done
@@ -767,7 +765,7 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
     public POSTResultsReturn checkAndUpdate(List<VectorDTO> vectors) {
         POSTResultsReturn checkResult = check(vectors);
         if (checkResult.getDataState()) {
-            return update(vectors);
+            return updateAndReturnPOSTResultsReturn(vectors);
         } else { //errors founded in data
             return checkResult;
         }
@@ -817,5 +815,30 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
             }
         }
         return uavs;
+    }
+
+    @Override
+    public List<Vector> create(List<Vector> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List<Vector> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<Vector> update(List<Vector> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Vector find(Vector object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Vector findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

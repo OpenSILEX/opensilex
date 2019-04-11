@@ -1,19 +1,16 @@
 //******************************************************************************
-//                                       ShootingConfigurationDAOMongo.java
-//
-// Author(s): Morgane Vidal <morgane.vidal@inra.fr>
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
+//                       ShootingConfigurationDAOMongo.java
+// SILEX-INRA
+// Copyright © INRA 2018
 // Creation date: 5 févr. 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  5 févr. 2018
-// Subject: A dao specific to images metadata shooting configurations
 //******************************************************************************
 package phis2ws.service.dao.mongo;
 
 import com.mongodb.BasicDBObject;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.List;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,11 +40,6 @@ public class ShootingConfigurationDAOMongo extends DAOMongo<ShootingConfiguratio
     protected BasicDBObject prepareSearchQuery() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-
-    @Override
-    public ArrayList<ShootingConfiguration> allPaginate() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
     
     /**
      * get a Document corresponding to an image shooting configuration and 
@@ -63,5 +55,30 @@ public class ShootingConfigurationDAOMongo extends DAOMongo<ShootingConfiguratio
         shootingConfiguration.setSensor(shootingConfigurationDocument.getString(ShootingConfigurationDAOMongo.DB_FIELDS_SENSOR));
         
         return shootingConfiguration;
+    }
+
+    @Override
+    public List<ShootingConfiguration> create(List<ShootingConfiguration> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List<ShootingConfiguration> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<ShootingConfiguration> update(List<ShootingConfiguration> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ShootingConfiguration find(ShootingConfiguration object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ShootingConfiguration findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

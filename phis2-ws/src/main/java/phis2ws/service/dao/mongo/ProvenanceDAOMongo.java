@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                       ProvenanceDAOMongo.java
+//                              ProvenanceDAOMongo.java
 // SILEX-PHIS
 // Copyright © INRA 2019
 // Creation date: 5 mars 2019
@@ -18,7 +18,6 @@ import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import javax.ws.rs.core.Response;
 import org.bson.BSONObject;
@@ -54,11 +53,6 @@ public class ProvenanceDAOMongo extends DAOMongo<Provenance> {
 
     @Override
     protected BasicDBObject prepareSearchQuery() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public ArrayList<Provenance> allPaginate() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
@@ -326,7 +320,7 @@ public class ProvenanceDAOMongo extends DAOMongo<Provenance> {
      * @param provenances the list of the provenances to update
      * @return the update result with the list of all the updated provenances.
      */
-    private POSTResultsReturn update(List<Provenance> provenances) throws Exception {
+    private POSTResultsReturn updateAndReturnPoSTResultsReturn(List<Provenance> provenances) throws Exception {
         // Initialize transaction
         MongoClient client = DAOMongo.getMongoClient();
         ClientSession session = client.startSession();
@@ -385,7 +379,7 @@ public class ProvenanceDAOMongo extends DAOMongo<Provenance> {
         try {
             POSTResultsReturn checkResult = check(provenances);
             if (checkResult.getDataState()) {
-                return update(provenances);
+                return updateAndReturnPoSTResultsReturn(provenances);
             } else { //errors found in data
                 return checkResult;
             }
@@ -431,5 +425,30 @@ public class ProvenanceDAOMongo extends DAOMongo<Provenance> {
         }
         
         return provenances;
+    }
+
+    @Override
+    public List<Provenance> create(List<Provenance> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List<Provenance> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Provenance find(Provenance object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Provenance findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<Provenance> update(List<Provenance> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

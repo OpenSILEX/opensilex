@@ -1,14 +1,10 @@
-//**********************************************************************************************
-//                                       DocumentDaoMongo.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
+//******************************************************************************
+//                            DocumentDaoMongo.java 
+// SILEX-PHIS
 // Copyright © - INRA - 2017
 // Creation date: June 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  June, 2017
-// Subject: A Dao specific to documents insert into mongodb
-//***********************************************************************************************
+//******************************************************************************
 package phis2ws.service.dao.mongo;
 
 import com.mongodb.BasicDBObject;
@@ -36,11 +32,6 @@ public class DocumentDaoMongo extends DAOMongo<Document> {
 
     @Override
     protected BasicDBObject prepareSearchQuery() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public ArrayList<Document> allPaginate() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
@@ -96,5 +87,30 @@ public class DocumentDaoMongo extends DAOMongo<Document> {
         }
         
         return file;
+    }
+
+    @Override
+    public List<Document> create(List<Document> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List<Document> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<Document> update(List<Document> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Document find(Document object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Document findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

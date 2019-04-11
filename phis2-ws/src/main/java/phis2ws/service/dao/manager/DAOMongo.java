@@ -1,14 +1,10 @@
-//**********************************************************************************************
-//                                       DAOMongo.java 
-//
-// Author(s): Arnaud Charleroy
-// PHIS-SILEX version 1.0
+//******************************************************************************
+//                                DAOMongo.java 
+// SILEX-PHIS
 // Copyright © - INRA - 2016
 // Creation date: august 2016
 // Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  October, 2016
-// Subject:This abstract class is the base of all Dao class for the Mongo DB 
-//***********************************************************************************************
+//******************************************************************************
 package phis2ws.service.dao.manager;
 
 import com.mongodb.BasicDBObject;
@@ -17,7 +13,6 @@ import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.gridfs.GridFS;
-import java.util.ArrayList;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecProvider;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
@@ -29,13 +24,11 @@ import phis2ws.service.configuration.DefaultBrapiPaginationValues;
 import phis2ws.service.model.User;
 
 /**
- * Répresente une définition de la classe DAO permettant de se connecter à la
- * source de données MongoDB
- *
+ * DAO for Mongo querying
  * @author Arnaud Charleroy
  * @param <T>
  */
-public abstract class DAOMongo<T> {
+public abstract class DAOMongo<T> extends DAO<T> {
 
     /**
      * @see service.properties file
@@ -49,6 +42,7 @@ public abstract class DAOMongo<T> {
     public User user;
     protected Integer page;
     protected Integer pageSize;
+    
     /**
      * User ip adress
      */
@@ -179,10 +173,4 @@ public abstract class DAOMongo<T> {
      * @return BasicDBObject
      */
     abstract protected BasicDBObject prepareSearchQuery();
-    
-     /**
-     * Retourne les élements retournés par la requête en prenant en compte la pagination de l'utilisateur
-     * @return 
-     */
-    public abstract ArrayList<T> allPaginate();
 }

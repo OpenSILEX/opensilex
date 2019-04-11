@@ -63,6 +63,12 @@ public class EventPutDTO extends AbstractVerifiedClass {
     }
 
     @URL
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EVENT_URI)
+    public String getUri() {
+        return uri;
+    }
+
+    @URL
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EVENT_TYPE)
     public String getRdfType() {
         return rdfType;

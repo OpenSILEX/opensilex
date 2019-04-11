@@ -113,6 +113,53 @@ public abstract class ResourceService {
                 StatusCodeMsg.ERR,
                 exception.getMessage());
     }
+
+    /**
+     * Gets a response for a GET operation in success.
+     * @param objects
+     * @param pageSize
+     * @param page
+     * @param totalCount
+     * @return the response.
+     */
+    protected Response getGETResponseWhenSuccess(ArrayList<? extends Object> objects, int pageSize, int page, int totalCount) {
+        ResultForm resultForm = new ResultForm<>(pageSize, page, getDTOsFromObjects(objects), true, totalCount);
+        resultForm.setStatus(new ArrayList<Status>());
+        return Response.status(Response.Status.OK).entity(resultForm).build();
+    }
+
+    /**
+     * Gets a response for a GET operation returns no result.
+     * @return the response.
+     */
+    protected Response getGETResponseWhenNoResult() {
+        ResultForm<? extends AbstractVerifiedClass> getResponse = new ResultForm<>(0, 0, new ArrayList(), true);
+        return noResultFound(getResponse, new ArrayList<>());
+    }
+    
+    /**
+     * Gets a response from a search by URI using a DAO.
+     * @param dao
+     * @param uri
+     * @return 
+     */
+    protected Response getGETByUriResponseFromDAOResults(DAO dao, String uri) {
+        ArrayList<Object> objects = new ArrayList();
+        try {
+            Object object = dao.findById(uri);
+            objects.add(dao.findById(uri));
+            // Analyse results
+            if (object == null) { // Request failure
+                return getGETResponseWhenNoResult();
+            } else if (objects.isEmpty()) {
+                    return getGETResponseWhenNoResult();
+            } else {
+                return getGETResponseWhenSuccess(objects, 0, 0, 0);
+            }
+        } catch (Exception ex) {
+            return getResponseWhenInternalError(ex);
+        }
+    }
     
     /**
      * Gets a response for a POST request depending on the results.
@@ -153,34 +200,11 @@ public abstract class ResourceService {
     }
 
     /**
-     * Gets a response for a GET operation in success.
-     * @param objects
-     * @param pageSize
-     * @param page
-     * @param totalCount
-     * @return the response.
-     */
-    protected Response getGETResponseWhenSuccess(ArrayList<? extends Object> objects, int pageSize, int page, int totalCount) {
-        ResultForm resultForm = new ResultForm<>(pageSize, page, getDTOsFromObjects(objects), true, totalCount);
-        resultForm.setStatus(new ArrayList<Status>());
-        return Response.status(Response.Status.OK).entity(resultForm).build();
-    }
-
-    /**
-     * Gets a response for a GET operation returns no result.
-     * @return the response.
-     */
-    protected Response getGETResponseWhenNoResult() {
-        ResultForm<? extends AbstractVerifiedClass> getResponse = new ResultForm<>(0, 0, new ArrayList(), true);
-        return noResultFound(getResponse, new ArrayList<>());
-    }
-
-    /**
      * Gets a response for a POST operation in success.
      * @param urisCreated
      * @return the response. 
      */
-    protected Response getPostResponseWhenSuccess(List<String> urisCreated) {
+    private Response getPostResponseWhenSuccess(List<String> urisCreated) {
         ResponseFormPOST postResponse = new ResponseFormPOST(new Status(
                 StatusCodeMsg.RESOURCES_CREATED, 
                 StatusCodeMsg.INFO, 
@@ -194,7 +218,7 @@ public abstract class ResourceService {
      * @param aggregateException
      * @return the response. 
      */
-    protected Response getPostResponseFromDAODataErrorExceptions(DAODataErrorAggregateException aggregateException) {
+    private Response getPostResponseFromDAODataErrorExceptions(DAODataErrorAggregateException aggregateException) {
         List<Status> statusList = new ArrayList<>();
         aggregateException.getExceptions().forEach((ex) -> {
             statusList.add(new Status(
@@ -210,7 +234,7 @@ public abstract class ResourceService {
      * @param statusMessageDetails
      * @return the response. 
      */
-    protected Response getPostResponseWhenEmptyListGiven(String statusMessageDetails) {
+    private Response getPostResponseWhenEmptyListGiven(String statusMessageDetails) {
         return getPostResponseFromSingleOperationStatus(
                 Response.Status.BAD_REQUEST,
                 StatusCodeMsg.REQUEST_ERROR,
@@ -223,7 +247,7 @@ public abstract class ResourceService {
      * @param exception
      * @return the response. 
      */
-    protected Response getPostResponseWhenResourceAccessDenied(ResourceAccessDeniedException exception) {
+    private Response getPostResponseWhenResourceAccessDenied(ResourceAccessDeniedException exception) {
         return getPostResponseFromSingleOperationStatus(
                 Response.Status.BAD_REQUEST,
                 ResourceAccessDeniedException.GENERIC_MESSAGE,
@@ -262,29 +286,5 @@ public abstract class ResourceService {
      */
     private Response buildResponse(Response.Status status, AbstractResultForm resultForm) {
         return Response.status(status).entity(resultForm).build();
-    }
-    
-    /**
-     * Gets a response from a search by URI using a DAO.
-     * @param dao
-     * @param uri
-     * @return 
-     */
-    protected Response getGETByUriResponseFromDAOResults(DAO dao, String uri) {
-        ArrayList<Object> objects = new ArrayList();
-        try {
-            Object object = dao.findById(uri);
-            objects.add(dao.findById(uri));
-            // Analyse results
-            if (object == null) { // Request failure
-                return getGETResponseWhenNoResult();
-            } else if (objects.isEmpty()) {
-                    return getGETResponseWhenNoResult();
-            } else {
-                return getGETResponseWhenSuccess(objects, 0, 0, 0);
-            }
-        } catch (Exception ex) {
-            return getResponseWhenInternalError(ex);
-        }
     }
 }

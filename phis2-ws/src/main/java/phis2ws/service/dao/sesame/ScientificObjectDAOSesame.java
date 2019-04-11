@@ -947,6 +947,7 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
      * The rdfType and geometry are global metadata and are updated for each context.
      * The others metadata of the scientific object are updated for the given context.
      * /!\ prerequisite: data must have been checked before. 
+     * @throws java.lang.Exception
      * @see ScientificObjectDAOSesame#check(java.util.List)
      * @param scientificObject
      * @param context

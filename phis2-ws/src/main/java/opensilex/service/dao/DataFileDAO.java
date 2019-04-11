@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import opensilex.service.PropertiesFileManager;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.ResourceAccessDeniedException;
 import opensilex.service.dao.manager.MongoDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.ontology.Oeso;
@@ -502,7 +503,7 @@ public class DataFileDAO extends MongoDAO<FileDescription> {
     }
 
     @Override
-    public void checkBeforeCreation(List<FileDescription> objects) throws DAODataErrorAggregateException {
+    public void validate(List<FileDescription> objects) throws DAODataErrorAggregateException, ResourceAccessDeniedException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

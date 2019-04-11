@@ -754,7 +754,7 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
     }
 
     @Override
-    public void checkBeforeCreation(List<Variable> objects) throws DAODataErrorAggregateException {
+    public void validate(List<Variable> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

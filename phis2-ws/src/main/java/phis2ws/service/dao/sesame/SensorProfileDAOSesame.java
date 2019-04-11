@@ -331,7 +331,7 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
     }
 
     @Override
-    public void checkBeforeCreation(List<SensorProfile> objects) throws DAODataErrorAggregateException {
+    public void validate(List<SensorProfile> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

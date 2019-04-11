@@ -79,7 +79,7 @@ public class FileInformationsDAOMongo extends DAOMongo<FileInformations> {
     }
 
     @Override
-    public void checkBeforeCreation(List<FileInformations> objects) throws DAODataErrorAggregateException {
+    public void validate(List<FileInformations> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

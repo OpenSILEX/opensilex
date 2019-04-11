@@ -74,15 +74,15 @@ public abstract class DAO<T> {
             throws DAODataErrorAggregateException, ResourceAccessDeniedException;
     
     /**
-     * Checks and create objects.
+     * Validates and creates objects.
      * @param annotations
      * @return the annotations created.
      * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
      * @throws opensilex.service.dao.exception.ResourceAccessDeniedException
      */
-    public List<T> checkAndCreate(List<T> annotations) 
+    public List<T> validateAndCreate(List<T> annotations) 
             throws DAODataErrorAggregateException, ResourceAccessDeniedException, Exception {
-        checkBeforeCreation(annotations);
+        validate(annotations);
         return create(annotations);
     }
     

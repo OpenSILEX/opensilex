@@ -819,7 +819,7 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
     }
 
     @Override
-    public void checkBeforeCreation(List<ScientificObject> objects) throws DAODataErrorAggregateException {
+    public void validate(List<ScientificObject> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

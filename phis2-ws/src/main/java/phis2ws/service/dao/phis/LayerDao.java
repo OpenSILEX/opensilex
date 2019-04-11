@@ -252,7 +252,7 @@ public class LayerDao extends DAO<LayerDTO>{
     }
 
     @Override
-    public void checkBeforeCreation(List<LayerDTO> objects) throws DAODataErrorAggregateException {
+    public void validate(List<LayerDTO> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

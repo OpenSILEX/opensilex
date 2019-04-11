@@ -116,7 +116,7 @@ public class DocumentDaoMongo extends DAOMongo<Document> {
     }
 
     @Override
-    public void checkBeforeCreation(List<Document> objects) throws DAODataErrorAggregateException {
+    public void validate(List<Document> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

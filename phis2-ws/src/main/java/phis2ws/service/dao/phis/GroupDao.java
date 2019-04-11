@@ -593,7 +593,7 @@ public class GroupDao extends DAOPhisBrapi<Group, GroupDTO> {
     }
 
     @Override
-    public void checkBeforeCreation(List<Group> objects) throws DAODataErrorAggregateException {
+    public void validate(List<Group> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -522,7 +522,7 @@ public class MethodDaoSesame extends DAOSesame<Method> {
     }
 
     @Override
-    public void checkBeforeCreation(List<Method> objects) throws DAODataErrorAggregateException {
+    public void validate(List<Method> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

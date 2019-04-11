@@ -493,7 +493,7 @@ public class AnnotationDAOSesame extends DAOSesame<Annotation> {
     }
 
     @Override
-    public void checkBeforeCreation(List<Annotation> objects) throws DAODataErrorAggregateException {
+    public void validate(List<Annotation> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

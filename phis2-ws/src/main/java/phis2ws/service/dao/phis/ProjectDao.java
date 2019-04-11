@@ -643,7 +643,7 @@ public class ProjectDao extends DAOPhisBrapi<Project, ProjectDTO> {
     }
 
     @Override
-    public void checkBeforeCreation(List<Project> objects) throws DAODataErrorAggregateException {
+    public void validate(List<Project> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

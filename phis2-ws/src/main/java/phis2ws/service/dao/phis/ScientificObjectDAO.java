@@ -342,7 +342,7 @@ public class ScientificObjectDAO extends DAOPhisBrapi<ScientificObject, Scientif
     }
 
     @Override
-    public void checkBeforeCreation(List<ScientificObject> objects) throws DAODataErrorAggregateException {
+    public void validate(List<ScientificObject> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

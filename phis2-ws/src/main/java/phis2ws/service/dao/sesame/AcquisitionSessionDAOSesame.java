@@ -262,7 +262,7 @@ public class AcquisitionSessionDAOSesame extends DAOSesame<MetadataFileDTO> {
     }
 
     @Override
-    public void checkBeforeCreation(List<MetadataFileDTO> objects) throws DAODataErrorAggregateException {
+    public void validate(List<MetadataFileDTO> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

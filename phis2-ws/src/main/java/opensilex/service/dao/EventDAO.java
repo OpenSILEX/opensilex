@@ -450,19 +450,12 @@ public class EventDAO extends SparqlDAO<Event> {
      */
     @Override
     public List<Event> create(List<Event> events) 
-            throws ResourceAccessDeniedException, SemanticInconsistencyException, Exception {        
-        getConnection().begin();
-        try {
-            for (Event event : events) {
-                create(event);
-            }
-            getConnection().commit();
-        } catch (Exception ex) {
-            getConnection().rollback();
-            throw ex;
+            throws ResourceAccessDeniedException, SemanticInconsistencyException, Exception {     
+        int i = 0;
+        for (Event event : events) {
+            i++;
+            create(event);
         }
-        getConnection().close();
-        
         return events;
     }
     
@@ -477,7 +470,7 @@ public class EventDAO extends SparqlDAO<Event> {
         
         ArrayList<DAODataErrorException> exceptions = new ArrayList<>();
         
-        // 1. Check if user is admin
+        // Check if user is admin
         UserDAO userDAO = new UserDAO();
         if (!userDAO.isAdmin(user)) {
             throw new NotAnAdminException();

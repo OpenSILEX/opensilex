@@ -212,26 +212,12 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
      */
     @Override
     public List<Annotation> create(List<Annotation> annotations) throws Exception {
-
         UriGenerator uriGenerator = new UriGenerator();
-
-        //SILEX:test
-        //Triplestore connection has to be checked (this is kind of a hot fix)
-        getConnection().begin();
-        //\SILEX:test
-
-        try {
-            for (Annotation annotation : annotations) {
-                    annotation.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_ANNOTATION.toString(), null, null));
-                    UpdateRequest query = prepareInsertQuery(annotation);
-                    getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString()).execute();
-            }
-            getConnection().commit();
-        } catch (Exception ex) {
-            getConnection().rollback();
-            throw ex;
+        for (Annotation annotation : annotations) {
+            annotation.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_ANNOTATION.toString(), null, null));
+            UpdateRequest query = prepareInsertQuery(annotation);
+            getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString()).execute();
         }
-        getConnection().close();
         return annotations;
     }
 

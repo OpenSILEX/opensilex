@@ -396,4 +396,31 @@ public abstract class SparqlDAO<T> extends DAO<T> {
         }
         return null;
     }
+
+    @Override
+    protected void initConnection() {
+        getConnection().begin();    
+    }
+
+    @Override
+    protected void closeConnection() {
+        getConnection().close();
+    }
+
+    @Override
+    protected void startTransaction() {
+        // transactions are startes automatically in SPARQL.
+    }
+
+    @Override
+    protected void commitTransaction() {
+        getConnection().commit();
+    }
+
+    @Override
+    protected void rollbackTransaction() {
+        getConnection().rollback();
+    }
+    
+    
 }

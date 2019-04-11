@@ -378,7 +378,7 @@ public class EventResourceService  extends ResourceService {
     
     /**
      * Radiometric target PUT service.
-     * @param radiometricTargets
+     * @param eventsDtos
      * @param context
      * @return 
      */

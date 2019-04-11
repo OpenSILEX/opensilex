@@ -113,44 +113,6 @@ public abstract class ResourceService {
                 StatusCodeMsg.ERR,
                 exception.getMessage());
     }
-    
-    /**
-     * Gets a response for a POST or PUT request depending on the results.
-     * @param objectDao DAO of the manipulated object.
-     * @param objectsDtos DTOs sent through the POST.
-     * @param userIpAddress
-     * @param statusMessageIfEmptyDtosSent
-     * @return a success response when success.
-     *         an internal error response when an non handled exception occured.
-     *         an access denied response when the resource isn't available for the user.
-     *         a data error response when the data sent is incorrect.
-     */
-    protected Response getPostPutResponse (DAO objectDao, ArrayList<? extends AbstractVerifiedClass> objectsDtos, String userIpAddress, String statusMessageIfEmptyDtosSent) {
-        if (objectsDtos == null || objectsDtos.isEmpty()) {
-            // Empty object list
-            return getPostPutResponseWhenEmptyListGiven(statusMessageIfEmptyDtosSent);
-        } 
-        else {
-            try {
-                // Process operation
-                objectDao.remoteUserAdress = userIpAddress;
-                List<? extends Object> createdObjects = objectDao.validateAndCreate(getObjectsFromDTOs(objectsDtos));
-                
-                // Return according to operation results
-                List<String> createdUris = getUrisFromObjects(createdObjects);
-                return getPostPutResponseWhenSuccess(createdUris);
-                
-            } catch (ResourceAccessDeniedException ex) {
-                return getPostPutResponseWhenResourceAccessDenied(ex);
-                
-            } catch (DAODataErrorAggregateException ex) {
-                return getPostPutResponseFromDAODataErrorExceptions(ex);
-                
-            } catch (Exception ex) {
-                return getResponseWhenInternalError(ex);
-            }  
-        }
-    }
 
     /**
      * Gets a response for a GET operation in success.
@@ -196,6 +158,81 @@ public abstract class ResourceService {
             }
         } catch (Exception ex) {
             return getResponseWhenInternalError(ex);
+        }
+    }
+    
+    /**
+     * Gets a response for a POST request depending on the results.
+     * @param objectDao DAO of the manipulated object.
+     * @param objectsDtos DTOs sent through the POST.
+     * @param userIpAddress
+     * @param statusMessageIfEmptyDtosSent
+     * @return a success response when success.
+     *         an internal error response when an non handled exception occured.
+     *         an access denied response when the resource isn't available for the user.
+     *         a data error response when the data sent is incorrect.
+     */
+    protected Response getPostResponse (DAO objectDao, ArrayList<? extends AbstractVerifiedClass> objectsDtos, String userIpAddress, String statusMessageIfEmptyDtosSent) {
+        return getPostPutResponse(objectDao, objectsDtos, userIpAddress, statusMessageIfEmptyDtosSent, true);
+    }
+    
+    /**
+     * Gets a response for a PUT request depending on the results.
+     * @param objectDao DAO of the manipulated object.
+     * @param objectsDtos DTOs sent through the PUT.
+     * @param userIpAddress
+     * @param statusMessageIfEmptyDtosSent
+     * @return a success response when success.
+     *         an internal error response when an non handled exception occured.
+     *         an access denied response when the resource isn't available for the user.
+     *         a data error response when the data sent is incorrect.
+     */
+    protected Response getPutResponse (DAO objectDao, ArrayList<? extends AbstractVerifiedClass> objectsDtos, String userIpAddress, String statusMessageIfEmptyDtosSent) {
+        return getPostPutResponse(objectDao, objectsDtos, userIpAddress, statusMessageIfEmptyDtosSent, false);
+    }
+    
+    /**
+     * Gets a response for a POST or PUT request depending on the results.
+     * @param objectDao DAO of the manipulated object.
+     * @param objectsDtos DTOs sent through the POST or PUT.
+     * @param userIpAddress
+     * @param statusMessageIfEmptyDtosSent
+     * @return a success response when success.
+     *         an internal error response when an non handled exception occured.
+     *         an access denied response when the resource isn't available for the user.
+     *         a data error response when the data sent is incorrect.
+     */
+    protected Response getPostPutResponse (DAO objectDao, ArrayList<? extends AbstractVerifiedClass> objectsDtos, String userIpAddress, String statusMessageIfEmptyDtosSent, boolean isPost) {
+        if (objectsDtos == null || objectsDtos.isEmpty()) {
+            // Empty object list
+            return getPostPutResponseWhenEmptyListGiven(statusMessageIfEmptyDtosSent);
+        } 
+        else {
+            try {
+                // Process operation
+                objectDao.remoteUserAdress = userIpAddress;
+                List<? extends Object> objectsToImpact = getObjectsFromDTOs(objectsDtos);
+                List<? extends Object> impactedObjects;
+                if (isPost) { // POST
+                    impactedObjects = objectDao.validateAndCreate(objectsToImpact);
+                }
+                else { // PUT
+                    impactedObjects = objectDao.validateAndUpdate(objectsToImpact);
+                }
+                
+                // Return according to operation results
+                List<String> impactedUris = getUrisFromObjects(impactedObjects);
+                return getPostPutResponseWhenSuccess(impactedUris);
+                
+            } catch (ResourceAccessDeniedException ex) {
+                return getPostPutResponseWhenResourceAccessDenied(ex);
+                
+            } catch (DAODataErrorAggregateException ex) {
+                return getPostPutResponseFromDAODataErrorExceptions(ex);
+                
+            } catch (Exception ex) {
+                return getResponseWhenInternalError(ex);
+            }  
         }
     }
 

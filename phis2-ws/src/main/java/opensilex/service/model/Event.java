@@ -28,14 +28,32 @@ public class Event extends RdfResourceDefinition {
     private ArrayList<ConcernedItem> concernedItems;
     
     /**
-     * DateTime.
+     * Instant.
      */
-    private DateTime dateTime;
+    private Instant instant;
     
     /**
      * Annotations.
      */
     private ArrayList<Annotation> annotations;
+
+    /**
+     * @param uri
+     * @param type
+     * @param concernedItems
+     * @param instantUri
+     * @param dateTime
+     * @param properties
+     * @param annotations
+     */
+    public Event(String uri, String type, ArrayList<ConcernedItem> concernedItems, String instantUri, DateTime dateTime, ArrayList<Property> properties, ArrayList<Annotation> annotations) {
+        this.uri = uri;
+        this.type = type;
+        this.concernedItems = concernedItems;
+        this.instant = new Instant(instantUri, dateTime);
+        this.properties = properties;
+        this.annotations = annotations;
+    }
 
     /**
      * @param uri
@@ -49,7 +67,7 @@ public class Event extends RdfResourceDefinition {
         this.uri = uri;
         this.type = type;
         this.concernedItems = concernedItems;
-        this.dateTime = dateTime;
+        this.instant = new Instant(null, dateTime);
         this.properties = properties;
         this.annotations = annotations;
     }
@@ -74,12 +92,12 @@ public class Event extends RdfResourceDefinition {
         this.concernedItems = concernedItems;
     }
 
-    public DateTime getDateTime() {
-        return dateTime;
+    public Instant getInstant() {
+        return instant;
     }
 
-    public void setDateTime(DateTime dateTime) {
-        this.dateTime = dateTime;
+    public void setInstant(Instant instant) {
+        this.instant = instant;
     }
 
     public ArrayList<Annotation> getAnnotations() {

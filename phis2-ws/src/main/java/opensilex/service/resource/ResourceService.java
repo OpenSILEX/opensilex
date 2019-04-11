@@ -241,11 +241,7 @@ public abstract class ResourceService {
      * @param urisCreated
      * @return the response. 
      */
-<<<<<<< HEAD
-    protected Response getPostPutResponseWhenSuccess(List<String> urisCreated) {
-=======
-    private Response getPostResponseWhenSuccess(List<String> urisCreated) {
->>>>>>> use-dao-generic-functions
+    private Response getPostPutResponseWhenSuccess(List<String> urisCreated) {
         ResponseFormPOST postResponse = new ResponseFormPOST(new Status(
                 StatusCodeMsg.RESOURCES_CREATED, 
                 StatusCodeMsg.INFO, 
@@ -259,11 +255,7 @@ public abstract class ResourceService {
      * @param aggregateException
      * @return the response. 
      */
-<<<<<<< HEAD
-    protected Response getPostPutResponseFromDAODataErrorExceptions(DAODataErrorAggregateException aggregateException) {
-=======
-    private Response getPostResponseFromDAODataErrorExceptions(DAODataErrorAggregateException aggregateException) {
->>>>>>> use-dao-generic-functions
+    private Response getPostPutResponseFromDAODataErrorExceptions(DAODataErrorAggregateException aggregateException) {
         List<Status> statusList = new ArrayList<>();
         aggregateException.getExceptions().forEach((ex) -> {
             statusList.add(new Status(
@@ -279,13 +271,8 @@ public abstract class ResourceService {
      * @param statusMessageDetails
      * @return the response. 
      */
-<<<<<<< HEAD
-    protected Response getPostPutResponseWhenEmptyListGiven(String statusMessageDetails) {
+    private Response getPostPutResponseWhenEmptyListGiven(String statusMessageDetails) {
         return getPostPutResponseFromSingleOperationStatus(
-=======
-    private Response getPostResponseWhenEmptyListGiven(String statusMessageDetails) {
-        return getPostResponseFromSingleOperationStatus(
->>>>>>> use-dao-generic-functions
                 Response.Status.BAD_REQUEST,
                 StatusCodeMsg.REQUEST_ERROR,
                 StatusCodeMsg.ERR,
@@ -297,13 +284,8 @@ public abstract class ResourceService {
      * @param exception
      * @return the response. 
      */
-<<<<<<< HEAD
-    protected Response getPostPutResponseWhenResourceAccessDenied(ResourceAccessDeniedException exception) {
+    private Response getPostPutResponseWhenResourceAccessDenied(ResourceAccessDeniedException exception) {
         return getPostPutResponseFromSingleOperationStatus(
-=======
-    private Response getPostResponseWhenResourceAccessDenied(ResourceAccessDeniedException exception) {
-        return getPostResponseFromSingleOperationStatus(
->>>>>>> use-dao-generic-functions
                 Response.Status.BAD_REQUEST,
                 ResourceAccessDeniedException.GENERIC_MESSAGE,
                 StatusCodeMsg.ERR,

@@ -723,7 +723,7 @@ public class UriDAO extends SparqlDAO<Uri> {
     }
 
     @Override
-    public void checkBeforeCreation(List<Uri> objects) throws DAODataErrorAggregateException {
+    public void validate(List<Uri> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

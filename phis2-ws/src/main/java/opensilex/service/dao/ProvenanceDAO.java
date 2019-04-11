@@ -454,7 +454,7 @@ public class ProvenanceDAO extends MongoDAO<Provenance> {
     }
 
     @Override
-    public void checkBeforeCreation(List<Provenance> objects) throws DAODataErrorAggregateException {
+    public void validate(List<Provenance> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

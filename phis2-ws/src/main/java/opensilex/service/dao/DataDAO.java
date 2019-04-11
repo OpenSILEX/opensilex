@@ -442,7 +442,7 @@ public class DataDAO extends MongoDAO<Data> {
     }
 
     @Override
-    public void checkBeforeCreation(List<Data> objects) throws DAODataErrorAggregateException {
+    public void validate(List<Data> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

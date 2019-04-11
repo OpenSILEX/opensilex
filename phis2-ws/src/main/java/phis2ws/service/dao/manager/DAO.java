@@ -86,6 +86,19 @@ public abstract class DAO<T> {
         return create(annotations);
     }
     
+    /**
+     * Validates and updates objects.
+     * @param annotations
+     * @return the annotations created.
+     * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
+     * @throws opensilex.service.dao.exception.ResourceAccessDeniedException
+     */
+    public List<T> validateAndUpdate(List<T> annotations) 
+            throws DAODataErrorAggregateException, ResourceAccessDeniedException, Exception {
+        validate(annotations);
+        return update(annotations);
+    }
+    
      /**
      * @return the traceability logs
      */

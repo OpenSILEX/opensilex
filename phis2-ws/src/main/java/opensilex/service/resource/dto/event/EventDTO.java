@@ -60,7 +60,7 @@ public class EventDTO extends AbstractVerifiedClass {
             this.concernedItems.add(new ConcernedItemWithLabelsDTO(concernedItem));
         });
         
-        DateTime eventDateTime = event.getDateTime();
+        DateTime eventDateTime = event.getInstant().getDateTime();
         if (eventDateTime != null){
             this.date = DateTimeFormat
                     .forPattern(DateFormat.YMDTHMSZZ.toString())

@@ -107,7 +107,7 @@ public abstract class ResourceService {
      * @return the response. 
      */
     protected Response getResponseWhenInternalError(Exception exception) {
-        return getPostResponseFromSingleOperationStatus(
+        return getPostPutResponseFromSingleOperationStatus(
                 Response.Status.INTERNAL_SERVER_ERROR,
                 StatusCodeMsg.INTERNAL_ERROR,
                 StatusCodeMsg.ERR,
@@ -115,7 +115,7 @@ public abstract class ResourceService {
     }
     
     /**
-     * Gets a response for a POST request depending on the results.
+     * Gets a response for a POST or PUT request depending on the results.
      * @param objectDao DAO of the manipulated object.
      * @param objectsDtos DTOs sent through the POST.
      * @param userIpAddress
@@ -125,10 +125,10 @@ public abstract class ResourceService {
      *         an access denied response when the resource isn't available for the user.
      *         a data error response when the data sent is incorrect.
      */
-    protected Response getPostResponse (DAO objectDao, ArrayList<? extends AbstractVerifiedClass> objectsDtos, String userIpAddress, String statusMessageIfEmptyDtosSent) {
+    protected Response getPostPutResponse (DAO objectDao, ArrayList<? extends AbstractVerifiedClass> objectsDtos, String userIpAddress, String statusMessageIfEmptyDtosSent) {
         if (objectsDtos == null || objectsDtos.isEmpty()) {
             // Empty object list
-            return getPostResponseWhenEmptyListGiven(statusMessageIfEmptyDtosSent);
+            return getPostPutResponseWhenEmptyListGiven(statusMessageIfEmptyDtosSent);
         } 
         else {
             try {
@@ -138,13 +138,13 @@ public abstract class ResourceService {
                 
                 // Return according to operation results
                 List<String> createdUris = getUrisFromObjects(createdObjects);
-                return getPostResponseWhenSuccess(createdUris);
+                return getPostPutResponseWhenSuccess(createdUris);
                 
             } catch (ResourceAccessDeniedException ex) {
-                return getPostResponseWhenResourceAccessDenied(ex);
+                return getPostPutResponseWhenResourceAccessDenied(ex);
                 
             } catch (DAODataErrorAggregateException ex) {
-                return getPostResponseFromDAODataErrorExceptions(ex);
+                return getPostPutResponseFromDAODataErrorExceptions(ex);
                 
             } catch (Exception ex) {
                 return getResponseWhenInternalError(ex);
@@ -174,95 +174,6 @@ public abstract class ResourceService {
         ResultForm<? extends AbstractVerifiedClass> getResponse = new ResultForm<>(0, 0, new ArrayList(), true);
         return noResultFound(getResponse, new ArrayList<>());
     }
-
-    /**
-     * Gets a response for a POST operation in success.
-     * @param urisCreated
-     * @return the response. 
-     */
-    protected Response getPostResponseWhenSuccess(List<String> urisCreated) {
-        ResponseFormPOST postResponse = new ResponseFormPOST(new Status(
-                StatusCodeMsg.RESOURCES_CREATED, 
-                StatusCodeMsg.INFO, 
-                String.format(POSTResultsReturn.NEW_RESOURCES_CREATED_MESSAGE, urisCreated.size())));
-        postResponse.getMetadata().setDatafiles(urisCreated);
-        return buildResponse(Response.Status.CREATED, postResponse);
-    }
-
-    /**
-     * Gets a response from data exceptions thrown by a DAO.
-     * @param aggregateException
-     * @return the response. 
-     */
-    protected Response getPostResponseFromDAODataErrorExceptions(DAODataErrorAggregateException aggregateException) {
-        List<Status> statusList = new ArrayList<>();
-        aggregateException.getExceptions().forEach((ex) -> {
-            statusList.add(new Status(
-                    ex.getGenericMessage(), 
-                    StatusCodeMsg.DATA_ERROR, 
-                    ex.getMessage()));
-        });
-        return getPostResponseFromMultipleOperationStatus(Response.Status.BAD_REQUEST, statusList);
-    }
-
-    /**
-     * Gets a response when an empty list is received by a POST.
-     * @param statusMessageDetails
-     * @return the response. 
-     */
-    protected Response getPostResponseWhenEmptyListGiven(String statusMessageDetails) {
-        return getPostResponseFromSingleOperationStatus(
-                Response.Status.BAD_REQUEST,
-                StatusCodeMsg.REQUEST_ERROR,
-                StatusCodeMsg.ERR,
-                statusMessageDetails);
-    }
-
-    /**
-     * Gets a response when an empty list is received by a POST.
-     * @param exception
-     * @return the response. 
-     */
-    protected Response getPostResponseWhenResourceAccessDenied(ResourceAccessDeniedException exception) {
-        return getPostResponseFromSingleOperationStatus(
-                Response.Status.BAD_REQUEST,
-                ResourceAccessDeniedException.GENERIC_MESSAGE,
-                StatusCodeMsg.ERR,
-                exception.getMessage());
-    }
-    
-    /**
-     * Gets a response with the HTTP status given and a single operation status.
-     * @param httpStatus
-     * @param responseFormMessage
-     * @param responseFormCode
-     * @param responseFormDetails
-     * @return the response. 
-     */
-    private Response getPostResponseFromSingleOperationStatus (Response.Status httpStatus, String responseFormMessage, String responseFormCode, String responseFormDetails) {
-        return buildResponse(httpStatus, new ResponseFormPOST(
-                new Status(responseFormMessage, responseFormCode, responseFormDetails)));
-    }
-    
-    /**
-     * Gets a response with the HTTP status given and a list of operation status.
-     * @param httpStatus
-     * @param statusList
-     * @return the response. 
-     */
-    private Response getPostResponseFromMultipleOperationStatus (Response.Status httpStatus, List<Status> statusList) {
-        return buildResponse(httpStatus, new ResponseFormPOST(statusList));
-    }
-    
-    /**
-     * Builds a response from a status and a result form.
-     * @param status
-     * @param resultForm
-     * @return the response. 
-     */
-    private Response buildResponse(Response.Status status, AbstractResultForm resultForm) {
-        return Response.status(status).entity(resultForm).build();
-    }
     
     /**
      * Gets a response from a search by URI using a DAO.
@@ -286,5 +197,94 @@ public abstract class ResourceService {
         } catch (Exception ex) {
             return getResponseWhenInternalError(ex);
         }
+    }
+
+    /**
+     * Gets a response for a POST operation in success.
+     * @param urisCreated
+     * @return the response. 
+     */
+    protected Response getPostPutResponseWhenSuccess(List<String> urisCreated) {
+        ResponseFormPOST postResponse = new ResponseFormPOST(new Status(
+                StatusCodeMsg.RESOURCES_CREATED, 
+                StatusCodeMsg.INFO, 
+                String.format(POSTResultsReturn.NEW_RESOURCES_CREATED_MESSAGE, urisCreated.size())));
+        postResponse.getMetadata().setDatafiles(urisCreated);
+        return buildResponse(Response.Status.CREATED, postResponse);
+    }
+
+    /**
+     * Gets a response from data exceptions thrown by a DAO.
+     * @param aggregateException
+     * @return the response. 
+     */
+    protected Response getPostPutResponseFromDAODataErrorExceptions(DAODataErrorAggregateException aggregateException) {
+        List<Status> statusList = new ArrayList<>();
+        aggregateException.getExceptions().forEach((ex) -> {
+            statusList.add(new Status(
+                    ex.getGenericMessage(), 
+                    StatusCodeMsg.DATA_ERROR, 
+                    ex.getMessage()));
+        });
+        return getPostPutResponseFromMultipleOperationStatus(Response.Status.BAD_REQUEST, statusList);
+    }
+
+    /**
+     * Gets a response when an empty list is received by a POST.
+     * @param statusMessageDetails
+     * @return the response. 
+     */
+    protected Response getPostPutResponseWhenEmptyListGiven(String statusMessageDetails) {
+        return getPostPutResponseFromSingleOperationStatus(
+                Response.Status.BAD_REQUEST,
+                StatusCodeMsg.REQUEST_ERROR,
+                StatusCodeMsg.ERR,
+                statusMessageDetails);
+    }
+
+    /**
+     * Gets a response when an empty list is received by a POST.
+     * @param exception
+     * @return the response. 
+     */
+    protected Response getPostPutResponseWhenResourceAccessDenied(ResourceAccessDeniedException exception) {
+        return getPostPutResponseFromSingleOperationStatus(
+                Response.Status.BAD_REQUEST,
+                ResourceAccessDeniedException.GENERIC_MESSAGE,
+                StatusCodeMsg.ERR,
+                exception.getMessage());
+    }
+    
+    /**
+     * Gets a response with the HTTP status given and a single operation status.
+     * @param httpStatus
+     * @param responseFormMessage
+     * @param responseFormCode
+     * @param responseFormDetails
+     * @return the response. 
+     */
+    private Response getPostPutResponseFromSingleOperationStatus (Response.Status httpStatus, String responseFormMessage, String responseFormCode, String responseFormDetails) {
+        return buildResponse(httpStatus, new ResponseFormPOST(
+                new Status(responseFormMessage, responseFormCode, responseFormDetails)));
+    }
+    
+    /**
+     * Gets a response with the HTTP status given and a list of operation status.
+     * @param httpStatus
+     * @param statusList
+     * @return the response. 
+     */
+    private Response getPostPutResponseFromMultipleOperationStatus (Response.Status httpStatus, List<Status> statusList) {
+        return buildResponse(httpStatus, new ResponseFormPOST(statusList));
+    }
+    
+    /**
+     * Builds a response from a status and a result form.
+     * @param status
+     * @param resultForm
+     * @return the response. 
+     */
+    private Response buildResponse(Response.Status status, AbstractResultForm resultForm) {
+        return Response.status(status).entity(resultForm).build();
     }
 }

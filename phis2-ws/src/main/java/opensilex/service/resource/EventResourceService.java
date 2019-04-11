@@ -373,7 +373,7 @@ public class EventResourceService  extends ResourceService {
         }
         
         // Get POST response
-        return getPostResponse(objectDao, eventsDtos, context.getRemoteAddr(), StatusCodeMsg.EMPTY_EVENT_LIST);
+        return getPostPutResponse(objectDao, eventsDtos, context.getRemoteAddr(), StatusCodeMsg.EMPTY_EVENT_LIST);
     }
     
     /**

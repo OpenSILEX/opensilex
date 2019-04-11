@@ -239,7 +239,7 @@ public class InfrastructureDAO extends SparqlDAO<Infrastructure> {
     }
 
     @Override
-    public void checkBeforeCreation(List<Infrastructure> objects) throws DAODataErrorAggregateException {
+    public void validate(List<Infrastructure> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

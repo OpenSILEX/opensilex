@@ -512,7 +512,7 @@ public class UnitDAO extends SparqlDAO<Unit> {
     }
 
     @Override
-    public void checkBeforeCreation(List<Unit> objects) throws DAODataErrorAggregateException {
+    public void validate(List<Unit> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -100,7 +100,7 @@ public class AnnotationResourceService extends ResourceService {
             objectDao.remoteUserAdress = context.getRemoteAddr();
         }
         
-        return getPostPutResponse(objectDao, annotationsDtos, context.getRemoteAddr(), StatusCodeMsg.EMPTY_ANNOTATION_LIST);
+        return getPostResponse(objectDao, annotationsDtos, context.getRemoteAddr(), StatusCodeMsg.EMPTY_ANNOTATION_LIST);
     }
 
     /**

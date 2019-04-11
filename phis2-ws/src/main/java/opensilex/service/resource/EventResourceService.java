@@ -380,7 +380,7 @@ public class EventResourceService  extends ResourceService {
      * Radiometric target PUT service.
      * @param eventsDtos
      * @param context
-     * @return 
+     * @return the response of the service.
      */
     @PUT
     @ApiOperation(value = "Update events")
@@ -391,14 +391,17 @@ public class EventResourceService  extends ResourceService {
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
     @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+        @ApiImplicitParam(
+                name = GlobalWebserviceValues.AUTHORIZATION, 
+                required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, 
+                paramType = GlobalWebserviceValues.HEADER,
                 value = DocumentationAnnotation.ACCES_TOKEN,
                 example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response put(
-        @ApiParam(value = DocumentationAnnotation.RADIOMETRIC_TARGET_POST_DEFINITION) @Valid ArrayList<EventPutDTO> eventsDtos,
+        @ApiParam(value = DocumentationAnnotation.EVENT_PUT_DEFINITION) @Valid ArrayList<EventPutDTO> eventsDtos,
         @Context HttpServletRequest context) {
         
         // Set DAO

@@ -95,7 +95,7 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
      * LIMIT 20
      * @return query generated with the searched parameter above
      */
-    protected SPARQLQueryBuilder prepareSearchQuery(String uri, String creator, String target, String bodyValue, String motivatedBy) {
+    private SPARQLQueryBuilder prepareSearchQuery(String uri, String creator, String target, String bodyValue, String motivatedBy) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
 
         String annotationUri;

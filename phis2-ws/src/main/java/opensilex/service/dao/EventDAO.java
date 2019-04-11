@@ -192,7 +192,7 @@ public class EventDAO extends SparqlDAO<Event> {
      * @param dateRangeEndString
      * @return query
      */
-    protected SPARQLQueryBuilder prepareSearchQueryEvents(String uri, String type, String searchConcernedItemLabel, String searchConcernedItemUri, String dateRangeStartString, String dateRangeEndString) {
+    private SPARQLQueryBuilder prepareSearchQueryEvents(String uri, String type, String searchConcernedItemLabel, String searchConcernedItemUri, String dateRangeStartString, String dateRangeEndString) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
         
@@ -226,7 +226,7 @@ public class EventDAO extends SparqlDAO<Event> {
      * @param searchUri
      * @return query
      */
-    protected SPARQLQueryBuilder prepareSearchQueryEvent(String searchUri) {
+    private SPARQLQueryBuilder prepareSearchQueryEvent(String searchUri) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
         
@@ -394,7 +394,7 @@ public class EventDAO extends SparqlDAO<Event> {
      * @return the event completed with its new URI.
      * @throws java.lang.Exception
      */
-    public Event create(Event event) throws Exception {
+    private Event create(Event event) throws Exception {
         
         UriGenerator uriGenerator = new UriGenerator();
         ConcernedItemDAO concernedItemDao = new ConcernedItemDAO(user);

@@ -1018,7 +1018,7 @@ public class SensorDAO extends SparqlDAO<Sensor> {
     }
 
     @Override
-    public void checkBeforeCreation(List<Sensor> objects) throws DAODataErrorAggregateException {
+    public void validate(List<Sensor> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -502,7 +502,7 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
     }
 
     @Override
-    public void checkBeforeCreation(List<FileDescription> objects) throws DAODataErrorAggregateException {
+    public void validate(List<FileDescription> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

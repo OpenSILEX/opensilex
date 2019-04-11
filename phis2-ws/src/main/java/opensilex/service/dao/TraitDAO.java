@@ -547,7 +547,7 @@ public class TraitDAO extends SparqlDAO<Trait> {
     }
 
     @Override
-    public void checkBeforeCreation(List<Trait> objects) throws DAODataErrorAggregateException {
+    public void validate(List<Trait> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

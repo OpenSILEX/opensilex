@@ -435,7 +435,7 @@ public class EnvironmentMeasureDAO extends MongoDAO<EnvironmentMeasure> {
     }
 
     @Override
-    public void checkBeforeCreation(List<EnvironmentMeasure> objects) throws DAODataErrorAggregateException {
+    public void validate(List<EnvironmentMeasure> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

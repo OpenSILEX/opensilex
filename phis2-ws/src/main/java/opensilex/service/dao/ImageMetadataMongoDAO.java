@@ -379,7 +379,7 @@ public class ImageMetadataMongoDAO extends MongoDAO<ImageMetadata> {
     }
 
     @Override
-    public void checkBeforeCreation(List<ImageMetadata> objects) throws DAODataErrorAggregateException {
+    public void validate(List<ImageMetadata> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

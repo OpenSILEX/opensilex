@@ -341,7 +341,7 @@ public class ConcernedItemDAO extends SparqlDAO<ConcernedItem> {
     }
 
     @Override
-    public void checkBeforeCreation(List<ConcernedItem> objects) throws DAODataErrorAggregateException {
+    public void validate(List<ConcernedItem> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

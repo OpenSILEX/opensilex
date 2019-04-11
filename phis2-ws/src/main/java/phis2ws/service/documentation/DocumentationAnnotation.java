@@ -212,6 +212,7 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_SENSOR_RDF_TYPE = "http://www.opensilex.org/vocabulary/oeso#Sensor";
     public static final String EXAMPLE_SENSOR_LABEL = "par03_p";
     public static final String EXAMPLE_SENSOR_BRAND = "Skye Instruments";
+    public static final String EXAMPLE_SENSOR_MODEL = "m001";
     public static final String EXAMPLE_SENSOR_VARIABLE = "http://www.phenome-fppn.fr/phenovia/id/variables/v001";
     public static final String EXAMPLE_SENSOR_IN_SERVICE_DATE = EXAMPLE_DATE;
     public static final String EXAMPLE_SENSOR_DATE_OF_PURCHASE = EXAMPLE_DATE;
@@ -301,4 +302,6 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_INFRASTRUCTURE_LABEL = "EMPHASIS";
     
     public static final String EXAMPLE_LANGUAGE = "en";
+    
+    public static final String EXAMPLE_SKOS_REFERECENCE_URI = "http://purl.obolibrary.org/obo/CO_125_0000002";
 }

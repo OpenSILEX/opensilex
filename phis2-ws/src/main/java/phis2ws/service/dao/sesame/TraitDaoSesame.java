@@ -14,7 +14,6 @@ package phis2ws.service.dao.sesame;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -67,7 +66,6 @@ public class TraitDaoSesame extends DAOSesame<Trait> {
         this.uri = uri;
     }
     
-    @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
         //SILEX:todo
         //Ajouter la recherche par référence vers d'autres ontologies aussi
@@ -102,11 +100,6 @@ public class TraitDaoSesame extends DAOSesame<Trait> {
         
         LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
-    }
-
-    @Override
-    public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
     /**
@@ -403,7 +396,7 @@ public class TraitDaoSesame extends DAOSesame<Trait> {
         return spql.buildRequest();        
     }
     
-    private POSTResultsReturn update(List<TraitDTO> traitsDTO) {
+    private POSTResultsReturn updateAndReturnPOSTResultsReturn(List<TraitDTO> traitsDTO) {
         List<Status> updateStatusList = new ArrayList<>();
         List<String> updatedResourcesURIList = new ArrayList<>();
         POSTResultsReturn results;
@@ -491,7 +484,7 @@ public class TraitDaoSesame extends DAOSesame<Trait> {
     public POSTResultsReturn checkAndUpdate(List<TraitDTO> traitsDTO) {
         POSTResultsReturn checkResult = check(traitsDTO);
         if (checkResult.getDataState()) {
-            return update(traitsDTO);
+            return updateAndReturnPOSTResultsReturn(traitsDTO);
         } else { //Les données ne sont pas bonnes
             return checkResult;
         }
@@ -531,5 +524,30 @@ public class TraitDaoSesame extends DAOSesame<Trait> {
             }                    
         }
         return varList;
-    }     
+    } 
+
+    @Override
+    public List<Trait> create(List<Trait> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List<Trait> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<Trait> update(List<Trait> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Trait find(Trait object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Trait findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

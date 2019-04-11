@@ -74,6 +74,7 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
     public String label;
     public String comment;
     public ArrayList<OntologyReference> ontologiesReferences = new ArrayList<>();
+    public String traitSKosReference;
 
     public VariableDaoSesame() {
         
@@ -100,7 +101,6 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
      * LIMIT 20 
      * OFFSET 40 
      */
-    @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
         //SILEX:todo
         //Ajouter la recherche par référence vers d'autres ontologies aussi
@@ -141,6 +141,18 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
             query.appendSelect(" ?trait");
             query.appendTriplet(variableURI, Oeso.RELATION_HAS_TRAIT.toString(), "?trait", null);
         }
+        
+        if (traitSKosReference != null){
+            if( trait != null) {
+                query.appendTriplet(trait, "?skosRelation", traitSKosReference, null);
+            } else {
+                query.appendTriplet("?trait", "?skosRelation", traitSKosReference, null);
+            }
+            query.appendFilter("?skosRelation IN(<" + Skos.RELATION_CLOSE_MATCH.toString() + ">, <"
+                                               + Skos.RELATION_EXACT_MATCH.toString() + ">, <"
+                                               + Skos.RELATION_NARROWER.toString() + ">, <"
+                                               + Skos.RELATION_BROADER.toString() + ">)");
+        } 
         
         if (method != null) {
             query.appendTriplet(variableURI, Oeso.RELATION_HAS_METHOD.toString(), method, null);
@@ -261,7 +273,6 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
      * @return The number of variables 
      * @inheritdoc
      */
-    @Override
     public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
         SPARQLQueryBuilder prepareCount = prepareCount();
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
@@ -605,7 +616,7 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
         return spql.buildRequest();        
     }    
     
-    private POSTResultsReturn update(List<VariableDTO> variablesDTO) {
+    private POSTResultsReturn AndReturnPOSTResultsReturn(List<VariableDTO> variablesDTO) {
         List<Status> updateStatusList = new ArrayList<>();
         List<String> updatedResourcesURIList = new ArrayList<>();
         POSTResultsReturn results;
@@ -679,7 +690,7 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
     public POSTResultsReturn checkAndUpdate(List<VariableDTO> variablesDTO) {
         POSTResultsReturn checkResult = check(variablesDTO);
         if (checkResult.getDataState()) {
-            return update(variablesDTO);
+            return AndReturnPOSTResultsReturn(variablesDTO);
         } else { //Les données ne sont pas bonnes
             return checkResult;
         }
@@ -774,5 +785,29 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
         }
         return varList;        
     }
-    
+
+    @Override
+    public List<Variable> create(List<Variable> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List<Variable> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<Variable> update(List<Variable> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Variable find(Variable object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Variable findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

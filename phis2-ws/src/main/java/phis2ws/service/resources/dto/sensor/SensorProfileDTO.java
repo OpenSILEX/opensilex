@@ -9,7 +9,7 @@
 // Last modification date:  28 mai 2018
 // Subject: Represents the submitted JSON for the sensor's profile
 //******************************************************************************
-package phis2ws.service.resources.dto;
+package phis2ws.service.resources.dto.sensor;
 
 import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyDTO;
 import io.swagger.annotations.ApiModelProperty;

@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import phis2ws.service.dao.manager.DAO;
 import phis2ws.service.utils.sql.SQLQueryBuilder;
 import phis2ws.service.model.User;
 import phis2ws.service.utils.sql.JoinAttributes;
@@ -39,7 +40,7 @@ import phis2ws.service.view.model.phis.StudyDetails;
  * required attributes to get brapi studies
  * @author Alice Boizet
  */
-public class StudyDAO {
+public class StudyDAO extends DAO<StudyDetails>{
     final static Logger LOGGER = LoggerFactory.getLogger(StudyDAO.class);
     public String studyType; 
     public String trialDbId;
@@ -243,5 +244,30 @@ public class StudyDAO {
             }            
         }
         return study;        
+    }
+
+    @Override
+    public List<StudyDetails> create(List<StudyDetails> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List<StudyDetails> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<StudyDetails> update(List<StudyDetails> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public StudyDetails find(StudyDetails object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public StudyDetails findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

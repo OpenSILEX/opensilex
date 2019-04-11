@@ -1,11 +1,11 @@
-//**********************************************************************************************
-//                                       UserDaoPhisBrapi.java 
+//******************************************************************************
+//                           UserDaoPhisBrapi.java 
 // SILEX-PHIS
 // Copyright © INRA 2016
 // Creation date: may 2016
 // Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr, 
 //         morgane.vidal@inra.fr
-//***********************************************************************************************
+//******************************************************************************
 package phis2ws.service.dao.phis;
 
 import phis2ws.service.model.User;
@@ -879,5 +879,25 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
             postResult = new POSTResultsReturn(false, Response.Status.INTERNAL_SERVER_ERROR, e.toString());
         }
         return postResult;
+    }
+
+    @Override
+    public List<User> create(List<User> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List<User> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<User> update(List<User> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public User findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

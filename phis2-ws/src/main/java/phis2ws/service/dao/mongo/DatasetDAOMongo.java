@@ -1,16 +1,10 @@
-//**********************************************************************************************
-//                                       DatasetDaoMongo.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
+//******************************************************************************
+//                              DatasetDaoMongo.java 
+// SILEX-PHIS
+// Copyright © INRA 2017
 // Creation date: September 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  January, 12 2018 update insert data : add 
-// possibility to add a dataset with an already existing provenance  
-// Subject: A specific Dao to retrieve data on phenotypes. Here, we choose to
-// deals with quantitative varibles with double type. 
-//***********************************************************************************************
+//******************************************************************************
 package phis2ws.service.dao.mongo;
 
 import com.mongodb.BasicDBList;
@@ -193,7 +187,6 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
      * objects, variable, date start, date end)
      * @return datasets list, empty if no search result
      */
-    @Override
     public ArrayList<Dataset> allPaginate() {
         //If search by experiment, get experiment's agronomical objects.
         if (experiment != null) {
@@ -398,5 +391,30 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
         }
         
         return postResult;
+    }
+
+    @Override
+    public List<Dataset> create(List<Dataset> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List<Dataset> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<Dataset> update(List<Dataset> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Dataset find(Dataset object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Dataset findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

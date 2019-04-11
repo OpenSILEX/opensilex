@@ -717,7 +717,6 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
         }
     }
     
-    @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
         //SILEX:INFO
         //- il faudra ajouter les propriétés de l'objet
@@ -764,11 +763,6 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
         
         return sparqlQuery;
     }
-
-    @Override
-    public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
     
     /**
      * checks if the scientific object exists
@@ -796,5 +790,30 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
 
         LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
+    }
+
+    @Override
+    public List<ScientificObject> create(List<ScientificObject> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List<ScientificObject> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<ScientificObject> update(List<ScientificObject> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ScientificObject find(ScientificObject object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ScientificObject findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

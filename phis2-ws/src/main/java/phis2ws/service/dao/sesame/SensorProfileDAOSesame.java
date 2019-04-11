@@ -38,7 +38,7 @@ import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Oeso;
-import phis2ws.service.resources.dto.SensorProfileDTO;
+import phis2ws.service.resources.dto.sensor.SensorProfileDTO;
 import phis2ws.service.resources.dto.rdfResourceDefinition.PropertyPostDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
@@ -63,7 +63,6 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
     private final String RELATION = "relation";
     private final String PROPERTY = "property";
     
-    @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
@@ -76,11 +75,6 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
         LOGGER.debug(SPARQL_QUERY + query.toString());
         
         return query;
-    }
-
-    @Override
-    public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
     /**
@@ -308,5 +302,30 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
         }
         
         return sensorsProfiles;
+    }
+
+    @Override
+    public List<SensorProfile> create(List<SensorProfile> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List<SensorProfile> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<SensorProfile> update(List<SensorProfile> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public SensorProfile find(SensorProfile object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public SensorProfile findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

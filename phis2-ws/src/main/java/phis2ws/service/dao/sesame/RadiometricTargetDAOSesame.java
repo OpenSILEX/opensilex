@@ -66,7 +66,6 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
      * }
      * @return the query
      */
-    @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
@@ -162,7 +161,6 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
      * @return The number of sensors 
      * @inheritdoc
      */
-    @Override
     public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
         SPARQLQueryBuilder prepareCount = prepareCount();
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
@@ -435,7 +433,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
      * Compare the new radiometric target given and the old.
      * Check if some properties are missing in the new radiometric target.
      * Used for a radiometric target update update.
-     * @see RadiometricTargetDAOSesame#update(java.util.List)
+     * @see RadiometricTargetDAOSesame#updateAndReturnPOSTResultsReturn(java.util.List)
      * @param newRadiometricTargetData the new radiometric target data
      * @param oldRadiometricTargetData the old radiometric target data
      * @return the list of the status with the errors if some has been found.
@@ -487,7 +485,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
      * @param radiometricTargets the list of the radiometric targets to update
      * @return the update result with the list of all the updated radiometric targets.
      */
-    private POSTResultsReturn update(List<RadiometricTarget> radiometricTargets) {
+    private POSTResultsReturn updateAndReturnPOSTResultsReturn(List<RadiometricTarget> radiometricTargets) {
         //SILEX:info
         //If a property of a radiometric target has a null value, 
         //it will be deleted from the triplestore
@@ -579,7 +577,7 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
     public POSTResultsReturn checkAndUpdate(List<RadiometricTarget> radiometricTargets) {
         POSTResultsReturn checkResult = check(radiometricTargets);
         if (checkResult.getDataState()) {
-            return update(radiometricTargets);
+            return updateAndReturnPOSTResultsReturn(radiometricTargets);
         } else { //errors found in data
             return checkResult;
         }
@@ -635,5 +633,30 @@ public class RadiometricTargetDAOSesame extends DAOSesame<RadiometricTarget> {
                 return 0;
             }
         }
+    }
+
+    @Override
+    public List<RadiometricTarget> create(List<RadiometricTarget> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List<RadiometricTarget> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<RadiometricTarget> update(List<RadiometricTarget> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public RadiometricTarget find(RadiometricTarget object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public RadiometricTarget findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

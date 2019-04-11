@@ -48,10 +48,11 @@ import phis2ws.service.view.model.phis.Property;
 /**
  * DAO for Events
  * @update [Andreas Garcia] 14 Feb., 2019: Add event detail service
- * @update [Andreas Garcia] 5 March, 2019: Add events insertion service
- * @update [Andréas Garcia] 5 March, 2019: 
+ * @update [Andreas Garcia] 5 March, 2019: 
+ *      Add events insertion service
  *      Move the generic function to get a string value from a binding set to DAOSesame
  *      Move concerned items accesses handling into a new ConcernedItemDAOSesame class
+ * @update [Andreas Garcia] 19 March, 2019: remove annotations handling
  * @author Andreas Garcia <andreas.garcia@inra.fr>
  */
 public class EventDAOSesame extends DAOSesame<Event> {
@@ -576,12 +577,27 @@ public class EventDAOSesame extends DAOSesame<Event> {
     }
 
     @Override
-    protected SPARQLQueryBuilder prepareSearchQuery() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public List<Event> create(List<Event> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void delete(List<Event> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<Event> update(List<Event> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Event find(Event object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Event findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

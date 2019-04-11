@@ -264,7 +264,6 @@ public class DataDAOMongo extends DAOMongo<Data> {
         }
     }
 
-    @Override
     public ArrayList<Data> allPaginate() {
         // Get the collection corresponding to variable uri
         String variableCollection = this.getCollectionFromVariable(variableUri);
@@ -402,5 +401,30 @@ public class DataDAOMongo extends DAOMongo<Data> {
         query.append(DB_FIELD_URI, uri);
         
         return database.getCollection(variableCollection).countDocuments(query) > 0; 
+    }
+
+    @Override
+    public List<Data> create(List<Data> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List<Data> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<Data> update(List<Data> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Data find(Data object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Data findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

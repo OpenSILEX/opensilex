@@ -8,6 +8,7 @@
 package phis2ws.service.dao.sesame;
 
 import java.util.ArrayList;
+import java.util.List;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -31,19 +32,6 @@ import phis2ws.service.view.model.phis.Species;
 public class SpeciesDAOSesame extends DAOSesame<Species> {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(SpeciesDAOSesame.class);
-
-    public SpeciesDAOSesame() {
-    }
-    
-    @Override
-    protected SPARQLQueryBuilder prepareSearchQuery() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
-    @Override
-    public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
     
     /**
      * Generates the query to count the results for a specific filter.
@@ -185,5 +173,30 @@ public class SpeciesDAOSesame extends DAOSesame<Species> {
         }
         
         return species;
+    }
+
+    @Override
+    public List<Species> create(List<Species> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List<Species> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<Species> update(List<Species> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Species find(Species object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Species findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

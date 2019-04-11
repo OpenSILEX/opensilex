@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                       EnvironmentDAOMongo.java
+//                           EnvironmentDAOMongo.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 30 oct. 2018
@@ -149,7 +149,6 @@ public class EnvironmentDAOMongo extends DAOMongo<EnvironmentMeasure> {
      * - dateSortAsc
      * @return List of measures
      */
-    @Override
     public ArrayList<EnvironmentMeasure> allPaginate() {
         // Get the collection corresponding to variable uri
         String variableCollection = this.getEnvironmentCollectionFromVariable(variableUri);
@@ -399,5 +398,30 @@ public class EnvironmentDAOMongo extends DAOMongo<EnvironmentMeasure> {
         } else { //Errors in the data
             return checkResult;
         }
+    }
+
+    @Override
+    public List<EnvironmentMeasure> create(List<EnvironmentMeasure> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List<EnvironmentMeasure> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<EnvironmentMeasure> update(List<EnvironmentMeasure> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public EnvironmentMeasure find(EnvironmentMeasure object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public EnvironmentMeasure findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

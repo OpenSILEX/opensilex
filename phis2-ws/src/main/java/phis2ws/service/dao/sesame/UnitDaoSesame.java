@@ -14,7 +14,6 @@ package phis2ws.service.dao.sesame;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -58,10 +57,6 @@ public class UnitDaoSesame extends DAOSesame<Unit> {
     public String comment;
     public ArrayList<OntologyReference> ontologiesReferences = new ArrayList<>();
 
-    public UnitDaoSesame() {
-    }
-
-    @Override
     protected SPARQLQueryBuilder prepareSearchQuery() {
         //SILEX:todo
         //Ajouter la recherche par référence vers d'autres ontologies aussi
@@ -97,11 +92,6 @@ public class UnitDaoSesame extends DAOSesame<Unit> {
         
         LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
-    }
-
-    @Override
-    public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
     /**
@@ -415,7 +405,7 @@ public class UnitDaoSesame extends DAOSesame<Unit> {
         return spql.buildRequest();        
     }
     
-    private POSTResultsReturn update(List<UnitDTO> unitsDTO) {
+    private POSTResultsReturn updateAndReturnPOSTResultsReturn(List<UnitDTO> unitsDTO) {
         List<Status> updateStatusList = new ArrayList<>();
         List<String> updatedResourcesURIList = new ArrayList<>();
         POSTResultsReturn results;
@@ -489,10 +479,35 @@ public class UnitDaoSesame extends DAOSesame<Unit> {
     public POSTResultsReturn checkAndUpdate(List<UnitDTO> unitsDTO) {
         POSTResultsReturn checkResult = check(unitsDTO);
         if (checkResult.getDataState()) {
-            return update(unitsDTO);
+            return updateAndReturnPOSTResultsReturn(unitsDTO);
         } else { //Les données ne sont pas bonnes
             return checkResult;
         }
+    }
+
+    @Override
+    public List<Unit> create(List<Unit> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List<Unit> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<Unit> update(List<Unit> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Unit find(Unit object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Unit findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
 

@@ -11,6 +11,7 @@
 //***********************************************************************************************
 package phis2ws.service.dao.sesame;
 
+import java.util.List;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.repository.RepositoryException;
@@ -34,12 +35,27 @@ public class ImageMetadataDaoSesame extends DAOSesame<ImageMetadata> {
     }
 
     @Override
-    protected SPARQLQueryBuilder prepareSearchQuery() {
+    public List<ImageMetadata> create(List<ImageMetadata> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
+    public void delete(List<ImageMetadata> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<ImageMetadata> update(List<ImageMetadata> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ImageMetadata find(ImageMetadata object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ImageMetadata findById(String id) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

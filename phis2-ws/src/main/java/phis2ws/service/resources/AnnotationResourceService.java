@@ -45,10 +45,12 @@ import phis2ws.service.view.manager.ResultForm;
 import phis2ws.service.view.model.phis.Annotation;
 
 /**
- * Represent the annotation service.
+ * Represents the annotation service.
  * @update [Arnaud Charleroy] 23 August, 2018: update coding style.
  * @update [Andréas Garcia] 15 Feb. 2019: search parameters are no longer DAO 
  * class attributes but parameters sent through the search functions
+ * @update [Andreas Garcia] 19 March, 2019: make getAnnotations public to be 
+ * able to use it from another service
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 @Api("/annotations")

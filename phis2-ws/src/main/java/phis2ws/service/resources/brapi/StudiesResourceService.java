@@ -230,7 +230,7 @@ public class StudiesResourceService implements BrapiCall {
 
     public Response getObservations (
         @ApiParam(value = "studyDbId", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI ) @PathParam("studyDbId") @URL @Required String studyDbId,
-        @ApiParam(value = "observationVariableDbIds") @QueryParam(value = "observationVariableDbIds") List<String> observationVariableDbIds,  
+        @ApiParam(value = "observationVariableDbIds") @QueryParam(value = "observationVariableDbIds") @URL List<String> observationVariableDbIds,  
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
     ) throws SQLException {               
@@ -655,7 +655,7 @@ public class StudiesResourceService implements BrapiCall {
             observation.setObservationVariableName(variable.getLabel());    
             observation.setObservationDbId(data.getUri());
             observation.setObservationTimeStamp(df.format(data.getDate()));
-            observation.setValue(data.getValue());
+            observation.setValue(data.getValue().toString());
             observations.add(observation);
         }
 
@@ -694,7 +694,7 @@ public class StudiesResourceService implements BrapiCall {
                     obs.setObservationTimeStamp(df.format(data.getDate()));
                     obs.setObservationVariableDbId(variable.getUri());
                     obs.setObservationVariableName(variable.getLabel());
-                    obs.setValue(data.getValue());
+                    obs.setValue(data.getValue().toString());
                     observationsPerObjectAndVariable.add(obs);
                 }
                 observationsPerObsUnit.addAll(observationsPerObjectAndVariable);

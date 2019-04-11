@@ -8,7 +8,6 @@
 package phis2ws.service.resources.dto.data;
 
 import io.swagger.annotations.ApiModelProperty;
-import java.util.Date;
 import phis2ws.service.documentation.DocumentationAnnotation;
 
 /**
@@ -45,7 +44,7 @@ public class BrapiObservationDTO {
     //The name or id of the user who uploaded the observation to the database system
     private String uploadedBy;
     //The value of the data collected as an observation
-    private Object value;
+    private String value;
 
     public BrapiObservationDTO() {
     }
@@ -163,11 +162,11 @@ public class BrapiObservationDTO {
     }
 
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_DATA_VALUE)
-    public Object getValue() {
+    public String getValue() {
         return value;
     }
 
-    public void setValue(Object value) {
+    public void setValue(String value) {
         this.value = value;
     }  
 }

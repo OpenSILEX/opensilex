@@ -8,7 +8,6 @@
 package phis2ws.service.resources.dto.scientificObject;
 
 import io.swagger.annotations.ApiModelProperty;
-import java.util.Date;
 import phis2ws.service.documentation.DocumentationAnnotation;
 
 /**
@@ -31,7 +30,7 @@ public class BrapiObservationSummaryDTO {
     private String season; 
     //\SILEX
     //The value of the data collected as an observation
-    private Object value;
+    private String value;
 
     public BrapiObservationSummaryDTO() {
     }
@@ -89,11 +88,11 @@ public class BrapiObservationSummaryDTO {
     }
 
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_DATA_VALUE)
-    public Object getValue() {
+    public String getValue() {
         return value;
     }
 
-    public void setValue(Object value) {
+    public void setValue(String value) {
         this.value = value;
     }
 

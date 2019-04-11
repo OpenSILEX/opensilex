@@ -40,6 +40,7 @@ import phis2ws.service.view.brapi.form.BrapiSingleResponseForm;
 import phis2ws.service.view.model.phis.BrapiVariable;
 import phis2ws.service.view.model.phis.Call;
 
+
 /**
  * Variable service
  * @See https://brapi.docs.apiary.io/#reference/observation-variables
@@ -229,11 +230,14 @@ public class VariableResourceService implements BrapiCall {
      * @return the response with the variables data list 
      */
     private Response getVariablesData(VariableDaoSesame varDAO) {
-        ArrayList<Status> statusList = new ArrayList<>();
+        ArrayList<Status> statusList = new ArrayList<>();          
+        //Get number of variables corresponding to the search params
+        Integer totalCount = varDAO.count();
+        //Get the variables to return
         ArrayList<BrapiVariable> brapiVariables = varDAO.getBrapiVarData();
         BrapiMultiResponseForm getResponse;
         if (!brapiVariables.isEmpty()) {
-            getResponse = new BrapiMultiResponseForm(varDAO.getPageSize(), varDAO.getPage(), brapiVariables, false);
+            getResponse = new BrapiMultiResponseForm(varDAO.getPageSize(), varDAO.getPage(), brapiVariables, true, totalCount);
             getResponse.getMetadata().setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         } else {

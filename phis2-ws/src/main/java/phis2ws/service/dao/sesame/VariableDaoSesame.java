@@ -757,7 +757,7 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
             brapiVar.setObservationVariableName(var.getLabel());
             brapiVar.setContextOfUse(new ArrayList());
             brapiVar.setSynonyms(new ArrayList());
-                        
+
             //trait 
             BrapiVariableTrait trait = new BrapiVariableTrait();
             trait.setTraitDbId(var.getTrait().getUri());
@@ -766,21 +766,21 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
             trait.setAlternativeAbbreviations(new ArrayList());
             trait.setSynonyms(new ArrayList());
             brapiVar.setTrait(trait);
-            
+
             //method
             BrapiMethod method = new BrapiMethod();
             method.setMethodDbId(var.getMethod().getUri());
             method.setMethodName(var.getMethod().getLabel());
             method.setDescription(var.getMethod().getComment());
             brapiVar.setMethod(method);
-            
+
             //scale
             BrapiScale scale = new BrapiScale();
             scale.setScaleDbid(var.getUnit().getUri());
             scale.setScaleName(var.getUnit().getLabel());
             scale.setDataType("Numerical");
             brapiVar.setScale(scale);
-            
+
             varList.add(brapiVar); 
         }
         return varList;        
@@ -810,4 +810,5 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
     public Variable findById(String id) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
 }

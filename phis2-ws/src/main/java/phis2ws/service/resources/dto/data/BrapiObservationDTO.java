@@ -7,8 +7,9 @@
 //******************************************************************************
 package phis2ws.service.resources.dto.data;
 
-import java.util.Date;
-import phis2ws.service.view.model.phis.Dataset;
+import io.swagger.annotations.ApiModelProperty;
+import phis2ws.service.documentation.DocumentationAnnotation;
+
 
 /**
  * Represents the response of the brapi call get Observations by study
@@ -24,7 +25,7 @@ public class BrapiObservationDTO {
     //The level of an observation unit. ex. \"plot\", \"plant\
     private String observationLevel;
     //The date and time  when this observation was made
-    private Date observationTimeStamp;
+    private String observationTimeStamp;
     //The ID which uniquely identifies an observation unit = scientific object
     private String observationUnitDbId;
     //A human readable name for an observation unit
@@ -44,13 +45,9 @@ public class BrapiObservationDTO {
     //The name or id of the user who uploaded the observation to the database system
     private String uploadedBy;
     //The value of the data collected as an observation
-    private Object value;
+    private String value;
 
     public BrapiObservationDTO() {
-    }
-    
-    public BrapiObservationDTO(Dataset dataset) {
-        this.studyDbId = dataset.getExperiment();
     }
 
     public String getGermplasmDbId() {
@@ -68,7 +65,8 @@ public class BrapiObservationDTO {
     public void setGermplasmName(String germplasmName) {
         this.germplasmName = germplasmName;
     }
-
+    
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_DATA_URI)
     public String getObservationDbId() {
         return observationDbId;
     }
@@ -77,6 +75,7 @@ public class BrapiObservationDTO {
         this.observationDbId = observationDbId;
     }
 
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_TYPE)
     public String getObservationLevel() {
         return observationLevel;
     }
@@ -85,14 +84,16 @@ public class BrapiObservationDTO {
         this.observationLevel = observationLevel;
     }
 
-    public Date getObservationTimeStamp() {
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_DATETIME)
+    public String getObservationTimeStamp() {
         return observationTimeStamp;
     }
 
-    public void setObservationTimeStamp(Date observationTimeStamp) {
+    public void setObservationTimeStamp(String observationTimeStamp) {
         this.observationTimeStamp = observationTimeStamp;
     }
 
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_URI)
     public String getObservationUnitDbId() {
         return observationUnitDbId;
     }
@@ -101,6 +102,7 @@ public class BrapiObservationDTO {
         this.observationUnitDbId = observationUnitDbId;
     }
 
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_ALIAS)
     public String getObservationUnitName() {
         return observationUnitName;
     }
@@ -109,6 +111,7 @@ public class BrapiObservationDTO {
         this.observationUnitName = observationUnitName;
     }
 
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI)
     public String getObservationVariableDbId() {
         return observationVariableDbId;
     }
@@ -117,6 +120,7 @@ public class BrapiObservationDTO {
         this.observationVariableDbId = observationVariableDbId;
     }
 
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_VARIABLE_LABEL)
     public String getObservationVariableName() {
         return observationVariableName;
     }
@@ -141,6 +145,7 @@ public class BrapiObservationDTO {
         this.season = season;
     }
 
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI)
     public String getStudyDbId() {
         return studyDbId;
     }
@@ -157,12 +162,12 @@ public class BrapiObservationDTO {
         this.uploadedBy = uploadedBy;
     }
 
-    public Object getValue() {
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_DATA_VALUE)
+    public String getValue() {
         return value;
     }
 
-    public void setValue(Object value) {
+    public void setValue(String value) {
         this.value = value;
     }  
 }
-    

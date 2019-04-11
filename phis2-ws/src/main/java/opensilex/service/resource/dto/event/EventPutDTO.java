@@ -15,13 +15,11 @@ import javax.validation.constraints.NotNull;
 import org.joda.time.DateTime;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.documentation.DocumentationAnnotation;
-import opensilex.service.ontology.Oa;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resource.dto.rdfResourceDefinition.PropertyDTO;
 import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.utils.date.Dates;
-import opensilex.service.model.Annotation;
 import opensilex.service.model.ConcernedItem;
 import opensilex.service.model.Event;
 import opensilex.service.model.Property;
@@ -32,6 +30,7 @@ import opensilex.service.model.Property;
  */
 public class EventPutDTO extends AbstractVerifiedClass {
         
+    protected String uri;
     protected String rdfType;
     protected ArrayList<String> concernedItemsUris;
     protected String date;
@@ -60,7 +59,7 @@ public class EventPutDTO extends AbstractVerifiedClass {
         
         DateTime dateTime = Dates.stringToDateTimeWithGivenPattern(this.date, DateFormat.YMDTHMSZZ.toString());
         
-        return new Event(null, this.rdfType, modelConcernedItems, dateTime, modelProperties, null);
+        return new Event(this.uri, this.rdfType, modelConcernedItems, dateTime, modelProperties, null);
     }
 
     @URL

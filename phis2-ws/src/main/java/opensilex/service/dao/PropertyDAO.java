@@ -946,14 +946,13 @@ public class PropertyDAO extends SparqlDAO<Property> {
     }
     
     /**
-     * Generates an delete query for the given properties.
+     * Generates an delete query for the given properties links.
      * @param updateBuilder
      * @param graph
-     * @param resourceLinked
+     * @param linkedResource
      * @param properties
      */
-    public static void addDeletePropertiesToUpdateBuilder(UpdateBuilder updateBuilder, Node graph, Resource resourceLinked, List<Property> properties) {
-        
+    public static void addDeletePropertyLinksToUpdateBuilder(UpdateBuilder updateBuilder, Node graph, Resource linkedResource, List<Property> properties) {
         Object propertyValue;
         for(Property property : properties) {
             org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
@@ -963,7 +962,7 @@ public class PropertyDAO extends SparqlDAO<Property> {
             } else {
                 propertyValue = ResourceFactory.createStringLiteral(property.getValue());
             }
-            updateBuilder.addDelete(graph, resourceLinked, propertyRelation, propertyValue);
+            updateBuilder.addDelete(graph, linkedResource, propertyRelation, propertyValue);
         }
     }
     

@@ -148,17 +148,17 @@ public class TimeDAO extends SparqlDAO<Time> {
      * Adds a delete statement to an update builder for an Instant linked to the given URI in the given graph. 
      * @param updateBuilder
      * @param graph
-     * @param resourceLinked
+     * @param linkedResource
      * @param instant
      * @throws java.lang.Exception
      */
-    public static void addDeleteInstantToUpdateBuilder(UpdateBuilder updateBuilder, Node graph, Resource resourceLinked, Instant instant) 
+    public static void addDeleteInstantToUpdateBuilder(UpdateBuilder updateBuilder, Node graph, Resource linkedResource, Instant instant) 
             throws Exception {
         Resource instantResource = ResourceFactory.createResource(instant.getUri());
         Literal dateTimeLiteral = getLiteralFromDateTime(instant.getDateTime());
         updateBuilder.addDelete(graph, instantResource, RDF.type, Time.Instant);
         updateBuilder.addInsert(graph, instantResource, Time.inXSDDateTimeStamp, dateTimeLiteral);
-        updateBuilder.addDelete(graph, resourceLinked, Time.hasTime, instantResource);
+        updateBuilder.addDelete(graph, linkedResource, Time.hasTime, instantResource);
     }
     
     /**

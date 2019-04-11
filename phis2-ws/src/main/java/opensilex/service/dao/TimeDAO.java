@@ -143,6 +143,16 @@ public class TimeDAO extends SparqlDAO<Time> {
         // Link resource to instant
         updateBuilder.addInsert(graph, resourceLinkedToInstant, Time.hasTime, instantResource);
     }
+    
+    /**
+     * Builds a Literal date from a Datetime date.
+     * @param datetime
+     * @return 
+     */
+    public static Literal getLiteralFromDateTime(DateTime datetime) {
+        DateTimeFormatter formatter = DateTimeFormat.forPattern(DATETIMESTAMP_FORMAT_SPARQL);
+        return ResourceFactory.createTypedLiteral(datetime.toString(formatter), XSDDatatype.XSDdateTime);
+    }
 
     @Override
     public List<Time> create(List<Time> objects) throws Exception {

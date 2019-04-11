@@ -72,7 +72,6 @@ public class AcquisitionSessionDAOSesame extends DAOSesame<MetadataFileDTO> {
             if (uriDaoSesame.isSubClassOf(vectorRdfType, Oeso.CONCEPT_UAV.toString())) {
                 //3. get the number of cameras
                 SensorDAOSesame sensorDAO = new SensorDAOSesame();
-                sensorDAO.rdfType = Oeso.CONCEPT_CAMERA.toString();
                 sizes.add(sensorDAO.countCameras());
 
                 //4. get the number of vectors

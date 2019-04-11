@@ -1,20 +1,17 @@
 //******************************************************************************
 //                                       Sensor.java
 //
-// Author(s): Morgane Vidal <morgane.vidal@inra.fr>
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
+// SILEX-PHIS
+// Copyright © INRA 2018
 // Creation date: 14 mars 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  14 mars 2018
-// Subject: Represents sensors view
 //******************************************************************************
 package phis2ws.service.view.model.phis;
 
 import java.util.HashMap;
 
 /**
- * Represents a sensor view
+ * Represents a sensor model
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class Sensor {
@@ -27,6 +24,8 @@ public class Sensor {
     private String label;
     //sensor brand
     private String brand;
+    //model of the sensor
+    private String model;
     //serial number of the sensor
     private String serialNumber;
     //first date of sensor service
@@ -118,5 +117,13 @@ public class Sensor {
 
     public void setVariables(HashMap<String, String>  variables) {
         this.variables = variables;
+    }
+
+    public String getModel() {
+        return model;
+    }
+
+    public void setModel(String model) {
+        this.model = model;
     }
 }

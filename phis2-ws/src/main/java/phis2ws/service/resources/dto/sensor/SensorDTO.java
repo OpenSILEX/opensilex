@@ -1,33 +1,27 @@
 //******************************************************************************
-//                                       SensorDTO.java
-//
-// Author(s): Morgane Vidal <morgane.vidal@inra.fr>
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2018
-// Creation date: 25 mai 2018
+//                                       SensorGetDTO.java
+// SILEX-PHIS
+// Copyright © INRA 2019
+// Creation date: 11 avr. 2019
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  25 mai 2018
-// Subject: definition of a sensor, viewed by the web service client
 //******************************************************************************
-package phis2ws.service.resources.dto;
+package phis2ws.service.resources.dto.sensor;
 
 import io.swagger.annotations.ApiModelProperty;
 import javax.validation.constraints.Email;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.documentation.DocumentationAnnotation;
-import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.dto.manager.AbstractVerifiedClass;
 import phis2ws.service.resources.validation.interfaces.Date;
+import phis2ws.service.resources.validation.interfaces.Required;
 import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.Sensor;
 
 /**
- * corresponds to the submitted JSON for the sensors
  *
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class SensorDTO extends AbstractVerifiedClass {
-
     //uri of the sensor
     private String uri;
     //type of the sensor. Uri of the concept (must be subclass of SensingDevice concept)
@@ -36,6 +30,8 @@ public class SensorDTO extends AbstractVerifiedClass {
     private String label;
     //brand of the sensor
     private String brand;
+    //model of the sensor
+    private String model;
     //serial number of the sensor
     private String serialNumber;
     //in service date of the sensor
@@ -47,7 +43,19 @@ public class SensorDTO extends AbstractVerifiedClass {
     //email of the person in charge of the sensor
     private String personInCharge;
 
-
+    public SensorDTO(Sensor sensor) {
+        uri = sensor.getUri();
+        rdfType = sensor.getRdfType();
+        label = sensor.getLabel();
+        brand = sensor.getBrand();
+        model = sensor.getModel();
+        serialNumber = sensor.getSerialNumber();
+        inServiceDate = sensor.getInServiceDate();
+        dateOfPurchase = sensor.getDateOfPurchase();
+        dateOfLastCalibration = sensor.getDateOfLastCalibration();
+        personInCharge = sensor.getPersonInCharge();
+    }
+    
     @Override
     public Sensor createObjectFromDTO() {
         Sensor sensor = new Sensor();
@@ -55,6 +63,7 @@ public class SensorDTO extends AbstractVerifiedClass {
         sensor.setRdfType(rdfType);
         sensor.setLabel(label);
         sensor.setBrand(brand);
+        sensor.setModel(model);
         sensor.setSerialNumber(serialNumber);
         sensor.setInServiceDate(inServiceDate);
         sensor.setDateOfPurchase(dateOfPurchase);
@@ -154,5 +163,14 @@ public class SensorDTO extends AbstractVerifiedClass {
 
     public void setPersonInCharge(String personInCharge) {
         this.personInCharge = personInCharge;
+    }
+    
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SENSOR_MODEL)
+    public String getModel() {
+        return model;
+    }
+
+    public void setModel(String model) {
+        this.model = model;
     }
 }

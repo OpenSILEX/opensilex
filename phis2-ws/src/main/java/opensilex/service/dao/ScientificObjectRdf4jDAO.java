@@ -12,6 +12,7 @@
 
 package opensilex.service.dao;
 
+import opensilex.service.dao.UriDAO;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,7 +41,7 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.dao.manager.Rdf4jDAO;
+import opensilex.service.dao.manager.SparqlDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.ontology.Contexts;
 import opensilex.service.ontology.GeoSPARQL;
@@ -60,7 +61,7 @@ import opensilex.service.model.Property;
 import opensilex.service.model.Uri;
 
 
-public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
+public class ScientificObjectRdf4jDAO extends SparqlDAO<ScientificObject> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(ScientificObjectRdf4jDAO.class);
     

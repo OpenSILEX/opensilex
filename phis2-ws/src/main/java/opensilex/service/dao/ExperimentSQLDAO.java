@@ -23,7 +23,7 @@ import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.dao.manager.PhisDAO;
-import opensilex.service.dao.ExperimentSparqlDAO;
+import opensilex.service.dao.ExperimentRdf4jDAO;
 import opensilex.service.dao.SensorDAO;
 import opensilex.service.dao.UserDAO;
 import opensilex.service.dao.VariableDAO;
@@ -295,7 +295,7 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
             }
             
             // Gets experiments variables
-            ExperimentSparqlDAO experimentDAOSesame = new ExperimentSparqlDAO();
+            ExperimentRdf4jDAO experimentDAOSesame = new ExperimentRdf4jDAO();
             for (Experiment experiment : experiments) {
                 HashMap<String, String> variables = experimentDAOSesame.getVariables(experiment.getUri());
                 experiment.setVariables(variables);
@@ -607,7 +607,7 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
                     } else { // If non existing data and inserted
                         insertStatusList.add(new Status("Data inserted", StatusCodeMsg.INFO, String.valueOf(inserted) + " experiments inserted"));
                         //Add the experiments in the triplestore
-                        ExperimentSparqlDAO experimentDAOSesame = new ExperimentSparqlDAO();
+                        ExperimentRdf4jDAO experimentDAOSesame = new ExperimentRdf4jDAO();
                         POSTResultsReturn insertTriplestore = experimentDAOSesame.insertExperiments(experiments);
                         if (!insertTriplestore.getDataState()) { //An error occurred
                             insertStatusList.addAll(insertTriplestore.getStatusList());
@@ -1107,13 +1107,13 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
      * Updates the list of variables linked to the given experiment. 
      * /!\ Prerequisite: the information must have been checked before. 
      * @see ExperimentSQLDAO#checkLinkedVariables(java.lang.String, java.util.List)
-     * @see ExperimentSparqlDAO#updateLinkedVariables(java.lang.String, java.util.List) 
+     * @see ExperimentRdf4jDAO#updateLinkedVariables(java.lang.String, java.util.List) 
      * @param experimentUri
      * @param variables
      * @return the update result.
      */
     private POSTResultsReturn updateLinkedVariables(String experimentUri, List<String> variables) {
-        ExperimentSparqlDAO experimentDAOSesame = new ExperimentSparqlDAO();
+        ExperimentRdf4jDAO experimentDAOSesame = new ExperimentRdf4jDAO();
         return experimentDAOSesame.updateLinkedVariables(experimentUri, variables);
     }
     
@@ -1121,13 +1121,13 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
      * Updates the list of sensors linked to the given experiment. 
      * /!\ Prerequisite: the information must have been checked before. 
      * @see ExperimentSQLDAO#checkLinkedSensors(java.lang.String, java.util.List)
-     * @see ExperimentSparqlDAO#updateLinkedSensors(java.lang.String, java.util.List)
+     * @see ExperimentRdf4jDAO#updateLinkedSensors(java.lang.String, java.util.List)
      * @param experimentUri
      * @param sensors
      * @return the update result.
      */
     private POSTResultsReturn updateLinkedSensors(String experimentUri, List<String> sensors) {
-        ExperimentSparqlDAO experimentDAOSesame = new ExperimentSparqlDAO();
+        ExperimentRdf4jDAO experimentDAOSesame = new ExperimentRdf4jDAO();
         return experimentDAOSesame.updateLinkedSensors(experimentUri, sensors);
     }
     

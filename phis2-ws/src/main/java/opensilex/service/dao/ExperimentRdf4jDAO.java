@@ -21,6 +21,7 @@ import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
@@ -29,7 +30,8 @@ import org.eclipse.rdf4j.query.UpdateExecutionException;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.dao.manager.Rdf4jDAO;
+import opensilex.service.dao.manager.SparqlDAO;
+import opensilex.service.dao.ExperimentSQLDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.ontology.Rdf;
 import opensilex.service.ontology.Rdfs;
@@ -43,7 +45,7 @@ import opensilex.service.model.Experiment;
  * Access to the experiments in the triplestore. 
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class ExperimentRdf4jDAO extends Rdf4jDAO<Experiment> {
+public class ExperimentRdf4jDAO extends SparqlDAO<Experiment> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(ExperimentRdf4jDAO.class);
     

@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 import opensilex.service.PropertiesFileManager;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.dao.manager.MongoDAO;
-import opensilex.service.dao.ScientificObjectSparqlDAO;
+import opensilex.service.dao.ScientificObjectRdf4jDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.ontology.Oeso;
 import opensilex.service.utils.FileUploader;
@@ -265,7 +265,7 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
         boolean dataOk = true;
 
         ProvenanceDAO provenanceDAO = new ProvenanceDAO();
-        ScientificObjectSparqlDAO scientificObjectDao = new ScientificObjectSparqlDAO();
+        ScientificObjectRdf4jDAO scientificObjectDao = new ScientificObjectRdf4jDAO();
         
         if (!provenanceDAO.existProvenanceUri(fileDescription.getProvenanceUri())) {
             // 1. Check if the provenance uri exist and is a provenance

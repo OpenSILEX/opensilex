@@ -60,7 +60,7 @@ import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.DocumentMongoDAO;
-import opensilex.service.dao.DocumentSparqlDAO;
+import opensilex.service.dao.DocumentRdf4jDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.ontology.Contexts;
@@ -129,7 +129,7 @@ public class DocumentResourceService extends ResourceService {
         AbstractResultForm postResponse;
         if (documentsAnnotations != null && !documentsAnnotations.isEmpty()) {
             //Insertion du document
-            DocumentSparqlDAO documentDao = new DocumentSparqlDAO();
+            DocumentRdf4jDAO documentDao = new DocumentRdf4jDAO();
             documentDao.user = userSession.getUser();
             //Vérification des documentsAnnotations
             final POSTResultsReturn checkAnnots = documentDao.check(documentsAnnotations);
@@ -285,7 +285,7 @@ public class DocumentResourceService extends ResourceService {
         }
         
         WAITING_ANNOT_INFORMATION.get(docUri).setServerFilePath(serverFilePath);
-        DocumentSparqlDAO documentsDao = new DocumentSparqlDAO();
+        DocumentRdf4jDAO documentsDao = new DocumentRdf4jDAO();
         if (request.getRemoteAddr() != null) {
             documentsDao.remoteUserAdress = request.getRemoteAddr();
         }
@@ -337,7 +337,7 @@ public class DocumentResourceService extends ResourceService {
     public Response getDocumentsType(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
-        DocumentSparqlDAO documentsDao = new DocumentSparqlDAO();
+        DocumentRdf4jDAO documentsDao = new DocumentRdf4jDAO();
         Status errorStatus = null;
         try {
             ArrayList<String> documentCategories = documentsDao.getDocumentsTypes();
@@ -401,7 +401,7 @@ public class DocumentResourceService extends ResourceService {
         //Par la suite il faudra la faire sur une liste d'éléments
         //\SILEX:conception
         
-        DocumentSparqlDAO documentDao = new DocumentSparqlDAO();
+        DocumentRdf4jDAO documentDao = new DocumentRdf4jDAO();
         
         if (uri != null) {
             documentDao.uri = uri;
@@ -500,7 +500,7 @@ public class DocumentResourceService extends ResourceService {
         AbstractResultForm postResponse = null;
         
         if (documentsMetadata != null && !documentsMetadata.isEmpty()) {
-            DocumentSparqlDAO documentDaoSesame = new DocumentSparqlDAO();
+            DocumentRdf4jDAO documentDaoSesame = new DocumentRdf4jDAO();
             if (documentDaoSesame.remoteUserAdress != null) {
                 documentDaoSesame.remoteUserAdress = context.getRemoteAddr();
             }
@@ -530,7 +530,7 @@ public class DocumentResourceService extends ResourceService {
      * @return la réponse dédiée à l'utilisateur. 
      *         Contient la liste des métadonnées de documents correspondant au résultat de la recherche
      */
-    private Response getDocumentsMetadata(DocumentSparqlDAO documentDao) {
+    private Response getDocumentsMetadata(DocumentRdf4jDAO documentDao) {
         ArrayList<Document> documentsMetadata;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Document> getResponse;

@@ -34,7 +34,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.configuration.DocumentStatus;
 import opensilex.service.configuration.SortingValues;
-import opensilex.service.dao.manager.Rdf4jDAO;
+import opensilex.service.dao.manager.SparqlDAO;
+import opensilex.service.dao.DocumentMongoDAO;
+import opensilex.service.dao.ExperimentSQLDAO;
+import opensilex.service.dao.UserDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.User;
 import opensilex.service.ontology.Contexts;
@@ -67,7 +70,7 @@ import opensilex.service.model.Experiment;
  * @update [Morgane Vidal] 12 October, 2017 : add status on documents : linked/unlinked
  * @update [Andréas Garcia] 15 Jan. 2019 : Replace "concern" occurences by "concernedItem"
  */
-public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
+public class DocumentRdf4jDAO extends SparqlDAO<Document> {
     final static Logger LOGGER = LoggerFactory.getLogger(DocumentRdf4jDAO.class);
     public String uri;
     

@@ -170,7 +170,7 @@ public class DatasetDAO extends MongoDAO<Dataset> {
      * agronomical objects list 
      */
     private void updateAgronomicalObjectsWithExperimentsAgronomicalObjects() {
-        ScientificObjectSparqlDAO agronomicalObjectDaoSesame = new ScientificObjectSparqlDAO();
+        ScientificObjectRdf4jDAO agronomicalObjectDaoSesame = new ScientificObjectRdf4jDAO();
         agronomicalObjectDaoSesame.experiment = experiment;
         
         ArrayList<ScientificObject> agronomicalObjectsSearched = agronomicalObjectDaoSesame.allPaginate();
@@ -255,7 +255,7 @@ public class DatasetDAO extends MongoDAO<Dataset> {
             //if the datasetDTO follows the rules
             for (AgronomicalDataDTO data : datasetDTO.getData()) {
                 //is agronomical object exist ?
-                ScientificObjectSparqlDAO agronomicalObjectDao = new ScientificObjectSparqlDAO();
+                ScientificObjectRdf4jDAO agronomicalObjectDao = new ScientificObjectRdf4jDAO();
                 if (!agronomicalObjectDao.existScientificObject(data.getAgronomicalObject())) {
                     dataState = false;
                     insertStatusList.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Unknown Agronomical Object URI : " + data.getAgronomicalObject()));

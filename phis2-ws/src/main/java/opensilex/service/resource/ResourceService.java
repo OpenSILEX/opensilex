@@ -197,6 +197,7 @@ public abstract class ResourceService {
      * @param objectsDtos DTOs sent through the POST or PUT.
      * @param userIpAddress
      * @param statusMessageIfEmptyDtosSent
+     * @param isPost is the operation a POST or a PUT.
      * @return a success response when success.
      *         an internal error response when an non handled exception occured.
      *         an access denied response when the resource isn't available for the user.

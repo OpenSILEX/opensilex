@@ -221,20 +221,39 @@ public class ConcernedItemDAO extends SparqlDAO<ConcernedItem> {
      * relation has to be 
      * @param concernedItem
      * @return the query
-     * @example
      */
     private UpdateRequest prepareInsertLinkQuery(String graphString, Resource objectResource, String concernsRelationUri, ArrayList<ConcernedItem> concernedItems) {
         UpdateBuilder updateBuilder = new UpdateBuilder();
         Node graph = NodeFactory.createURI(graphString);
         Resource concernsRelation = ResourceFactory.createResource(concernsRelationUri);
         for (ConcernedItem concernedItem : concernedItems) {
-            Resource concernedItemResource = ResourceFactory.createResource(concernedItem.getUri());
+            org.apache.jena.rdf.model.Property  concernedItemResource = 
+                    ResourceFactory.createProperty(concernedItem.getUri());
             updateBuilder.addInsert(graph, objectResource, concernsRelation, concernedItemResource);
         }
         UpdateRequest query = updateBuilder.buildRequest();
         LOGGER.debug(SPARQL_QUERY + " " + query.toString());
         
         return query;
+    }
+    
+    /**
+     * Generates an insert query for the links of the given concerned items links.
+     * @param updateBuilder
+     * @param graph
+     * @param linkedResource
+     * @param concernsRelationUri since "concerns" can designate various
+     * relations in various vocabularies (e.g OESO or OEEV), the URI of the 
+     * relation has to be
+     * @param concernedItems
+     */
+    public static void addDeleteConcernedItemLinksToUpdateBuilder(UpdateBuilder updateBuilder, Node graph, Resource linkedResource, String concernsRelationUri, List<ConcernedItem> concernedItems) {
+        org.apache.jena.rdf.model.Property  concernsJenaProperty = 
+                ResourceFactory.createProperty(concernsRelationUri);
+        for (ConcernedItem concernedItem : concernedItems) {
+            Resource concernedItemResource = ResourceFactory.createResource(concernedItem.getUri());
+            updateBuilder.addDelete(graph, linkedResource, concernsJenaProperty, concernedItemResource);
+        }
     }
     
     /**

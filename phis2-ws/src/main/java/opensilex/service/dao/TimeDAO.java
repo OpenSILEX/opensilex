@@ -121,24 +121,6 @@ public class TimeDAO extends SparqlDAO<Time> {
     }
     
     /**
-     * Adds a delete statement to an update builder for an Instant linked to the given URI in the given graph. 
-     * @param updateBuilder
-     * @param graph
-     * @param resourceLinkedToInstant
-     * @param instant
-     * @throws java.lang.Exception
-     */
-    public static void addDeleteInstantToUpdateBuilder(UpdateBuilder updateBuilder, Node graph, Resource resourceLinkedToInstant, Instant instant) 
-            throws Exception {
-        Resource instantResource = ResourceFactory.createResource(instant.getUri());
-        Literal dateTimeLiteral = getLiteralFromDateTime(instant.getDateTime());
-        updateBuilder.addDelete(graph, instantResource, RDF.type, Time.Instant);
-        updateBuilder.addDelete(graph, instantResource, Time.inXSDDateTimeStamp, null);
-        updateBuilder.addDelete(graph, resourceLinkedToInstant, Time.hasTime, instantResource);
-        updateBuilder.addInsert(graph, instantResource, Time.inXSDDateTimeStamp, dateTimeLiteral);
-    }
-    
-    /**
      * Inserts an Instant linked to the given URI in the given graph with the given date value.
      * @param updateBuilder
      * @param graph
@@ -159,6 +141,23 @@ public class TimeDAO extends SparqlDAO<Time> {
 
         // Link resource to instant
         updateBuilder.addInsert(graph, resourceLinkedToInstant, Time.hasTime, instantResource);
+    }
+    
+    /**
+     * Adds a delete statement to an update builder for an Instant linked to the given URI in the given graph. 
+     * @param updateBuilder
+     * @param graph
+     * @param resourceLinkedToInstant
+     * @param instant
+     * @throws java.lang.Exception
+     */
+    public static void addDeleteInstantToUpdateBuilder(UpdateBuilder updateBuilder, Node graph, Resource resourceLinkedToInstant, Instant instant) 
+            throws Exception {
+        Resource instantResource = ResourceFactory.createResource(instant.getUri());
+        Literal dateTimeLiteral = getLiteralFromDateTime(instant.getDateTime());
+        updateBuilder.addDelete(graph, instantResource, RDF.type, Time.Instant);
+        updateBuilder.addInsert(graph, instantResource, Time.inXSDDateTimeStamp, dateTimeLiteral);
+        updateBuilder.addDelete(graph, resourceLinkedToInstant, Time.hasTime, instantResource);
     }
     
     /**

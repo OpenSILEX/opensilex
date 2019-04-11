@@ -248,7 +248,7 @@ public class VocabularyDAO extends SparqlDAO<PropertyVocabularyDTO> {
     }
 
     @Override
-    public void checkBeforeCreation(List<PropertyVocabularyDTO> objects) throws DAODataErrorAggregateException {
+    public void validate(List<PropertyVocabularyDTO> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

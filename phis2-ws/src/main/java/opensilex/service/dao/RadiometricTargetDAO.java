@@ -660,7 +660,7 @@ public class RadiometricTargetDAO extends SparqlDAO<RadiometricTarget> {
     }
 
     @Override
-    public void checkBeforeCreation(List<RadiometricTarget> objects) throws DAODataErrorAggregateException {
+    public void validate(List<RadiometricTarget> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

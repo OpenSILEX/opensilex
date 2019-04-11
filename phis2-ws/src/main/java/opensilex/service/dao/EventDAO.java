@@ -9,6 +9,7 @@ package opensilex.service.dao;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -47,6 +48,7 @@ import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.model.Annotation;
 import opensilex.service.model.Event;
 import opensilex.service.model.Property;
+import org.apache.jena.vocabulary.RDFS;
 
 /**
  * Events DAO.
@@ -361,7 +363,7 @@ public class EventDAO extends SparqlDAO<Event> {
      * @return the query
      * @example
      */
-    private UpdateRequest prepareInsertQuery(Event event) {
+    private UpdateRequest prepareInsertQuery(Event event) throws Exception {
         UpdateBuilder updateBuilder = new UpdateBuilder();
         
         // Event URI and simple attributes
@@ -371,16 +373,42 @@ public class EventDAO extends SparqlDAO<Event> {
         updateBuilder.addInsert(graph, eventResource, RDF.type, eventType);
         
         // Event's Instant
-        TimeDAO timeDao = new TimeDAO(this.user);
-        try {
-            timeDao.addInsertToUpdateBuilderWithInstant(
-                    updateBuilder,
-                    graph,
-                    eventResource,
-                    event.getDateTime());
-        } catch (Exception ex) {
-            LOGGER.error(ex.getLocalizedMessage());
-        }
+        TimeDAO.addInsertInstantToUpdateBuilder(updateBuilder, graph, eventResource, event.getInstant());
+        
+        UpdateRequest query = updateBuilder.buildRequest();
+        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
+        
+        return query;
+    }
+    
+    /**
+     * Generates an delete query for the given event.
+     * @param event
+     * @return the query
+     * @example
+     */
+    private UpdateRequest prepareDeleteQueryWhenUpdating(Event event) throws Exception {
+        UpdateBuilder updateBuilder = new UpdateBuilder();
+        
+        // Event URI and simple attributes
+        Node graph = NodeFactory.createURI(Contexts.EVENTS.toString());
+        Resource eventResource = ResourceFactory.createResource(event.getUri());
+        
+        updateBuilder.addDelete(graph, eventResource, RDF.type, event.getType());
+        
+        // Instant
+        TimeDAO.addDeleteInstantToUpdateBuilder(updateBuilder, graph, eventResource, event.getInstant());
+        
+        // Property links
+        PropertyDAO.addDeletePropertyLinksToUpdateBuilder(updateBuilder, graph, eventResource, event.getProperties());
+        
+        // Concerned items
+        ConcernedItemDAO.addDeleteConcernedItemLinksToUpdateBuilder(
+                updateBuilder, 
+                graph, 
+                eventResource, 
+                Oeev.concerns.getURI(),
+                event.getConcernedItems());
         
         UpdateRequest query = updateBuilder.buildRequest();
         LOGGER.debug(SPARQL_QUERY + " " + query.toString());
@@ -615,8 +643,17 @@ public class EventDAO extends SparqlDAO<Event> {
     }
 
     @Override
-    public List<Event> update(List<Event> objects) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public List<Event> update(List<Event> events) throws Exception {
+        for(Event event : events) {
+            Event oldEvent = find(findById(event.getUri()));
+            UpdateRequest deleteQuery = prepareDeleteQueryWhenUpdating(oldEvent);
+            UpdateRequest insertQuery = prepareInsertQuery(event);  
+            Update prepareDelete = getConnection().prepareUpdate(deleteQuery.toString());  
+            Update prepareInsert = getConnection().prepareUpdate(QueryLanguage.SPARQL, insertQuery.toString());
+            prepareDelete.execute();
+            prepareInsert.execute();
+        }
+        return events;
     }
 
     @Override

@@ -95,7 +95,7 @@ public abstract class SparqlDAO<T> extends DAO<T> {
     protected static final String LABEL = "label";
     protected static final String COMMENT = "comment";
     
-    protected final String DATETIMESTAMP_FORMAT_SPARQL = DateFormat.YMDTHMSZZ.toString();
+    protected static final String DATETIMESTAMP_FORMAT_SPARQL = DateFormat.YMDTHMSZZ.toString();
     
     // Triplestore relations
     protected static final URINamespaces ONTOLOGIES = new URINamespaces();

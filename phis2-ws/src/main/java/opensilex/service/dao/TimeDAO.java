@@ -22,6 +22,7 @@ import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.dao.manager.SparqlDAO;
+import opensilex.service.model.Instant;
 import opensilex.service.model.User;
 import opensilex.service.ontology.Time;
 import opensilex.service.ontology.Xsd;
@@ -120,15 +121,32 @@ public class TimeDAO extends SparqlDAO<Time> {
     }
     
     /**
-     * Inserts an Instant linked to the given URI in the given graph with the 
-     * given date value.
+     * Adds a delete statement to an update builder for an Instant linked to the given URI in the given graph. 
+     * @param updateBuilder
+     * @param graph
+     * @param resourceLinkedToInstant
+     * @param instant
+     * @throws java.lang.Exception
+     */
+    public static void addDeleteInstantToUpdateBuilder(UpdateBuilder updateBuilder, Node graph, Resource resourceLinkedToInstant, Instant instant) 
+            throws Exception {
+        Resource instantResource = ResourceFactory.createResource(instant.getUri());
+        Literal dateTimeLiteral = getLiteralFromDateTime(instant.getDateTime());
+        updateBuilder.addDelete(graph, instantResource, RDF.type, Time.Instant);
+        updateBuilder.addDelete(graph, instantResource, Time.inXSDDateTimeStamp, null);
+        updateBuilder.addDelete(graph, resourceLinkedToInstant, Time.hasTime, instantResource);
+        updateBuilder.addInsert(graph, instantResource, Time.inXSDDateTimeStamp, dateTimeLiteral);
+    }
+    
+    /**
+     * Inserts an Instant linked to the given URI in the given graph with the given date value.
      * @param updateBuilder
      * @param graph
      * @param resourceLinkedToInstant
      * @param dateTime
      * @throws java.lang.Exception
      */
-    public void addInsertToUpdateBuilderWithInstant(UpdateBuilder updateBuilder, Node graph, Resource resourceLinkedToInstant, DateTime dateTime) throws Exception {
+    public static void addInsertInstantToUpdateBuilder(UpdateBuilder updateBuilder, Node graph, Resource resourceLinkedToInstant, DateTime dateTime) throws Exception {
         // Add insert instant uri with type
         UriGenerator uriGenerator = new UriGenerator();
         String instantUri = uriGenerator.generateNewInstanceUri(Time.Instant.toString(), null, null);
@@ -138,7 +156,6 @@ public class TimeDAO extends SparqlDAO<Time> {
         // Add date time stamp to instant
         Literal dateTimeLiteral = getLiteralFromDateTime(dateTime);
         updateBuilder.addInsert(graph, instantResource, Time.inXSDDateTimeStamp, dateTimeLiteral);
-        updateBuilder.addInsert(graph, instantResource, Time.inXSDDateTimeStamp, dateLiteral);
 
         // Link resource to instant
         updateBuilder.addInsert(graph, resourceLinkedToInstant, Time.hasTime, instantResource);

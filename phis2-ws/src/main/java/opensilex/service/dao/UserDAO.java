@@ -900,7 +900,7 @@ public class UserDAO extends PhisDAO<User, UserDTO> {
     }
 
     @Override
-    public void checkBeforeCreation(List<User> objects) throws DAODataErrorAggregateException {
+    public void validate(List<User> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

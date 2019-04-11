@@ -82,7 +82,7 @@ public class ShootingConfigurationDAO extends MongoDAO<ShootingConfiguration> {
     }
 
     @Override
-    public void checkBeforeCreation(List<ShootingConfiguration> objects) throws DAODataErrorAggregateException {
+    public void validate(List<ShootingConfiguration> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -1239,7 +1239,7 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
     }
 
     @Override
-    public void checkBeforeCreation(List<Experiment> objects) throws DAODataErrorAggregateException {
+    public void validate(List<Experiment> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

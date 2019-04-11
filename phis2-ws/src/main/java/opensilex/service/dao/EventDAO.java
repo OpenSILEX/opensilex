@@ -473,7 +473,7 @@ public class EventDAO extends SparqlDAO<Event> {
      * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
      */
     @Override
-    public void checkBeforeCreation(List<Event> events) throws DAODataErrorAggregateException, NotAnAdminException {
+    public void validate(List<Event> events) throws DAODataErrorAggregateException, NotAnAdminException {
         
         ArrayList<DAODataErrorException> exceptions = new ArrayList<>();
         
@@ -502,7 +502,7 @@ public class EventDAO extends SparqlDAO<Event> {
                 
                 // Check concerned items
                 try {
-                    concernedItemDAO.checkBeforeCreation(event.getConcernedItems());
+                    concernedItemDAO.validate(event.getConcernedItems());
                 }
                 catch (DAODataErrorAggregateException ex) {
                     exceptions.addAll(ex.getExceptions());
@@ -518,7 +518,7 @@ public class EventDAO extends SparqlDAO<Event> {
                 
                 // Check annotations
                 try {
-                    annotationDao.checkBeforeCreation(event.getAnnotations());
+                    annotationDao.validate(event.getAnnotations());
                 }
                 catch (DAODataErrorAggregateException ex) {
                     exceptions.addAll(ex.getExceptions());

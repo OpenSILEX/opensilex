@@ -301,7 +301,7 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
      * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
      */
     @Override
-    public void checkBeforeCreation(List<Annotation> annotations) throws DAODataErrorAggregateException {
+    public void validate(List<Annotation> annotations) throws DAODataErrorAggregateException {
         UriDAO uriDao = new UriDAO();
         UserDAO userDao = new UserDAO();
         ArrayList<DAODataErrorException> exceptions = new ArrayList<>();

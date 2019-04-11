@@ -836,7 +836,7 @@ public class VectorDAO extends SparqlDAO<Vector> {
     }
 
     @Override
-    public void checkBeforeCreation(List<Vector> objects) throws DAODataErrorAggregateException {
+    public void validate(List<Vector> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -134,7 +134,7 @@ public abstract class ResourceService {
             try {
                 // Process operation
                 objectDao.remoteUserAdress = userIpAddress;
-                List<? extends Object> createdObjects = objectDao.checkAndCreate(getObjectsFromDTOs(objectsDtos));
+                List<? extends Object> createdObjects = objectDao.validateAndCreate(getObjectsFromDTOs(objectsDtos));
                 
                 // Return according to operation results
                 List<String> createdUris = getUrisFromObjects(createdObjects);

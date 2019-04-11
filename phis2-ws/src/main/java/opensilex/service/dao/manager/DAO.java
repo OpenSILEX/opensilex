@@ -65,25 +65,58 @@ public abstract class DAO<T> {
     public abstract T findById(String id) throws Exception;
     
     /**
-     * Checks the objects can be correctly created.Throws an aggregate exception to handle multiple exceptions.
+     * Validates the objects given.
      * @param objects
-     * @throws DAODataErrorAggregateException 
+     * @throws DAODataErrorAggregateException to handle multiple data error exceptions.
      * @throws opensilex.service.dao.exception.ResourceAccessDeniedException 
      */
-    public abstract void checkBeforeCreation(List<T> objects) 
+    public abstract void validate(List<T> objects) 
             throws DAODataErrorAggregateException, ResourceAccessDeniedException;
     
     /**
-     * Checks and create objects.
-     * @param annotations
+     * Validates and creates objects.
+     * @param objects
      * @return the annotations created.
      * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
      * @throws opensilex.service.dao.exception.ResourceAccessDeniedException
      */
-    public List<T> checkAndCreate(List<T> annotations) 
+    public List<T> validateAndCreate(List<T> objects) 
             throws DAODataErrorAggregateException, ResourceAccessDeniedException, Exception {
-        checkBeforeCreation(annotations);
-        return create(annotations);
+        validate(objects);     
+        initConnection();
+        List<T> objectsCreated;
+        try {
+            objectsCreated = create(objects);
+            commitTransaction();
+        } catch (Exception ex) {
+            rollbackTransaction();
+            throw ex;
+        }
+        closeConnection();
+        return objectsCreated;
+    }
+    
+    /**
+     * Validates and updates objects.
+     * @param objects
+     * @return the objects created.
+     * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
+     * @throws opensilex.service.dao.exception.ResourceAccessDeniedException
+     */
+    public List<T> validateAndUpdate(List<T> objects) 
+            throws DAODataErrorAggregateException, ResourceAccessDeniedException, Exception {
+        validate(objects);     
+        initConnection();
+        List<T> objectsUpdated;
+        try {
+            objectsUpdated = update(objects);
+            commitTransaction();
+        } catch (Exception ex) {
+            rollbackTransaction();
+            throw ex;
+        }
+        closeConnection();
+        return objectsUpdated;
     }
     
      /**
@@ -100,4 +133,29 @@ public abstract class DAO<T> {
         
         return log;
     }
+    
+    /**
+     * Initializes the connection to the storage.
+     */
+    protected abstract void initConnection();
+    
+    /**
+     * Closes the connection to the storage.
+     */
+    protected abstract void closeConnection();
+    
+    /**
+     * Starts a transaction.
+     */    
+    protected abstract void startTransaction();
+    
+    /**
+     * Commits a transaction.
+     */    
+    protected abstract void commitTransaction();
+    
+    /**
+     * Rollbacks a transaction.
+     */
+    protected abstract void rollbackTransaction();
 }

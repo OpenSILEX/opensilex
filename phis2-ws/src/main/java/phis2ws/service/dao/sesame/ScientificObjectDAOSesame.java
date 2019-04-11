@@ -979,7 +979,7 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
             scientificObjectToSearchInDB.setUri(scientificObject.getUri());
             if (scientificObjectDAO.existInDB(scientificObjectToSearchInDB)) {
                 //2.2.1a Update old data
-                scientificObjectDAO.updateOneGeometry(scientificObject.getUri(), scientificObject.getGeometry());
+                scientificObjectDAO.updateOneGeometry(scientificObject.getUri(), scientificObject.getGeometry(), scientificObject.getRdfType(), scientificObject.getExperiment());
             } else {
                 //2.2.1b Add new entry in database
                 ArrayList<ScientificObject> scientificObjects = new ArrayList<>();

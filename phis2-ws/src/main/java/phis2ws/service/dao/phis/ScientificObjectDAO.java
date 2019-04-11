@@ -318,6 +318,8 @@ public class ScientificObjectDAO extends DAOPhisBrapi<ScientificObject, Scientif
      * Update the geometry of a scientific object identified by its URI.
      * @param uri
      * @param geometry
+     * @param rdfType
+     * @param experiment
      * @example 
      *  UPDATE "trial"
      *  SET "geometry" = ST_GeomFromText("POLYGON(1 0, 0 0, 0 1, 1 0)", 4326)
@@ -325,20 +327,37 @@ public class ScientificObjectDAO extends DAOPhisBrapi<ScientificObject, Scientif
      * @return the updated scientific object.
      * @throws SQLException 
      */
-    public ScientificObject updateOneGeometry(String uri, String geometry) throws SQLException {
+    public ScientificObject updateOneGeometry(String uri, String geometry, String rdfType, String experiment) throws Exception {
+        ScientificObject scientificObject = new ScientificObject(uri);
+        scientificObject.setGeometry(geometry);
         try (Connection connection = dataSource.getConnection(); Statement statement = connection.createStatement()) {
-            String updateGeometry = "UPDATE \"" + table + "\" "
-                              + "SET \"" + GEOMETRY + "\" = ST_GeomFromText('" + geometry + "', 4326) "
-                              + "WHERE \"" + URI + "\" = '" + uri + "'";
-            
-            LOGGER.debug(updateGeometry);
-            
-            statement.executeUpdate(updateGeometry);
-            ScientificObject scientificObject = new ScientificObject(uri);
-            scientificObject.setGeometry(geometry);
-            
-            return scientificObject;
+            if (geometry != null) {
+                if (!existInDB(scientificObject)) { //The scientific object must be inserted in the database.
+                   String insertScientificObject = "INSERT INTO \"" + table + "\" (\"" + URI + "\", \"" + TYPE + "\", \"" + GEOMETRY + "\", \"" + NAMED_GRAPH + "\") "
+                                       + "VALUES (\"" + uri + "\", \"" + rdfType + "\", ST_GeomFromText(\"" + geometry + "\", 4326), \"" + experiment + "\")"; 
+
+                   LOGGER.debug(insertScientificObject);
+                   statement.execute(insertScientificObject);
+                } else { //The scientific object already exist in the database and must be updated.
+                    String updateGeometry = "UPDATE \"" + table + "\" "
+                                      + "SET \"" + GEOMETRY + "\" = ST_GeomFromText('" + geometry + "', 4326) "
+                                      + "WHERE \"" + URI + "\" = '" + uri + "'";
+
+                    LOGGER.debug(updateGeometry);
+                    statement.executeUpdate(updateGeometry);
+                }
+            } else {
+                if (!existInDB(scientificObject)) { //The scientific object must be delete from the database.
+                    String deleteScientificObject = "DELETE FROM \"" + table + "\" WHERE \"" + URI + "\" = '" + uri + "'";
+                    LOGGER.debug(deleteScientificObject);
+                    statement.execute(deleteScientificObject);
+                }
+            }
+            statement.close();
+            connection.close();
         }
+        
+        return scientificObject;
     }
 
     @Override

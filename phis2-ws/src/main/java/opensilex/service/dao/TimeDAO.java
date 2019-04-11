@@ -45,15 +45,6 @@ public class TimeDAO extends SparqlDAO<Time> {
     protected static final String DATE_RANGE_END_DATETIME_SELECT_NAME = "dateRangeEndDateTime";
     protected static final String DATE_RANGE_END_DATETIME_SELECT_NAME_SPARQL = "?" + DATE_RANGE_END_DATETIME_SELECT_NAME;
     
-    // constants used for SPARQL names in the SELECT
-    private static final String XSD_DATE_TIME_STAMP_SELECT_NAME = "XSDDateTimeStamp";
-    private static final String XSD_DATE_TIME_STAMP_SELECT_NAME_SPARQL = "?" + XSD_DATE_TIME_STAMP_SELECT_NAME;
-    private static final String TIME_SELECT_NAME = "time";
-    private static final String TIME_SELECT_NAME_SPARQL = "?" + TIME_SELECT_NAME;
-    
-    private static final String DATETIMESTAMP_SELECT_NAME = "dateTimeStamp";
-    private static final String DATETIMESTAMP_SELECT_NAME_SPARQL = "?" + DATETIMESTAMP_SELECT_NAME;
-
     public TimeDAO(User user) {
         super(user);
     }

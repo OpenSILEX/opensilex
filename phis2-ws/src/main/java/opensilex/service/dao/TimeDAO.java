@@ -136,8 +136,8 @@ public class TimeDAO extends SparqlDAO<Time> {
         updateBuilder.addInsert(graph, instantResource, RDF.type, Time.Instant);
 
         // Add date time stamp to instant
-        DateTimeFormatter formatter = DateTimeFormat.forPattern(DATETIMESTAMP_FORMAT_SPARQL);
-        Literal dateLiteral = ResourceFactory.createTypedLiteral(dateTime.toString(formatter), XSDDatatype.XSDdateTime);
+        Literal dateTimeLiteral = getLiteralFromDateTime(dateTime);
+        updateBuilder.addInsert(graph, instantResource, Time.inXSDDateTimeStamp, dateTimeLiteral);
         updateBuilder.addInsert(graph, instantResource, Time.inXSDDateTimeStamp, dateLiteral);
 
         // Link resource to instant

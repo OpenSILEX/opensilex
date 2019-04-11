@@ -243,7 +243,7 @@ public class ConcernedItemDAO extends SparqlDAO<ConcernedItem> {
      * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
      */
     @Override
-    public void checkBeforeCreation(List<ConcernedItem> concernedItems) throws DAODataErrorAggregateException {       
+    public void validate(List<ConcernedItem> concernedItems) throws DAODataErrorAggregateException {       
         ArrayList<DAODataErrorException> exceptions = new ArrayList<>(); 
         concernedItems.forEach((concernedItem) -> {
             String concernedItemUri = concernedItem.getUri();

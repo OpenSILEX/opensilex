@@ -451,9 +451,7 @@ public class EventDAO extends SparqlDAO<Event> {
     @Override
     public List<Event> create(List<Event> events) 
             throws ResourceAccessDeniedException, SemanticInconsistencyException, Exception {     
-        int i = 0;
         for (Event event : events) {
-            i++;
             create(event);
         }
         return events;

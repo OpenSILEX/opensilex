@@ -65,12 +65,12 @@ public abstract class DAO<T> {
     public abstract T findById(String id) throws Exception;
     
     /**
-     * Checks the objects can be correctly created.Throws an aggregate exception to handle multiple exceptions.
+     * Validates the objects given.
      * @param objects
-     * @throws DAODataErrorAggregateException 
+     * @throws DAODataErrorAggregateException to handle multiple data error exceptions.
      * @throws opensilex.service.dao.exception.ResourceAccessDeniedException 
      */
-    public abstract void checkBeforeCreation(List<T> objects) 
+    public abstract void validate(List<T> objects) 
             throws DAODataErrorAggregateException, ResourceAccessDeniedException;
     
     /**

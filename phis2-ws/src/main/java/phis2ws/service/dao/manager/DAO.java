@@ -75,28 +75,48 @@ public abstract class DAO<T> {
     
     /**
      * Validates and creates objects.
-     * @param annotations
+     * @param objects
      * @return the annotations created.
      * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
      * @throws opensilex.service.dao.exception.ResourceAccessDeniedException
      */
-    public List<T> validateAndCreate(List<T> annotations) 
+    public List<T> validateAndCreate(List<T> objects) 
             throws DAODataErrorAggregateException, ResourceAccessDeniedException, Exception {
-        validate(annotations);
-        return create(annotations);
+        validate(objects);     
+        initConnection();
+        List<T> objectsCreated;
+        try {
+            objectsCreated = create(objects);
+            commitTransaction();
+        } catch (Exception ex) {
+            rollbackTransaction();
+            throw ex;
+        }
+        closeConnection();
+        return objectsCreated;
     }
     
     /**
      * Validates and updates objects.
-     * @param annotations
-     * @return the annotations created.
+     * @param objects
+     * @return the objects created.
      * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
      * @throws opensilex.service.dao.exception.ResourceAccessDeniedException
      */
-    public List<T> validateAndUpdate(List<T> annotations) 
+    public List<T> validateAndUpdate(List<T> objects) 
             throws DAODataErrorAggregateException, ResourceAccessDeniedException, Exception {
-        validate(annotations);
-        return update(annotations);
+        validate(objects);     
+        initConnection();
+        List<T> objectsUpdated;
+        try {
+            objectsUpdated = update(objects);
+            commitTransaction();
+        } catch (Exception ex) {
+            rollbackTransaction();
+            throw ex;
+        }
+        closeConnection();
+        return objectsUpdated;
     }
     
      /**
@@ -113,4 +133,29 @@ public abstract class DAO<T> {
         
         return log;
     }
+    
+    /**
+     * Initializes the connection to the storage.
+     */
+    protected abstract void initConnection();
+    
+    /**
+     * Closes the connection to the storage.
+     */
+    protected abstract void closeConnection();
+    
+    /**
+     * Starts a transaction.
+     */    
+    protected abstract void startTransaction();
+    
+    /**
+     * Commits a transaction.
+     */    
+    protected abstract void commitTransaction();
+    
+    /**
+     * Rollbacks a transaction.
+     */
+    protected abstract void rollbackTransaction();
 }

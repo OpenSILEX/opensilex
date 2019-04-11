@@ -398,7 +398,7 @@ public class EventResourceService  extends ResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response put(
-        @ApiParam(value = DocumentationAnnotation.RADIOMETRIC_TARGET_POST_DEFINITION) @Valid ArrayList<EventPutDTO> radiometricTargets,
+        @ApiParam(value = DocumentationAnnotation.RADIOMETRIC_TARGET_POST_DEFINITION) @Valid ArrayList<EventPutDTO> eventsDtos,
         @Context HttpServletRequest context) {
         
         // Set DAO
@@ -408,7 +408,7 @@ public class EventResourceService  extends ResourceService {
         }
         
         // Get POST response
-        return getPostResponse(objectDao, eventsDtos, context.getRemoteAddr(), StatusCodeMsg.EMPTY_EVENT_LIST);
+        return getPostPutResponse(objectDao, eventsDtos, context.getRemoteAddr(), StatusCodeMsg.EMPTY_EVENT_LIST);
     }
 
     @Override

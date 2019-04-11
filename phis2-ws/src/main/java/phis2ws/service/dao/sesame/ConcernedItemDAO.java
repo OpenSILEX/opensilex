@@ -27,7 +27,7 @@ import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.dao.manager.SparqlDAO;
+import phis2ws.service.dao.manager.Rdf4jDAO;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.model.User;
 import phis2ws.service.ontologies.Rdf;
@@ -41,7 +41,7 @@ import phis2ws.service.view.model.phis.ConcernedItem;
  * DAO for concerned items
  * @author Andreas Garcia <andreas.garcia@inra.fr>
  */
-public class ConcernedItemDAO extends SparqlDAO<ConcernedItem> {
+public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
     final static Logger LOGGER = LoggerFactory.getLogger(ConcernedItemDAO.class);
     
     // constants used for SPARQL names in the SELECT

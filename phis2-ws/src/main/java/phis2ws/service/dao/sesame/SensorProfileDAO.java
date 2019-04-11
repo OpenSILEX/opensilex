@@ -32,7 +32,7 @@ import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.dao.manager.SparqlDAO;
+import phis2ws.service.dao.manager.Rdf4jDAO;
 import phis2ws.service.dao.phis.UserDAO;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.ontologies.Contexts;
@@ -53,7 +53,7 @@ import phis2ws.service.view.model.phis.Uri;
  * CRUD method of sensor's profiles, in the triplestore [rdf4j]
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class SensorProfileDAO extends SparqlDAO<SensorProfile> {
+public class SensorProfileDAO extends Rdf4jDAO<SensorProfile> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(SensorProfile.class);
     

@@ -24,7 +24,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.dao.manager.SparqlDAO;
+import phis2ws.service.dao.manager.Rdf4jDAO;
 import phis2ws.service.model.User;
 import phis2ws.service.ontologies.Time;
 import phis2ws.service.ontologies.Xsd;
@@ -37,7 +37,7 @@ import phis2ws.service.utils.sparql.SPARQLStringBuilder;
  * DAO for Time objects
  * @author Andreas Garcia <andreas.garcia@inra.fr>
  */
-public class TimeDAO extends SparqlDAO<Time> {
+public class TimeDAO extends Rdf4jDAO<Time> {
     final static Logger LOGGER = LoggerFactory.getLogger(TimeDAO.class);
     
     protected static final String DATETIME_SELECT_NAME = "dateTime";

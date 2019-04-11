@@ -214,7 +214,7 @@ public class ImageMetadataMongoDAO extends MongoDAO<ImageMetadata> {
         
         for (ImageMetadataDTO imageMetadata : imagesMetadata) {
             //1. Check if the image type exist
-            phis2ws.service.dao.sesame.ImageMetadataSparqlDAO imageMetadataDaoSesame = new phis2ws.service.dao.sesame.ImageMetadataSparqlDAO();
+            phis2ws.service.dao.sesame.ImageMetadataRdf4jDAO imageMetadataDaoSesame = new phis2ws.service.dao.sesame.ImageMetadataRdf4jDAO();
             if (!imageMetadataDaoSesame.existUri(imageMetadata.getRdfType())) {
                 dataOk = false;
                 checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Wrong image type given : " + imageMetadata.getRdfType()));

@@ -19,7 +19,7 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.dao.manager.SparqlDAO;
+import phis2ws.service.dao.manager.Rdf4jDAO;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Oeso;
@@ -30,7 +30,7 @@ import phis2ws.service.view.model.phis.Species;
  * Species access in the triplestore rdf4j
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class SpeciesDAO extends SparqlDAO<Species> {
+public class SpeciesDAO extends Rdf4jDAO<Species> {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(SpeciesDAO.class);
     

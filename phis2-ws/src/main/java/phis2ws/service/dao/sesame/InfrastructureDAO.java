@@ -20,7 +20,7 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.dao.manager.SparqlDAO;
+import phis2ws.service.dao.manager.Rdf4jDAO;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Oeso;
@@ -32,7 +32,7 @@ import phis2ws.service.view.model.phis.Infrastructure;
  *
  * @author Vincent Migot <vincent.migot@inra.fr>
  */
-public class InfrastructureDAO extends SparqlDAO<Infrastructure> {
+public class InfrastructureDAO extends Rdf4jDAO<Infrastructure> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(InfrastructureDAO.class);
     

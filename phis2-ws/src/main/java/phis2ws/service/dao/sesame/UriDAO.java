@@ -34,7 +34,7 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.dao.manager.SparqlDAO;
+import phis2ws.service.dao.manager.Rdf4jDAO;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
@@ -46,7 +46,7 @@ import phis2ws.service.view.model.phis.Uri;
  *
  * @author Eloan LAGIER
  */
-public class UriDAO extends SparqlDAO<Uri> {
+public class UriDAO extends Rdf4jDAO<Uri> {
 
     public String uri;
     public String label;

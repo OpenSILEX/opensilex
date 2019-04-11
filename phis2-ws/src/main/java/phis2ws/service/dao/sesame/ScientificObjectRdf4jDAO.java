@@ -40,7 +40,7 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.dao.manager.SparqlDAO;
+import phis2ws.service.dao.manager.Rdf4jDAO;
 import phis2ws.service.dao.phis.ScientificObjectSQLDAO;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.ontologies.Contexts;
@@ -61,9 +61,9 @@ import phis2ws.service.view.model.phis.Property;
 import phis2ws.service.view.model.phis.Uri;
 
 
-public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
+public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     
-    final static Logger LOGGER = LoggerFactory.getLogger(ScientificObjectSparqlDAO.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(ScientificObjectRdf4jDAO.class);
     
     //The following attributes are used to search scientific objects in the triplestore
     //uri of the scientific object
@@ -88,7 +88,7 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
     
     private static final String URI_CODE_SCIENTIFIC_OBJECT = "o";
 
-    public ScientificObjectSparqlDAO() {
+    public ScientificObjectRdf4jDAO() {
         super();
     }
     
@@ -708,7 +708,7 @@ public class ScientificObjectSparqlDAO extends SparqlDAO<ScientificObject> {
             
             return scientificObjects;
         }   catch (SQLException ex) {
-            java.util.logging.Logger.getLogger(ScientificObjectSparqlDAO.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ScientificObjectRdf4jDAO.class.getName()).log(Level.SEVERE, null, ex);
             
             if (getConnection() != null) {
                 getConnection().close();

@@ -19,7 +19,7 @@ import phis2ws.service.dao.mongo.ImageMetadataMongoDAO;
 import phis2ws.service.dao.phis.ExperimentSQLDAO;
 import phis2ws.service.dao.phis.GroupDAO;
 import phis2ws.service.dao.phis.ProjectDAO;
-import phis2ws.service.dao.sesame.ScientificObjectSparqlDAO;
+import phis2ws.service.dao.sesame.ScientificObjectRdf4jDAO;
 import phis2ws.service.dao.sesame.AnnotationDAO;
 import phis2ws.service.dao.sesame.EventDAO;
 import phis2ws.service.dao.sesame.MethodDAO;
@@ -159,7 +159,7 @@ public class UriGenerator {
     private String generateAgronomicalObjectUri(String year) {
         //1. get the highest number for the year 
         //(i.e. the last inserted agronomical object for the year)
-        ScientificObjectSparqlDAO agronomicalObjectDAO = new ScientificObjectSparqlDAO();
+        ScientificObjectRdf4jDAO agronomicalObjectDAO = new ScientificObjectRdf4jDAO();
         int lastAgronomicalObjectIdFromYear = agronomicalObjectDAO.getLastScientificObjectIdFromYear(year);
 
         //2. generates agronomical object URI

@@ -35,7 +35,7 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.dao.manager.SparqlDAO;
+import phis2ws.service.dao.manager.Rdf4jDAO;
 import phis2ws.service.dao.phis.UserDAO;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.model.User;
@@ -54,7 +54,7 @@ import phis2ws.service.view.model.phis.Vector;
  * CRUD methods of vectors, in the triplestore rdf4j
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class VectorDAO extends SparqlDAO<Vector> {
+public class VectorDAO extends Rdf4jDAO<Vector> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(SensorDAO.class);
 

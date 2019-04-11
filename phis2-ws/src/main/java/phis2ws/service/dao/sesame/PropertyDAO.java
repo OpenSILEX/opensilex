@@ -31,7 +31,7 @@ import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.dao.manager.SparqlDAO;
+import phis2ws.service.dao.manager.Rdf4jDAO;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.ontologies.Owl;
 import phis2ws.service.ontologies.Rdf;
@@ -57,7 +57,7 @@ import phis2ws.service.view.model.phis.Property;
  * the parameters of the DAO functions
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class PropertyDAO extends SparqlDAO<Property> {
+public class PropertyDAO extends Rdf4jDAO<Property> {
     final static Logger LOGGER = LoggerFactory.getLogger(PropertyDAO.class);
         
     // This attribute is used to restrict available uri to a specific set of subclass

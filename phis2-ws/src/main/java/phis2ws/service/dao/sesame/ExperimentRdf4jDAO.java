@@ -30,7 +30,7 @@ import org.eclipse.rdf4j.query.UpdateExecutionException;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.dao.manager.SparqlDAO;
+import phis2ws.service.dao.manager.Rdf4jDAO;
 import phis2ws.service.dao.phis.ExperimentSQLDAO;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.ontologies.Rdf;
@@ -45,9 +45,9 @@ import phis2ws.service.view.model.phis.Experiment;
  * Access to the experiments in the triplestore. 
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class ExperimentSparqlDAO extends SparqlDAO<Experiment> {
+public class ExperimentRdf4jDAO extends Rdf4jDAO<Experiment> {
     
-    final static Logger LOGGER = LoggerFactory.getLogger(ExperimentSparqlDAO.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(ExperimentRdf4jDAO.class);
     
     /**
      * Prepare the SPARQL query to return all variables measured by an experiment.

@@ -29,7 +29,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.DateFormat;
-import phis2ws.service.dao.manager.SparqlDAO;
+import phis2ws.service.dao.manager.Rdf4jDAO;
 import phis2ws.service.dao.phis.UserDAO;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.model.User;
@@ -56,7 +56,7 @@ import phis2ws.service.view.model.phis.Property;
  *      Move concerned items accesses handling into a new ConcernedItemDAOSesame class
  * @author Andreas Garcia <andreas.garcia@inra.fr>
  */
-public class EventDAO extends SparqlDAO<Event> {
+public class EventDAO extends Rdf4jDAO<Event> {
     final static Logger LOGGER = LoggerFactory.getLogger(EventDAO.class);
     
     private static final String TIME_SELECT_NAME = "time";

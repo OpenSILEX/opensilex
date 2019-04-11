@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.configuration.DateFormat;
 import phis2ws.service.dao.manager.MongoDAO;
-import phis2ws.service.dao.sesame.ScientificObjectSparqlDAO;
+import phis2ws.service.dao.sesame.ScientificObjectRdf4jDAO;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.utils.FileUploader;
@@ -265,7 +265,7 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
         boolean dataOk = true;
 
         ProvenanceDAO provenanceDAO = new ProvenanceDAO();
-        ScientificObjectSparqlDAO scientificObjectDao = new ScientificObjectSparqlDAO();
+        ScientificObjectRdf4jDAO scientificObjectDao = new ScientificObjectRdf4jDAO();
         
         if (!provenanceDAO.existProvenanceUri(fileDescription.getProvenanceUri())) {
             // 1. Check if the provenance uri exist and is a provenance

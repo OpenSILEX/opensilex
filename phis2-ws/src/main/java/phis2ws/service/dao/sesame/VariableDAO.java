@@ -34,7 +34,7 @@ import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
-import phis2ws.service.dao.manager.SparqlDAO;
+import phis2ws.service.dao.manager.Rdf4jDAO;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.ontologies.Contexts;
 import phis2ws.service.ontologies.Rdf;
@@ -57,7 +57,7 @@ import phis2ws.service.view.model.phis.Variable;
  * It manages operation on variables in the triplestore.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class VariableDAO extends SparqlDAO<Variable> {
+public class VariableDAO extends Rdf4jDAO<Variable> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(VariableDAO.class);
     

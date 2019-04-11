@@ -36,7 +36,7 @@ import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.DateFormats;
-import phis2ws.service.dao.manager.SparqlDAO;
+import phis2ws.service.dao.manager.Rdf4jDAO;
 import phis2ws.service.dao.phis.UserDAO;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.model.User;
@@ -57,7 +57,7 @@ import phis2ws.service.view.model.phis.Annotation;
  * attributes but parameters sent through search functions
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
-public class AnnotationDAO extends SparqlDAO<Annotation> {
+public class AnnotationDAO extends Rdf4jDAO<Annotation> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(AnnotationDAO.class);
 

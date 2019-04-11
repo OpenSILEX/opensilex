@@ -18,7 +18,7 @@ import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.dao.manager.SparqlDAO;
+import phis2ws.service.dao.manager.Rdf4jDAO;
 import phis2ws.service.utils.sparql.SPARQLQueryBuilder;
 import phis2ws.service.view.model.phis.ImageMetadata;
 
@@ -26,13 +26,13 @@ import phis2ws.service.view.model.phis.ImageMetadata;
  * Used to check if an image type exist in the triplestore
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class ImageMetadataSparqlDAO extends SparqlDAO<ImageMetadata> {
+public class ImageMetadataRdf4jDAO extends Rdf4jDAO<ImageMetadata> {
     
-    final static Logger LOGGER = LoggerFactory.getLogger(ImageMetadataSparqlDAO.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(ImageMetadataRdf4jDAO.class);
     
     public String rdfType;
 
-    public ImageMetadataSparqlDAO() {
+    public ImageMetadataRdf4jDAO() {
     }
 
     @Override

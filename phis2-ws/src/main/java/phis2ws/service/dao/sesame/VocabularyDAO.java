@@ -22,7 +22,7 @@ import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.URINamespaces;
-import phis2ws.service.dao.manager.SparqlDAO;
+import phis2ws.service.dao.manager.Rdf4jDAO;
 import phis2ws.service.ontologies.Rdfs;
 import phis2ws.service.ontologies.Oeso;
 import phis2ws.service.resources.dto.PropertyVocabularyDTO;
@@ -34,7 +34,7 @@ import phis2ws.service.view.model.phis.Namespace;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
-public class VocabularyDAO extends SparqlDAO<PropertyVocabularyDTO> {
+public class VocabularyDAO extends Rdf4jDAO<PropertyVocabularyDTO> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(VocabularyDAO.class);
 

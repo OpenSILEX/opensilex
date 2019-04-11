@@ -34,7 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.configuration.DocumentStatus;
 import phis2ws.service.configuration.SortingValues;
-import phis2ws.service.dao.manager.SparqlDAO;
+import phis2ws.service.dao.manager.Rdf4jDAO;
 import phis2ws.service.dao.mongo.DocumentMongoDAO;
 import phis2ws.service.dao.phis.ExperimentSQLDAO;
 import phis2ws.service.dao.phis.UserDAO;
@@ -70,8 +70,8 @@ import phis2ws.service.view.model.phis.Experiment;
  * @update [Morgane Vidal] 12 October, 2017 : add status on documents : linked/unlinked
  * @update [Andréas Garcia] 15 Jan. 2019 : Replace "concern" occurences by "concernedItem"
  */
-public class DocumentSparqlDAO extends SparqlDAO<Document> {
-    final static Logger LOGGER = LoggerFactory.getLogger(DocumentSparqlDAO.class);
+public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
+    final static Logger LOGGER = LoggerFactory.getLogger(DocumentRdf4jDAO.class);
     public String uri;
     
     public String documentType;
@@ -112,7 +112,7 @@ public class DocumentSparqlDAO extends SparqlDAO<Document> {
     public String status;
     public static final String STATUS = "status";
 
-    public DocumentSparqlDAO() {
+    public DocumentRdf4jDAO() {
         super(); // Repository
         resourceType = "documents";
     }
@@ -750,7 +750,7 @@ public class DocumentSparqlDAO extends SparqlDAO<Document> {
         for (DocumentMetadataDTO documentMetadata : documentsMetadata) {
             //1. Delete actual metadata
             //1.1 Get informations which will be updated (to remove triplets)
-            DocumentSparqlDAO docDaoSesame = new DocumentSparqlDAO();
+            DocumentRdf4jDAO docDaoSesame = new DocumentRdf4jDAO();
             docDaoSesame.user = user;
             docDaoSesame.uri = documentMetadata.getUri();
             ArrayList<Document> documentsCorresponding = docDaoSesame.allPaginate();

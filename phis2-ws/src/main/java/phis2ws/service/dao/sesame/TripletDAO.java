@@ -34,7 +34,7 @@ import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.dao.manager.SparqlDAO;
+import phis2ws.service.dao.manager.Rdf4jDAO;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.configuration.OType;
 import phis2ws.service.ontologies.Rdf;
@@ -50,7 +50,7 @@ import phis2ws.service.view.model.phis.Triplet;
  * a specific DAO to insert triplets in the triplestore
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class TripletDAO extends SparqlDAO<Triplet> {
+public class TripletDAO extends Rdf4jDAO<Triplet> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(TripletDAO.class);
     

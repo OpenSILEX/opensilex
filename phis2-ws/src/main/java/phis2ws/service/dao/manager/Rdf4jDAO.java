@@ -56,9 +56,9 @@ import phis2ws.service.view.brapi.form.ResponseFormPOST;
  * @param <T>
  * @author Arnaud Charleroy
  */
-public abstract class SparqlDAO<T> extends DAO<T> {
+public abstract class Rdf4jDAO<T> extends DAO<T> {
 
-    final static Logger LOGGER = LoggerFactory.getLogger(SparqlDAO.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(Rdf4jDAO.class);
     protected static final String PROPERTY_FILENAME = "sesame_rdf_config";
     
     /**
@@ -108,7 +108,7 @@ public abstract class SparqlDAO<T> extends DAO<T> {
     protected Integer page;
     protected Integer pageSize;
 
-    public SparqlDAO() {
+    public Rdf4jDAO() {
         try {
             String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
             String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "repositoryID");
@@ -121,12 +121,12 @@ public abstract class SparqlDAO<T> extends DAO<T> {
         }
     }
 
-    public SparqlDAO(User user) {
+    public Rdf4jDAO(User user) {
         this();
         this.user = user;
     }
 
-    public SparqlDAO(String repositoryID) {
+    public Rdf4jDAO(String repositoryID) {
         try {
             String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
             rep = new HTTPRepository(sesameServer, repositoryID); //Stockage triplestore Sesame

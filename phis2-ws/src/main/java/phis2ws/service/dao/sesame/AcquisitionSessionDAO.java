@@ -16,7 +16,7 @@ import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import phis2ws.service.dao.manager.SparqlDAO;
+import phis2ws.service.dao.manager.Rdf4jDAO;
 import phis2ws.service.dao.phis.ExperimentSQLDAO;
 import phis2ws.service.dao.phis.UserDAO;
 import phis2ws.service.model.User;
@@ -36,7 +36,7 @@ import phis2ws.service.view.model.phis.Vector;
  * @update [Arnaud Charleroy] 10 September, 2018 : minor fix on vector data gathering
  * @author Morgane Vidal <morgane.vidal@inra.fr>, Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
-public class AcquisitionSessionDAO extends SparqlDAO<MetadataFileDTO> {
+public class AcquisitionSessionDAO extends Rdf4jDAO<MetadataFileDTO> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(AcquisitionSessionDAO.class);
     

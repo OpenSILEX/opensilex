@@ -33,7 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.dao.manager.DAO;
-import phis2ws.service.dao.sesame.ScientificObjectSparqlDAO;
+import phis2ws.service.dao.sesame.ScientificObjectRdf4jDAO;
 import phis2ws.service.documentation.StatusCodeMsg;
 import phis2ws.service.ontologies.Rdf;
 import phis2ws.service.ontologies.Oeso;
@@ -76,7 +76,7 @@ public class LayerDAO extends DAO<LayerDTO>{
      * @param layerDTO 
      */
       public void searchAndUpdateChildren(LayerDTO layerDTO) throws SQLException {
-        ScientificObjectSparqlDAO agronomicalObjectDao = new ScientificObjectSparqlDAO();
+        ScientificObjectRdf4jDAO agronomicalObjectDao = new ScientificObjectRdf4jDAO();
         ScientificObjectSQLDAO agronomicalObject = new ScientificObjectSQLDAO();
         
         HashMap<String, ScientificObject> childrendAgronomicalObjectDaoSesame = agronomicalObjectDao.searchChildren(layerDTO);

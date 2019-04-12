@@ -749,13 +749,6 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
                 
             }
             
-            if (scientificObject.getUriExperiment() != null) {
-                Node experimentUri = NodeFactory.createURI(scientificObject.getUriExperiment());
-                org.apache.jena.rdf.model.Property relationHasPlot = ResourceFactory.createProperty(Oeso.RELATION_HAS_PLOT.toString());
-                
-                spql.addInsert(graph, experimentUri, relationHasPlot, scientificObjectUri);  
-            }
-            
             //isPartOf : the object which has part the element must not be a plot    
             if (scientificObject.getIsPartOf()!= null) {
                 Node agronomicalObjectPartOf = NodeFactory.createURI(scientificObject.getIsPartOf());

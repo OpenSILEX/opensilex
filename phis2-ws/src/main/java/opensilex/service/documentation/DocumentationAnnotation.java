@@ -301,4 +301,6 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_INFRASTRUCTURE_LABEL = "EMPHASIS";
     
     public static final String EXAMPLE_LANGUAGE = "en";
+    
+    public static final String EXAMPLE_SKOS_REFERECENCE_URI = "http://purl.obolibrary.org/obo/CO_125_0000002";
 }

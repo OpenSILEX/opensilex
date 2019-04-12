@@ -242,7 +242,7 @@ public class VariableResourceService extends ResourceService {
             variableDao.trait = trait;
         }
         if (traitSKosReference != null) {
-            variableDaoSesame.traitSKosReference = traitSKosReference;
+            variableDao.traitSKosReference = traitSKosReference;
         }
         if (method != null) {
             variableDao.method = method;

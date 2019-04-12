@@ -197,7 +197,7 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
         //This is an unclean hot fix
         String tripleStoreServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
         String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "repositoryID");
-        rep = new HTTPRepository(tripleStoreServer, repositoryID); //Stockage triplestore Sesame
+        rep = new HTTPRepository(tripleStoreServer, repositoryID); //Stockage triplestore
         rep.initialize();
         this.setConnection(rep.getConnection());
         this.getConnection().begin();
@@ -398,7 +398,7 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
                 // storage connection to review: dirty hotfix
                 String tripleStoreServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
                 String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "repositoryID");
-                rep = new HTTPRepository(tripleStoreServer, repositoryID); //Stockage triplestore Sesame
+                rep = new HTTPRepository(tripleStoreServer, repositoryID); //Stockage triplestore
                 rep.initialize();
                 this.setConnection(rep.getConnection());
                 this.getConnection().begin();

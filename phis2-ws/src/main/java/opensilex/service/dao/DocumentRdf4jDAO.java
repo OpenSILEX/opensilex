@@ -747,10 +747,10 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
         for (DocumentMetadataDTO documentMetadata : documentsMetadata) {
             //1. Delete actual metadata
             //1.1 Get informations which will be updated (to remove triplets)
-            DocumentRdf4jDAO docDaoSesame = new DocumentRdf4jDAO();
-            docDaoSesame.user = user;
-            docDaoSesame.uri = documentMetadata.getUri();
-            ArrayList<Document> documentsCorresponding = docDaoSesame.allPaginate();
+            DocumentRdf4jDAO docRdf4jDao = new DocumentRdf4jDAO();
+            docRdf4jDao.user = user;
+            docRdf4jDao.uri = documentMetadata.getUri();
+            ArrayList<Document> documentsCorresponding = docRdf4jDao.allPaginate();
 
             UpdateRequest deleteQuery = null;
             //1.2 Delete metatada associated to the URI

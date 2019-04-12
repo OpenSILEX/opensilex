@@ -113,9 +113,9 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
 
     public Rdf4jDAO() {
         try {
-            String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
+            String triplestoreServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
             String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "repositoryID");
-            rep = new HTTPRepository(sesameServer, repositoryID); //Stockage triplestore Sesame
+            rep = new HTTPRepository(triplestoreServer, repositoryID); //Stockage triplestore
             rep.initialize();
             setConnection(rep.getConnection());
         } catch (RepositoryException e) {
@@ -133,8 +133,8 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
 
     public Rdf4jDAO(String repositoryID) {
         try {
-            String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
-            rep = new HTTPRepository(sesameServer, repositoryID); //Stockage triplestore Sesame
+            String tripleStoreServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
+            rep = new HTTPRepository(tripleStoreServer, repositoryID); //Stockage triplestore
             rep.initialize();
             setConnection(rep.getConnection());
         } catch (RepositoryException e) {

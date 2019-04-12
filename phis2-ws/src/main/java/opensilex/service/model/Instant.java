@@ -37,7 +37,7 @@ public class Instant extends RdfResourceDefinition {
      * @param uri
      * @param dateTime
      */
-    Instant(String uri, DateTime dateTime) {
+    public Instant(String uri, DateTime dateTime) {
         this.uri = uri;
         this.dateTime = dateTime;
     }

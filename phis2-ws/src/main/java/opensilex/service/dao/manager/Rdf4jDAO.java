@@ -1,5 +1,5 @@
 //******************************************************************************
-//                              DAOSesame.java 
+//                              Rdf4jDAO.java 
 // SILEX-PHIS
 // Copyright © INRA 2016
 // Creation date: Aug 2016

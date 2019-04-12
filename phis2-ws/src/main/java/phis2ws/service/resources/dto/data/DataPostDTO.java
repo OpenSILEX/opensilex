@@ -23,6 +23,7 @@ import phis2ws.service.view.model.phis.Data;
  * Represents the exchange format used to insert data in post service.
  */
 public class DataPostDTO extends AbstractVerifiedClass {
+
     //The uri of the provenance from which data come.
     //e.g. http://www.phenome-fppn.fr/mtp/2018/s18003
     protected String provenanceUri;
@@ -38,7 +39,7 @@ public class DataPostDTO extends AbstractVerifiedClass {
     //The measured value.
     //e.g. 1.2
     protected Object value;
-    
+
     @URL
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SENSOR_URI)
@@ -61,7 +62,7 @@ public class DataPostDTO extends AbstractVerifiedClass {
         this.variableUri = variableUri;
     }
 
-    @Date(DateFormat.YMDTHMSZ)
+    @Date({DateFormat.YMDTHMSZ, DateFormat.YMD})
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_XSDDATETIME)
     public String getDate() {
@@ -96,20 +97,19 @@ public class DataPostDTO extends AbstractVerifiedClass {
     @Override
     public Data createObjectFromDTO() throws ParseException {
         Data data = new Data();
-        
+
         data.setObjectUri(objectUri);
         data.setVariableUri(variableUri);
         data.setProvenanceUri(provenanceUri);
-        
-        SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
-        data.setDate(df.parse(date));
-        
+
+        data.setDate(DateFormat.parseDateOrDateTime(date, false));
+
         try {
-            data.setValue(df.parse(value.toString()));
+            data.setValue(DateFormat.parseDateOrDateTime(value.toString(), false));
         } catch (ParseException ex) {
             data.setValue(value);
         }
-        
+
         return data;
     }
 }

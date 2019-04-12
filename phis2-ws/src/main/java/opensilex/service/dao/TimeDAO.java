@@ -8,6 +8,7 @@
 package opensilex.service.dao;
 
 import java.util.List;
+import opensilex.service.configuration.DateFormat;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
@@ -30,6 +31,7 @@ import opensilex.service.utils.UriGenerator;
 import opensilex.service.utils.date.Dates;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.utils.sparql.SPARQLStringBuilder;
+import org.eclipse.rdf4j.query.BindingSet;
 
 /**
  * Time object DAO.
@@ -167,8 +169,16 @@ public class TimeDAO extends SparqlDAO<Time> {
         Resource instantResource = ResourceFactory.createResource(instant.getUri());
         Literal dateTimeLiteral = getLiteralFromDateTime(instant.getDateTime());
         updateBuilder.addDelete(graph, instantResource, RDF.type, Time.Instant);
-        updateBuilder.addInsert(graph, instantResource, Time.inXSDDateTimeStamp, dateTimeLiteral);
+        updateBuilder.addDelete(graph, instantResource, Time.inXSDDateTimeStamp, dateTimeLiteral);
         updateBuilder.addDelete(graph, linkedResource, Time.hasTime, instantResource);
+    }
+    
+    public static Instant getInstantFromBindingSet(BindingSet bindingSet, String instantUriSelectName, String dateTimeStampSelectName) {
+        String instantDateTimeString = getStringValueOfSelectNameFromBindingSet(dateTimeStampSelectName, bindingSet);    
+        String instantUri = getStringValueOfSelectNameFromBindingSet(instantUriSelectName, bindingSet);    
+        DateTime InstantDateTime = 
+                Dates.stringToDateTimeWithGivenPattern(instantDateTimeString, DateFormat.YMDTHMSZZ.toString());
+        return new Instant(instantUri, InstantDateTime);
     }
     
     /**

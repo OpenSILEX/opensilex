@@ -240,7 +240,7 @@ public class ConcernedItemDAO extends SparqlDAO<ConcernedItem> {
     /**
      * Inserts the given concerned items in the storage. 
      * /!\ Prerequisite: data must have been checked before calling this method
-     * @see EventDAOSesame#check(java.util.List)
+     * @see EventDAO#check(java.util.List)
      * @param graph 
      * @param objectResource
      * @param concernsRelationUri since "concerns" can designate various

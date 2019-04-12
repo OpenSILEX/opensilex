@@ -2,7 +2,7 @@
 //                                 DatasetDao.java 
 // SILEX-PHIS
 // Copyright © INRA 2017
-// Creation date: September 2017
+// Creation date: Sept. 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.dao;
@@ -38,7 +38,7 @@ import opensilex.service.model.AgronomicalData;
 import opensilex.service.model.Dataset;
 
 /**
- * datasets DAO.
+ * Dataset DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class DatasetDAO extends MongoDAO<Dataset> {
@@ -96,39 +96,48 @@ public class DatasetDAO extends MongoDAO<Dataset> {
     public String incertitude;
     
     // MongoDB fields labels 
-    //Represents the agronomical object label used for mongodb documents
+    // Agronomical object label used for mongodb documents
     private final static String DB_FIELD_SCIENTIFIC_OBJECT = "agronomicalObject";
-    //Represents the variable label used for mongodb documents
+    
+    // Variable label used for mongodb documents
     private final static String DB_FIELD_VARIABLE = "variable";
-    //Represents the date label used for mongodb documents
+    
+    // Date label used for mongodb documents
     private final static String DB_FIELD_DATE = "date";
-    //Represents the uri label used for mongodb documents
+    
+    // URI label used for mongodb documents
     private final static String DB_FIELD_URI = "uri";
-    //Represents the value label used for mongodb documents. It is the double 
-    //value of the data
+    
+    // Value label used for mongodb documents. It is the double value of the data
     private final static String DB_FIELD_VALUE = "value";
-    //Represents the creation date label used for mongodb documents.
+    
+    // Dreation date label used for mongodb documents.
     private final static String DB_FIELD_CREATION_DATE = "creationDate";
-    //Represents the mongodb documents label for the script document uri which 
-    //was used to generate the dataset
+    
+    // MongoDB documents label for the script document uri which 
+    // was used to generate the dataset
     private final static String DB_FIELD_WAS_GENERATED_BY = "wasGeneratedBy";
-    //Represents the mongodb documents label for the description about the 
-    //dataset generation 
+    
+    // MongoDB documents label for the description about the dataset generation 
     private final static String DB_FIELDS_WAS_GENERATED_BY_DESCRIPTION = "wasGeneratedByDescription";
-    //Represents the mongodb documents label for the documents linked to the 
-    //dataset
+    
+    // MongoDB documents label for the documents linked to the dataset
     private final static String DB_FIELDS_DOCUMENTS = "documents";
-    //Represents the mongodb documents label for the provenance id
+    
+    // MongoDB documents label for the provenance id
     private final static String DB_FIELDS_PROVENANCE_ID = "provenanceId";
-    //Represents the mongodb documents label for the provenance uri
+    
+    // MongoDB documents label for the provenance URI
     private final static String DB_FIELDS_PROVENANCE_URI = "provenanceUri";
-    //Represents the mongodb documents label for the sensor uri
+    
+    // MongoDB documents label for the sensor URI
     private final static String DB_FIELDS_SENSOR = "sensor";
-    //Represents the mongodb documents label for the incertitude of data
+    
+    // MongoDB documents label for the incertitude of data
     private final static String DB_FIELDS_INCERTITUDE = "incertitude";  
     
     /**
-     * Searches by variable, start date, end date, agronomical object 
+     * Searches by variable, start date, end date, scientific object.
      * @return the search query
      */
     @Override
@@ -189,14 +198,14 @@ public class DatasetDAO extends MongoDAO<Dataset> {
     }
 
     /**
-     * Gets experiment's scientific objects and add them to the searched 
-     * scientific objects list 
+     * Gets experiment's scientific objects and add them to the searched
+     * scientific objects list.
      */
     private void updateScientificObjectsWithExperimentsScientificObjects() {
-        ScientificObjectSparqlDAO scientificObjectSparqlDao = new ScientificObjectSparqlDAO();
-        scientificObjectSparqlDao.experiment = experiment;
+        ScientificObjectRdf4jDAO scientificObjectRdf4jDao = new ScientificObjectRdf4jDAO();
+        scientificObjectRdf4jDao.experiment = experiment;
         
-        ArrayList<ScientificObject> scientificObjectsSearched = scientificObjectSparqlDao.allPaginate();
+        ArrayList<ScientificObject> scientificObjectsSearched = scientificObjectRdf4jDao.allPaginate();
         
         scientificObjectsSearched.forEach((scientificObject) -> {
             this.scientificObjects.add(scientificObject.getUri());
@@ -205,8 +214,8 @@ public class DatasetDAO extends MongoDAO<Dataset> {
     
     /**
      * Gets all the datasets corresponding to search parameters (experiment, 
-     * scientific objects, variable, date start, date end)
-     * @return datasets list, empty if no search result
+     * scientific objects, variable, date start, date end).
+     * @return datasets list, empty if no search result.
      */
     public ArrayList<Dataset> allPaginate() {
         //If search by experiment, get experiment's scientific objects.
@@ -255,11 +264,11 @@ public class DatasetDAO extends MongoDAO<Dataset> {
     //- The check function must be also used in the update
     //\SILEX:todo
     /**
-     * check and insert in the mongodb database a list of datasets.
+     * Checks and inserts in the MongoDB database a list of datasets.
      * If the provenance creation date is not given, it means that the provenance
      * already exist. The dataset is added to the existing provenance. If the 
      * provenance does not exist and the creation date is given, a new provenance
-     * is created
+     * is created.
      * @param datasetsDTO datasets to insert
      * @return the insertion result
      * @throws Exception 
@@ -268,23 +277,23 @@ public class DatasetDAO extends MongoDAO<Dataset> {
         List<Status> insertStatusList = new ArrayList<>();
         //The uris of the provenances created
         List<String> createdProvenances = new ArrayList<>(); 
-        POSTResultsReturn result = null;
+        POSTResultsReturn result;
         
         ArrayList<Dataset> datasets = new ArrayList<>();
         boolean dataState = true;
         
-        //check if data is valid
+        // check if data is valid
         for (DatasetDTO datasetDTO : datasetsDTO) {
-            //if the datasetDTO follows the rules
+            // if the datasetDTO follows the rules
             for (AgronomicalDataDTO data : datasetDTO.getData()) {
-                //is agronomical object exist ?
-                ScientificObjectSparqlDAO scientifiObjectSparqlDao = new ScientificObjectSparqlDAO();
-                if (!scientifiObjectSparqlDao.existScientificObject(data.getAgronomicalObject())) {
+                // does the scientific object exist?
+                ScientificObjectRdf4jDAO agronomicalObjectDao = new ScientificObjectRdf4jDAO();
+                if (!agronomicalObjectDao.existScientificObject(data.getAgronomicalObject())) {
                     dataState = false;
                     insertStatusList.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Unknown Agronomical Object URI : " + data.getAgronomicalObject()));
                 }
 
-                //is sensor exist ?
+                // does the sensor exist?
                 if (data.getSensor() != null) {
                     SensorDAO sensorDAO = new SensorDAO();
                     if (!sensorDAO.existUri(data.getSensor())) {
@@ -294,7 +303,7 @@ public class DatasetDAO extends MongoDAO<Dataset> {
                 }
             }
 
-            // does variable exist ? 
+            // does the variable exist? 
             VariableDAO variableDao = new VariableDAO();
             if (!variableDao.existUri(datasetDTO.getVariableUri())) {
                 dataState = false;
@@ -305,7 +314,7 @@ public class DatasetDAO extends MongoDAO<Dataset> {
             datasets.add(phenotype);
         }
         
-        // if data is valid, insert in mongo
+        // if data is valid, insert in Mongo
         if (dataState) {
             SimpleDateFormat df = new SimpleDateFormat(DateFormats.YMD_FORMAT);
             // SILEX:todo
@@ -397,9 +406,9 @@ public class DatasetDAO extends MongoDAO<Dataset> {
     }
     
     /**
-     * Registers datasets in MongoDB
-     * @param datasetsDTO datasets to save
-     * @return insertion result
+     * Registers datasets in MongoDB.
+     * @param datasetsDTO datasets to save.
+     * @return insertion result.
      */
     public POSTResultsReturn checkAndInsert(ArrayList<DatasetDTO> datasetsDTO) {
         POSTResultsReturn postResult;

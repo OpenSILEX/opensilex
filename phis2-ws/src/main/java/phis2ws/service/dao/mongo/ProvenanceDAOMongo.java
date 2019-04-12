@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 import javax.ws.rs.core.Response;
+import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import org.bson.BSONObject;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -449,6 +450,11 @@ public class ProvenanceDAOMongo extends DAOMongo<Provenance> {
 
     @Override
     public List<Provenance> update(List<Provenance> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void validate(List<Provenance> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

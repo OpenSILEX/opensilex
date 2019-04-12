@@ -14,6 +14,7 @@ package phis2ws.service.dao.sesame;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
+import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -839,6 +840,11 @@ public class VectorDAOSesame extends DAOSesame<Vector> {
 
     @Override
     public Vector findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void validate(List<Vector> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -66,14 +66,9 @@ public abstract class SQLDAO<T> extends DAO<T> {
     // For query logging
     protected static final String SQL_SELECT_QUERY = "SQL query : ";
     
-    /**
-     * user c'est l'objet qui représente l'utilisateur
-     */
-    public User user;
     protected Integer page;
     protected Integer pageSize;
-
-    public String remoteUserAdress;
+    
     /**
      * Nom de la table du dao (table principale)
      */
@@ -646,5 +641,30 @@ public abstract class SQLDAO<T> extends DAO<T> {
                 this.dataSource = JWT_ISSUER_DATASOURCE.get(issuer);
             }
         }
+    }
+
+    @Override
+    protected void initConnection() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    protected void closeConnection() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    protected void startTransaction() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    protected void commitTransaction() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    protected void rollbackTransaction() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

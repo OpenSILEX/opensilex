@@ -31,22 +31,37 @@ import phis2ws.service.model.User;
 public abstract class DAOMongo<T> extends DAO<T> {
 
     /**
-     * @see service.properties file
+     * This block initialize MongoDB connection URL with user authentication or not 
+     * depending of the configuration
+     * @see mongodb_nosql_config.properties file
      */
-    private final static MongoClient MONGO_CLIENT = new MongoClient(
-            new MongoClientURI(PropertiesFileManager.getConfigFileProperty("mongodb_nosql_config", "url")));
+    static {
+        String host = PropertiesFileManager.getConfigFileProperty("mongodb_nosql_config", "host");
+        String port = PropertiesFileManager.getConfigFileProperty("mongodb_nosql_config", "port");
+        String user = PropertiesFileManager.getConfigFileProperty("mongodb_nosql_config", "user");
+        String password = PropertiesFileManager.getConfigFileProperty("mongodb_nosql_config", "password");
+        String authdb = PropertiesFileManager.getConfigFileProperty("mongodb_nosql_config", "authdb");
+        String url = "mongodb://";
+        if (!user.equals("")) {
+            url += user + ":" + password + "@";
+        }
+        
+        url += host + ":" + port + "/";
+        
+        if (!authdb.equals("") && !user.equals("")) {
+             url += "?authSource=" + authdb;
+        }
+        
+        MONGO_CLIENT = new MongoClient(new MongoClientURI(url));
+    }
+    private final static MongoClient MONGO_CLIENT;
+    
     protected GridFS gridFS = new GridFS(MONGO_CLIENT.getDB(PropertiesFileManager.getConfigFileProperty("mongodb_nosql_config", "db")));
     protected MongoDatabase database;
     protected MongoCollection<Document> collection;
 
-    public User user;
     protected Integer page;
     protected Integer pageSize;
-    
-    /**
-     * User ip adress
-     */
-    protected String remoteUserAdress;
     
     //The _id json data key in the mongodb documents
     public final static String DB_FIELD_ID = "_id";
@@ -140,22 +155,6 @@ public abstract class DAOMongo<T> extends DAO<T> {
         }
         return pageSize;
     }
-
-    /**
-     * 
-     * @return Les logs qui seront utilisés pour la traçabilité
-     */
-    protected String getTraceabilityLogs() {
-        String log = "";
-        if (remoteUserAdress != null) {
-            log += "IP Address " + remoteUserAdress + " - ";
-        }
-        if (user != null) {
-            log += "User : " + user.getEmail() + " - ";
-        }
-        
-        return log;
-    }
     
     /**
      * Définit le paramètre taille de page
@@ -173,4 +172,29 @@ public abstract class DAOMongo<T> extends DAO<T> {
      * @return BasicDBObject
      */
     abstract protected BasicDBObject prepareSearchQuery();
+
+    @Override
+    protected void initConnection() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    protected void closeConnection() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    protected void startTransaction() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    protected void commitTransaction() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    protected void rollbackTransaction() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

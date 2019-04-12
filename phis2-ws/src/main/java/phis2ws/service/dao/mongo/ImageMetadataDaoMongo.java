@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import javax.ws.rs.core.Response;
+import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -368,6 +369,11 @@ public class ImageMetadataDaoMongo extends DAOMongo<ImageMetadata> {
 
     @Override
     public ImageMetadata findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void validate(List<ImageMetadata> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

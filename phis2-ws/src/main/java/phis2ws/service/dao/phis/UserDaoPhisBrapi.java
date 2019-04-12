@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import javax.ws.rs.core.Response;
+import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.dao.manager.DAOPhisBrapi;
@@ -898,6 +899,11 @@ public class UserDaoPhisBrapi extends DAOPhisBrapi<User, UserDTO> {
 
     @Override
     public User findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void validate(List<User> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

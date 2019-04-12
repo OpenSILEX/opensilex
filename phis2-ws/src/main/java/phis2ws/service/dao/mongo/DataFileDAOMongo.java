@@ -28,6 +28,7 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import javax.ws.rs.core.Response;
+import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import org.bson.BSONObject;
 import org.bson.Document;
 import org.slf4j.Logger;
@@ -477,7 +478,32 @@ public class DataFileDAOMongo extends DAOMongo<FileDescription> {
     }
 
     @Override
-    public ArrayList<FileDescription> allPaginate() {
+    public List<FileDescription> create(List<FileDescription> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List<FileDescription> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<FileDescription> update(List<FileDescription> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public FileDescription find(FileDescription object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public FileDescription findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void validate(List<FileDescription> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

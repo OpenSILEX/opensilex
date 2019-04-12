@@ -9,6 +9,7 @@ package phis2ws.service.dao.sesame;
 
 import java.util.ArrayList;
 import java.util.List;
+import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -606,12 +607,32 @@ public class EventDAOSesame extends DAOSesame<Event> {
     }
 
     @Override
-    protected SPARQLQueryBuilder prepareSearchQuery() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public List<Event> create(List<Event> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void delete(List<Event> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<Event> update(List<Event> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Event find(Event object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Event findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void validate(List<Event> objects) throws DAODataErrorAggregateException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

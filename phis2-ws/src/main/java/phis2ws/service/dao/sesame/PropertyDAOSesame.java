@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -123,45 +124,6 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
         LOGGER.debug(SPARQL_QUERY + query.toString());
         
         return query;
-    }
-    
-    /**
-     * Searches all the properties corresponding to the given object URI
-     * @param uri
-     * @return the list of the properties which match the given URI.
-     */
-    public ArrayList<RdfResourceDefinitionDTO> searchProperties(String uri) {        
-        SPARQLQueryBuilder query = prepareSearchQuery();
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-        ArrayList<RdfResourceDefinitionDTO> propertiesContainer = new ArrayList<>();
-        
-        try (TupleQueryResult result = tupleQuery.evaluate()) {
-            RdfResourceDefinitionDTO properties = new RdfResourceDefinitionDTO();
-            while (result.hasNext()) {
-                if (properties.getUri() == null) {
-                    properties.setUri(uri);
-                }
-                BindingSet bindingSet = result.next();
-                PropertyPostDTO property = new PropertyPostDTO();
-        
-                property.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
-                property.setRelation(bindingSet.getValue(RELATION).stringValue());
-                property.setValue(bindingSet.getValue(PROPERTY).stringValue());
-        
-                properties.addProperty(property);
-            }
-            
-            if (properties.getUri() != null) {
-                propertiesContainer.add(properties);
-            }
-        }
-        
-        return propertiesContainer;
-    }
-    
-    @Override
-    public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
     /**
@@ -1011,9 +973,34 @@ public class PropertyDAOSesame extends DAOSesame<Property> {
     public void setSubClassOf(Oeso subClassOf) {
         this.subClassOf = subClassOf;
     }
-    
+
     @Override
-    protected SPARQLQueryBuilder prepareSearchQuery() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public List<Property> create(List<Property> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List<Property> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<Property> update(List<Property> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Property find(Property object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Property findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void validate(List<Property> objects) throws DAODataErrorAggregateException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

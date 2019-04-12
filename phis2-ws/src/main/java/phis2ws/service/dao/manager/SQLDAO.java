@@ -1,14 +1,10 @@
-//**********************************************************************************************
-//                                       SQLDAO.java 
-//
-// Author(s): Arnaud Charleroy
-// PHIS-SILEX version 1.0
+//******************************************************************************
+//                                 SQLDAO.java 
+// SILEX-PHIS
 // Copyright © - INRA - 2016
 // Creation date: august 2016
 // Contact:arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  October, 2016
-// Subject: List all methods usable for all SQL Database DAO
-//***********************************************************************************************
+//******************************************************************************
 package phis2ws.service.dao.manager;
 
 import com.nimbusds.jwt.JWTClaimsSet;
@@ -46,12 +42,9 @@ import phis2ws.service.utils.JsonConverter;
 import phis2ws.service.utils.sql.SQLQueryBuilder;
 
 /**
- * Répresente les attributs et les methode d'un DAO se connectant à une base de
- * données relationnelle
- *
+ * DAO for relational database querying
  * @author Arnaud Charleroy
  * @param <T>
- * @date 05/2016
  */
 public abstract class SQLDAO<T> extends DAO<T> {
 
@@ -73,14 +66,9 @@ public abstract class SQLDAO<T> extends DAO<T> {
     // For query logging
     protected static final String SQL_SELECT_QUERY = "SQL query : ";
     
-    /**
-     * user c'est l'objet qui représente l'utilisateur
-     */
-    public User user;
     protected Integer page;
     protected Integer pageSize;
-
-    public String remoteUserAdress;
+    
     /**
      * Nom de la table du dao (table principale)
      */
@@ -262,7 +250,6 @@ public abstract class SQLDAO<T> extends DAO<T> {
      * @return
      * @throws Exception
      */
-    @Override
     public boolean existInDB(T obj) throws Exception {
         String query = new StringBuilder("SELECT * ")
                 .append("FROM ")
@@ -388,7 +375,6 @@ public abstract class SQLDAO<T> extends DAO<T> {
      * @return
      * @throws Exception
      */
-    @Override
     public Boolean create(T obj) throws Exception {
         String query = new StringBuilder("INSERT INTO ")
                 .append("\"").append(table).append("\" ").toString();
@@ -406,8 +392,6 @@ public abstract class SQLDAO<T> extends DAO<T> {
                 log += "User : " + user.getEmail() + "-";
             }
             LOGGER.trace(log + " query : " + preparedStatement.toString());
-//            logger.trace(preparedStatement.toString());
-//            logger.debug(preparedStatement.toString());
             return true;
         } catch (SQLException e) {
             if (e.getSQLState().contains(DUPLICATE_KEY_ERROR_POSTGRE)) {
@@ -441,16 +425,6 @@ public abstract class SQLDAO<T> extends DAO<T> {
      * @return Map<String,String>
      */
     public abstract Map<String, String> relationFieldsJavaSQLObject();
-
-    @Override
-    public boolean delete(T obj) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public boolean update(T obj) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 
     /**
      * Crée automatiquement une requête pour récupérer un élément dans une base
@@ -667,5 +641,30 @@ public abstract class SQLDAO<T> extends DAO<T> {
                 this.dataSource = JWT_ISSUER_DATASOURCE.get(issuer);
             }
         }
+    }
+
+    @Override
+    protected void initConnection() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    protected void closeConnection() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    protected void startTransaction() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    protected void commitTransaction() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    protected void rollbackTransaction() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

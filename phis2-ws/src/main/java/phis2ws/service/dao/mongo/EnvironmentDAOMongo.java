@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                       EnvironmentDAOMongo.java
+//                           EnvironmentDAOMongo.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 30 oct. 2018
@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.ws.rs.core.Response;
+import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.slf4j.Logger;
@@ -149,7 +150,6 @@ public class EnvironmentDAOMongo extends DAOMongo<EnvironmentMeasure> {
      * - dateSortAsc
      * @return List of measures
      */
-    @Override
     public ArrayList<EnvironmentMeasure> allPaginate() {
         // Get the collection corresponding to variable uri
         String variableCollection = this.getEnvironmentCollectionFromVariable(variableUri);
@@ -399,5 +399,35 @@ public class EnvironmentDAOMongo extends DAOMongo<EnvironmentMeasure> {
         } else { //Errors in the data
             return checkResult;
         }
+    }
+
+    @Override
+    public List<EnvironmentMeasure> create(List<EnvironmentMeasure> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List<EnvironmentMeasure> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<EnvironmentMeasure> update(List<EnvironmentMeasure> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public EnvironmentMeasure find(EnvironmentMeasure object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public EnvironmentMeasure findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void validate(List<EnvironmentMeasure> objects) throws DAODataErrorAggregateException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

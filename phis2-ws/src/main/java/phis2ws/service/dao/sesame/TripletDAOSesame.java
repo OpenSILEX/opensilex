@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
+import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -56,16 +57,6 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
     //pattern to generate uri for the subject of a triplet
     private final static String REQUEST_GENERATION_URI_STRING = "?";
     private final static String LITERAL = "literal";
-
-    @Override
-    protected SPARQLQueryBuilder prepareSearchQuery() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
     
     /**
      * check each triplet's values 
@@ -396,5 +387,35 @@ public class TripletDAOSesame extends DAOSesame<Triplet> {
         } else { //errors founded
             return checkResults; 
         }
+    }
+
+    @Override
+    public List<Triplet> create(List<Triplet> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List<Triplet> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<Triplet> update(List<Triplet> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Triplet find(Triplet object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Triplet findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void validate(List<Triplet> objects) throws DAODataErrorAggregateException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

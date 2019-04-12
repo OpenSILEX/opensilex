@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.ws.rs.core.Response;
+import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.slf4j.Logger;
@@ -279,7 +280,6 @@ public class DataDAOMongo extends DAOMongo<Data> {
         }
     }
 
-    @Override
     public ArrayList<Data> allPaginate() {
         // Get the collection corresponding to variable uri
         String variableCollection = this.getCollectionFromVariable(variableUri);
@@ -415,5 +415,35 @@ public class DataDAOMongo extends DAOMongo<Data> {
         query.append(DB_FIELD_URI, uri);
         
         return database.getCollection(variableCollection).countDocuments(query) > 0; 
+    }
+
+    @Override
+    public List<Data> create(List<Data> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List<Data> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<Data> update(List<Data> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Data find(Data object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Data findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void validate(List<Data> objects) throws DAODataErrorAggregateException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

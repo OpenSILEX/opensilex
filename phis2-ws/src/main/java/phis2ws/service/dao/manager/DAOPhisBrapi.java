@@ -1,14 +1,10 @@
-//**********************************************************************************************
-//                                       DAOPhisBrapi.java 
-//
-// Author(s): Arnaud Charleroy, Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
+//******************************************************************************
+//                               DAOPhisBrapi.java 
+// SILEX-PHIS
+// Copyright © INRA 2017
 // Creation date: august 2016
 // Contact:arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  January, 2017
-// Subject:This abstract class is the base of all Dao class for the Phis DB 
-//***********************************************************************************************
+//******************************************************************************
 package phis2ws.service.dao.manager;
 
 import java.util.List;
@@ -52,20 +48,4 @@ public abstract class DAOPhisBrapi<T, D> extends SQLDAO<T> {
      * @return 
      */
     public abstract POSTResultsReturn checkAndUpdateList(List<D> newObjects);
-    
-     /**
-     * 
-     * @return Les logs qui seront utilisés pour la traçabilité
-     */
-    protected String getTraceabilityLogs() {
-        String log = "";
-        if (remoteUserAdress != null) {
-            log += "IP Address " + remoteUserAdress + " - ";
-        }
-        if (user != null) {
-            log += "User : " + user.getEmail() + " - ";
-        }
-        
-        return log;
-    }
 }

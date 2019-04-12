@@ -23,6 +23,7 @@ import opensilex.service.utils.date.Dates;
 import opensilex.service.model.ConcernedItem;
 import opensilex.service.model.Event;
 import opensilex.service.model.Property;
+import opensilex.service.resource.validation.interfaces.Required;
 
 /**
  * Event PUT DTO.
@@ -47,9 +48,9 @@ public class EventPutDTO extends AbstractVerifiedClass {
     @Override
     public Event createObjectFromDTO() {
         
-        ArrayList<Property> modelProperties = new ArrayList<>();
+        ArrayList<Property> propertyObjects = new ArrayList<>();
         this.properties.forEach((property) -> {
-            modelProperties.add(property.createObjectFromDTO());
+            propertyObjects.add(property.createObjectFromDTO());
         });
         
         ArrayList<ConcernedItem> modelConcernedItems = new ArrayList<>();
@@ -59,7 +60,7 @@ public class EventPutDTO extends AbstractVerifiedClass {
         
         DateTime dateTime = Dates.stringToDateTimeWithGivenPattern(this.date, DateFormat.YMDTHMSZZ.toString());
         
-        return new Event(this.uri, this.rdfType, modelConcernedItems, dateTime, modelProperties, null);
+        return new Event(this.uri, this.rdfType, modelConcernedItems, dateTime, propertyObjects, new ArrayList<>());
     }
 
     @URL
@@ -90,6 +91,7 @@ public class EventPutDTO extends AbstractVerifiedClass {
 
     @Date(DateFormat.YMDTHMSZZ)
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EVENT_DATE)
+    @Required
     public String getDate() {
         return date;
     }

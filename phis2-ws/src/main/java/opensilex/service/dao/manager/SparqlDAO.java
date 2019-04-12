@@ -388,7 +388,7 @@ public abstract class SparqlDAO<T> extends DAO<T> {
      * @param bindingSet 
      * @return  the string value of the "selectName" variable in the binding set
      */
-    protected String getStringValueOfSelectNameFromBindingSet(String selectName, BindingSet bindingSet) { 
+    protected static String getStringValueOfSelectNameFromBindingSet(String selectName, BindingSet bindingSet) { 
         Value selectedFieldValue = bindingSet.getValue(selectName);
         if (selectedFieldValue != null) {
             return selectedFieldValue.stringValue();

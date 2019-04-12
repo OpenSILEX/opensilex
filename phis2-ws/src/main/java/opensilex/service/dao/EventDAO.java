@@ -299,10 +299,9 @@ public class EventDAO extends SparqlDAO<Event> {
             while (eventsResult.hasNext()) {
                 Event event = getEventFromBindingSet(eventsResult.next());
                 searchEventPropertiesAndSetThemToIt(event);
-                ConcernedItemDAO concernedItemDao = new ConcernedItemDAO(user);
+                ConcernedItemDAO concernedItemDao = new ConcernedItemDAO(user, Contexts.EVENTS.toString(), Oeev.concerns.getURI());
                 event.setConcernedItems(concernedItemDao.find(
                         event.getUri(), 
-                        Oeev.concerns.getURI(), 
                         null, 
                         null, 
                         0, 
@@ -331,10 +330,10 @@ public class EventDAO extends SparqlDAO<Event> {
                 event = getEventFromBindingSet(eventsResult.next());
                 searchEventPropertiesAndSetThemToIt(event);
                 
-                ConcernedItemDAO concernedItemDao = new ConcernedItemDAO(user);
+                ConcernedItemDAO concernedItemDao = 
+                        new ConcernedItemDAO(user, Contexts.EVENTS.toString(), Oeev.concerns.getURI());
                 event.setConcernedItems(concernedItemDao.find(
                         event.getUri(), 
-                        Oeev.concerns.getURI(), 
                         null, 
                         null, 
                         0, 
@@ -397,7 +396,8 @@ public class EventDAO extends SparqlDAO<Event> {
     private Event create(Event event) throws Exception {
         
         UriGenerator uriGenerator = new UriGenerator();
-        ConcernedItemDAO concernedItemDao = new ConcernedItemDAO(user);
+        ConcernedItemDAO concernedItemDao = 
+                new ConcernedItemDAO(user, Contexts.EVENTS.toString(), Oeev.concerns.getURI());
         AnnotationDAO annotationDao = new AnnotationDAO(user);
         PropertyDAO propertyDao = new PropertyDAO();
 
@@ -413,11 +413,7 @@ public class EventDAO extends SparqlDAO<Event> {
         Resource eventResource = ResourceFactory.createResource(event.getUri());
 
         // Insert concerned items links
-        concernedItemDao.createLinksWithObject(
-                Contexts.EVENTS.toString(),
-                eventResource,
-                Oeev.concerns.getURI(), 
-                event.getConcernedItems());
+        concernedItemDao.create(event.getConcernedItems());
 
         // The annotation
         ArrayList<String> annotationTargets = new ArrayList<>();
@@ -474,8 +470,9 @@ public class EventDAO extends SparqlDAO<Event> {
             throw new NotAnAdminException();
         }
         else {
-            ConcernedItemDAO concernedItemDAO = new ConcernedItemDAO(user);
-            PropertyDAO propertyDAO = new PropertyDAO();
+            ConcernedItemDAO concernedItemDao = 
+                    new ConcernedItemDAO(user, Contexts.EVENTS.toString(), Oeev.concerns.getURI());
+            PropertyDAO propertyDao = new PropertyDAO();
             AnnotationDAO annotationDao = new AnnotationDAO();
             for (Event event : events) {
                 
@@ -493,7 +490,7 @@ public class EventDAO extends SparqlDAO<Event> {
                 
                 // Check concerned items
                 try {
-                    concernedItemDAO.validate(event.getConcernedItems());
+                    concernedItemDao.validate(event.getConcernedItems());
                 }
                 catch (DAODataErrorAggregateException ex) {
                     exceptions.addAll(ex.getExceptions());
@@ -501,7 +498,7 @@ public class EventDAO extends SparqlDAO<Event> {
                 
                 // Check properties
                 try {
-                    propertyDAO.checkExistenceRangeDomain(event.getProperties(), event.getType());
+                    propertyDao.checkExistenceRangeDomain(event.getProperties(), event.getType());
                 }
                 catch (DAODataErrorAggregateException ex) {
                     exceptions.addAll(ex.getExceptions());

@@ -605,6 +605,7 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
         sparqlQuery.appendDistinct(true);
                 
         String scientificObjectURI;
+        String optional = "";
         
         if (uri != null ) {
             scientificObjectURI = "<" + uri + ">";
@@ -617,7 +618,7 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
               sparqlQuery.appendFrom("<" + Contexts.VOCABULARY.toString() + "> \n FROM <" + experiment + ">");
         } else {
             sparqlQuery.appendSelect("?" + EXPERIMENT);
-            sparqlQuery.appendOptional(scientificObjectURI + " <" + Oeso.RELATION_PARTICIPATES_IN.toString() + "> " + "?" + EXPERIMENT);
+            optional += scientificObjectURI + " <" + Oeso.RELATION_PARTICIPATES_IN.toString() + "> " + "?" + EXPERIMENT + " . ";
         }
         
         if (alias != null) {
@@ -638,7 +639,9 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
         sparqlQuery.appendSelect(" ?" + RELATION + " ?" + PROPERTY + " ?" + PROPERTY_TYPE);
         sparqlQuery.appendTriplet(scientificObjectURI, "?" + RELATION, "?" + PROPERTY, null);
         
-        sparqlQuery.appendOptional("?" + PROPERTY + " <" + Rdf.RELATION_TYPE.toString() + "> ?" + PROPERTY_TYPE);
+        optional += "?" + PROPERTY + " <" + Rdf.RELATION_TYPE.toString() + "> ?" + PROPERTY_TYPE;
+        
+        sparqlQuery.appendOptional(optional);
         
         LOGGER.debug(SPARQL_QUERY + sparqlQuery.toString());
         

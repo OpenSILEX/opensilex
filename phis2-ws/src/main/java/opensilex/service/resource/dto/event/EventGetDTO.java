@@ -23,10 +23,10 @@ import opensilex.service.model.Event;
 import opensilex.service.model.Property;
 
 /**
- * DTO representing a event with the basic information
- * @author Andréas Garcia<andreas.garcia@inra.fr>
+ * DTO representing a event for GET requests.
+ * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
-public class EventDTO extends AbstractVerifiedClass {
+public class EventGetDTO extends AbstractVerifiedClass {
     
     @URL
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EVENT_URI)
@@ -53,7 +53,7 @@ public class EventDTO extends AbstractVerifiedClass {
      * Constructor from an Event model
      * @param event 
      */
-    public EventDTO(Event event) {
+    public EventGetDTO(Event event) {
         this.uri = event.getUri();
         this.rdfType = event.getType();
         event.getConcernedItems().forEach((concernedItem) -> {

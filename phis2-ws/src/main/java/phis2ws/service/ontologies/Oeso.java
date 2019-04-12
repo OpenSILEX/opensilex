@@ -259,12 +259,6 @@ public enum Oeso {
             return NAMESPACE.toString() + "hasModel";
         }
     },
-    RELATION_HAS_PLOT {
-        @Override
-        public String toString() {
-            return NAMESPACE.toString() + "hasPlot";
-        }
-    },
     RELATION_HAS_RADIOMETRIC_TARGET_MATERIAL{
         @Override
         public String toString() {

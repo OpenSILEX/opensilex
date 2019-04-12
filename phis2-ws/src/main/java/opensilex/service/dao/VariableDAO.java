@@ -70,6 +70,7 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
     public String label;
     public String comment;
     public ArrayList<OntologyReference> ontologiesReferences = new ArrayList<>();
+    public String traitSKosReference;
 
     public VariableDAO() {
         
@@ -135,6 +136,18 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
             query.appendSelect(" ?trait");
             query.appendTriplet(variableURI, Oeso.RELATION_HAS_TRAIT.toString(), "?trait", null);
         }
+        
+        if (traitSKosReference != null){
+            if( trait != null) {
+                query.appendTriplet(trait, "?skosRelation", traitSKosReference, null);
+            } else {
+                query.appendTriplet("?trait", "?skosRelation", traitSKosReference, null);
+            }
+            query.appendFilter("?skosRelation IN(<" + Skos.RELATION_CLOSE_MATCH.toString() + ">, <"
+                                               + Skos.RELATION_EXACT_MATCH.toString() + ">, <"
+                                               + Skos.RELATION_NARROWER.toString() + ">, <"
+                                               + Skos.RELATION_BROADER.toString() + ">)");
+        } 
         
         if (method != null) {
             query.appendTriplet(variableURI, Oeso.RELATION_HAS_METHOD.toString(), method, null);

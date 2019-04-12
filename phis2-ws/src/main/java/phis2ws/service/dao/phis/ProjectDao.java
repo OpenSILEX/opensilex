@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import javax.ws.rs.core.Response;
+import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import org.apache.jena.sparql.AlreadyExists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -638,6 +639,11 @@ public class ProjectDao extends DAOPhisBrapi<Project, ProjectDTO> {
 
     @Override
     public Project findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void validate(List<Project> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

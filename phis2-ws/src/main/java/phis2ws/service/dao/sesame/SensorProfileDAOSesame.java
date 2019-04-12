@@ -13,6 +13,7 @@ package phis2ws.service.dao.sesame;
 
 import java.util.ArrayList;
 import java.util.List;
+import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -323,6 +324,11 @@ public class SensorProfileDAOSesame extends DAOSesame<SensorProfile> {
 
     @Override
     public SensorProfile findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void validate(List<SensorProfile> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

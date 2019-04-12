@@ -10,6 +10,7 @@ package phis2ws.service.dao.sesame;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -70,6 +71,7 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
     public String label;
     public String comment;
     public ArrayList<OntologyReference> ontologiesReferences = new ArrayList<>();
+    public String traitSKosReference;
 
     public VariableDaoSesame() {
         
@@ -136,6 +138,18 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
             query.appendSelect(" ?trait");
             query.appendTriplet(variableURI, Oeso.RELATION_HAS_TRAIT.toString(), "?trait", null);
         }
+        
+        if (traitSKosReference != null){
+            if( trait != null) {
+                query.appendTriplet(trait, "?skosRelation", traitSKosReference, null);
+            } else {
+                query.appendTriplet("?trait", "?skosRelation", traitSKosReference, null);
+            }
+            query.appendFilter("?skosRelation IN(<" + Skos.RELATION_CLOSE_MATCH.toString() + ">, <"
+                                               + Skos.RELATION_EXACT_MATCH.toString() + ">, <"
+                                               + Skos.RELATION_NARROWER.toString() + ">, <"
+                                               + Skos.RELATION_BROADER.toString() + ">)");
+        } 
         
         if (method != null) {
             query.appendTriplet(variableURI, Oeso.RELATION_HAS_METHOD.toString(), method, null);
@@ -749,6 +763,11 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
 
     @Override
     public Variable findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void validate(List<Variable> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

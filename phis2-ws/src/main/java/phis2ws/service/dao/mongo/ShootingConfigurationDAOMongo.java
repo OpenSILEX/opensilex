@@ -11,6 +11,7 @@ import com.mongodb.BasicDBObject;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,6 +80,11 @@ public class ShootingConfigurationDAOMongo extends DAOMongo<ShootingConfiguratio
 
     @Override
     public ShootingConfiguration findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void validate(List<ShootingConfiguration> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

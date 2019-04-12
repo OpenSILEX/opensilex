@@ -28,6 +28,7 @@ import opensilex.service.ontology.Time;
 import opensilex.service.ontology.Xsd;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.utils.date.Dates;
+import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.utils.sparql.SPARQLStringBuilder;
 
 /**
@@ -70,7 +71,7 @@ public class TimeDAO extends SparqlDAO<Time> {
      *   BIND(xsd:dateTime(str("2017-09-10T12:00:00+01:00")) as ?dateRangeStartDateTime) .
      *   FILTER ( (?dateRangeStartDateTime <= ?dateTime) ) 
      */
-    protected void filterSearchQueryWithDateTimeStampComparison( SPARQLStringBuilder query, String filterDateString, String filterDateFormat, String filterDateSparqlVariable, String comparisonSign, String dateTimeStampToCompareSparqlVariable){
+    public static void filterSearchQueryWithDateTimeStampComparison(SPARQLStringBuilder query, String filterDateString, String filterDateFormat, String filterDateSparqlVariable, String comparisonSign, String dateTimeStampToCompareSparqlVariable){
         
         DateTime filterDate = Dates.stringToDateTimeWithGivenPattern(filterDateString, filterDateFormat);
         
@@ -88,7 +89,7 @@ public class TimeDAO extends SparqlDAO<Time> {
      * @param filterRangeDatesStringFormat
      * @param filterRangeStartDateString
      * @param filterRangeEndDateString
-     * @param dateTimeStampToCompareSparqleVariable the SPARQL variable (?abc 
+     * @param dateTimeStampToCompareSparqlName the SPARQL variable (?abc 
      * format) of the dateTimeStamp to compare to the range
      * @example SparQL code added to the query :
      *   BIND(xsd:dateTime(str(?dateTimeStamp)) as ?dateTime) .
@@ -96,9 +97,18 @@ public class TimeDAO extends SparqlDAO<Time> {
      *   BIND(xsd:dateTime(str("2017-09-12T12:00:00+01:00")) as ?dateRangeEndDateTime) .
      *   FILTER ( (?dateRangeStartDateTime <= ?dateTime) && (?dateRangeEndDateTime >= ?dateTime) ) 
      */
-    protected void filterSearchQueryWithDateRangeComparisonWithDateTimeStamp(SPARQLStringBuilder query, String filterRangeDatesStringFormat, String filterRangeStartDateString, String filterRangeEndDateString, String dateTimeStampToCompareSparqleVariable){
+    public static void filterSearchQueryWithDateRangeComparisonWithDateTimeStamp(SPARQLQueryBuilder query, String objectUriLinkedToInstant, String instantSparqlName, String filterRangeDatesStringFormat, String filterRangeStartDateString, String filterRangeEndDateString, String dateTimeStampToCompareSparqlName, boolean inGroupBy){
         
-        query.appendToBody("\nBIND(<" + Xsd.FUNCTION_DATETIME.toString() + ">(str(" + dateTimeStampToCompareSparqleVariable + ")) as " + DATETIME_SELECT_NAME_SPARQL + ") .");
+        query.appendSelect(instantSparqlName);
+        query.appendSelect(dateTimeStampToCompareSparqlName);
+        if (inGroupBy) {
+            query.appendGroupBy(instantSparqlName);
+            query.appendGroupBy(dateTimeStampToCompareSparqlName);
+        }
+        query.appendTriplet(objectUriLinkedToInstant, Time.hasTime.toString(), instantSparqlName, null);
+        query.appendTriplet(instantSparqlName, Time.inXSDDateTimeStamp.toString(), dateTimeStampToCompareSparqlName, null);
+        
+        query.appendToBody("\nBIND(<" + Xsd.FUNCTION_DATETIME.toString() + ">(str(" + dateTimeStampToCompareSparqlName + ")) as " + DATETIME_SELECT_NAME_SPARQL + ") .");
         
         if (filterRangeStartDateString != null){
             filterSearchQueryWithDateTimeStampComparison(

@@ -271,12 +271,23 @@ public class EventDAO extends SparqlDAO<Event> {
         TupleQuery eventsTupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, eventsQuery.toString());
         
         ArrayList<Event> events;
-        // for each event, set its properties and concerned Items
-        try (TupleQueryResult eventsResult = eventsTupleQuery.evaluate()) {
+        
+        try (TupleQueryResult queryResult = eventsTupleQuery.evaluate()) {
             events = new ArrayList<>();
-            while (eventsResult.hasNext()) {
-                Event event = getEventFromBindingSet(eventsResult.next());
+            while (queryResult.hasNext()) {
+                BindingSet bindingSet = queryResult.next();
+                Event event = getEventFromBindingSet(bindingSet);
+                
+                // Instant
+                event.setInstant(TimeDAO.getInstantFromBindingSet(
+                        bindingSet,
+                        INSTANT_SELECT_NAME, 
+                        DATETIMESTAMP_SELECT_NAME));
+                
+                // Properties
                 searchEventPropertiesAndSetThemToIt(event);
+                
+                // Concerned items
                 ConcernedItemDAO concernedItemDao = new ConcernedItemDAO(user);
                 event.setConcernedItems(concernedItemDao.find(
                         event.getUri(), 
@@ -285,6 +296,7 @@ public class EventDAO extends SparqlDAO<Event> {
                         null, 
                         0, 
                         pageSizeMaxValue));
+                
                 events.add(event);
             }
         }

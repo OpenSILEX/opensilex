@@ -33,7 +33,7 @@ import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.dao.manager.SparqlDAO;
+import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.User;
 import opensilex.service.ontology.Contexts;
@@ -52,7 +52,7 @@ import opensilex.service.model.Sensor;
  * Sensor DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class SensorDAO extends SparqlDAO<Sensor> {
+public class SensorDAO extends Rdf4jDAO<Sensor> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(SensorDAO.class);
 

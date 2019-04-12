@@ -21,7 +21,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.dao.manager.SparqlDAO;
+import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.model.User;
 import opensilex.service.ontology.Time;
 import opensilex.service.ontology.Xsd;
@@ -33,7 +33,7 @@ import opensilex.service.utils.sparql.SPARQLStringBuilder;
  * Time object DAO.
  * @author Andreas Garcia <andreas.garcia@inra.fr>
  */
-public class TimeDAO extends SparqlDAO<Time> {
+public class TimeDAO extends Rdf4jDAO<Time> {
     final static Logger LOGGER = LoggerFactory.getLogger(TimeDAO.class);
     
     protected static final String DATETIME_SELECT_NAME = "dateTime";

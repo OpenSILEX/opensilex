@@ -29,7 +29,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.configuration.DateFormat;
-import opensilex.service.dao.manager.SparqlDAO;
+import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.User;
 import opensilex.service.ontology.Contexts;
@@ -55,7 +55,7 @@ import opensilex.service.model.Property;
  *      Move concerned items accesses handling into a new ConcernedItemDAO class
  * @author Andreas Garcia <andreas.garcia@inra.fr>
  */
-public class EventDAO extends SparqlDAO<Event> {
+public class EventDAO extends Rdf4jDAO<Event> {
     final static Logger LOGGER = LoggerFactory.getLogger(EventDAO.class);
     
     private static final String TIME_SELECT_NAME = "time";

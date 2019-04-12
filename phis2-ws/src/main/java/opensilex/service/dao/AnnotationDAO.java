@@ -36,7 +36,7 @@ import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.configuration.DateFormats;
-import opensilex.service.dao.manager.SparqlDAO;
+import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.User;
 import opensilex.service.ontology.Contexts;
@@ -56,7 +56,7 @@ import opensilex.service.model.Annotation;
  * attributes but parameters sent through search functions
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
-public class AnnotationDAO extends SparqlDAO<Annotation> {
+public class AnnotationDAO extends Rdf4jDAO<Annotation> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(AnnotationDAO.class);
 

@@ -34,7 +34,7 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.dao.manager.SparqlDAO;
+import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.ontology.Contexts;
 import opensilex.service.ontology.GeoSPARQL;
@@ -54,10 +54,10 @@ import opensilex.service.model.Property;
 import opensilex.service.model.Uri;
 
 /**
- * Scientific object RDF4J DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * Scientific object RDF4J DAO.
  */
-public class ScientificObjectRdf4jDAO extends SparqlDAO<ScientificObject> {
+public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(ScientificObjectRdf4jDAO.class);
     

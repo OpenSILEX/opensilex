@@ -45,10 +45,10 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.model.OntologyReference;
 import opensilex.service.model.Unit;
 
- */
+/**
  * Unit DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
-/**
+ */
 public class UnitDAO extends Rdf4jDAO<Unit> {
     final static Logger LOGGER = LoggerFactory.getLogger(UnitDAO.class);
     
@@ -116,7 +116,8 @@ public class UnitDAO extends Rdf4jDAO<Unit> {
                    && !ontologyReference.getProperty().equals(Skos.RELATION_BROADER.toString())) {
                     dataOk = false;
                     checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
-                            "Bad property relation given. Must be one of the following : " + Skos.RELATION_EXACT_MATCH.toString()
+                            "Bad property relation given. Must be one of the following : " 
+                            + Skos.RELATION_EXACT_MATCH.toString()
                             + ", " + Skos.RELATION_CLOSE_MATCH.toString()
                             + ", " + Skos.RELATION_NARROWER.toString()
                             + ", " + Skos.RELATION_BROADER.toString()
@@ -257,7 +258,10 @@ public class UnitDAO extends Rdf4jDAO<Unit> {
             } catch (MalformedQueryException e) {
                     LOGGER.error(e.getMessage(), e);
                     annotationInsert = false;
-                    insertStatusList.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, "Malformed insertion query: " + e.getMessage()));
+                    insertStatusList.add(new Status(
+                            StatusCodeMsg.QUERY_ERROR, 
+                            StatusCodeMsg.ERR, 
+                            "Malformed insertion query: " + e.getMessage()));
             } 
         }
         
@@ -266,7 +270,10 @@ public class UnitDAO extends Rdf4jDAO<Unit> {
         results.setCreatedResources(createdResourcesURI);
         if (resultState && !createdResourcesURI.isEmpty()) {
             results.createdResources = createdResourcesURI;
-            results.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, createdResourcesURI.size() + " new resource(s) created."));
+            results.statusList.add(new Status(
+                    StatusCodeMsg.RESOURCES_CREATED, 
+                    StatusCodeMsg.INFO, 
+                    createdResourcesURI.size() + " new resource(s) created."));
         }
         
         return results;
@@ -307,7 +314,11 @@ public class UnitDAO extends Rdf4jDAO<Unit> {
         } else {
             for (OntologyReference ontologyReference : ontologiesReferences) {
                 query.appendTriplet(uri, ontologyReference.getProperty(), ontologyReference.getObject(), null);
-                query.appendTriplet(ontologyReference.getObject(), Rdfs.RELATION_SEE_ALSO.toString(), ontologyReference.getSeeAlso(), null);
+                query.appendTriplet(
+                        ontologyReference.getObject(), 
+                        Rdfs.RELATION_SEE_ALSO.toString(), 
+                        ontologyReference.getSeeAlso(), 
+                        null);
             }
         }
         
@@ -348,7 +359,8 @@ public class UnitDAO extends Rdf4jDAO<Unit> {
                 
                 // Get ontology references  
                 SPARQLQueryBuilder queryOntologiesReferences = prepareSearchOntologiesReferencesQuery(unit.getUri());
-                TupleQuery tupleQueryOntologiesReferences = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryOntologiesReferences.toString());
+                TupleQuery tupleQueryOntologiesReferences = this.getConnection()
+                        .prepareTupleQuery(QueryLanguage.SPARQL, queryOntologiesReferences.toString());
                 TupleQueryResult resultOntologiesReferences = tupleQueryOntologiesReferences.evaluate();
                 while (resultOntologiesReferences.hasNext()) {
                     BindingSet bindingSetOntologiesReferences = resultOntologiesReferences.next();
@@ -421,7 +433,8 @@ public class UnitDAO extends Rdf4jDAO<Unit> {
                         Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery.toString());
                         LOGGER.debug(getTraceabilityLogs() + " query : " + prepareDelete.toString());
                         prepareDelete.execute();
-                        Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, queryInsert.toString());
+                        Update prepareUpdate = this.getConnection()
+                                .prepareUpdate(QueryLanguage.SPARQL, queryInsert.toString());
                         LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                         prepareUpdate.execute();
 
@@ -429,11 +442,15 @@ public class UnitDAO extends Rdf4jDAO<Unit> {
                     } catch (MalformedQueryException e) {
                         LOGGER.error(e.getMessage(), e);
                         annotationUpdate = false;
-                        updateStatusList.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, "Malformed update query: " + e.getMessage()));
+                        updateStatusList.add(new Status(
+                                StatusCodeMsg.QUERY_ERROR, 
+                                StatusCodeMsg.ERR, 
+                                "Malformed update query: " + e.getMessage()));
                     }   
             } else {
                 annotationUpdate = false;
-                updateStatusList.add(new Status("Unknown instance", StatusCodeMsg.ERR, "Unknown unit " + unitDTO.getUri()));
+                updateStatusList.add(
+                        new Status("Unknown instance", StatusCodeMsg.ERR, "Unknown unit " + unitDTO.getUri()));
             }
         }
         
@@ -457,9 +474,11 @@ public class UnitDAO extends Rdf4jDAO<Unit> {
         results.statusList = updateStatusList;
         if (resultState && !updatedResourcesURIList.isEmpty()) {
             results.createdResources = updatedResourcesURIList;
-            results.statusList.add(new Status(StatusCodeMsg.RESOURCES_UPDATED, StatusCodeMsg.INFO, updatedResourcesURIList.size() + " resources updated"));
+            results.statusList.add(new Status(
+                    StatusCodeMsg.RESOURCES_UPDATED, 
+                    StatusCodeMsg.INFO, 
+                    updatedResourcesURIList.size() + " resources updated"));
         }
-        
         return results;
     }
     

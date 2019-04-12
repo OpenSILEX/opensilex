@@ -35,7 +35,7 @@ import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.dao.manager.SparqlDAO;
+import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.ontology.Contexts;
 import opensilex.service.ontology.Rdf;
@@ -50,7 +50,7 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.model.OntologyReference;
 import opensilex.service.model.Trait;
 
-public class TraitDAO extends SparqlDAO<Trait> {
+public class TraitDAO extends Rdf4jDAO<Trait> {
     final static Logger LOGGER = LoggerFactory.getLogger(TraitDAO.class);
 
     public String uri;

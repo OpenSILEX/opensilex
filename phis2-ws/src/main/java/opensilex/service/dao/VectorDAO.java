@@ -35,7 +35,7 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.dao.manager.SparqlDAO;
+import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.dao.UserDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.User;
@@ -54,7 +54,7 @@ import opensilex.service.model.Vector;
  * CRUD methods of vectors, in the triplestore rdf4j
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class VectorDAO extends SparqlDAO<Vector> {
+public class VectorDAO extends Rdf4jDAO<Vector> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(SensorDAO.class);
 

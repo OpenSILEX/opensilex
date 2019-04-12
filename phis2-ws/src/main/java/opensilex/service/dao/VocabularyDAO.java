@@ -22,7 +22,7 @@ import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.configuration.URINamespaces;
-import opensilex.service.dao.manager.SparqlDAO;
+import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.ontology.Rdfs;
 import opensilex.service.ontology.Oeso;
 import opensilex.service.resource.dto.PropertyVocabularyDTO;
@@ -34,7 +34,7 @@ import opensilex.service.model.Namespace;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
-public class VocabularyDAO extends SparqlDAO<PropertyVocabularyDTO> {
+public class VocabularyDAO extends Rdf4jDAO<PropertyVocabularyDTO> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(VocabularyDAO.class);
 

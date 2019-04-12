@@ -34,7 +34,7 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.dao.manager.SparqlDAO;
+import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.ontology.Rdf;
 import opensilex.service.ontology.Rdfs;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
@@ -46,7 +46,7 @@ import opensilex.service.model.Uri;
  *
  * @author Eloan LAGIER
  */
-public class UriDAO extends SparqlDAO<Uri> {
+public class UriDAO extends Rdf4jDAO<Uri> {
 
     public String uri;
     public String label;

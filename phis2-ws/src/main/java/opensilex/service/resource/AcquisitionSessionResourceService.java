@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                       AcquisitionSessionResourceService.java
+//                       AcquisitionSessionResourceService.java
 // SILEX-PHIS
 // Copyright © INRA
 // Creation date: 30 August, 2018

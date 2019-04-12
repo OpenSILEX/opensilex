@@ -18,7 +18,7 @@ import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.dao.manager.SparqlDAO;
+import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.model.ImageMetadata;
 
@@ -26,7 +26,7 @@ import opensilex.service.model.ImageMetadata;
  * Used to check if an image type exist in the triplestore
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class ImageMetadataRdf4jDAO extends SparqlDAO<ImageMetadata> {
+public class ImageMetadataRdf4jDAO extends Rdf4jDAO<ImageMetadata> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(ImageMetadataRdf4jDAO.class);
     

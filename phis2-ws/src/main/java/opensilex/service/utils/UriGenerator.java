@@ -20,7 +20,7 @@ import opensilex.service.dao.ExperimentSQLDAO;
 import opensilex.service.dao.ImageMetadataMongoDAO;
 import opensilex.service.dao.GroupDAO;
 import opensilex.service.dao.ProjectDAO;
-import opensilex.service.dao.ScientificObjectSparqlDAO;
+import opensilex.service.dao.ScientificObjectRdf4jDAO;
 import opensilex.service.dao.AnnotationDAO;
 import opensilex.service.dao.EventDAO;
 import opensilex.service.dao.MethodDAO;
@@ -160,7 +160,7 @@ public class UriGenerator {
     private String generateAgronomicalObjectUri(String year) {
         //1. get the highest number for the year 
         //(i.e. the last inserted agronomical object for the year)
-        ScientificObjectSparqlDAO agronomicalObjectDAO = new ScientificObjectSparqlDAO();
+        ScientificObjectRdf4jDAO agronomicalObjectDAO = new ScientificObjectRdf4jDAO();
         int lastAgronomicalObjectIdFromYear = agronomicalObjectDAO.getLastScientificObjectIdFromYear(year);
 
         //2. generates agronomical object URI
@@ -382,7 +382,7 @@ public class UriGenerator {
     private String generateImageUri(String year, String lastGeneratedUri) {
         if (lastGeneratedUri == null) {
             ImageMetadataMongoDAO imageMongoDao = new ImageMetadataMongoDAO();
-            long imagesNumber = imageMongoDao.getNbImagesYear();
+            long imagesNumber = imageMongoDao.getImagesCountOfCurrentYear();
             imagesNumber++;
 
             //calculate the number of 0 to add before the number of the image

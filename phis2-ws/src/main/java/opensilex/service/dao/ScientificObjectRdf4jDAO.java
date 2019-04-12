@@ -1,15 +1,10 @@
-//**********************************************************************************************
-//                               ScientificObjectDaoSesame.java 
-//
-// Author(s): Morgane Vidal
-// PHIS-SILEX version 1.0
-// Copyright © - INRA - 2017
-// Creation date: august 2017
+///******************************************************************************
+//                       ScientificObjectRdf4jDAO.java 
+// SILEX-PHIS
+// Copyright © INRA 2017
+// Creation date: Aug. 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-// Last modification date:  September, 6 2017
-// Subject: A specific DAO to retreive data on scientific objects
-//***********************************************************************************************
-
+//******************************************************************************
 package opensilex.service.dao;
 
 import java.sql.SQLException;
@@ -31,7 +26,6 @@ import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.MalformedQueryException;
-import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
@@ -40,7 +34,7 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.dao.manager.Rdf4jDAO;
+import opensilex.service.dao.manager.SparqlDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.ontology.Contexts;
 import opensilex.service.ontology.GeoSPARQL;
@@ -59,8 +53,11 @@ import opensilex.service.model.ScientificObject;
 import opensilex.service.model.Property;
 import opensilex.service.model.Uri;
 
-
-public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
+/**
+ * Scientific object RDF4J DAO.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ */
+public class ScientificObjectRdf4jDAO extends SparqlDAO<ScientificObject> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(ScientificObjectRdf4jDAO.class);
     
@@ -92,11 +89,11 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     }
     
     /**
-     * generates a query to get the last scientific object uri from the given year
+     * Generates a query to get the last scientific object URI from the given year.
      * @param year 
-     * @return the query to get the uri of the last inserted scientific object 
+     * @return the query to get the URI of the last inserted scientific object 
      *         for the given year
-     * e.g
+     * @example
      * SELECT ?uri WHERE {
      *      ?uri  rdf:type  ?type  . 
      *      ?type  rdfs:subClassOf*  <http://www.opensilex.org/vocabulary/oeso#ScientificObject> . 
@@ -119,8 +116,8 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     }
     
     /**
-     * get the last scientific object id for the given year. 
-     * e.g : for http://www.phenome-fppn.fr/diaphen/
+     * Gets the last scientific object id for the given year. 
+     * @example http://www.phenome-fppn.fr/diaphen/
      * @param year the year of the wanted scientific object number.
      * @return the id of the last scientific object inserted in the triplestore for the given year
      */
@@ -158,8 +155,8 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     }
     
     /**
-     * generates the sparql ask query to know if a given alias is already 
-     * existing in a given context
+     * Generates the SPARQL ask query to know if a given alias already 
+     * exists in a given context
      * @param alias
      * @param context
      * @return the query
@@ -177,14 +174,14 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     }
         
     /**
-     * Check if the scientific objects are accurates
+     * Checks if the scientific objects are valid.
      * @param ScientificObjectsDTO
      * @return
      * @throws RepositoryException 
      */
     public POSTResultsReturn check(List<ScientificObjectDTO> ScientificObjectsDTO) throws RepositoryException {
         //Expected results
-        POSTResultsReturn scientificObjectsCheck = null;
+        POSTResultsReturn scientificObjectsCheck;
         //returned status list
         List<Status> checkStatusList = new ArrayList<>();
         
@@ -251,8 +248,8 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     }
     
     /**
-     * insère les données dans le triplestore. 
-     * On suppose que la vérification de leur intégrité a été fait auparavent via l'appel à la méthode check()
+     * Insert data. 
+     * The data has to be checked before calling this function.
      * @param scientificObjects
      * @return 
      */
@@ -262,8 +259,8 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         
         POSTResultsReturn results;
         
-        boolean resultState = false; //Pour savoir si les données sont bonnes et ont bien été insérées
-        boolean annotationInsert = true; // Si l'insertion a bien été effectuée
+        boolean resultState = false; 
+        boolean annotationInsert = true;
         
         final Iterator<ScientificObjectDTO> iteratorScientificObjects = scientificObjects.iterator();
         
@@ -359,10 +356,8 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                     resultState = true;
                     this.getConnection().commit();
                 } else {
-                    // retour en arrière sur la transaction
                     this.getConnection().rollback();
                 }
-//                this.getConnection().close();
             } catch (RepositoryException ex) {
                     LOGGER.error("Error during commit or rolleback Triplestore statements: ", ex);
             } catch (MalformedQueryException e) {
@@ -390,7 +385,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     }
     
     /**
-     * vérifie les données et les insère dans le triplestore
+     * Checks and inserts the data.
      * @param scientificObjectsDTO
      * @return 
      */
@@ -407,7 +402,8 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     /**
      * 
      * @param experimentURI
-     * @return the query enabling to retrieve the list of scientific objects participating in the experiment and the objects propertiesT
+     * @return the query enabling to retrieve the list of scientific objects participating in the experiment and the 
+     * objects propertiesT
      * SILEX:TODO 
      * filter on the rdfs.type --> scientific object
      * \SILEX:TODO 
@@ -432,10 +428,9 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     }
     
     /**
-     * 
      * @param objectURI
-     * @return la requête permettant d'avoir tous les éléments contenus (geo:contains) dans objectURI.
-     *         la requête permet d'avoir la liste de tous les descendants
+     * @return the query enabling to select all contained element (geo:contains) in objectURI.
+     *         the query enabling to select all descendants
      */
     private SPARQLQueryBuilder prepareSearchChildrenWithContains(String objectURI, String objectType) {
         SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
@@ -453,9 +448,8 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     }
     
     /**
-     * 
      * @param objectURI
-     * @return La liste des premiers enfants de l'entités (relation geo:contains)
+     * @return the first descendants of the element (geo:contains relation)
      */
     private SPARQLQueryBuilder prepareSearchFirstChildrenWithContains(String objectURI) {
         SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
@@ -471,19 +465,17 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     }
      
     /**
-     * 
      * @param layerDTO
-     * @return la liste des enfants de layerDTO.getObjectURI. Retourne tous les
-     *         descendants si layerDTO.getDepth == true. (clé : uri, valeur : type)
+     * @return children of layerDTO.getObjectURI. Returns the descendants if layerDTO.getDepth == true. 
+     * (key: URI, value: type)
      */
     public HashMap<String, ScientificObject> searchChildren(LayerDTO layerDTO) {
         HashMap<String, ScientificObject> children = new HashMap<>(); // uri (clé), type (valeur)
         
-        //Si c'est une expérimentation, le nom du lien n'est pas le même donc, 
-        //on commence par récupérer la liste des enfants directs
+        /* If it's an experiment, the link name isn't the same so we get the direct descendants first*/
         if (layerDTO.getObjectType().equals(Oeso.CONCEPT_EXPERIMENT.toString())) {
             //SILEX:test
-            //Pour les soucis de pool de connexion
+            //For pool connection issues
             rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID); //Stockage triplestore Sesame
             rep.initialize();
             setConnection(rep.getConnection());
@@ -495,7 +487,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             TupleQueryResult result = tupleQuery.evaluate();
                         
             //SILEX:test
-            //Pour les soucis de pool de connexion
+            //For pool connection issues
             getConnection().close();
             //\SILEX:test
             while (result.hasNext()) {
@@ -510,7 +502,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                     }
                     
                     scientificObject.addProperty(property);
-                } else { //Il n'est pas encore dans la liste, il faut le rajouter
+                } else { // not in the list, has to be added
                     scientificObject = new ScientificObject();
                     scientificObject.setUri(bindingSet.getValue(CHILD).stringValue());
                     scientificObject.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
@@ -528,26 +520,27 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             }
         }
         //SILEX:INFO
-        //Pour l'instant, on ne récupère que les propriétés des premiers descendants de l'expérimentation.
-        //Pas les autres
-        //Si il faut aussi tous les descendants
+        //For the moment, get only the first descendants properties, not the others
+        // If all descendants needed
         if (ResourcesUtils.getStringBooleanValue(layerDTO.getDepth())) {
-            //Si c'est les descendants d'un essai, il y a un traitement particulier
+            // Particular treatment if descendants of a trial
             if (layerDTO.getObjectType().equals(Oeso.CONCEPT_EXPERIMENT.toString())) {
-                //On recherche tous les fils des plots de l'experimentation, récupérés précédemment
+                // Get all descendants of the plots of the previously retrieved experimentations
                     //SILEX:test
-                    //Pour les soucis de pool de connexion
-                    rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID); //Stockage triplestore Sesame
+                    //For pool connection issues
+                    rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID);
                     rep.initialize();
                     setConnection(rep.getConnection());
                     //\SILEX:test
                 for (Entry<String, ScientificObject> child : children.entrySet()) {
                    
-                    SPARQLQueryBuilder sparqlQuery = prepareSearchChildrenWithContains(child.getKey(), child.getValue().getRdfType());
-                    TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
+                    SPARQLQueryBuilder sparqlQuery = prepareSearchChildrenWithContains(
+                            child.getKey(), 
+                            child.getValue().getRdfType());
+                    TupleQuery tupleQuery = this.getConnection()
+                            .prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
                     TupleQueryResult result = tupleQuery.evaluate();
                    
-                    
                     while (result.hasNext()) {
                         BindingSet bindingSet = result.next();
                         if (!children.containsKey(bindingSet.getValue(CHILD).stringValue())) {
@@ -559,22 +552,24 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                         }
                     }
                 }
-                 //SILEX:test
-                    //Pour les soucis de pool de connexion
+                    //SILEX:test
+                    //For pool connection issues
                     getConnection().close();
                     //\SILEX:test
-            } else { //Si c'est un objet classique
+            } else { // if standard object
                 //SILEX:test
-                //Pour les soucis de pool de connexion
+                //For pool connection issues
                 rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID); //Stockage triplestore Sesame
                 rep.initialize();
                 setConnection(rep.getConnection());
                 //\SILEX:test
-                SPARQLQueryBuilder sparqlQuery = prepareSearchChildrenWithContains(layerDTO.getObjectUri(), layerDTO.getObjectType());
-                TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
+                SPARQLQueryBuilder sparqlQuery = 
+                        prepareSearchChildrenWithContains(layerDTO.getObjectUri(), layerDTO.getObjectType());
+                TupleQuery tupleQuery = 
+                        this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
                 TupleQueryResult result = tupleQuery.evaluate();
                 //SILEX:test
-                //Pour les soucis de pool de connexion
+                //For pool connection issues
                 getConnection().close();
                 //\SILEX:test
                 
@@ -589,10 +584,11 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                 }
             }
             
-        } else if (!layerDTO.getObjectType().equals(Oeso.CONCEPT_EXPERIMENT.toString())) { //S'il ne faut que les enfants directs et que ce n'est pas une expérimentation
+        } else if (!layerDTO.getObjectType().equals(Oeso.CONCEPT_EXPERIMENT.toString())) { 
+            // If only direct descendants needed and not an experimentation
             //SILEX:test
-            //Pour les soucis de pool de connexion
-            rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID); //Stockage triplestore Sesame
+            //For pool connection issues
+            rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID);
             rep.initialize();
             setConnection(rep.getConnection());
             //\SILEX:test
@@ -600,7 +596,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
             TupleQueryResult result = tupleQuery.evaluate();
             //SILEX:test
-            //Pour les soucis de pool de connexion
+            //For pool connection issues
             getConnection().close();
             //\SILEX:test
             
@@ -619,20 +615,19 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     }
     
     /**
-     * 
      * @return scientific objects list, result of the user query, empty if no result
      */
     public ArrayList<ScientificObject> allPaginate() {
         try {
             SPARQLQueryBuilder sparqlQuery = prepareSearchQuery();
             //SILEX:test
-            //Pour les soucis de pool de connexion
-            rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID); //Stockage triplestore Sesame
+            //For pool connection issues
+            rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID);
             rep.initialize();
             setConnection(rep.getConnection());
             //\SILEX:test
             
-            TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
+            TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
             Map<String, ScientificObject> foundedScientificObjects = new HashMap<>();
             
             try (TupleQueryResult result = tupleQuery.evaluate()) {
@@ -701,7 +696,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             
             
             //SILEX:test
-            //Pour les soucis de pool de connexion
+            //For pool connection issues
             getConnection().close();
             //\SILEX:test
             
@@ -738,7 +733,10 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
               sparqlQuery.appendFrom("<" + Contexts.VOCABULARY.toString() + "> \n FROM <" + experiment + ">");
         } else {
             sparqlQuery.appendSelect("?" + EXPERIMENT);
-            sparqlQuery.appendOptional(scientificObjectURI + " <" + Oeso.RELATION_PARTICIPATES_IN.toString() + "> " + "?" + EXPERIMENT);
+            sparqlQuery.appendOptional(
+                    scientificObjectURI 
+                    + " <" + Oeso.RELATION_PARTICIPATES_IN.toString() + "> " 
+                    + "?" + EXPERIMENT);
         }
         
         if (alias != null) {
@@ -753,7 +751,10 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         } else {
             sparqlQuery.appendSelect(" ?" + RDF_TYPE);
             sparqlQuery.appendTriplet(scientificObjectURI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
-            sparqlQuery.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString(), null);
+            sparqlQuery.appendTriplet(
+                    "?" + RDF_TYPE, 
+                    "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", 
+                    Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString(), null);
         }
         
         sparqlQuery.appendSelect(" ?" + RELATION + " ?" + PROPERTY);
@@ -765,9 +766,10 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     }
     
     /**
-     * checks if the scientific object exists
+     * Checks if the scientific object exists.
      * @param uri
-     * @return 0 if the object uri doesn't exist, 1 if it does exist
+     * @return 0 if the object URI doesn't exist.
+     *         1 if it does exist.
      */
     public boolean existScientificObject(String uri) {        
         SPARQLQueryBuilder query = askExistScientificObject(uri);
@@ -777,8 +779,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     }
 
     /**
-     * generates the sparql ask query to know if the scientific object uri exists
-     * existing in a given context
+     * Generates the SPARQL ASK query to know if the scientific object URI exists.
      * @param uri
      * @return the query
      */

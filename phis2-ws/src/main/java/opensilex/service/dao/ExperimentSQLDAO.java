@@ -1,8 +1,8 @@
 //******************************************************************************
-//                            ExperimentMongoDao.java 
+//                            ExperimentSQLDAO.java 
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: January 2017
+// Creation date: Jan. 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.dao;
@@ -23,10 +23,6 @@ import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.dao.manager.PhisDAO;
-import opensilex.service.dao.ExperimentSparqlDAO;
-import opensilex.service.dao.SensorDAO;
-import opensilex.service.dao.UserDAO;
-import opensilex.service.dao.VariableDAO;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.User;
@@ -44,7 +40,7 @@ import opensilex.service.model.Project;
 import opensilex.service.model.Experiment;
 
 /**
- * Experiments in a relational database DAO. 
+ * Experiment DAO for a relational database. 
  * @update [Andreas Garcia] 14 Feb. 2019: update the method that returns the 
  * total number of experiment by making it return the last experiment URI 
  * because the experiment URI generator now use the last inserted experiment
@@ -56,7 +52,7 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(ExperimentSQLDAO.class);
     
-    //Search parameters :
+    //Search parameters
      
     /** 
      * The URI of an experiment.
@@ -295,11 +291,11 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
             }
             
             // Gets experiments variables
-            ExperimentSparqlDAO experimentDAO = new ExperimentSparqlDAO();
+            ExperimentRdf4jDAO experimentRdf4jDAO = new ExperimentRdf4jDAO();
             for (Experiment experiment : experiments) {
-                HashMap<String, String> variables = experimentDAO.getVariables(experiment.getUri());
+                HashMap<String, String> variables = experimentRdf4jDAO.getVariables(experiment.getUri());
                 experiment.setVariables(variables);
-                HashMap<String, String> sensors = experimentDAO.getSensors(experiment.getUri());
+                HashMap<String, String> sensors = experimentRdf4jDAO.getSensors(experiment.getUri());
                 experiment.setSensors(sensors);
             }
             
@@ -324,7 +320,7 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
     }
     
     /**
-     * 
+     * Gets experiments projects.
      * @param experiments ArrayList<Experiment> list of experiments for which 
      * the list of projects is also needed
      * @param statement Statement
@@ -332,7 +328,8 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
      * experiment
      * @throws SQLException 
      */
-    private ArrayList<Experiment> getExperimentsProjects(ArrayList<Experiment> experiments, Statement statement) throws SQLException {
+    private ArrayList<Experiment> getExperimentsProjects(ArrayList<Experiment> experiments, Statement statement) 
+            throws SQLException {
         for (Experiment experiment : experiments) {
             SQLQueryBuilder query = new SQLQueryBuilder();
             query.appendSelect("p.acronyme, p.uri");
@@ -351,11 +348,13 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
     }
     
     /**
+     * Gets the contacts of an experiment.
      * @param statement Statement
      * @param experiments ArrayList<Experiment> experiment list
      * @return the experiment list with the contact list for each experiment
      */
-    private ArrayList<Experiment> getExperimentsContacts(ArrayList<Experiment> experiments, Statement statement) throws SQLException {
+    private ArrayList<Experiment> getExperimentsContacts(ArrayList<Experiment> experiments, Statement statement) 
+            throws SQLException {
         for (Experiment experiment : experiments) {
             SQLQueryBuilder query = new SQLQueryBuilder();
             query.appendSelect("u.email, u.first_name, u.family_name, tu.type");
@@ -607,8 +606,8 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
                     } else { // If non existing data and inserted
                         insertStatusList.add(new Status("Data inserted", StatusCodeMsg.INFO, String.valueOf(inserted) + " experiments inserted"));
                         //Add the experiments in the triplestore
-                        ExperimentSparqlDAO experimentDAO = new ExperimentSparqlDAO();
-                        POSTResultsReturn insertTriplestore = experimentDAO.insertExperiments(experiments);
+                        ExperimentRdf4jDAO experimentDAOSesame = new ExperimentRdf4jDAO();
+                        POSTResultsReturn insertTriplestore = experimentDAOSesame.insertExperiments(experiments);
                         if (!insertTriplestore.getDataState()) { //An error occurred
                             insertStatusList.addAll(insertTriplestore.getStatusList());
                             insertionState = false;
@@ -732,19 +731,20 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
     }
     
     /**
+     * Checks if a user can see an experiment.
      * @param user 
      * @param experiment
-     * @return 
-     *  true if the user belongs to a group having access to the 
-     * experiment
-     *  false otherwise
+     * @return true if the user belongs to a group having access to the 
+     * experiment.
+     *         false otherwise.
      */
     public boolean canUserSeeExperiment(User user, Experiment experiment) {
         try {
             UserDAO userDao = new UserDAO();
 
             ArrayList<Group> experimentGroups = this.getExperimentGroups(experiment);
-            //Quand l'essai n'est dans aucun groupe, il est public donc l'utilisateur peut le consulter
+            
+            // when the trial isn't in any group, it is public so the user can consult it
             if (experimentGroups.isEmpty()) { 
                 return true;
             } else {
@@ -766,9 +766,9 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
     
     /**
      * @param experiment
-     * @return boolean true if the user can modify the experiment (admin or 
+     * @return true if the user can modify the experiment (admin or 
      * member of a data owner group)
-     *                 false otherwise
+     *         false otherwise
      * @throws SQLException 
      */
     private boolean canUserUpdateExperiment(Experiment experiment) throws SQLException {
@@ -799,7 +799,8 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
      * @param updateExperiments List<ExperimentDTO> experiments to modify
      * @return POSTResultReturn, updates result
      */
-    private POSTResultsReturn checkAndUpdateExperimentList(List<ExperimentDTO> updateExperiments) throws SQLException, Exception {
+    private POSTResultsReturn checkAndUpdateExperimentList(List<ExperimentDTO> updateExperiments) 
+            throws SQLException, Exception {
         //init result returned maps
         List<Status> insertStatusList = new ArrayList<>();
         boolean allExperimentsAlreadyInDB = true;
@@ -834,11 +835,12 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
             PreparedStatement insertPreparedStatementContact = null;
             Connection connection = null;
             
-            final String updateExperiment = "UPDATE \"trial\" SET \"start_date\" = to_date(?, 'YYYY:MM:DD'), \"end_date\" = to_date(?, 'YYYY:MM:DD'),"
-                + " \"field\" = ?,"
-                + "\"place\" = ?, \"alias\" = ?, \"comment\" = ?, \"keywords\" = ?, \"objective\" = ?,"
-                + "\"crop_species\" = ? "
-                + "WHERE \"uri\" = ?";
+            final String updateExperiment = "UPDATE \"trial\" "
+                    + "SET \"start_date\" = to_date(?, 'YYYY:MM:DD'), \"end_date\" = to_date(?, 'YYYY:MM:DD'),"
+                    + " \"field\" = ?,"
+                    + "\"place\" = ?, \"alias\" = ?, \"comment\" = ?, \"keywords\" = ?, \"objective\" = ?,"
+                    + "\"crop_species\" = ? "
+                    + "WHERE \"uri\" = ?";
             final String deleteProject = "DELETE FROM \"at_trial_project\" WHERE \"trial_uri\" = ?";
             final String insertProject = "INSERT INTO \"at_trial_project\" (\"trial_uri\", \"project_uri\") VALUES (?, ?)";
             final String deleteGroup = "DELETE FROM \"at_group_trial\" WHERE \"trial_uri\" = ?";
@@ -863,8 +865,8 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
                 deletePreparedStatementContact = connection.prepareStatement(deleteContact);
                 insertPreparedStatementContact = connection.prepareStatement(insertContact);
                 
+                //Update of experiments
                 for (Experiment experiment : experiments) {
-                    //Update of experiments
                     updatePreparedStatementExperiment.setString(1, experiment.getStartDate());
                     updatePreparedStatementExperiment.setString(2, experiment.getEndDate());
                     updatePreparedStatementExperiment.setString(3, experiment.getField());
@@ -1107,28 +1109,28 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
      * Updates the list of variables linked to the given experiment. 
      * /!\ Prerequisite: the information must have been checked before. 
      * @see ExperimentSQLDAO#checkLinkedVariables(java.lang.String, java.util.List)
-     * @see ExperimentSparqlDAO#updateLinkedVariables(java.lang.String, java.util.List) 
+     * @see ExperimentRdf4jDAO#updateLinkedVariables(java.lang.String, java.util.List) 
      * @param experimentUri
      * @param variables
      * @return the update result.
      */
     private POSTResultsReturn updateLinkedVariables(String experimentUri, List<String> variables) {
-        ExperimentSparqlDAO experimentDAO = new ExperimentSparqlDAO();
-        return experimentDAO.updateLinkedVariables(experimentUri, variables);
+        ExperimentRdf4jDAO experimentDAOSesame = new ExperimentRdf4jDAO();
+        return experimentDAOSesame.updateLinkedVariables(experimentUri, variables);
     }
     
     /**
      * Updates the list of sensors linked to the given experiment. 
      * /!\ Prerequisite: the information must have been checked before. 
      * @see ExperimentSQLDAO#checkLinkedSensors(java.lang.String, java.util.List)
-     * @see ExperimentSparqlDAO#updateLinkedSensors(java.lang.String, java.util.List)
+     * @see ExperimentRdf4jDAO#updateLinkedSensors(java.lang.String, java.util.List)
      * @param experimentUri
      * @param sensors
      * @return the update result.
      */
     private POSTResultsReturn updateLinkedSensors(String experimentUri, List<String> sensors) {
-        ExperimentSparqlDAO experimentDAO = new ExperimentSparqlDAO();
-        return experimentDAO.updateLinkedSensors(experimentUri, sensors);
+        ExperimentRdf4jDAO experimentDAOSesame = new ExperimentRdf4jDAO();
+        return experimentDAOSesame.updateLinkedSensors(experimentUri, sensors);
     }
     
     /**
@@ -1167,7 +1169,7 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
     }
     
     /**
-     * Gets the campaign last experiment URI
+     * Gets the campaign last experiment URI.
      * @example
      *  SELECT count(e.uri)
      *  FROM experiment e

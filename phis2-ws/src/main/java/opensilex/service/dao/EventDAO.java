@@ -9,7 +9,6 @@ package opensilex.service.dao;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -48,7 +47,6 @@ import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.model.Annotation;
 import opensilex.service.model.Event;
 import opensilex.service.model.Property;
-import org.apache.jena.vocabulary.RDFS;
 
 /**
  * Events DAO.
@@ -233,13 +231,7 @@ public class EventDAO extends SparqlDAO<Event> {
                 
         String eventType = getStringValueOfSelectNameFromBindingSet(RDF_TYPE, bindingSet);
         
-        String eventDateTimeString = getStringValueOfSelectNameFromBindingSet(DATETIMESTAMP_SELECT_NAME, bindingSet);    
-        DateTime eventDateTime = null;
-        if (eventDateTimeString != null) {
-            eventDateTime = Dates.stringToDateTimeWithGivenPattern(eventDateTimeString, DateFormat.YMDTHMSZZ.toString());
-        }
-        
-        return new Event(eventUri, eventType, new ArrayList<>(), eventDateTime, new ArrayList<>(), null);
+        return new Event(eventUri, eventType, new ArrayList<>(), null, new ArrayList<>(), null);
     }
     
     /**
@@ -316,31 +308,40 @@ public class EventDAO extends SparqlDAO<Event> {
         TupleQuery eventsTupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, eventQuery.toString());
         
         Event event = null;
-        try (TupleQueryResult eventsResult = eventsTupleQuery.evaluate()) {
-            if (eventsResult.hasNext()) {
-                event = getEventFromBindingSet(eventsResult.next());
-                searchEventPropertiesAndSetThemToIt(event);
-                
-                ConcernedItemDAO concernedItemDao = new ConcernedItemDAO(user);
-                event.setConcernedItems(concernedItemDao.find(
-                        event.getUri(), 
-                        Oeev.concerns.getURI(), 
-                        null, 
-                        null, 
-                        0, 
-                        pageSizeMaxValue));
-                
-                AnnotationDAO annotationDAO = new AnnotationDAO(this.user);
-                ArrayList<Annotation> annotations = annotationDAO.find(
-                        null, 
-                        null, 
-                        event.getUri(), 
-                        null, 
-                        null, 
-                        0, 
-                        pageSizeMaxValue);
-                event.setAnnotations(annotations);
-            }
+        TupleQueryResult eventsResult = eventsTupleQuery.evaluate();
+        if (eventsResult.hasNext()) {
+            BindingSet bindingSet = eventsResult.next();
+            event = getEventFromBindingSet(bindingSet);
+            
+            // Instant
+            event.setInstant(TimeDAO.getInstantFromBindingSet(
+                    bindingSet,
+                    INSTANT_SELECT_NAME, 
+                    DATETIMESTAMP_SELECT_NAME));
+            
+            // Properties
+            searchEventPropertiesAndSetThemToIt(event);
+            
+            // Concerned items
+            ConcernedItemDAO concernedItemDao = new ConcernedItemDAO(user);
+            event.setConcernedItems(concernedItemDao.find(
+                    event.getUri(), 
+                    Oeev.concerns.getURI(), 
+                    null, 
+                    null, 
+                    0, 
+                    pageSizeMaxValue));
+
+            // Annotations
+            AnnotationDAO annotationDAO = new AnnotationDAO(this.user);
+            event.setAnnotations(annotationDAO.find(
+                    null, 
+                    null, 
+                    event.getUri(), 
+                    null, 
+                    null, 
+                    0, 
+                    pageSizeMaxValue));
         }
         return event;
     }
@@ -404,22 +405,8 @@ public class EventDAO extends SparqlDAO<Event> {
         return query;
     }
     
-    /**
-     * Inserts the given event in the storage.
-     * @param event
-     * @return the event completed with its new URI.
-     * @throws java.lang.Exception
-     */
-    private Event create(Event event) throws Exception {
-        
-        UriGenerator uriGenerator = new UriGenerator();
-        ConcernedItemDAO concernedItemDao = new ConcernedItemDAO(user);
-        AnnotationDAO annotationDao = new AnnotationDAO(user);
-        PropertyDAO propertyDao = new PropertyDAO();
-
-        // Generate uri
-        event.setUri(uriGenerator.generateNewInstanceUri(Oeev.Event.getURI(), null, null));
-        
+    // Inserts the given event in the storage.
+    private Event insert(Event event) throws Exception {
         // Insert event
         UpdateRequest query = prepareInsertQuery(event);
 
@@ -429,21 +416,15 @@ public class EventDAO extends SparqlDAO<Event> {
         Resource eventResource = ResourceFactory.createResource(event.getUri());
 
         // Insert concerned items links
+        ConcernedItemDAO concernedItemDao = new ConcernedItemDAO(user);
         concernedItemDao.createLinksWithObject(
                 Contexts.EVENTS.toString(),
                 eventResource,
                 Oeev.concerns.getURI(), 
                 event.getConcernedItems());
 
-        // The annotation
-        ArrayList<String> annotationTargets = new ArrayList<>();
-        annotationTargets.add(event.getUri());
-        event.getAnnotations().forEach(annotation -> {
-            annotation.setTargets(annotationTargets);
-        });
-        event.setAnnotations((ArrayList<Annotation>) annotationDao.create(event.getAnnotations()));
-
         // The properties links
+        PropertyDAO propertyDao = new PropertyDAO();
         ArrayList<Property> properties = event.getProperties();
         if (!properties.isEmpty()) {
             propertyDao.insertLinksBetweenObjectAndProperties(
@@ -452,6 +433,31 @@ public class EventDAO extends SparqlDAO<Event> {
                     Contexts.EVENTS.toString(), 
                     false);
         }
+    }
+    
+    /**
+     * Generates a new URI and inserts the given event in the storage.
+     * @param event
+     * @return the event completed with its new URI.
+     * @throws java.lang.Exception
+     */
+    private Event create(Event event) throws Exception {
+        
+        UriGenerator uriGenerator = new UriGenerator();
+        AnnotationDAO annotationDao = new AnnotationDAO(user);
+
+        // Generate uri
+        event.setUri(uriGenerator.generateNewInstanceUri(Oeev.Event.getURI(), null, null));
+
+        insert(event);
+        
+        // The annotation
+        ArrayList<String> annotationTargets = new ArrayList<>();
+        annotationTargets.add(event.getUri());
+        event.getAnnotations().forEach(annotation -> {
+            annotation.setTargets(annotationTargets);
+        });
+        event.setAnnotations((ArrayList<Annotation>) annotationDao.create(event.getAnnotations()));
         
         return event;
     }
@@ -632,15 +638,15 @@ public class EventDAO extends SparqlDAO<Event> {
 
     @Override
     public List<Event> update(List<Event> events) throws Exception {
-            Event oldEvent = findById(event.getUri());
         for(Event event : events) {
-            UpdateRequest insertQuery = prepareInsertQuery(event);  
+            Event oldEvent = findById(event.getUri());
             UpdateRequest deleteQuery = prepareDeleteQueryWhenUpdating(oldEvent);
+            UpdateRequest insertQuery = prepareInsertQuery(event);  
             Update prepareDelete = getConnection().prepareUpdate(deleteQuery.toString());  
             Update prepareInsert = getConnection().prepareUpdate(QueryLanguage.SPARQL, insertQuery.toString());
             prepareDelete.execute();
-        }
             prepareInsert.execute();
+        }
         return events;
     }
 

@@ -222,15 +222,15 @@ public class ImageMetadataMongoDAO extends MongoDAO<ImageMetadata> {
         
         for (ImageMetadataDTO imageMetadata : imagesMetadata) {
             //1. Check if the image type exist
-            opensilex.service.dao.ImageMetadataSparqlDAO imageMetadataDao = new opensilex.service.dao.ImageMetadataSparqlDAO();
-            if (!imageMetadataDao.existUri(imageMetadata.getRdfType())) {
+            ImageMetadataRdf4jDAO imageMetadataRdf4jDao = new opensilex.service.dao.ImageMetadataRdf4jDAO();
+            if (!imageMetadataRdf4jDao.existUri(imageMetadata.getRdfType())) {
                 dataOk = false;
                 checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Wrong image type given : " + imageMetadata.getRdfType()));
             }
 
             //2. Check if the concerned items exist in the triplestore
             for (ConcernedItemDTO concernedItem : imageMetadata.getConcernedItems()) {
-                if (!imageMetadataDao.existUri(concernedItem.getUri())) {
+                if (!imageMetadataRdf4jDao.existUri(concernedItem.getUri())) {
                     dataOk = false;
                     checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Unknown concerned item given : " + concernedItem.getUri()));
                 }
@@ -269,12 +269,16 @@ public class ImageMetadataMongoDAO extends MongoDAO<ImageMetadata> {
     }
     
     /**
-     * @return the number of images in the database for the actual year
+     * Gets the number of images in the database for the current year.
+     * @return the number of images in the database for the current year.
      */
-    public long getNbImagesYear() {
+    public long getImagesCountOfCurrentYear() {
         Document query = prepareGetLastId();
         
-        FindIterable<Document> cursor = imagesCollection.find(query).sort(new BasicDBObject(DB_FIELDS_IMAGE_URI, -1)).limit(1);
+        FindIterable<Document> cursor = imagesCollection
+                .find(query)
+                .sort(new BasicDBObject(DB_FIELDS_IMAGE_URI, -1))
+                .limit(1);
         
         String lastUri = "";
         MongoCursor<Document> imagesMetadataCursor = cursor.iterator();

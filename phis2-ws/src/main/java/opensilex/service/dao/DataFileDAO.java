@@ -265,7 +265,7 @@ public class DataFileDAO extends MongoDAO<FileDescription> {
         boolean dataOk = true;
 
         ProvenanceDAO provenanceDAO = new ProvenanceDAO();
-        ScientificObjectSparqlDAO scientificObjectDao = new ScientificObjectSparqlDAO();
+        ScientificObjectRdf4jDAO scientificObjectDao = new ScientificObjectRdf4jDAO();
         
         if (!provenanceDAO.existProvenanceUri(fileDescription.getProvenanceUri())) {
             // 1. Check if the provenance uri exist and is a provenance

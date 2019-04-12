@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                       ExperimentDaoSesame.java
+//                             ExperimentRdf4jDAO.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 18 déc. 2018
@@ -29,7 +29,7 @@ import org.eclipse.rdf4j.query.UpdateExecutionException;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.dao.manager.Rdf4jDAO;
+import opensilex.service.dao.manager.SparqlDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.ontology.Rdf;
 import opensilex.service.ontology.Rdfs;
@@ -40,17 +40,16 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.model.Experiment;
 
 /**
- * Access to the experiments in the triplestore. 
+ * Experiment DAO for RDF4J. 
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class ExperimentRdf4jDAO extends Rdf4jDAO<Experiment> {
+public class ExperimentRdf4jDAO extends SparqlDAO<Experiment> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(ExperimentRdf4jDAO.class);
     
     /**
-     * Prepare the SPARQL query to return all variables measured by an experiment.
-     * 
-     * @param experimentUri The experiment uri which measures veriables
+     * Prepares the SPARQL query to return all variables measured by an experiment.
+     * @param experimentUri The experiment URI which measures variables
      * @return The prepared query
      * @example 
      * SELECT DISTINCT  ?uri ?label WHERE {
@@ -75,9 +74,8 @@ public class ExperimentRdf4jDAO extends Rdf4jDAO<Experiment> {
     }
     
     /**
-     * Prepare the SPARQL query to return all sensors which participates in the given experiment.
-     * 
-     * @param experimentUri The experiment uri which measures veriables
+     * Prepares the SPARQL query to return all sensors which participates in the given experiment.
+     * @param experimentUri The experiment URI which measures variables.
      * @return The prepared query
      * @example 
      * SELECT DISTINCT  ?uri ?label WHERE {
@@ -102,10 +100,9 @@ public class ExperimentRdf4jDAO extends Rdf4jDAO<Experiment> {
     }
     
     /**
-     * Return a HashMap of uri => label of the variables linked to an experiment.
-     * 
-     * @param experimentUri The experiment uri which measures variables
-     * @return HashMap of uri => label
+     * Returns a hashMap of URI => label of the variables linked to an experiment.
+     * @param experimentUri The experiment URI which measures variables
+     * @return HashMap of URI => label
      */
     public HashMap<String, String> getVariables(String experimentUri) {
         SPARQLQueryBuilder query = prepareSearchVariablesQuery(experimentUri);
@@ -126,10 +123,9 @@ public class ExperimentRdf4jDAO extends Rdf4jDAO<Experiment> {
     }
     
     /**
-     * Return a HashMap of uri => label of the sensors linked to an experiment.
-     * 
-     * @param experimentUri The experiment uri
-     * @return HashMap of uri => label
+     * Returns a hashMap of URI => label of the sensors linked to an experiment.
+     * @param experimentUri The experiment URI
+     * @return HashMap of URI => label
      */
     public HashMap<String, String> getSensors(String experimentUri) {
         SPARQLQueryBuilder query = prepareSearchSensorsQuery(experimentUri);
@@ -150,7 +146,7 @@ public class ExperimentRdf4jDAO extends Rdf4jDAO<Experiment> {
     }
     
     /**
-     * Update the list of the variables linked to the given experiment.
+     * Updates the list of variables linked to the given experiment.
      * /!\ Prerequisite : the information must have been checked before.
      * @see ExperimentSQLDAO#checkAndUpdateLinkedVariables(java.lang.String, java.util.List) 
      * @param experimentUri
@@ -190,7 +186,7 @@ public class ExperimentRdf4jDAO extends Rdf4jDAO<Experiment> {
     }
     
     /**
-     * Add participatesIn relations between a list of sensors and an experiment.
+     * Adds a participatesIn relations between a list of sensors and an experiment.
      * @param sensors
      * @param experimentUri
      * @example
@@ -198,8 +194,8 @@ public class ExperimentRdf4jDAO extends Rdf4jDAO<Experiment> {
      *      GRAPH <http://www.opensilex.fr/platform/OSL2018-1> { 
      *          <http://www.opensilex.fr/platform/2018/s18533>  <http://www.opensilex.fr/vocabulary/2017#participatesIn>  <http://www.opensilex.fr/platform/OSL2018-1> . 
      * }}
-     * @return true if the insertion has been done
-     *         false if an error occurred (see the error logs to get more details)
+     * @return true if the insertion has been done.
+     *         false if an error occurred (see the error logs to get more details).
      */
     private boolean linkSensorsToExperiment(List<String> sensors, String experimentUri) {
         //Add links to sensors if needed
@@ -232,7 +228,7 @@ public class ExperimentRdf4jDAO extends Rdf4jDAO<Experiment> {
     }
     
     /**
-     * Delete the participatesIn relations between the given sensors and the given experiment.
+     * Deletes the participatesIn relations between the given sensors and the given experiment.
      * @param subjectUri
      * @param predicateUri
      * @param objectPropertiesUris
@@ -274,7 +270,7 @@ public class ExperimentRdf4jDAO extends Rdf4jDAO<Experiment> {
     }
     
     /**
-     * Update the list of the sensors linked to the given experiment.
+     * Updates the list of sensors linked to the given experiment.
      * /!\ Prerequisite : the information must have been checked before.
      * @see ExperimentSQLDAO#checkAndUpdateLinkedSensors(java.lang.String, java.util.List)
      * @param experimentUri
@@ -314,10 +310,10 @@ public class ExperimentRdf4jDAO extends Rdf4jDAO<Experiment> {
     }
     
     /**
-     * Insert the experiment
+     * Inserts the experiment.
      * SILEX:warning
      * In this first version, the experiments are created in the PostgreSQL database. 
-     * The only information added in the triplestore is the uri of the experiment and its type.
+     * The only information added in the triplestore is the URI of the experiment and its type.
      * \SILEX:warning
      * @example
      * INSERT DATA {
@@ -344,7 +340,7 @@ public class ExperimentRdf4jDAO extends Rdf4jDAO<Experiment> {
     }
     
     /**
-     * Insert the given experiments in the triplestore.
+     * Inserts the given experiments in the storage.
      * SILEX:warning
      * In this first version, the experiments are created in the PostgreSQL database. 
      * We assume that the givent experiments does not exist in the triplestore 

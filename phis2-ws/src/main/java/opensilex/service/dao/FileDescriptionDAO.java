@@ -258,13 +258,13 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
      * @return the check result with the founded errors
      */
     private POSTResultsReturn check(FileDescription fileDescription) {
-        POSTResultsReturn checkResult = new POSTResultsReturn();
+        POSTResultsReturn checkResult;
         List<Status> checkStatus = new ArrayList<>();
 
         boolean dataOk = true;
 
         ProvenanceDAO provenanceDAO = new ProvenanceDAO();
-        ScientificObjectSparqlDAO scientificObjectDao = new ScientificObjectSparqlDAO();
+        ScientificObjectRdf4jDAO scientificObjectDao = new ScientificObjectRdf4jDAO();
         
         if (!provenanceDAO.existProvenanceUri(fileDescription.getProvenanceUri())) {
             // 1. Check if the provenance uri exist and is a provenance

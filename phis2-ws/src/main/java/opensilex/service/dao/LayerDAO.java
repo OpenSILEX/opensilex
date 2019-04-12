@@ -2,7 +2,7 @@
 //                                LayerDAO.java 
 // SILEX-PHIS
 // Copyright © INRA 2017
-// Creation date: August 2017
+// Creation date: Aug. 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.dao;
@@ -10,13 +10,10 @@ package opensilex.service.dao;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
-import java.nio.file.attribute.UserPrincipal;
-import java.nio.file.attribute.UserPrincipalLookupService;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -63,7 +60,7 @@ public class LayerDAO extends DAO<LayerDTO>{
      * @param layerDTO 
      */
       public void searchAndUpdateChildren(LayerDTO layerDTO) throws SQLException {
-        ScientificObjectSparqlDAO agronomicalObjectDao = new ScientificObjectSparqlDAO();
+        ScientificObjectRdf4jDAO agronomicalObjectDao = new ScientificObjectRdf4jDAO();
         ScientificObjectSQLDAO agronomicalObject = new ScientificObjectSQLDAO();
         
         HashMap<String, ScientificObject> scientificObjectChildren = agronomicalObjectDao.searchChildren(layerDTO);

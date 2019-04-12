@@ -2,7 +2,7 @@
 //                           AcquisitionSessionDAO.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 30 August 2018
+// Creation date: 30 Aug. 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.dao;
@@ -28,7 +28,7 @@ import opensilex.service.model.Sensor;
 import opensilex.service.model.Vector;
 
 /**
- * Acquisition sessions DAO.
+ * Acquisition session DAO.
  * @update [Arnaud Charleroy] 10 September 2018: minor fix on vector data gathering
  * @author Morgane Vidal <morgane.vidal@inra.fr>, Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
@@ -227,8 +227,8 @@ public class AcquisitionSessionDAO extends SparqlDAO<MetadataFileDTO> {
      */
     public ArrayList<MetadataFileDTO> allPaginateFileMetadata() {
         // Check if the rdf type is a subclass of vector
-        UriDAO uriDAOSesame = new UriDAO();
-        if (uriDAOSesame.isSubClassOf(vectorRdfType, Oeso.CONCEPT_VECTOR.toString())) {
+        UriDAO uriDao = new UriDAO();
+        if (uriDao.isSubClassOf(vectorRdfType, Oeso.CONCEPT_VECTOR.toString())) {
             return getFileMetadata();
         } else {
             return null;

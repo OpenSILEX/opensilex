@@ -268,8 +268,7 @@ public class ConcernedItemDAO extends SparqlDAO<ConcernedItem> {
      * relations in various vocabularies (e.g OESO or OEEV), the URI of the 
      * relation has to be specified
      * @param concernedItems
-     * @return the insertion result, with the error list or the URI of the 
-     * concerned item link inserted
+     * @return the insertion result
      */
     public POSTResultsReturn createLinksWithObject(String graph, Resource objectResource, String concernsRelationUri, ArrayList<ConcernedItem> concernedItems) {
         List<Status> status = new ArrayList<>();

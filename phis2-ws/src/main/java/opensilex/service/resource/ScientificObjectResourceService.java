@@ -32,7 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
-import opensilex.service.dao.ScientificObjectSparqlDAO;
+import opensilex.service.dao.ScientificObjectRdf4jDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.resource.dto.ScientificObjectDTO;
@@ -97,15 +97,15 @@ public class ScientificObjectResourceService extends ResourceService {
         //if there is at least one scientific object
         if (!scientificObjectsDTO.isEmpty()) {
             try {
-                ScientificObjectSparqlDAO scientificObjectDao = new ScientificObjectSparqlDAO();
+                ScientificObjectRdf4jDAO scientificObjectRdf4jDao = new ScientificObjectRdf4jDAO();
                 if (context.getRemoteAddr() != null) {
-                    scientificObjectDao.remoteUserAdress = context.getRemoteAddr();
+                    scientificObjectRdf4jDao.remoteUserAdress = context.getRemoteAddr();
                 }
                 
-                scientificObjectDao.user = userSession.getUser();
+                scientificObjectRdf4jDao.user = userSession.getUser();
                 
                 //Check the scientific objects and insert them in triplestore
-                POSTResultsReturn result = scientificObjectDao.checkAndInsert(scientificObjectsDTO);
+                POSTResultsReturn result = scientificObjectRdf4jDao.checkAndInsert(scientificObjectsDTO);
                 if (result.getHttpStatus().equals(Response.Status.CREATED)) {
                     //scientific objects inserted (201)
                     postResponse = new ResponseFormPOST(result.statusList);
@@ -122,28 +122,33 @@ public class ScientificObjectResourceService extends ResourceService {
                 return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
             }
         } else {
-            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty scientific objects list"));
+            postResponse = new ResponseFormPOST(
+                    new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty scientific objects list"));
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }
     
     /**
      * Collects data corresponding to the user query (scientific objects research)
-     * @param scientificObjectDao
+     * @param ScientificObjectRdf4jDao
      * @return the response for the user. Contains the list of scientific objects
      */
-    private Response getScientificObjectsData(ScientificObjectSparqlDAO scientificObjectDao) {
+    private Response getScientificObjectsData(ScientificObjectRdf4jDAO ScientificObjectRdf4jDao) {
         ArrayList<ScientificObject> scientificObjects;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<ScientificObject> getResponse;
         
-        scientificObjects = scientificObjectDao.allPaginate();
+        scientificObjects = ScientificObjectRdf4jDao.allPaginate();
         
         if (scientificObjects == null) {
             getResponse = new ResultForm<>(0, 0, scientificObjects, true);
             return noResultFound(getResponse, statusList);
         } else if (!scientificObjects.isEmpty()) {
-            getResponse = new ResultForm<>(scientificObjectDao.getPageSize(), scientificObjectDao.getPage(), scientificObjects, false);
+            getResponse = new ResultForm<>(
+                    ScientificObjectRdf4jDao.getPageSize(), 
+                    ScientificObjectRdf4jDao.getPage(), 
+                    scientificObjects, 
+                    false);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {
@@ -180,25 +185,25 @@ public class ScientificObjectResourceService extends ResourceService {
         @ApiParam(value = "Search by alias", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_ALIAS) @QueryParam("alias") String alias,
         @ApiParam(value = "Search by rdfType", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_TYPE) @QueryParam("rdfType") @URL String rdfType
     ) {
-        ScientificObjectSparqlDAO scientificObjectDao = new ScientificObjectSparqlDAO();
+        ScientificObjectRdf4jDAO scientificObjectRdf4jDAO = new ScientificObjectRdf4jDAO();
         
         if (uri != null) {
-            scientificObjectDao.uri = uri;
+            scientificObjectRdf4jDAO.uri = uri;
         }
         if (experimentURI != null) {
-            scientificObjectDao.experiment = experimentURI;
+            scientificObjectRdf4jDAO.experiment = experimentURI;
         }
         if (alias != null) {
-            scientificObjectDao.alias = alias;
+            scientificObjectRdf4jDAO.alias = alias;
         }
         if (rdfType != null) {
-            scientificObjectDao.rdfType = rdfType;
+            scientificObjectRdf4jDAO.rdfType = rdfType;
         }
         
-        scientificObjectDao.user = userSession.getUser();
-        scientificObjectDao.setPage(page);
-        scientificObjectDao.setPageSize(limit);
+        scientificObjectRdf4jDAO.user = userSession.getUser();
+        scientificObjectRdf4jDAO.setPage(page);
+        scientificObjectRdf4jDAO.setPageSize(limit);
         
-        return getScientificObjectsData(scientificObjectDao);
+        return getScientificObjectsData(scientificObjectRdf4jDAO);
     }
 }

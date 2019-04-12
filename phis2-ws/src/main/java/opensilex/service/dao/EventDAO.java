@@ -64,8 +64,8 @@ import org.apache.jena.vocabulary.RDFS;
 public class EventDAO extends SparqlDAO<Event> {
     final static Logger LOGGER = LoggerFactory.getLogger(EventDAO.class);
     
-    private static final String TIME_SELECT_NAME = "time";
-    private static final String TIME_SELECT_NAME_SPARQL = "?" + TIME_SELECT_NAME;
+    private static final String INSTANT_SELECT_NAME = "instant";
+    private static final String INSTANT_SELECT_NAME_SPARQL = "?" + INSTANT_SELECT_NAME;
     
     private static final String DATETIMESTAMP_SELECT_NAME = "dateTimeStamp";
     private static final String DATETIMESTAMP_SELECT_NAME_SPARQL = "?" + DATETIMESTAMP_SELECT_NAME;
@@ -124,45 +124,6 @@ public class EventDAO extends SparqlDAO<Event> {
             query.appendTriplet(RDF_TYPE_SELECT_NAME_SPARQL, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeev.Event.getURI(), null);
         }    
     }
-
-    /**
-     * Sets a search query to select a datetime from an instant and to filter 
-     * according to it if necessary
-     * @example SparQL filter added:
-     *  SELECT DISTINCT ?dateTimeStamp
-     *  WHERE {
-     *    ?uri  <http://www.w3.org/2006/time#hasTime>  ?time  . 
-     *    ?time  <http://www.w3.org/2006/time#inXSDDateTimeStamp>  ?dateTimeStamp  . 
-     *    BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str(?dateTimeStamp)) as ?dateTime) .
-     *    BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str("2017-09-10T12:00:00+01:00")) as ?dateRangeStartDateTime) .
-     *    BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str("2017-09-12T12:00:00+01:00")) as ?dateRangeEndDateTime) .
-     *  }
-     *  GROUP BY ?dateTimeStamp
-     * @param query
-     * @param uriSelectNameSparql
-     * @param searchDateTimeRangeStartString
-     * @param searchDateTimeRangeEndString
-     * @param inGroupBy
-     */
-    private void prepareSearchQueryDateTime(SPARQLQueryBuilder query, String uriSelectNameSparql, String searchDateTimeRangeStartString, String searchDateTimeRangeEndString, boolean inGroupBy) {  
-        
-        query.appendSelect(DATETIMESTAMP_SELECT_NAME_SPARQL);
-        if (inGroupBy) {
-            query.appendGroupBy(DATETIMESTAMP_SELECT_NAME_SPARQL);
-        }
-        query.appendTriplet(uriSelectNameSparql, Time.hasTime.toString(), TIME_SELECT_NAME_SPARQL, null);
-        query.appendTriplet(TIME_SELECT_NAME_SPARQL, Time.inXSDDateTimeStamp.toString(), DATETIMESTAMP_SELECT_NAME_SPARQL, null);
-        
-        if (searchDateTimeRangeStartString != null || searchDateTimeRangeEndString != null) {
-            TimeDAO timeDao = new TimeDAO(this.user);
-            timeDao.filterSearchQueryWithDateRangeComparisonWithDateTimeStamp(
-                    query, 
-                    DateFormat.YMDTHMSZZ.toString(), 
-                    searchDateTimeRangeStartString, 
-                    searchDateTimeRangeEndString, 
-                    DATETIMESTAMP_SELECT_NAME_SPARQL);
-        }
-    }
     
     /**
      * Prepares the event search query.
@@ -206,7 +167,15 @@ public class EventDAO extends SparqlDAO<Event> {
                 Oeev.concerns.getURI(), 
                 searchConcernedItemUri, 
                 searchConcernedItemLabel); 
-        prepareSearchQueryDateTime(query, uriSelectNameSparql, dateRangeStartString, dateRangeEndString, true); 
+        TimeDAO.filterSearchQueryWithDateRangeComparisonWithDateTimeStamp(
+                    query, 
+                    uriSelectNameSparql,
+                    INSTANT_SELECT_NAME_SPARQL,
+                    DateFormat.YMDTHMSZZ.toString(), 
+                    dateRangeStartString, 
+                    dateRangeEndString, 
+                    DATETIMESTAMP_SELECT_NAME_SPARQL,
+                    true);
         
         query.appendLimit(getPageSize());
         query.appendOffset(getPage() * getPageSize());
@@ -240,8 +209,15 @@ public class EventDAO extends SparqlDAO<Event> {
                 Oeev.concerns.getURI(), 
                 null, 
                 null); 
-        prepareSearchQueryDateTime(query, uriSelectNameSparql, null, null, false); 
-        
+        TimeDAO.filterSearchQueryWithDateRangeComparisonWithDateTimeStamp(
+                    query, 
+                    uriSelectNameSparql,
+                    INSTANT_SELECT_NAME_SPARQL,
+                    DateFormat.YMDTHMSZZ.toString(), 
+                    null, 
+                    null, 
+                    DATETIMESTAMP_SELECT_NAME_SPARQL,
+                    false);
         LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
     }
@@ -644,15 +620,15 @@ public class EventDAO extends SparqlDAO<Event> {
 
     @Override
     public List<Event> update(List<Event> events) throws Exception {
+            Event oldEvent = findById(event.getUri());
         for(Event event : events) {
-            Event oldEvent = find(findById(event.getUri()));
-            UpdateRequest deleteQuery = prepareDeleteQueryWhenUpdating(oldEvent);
             UpdateRequest insertQuery = prepareInsertQuery(event);  
+            UpdateRequest deleteQuery = prepareDeleteQueryWhenUpdating(oldEvent);
             Update prepareDelete = getConnection().prepareUpdate(deleteQuery.toString());  
             Update prepareInsert = getConnection().prepareUpdate(QueryLanguage.SPARQL, insertQuery.toString());
             prepareDelete.execute();
-            prepareInsert.execute();
         }
+            prepareInsert.execute();
         return events;
     }
 

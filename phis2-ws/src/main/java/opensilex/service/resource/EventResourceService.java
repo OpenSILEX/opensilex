@@ -39,7 +39,7 @@ import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.EventDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
-import opensilex.service.resource.dto.event.EventDTO;
+import opensilex.service.resource.dto.event.EventGetDTO;
 import opensilex.service.resource.dto.event.EventPostDTO;
 import opensilex.service.resource.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
 import opensilex.service.resource.validation.interfaces.Date;
@@ -118,7 +118,7 @@ public class EventResourceService  extends ResourceService {
         @ApiResponse(
                 code = 200, 
                 message = "Retrieve all events", 
-                response = EventDTO.class, 
+                response = EventGetDTO.class, 
                 responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
@@ -232,7 +232,7 @@ public class EventResourceService  extends ResourceService {
     @ApiOperation(value = "Get the event corresponding to the search uri",
                   notes = "Get the event corresponding to the search uri")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Get an event", response = EventDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Get an event", response = EventGetDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
@@ -418,7 +418,7 @@ public class EventResourceService  extends ResourceService {
     protected ArrayList<AbstractVerifiedClass> getDTOsFromObjects(List<? extends Object> objects) {
         ArrayList<AbstractVerifiedClass> dtos = new ArrayList();
         objects.forEach((object) -> {
-            dtos.add(new EventDTO((Event)object));
+            dtos.add(new EventGetDTO((Event)object));
         });
         return dtos;
     }

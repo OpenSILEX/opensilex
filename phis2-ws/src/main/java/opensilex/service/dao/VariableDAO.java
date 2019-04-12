@@ -34,7 +34,7 @@ import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.PropertiesFileManager;
-import opensilex.service.dao.manager.SparqlDAO;
+import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.ontology.Contexts;
 import opensilex.service.ontology.Rdf;
@@ -56,7 +56,7 @@ import opensilex.service.model.Variable;
  * Variable DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class VariableDAO extends SparqlDAO<Variable> {
+public class VariableDAO extends Rdf4jDAO<Variable> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(VariableDAO.class);
     

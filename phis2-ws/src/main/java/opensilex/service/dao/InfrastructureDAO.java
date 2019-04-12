@@ -19,7 +19,7 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.dao.manager.SparqlDAO;
+import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.ontology.Rdf;
 import opensilex.service.ontology.Rdfs;
 import opensilex.service.ontology.Oeso;
@@ -30,7 +30,7 @@ import opensilex.service.model.Infrastructure;
  * Infrastructure DAO.
  * @author Vincent Migot <vincent.migot@inra.fr>
  */
-public class InfrastructureDAO extends SparqlDAO<Infrastructure> {
+public class InfrastructureDAO extends Rdf4jDAO<Infrastructure> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(InfrastructureDAO.class);
     

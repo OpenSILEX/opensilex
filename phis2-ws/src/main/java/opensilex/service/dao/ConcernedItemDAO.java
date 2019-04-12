@@ -25,7 +25,7 @@ import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.dao.manager.SparqlDAO;
+import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.model.User;
 import opensilex.service.ontology.Rdf;
 import opensilex.service.ontology.Rdfs;
@@ -36,7 +36,7 @@ import opensilex.service.model.ConcernedItem;
  * Concerned items DAO.
  * @author Andreas Garcia <andreas.garcia@inra.fr>
  */
-public class ConcernedItemDAO extends SparqlDAO<ConcernedItem> {
+public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
     final static Logger LOGGER = LoggerFactory.getLogger(ConcernedItemDAO.class);
     
     /**

@@ -38,7 +38,7 @@ import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAODataErrorException;
 import opensilex.service.dao.exception.UnknownUriException;
 import opensilex.service.dao.exception.WrongTypeException;
-import opensilex.service.dao.manager.SparqlDAO;
+import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.model.User;
 import opensilex.service.ontology.Contexts;
 import opensilex.service.ontology.Oa;
@@ -57,7 +57,7 @@ import opensilex.service.model.Annotation;
  * to handle errors.
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
-public class AnnotationDAO extends SparqlDAO<Annotation> {
+public class AnnotationDAO extends Rdf4jDAO<Annotation> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(AnnotationDAO.class);
 

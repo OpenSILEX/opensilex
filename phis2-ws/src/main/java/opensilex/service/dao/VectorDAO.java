@@ -104,7 +104,7 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
         //SILEX:test
         //for the pool connection problems. 
         //WARNING this is a quick fix
-        rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID); //Stockage triplestore Sesame
+        rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID); //Stockage triplestore
         rep.initialize();
         setConnection(rep.getConnection());
         //\SILEX:test

@@ -43,13 +43,13 @@ public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
      * Graph in which the DAO will operate.
      * @example <http://www.opensilex.org/{instance}/set/events>, <http://www.opensilex.org/{instance}/documents>
      */
-    private String graphString;
+    private final String graphString;
     
     /**
      * Relation URI of "concerns"
      * @example oeev:concerns, oeso:concerns
      */
-    private String concernsRelationUri;
+    private final String concernsRelationUri;
     
     // constants used for SPARQL names in the SELECT
     private static final String CONCERNED_ITEM_URI_SELECT_NAME = "concernedItemUri";
@@ -231,10 +231,10 @@ public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
         UpdateBuilder updateBuilder = new UpdateBuilder();
         Node graphNode = NodeFactory.createURI(this.graphString);
         Resource concernsRelation = ResourceFactory.createResource(concernsRelationUri);
-        for (ConcernedItem concernedItem : concernedItems) {
+        concernedItems.forEach((concernedItem) -> {
             Resource concernedItemResource = ResourceFactory.createResource(concernedItem.getUri());
             updateBuilder.addInsert(graphNode, concernedItem.getObjectLinked(), concernsRelation, concernedItemResource);
-        }
+        });
         UpdateRequest query = updateBuilder.buildRequest();
         LOGGER.debug(SPARQL_QUERY + " " + query.toString());
         

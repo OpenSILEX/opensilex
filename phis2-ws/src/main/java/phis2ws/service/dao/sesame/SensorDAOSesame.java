@@ -1026,7 +1026,7 @@ public class SensorDAOSesame extends DAOSesame<Sensor> {
     public void delete(List<Sensor> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-
+    
     @Override
     public List<Sensor> update(List<Sensor> objects) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.

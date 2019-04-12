@@ -173,9 +173,8 @@ public class DatasetDAOMongo extends DAOMongo<Dataset> {
      */
     private void updateAgronomicalObjectsWithExperimentsAgronomicalObjects() {
         ScientificObjectDAOSesame agronomicalObjectDaoSesame = new ScientificObjectDAOSesame();
-        agronomicalObjectDaoSesame.experiment = experiment;
         
-        ArrayList<ScientificObject> agronomicalObjectsSearched = agronomicalObjectDaoSesame.allPaginate();
+        ArrayList<ScientificObject> agronomicalObjectsSearched = agronomicalObjectDaoSesame.find(null, null, experiment, null);
         
         for (ScientificObject agronomicalObject : agronomicalObjectsSearched) {
             this.agronomicalObjects.add(agronomicalObject.getUri());

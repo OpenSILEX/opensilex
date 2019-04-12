@@ -22,7 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import phis2ws.service.dao.manager.DAOPhisBrapi;
 import phis2ws.service.documentation.StatusCodeMsg;
-import phis2ws.service.resources.dto.ScientificObjectDTO;
+import phis2ws.service.resources.dto.scientificObject.ScientificObjectPostDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.utils.sql.SQLQueryBuilder;
 import phis2ws.service.view.brapi.Status;
@@ -32,8 +32,7 @@ import phis2ws.service.view.model.phis.ScientificObject;
  * DAO for scientific objects
  * @author andreas
  */
-public class ScientificObjectDAO extends DAOPhisBrapi<ScientificObject, ScientificObjectDTO> {
-    
+public class ScientificObjectDAO extends DAOPhisBrapi<ScientificObject, ScientificObjectPostDTO> {    
     final static Logger LOGGER = LoggerFactory.getLogger(ScientificObjectDAO.class);
     
     public String uri;
@@ -53,7 +52,7 @@ public class ScientificObjectDAO extends DAOPhisBrapi<ScientificObject, Scientif
     }
 
     @Override
-    public POSTResultsReturn checkAndInsert(ScientificObjectDTO newObject) {
+    public POSTResultsReturn checkAndInsert(ScientificObjectPostDTO newObject) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
@@ -174,7 +173,7 @@ public class ScientificObjectDAO extends DAOPhisBrapi<ScientificObject, Scientif
     }
 
     @Override
-    public POSTResultsReturn checkAndUpdateList(List<ScientificObjectDTO> newObjects) {
+    public POSTResultsReturn checkAndUpdateList(List<ScientificObjectPostDTO> newObjects) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -314,9 +313,55 @@ public class ScientificObjectDAO extends DAOPhisBrapi<ScientificObject, Scientif
             return null;
         }  
     }
+    
+    /**
+     * Update the geometry of a scientific object identified by its URI.
+     * @param uri
+     * @param geometry
+     * @param rdfType
+     * @param experiment
+     * @example 
+     *  UPDATE "trial"
+     *  SET "geometry" = ST_GeomFromText("POLYGON(1 0, 0 0, 0 1, 1 0)", 4326)
+     *  WHERE "uri" = "http://www.opensilex.org/demo/o1800000000023"
+     * @return the updated scientific object.
+     * @throws SQLException 
+     */
+    public ScientificObject updateOneGeometry(String uri, String geometry, String rdfType, String experiment) throws Exception {
+        ScientificObject scientificObject = new ScientificObject(uri);
+        scientificObject.setGeometry(geometry);
+        try (Connection connection = dataSource.getConnection(); Statement statement = connection.createStatement()) {
+            if (geometry != null) {
+                if (!existInDB(scientificObject)) { //The scientific object must be inserted in the database.
+                   String insertScientificObject = "INSERT INTO \"" + table + "\" (\"" + URI + "\", \"" + TYPE + "\", \"" + GEOMETRY + "\", \"" + NAMED_GRAPH + "\") "
+                                       + "VALUES (\"" + uri + "\", \"" + rdfType + "\", ST_GeomFromText(\"" + geometry + "\", 4326), \"" + experiment + "\")"; 
+
+                   LOGGER.debug(insertScientificObject);
+                   statement.execute(insertScientificObject);
+                } else { //The scientific object already exist in the database and must be updated.
+                    String updateGeometry = "UPDATE \"" + table + "\" "
+                                      + "SET \"" + GEOMETRY + "\" = ST_GeomFromText('" + geometry + "', 4326) "
+                                      + "WHERE \"" + URI + "\" = '" + uri + "'";
+
+                    LOGGER.debug(updateGeometry);
+                    statement.executeUpdate(updateGeometry);
+                }
+            } else {
+                if (!existInDB(scientificObject)) { //The scientific object must be delete from the database.
+                    String deleteScientificObject = "DELETE FROM \"" + table + "\" WHERE \"" + URI + "\" = '" + uri + "'";
+                    LOGGER.debug(deleteScientificObject);
+                    statement.execute(deleteScientificObject);
+                }
+            }
+            statement.close();
+            connection.close();
+        }
+        
+        return scientificObject;
+    }
 
     @Override
-    public POSTResultsReturn checkAndInsertList(List<ScientificObjectDTO> newObjects) {
+    public POSTResultsReturn checkAndInsertList(List<ScientificObjectPostDTO> newObjects) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

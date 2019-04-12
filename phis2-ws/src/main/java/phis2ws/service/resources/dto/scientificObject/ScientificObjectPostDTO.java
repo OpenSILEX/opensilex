@@ -11,7 +11,7 @@
 //          of a class, from rules defined by the user
 //***********************************************************************************************
 
-package phis2ws.service.resources.dto;
+package phis2ws.service.resources.dto.scientificObject;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
@@ -28,7 +28,7 @@ import phis2ws.service.resources.validation.interfaces.URL;
  * Represents the submitted JSON for the scientific objects
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class ScientificObjectDTO extends AbstractVerifiedClass {
+public class ScientificObjectPostDTO extends AbstractVerifiedClass {
     
     //the scientific object type 
     //(e.g. http://www.opensilex.org/vocabulary/oeso#Plot)
@@ -54,6 +54,7 @@ public class ScientificObjectDTO extends AbstractVerifiedClass {
         scientificObject.setGeometry(geometry);
         scientificObject.setUriExperiment(experiment);
         scientificObject.setIsPartOf(isPartOf);
+        scientificObject.setYear(year);
         
         if (properties != null) {
             properties.forEach((property) -> {

@@ -416,4 +416,15 @@ public abstract class DAOSesame<T> extends DAO<T> {
         }
         return null;
     }
+    
+    @Override
+    public void finalize() throws Throwable {
+        try {
+            if (getConnection() != null) {
+                getConnection().close();
+            }
+        } finally {
+            super.finalize();
+        }
+    }
 }

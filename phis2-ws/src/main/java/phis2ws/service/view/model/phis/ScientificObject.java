@@ -30,13 +30,11 @@ public class ScientificObject {
     private String experiment;
     //object which has part the scientific object
     private String isPartOf;
-    
-    //SILEX:INFO
-    //Pour l'instant je l'ai mis en attribut pour aller plus vite et avancer le reste (dans le get ao)
-    //Il faudra modifier le getAO (search) en récupérant toutes les propriétés, alias inclu
-    private String alias;
-    //\SILEX:INFO
-    
+    //year of the scientific object
+    private String year;
+    //label of the scientific object
+    private String label;
+    //The properties of the scientific object
     private ArrayList<Property> properties = new ArrayList<>();
 
     public ScientificObject(String uri) {
@@ -87,12 +85,12 @@ public class ScientificObject {
         properties.add(property);
     }
 
-    public String getAlias() {
-        return alias;
+    public String getLabel() {
+        return label;
     }
 
-    public void setAlias(String alias) {
-        this.alias = alias;
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     public String getExperiment() {
@@ -109,5 +107,13 @@ public class ScientificObject {
 
     public void setIsPartOf(String isPartOf) {
         this.isPartOf = isPartOf;
+    }
+
+    public String getYear() {
+        return year;
+    }
+
+    public void setYear(String year) {
+        this.year = year;
     }
 }

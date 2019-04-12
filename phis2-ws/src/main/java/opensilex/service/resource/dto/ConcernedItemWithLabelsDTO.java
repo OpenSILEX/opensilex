@@ -9,6 +9,7 @@ package opensilex.service.resource.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
+import java.util.List;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.model.ConcernedItem;
@@ -22,7 +23,7 @@ public class ConcernedItemWithLabelsDTO extends ConcernedItemDTO {
     /**
      * Labels
      */
-    protected ArrayList<String> labels = new ArrayList();
+    protected List<String> labels = new ArrayList();
 
     public ConcernedItemWithLabelsDTO(ConcernedItem concernedItem) {
         this.uri = concernedItem.getUri();
@@ -39,11 +40,11 @@ public class ConcernedItemWithLabelsDTO extends ConcernedItemDTO {
     
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI)
     @Required
-    public ArrayList<String> getLabels() {
+    public List<String> getLabels() {
         return labels;
     }
 
-    public void setLabels(ArrayList<String> labels) {
+    public void setLabels(List<String> labels) {
         this.labels = labels;
     }
 }

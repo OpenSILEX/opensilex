@@ -401,7 +401,7 @@ public class EventDAO extends SparqlDAO<Event> {
         AnnotationDAO annotationDao = new AnnotationDAO(user);
         PropertyDAO propertyDao = new PropertyDAO();
 
-        // Generate uri
+        // Generate URI
         event.setUri(uriGenerator.generateNewInstanceUri(Oeev.Event.getURI(), null, null));
         
         // Insert event

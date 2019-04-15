@@ -13,6 +13,7 @@ import java.util.List;
 import opensilex.service.dao.exception.UnknownUriException;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAODataErrorException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -283,29 +284,29 @@ public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
     }
 
     @Override
-    public List<ConcernedItem> create(List<ConcernedItem> objects) throws Exception {               
+    public List<ConcernedItem> create(List<ConcernedItem> objects) throws DAOPersistenceException, Exception {
         UpdateRequest query = prepareInsertLinkQuery(objects);
         getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString()).execute();
         return objects;
     }
 
     @Override
-    public void delete(List<ConcernedItem> objects) throws Exception {
+    public void delete(List<ConcernedItem> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<ConcernedItem> update(List<ConcernedItem> objects) throws Exception {
+    public List<ConcernedItem> update(List<ConcernedItem> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public ConcernedItem find(ConcernedItem object) throws Exception {
+    public ConcernedItem find(ConcernedItem object) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public ConcernedItem findById(String id) throws Exception {
+    public ConcernedItem findById(String id) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

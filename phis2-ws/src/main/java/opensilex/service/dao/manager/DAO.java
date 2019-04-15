@@ -9,6 +9,7 @@ package opensilex.service.dao.manager;
 
 import java.util.List;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.dao.exception.ResourceAccessDeniedException;
 import opensilex.service.model.User;
 
@@ -29,59 +30,66 @@ public abstract class DAO<T> {
      * Creates in the storage the list of objects given.
      * @param objects
      * @return the given list with the generated IDs 
+     * @throws opensilex.service.dao.exception.DAOPersistenceException 
      * @throws java.lang.Exception
      */
-    public abstract List<T> create(List<T> objects) throws Exception;
+    public abstract List<T> create(List<T> objects) throws DAOPersistenceException, Exception;
 
     /**
      * Deletes in the storage the list of objects given.
      * @param objects
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      * @throws java.lang.Exception
      */
-    public abstract void delete(List<T> objects) throws Exception;
+    public abstract void delete(List<T> objects) throws DAOPersistenceException, Exception;
 
     /**
      * Updates in the storage the list of objects given.
      * @param objects
      * @return the given list with the data updated
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      * @throws java.lang.Exception
      */
-    public abstract List<T> update(List<T> objects) throws Exception;
+    public abstract List<T> update(List<T> objects) throws DAOPersistenceException, Exception;
 
     /**
      * Finds in the storage the object given.
      * @param object
      * @return the object found
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      * @throws java.lang.Exception
      */
-    public abstract T find(T object) throws Exception;
+    public abstract T find(T object) throws DAOPersistenceException, Exception;
 
     /**
      * Finds in the storage the objects with the ID given.
      * @param id
      * @return the object found
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      * @throws java.lang.Exception
      */
-    public abstract T findById(String id) throws Exception;
+    public abstract T findById(String id) throws DAOPersistenceException, Exception;
     
     /**
      * Validates the objects given.
      * @param objects
      * @throws DAODataErrorAggregateException to handle multiple data error exceptions.
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      * @throws opensilex.service.dao.exception.ResourceAccessDeniedException 
      */
     public abstract void validate(List<T> objects) 
-            throws DAODataErrorAggregateException, ResourceAccessDeniedException;
+            throws DAOPersistenceException, DAODataErrorAggregateException, DAOPersistenceException, ResourceAccessDeniedException;
     
     /**
      * Validates and creates objects.
      * @param objects
      * @return the annotations created.
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
      * @throws opensilex.service.dao.exception.ResourceAccessDeniedException
      */
     public List<T> validateAndCreate(List<T> objects) 
-            throws DAODataErrorAggregateException, ResourceAccessDeniedException, Exception {
+            throws DAOPersistenceException, DAODataErrorAggregateException, ResourceAccessDeniedException, Exception {
         validate(objects);     
         initConnection();
         List<T> objectsCreated;
@@ -100,11 +108,12 @@ public abstract class DAO<T> {
      * Validates and updates objects.
      * @param objects
      * @return the objects created.
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
      * @throws opensilex.service.dao.exception.ResourceAccessDeniedException
      */
     public List<T> validateAndUpdate(List<T> objects) 
-            throws DAODataErrorAggregateException, ResourceAccessDeniedException, Exception {
+            throws DAOPersistenceException, DAODataErrorAggregateException, ResourceAccessDeniedException, Exception {
         validate(objects);     
         initConnection();
         List<T> objectsUpdated;

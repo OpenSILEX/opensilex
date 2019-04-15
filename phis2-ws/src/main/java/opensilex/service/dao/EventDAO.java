@@ -9,7 +9,8 @@ package opensilex.service.dao;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.persistence.PersistenceException;
+import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -613,17 +614,17 @@ public class EventDAO extends Rdf4jDAO<Event> {
     }
 
     @Override
-    public void delete(List<Event> objects) throws Exception {
+    public void delete(List<Event> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<Event> update(List<Event> objects) throws Exception {
+    public List<Event> update(List<Event> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Event find(Event object) throws Exception {
+    public Event find(Event object) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

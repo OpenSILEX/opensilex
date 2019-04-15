@@ -9,6 +9,7 @@ package opensilex.service.dao;
 
 import java.util.List;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.dao.manager.Rdf4jDAO;
@@ -28,32 +29,32 @@ public class ImageMetadataRdf4jDAO extends Rdf4jDAO<ImageMetadata> {
     }
 
     @Override
-    public List<ImageMetadata> create(List<ImageMetadata> objects) throws Exception {
+    public List<ImageMetadata> create(List<ImageMetadata> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List<ImageMetadata> objects) throws Exception {
+    public void delete(List<ImageMetadata> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<ImageMetadata> update(List<ImageMetadata> objects) throws Exception {
+    public List<ImageMetadata> update(List<ImageMetadata> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public ImageMetadata find(ImageMetadata object) throws Exception {
+    public ImageMetadata find(ImageMetadata object) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public ImageMetadata findById(String id) throws Exception {
+    public ImageMetadata findById(String id) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void validate(List<ImageMetadata> objects) throws DAODataErrorAggregateException {
+    public void validate(List<ImageMetadata> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

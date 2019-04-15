@@ -8,7 +8,7 @@
 package opensilex.service.dao.exception;
 
 /**
- * Resource access denied exception.
+ * A persistence exception occured during a DAO operation.
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
 public class DAOPersistenceException extends DAOException {

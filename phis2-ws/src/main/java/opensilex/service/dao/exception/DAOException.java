@@ -1,38 +1,36 @@
 //******************************************************************************
-//                            UnknownUriException.java
+//                               DAOException.java
 // SILEX-PHIS
 // Copyright © INRA 2019
-// Creation date: 5 Apr. 2019
+// Creation date: 10 Apr. 2019
 // Contact: andreas.garcia@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.dao.exception;
 
 /**
- * Unknown URI exception.
+ * Abstract exception thrown during a DAO operation.
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
-public class UnknownUriException extends SemanticInconsistencyException {
+public abstract class DAOException extends Exception {
     
-    public final static String GENERIC_MESSAGE = "Unknown URI";
-    public final static String DETAILS = "The URI %s of %s is unknown";
+    public final static String GENERIC_MESSAGE = "An error occured during a DAO operation.";
     
-    public UnknownUriException() {
-        super(DETAILS);
+    public DAOException() {
+        super(GENERIC_MESSAGE);
     }
     
-    public UnknownUriException(Throwable throwableCause) {
-        super(DETAILS, throwableCause);
+    public DAOException(Throwable throwableCause) {
+        super(GENERIC_MESSAGE, throwableCause);
     }
     
-    public UnknownUriException(String uri, String objectWhoseUriIsUnknown) {
-        super(String.format(DETAILS, uri, objectWhoseUriIsUnknown));
+    public DAOException(String errorMessage) {
+        super(errorMessage);
     }
     
-    public UnknownUriException(String uri, String uriObject, Throwable throwableCause) {
-        super(String.format(DETAILS, uri, uriObject), throwableCause);
+    public DAOException(String message, Throwable throwableCause) {
+        super(message, throwableCause);
     }
 
-    @Override
     public String getGenericMessage() {
         return GENERIC_MESSAGE;
     }

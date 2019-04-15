@@ -32,6 +32,9 @@ import opensilex.service.ontology.Rdf;
 import opensilex.service.ontology.Rdfs;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.model.ConcernedItem;
+import org.eclipse.rdf4j.query.MalformedQueryException;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.repository.RepositoryException;
 
 /**
  * Concerned items DAO.
@@ -191,8 +194,10 @@ public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
      * @param page 
      * @param pageSize 
      * @return  the object's concerned items
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
-    public ArrayList<ConcernedItem> find(String objectUri, String searchUri, String searchLabel, int page, int pageSize) {
+    public ArrayList<ConcernedItem> find(String objectUri, String searchUri, String searchLabel, int page, int pageSize) 
+            throws DAOPersistenceException {
         setPage(page);
         setPageSize(pageSize);
         
@@ -213,6 +218,8 @@ public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
                     concernedItems.add(concernedItem);
                 }
             }
+        } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
+            handleRdf4jException(ex);
         }
         return concernedItems;
     }
@@ -246,21 +253,26 @@ public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
      * Checks the existence of the given list of concerned items.
      * @param concernedItems
      * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
     @Override
-    public void validate(List<ConcernedItem> concernedItems) throws DAODataErrorAggregateException {       
+    public void validate(List<ConcernedItem> concernedItems) 
+            throws DAODataErrorAggregateException, DAOPersistenceException {       
         ArrayList<DAODataErrorException> exceptions = new ArrayList<>(); 
-        concernedItems.forEach((concernedItem) -> {
-            String concernedItemUri = concernedItem.getUri();
-            if (concernedItemUri != null) {
-                if (!existUri(concernedItem.getUri())) {
-                    exceptions.add(new UnknownUriException(concernedItemUri, "the concerned item"));
+        try {
+            concernedItems.forEach((concernedItem) -> {
+                String concernedItemUri = concernedItem.getUri();
+                if (concernedItemUri != null) {
+                    if (!existUri(concernedItem.getUri())) {
+                        exceptions.add(new UnknownUriException(concernedItemUri, "the concerned item"));
+                    }
                 }
+            });
+            if (exceptions.size() > 0) {
+                throw new DAODataErrorAggregateException(exceptions);
             }
-        });
-        
-        if (exceptions.size() > 0) {
-            throw new DAODataErrorAggregateException(exceptions);
+        } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
+            handleRdf4jException(ex);
         }
     }
     
@@ -286,7 +298,11 @@ public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
     @Override
     public List<ConcernedItem> create(List<ConcernedItem> objects) throws DAOPersistenceException, Exception {
         UpdateRequest query = prepareInsertLinkQuery(objects);
-        getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString()).execute();
+        try {
+            getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString()).execute();
+        } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
+            handleRdf4jException(ex);
+        }
         return objects;
     }
 

@@ -44,6 +44,7 @@ public final class StatusCodeMsg {
     public static final String MISSING_FIELDS = "Fields are missing in JSON Data";
     public static final String NO_RESULTS = "No results";
     public static final String POSTGRESQL_ERROR = "PostgresSQL Error";
+    public static final String PERSISTENCE_ERROR = "Persistence system error";
     public static final String QUERY_ERROR = "Query error";
     public static final String URI_TYPE_NOT_IN_DOMAIN_OF_RELATION = "the type of the subject %s is not in the domain of the relation %s";
     public static final String REQUEST_ERROR = "Request error";

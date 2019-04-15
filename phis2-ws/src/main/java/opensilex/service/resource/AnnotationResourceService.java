@@ -16,6 +16,8 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -32,6 +34,7 @@ import javax.ws.rs.core.Response;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.AnnotationDAO;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
@@ -39,6 +42,7 @@ import opensilex.service.resource.dto.annotation.AnnotationDTO;
 import opensilex.service.resource.dto.annotation.AnnotationPostDTO;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.model.Annotation;
+import static opensilex.service.resource.DocumentResourceService.LOGGER;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 
 /**
@@ -89,7 +93,7 @@ public class AnnotationResourceService extends ResourceService {
             value = DocumentationAnnotation.ACCES_TOKEN,
             example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
-    public Response postAnnotations(
+    public Response post(
         @ApiParam(value = DocumentationAnnotation.ANNOTATION_POST_DATA_DEFINITION) 
             @Valid ArrayList<AnnotationPostDTO> annotationsDtos,
         @Context HttpServletRequest context) {
@@ -161,8 +165,13 @@ public class AnnotationResourceService extends ResourceService {
             @ApiParam(value = "Search by motivation", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_MOTIVATED_BY) @QueryParam("motivatedBy") @URL String motivatedBy) {
 
         AnnotationDAO annotationDao = new AnnotationDAO(userSession.getUser());
-        ArrayList<Annotation> annotations 
-                = annotationDao.find(uri, creator, target, bodyValue, motivatedBy, page, pageSize);
+        ArrayList<Annotation> annotations;
+        try {
+            annotations = annotationDao.find(uri, creator, target, bodyValue, motivatedBy, page, pageSize);
+        } catch (DAOPersistenceException ex) {
+            LOGGER.error(ex.getMessage(), ex);
+            return getResponseWhenPersistenceError(ex);
+        }
 
         if (annotations == null) {
             return getGETResponseWhenNoResult();

@@ -13,6 +13,7 @@ import javax.ws.rs.core.Response;
 import opensilex.service.PropertiesFileManager;
 import opensilex.service.authentication.Session;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.dao.exception.ResourceAccessDeniedException;
 import opensilex.service.dao.manager.DAO;
 import opensilex.service.documentation.StatusCodeMsg;
@@ -116,6 +117,19 @@ public abstract class ResourceService {
     }
 
     /**
+     * Gets a response in the case of a persistence system error.
+     * @param exception
+     * @return the response. 
+     */
+    protected Response getResponseWhenPersistenceError(DAOPersistenceException exception) {
+        return getPostResponseFromSingleOperationStatus(
+                Response.Status.INTERNAL_SERVER_ERROR,
+                StatusCodeMsg.PERSISTENCE_ERROR,
+                StatusCodeMsg.ERR,
+                exception.getMessage());
+    }
+
+    /**
      * Gets a response for a GET operation in success.
      * @param objects
      * @param pageSize
@@ -158,6 +172,7 @@ public abstract class ResourceService {
                 return getGETResponseWhenSuccess(objects, 0, 0, 0);
             }
         } catch (Exception ex) {
+            LOGGER.error(ex.getMessage(), ex);
             return getResponseWhenInternalError(ex);
         }
     }

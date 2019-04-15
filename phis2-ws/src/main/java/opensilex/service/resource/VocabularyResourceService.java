@@ -16,6 +16,8 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.validation.constraints.Min;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -27,6 +29,7 @@ import javax.ws.rs.core.Response;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.VocabularyDAO;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.resource.dto.PropertyVocabularyDTO;
 import opensilex.service.resource.validation.interfaces.Required;
@@ -35,6 +38,7 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Namespace;
 import opensilex.service.model.Property;
+import static opensilex.service.resource.DocumentResourceService.LOGGER;
 
 /**
  * Vocabulary resource service.
@@ -152,22 +156,28 @@ public class VocabularyResourceService extends ResourceService {
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<PropertyVocabularyDTO> getResponse;
 
-        properties = vocabularyDAO.allPaginateContactProperties();
+        try {
+            properties = vocabularyDAO.allPaginateContactProperties();
 
-        if (properties == null) {
-            getResponse = new ResultForm<>(0, 0, properties, true);
-            return noResultFound(getResponse, statusList);
-        } else if (properties.isEmpty()) {
-            getResponse = new ResultForm<>(0, 0, properties, true);
-            return noResultFound(getResponse, statusList);
-        } else {
-            getResponse = new ResultForm<>(vocabularyDAO.getPageSize(), vocabularyDAO.getPage(), properties, false);
-            if (getResponse.getResult().dataSize() == 0) {
+            if (properties == null) {
+                getResponse = new ResultForm<>(0, 0, properties, true);
+                return noResultFound(getResponse, statusList);
+            } else if (properties.isEmpty()) {
+                getResponse = new ResultForm<>(0, 0, properties, true);
                 return noResultFound(getResponse, statusList);
             } else {
-                getResponse.setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(getResponse).build();
+                getResponse = new ResultForm<>(vocabularyDAO.getPageSize(), vocabularyDAO.getPage(), properties, false);
+                if (getResponse.getResult().dataSize() == 0) {
+                    return noResultFound(getResponse, statusList);
+                } else {
+                    getResponse.setStatus(statusList);
+                    return Response.status(Response.Status.OK).entity(getResponse).build();
+                }
             }
+        } catch (DAOPersistenceException ex) {
+            LOGGER.error(ex.getMessage(), ex);
+            getResponse = new ResultForm<>(0, 0, null, true);
+            return noResultFound(getResponse, statusList);
         }
     }
 
@@ -246,22 +256,28 @@ public class VocabularyResourceService extends ResourceService {
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<PropertyVocabularyDTO> getResponse;
 
-        properties = vocabularyDAO.allPaginateDeviceProperties();
+        try {
+            properties = vocabularyDAO.allPaginateDeviceProperties();
 
-        if (properties == null) {
-            getResponse = new ResultForm<>(0, 0, properties, true);
-            return noResultFound(getResponse, statusList);
-        } else if (properties.isEmpty()) {
-            getResponse = new ResultForm<>(0, 0, properties, true);
-            return noResultFound(getResponse, statusList);
-        } else {
-            getResponse = new ResultForm<>(vocabularyDAO.getPageSize(), vocabularyDAO.getPage(), properties, false);
-            if (getResponse.getResult().dataSize() == 0) {
+            if (properties == null) {
+                getResponse = new ResultForm<>(0, 0, properties, true);
+                return noResultFound(getResponse, statusList);
+            } else if (properties.isEmpty()) {
+                getResponse = new ResultForm<>(0, 0, properties, true);
                 return noResultFound(getResponse, statusList);
             } else {
-                getResponse.setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(getResponse).build();
+                getResponse = new ResultForm<>(vocabularyDAO.getPageSize(), vocabularyDAO.getPage(), properties, false);
+                if (getResponse.getResult().dataSize() == 0) {
+                    return noResultFound(getResponse, statusList);
+                } else {
+                    getResponse.setStatus(statusList);
+                    return Response.status(Response.Status.OK).entity(getResponse).build();
+                }
             }
+        } catch (DAOPersistenceException ex) {
+            LOGGER.error(ex.getMessage(), ex);
+            getResponse = new ResultForm<>(0, 0, null, true);
+            return noResultFound(getResponse, statusList);
         }
     }
 

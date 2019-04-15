@@ -205,6 +205,7 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
 
     /**
      * Inserts the given annotations in the storage.
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      * @note annotations have to be checked before calling this function.
      * @param annotations
      * @return the insertion resultAnnotationUri, with the errors list or the
@@ -213,12 +214,16 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
      * @throws opensilex.service.dao.exception.UnknownUriException
      */
     @Override
-    public List<Annotation> create(List<Annotation> annotations) throws Exception {
+    public List<Annotation> create(List<Annotation> annotations) throws DAOPersistenceException, Exception {
         UriGenerator uriGenerator = new UriGenerator();
-        for (Annotation annotation : annotations) {
-            annotation.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_ANNOTATION.toString(), null, null));
-            UpdateRequest query = prepareInsertQuery(annotation);
-            getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString()).execute();
+        try {
+            for (Annotation annotation : annotations) {
+                annotation.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_ANNOTATION.toString(), null, null));
+                UpdateRequest query = prepareInsertQuery(annotation);
+                getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString()).execute();
+            }
+        } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
+            handleRdf4jException(ex);
         }
         return annotations;
     }
@@ -287,34 +292,38 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
      * Checks the given annotations.
      * @param annotations
      * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
     @Override
-    public void validate(List<Annotation> annotations) throws DAODataErrorAggregateException {
+    public void validate(List<Annotation> annotations) throws DAODataErrorAggregateException, DAOPersistenceException {
         UriDAO uriDao = new UriDAO();
         UserDAO userDao = new UserDAO();
         ArrayList<DAODataErrorException> exceptions = new ArrayList<>();
-
-        annotations.forEach((annotation) -> {
-            // check motivation
-            if (!uriDao.existUri(annotation.getMotivatedBy())) {
-                exceptions.add(new UnknownUriException(annotation.getMotivatedBy(), "the motivation"));
-            }
-            else if (!uriDao.isInstanceOf(annotation.getMotivatedBy(), Oa.CONCEPT_MOTIVATION.toString())) {
-                exceptions.add(new WrongTypeException(annotation.getMotivatedBy(), "the motivation"));
-            }
-
-            // check person
-            if (!userDao.existUserUri(annotation.getCreator())) {
-                exceptions.add(new UnknownUriException(annotation.getCreator(), "the person"));
-            }
-
-            // check target
-            annotation.getTargets().forEach((targetUri) -> {
-                if (!uriDao.existUri(targetUri)) {
-                    exceptions.add(new UnknownUriException(targetUri, "the target"));
+        try {
+            annotations.forEach((annotation) -> {
+                // check motivation
+                if (!uriDao.existUri(annotation.getMotivatedBy())) {
+                    exceptions.add(new UnknownUriException(annotation.getMotivatedBy(), "the motivation"));
                 }
+                else if (!uriDao.isInstanceOf(annotation.getMotivatedBy(), Oa.CONCEPT_MOTIVATION.toString())) {
+                    exceptions.add(new WrongTypeException(annotation.getMotivatedBy(), "the motivation"));
+                }
+
+                // check person
+                if (!userDao.existUserUri(annotation.getCreator())) {
+                    exceptions.add(new UnknownUriException(annotation.getCreator(), "the person"));
+                }
+
+                // check target
+                annotation.getTargets().forEach((targetUri) -> {
+                    if (!uriDao.existUri(targetUri)) {
+                        exceptions.add(new UnknownUriException(targetUri, "the target"));
+                    }
+                });
             });
-        });
+        } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
+            handleRdf4jException(ex);
+        }
         
         if (exceptions.size() > 0) {
             throw new DAODataErrorAggregateException(exceptions);
@@ -331,8 +340,10 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
      * @param motivatedBy
      * @param pageSize
      * @return the list of the annotations found
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
-    public ArrayList<Annotation> find(String uri, String creator, String target, String bodyValue, String motivatedBy, int page, int pageSize) {
+    public ArrayList<Annotation> find(String uri, String creator, String target, String bodyValue, String motivatedBy, int page, int pageSize) 
+            throws DAOPersistenceException {
         setPage(page);
         setPageSize(pageSize);
 
@@ -343,14 +354,18 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
                 target, 
                 bodyValue, 
                 motivatedBy);
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-        ArrayList<Annotation> annotations;
-        
-        // Retreive all information for each URI
-        try (TupleQueryResult resultAnnotationUri = tupleQuery.evaluate()) {
-            annotations = getAnnotationsFromResult(resultAnnotationUri, uri, creator, motivatedBy);
+        ArrayList<Annotation> annotations = null;
+        try {
+            TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+
+            // Retreive all information for each URI
+            try (TupleQueryResult resultAnnotationUri = tupleQuery.evaluate()) {
+                annotations = getAnnotationsFromResult(resultAnnotationUri, uri, creator, motivatedBy);
+            }
+            LOGGER.debug(JsonConverter.ConvertToJson(annotations));
+        } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
+            handleRdf4jException(ex);
         }
-        LOGGER.debug(JsonConverter.ConvertToJson(annotations));
         return annotations;
     }
 
@@ -454,12 +469,14 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
 
     @Override
     public Annotation findById(String id) throws DAOPersistenceException, Exception {
-        List<Annotation> annotations = find(id, null, null, null, null, 0, 1);
-        if(!annotations.isEmpty()) {
-            return annotations.get(0);
+        try {
+            List<Annotation> annotations = find(id, null, null, null, null, 0, 1);
+            if(!annotations.isEmpty()) {
+                return annotations.get(0);
+            }
+        } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
+            handleRdf4jException(ex);
         }
-        else {
-            return null;
-        }
+        return null;
     }
 }

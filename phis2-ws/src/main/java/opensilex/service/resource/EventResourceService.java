@@ -16,6 +16,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -36,6 +37,7 @@ import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.EventDAO;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.resource.dto.event.EventDTO;
@@ -46,6 +48,7 @@ import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.model.Event;
+import static opensilex.service.resource.DocumentResourceService.LOGGER;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 
 /**
@@ -166,15 +169,21 @@ public class EventResourceService  extends ResourceService {
         EventDAO eventDAO = new EventDAO(userSession.getUser());
         
         // 1. Search events with parameters
-        ArrayList<Event> events = eventDAO.find(
-                uri,
-                type,
-                concernedItemLabel, 
-                concernedItemUri, 
-                startDate, 
-                endDate, 
-                page, 
-                pageSize);
+        ArrayList<Event> events;
+        try {
+            events = eventDAO.find(
+                    uri,
+                    type,
+                    concernedItemLabel,
+                    concernedItemUri,
+                    startDate,
+                    endDate,
+                    page,
+                    pageSize);
+        } catch (DAOPersistenceException ex) {
+            LOGGER.error(ex.getMessage(), ex);
+            return getResponseWhenPersistenceError(ex);
+        }
 
         if (events == null) {
             return getGETResponseWhenNoResult();

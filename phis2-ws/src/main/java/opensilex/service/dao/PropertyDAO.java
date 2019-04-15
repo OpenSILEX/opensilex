@@ -49,6 +49,7 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.model.Cardinality;
 import opensilex.service.model.RdfResourceDefinition;
 import opensilex.service.model.Property;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
 
 //SILEX:todo
 //use this DAO in the agronomical objects DAO
@@ -194,17 +195,21 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
      * Gets in the Triplestore the domain of the property if it exists.
      * @param relationUri
      * @return the domain of the property (attributes relation)
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
-    public ArrayList<String> getPropertyDomain(String relationUri) {
+    public ArrayList<String> getPropertyDomain(String relationUri) throws DAOPersistenceException {
         SPARQLQueryBuilder query = prepareGetDomainQuery(relationUri);
         ArrayList<String> propertyDomains = new ArrayList<>();
         
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-        try (TupleQueryResult result = tupleQuery.evaluate()) {
+        try {
+            TupleQueryResult result = tupleQuery.evaluate();
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 propertyDomains.add(bindingSet.getValue(DOMAIN).toString());
             }
+        } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
+            handleRdf4jException(ex);
         }
         
         return propertyDomains;
@@ -214,32 +219,36 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
      * Gets in the Triplestore the domain of the property if it exists.
      * @param relationUri
      * @return the domain of the property (attributes relation)
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
-    public ArrayList<String> getPropertyRange(String relationUri) {
+    public ArrayList<String> getPropertyRange(String relationUri) throws DAOPersistenceException {
         SPARQLQueryBuilder query = prepareGetRangeQuery(relationUri);
         ArrayList<String> propertyRangeList = new ArrayList<>();
         
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-        try (TupleQueryResult result = tupleQuery.evaluate()) {
+        try {
+            TupleQueryResult result = tupleQuery.evaluate();
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 propertyRangeList.add(bindingSet.getValue(RANGE).toString());
             }
+        } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
+            handleRdf4jException(ex);
         }
-        
         return propertyRangeList;
     }
     
     /**
-     * Checks if a given relation can be linked to a given rdfType. 
-     * Check if there is a domain and if the rdfType corresponds to the domain.
+     * Checks if a given relation can be linked to a given rdfType.Check if there is a domain and if the rdfType corresponds to the domain.
      * /!\ relation must contain the relation which domain is checked.
      * @param relationUri
      * @param rdfType the RDF type. e.g. http://www.opensilex.org/vocabulary/oeso#RadiometricTarget
      * @return true if the given property can be linked to the given rdfType
      *         false if the given rdfType is not part of the domain of the property.
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
-    public boolean isRelationDomainCompatibleWithRdfType(String relationUri, String rdfType) {
+    public boolean isRelationDomainCompatibleWithRdfType(String relationUri, String rdfType) 
+            throws DAOPersistenceException {
         ArrayList<String> propertyDomains = getPropertyDomain(relationUri);
         UriDAO uriDao = new UriDAO();
         boolean domainOk = false;
@@ -257,15 +266,16 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
     }
     
     /**
-     * Checks if a given relation can be linked to a given rdfType. 
-     * Checks if there is a domain and if the rdfType corresponds to the domain.
+     * Checks if a given relation can be linked to a given rdfType.Checks if there is a domain and if the rdfType corresponds to the domain.
      * /!\ relation must contain the relation which domain is checked.
      * @param relationUri
      * @param rdfType the RDF type. e.g. http://www.opensilex.org/vocabulary/oeso#RadiometricTarget
      * @return true if the given property can be linked to the given rdfType
      *         false if the given rdfType is not part of the domain of the property.
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
-    public boolean isRelationRangeCompatibleWithRdfType(String relationUri, String rdfType) {
+    public boolean isRelationRangeCompatibleWithRdfType(String relationUri, String rdfType) 
+            throws DAOPersistenceException {
         ArrayList<String> propertyRangeList = getPropertyRange(relationUri);
         UriDAO uriDao = new UriDAO();
         boolean isRdfTypeCompatible = false;
@@ -551,37 +561,41 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
      * @param properties
      * @param ownerType
      * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
     public void checkExistenceRangeDomain(ArrayList<Property> properties, String ownerType) 
-            throws DAODataErrorAggregateException {
+            throws DAODataErrorAggregateException, DAOPersistenceException {
         ArrayList<DAODataErrorException> exceptions = new ArrayList<>();
-        for (Property property : properties) {
-            // If URI, check value existence with type
-            if (property.getRdfType() != null 
-                    && !exist(property.getValue(), RDF.type.getURI(), property.getRdfType())) {
-                exceptions.add(new UnknownUriOfTypeException(
-                        property.getValue(), 
-                        property.getRdfType(), 
-                        "the property's value"));
-            }
-            
-            // Check relation existence
-            if (existUri(property.getRelation())) {
-                // Check domain
-                if (!isRelationDomainCompatibleWithRdfType(property.getRelation(), ownerType)) {
-                    exceptions.add(new TypeNotInDomainException(ownerType, property.getRelation()));
+        try {
+            for (Property property : properties) {
+                // If URI, check value existence with type
+                if (property.getRdfType() != null 
+                        && !exist(property.getValue(), RDF.type.getURI(), property.getRdfType())) {
+                    exceptions.add(new UnknownUriOfTypeException(
+                            property.getValue(), 
+                            property.getRdfType(), 
+                            "the property's value"));
                 }
-                // Check range
-                if (!isRelationRangeCompatibleWithRdfType(property.getRelation(), property.getRdfType())) {
-                    exceptions.add(new TypeNotInDomainException(property.getRdfType(), property.getRelation()));
+
+                // Check relation existence
+                if (existUri(property.getRelation())) {
+                    // Check domain
+                    if (!isRelationDomainCompatibleWithRdfType(property.getRelation(), ownerType)) {
+                        exceptions.add(new TypeNotInDomainException(ownerType, property.getRelation()));
+                    }
+                    // Check range
+                    if (!isRelationRangeCompatibleWithRdfType(property.getRelation(), property.getRdfType())) {
+                        exceptions.add(new TypeNotInDomainException(property.getRdfType(), property.getRelation()));
+                    }
+                } else {
+                    exceptions.add(new UnknownUriException(property.getRelation(), "the property relation"));
                 }
-            } else {
-                exceptions.add(new UnknownUriException(property.getRelation(), "the property relation"));
             }
-        }
-        
-        if (exceptions.size() > 0) {
-            throw new DAODataErrorAggregateException(exceptions);
+            if (exceptions.size() > 0) {
+                throw new DAODataErrorAggregateException(exceptions);
+            }
+        } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
+            handleRdf4jException(ex);
         }
     }
     
@@ -809,8 +823,10 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
      * language can be null
      * @return true    if the definition object is correctly filled
      *          false   if the URI doesn't exists
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
-    public boolean getAllPropertiesWithLabels(RdfResourceDefinition definition, String language) {
+    public boolean getAllPropertiesWithLabels(RdfResourceDefinition definition, String language) 
+            throws DAOPersistenceException {
         return getAllPropertiesWithLabelsExceptThoseSpecified(definition, language, null);
     }       
     
@@ -823,8 +839,10 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
      * considered as properties so we ignore them
      * @return true    if the definition object is correctly filled
      *          false   if the URI doesn't exist
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
-    public boolean getAllPropertiesWithLabelsExceptThoseSpecified(RdfResourceDefinition definition, String language, ArrayList<String> propertiesRelationsToIgnore) {
+    public boolean getAllPropertiesWithLabelsExceptThoseSpecified(RdfResourceDefinition definition, String language, ArrayList<String> propertiesRelationsToIgnore) 
+            throws DAOPersistenceException {
         String objectUri = definition.getUri();
         if (this.existUri(objectUri)) {
             /* Prepare and execute the query to retrieve all the relations, 
@@ -835,7 +853,8 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
         
             definition.setUri(objectUri);
         
-            try (TupleQueryResult result = tupleQuery.evaluate()) {
+            try {
+                TupleQueryResult result = tupleQuery.evaluate();
                 while (result.hasNext()) {
                     BindingSet bindingSet = result.next();
 
@@ -905,6 +924,8 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
                         definition.addProperty(property);                    
                     }
                 }
+            } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
+                handleRdf4jException(ex);
             }
             return true;
         } else {

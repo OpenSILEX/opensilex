@@ -979,12 +979,11 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
             prepareUpdate.execute();
             
             //2.2 Relational database data
-            //2.2.1 Check if it exist in the relational database
-            //3. insert in postgresql
             ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO();
             ScientificObject scientificObjectToSearchInDB = new ScientificObject();
             scientificObjectToSearchInDB.setGeometry(scientificObject.getGeometry());
             scientificObjectToSearchInDB.setUri(scientificObject.getUri());
+            //2.2.1 Check if it exist in the relational database
             if (scientificObjectDAO.existInDB(scientificObjectToSearchInDB)) {
                 //2.2.1a Update old data
                 scientificObjectDAO.updateOneGeometry(scientificObject.getUri(), scientificObject.getGeometry(), scientificObject.getRdfType(), scientificObject.getExperiment());

@@ -52,13 +52,15 @@ import opensilex.service.model.Property;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 
 //SILEX:todo
-//use this DAO in the agronomical objects DAO
+//use this DAO in the scientific objects DAO.
 //\SILEX:todo
 
 /**
  * Property DAO.
  * @update [Andréas Garcia] 5 March, 2019: Move URI from the class attributes to 
  * the parameters of the DAO functions
+ * @update [Andréas Garcia] 15 Apr. 2019: throw DAO persistence exceptions when querying issues occure in the functions
+ * used by the event DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class PropertyDAO extends Rdf4jDAO<Property> {
@@ -92,7 +94,6 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
     private final String BLANCK_NODE = "_:x";
     
     // a property, used to query the Triplestore.
-    
     protected final String PROPERTY = "property";
     
     // a count result, used to query the Triplestore (count properties).

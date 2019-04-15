@@ -56,6 +56,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Sensor resource service.
+ * @update [Andreas Garcia] 15 Apr. 2019: handle DAO persistence exceptions thrown by property DAO functions.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Api("/sensors")

@@ -67,6 +67,8 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
     final private String MALFORMED_QUERY_EXCEPTION_MESSAGE_FORMAT = "Malformed query: %s";
     final private String QUERY_EVALUATION_EXCEPTION_MESSAGE_FORMAT = "Error evaluating the query: %s";
     final private String UPDATE_EXECUTION_EXCEPTION_MESSAGE_FORMAT = "Error executing the update query: %s";
+    final private String COUNT_VALUE_PARSING_EXCEPTION_MESSAGE_FORMAT 
+            = "Error parsing value of " + COUNT_ELEMENT_QUERY + "from binding set";
     
     protected static final String PROPERTY_FILENAME = "sesame_rdf_config";
     
@@ -399,6 +401,15 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
             return selectedFieldValue.stringValue();
         }
         return null;
+    }
+    
+    /**
+     * Handle a NumberFormatException when getting the value of the count of results.
+     * @param ex
+     * @throws opensilex.service.dao.exception.DAOPersistenceException 
+     */
+    protected void handleCountValueNumberFormatException(NumberFormatException ex) throws Exception {
+        throw new Exception(String.format(COUNT_VALUE_PARSING_EXCEPTION_MESSAGE_FORMAT, COUNT_ELEMENT_QUERY), ex);
     }
     
     /**

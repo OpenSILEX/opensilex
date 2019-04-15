@@ -40,8 +40,9 @@ import opensilex.service.resource.dto.annotation.AnnotationDTO;
 import opensilex.service.resource.dto.annotation.AnnotationPostDTO;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.model.Annotation;
-import static opensilex.service.resource.DocumentResourceService.LOGGER;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Annotation resource service.
@@ -55,6 +56,7 @@ import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 @Api("/annotations")
 @Path("/annotations")
 public class AnnotationResourceService extends ResourceService {
+    final static Logger LOGGER = LoggerFactory.getLogger(SensorResourceService.class);
     
     public final static String EMPTY_ANNOTATION_LIST = "the annotation list to add is empty";
     
@@ -166,18 +168,32 @@ public class AnnotationResourceService extends ResourceService {
         ArrayList<Annotation> annotations;
         try {
             annotations = annotationDao.find(uri, creator, target, bodyValue, motivatedBy, page, pageSize);
+        
+        // handle search exceptions
         } catch (DAOPersistenceException ex) {
             LOGGER.error(ex.getMessage(), ex);
             return getResponseWhenPersistenceError(ex);
         }
 
+        // Returns result
         if (annotations == null) {
             return getGETResponseWhenNoResult();
         } else if (annotations.isEmpty()) {
             return getGETResponseWhenNoResult();
         } else {
-            Integer totalCount = annotationDao.count(uri, creator, target, bodyValue, motivatedBy);
-            return getGETResponseWhenSuccess(annotations, pageSize, page, totalCount);
+            // count
+            try {
+                int totalCount = annotationDao.count(uri, creator, target, bodyValue, motivatedBy);
+                return getGETResponseWhenSuccess(annotations, pageSize, page, totalCount);
+                
+            // handle count exceptions
+            } catch (DAOPersistenceException ex) {
+                LOGGER.error(ex.getMessage(), ex);
+                return getResponseWhenPersistenceError(ex);
+            } catch (Exception ex) {
+                LOGGER.error(ex.getMessage(), ex);
+                return getResponseWhenInternalError(ex);
+            }
         }
     }
 

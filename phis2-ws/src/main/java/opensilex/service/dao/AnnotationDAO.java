@@ -10,7 +10,6 @@ package opensilex.service.dao;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
@@ -63,7 +62,7 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(AnnotationDAO.class);
 
-    // constants used for SPARQL names in the SELECT
+    // constants used for SPARQL names in the SELECT statement
     public static final String CREATED = "created";
     public static final String BODY_VALUE = "bodyValue";
     public static final String BODY_VALUES = "bodyValues";
@@ -153,9 +152,10 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
      * @param searchBodyValue
      * @param searchMotivatedBy
      * @return number of total annotation returned with the search field
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
     public Integer count(String searchUri, String searchCreator, String searchTarget, String searchBodyValue, String searchMotivatedBy) 
-            throws RepositoryException, MalformedQueryException, QueryEvaluationException {
+            throws DAOPersistenceException, Exception {
         SPARQLQueryBuilder prepareCount = prepareCount(
                 searchUri, 
                 searchCreator, 
@@ -164,11 +164,18 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
                 searchMotivatedBy);
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
         Integer count = 0;
-        try (TupleQueryResult result = tupleQuery.evaluate()) {
+        try {
+            TupleQueryResult result = tupleQuery.evaluate();
             if (result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 count = Integer.parseInt(bindingSet.getValue(COUNT_ELEMENT_QUERY).stringValue());
             }
+        }
+        catch (QueryEvaluationException ex) {
+            handleRdf4jException(ex);
+        }
+        catch (NumberFormatException ex) {
+            handleCountValueNumberFormatException(ex);
         }
         return count;
     }

@@ -48,7 +48,6 @@ import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.model.Event;
-import static opensilex.service.resource.DocumentResourceService.LOGGER;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 
 /**
@@ -168,7 +167,7 @@ public class EventResourceService  extends ResourceService {
     ) {
         EventDAO eventDAO = new EventDAO(userSession.getUser());
         
-        // 1. Search events with parameters
+        // Search events with parameters
         ArrayList<Event> events;
         try {
             events = eventDAO.find(
@@ -180,6 +179,7 @@ public class EventResourceService  extends ResourceService {
                     endDate,
                     page,
                     pageSize);
+        // handle exceptions
         } catch (DAOPersistenceException ex) {
             LOGGER.error(ex.getMessage(), ex);
             return getResponseWhenPersistenceError(ex);
@@ -190,8 +190,19 @@ public class EventResourceService  extends ResourceService {
         } else if (events.isEmpty()) {
             return getGETResponseWhenNoResult();
         } else {
-            int totalCount = eventDAO.count(uri, type, concernedItemLabel, concernedItemUri, startDate, endDate);
-            return getGETResponseWhenSuccess(events, pageSize, page, totalCount);
+            // count results
+            try {
+                int totalCount = eventDAO.count(uri, type, concernedItemLabel, concernedItemUri, startDate, endDate);
+                return getGETResponseWhenSuccess(events, pageSize, page, totalCount);
+                
+            // handle count exceptions
+            } catch (DAOPersistenceException ex) {
+                LOGGER.error(ex.getMessage(), ex);
+                return getResponseWhenPersistenceError(ex);
+            } catch (Exception ex) {
+                LOGGER.error(ex.getMessage(), ex);
+                return getResponseWhenInternalError(ex);
+            }
         }
     }
     

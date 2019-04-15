@@ -117,9 +117,17 @@ public class EventDAO extends Rdf4jDAO<Event> {
         }
         query.appendTriplet(uriSelectNameSparql, Rdf.RELATION_TYPE.toString(), RDF_TYPE_SELECT_NAME_SPARQL, null);
         if (searchType != null) {
-            query.appendTriplet(RDF_TYPE_SELECT_NAME_SPARQL, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", searchType, null);
+            query.appendTriplet(
+                    RDF_TYPE_SELECT_NAME_SPARQL, 
+                    "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", 
+                    searchType, 
+                    null);
         } else {
-            query.appendTriplet(RDF_TYPE_SELECT_NAME_SPARQL, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeev.Event.getURI(), null);
+            query.appendTriplet(
+                    RDF_TYPE_SELECT_NAME_SPARQL, 
+                    "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", 
+                    Oeev.Event.getURI(), 
+                    null);
         }    
     }
 
@@ -149,7 +157,11 @@ public class EventDAO extends Rdf4jDAO<Event> {
             query.appendGroupBy(DATETIMESTAMP_SELECT_NAME_SPARQL);
         }
         query.appendTriplet(uriSelectNameSparql, Time.hasTime.toString(), TIME_SELECT_NAME_SPARQL, null);
-        query.appendTriplet(TIME_SELECT_NAME_SPARQL, Time.inXSDDateTimeStamp.toString(), DATETIMESTAMP_SELECT_NAME_SPARQL, null);
+        query.appendTriplet(
+                TIME_SELECT_NAME_SPARQL, 
+                Time.inXSDDateTimeStamp.toString(), 
+                DATETIMESTAMP_SELECT_NAME_SPARQL, 
+                null);
         
         if (searchDateTimeRangeStartString != null || searchDateTimeRangeEndString != null) {
             TimeDAO timeDao = new TimeDAO(this.user);
@@ -258,7 +270,9 @@ public class EventDAO extends Rdf4jDAO<Event> {
         String eventDateTimeString = getStringValueOfSelectNameFromBindingSet(DATETIMESTAMP_SELECT_NAME, bindingSet);    
         DateTime eventDateTime = null;
         if (eventDateTimeString != null) {
-            eventDateTime = Dates.stringToDateTimeWithGivenPattern(eventDateTimeString, DateFormat.YMDTHMSZZ.toString());
+            eventDateTime = Dates.stringToDateTimeWithGivenPattern(
+                    eventDateTimeString, 
+                    DateFormat.YMDTHMSZZ.toString());
         }
         
         return new Event(eventUri, eventType, new ArrayList<>(), eventDateTime, new ArrayList<>(), null);
@@ -301,7 +315,10 @@ public class EventDAO extends Rdf4jDAO<Event> {
             while (eventsResult.hasNext()) {
                 Event event = getEventFromBindingSet(eventsResult.next());
                 setEventProperties(event);
-                ConcernedItemDAO concernedItemDao = new ConcernedItemDAO(user, Contexts.EVENTS.toString(), Oeev.concerns.getURI());
+                ConcernedItemDAO concernedItemDao = new ConcernedItemDAO(
+                        user, 
+                        Contexts.EVENTS.toString(), 
+                        Oeev.concerns.getURI());
                 event.setConcernedItems(concernedItemDao.find(
                         event.getUri(), 
                         null, 
@@ -593,12 +610,10 @@ public class EventDAO extends Rdf4jDAO<Event> {
      * @param dateRangeStartString
      * @param dateRangeEndString
      * @return results number
-     * @throws RepositoryException
-     * @throws MalformedQueryException
-     * @throws QueryEvaluationException
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
     public Integer count(String searchUri, String searchType, String searchConcernedItemLabel, String searchConcernedItemUri, String dateRangeStartString, String dateRangeEndString) 
-            throws RepositoryException, MalformedQueryException, QueryEvaluationException {
+            throws DAOPersistenceException, Exception {
         
         SPARQLQueryBuilder countQuery = prepareCountQuery(
                 searchUri, 
@@ -615,6 +630,12 @@ public class EventDAO extends Rdf4jDAO<Event> {
                 BindingSet bindingSet = result.next();
                 count = Integer.parseInt(bindingSet.getValue(COUNT_ELEMENT_QUERY).stringValue());
             }
+        }
+        catch (QueryEvaluationException ex) {
+            handleRdf4jException(ex);
+        }
+        catch (NumberFormatException ex) {
+            handleCountValueNumberFormatException(ex);
         }
         return count;
     }

@@ -17,6 +17,7 @@ import opensilex.service.dao.exception.ResourceAccessDeniedException;
 import opensilex.service.dao.manager.DAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.injection.SessionInject;
+import static opensilex.service.resource.DocumentResourceService.LOGGER;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.result.ResultForm;
@@ -50,7 +51,7 @@ public abstract class ResourceService {
      * @return 
      */
     protected ArrayList<AbstractVerifiedClass> getDTOsFromObjects (List<? extends Object> objects) {
-        throw new UnsupportedOperationException("Not supported yet: getDTOsFromObjects getDTOsFromObjects.");
+        throw new UnsupportedOperationException("Not supported yet: getDTOsFromObjects function.");
     }
     
     /**
@@ -188,12 +189,17 @@ public abstract class ResourceService {
                 return getPostResponseWhenSuccess(createdUris);
                 
             } catch (ResourceAccessDeniedException ex) {
+                LOGGER.error(ex.getMessage(), ex);
                 return getPostResponseWhenResourceAccessDenied(ex);
                 
             } catch (DAODataErrorAggregateException ex) {
+                ex.getExceptions().forEach((exception) -> {
+                        LOGGER.error(ex.getMessage(), exception);
+                });
                 return getPostResponseFromDAODataErrorExceptions(ex);
                 
             } catch (Exception ex) {
+                LOGGER.error(ex.getMessage(), ex);
                 return getResponseWhenInternalError(ex);
             }  
         }

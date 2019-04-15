@@ -10,6 +10,7 @@ package opensilex.service.dao;
 import java.util.ArrayList;
 import java.util.List;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -303,27 +304,27 @@ public class SensorProfileDAO extends Rdf4jDAO<SensorProfile> {
     }
 
     @Override
-    public void delete(List<SensorProfile> objects) throws Exception {
+    public void delete(List<SensorProfile> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<SensorProfile> update(List<SensorProfile> objects) throws Exception {
+    public List<SensorProfile> update(List<SensorProfile> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public SensorProfile find(SensorProfile object) throws Exception {
+    public SensorProfile find(SensorProfile object) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public SensorProfile findById(String id) throws Exception {
+    public SensorProfile findById(String id) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void validate(List<SensorProfile> objects) throws DAODataErrorAggregateException {
+    public void validate(List<SensorProfile> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

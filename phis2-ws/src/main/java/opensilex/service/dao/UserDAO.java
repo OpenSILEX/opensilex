@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import javax.ws.rs.core.Response;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.dao.manager.PhisDAO;
@@ -880,27 +881,27 @@ public class UserDAO extends PhisDAO<User, UserDTO> {
     }
 
     @Override
-    public List<User> create(List<User> objects) throws Exception {
+    public List<User> create(List<User> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List<User> objects) throws Exception {
+    public void delete(List<User> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<User> update(List<User> objects) throws Exception {
+    public List<User> update(List<User> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public User findById(String id) throws Exception {
+    public User findById(String id) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void validate(List<User> objects) throws DAODataErrorAggregateException {
+    public void validate(List<User> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

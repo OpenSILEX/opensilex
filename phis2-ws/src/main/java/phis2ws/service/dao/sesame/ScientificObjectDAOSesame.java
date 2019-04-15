@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
+import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -800,10 +801,14 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
 
                 updateResult = new POSTResultsReturn(Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
                 updateResult.statusList.add(new Status(StatusCodeMsg.RESOURCES_UPDATED, StatusCodeMsg.INFO, updatedScientificObjectsUris.size() + " updated resource(s)."));
-                updateResult.createdResources = updatedScientificObjectsUris;
+                updateResult.createdResources = updatedScientificObjectsUris; 
             } catch (Exception ex) {
                 updateResult = new POSTResultsReturn(Boolean.FALSE, Boolean.FALSE, Boolean.FALSE);
-                updateResult.statusList.add(new Status(StatusCodeMsg.ERR, StatusCodeMsg.ERR, ex.getMessage()));
+                String errorMessage = "";
+                for (StackTraceElement stackTraceElement : ex.getStackTrace()) {
+                    errorMessage += stackTraceElement.toString() + " ";
+                }
+                updateResult.statusList.add(new Status(ex.getClass().toString(), StatusCodeMsg.ERR, errorMessage));
             }
         }
         return updateResult;
@@ -955,16 +960,22 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
         
         //2. Update the scientific object
         //2.1. Triplestore data
-        //2.1.1 Delete old data
-        UpdateRequest deleteQuery = prepareDeleteOneInContextQuery(oldScientificObject, context);
+        //2.1.1 Delete old data if the scientific object is in the context
+        UpdateRequest deleteQuery = null;
+        if (existUriInGraph(scientificObject.getUri(), context)) {
+            deleteQuery = prepareDeleteOneInContextQuery(oldScientificObject, context);
+        }
         
         //2.1.2 Insert new data
         UpdateRequest insertQuery = prepareInsertOneInContextQuery(scientificObject, context);
         getConnection().begin();
         try {
-            Update prepareDelete = getConnection().prepareUpdate(deleteQuery.toString());
+            if (deleteQuery != null) {
+                Update prepareDelete = getConnection().prepareUpdate(deleteQuery.toString());
+                prepareDelete.execute();
+            }
+            
             Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, insertQuery.toString());
-            prepareDelete.execute();
             prepareUpdate.execute();
             
             //2.2 Relational database data
@@ -1008,6 +1019,11 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
 
     @Override
     public ScientificObject findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void validate(List<ScientificObject> objects) throws DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

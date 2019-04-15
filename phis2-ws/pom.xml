@@ -37,10 +37,10 @@
         </profile>
         <!-- The configuration of the production profile -->
         <profile>
-            <id>prod</id>
+            <id>opensilex</id>
             <properties>
-                <build.profile.id>prod</build.profile.id>
-                <target.war.name>${project.artifactId}-${project.version}</target.war.name>
+                <build.profile.id>opensilex</build.profile.id>
+                <target.war.name>openSilexAPI</target.war.name>
             </properties>
         </profile>
         <!-- The configuration of the testing profile -->

@@ -105,14 +105,8 @@ public abstract class DAOSesame<T> extends DAO<T> {
 
     protected static String resourceType;
 
-    public User user;
     protected Integer page;
     protected Integer pageSize;
-    
-    /**
-     * User IP address
-     */
-    public String remoteUserAdress;
 
     public DAOSesame() {
         try {
@@ -231,7 +225,7 @@ public abstract class DAOSesame<T> extends DAO<T> {
     }
 
     /**
-     * 
+     * Check if a given URI exist in the triplestore.
      * @param uri the uri to test
      * @example
      * ASK {
@@ -268,6 +262,50 @@ public abstract class DAOSesame<T> extends DAO<T> {
             return false;
         }
     }
+    
+    /**
+     * Check if a given URI exist in a given Graph in the triplestore.
+     * @param uri the uri to test
+     * @param graph
+     * @example
+     * ASK FROM <http://www.mygraph.com> {
+     *  VALUES (?r) { (<http://www.w3.org/2000/01/rdf-schema#Literal>) }
+     *  { ?r ?p ?o }
+     *  UNION
+     *  { ?s ?r ?o }
+     *  UNION
+     *  { ?s ?p ?r }
+     * }
+     * @return true if the uri exist in the graph
+     *         false if it does not exist
+     */
+    public boolean existUriInGraph(String uri, String graph) {
+        if (uri == null) {
+            return false;
+        }
+        if (graph == null) {
+            return false;
+        }
+        try {            
+            String query = "ASK \n" +
+                            "  FROM <" + graph + "> {\n" +
+                            "\n" +
+                            " VALUES (?r) { (<" + uri + ">) }\n" +
+                            " { ?r ?p ?o }\n" +
+                            " UNION\n" +
+                            " { ?s ?r ?o }\n" +
+                            " UNION\n" +
+                            " { ?s ?p ?r }\n" +
+                            "  \n" +
+                            "}";
+            
+            LOGGER.debug(SPARQL_QUERY + query);
+            BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query);
+            return booleanQuery.evaluate();
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
     /**
      * Existence element recovery method by triplet
@@ -295,20 +333,6 @@ public abstract class DAOSesame<T> extends DAO<T> {
             LOGGER.trace(value);
         }
         return value;
-    }
-
-    /**
-     * @return logs for traceability
-     */
-    protected String getTraceabilityLogs() {
-        String log = "";
-        if (remoteUserAdress != null) {
-            log += "IP Address " + remoteUserAdress + " - ";
-        }
-        if (user != null) {
-            log += "User : " + user.getEmail() + " - ";
-        }
-        return log;
     }
 
     /**
@@ -426,5 +450,30 @@ public abstract class DAOSesame<T> extends DAO<T> {
         } finally {
             super.finalize();
         }
+    }
+
+    @Override
+    protected void initConnection() {
+        getConnection().begin();    
+    }
+
+    @Override
+    protected void closeConnection() {
+        getConnection().close();
+    }
+
+    @Override
+    protected void startTransaction() {
+        // transactions are startes automatically in SPARQL.
+    }
+
+    @Override
+    protected void commitTransaction() {
+        getConnection().commit();
+    }
+
+    @Override
+    protected void rollbackTransaction() {
+        getConnection().rollback();
     }
 }

@@ -48,20 +48,4 @@ public abstract class DAOPhisBrapi<T, D> extends SQLDAO<T> {
      * @return 
      */
     public abstract POSTResultsReturn checkAndUpdateList(List<D> newObjects);
-    
-     /**
-     * 
-     * @return Les logs qui seront utilisés pour la traçabilité
-     */
-    protected String getTraceabilityLogs() {
-        String log = "";
-        if (remoteUserAdress != null) {
-            log += "IP Address " + remoteUserAdress + " - ";
-        }
-        if (user != null) {
-            log += "User : " + user.getEmail() + " - ";
-        }
-        
-        return log;
-    }
 }

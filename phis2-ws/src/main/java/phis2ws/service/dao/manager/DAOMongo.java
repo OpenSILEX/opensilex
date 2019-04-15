@@ -60,14 +60,8 @@ public abstract class DAOMongo<T> extends DAO<T> {
     protected MongoDatabase database;
     protected MongoCollection<Document> collection;
 
-    public User user;
     protected Integer page;
     protected Integer pageSize;
-    
-    /**
-     * User ip adress
-     */
-    protected String remoteUserAdress;
     
     //The _id json data key in the mongodb documents
     public final static String DB_FIELD_ID = "_id";
@@ -161,22 +155,6 @@ public abstract class DAOMongo<T> extends DAO<T> {
         }
         return pageSize;
     }
-
-    /**
-     * 
-     * @return Les logs qui seront utilisés pour la traçabilité
-     */
-    protected String getTraceabilityLogs() {
-        String log = "";
-        if (remoteUserAdress != null) {
-            log += "IP Address " + remoteUserAdress + " - ";
-        }
-        if (user != null) {
-            log += "User : " + user.getEmail() + " - ";
-        }
-        
-        return log;
-    }
     
     /**
      * Définit le paramètre taille de page
@@ -194,4 +172,29 @@ public abstract class DAOMongo<T> extends DAO<T> {
      * @return BasicDBObject
      */
     abstract protected BasicDBObject prepareSearchQuery();
+
+    @Override
+    protected void initConnection() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    protected void closeConnection() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    protected void startTransaction() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    protected void commitTransaction() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    protected void rollbackTransaction() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

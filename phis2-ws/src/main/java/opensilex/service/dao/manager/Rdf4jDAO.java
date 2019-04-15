@@ -66,6 +66,7 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
             = "Error while committing or rolling back triplestore statements: %s";
     final private String MALFORMED_QUERY_EXCEPTION_MESSAGE_FORMAT = "Malformed query: %s";
     final private String QUERY_EVALUATION_EXCEPTION_MESSAGE_FORMAT = "Error evaluating the query: %s";
+    final private String UPDATE_EXECUTION_EXCEPTION_MESSAGE_FORMAT = "Error executing the update query: %s";
     
     protected static final String PROPERTY_FILENAME = "sesame_rdf_config";
     
@@ -243,7 +244,7 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
      * @return true if the URI exist in the triplestore
      *         false if it does not exist
      */
-    public boolean existUri(String uri) {
+    public boolean existUri(String uri) throws MalformedQueryException, QueryEvaluationException, RepositoryException {
         if (uri == null) {
             return false;
         }
@@ -263,7 +264,7 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
             BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
             return booleanQuery.evaluate();
         } catch (MalformedQueryException | QueryEvaluationException | RepositoryException e) {
-            return false;
+            throw (e);
         }
     }
 
@@ -418,6 +419,10 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
         else if(rdf4jException instanceof QueryEvaluationException) {
             daoPersistenceExceptionMessage 
                     = String.format(QUERY_EVALUATION_EXCEPTION_MESSAGE_FORMAT, rdf4jException.getMessage());
+        }
+        else if(rdf4jException instanceof UpdateExecutionException) {
+            daoPersistenceExceptionMessage 
+                    = String.format(UPDATE_EXECUTION_EXCEPTION_MESSAGE_FORMAT, rdf4jException.getMessage());
         }
         else {
             daoPersistenceExceptionMessage = rdf4jException.getMessage();

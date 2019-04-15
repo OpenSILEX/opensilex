@@ -122,7 +122,7 @@ public abstract class ResourceService {
      * @return the response. 
      */
     protected Response getResponseWhenPersistenceError(DAOPersistenceException exception) {
-        return getPostResponseFromSingleOperationStatus(
+        return getPostPutResponseFromSingleOperationStatus(
                 Response.Status.INTERNAL_SERVER_ERROR,
                 StatusCodeMsg.PERSISTENCE_ERROR,
                 StatusCodeMsg.ERR,

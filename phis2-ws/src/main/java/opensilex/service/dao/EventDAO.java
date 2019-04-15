@@ -253,8 +253,10 @@ public class EventDAO extends Rdf4jDAO<Event> {
      * @param searchPage
      * @param searchPageSize
      * @return events
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
-    public ArrayList<Event> find(String searchUri, String searchType, String searchConcernedItemLabel, String searchConcernedItemUri, String dateRangeStartString, String dateRangeEndString, int searchPage, int searchPageSize) throws DAOPersistenceException {
+    public ArrayList<Event> find(String searchUri, String searchType, String searchConcernedItemLabel, String searchConcernedItemUri, String dateRangeStartString, String dateRangeEndString, int searchPage, int searchPageSize) 
+            throws DAOPersistenceException {
         
         setPage(searchPage);
         setPageSize(searchPageSize);
@@ -270,46 +272,38 @@ public class EventDAO extends Rdf4jDAO<Event> {
         // get events from storage
         TupleQuery eventsTupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, eventsQuery.toString());
         
-        ArrayList<Event> events;
+        ArrayList<Event> events = new ArrayList<>();
+        ConcernedItemDAO concernedItemDao = new ConcernedItemDAO(
+                user, 
+                Contexts.EVENTS.toString(), 
+                Oeev.concerns.getURI());
         
-        events = new ArrayList<>();
+        // for each event, set its properties and concerned Items
         try {
-            // for each event, set its properties and concerned Items
             TupleQueryResult eventsResult = eventsTupleQuery.evaluate();
             while (eventsResult.hasNext()) {
-                Event event = getEventFromBindingSet(eventsResult.next());
-                setEventProperties(event);
-                ConcernedItemDAO concernedItemDao = new ConcernedItemDAO(
-                        user, 
-                        Contexts.EVENTS.toString(), 
-                        Oeev.concerns.getURI());
-        
-        try (TupleQueryResult queryResult = eventsTupleQuery.evaluate()) {
-            events = new ArrayList<>();
-            while (queryResult.hasNext()) {
-                BindingSet bindingSet = queryResult.next();
+                BindingSet bindingSet = eventsResult.next();
                 Event event = getEventFromBindingSet(bindingSet);
-                
-                // Instant
-                event.setInstant(TimeDAO.getInstantFromBindingSet(
-                        bindingSet,
-                        INSTANT_SELECT_NAME, 
-                        DATETIMESTAMP_SELECT_NAME));
-                
-                // Properties
-                searchEventPropertiesAndSetThemToIt(event);
-                
-                // Concerned items
-                ConcernedItemDAO concernedItemDao = new ConcernedItemDAO(user);
-                event.setConcernedItems(concernedItemDao.find(
-                        event.getUri(), 
-                        null, 
-                        null, 
-                        0, 
-                        pageSizeMaxValue));
-                
-                events.add(event);
-            }
+
+                    // Instant
+                    event.setInstant(TimeDAO.getInstantFromBindingSet(
+                            bindingSet,
+                            INSTANT_SELECT_NAME, 
+                            DATETIMESTAMP_SELECT_NAME));
+
+                    // Properties
+                    setEventProperties(event);
+
+                    // Concerned items
+                    event.setConcernedItems(concernedItemDao.find(
+                            event.getUri(), 
+                            null, 
+                            null, 
+                            0, 
+                            pageSizeMaxValue));
+
+                    events.add(event);
+                }
         } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
             handleRdf4jException(ex);
         }
@@ -326,45 +320,49 @@ public class EventDAO extends Rdf4jDAO<Event> {
     @Override
     public Event findById(String searchUri) throws DAOPersistenceException {        
         SPARQLQueryBuilder eventQuery = prepareSearchQueryEvent(searchUri);
+        ConcernedItemDAO concernedItemDao = new ConcernedItemDAO(
+                user, 
+                Contexts.EVENTS.toString(), 
+                Oeev.concerns.getURI());
+        Event event = null;
         
         // Get event from storage
         TupleQuery eventsTupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, eventQuery.toString());
         
-        Event event = null;
-        TupleQueryResult eventsResult = eventsTupleQuery.evaluate();
-        if (eventsResult.hasNext()) {
-            BindingSet bindingSet = eventsResult.next();
-            event = getEventFromBindingSet(bindingSet);
-            
-            // Instant
-            event.setInstant(TimeDAO.getInstantFromBindingSet(
-                    bindingSet,
-                    INSTANT_SELECT_NAME, 
-                    DATETIMESTAMP_SELECT_NAME));
-            
-            // Properties
-            searchEventPropertiesAndSetThemToIt(event);
-            
-            // Concerned items
-            ConcernedItemDAO concernedItemDao = new ConcernedItemDAO(user);
-            event.setConcernedItems(concernedItemDao.find(
-                    event.getUri(), 
-                    Oeev.concerns.getURI(), 
-                    null, 
-                    null, 
-                    0, 
-                    pageSizeMaxValue));
+        try {
+            TupleQueryResult eventsResult = eventsTupleQuery.evaluate();
+            if (eventsResult.hasNext()) {
+                BindingSet bindingSet = eventsResult.next();
+                event = getEventFromBindingSet(bindingSet);
 
-            // Annotations
-            AnnotationDAO annotationDAO = new AnnotationDAO(this.user);
-            event.setAnnotations(annotationDAO.find(
-                    null, 
-                    null, 
-                    event.getUri(), 
-                    null, 
-                    null, 
-                    0, 
-                    pageSizeMaxValue));
+                // Instant
+                event.setInstant(TimeDAO.getInstantFromBindingSet(
+                        bindingSet,
+                        INSTANT_SELECT_NAME, 
+                        DATETIMESTAMP_SELECT_NAME));
+
+                // Properties
+                setEventProperties(event);
+
+                // Concerned items
+                event.setConcernedItems(concernedItemDao.find(
+                        event.getUri(), 
+                        null, 
+                        null, 
+                        0, 
+                        pageSizeMaxValue));
+
+                // Annotations
+                AnnotationDAO annotationDAO = new AnnotationDAO(this.user);
+                event.setAnnotations(annotationDAO.find(
+                        null, 
+                        null, 
+                        event.getUri(), 
+                        null, 
+                        null, 
+                        0, 
+                        pageSizeMaxValue));
+            }
         } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
             handleRdf4jException(ex);
         }
@@ -431,7 +429,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
     }
     
     // Inserts the given event in the storage.
-    private Event insert(Event event) throws Exception {
+    private void insert(Event event) throws Exception {
         // Insert event
         UpdateRequest query = prepareInsertQuery(event);
 
@@ -441,23 +439,23 @@ public class EventDAO extends Rdf4jDAO<Event> {
 
             Resource eventResource = ResourceFactory.createResource(event.getUri());
 
-        // Insert concerned items links
-        ConcernedItemDAO concernedItemDao = new ConcernedItemDAO(user);
-        concernedItemDao.createLinksWithObject(
-                Contexts.EVENTS.toString(),
-                eventResource,
-                Oeev.concerns.getURI(), 
-                event.getConcernedItems());
-
-        // The properties links
-        PropertyDAO propertyDao = new PropertyDAO();
-        ArrayList<Property> properties = event.getProperties();
-        if (!properties.isEmpty()) {
-            propertyDao.insertLinksBetweenObjectAndProperties(
-                    eventResource,
-                    properties,
+            // Insert concerned items links
+            ConcernedItemDAO concernedItemDao = new ConcernedItemDAO(
+                    user, 
                     Contexts.EVENTS.toString(), 
-                    false);
+                    Oeev.concerns.getURI());
+            concernedItemDao.create(event.getConcernedItems());
+
+            // The properties links
+            PropertyDAO propertyDao = new PropertyDAO();
+            ArrayList<Property> properties = event.getProperties();
+            if (!properties.isEmpty()) {
+                propertyDao.insertLinksBetweenObjectAndProperties(
+                        eventResource,
+                        properties,
+                        Contexts.EVENTS.toString(), 
+                        false);
+            }
         } catch (RepositoryException|MalformedQueryException|QueryEvaluationException|UpdateExecutionException ex) {
             handleRdf4jException(ex);
         }

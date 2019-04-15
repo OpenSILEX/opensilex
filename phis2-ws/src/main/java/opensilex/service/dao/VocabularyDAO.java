@@ -106,7 +106,7 @@ public class VocabularyDAO extends Rdf4jDAO<PropertyVocabularyDTO> {
      * @return true if the class attribute domainRdfType can have the property
      *         false if not
      */
-    protected boolean isPropertyDomainContainsRdfType(String property) {
+    protected boolean isPropertyDomainContainsRdfType(String property) throws DAOPersistenceException {
         PropertyDAO propertyDAO = new PropertyDAO();
         ArrayList<String> propertyDomains = propertyDAO.getPropertyDomain(property);
 
@@ -142,7 +142,7 @@ public class VocabularyDAO extends Rdf4jDAO<PropertyVocabularyDTO> {
      * a given concept.
      * @return list of contact properties
      */
-    public ArrayList<PropertyVocabularyDTO> allPaginateContactProperties() {
+    public ArrayList<PropertyVocabularyDTO> allPaginateContactProperties() throws DAOPersistenceException {
         //1. get all the subproperties of the hasContact Property
         SPARQLQueryBuilder query = prepareGetContactProperties();
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
@@ -167,8 +167,9 @@ public class VocabularyDAO extends Rdf4jDAO<PropertyVocabularyDTO> {
      * Searches the list of device properties that can be added to an instance of
      * a given concept.
      * @return list of device properties
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
-    public ArrayList<PropertyVocabularyDTO> allPaginateDeviceProperties() {
+    public ArrayList<PropertyVocabularyDTO> allPaginateDeviceProperties() throws DAOPersistenceException {
         //1. get all the subproperties of the hasContact Property
         SPARQLQueryBuilder query = prepareGetDeviceProperties();
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());

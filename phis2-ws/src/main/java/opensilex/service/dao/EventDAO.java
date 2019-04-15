@@ -9,6 +9,7 @@ package opensilex.service.dao;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.PersistenceException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -31,6 +32,7 @@ import opensilex.service.configuration.DateFormat;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAODataErrorException;
 import opensilex.service.dao.exception.NotAnAdminException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.dao.exception.ResourceAccessDeniedException;
 import opensilex.service.dao.exception.SemanticInconsistencyException;
 import opensilex.service.dao.exception.UnknownUriException;
@@ -440,15 +442,16 @@ public class EventDAO extends Rdf4jDAO<Event> {
      * Inserts the given events in the storage.
      * @param events
      * @return the insertion result, with the error list or the URI of the events inserted
-     * @throws opensilex.service.dao.exception.ResourceAccessDeniedException
-     * @throws opensilex.service.dao.exception.UnknownUriException
-     * @throws opensilex.service.dao.exception.SemanticInconsistencyException
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
     @Override
-    public List<Event> create(List<Event> events) 
-            throws ResourceAccessDeniedException, SemanticInconsistencyException, Exception {     
-        for (Event event : events) {
-            create(event);
+    public List<Event> create(List<Event> events) throws DAOPersistenceException, Exception {     
+        try {
+            for (Event event : events) {
+                create(event);
+            }
+        } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
+            handleRdf4jException(ex);
         }
         return events;
     }
@@ -460,62 +463,65 @@ public class EventDAO extends Rdf4jDAO<Event> {
      * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
      */
     @Override
-    public void validate(List<Event> events) throws DAODataErrorAggregateException, NotAnAdminException {
-        
-        ArrayList<DAODataErrorException> exceptions = new ArrayList<>();
-        
-        // Check if user is admin
-        UserDAO userDAO = new UserDAO();
-        if (!userDAO.isAdmin(user)) {
-            throw new NotAnAdminException();
-        }
-        else {
-            ConcernedItemDAO concernedItemDao = 
-                    new ConcernedItemDAO(user, Contexts.EVENTS.toString(), Oeev.concerns.getURI());
-            PropertyDAO propertyDao = new PropertyDAO();
-            AnnotationDAO annotationDao = new AnnotationDAO();
-            for (Event event : events) {
-                
-                // Check the event URI if given (in case of an update)
-                if (event.getUri() != null) {
-                    if (find(event.getUri(), null, null, null, null, null, 0, pageSizeMaxValue).isEmpty()){
-                        exceptions.add(new UnknownUriException(event.getUri(), "the event"));
+    public void validate(List<Event> events) throws DAOPersistenceException, DAODataErrorAggregateException, NotAnAdminException {
+        try {
+            ArrayList<DAODataErrorException> exceptions = new ArrayList<>();
+
+            // Check if user is admin
+            UserDAO userDAO = new UserDAO();
+            if (!userDAO.isAdmin(user)) {
+                throw new NotAnAdminException();
+            }
+            else {
+                ConcernedItemDAO concernedItemDao = 
+                        new ConcernedItemDAO(user, Contexts.EVENTS.toString(), Oeev.concerns.getURI());
+                PropertyDAO propertyDao = new PropertyDAO();
+                AnnotationDAO annotationDao = new AnnotationDAO();
+                for (Event event : events) {
+
+                    // Check the event URI if given (in case of an update)
+                    if (event.getUri() != null) {
+                        if (find(event.getUri(), null, null, null, null, null, 0, pageSizeMaxValue).isEmpty()){
+                            exceptions.add(new UnknownUriException(event.getUri(), "the event"));
+                        }
+                    }
+
+                    // Check Type
+                    if (!existUri(event.getType())) {
+                        exceptions.add(new UnknownUriException(event.getType(), "the event type"));
+                    }
+
+                    // Check concerned items
+                    try {
+                        concernedItemDao.validate(event.getConcernedItems());
+                    }
+                    catch (DAODataErrorAggregateException ex) {
+                        exceptions.addAll(ex.getExceptions());
+                    }
+
+                    // Check properties
+                    try {
+                        propertyDao.checkExistenceRangeDomain(event.getProperties(), event.getType());
+                    }
+                    catch (DAODataErrorAggregateException ex) {
+                        exceptions.addAll(ex.getExceptions());
+                    }
+
+                    // Check annotations
+                    try {
+                        annotationDao.validate(event.getAnnotations());
+                    }
+                    catch (DAODataErrorAggregateException ex) {
+                        exceptions.addAll(ex.getExceptions());
                     }
                 }
-                
-                // Check Type
-                if (!existUri(event.getType())) {
-                    exceptions.add(new UnknownUriException(event.getType(), "the event type"));
-                }
-                
-                // Check concerned items
-                try {
-                    concernedItemDao.validate(event.getConcernedItems());
-                }
-                catch (DAODataErrorAggregateException ex) {
-                    exceptions.addAll(ex.getExceptions());
-                }
-                
-                // Check properties
-                try {
-                    propertyDao.checkExistenceRangeDomain(event.getProperties(), event.getType());
-                }
-                catch (DAODataErrorAggregateException ex) {
-                    exceptions.addAll(ex.getExceptions());
-                }
-                
-                // Check annotations
-                try {
-                    annotationDao.validate(event.getAnnotations());
-                }
-                catch (DAODataErrorAggregateException ex) {
-                    exceptions.addAll(ex.getExceptions());
-                }
             }
-        }
-        
-        if (exceptions.size() > 0) {
-            throw new DAODataErrorAggregateException(exceptions);
+
+            if (exceptions.size() > 0) {
+                throw new DAODataErrorAggregateException(exceptions);
+            }
+        } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
+            handleRdf4jException(ex);
         }
     }
     

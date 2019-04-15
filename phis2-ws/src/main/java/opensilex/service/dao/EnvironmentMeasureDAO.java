@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.ws.rs.core.Response;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.slf4j.Logger;
@@ -400,32 +401,32 @@ public class EnvironmentMeasureDAO extends MongoDAO<EnvironmentMeasure> {
     }
 
     @Override
-    public List<EnvironmentMeasure> create(List<EnvironmentMeasure> objects) throws Exception {
+    public List<EnvironmentMeasure> create(List<EnvironmentMeasure> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List<EnvironmentMeasure> objects) throws Exception {
+    public void delete(List<EnvironmentMeasure> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<EnvironmentMeasure> update(List<EnvironmentMeasure> objects) throws Exception {
+    public List<EnvironmentMeasure> update(List<EnvironmentMeasure> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public EnvironmentMeasure find(EnvironmentMeasure object) throws Exception {
+    public EnvironmentMeasure find(EnvironmentMeasure object) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public EnvironmentMeasure findById(String id) throws Exception {
+    public EnvironmentMeasure findById(String id) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void validate(List<EnvironmentMeasure> objects) throws DAODataErrorAggregateException {
+    public void validate(List<EnvironmentMeasure> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.utils.sql.SQLQueryBuilder;
@@ -248,32 +249,32 @@ public class StudyDAO extends DAO<StudyDetails>{
     }
 
     @Override
-    public List<StudyDetails> create(List<StudyDetails> objects) throws Exception {
+    public List<StudyDetails> create(List<StudyDetails> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List<StudyDetails> objects) throws Exception {
+    public void delete(List<StudyDetails> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<StudyDetails> update(List<StudyDetails> objects) throws Exception {
+    public List<StudyDetails> update(List<StudyDetails> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public StudyDetails find(StudyDetails object) throws Exception {
+    public StudyDetails find(StudyDetails object) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public StudyDetails findById(String id) throws Exception {
+    public StudyDetails findById(String id) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void validate(List<StudyDetails> objects) throws DAODataErrorAggregateException {
+    public void validate(List<StudyDetails> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

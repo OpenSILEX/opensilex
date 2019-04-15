@@ -29,6 +29,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.PropertiesFileManager;
@@ -226,32 +227,32 @@ public class LayerDAO extends DAO<LayerDTO>{
     }
 
     @Override
-    public List<LayerDTO> create(List<LayerDTO> objects) throws Exception {
+    public List<LayerDTO> create(List<LayerDTO> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List<LayerDTO> objects) throws Exception {
+    public void delete(List<LayerDTO> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<LayerDTO> update(List<LayerDTO> objects) throws Exception {
+    public List<LayerDTO> update(List<LayerDTO> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public LayerDTO find(LayerDTO object) throws Exception {
+    public LayerDTO find(LayerDTO object) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public LayerDTO findById(String id) throws Exception {
+    public LayerDTO findById(String id) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void validate(List<LayerDTO> objects) throws DAODataErrorAggregateException {
+    public void validate(List<LayerDTO> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

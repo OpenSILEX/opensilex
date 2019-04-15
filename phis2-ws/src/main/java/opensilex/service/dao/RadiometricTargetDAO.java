@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -637,32 +638,32 @@ public class RadiometricTargetDAO extends Rdf4jDAO<RadiometricTarget> {
     }
 
     @Override
-    public List<RadiometricTarget> create(List<RadiometricTarget> objects) throws Exception {
+    public List<RadiometricTarget> create(List<RadiometricTarget> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List<RadiometricTarget> objects) throws Exception {
+    public void delete(List<RadiometricTarget> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<RadiometricTarget> update(List<RadiometricTarget> objects) throws Exception {
+    public List<RadiometricTarget> update(List<RadiometricTarget> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public RadiometricTarget find(RadiometricTarget object) throws Exception {
+    public RadiometricTarget find(RadiometricTarget object) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public RadiometricTarget findById(String id) throws Exception {
+    public RadiometricTarget findById(String id) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void validate(List<RadiometricTarget> objects) throws DAODataErrorAggregateException {
+    public void validate(List<RadiometricTarget> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

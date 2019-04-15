@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import javax.ws.rs.core.Response;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.dao.manager.PhisDAO;
@@ -322,27 +323,27 @@ public class ScientificObjectSQLDAO extends PhisDAO<ScientificObject, Scientific
     }
 
     @Override
-    public List<ScientificObject> create(List<ScientificObject> objects) throws Exception {
+    public List<ScientificObject> create(List<ScientificObject> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List<ScientificObject> objects) throws Exception {
+    public void delete(List<ScientificObject> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<ScientificObject> update(List<ScientificObject> objects) throws Exception {
+    public List<ScientificObject> update(List<ScientificObject> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public ScientificObject findById(String id) throws Exception {
+    public ScientificObject findById(String id) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void validate(List<ScientificObject> objects) throws DAODataErrorAggregateException {
+    public void validate(List<ScientificObject> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

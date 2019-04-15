@@ -39,11 +39,13 @@ import opensilex.service.authentication.TokenManager;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.URINamespaces;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.User;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
+import org.eclipse.rdf4j.RDF4JException;
 
 /**
  * DAO class to query the triplestore 
@@ -59,6 +61,12 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 public abstract class Rdf4jDAO<T> extends DAO<T> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(Rdf4jDAO.class);
+    
+    final private String REPOSITORY_EXCEPTION_GENERIC_MESSAGE_FORMAT 
+            = "Error while committing or rolling back triplestore statements: %s";
+    final private String MALFORMED_QUERY_EXCEPTION_MESSAGE_FORMAT = "Malformed query: %s";
+    final private String QUERY_EVALUATION_EXCEPTION_MESSAGE_FORMAT = "Error evaluating the query: %s";
+    
     protected static final String PROPERTY_FILENAME = "sesame_rdf_config";
     
     /**
@@ -390,6 +398,33 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
             return selectedFieldValue.stringValue();
         }
         return null;
+    }
+    
+    /**
+     * Handle a RDF4J exception throwing a DAO persistence exception according to the given exception type.
+     * @param rdf4jException
+     * @throws opensilex.service.dao.exception.DAOPersistenceException 
+     */
+    protected void handleRdf4jException(RDF4JException rdf4jException) throws DAOPersistenceException {
+        String daoPersistenceExceptionMessage;
+        if(rdf4jException instanceof RepositoryException) {
+            daoPersistenceExceptionMessage 
+                    = String.format(REPOSITORY_EXCEPTION_GENERIC_MESSAGE_FORMAT, rdf4jException.getMessage());
+        }
+        else if(rdf4jException instanceof MalformedQueryException) {
+            daoPersistenceExceptionMessage 
+                    = String.format(MALFORMED_QUERY_EXCEPTION_MESSAGE_FORMAT, rdf4jException.getMessage());
+        }
+        else if(rdf4jException instanceof QueryEvaluationException) {
+            daoPersistenceExceptionMessage 
+                    = String.format(QUERY_EVALUATION_EXCEPTION_MESSAGE_FORMAT, rdf4jException.getMessage());
+        }
+        else {
+            daoPersistenceExceptionMessage = rdf4jException.getMessage();
+        }
+        
+        LOGGER.error(rdf4jException.getMessage(), rdf4jException);
+        throw new DAOPersistenceException(daoPersistenceExceptionMessage, rdf4jException);
     }
 
     @Override

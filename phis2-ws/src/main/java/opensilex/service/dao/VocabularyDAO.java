@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
@@ -19,7 +20,7 @@ import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.configuration.URINamespaces;
-import opensilex.service.dao.manager.SparqlDAO;
+import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.ontology.Rdfs;
 import opensilex.service.ontology.Oeso;
 import opensilex.service.resource.dto.PropertyVocabularyDTO;
@@ -30,7 +31,7 @@ import opensilex.service.model.Namespace;
  * Vocabulary DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>, Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
-public class VocabularyDAO extends SparqlDAO<PropertyVocabularyDTO> {
+public class VocabularyDAO extends Rdf4jDAO<PropertyVocabularyDTO> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(VocabularyDAO.class);
 
@@ -105,7 +106,7 @@ public class VocabularyDAO extends SparqlDAO<PropertyVocabularyDTO> {
      * @return true if the class attribute domainRdfType can have the property
      *         false if not
      */
-    protected boolean isPropertyDomainContainsRdfType(String property) {
+    protected boolean isPropertyDomainContainsRdfType(String property) throws DAOPersistenceException {
         PropertyDAO propertyDAO = new PropertyDAO();
         ArrayList<String> propertyDomains = propertyDAO.getPropertyDomain(property);
 
@@ -141,7 +142,7 @@ public class VocabularyDAO extends SparqlDAO<PropertyVocabularyDTO> {
      * a given concept.
      * @return list of contact properties
      */
-    public ArrayList<PropertyVocabularyDTO> allPaginateContactProperties() {
+    public ArrayList<PropertyVocabularyDTO> allPaginateContactProperties() throws DAOPersistenceException {
         //1. get all the subproperties of the hasContact Property
         SPARQLQueryBuilder query = prepareGetContactProperties();
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
@@ -166,8 +167,9 @@ public class VocabularyDAO extends SparqlDAO<PropertyVocabularyDTO> {
      * Searches the list of device properties that can be added to an instance of
      * a given concept.
      * @return list of device properties
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
-    public ArrayList<PropertyVocabularyDTO> allPaginateDeviceProperties() {
+    public ArrayList<PropertyVocabularyDTO> allPaginateDeviceProperties() throws DAOPersistenceException {
         //1. get all the subproperties of the hasContact Property
         SPARQLQueryBuilder query = prepareGetDeviceProperties();
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
@@ -223,32 +225,32 @@ public class VocabularyDAO extends SparqlDAO<PropertyVocabularyDTO> {
     }
 
     @Override
-    public List<PropertyVocabularyDTO> create(List<PropertyVocabularyDTO> objects) throws Exception {
+    public List<PropertyVocabularyDTO> create(List<PropertyVocabularyDTO> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List<PropertyVocabularyDTO> objects) throws Exception {
+    public void delete(List<PropertyVocabularyDTO> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<PropertyVocabularyDTO> update(List<PropertyVocabularyDTO> objects) throws Exception {
+    public List<PropertyVocabularyDTO> update(List<PropertyVocabularyDTO> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public PropertyVocabularyDTO find(PropertyVocabularyDTO object) throws Exception {
+    public PropertyVocabularyDTO find(PropertyVocabularyDTO object) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public PropertyVocabularyDTO findById(String id) throws Exception {
+    public PropertyVocabularyDTO findById(String id) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void validate(List<PropertyVocabularyDTO> objects) throws DAODataErrorAggregateException {
+    public void validate(List<PropertyVocabularyDTO> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

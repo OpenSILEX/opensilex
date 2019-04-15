@@ -1,5 +1,5 @@
 //******************************************************************************
-//                              DAOSesame.java 
+//                              Rdf4jDAO.java 
 // SILEX-PHIS
 // Copyright © INRA 2016
 // Creation date: Aug 2016
@@ -39,18 +39,20 @@ import opensilex.service.authentication.TokenManager;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.URINamespaces;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.User;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
+import org.eclipse.rdf4j.RDF4JException;
 
 /**
  * DAO class to query the triplestore 
  * @update [Morgane Vidal] 04 Oct, 2018: Rename existObject to existUri and change the query of the method existUri.
  * @update [Andréas Garcia] 11 Jan, 2019: Add generic date time stamp comparison SparQL filter.
  * @update [Andréas Garcia] 5 March, 2019: 
- *   Move date related functions in TimeDAOSesame.java
+ *   Move date related functions in TimeDAO.java
  *   Add a generic function to get a string value from a binding set
  *   Add the max value of a page (to get all results of a service)
  * @param <T>
@@ -59,6 +61,15 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 public abstract class Rdf4jDAO<T> extends DAO<T> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(Rdf4jDAO.class);
+    
+    final private String REPOSITORY_EXCEPTION_GENERIC_MESSAGE_FORMAT 
+            = "Error while committing or rolling back triplestore statements: %s";
+    final private String MALFORMED_QUERY_EXCEPTION_MESSAGE_FORMAT = "Malformed query: %s";
+    final private String QUERY_EVALUATION_EXCEPTION_MESSAGE_FORMAT = "Error evaluating the query: %s";
+    final private String UPDATE_EXECUTION_EXCEPTION_MESSAGE_FORMAT = "Error executing the update query: %s";
+    final private String COUNT_VALUE_PARSING_EXCEPTION_MESSAGE_FORMAT 
+            = "Error parsing value of " + COUNT_ELEMENT_QUERY + "from binding set";
+    
     protected static final String PROPERTY_FILENAME = "sesame_rdf_config";
     
     /**
@@ -71,12 +82,15 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
      * For the moment we use only one page by taking the max value
      * //\SILEX:todo
      */    
-    protected int pageSizeMaxValue = Integer.parseInt(PropertiesFileManager.getConfigFileProperty("service", "pageSizeMax"));
+    protected int pageSizeMaxValue = Integer.parseInt(PropertiesFileManager
+            .getConfigFileProperty("service", "pageSizeMax"));
     
     //SILEX:test
     // For the full connection pool issue
-    protected static final String SESAME_SERVER = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
-    protected static final String REPOSITORY_ID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "repositoryID");
+    protected static final String SESAME_SERVER = PropertiesFileManager
+            .getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
+    protected static final String REPOSITORY_ID = PropertiesFileManager
+            .getConfigFileProperty(PROPERTY_FILENAME, "repositoryID");
     //\SILEX:test
 
     // used for logger
@@ -110,14 +124,16 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
 
     public Rdf4jDAO() {
         try {
-            String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
+            String triplestoreServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
             String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "repositoryID");
-            rep = new HTTPRepository(sesameServer, repositoryID); //Stockage triplestore Sesame
+            rep = new HTTPRepository(triplestoreServer, repositoryID); //Stockage triplestore
             rep.initialize();
             setConnection(rep.getConnection());
-        } catch (Exception e) {
-            ResponseFormPOST postForm = new ResponseFormPOST(new Status("Can't connect to triplestore", StatusCodeMsg.ERR, e.getMessage()));
-            throw new WebApplicationException(Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postForm).build());
+        } catch (RepositoryException e) {
+            ResponseFormPOST postForm = new ResponseFormPOST(
+                    new Status("Can't connect to triplestore", StatusCodeMsg.ERR, e.getMessage()));
+            throw new WebApplicationException(
+                    Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postForm).build());
         }
     }
 
@@ -128,13 +144,15 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
 
     public Rdf4jDAO(String repositoryID) {
         try {
-            String sesameServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
-            rep = new HTTPRepository(sesameServer, repositoryID); //Stockage triplestore Sesame
+            String tripleStoreServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
+            rep = new HTTPRepository(tripleStoreServer, repositoryID); //Stockage triplestore
             rep.initialize();
             setConnection(rep.getConnection());
-        } catch (Exception e) {
-            ResponseFormPOST postForm = new ResponseFormPOST(new Status("Can't connect to triplestore", StatusCodeMsg.ERR, e.getMessage()));
-            throw new WebApplicationException(Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postForm).build());
+        } catch (RepositoryException e) {
+            ResponseFormPOST postForm = new ResponseFormPOST(
+                    new Status("Can't connect to triplestore", StatusCodeMsg.ERR, e.getMessage()));
+            throw new WebApplicationException(
+                    Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postForm).build());
         }
     }
 
@@ -171,45 +189,34 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
         }
         return page + 1;
     }
-
-    /**
-     * Page parameter
-     * @param page
-     */
+    
     public void setPage(Integer page) {
         if (page < 0) {
             this.page = Integer.valueOf(DefaultBrapiPaginationValues.PAGE);
         }
         this.page = page;
     }
-
-    /**
-     * Page size parameter
-     * @return
-     */
+    
     public Integer getPageSize() {
         if (pageSize == null || pageSize < 0) {
             return Integer.valueOf(DefaultBrapiPaginationValues.PAGE_SIZE);
         }
         return pageSize;
     }
-
-    /**
-     * Set page size parameter
-     * @param pageSize
-     */
+    
     public void setPageSize(Integer pageSize) {
         this.pageSize = pageSize;
     }
 
     /**
-     * Existence test method of a subject by triplet
+     * Checks if a subject exists by triplet.
      * @param subject
      * @param predicate
      * @param object
      * @return boolean
      */
-    public boolean exist(String subject, String predicate, String object) throws RepositoryException, MalformedQueryException, QueryEvaluationException {
+    public boolean exist(String subject, String predicate, String object) 
+            throws RepositoryException, MalformedQueryException, QueryEvaluationException {
         boolean exist = false;
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendSelect(null);
@@ -225,7 +232,7 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
     }
 
     /**
-     * 
+     * Checks if a URI exists.
      * @param uri the uri to test
      * @example
      * ASK {
@@ -236,10 +243,10 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
      *  UNION
      *  { ?s ?p ?r }
      * }
-     * @return true if the uri exist in the triplestore
+     * @return true if the URI exist in the triplestore
      *         false if it does not exist
      */
-    public boolean existUri(String uri) {
+    public boolean existUri(String uri) throws MalformedQueryException, QueryEvaluationException, RepositoryException {
         if (uri == null) {
             return false;
         }
@@ -258,13 +265,13 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
             LOGGER.debug(SPARQL_QUERY + query.toString());
             BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
             return booleanQuery.evaluate();
-        } catch (Exception e) {
-            return false;
+        } catch (MalformedQueryException | QueryEvaluationException | RepositoryException e) {
+            throw (e);
         }
     }
 
     /**
-     * Existence element recovery method by triplet
+     * Recovers the existence of an element by triplet.
      * @param subject
      * @param predicate
      * @return
@@ -292,7 +299,7 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
     }
 
     /**
-     * Define of user object from an id
+     * Defines of user object from an id.
      * @param id
      */
     public void setUser(String id) {
@@ -304,9 +311,9 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
     }
     
     /**
-     * Add object properties to a given object.
-     * @param subjectUri the subject uri which will have the object properties uris
-     * @param predicateUri the uri of the predicates
+     * Adds object properties to a given object.
+     * @param subjectUri the subject URI which will have the object properties URIs.
+     * @param predicateUri the URI of the predicates
      * @param objectPropertiesUris the list of the object properties to link to the subject
      * @param graphUri
      * @example
@@ -340,12 +347,11 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
             LOGGER.error("Add object properties error : " + ex.getMessage());
             return false;
         }
-        
         return true;
     }
     
     /**
-     * Delete the given object properties.
+     * Deletes the given object properties.
      * @param subjectUri
      * @param predicateUri
      * @param objectPropertiesUris
@@ -384,17 +390,57 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
     }
     
     /**
-     * Get the value of a name in the SELECT statement from a binding set
+     * Gets the value of a name in the SELECT statement from a binding set.
      * @param selectName 
      * @param bindingSet 
-     * @return  the string value of the "selectName" variable in the binding set
+     * @return the string value of the "selectName" variable in the binding set.
      */
-    protected String getStringValueOfSelectNameFromBindingSet(String selectName, BindingSet bindingSet) { 
+    protected static String getStringValueOfSelectNameFromBindingSet(String selectName, BindingSet bindingSet) { 
         Value selectedFieldValue = bindingSet.getValue(selectName);
         if (selectedFieldValue != null) {
             return selectedFieldValue.stringValue();
         }
         return null;
+    }
+    
+    /**
+     * Handle a NumberFormatException when getting the value of the count of results.
+     * @param ex
+     * @throws opensilex.service.dao.exception.DAOPersistenceException 
+     */
+    protected void handleCountValueNumberFormatException(NumberFormatException ex) throws Exception {
+        throw new Exception(String.format(COUNT_VALUE_PARSING_EXCEPTION_MESSAGE_FORMAT, COUNT_ELEMENT_QUERY), ex);
+    }
+    
+    /**
+     * Handle a RDF4J exception throwing a DAO persistence exception according to the given exception type.
+     * @param rdf4jException
+     * @throws opensilex.service.dao.exception.DAOPersistenceException 
+     */
+    protected void handleRdf4jException(RDF4JException rdf4jException) throws DAOPersistenceException {
+        String daoPersistenceExceptionMessage;
+        if(rdf4jException instanceof RepositoryException) {
+            daoPersistenceExceptionMessage 
+                    = String.format(REPOSITORY_EXCEPTION_GENERIC_MESSAGE_FORMAT, rdf4jException.getMessage());
+        }
+        else if(rdf4jException instanceof MalformedQueryException) {
+            daoPersistenceExceptionMessage 
+                    = String.format(MALFORMED_QUERY_EXCEPTION_MESSAGE_FORMAT, rdf4jException.getMessage());
+        }
+        else if(rdf4jException instanceof QueryEvaluationException) {
+            daoPersistenceExceptionMessage 
+                    = String.format(QUERY_EVALUATION_EXCEPTION_MESSAGE_FORMAT, rdf4jException.getMessage());
+        }
+        else if(rdf4jException instanceof UpdateExecutionException) {
+            daoPersistenceExceptionMessage 
+                    = String.format(UPDATE_EXECUTION_EXCEPTION_MESSAGE_FORMAT, rdf4jException.getMessage());
+        }
+        else {
+            daoPersistenceExceptionMessage = rdf4jException.getMessage();
+        }
+        
+        LOGGER.error(rdf4jException.getMessage(), rdf4jException);
+        throw new DAOPersistenceException(daoPersistenceExceptionMessage, rdf4jException);
     }
 
     @Override
@@ -409,7 +455,7 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
 
     @Override
     protected void startTransaction() {
-        // transactions are startes automatically in SPARQL.
+        // transactions starts automatically in SPARQL.
     }
 
     @Override
@@ -421,6 +467,4 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
     protected void rollbackTransaction() {
         getConnection().rollback();
     }
-    
-    
 }

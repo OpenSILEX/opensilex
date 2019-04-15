@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -34,7 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.configuration.DocumentStatus;
 import opensilex.service.configuration.SortingValues;
-import opensilex.service.dao.manager.SparqlDAO;
+import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.User;
 import opensilex.service.ontology.Contexts;
@@ -67,7 +68,7 @@ import opensilex.service.model.Experiment;
  * @update [Morgane Vidal] 12 October, 2017 : add status on documents : linked/unlinked
  * @update [Andréas Garcia] 15 Jan. 2019 : Replace "concern" occurences by "concernedItem"
  */
-public class DocumentRdf4jDAO extends SparqlDAO<Document> {
+public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
     final static Logger LOGGER = LoggerFactory.getLogger(DocumentRdf4jDAO.class);
     public String uri;
     
@@ -747,10 +748,10 @@ public class DocumentRdf4jDAO extends SparqlDAO<Document> {
         for (DocumentMetadataDTO documentMetadata : documentsMetadata) {
             //1. Delete actual metadata
             //1.1 Get informations which will be updated (to remove triplets)
-            DocumentRdf4jDAO docDaoSesame = new DocumentRdf4jDAO();
-            docDaoSesame.user = user;
-            docDaoSesame.uri = documentMetadata.getUri();
-            ArrayList<Document> documentsCorresponding = docDaoSesame.allPaginate();
+            DocumentRdf4jDAO docRdf4jDao = new DocumentRdf4jDAO();
+            docRdf4jDao.user = user;
+            docRdf4jDao.uri = documentMetadata.getUri();
+            ArrayList<Document> documentsCorresponding = docRdf4jDao.allPaginate();
 
             UpdateRequest deleteQuery = null;
             //1.2 Delete metatada associated to the URI
@@ -820,32 +821,32 @@ public class DocumentRdf4jDAO extends SparqlDAO<Document> {
     }
 
     @Override
-    public List<Document> create(List<Document> objects) throws Exception {
+    public List<Document> create(List<Document> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List<Document> objects) throws Exception {
+    public void delete(List<Document> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<Document> update(List<Document> objects) throws Exception {
+    public List<Document> update(List<Document> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Document find(Document object) throws Exception {
+    public Document find(Document object) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Document findById(String id) throws Exception {
+    public Document findById(String id) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void validate(List<Document> objects) throws DAODataErrorAggregateException {
+    public void validate(List<Document> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -36,6 +36,7 @@ import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.SensorDAO;
 import opensilex.service.dao.SensorProfileDAO;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.resource.dto.SensorDTO;
@@ -50,14 +51,18 @@ import opensilex.service.view.brapi.form.ResponseFormGET;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Sensor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Sensor resource service.
+ * @update [Andreas Garcia] 15 Apr. 2019: handle DAO persistence exceptions thrown by property DAO functions.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Api("/sensors")
 @Path("/sensors")
 public class SensorResourceService extends ResourceService {
+    final static Logger LOGGER = LoggerFactory.getLogger(SensorResourceService.class);
     
     /**
      * Searches sensors corresponding to search parameters given by a user.
@@ -531,25 +536,30 @@ public class SensorResourceService extends ResourceService {
         AbstractResultForm postResponse = null;
         
         if (profiles != null && !profiles.isEmpty()) {
-            SensorProfileDAO sensorProfileDAO = new SensorProfileDAO();
-            
-             if (context.getRemoteAddr() != null) {
-                sensorProfileDAO.remoteUserAdress = context.getRemoteAddr();
+            try {
+                SensorProfileDAO sensorProfileDAO = new SensorProfileDAO();
+                
+                if (context.getRemoteAddr() != null) {
+                    sensorProfileDAO.remoteUserAdress = context.getRemoteAddr();
+                }
+                
+                sensorProfileDAO.user = userSession.getUser();
+                
+                POSTResultsReturn result = sensorProfileDAO.checkAndInsert(profiles);
+                
+                if (result.getHttpStatus().equals(Response.Status.CREATED)) {
+                    postResponse = new ResponseFormPOST(result.statusList);
+                    postResponse.getMetadata().setDatafiles(result.getCreatedResources());
+                } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                        || result.getHttpStatus().equals(Response.Status.OK)
+                        || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                    postResponse = new ResponseFormPOST(result.statusList);
+                }
+                return Response.status(result.getHttpStatus()).entity(postResponse).build();
+            } catch (DAOPersistenceException ex) {
+                LOGGER.error(ex.getMessage(), ex);
+                return getResponseWhenPersistenceError(ex);
             }
-            
-            sensorProfileDAO.user = userSession.getUser();
-            
-            POSTResultsReturn result = sensorProfileDAO.checkAndInsert(profiles);
-            
-            if (result.getHttpStatus().equals(Response.Status.CREATED)) {
-                postResponse = new ResponseFormPOST(result.statusList);
-                postResponse.getMetadata().setDatafiles(result.getCreatedResources());
-            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                    || result.getHttpStatus().equals(Response.Status.OK)
-                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                postResponse = new ResponseFormPOST(result.statusList);
-            }
-            return Response.status(result.getHttpStatus()).entity(postResponse).build();
         } else {
             postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty sensor(s) profile(s) to add"));
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();

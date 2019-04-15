@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -30,7 +31,7 @@ import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.dao.manager.SparqlDAO;
+import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.ontology.Contexts;
 import opensilex.service.ontology.Rdf;
@@ -47,7 +48,7 @@ import opensilex.service.model.RadiometricTarget;
  * Radiometric target DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class RadiometricTargetDAO extends SparqlDAO<RadiometricTarget> {
+public class RadiometricTargetDAO extends Rdf4jDAO<RadiometricTarget> {
     final static Logger LOGGER = LoggerFactory.getLogger(RadiometricTargetDAO.class);
     
     // This attribute is used to search all properties of the given uri
@@ -176,10 +177,11 @@ public class RadiometricTargetDAO extends SparqlDAO<RadiometricTarget> {
     /**
      * Check the given list of radiometric targets (check properties domain, etc.)
      * @param radiometricTargets
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      * @see PropertyDAO
      * @return the result with the list of the found errors (empty if no error)
      */
-    public POSTResultsReturn check(List<RadiometricTarget> radiometricTargets) {
+    public POSTResultsReturn check(List<RadiometricTarget> radiometricTargets) throws DAOPersistenceException {
         POSTResultsReturn checkResult;
         //list of the returned status
         List<Status> status = new ArrayList<>();
@@ -351,8 +353,9 @@ public class RadiometricTargetDAO extends SparqlDAO<RadiometricTarget> {
      * @param radiometricTargets
      * @return the insertion result. Message error if errors found in data
      *         the list of the generated uri of the radiometric targets if the insertion has been done
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
-    public POSTResultsReturn checkAndInsert(List<RadiometricTarget> radiometricTargets) {
+    public POSTResultsReturn checkAndInsert(List<RadiometricTarget> radiometricTargets) throws DAOPersistenceException {
         POSTResultsReturn checkResult = check(radiometricTargets);
         if (checkResult.getDataState()) {
             return insert(radiometricTargets);
@@ -415,13 +418,13 @@ public class RadiometricTargetDAO extends SparqlDAO<RadiometricTarget> {
     }
     
     /**
-     * Gets the radiometric target information using it's URI.
-     * /!\ Prerequisite : the URI must have been checked and it must exist 
-     *                    before calling this method.
+     * Gets the radiometric target information using it's URI./!\ Prerequisite : the URI must have been checked and it must exist 
+                    before calling this method.
      * @param radiometricTargetUri
      * @return the Radiometric Target information
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
-    public RadiometricTarget getRadiometricTarget(String radiometricTargetUri) {
+    public RadiometricTarget getRadiometricTarget(String radiometricTargetUri) throws DAOPersistenceException {
         PropertyDAO propertyDAO = new PropertyDAO();
         RadiometricTarget radiometricTarget = new RadiometricTarget();
         propertyDAO.getAllPropertiesWithLabels(radiometricTarget, null);
@@ -484,7 +487,8 @@ public class RadiometricTargetDAO extends SparqlDAO<RadiometricTarget> {
      * @param radiometricTargets the list of the radiometric targets to update
      * @return the update result with the list of all the updated radiometric targets.
      */
-    private POSTResultsReturn updateAndReturnPOSTResultsReturn(List<RadiometricTarget> radiometricTargets) {
+    private POSTResultsReturn updateAndReturnPOSTResultsReturn(List<RadiometricTarget> radiometricTargets) 
+            throws DAOPersistenceException {
         //SILEX:info
         //If a property of a radiometric target has a null value, 
         //it will be deleted from the triplestore
@@ -572,8 +576,9 @@ public class RadiometricTargetDAO extends SparqlDAO<RadiometricTarget> {
      * @param radiometricTargets
      * @return the update result. Message error if errors found in data
      *         the list of the generated URI of the radiometric targets if the update has been done
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
-    public POSTResultsReturn checkAndUpdate(List<RadiometricTarget> radiometricTargets) {
+    public POSTResultsReturn checkAndUpdate(List<RadiometricTarget> radiometricTargets) throws DAOPersistenceException {
         POSTResultsReturn checkResult = check(radiometricTargets);
         if (checkResult.getDataState()) {
             return updateAndReturnPOSTResultsReturn(radiometricTargets);
@@ -635,32 +640,32 @@ public class RadiometricTargetDAO extends SparqlDAO<RadiometricTarget> {
     }
 
     @Override
-    public List<RadiometricTarget> create(List<RadiometricTarget> objects) throws Exception {
+    public List<RadiometricTarget> create(List<RadiometricTarget> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List<RadiometricTarget> objects) throws Exception {
+    public void delete(List<RadiometricTarget> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<RadiometricTarget> update(List<RadiometricTarget> objects) throws Exception {
+    public List<RadiometricTarget> update(List<RadiometricTarget> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public RadiometricTarget find(RadiometricTarget object) throws Exception {
+    public RadiometricTarget find(RadiometricTarget object) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public RadiometricTarget findById(String id) throws Exception {
+    public RadiometricTarget findById(String id) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void validate(List<RadiometricTarget> objects) throws DAODataErrorAggregateException {
+    public void validate(List<RadiometricTarget> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

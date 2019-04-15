@@ -32,6 +32,7 @@ import javax.ws.rs.core.Response;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.AnnotationDAO;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
@@ -40,6 +41,8 @@ import opensilex.service.resource.dto.annotation.AnnotationPostDTO;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.model.Annotation;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Annotation resource service.
@@ -53,6 +56,7 @@ import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 @Api("/annotations")
 @Path("/annotations")
 public class AnnotationResourceService extends ResourceService {
+    final static Logger LOGGER = LoggerFactory.getLogger(SensorResourceService.class);
     
     public final static String EMPTY_ANNOTATION_LIST = "the annotation list to add is empty";
     
@@ -89,7 +93,7 @@ public class AnnotationResourceService extends ResourceService {
             value = DocumentationAnnotation.ACCES_TOKEN,
             example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
-    public Response postAnnotations(
+    public Response post(
         @ApiParam(value = DocumentationAnnotation.ANNOTATION_POST_DATA_DEFINITION) 
             @Valid ArrayList<AnnotationPostDTO> annotationsDtos,
         @Context HttpServletRequest context) {
@@ -161,16 +165,35 @@ public class AnnotationResourceService extends ResourceService {
             @ApiParam(value = "Search by motivation", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_MOTIVATED_BY) @QueryParam("motivatedBy") @URL String motivatedBy) {
 
         AnnotationDAO annotationDao = new AnnotationDAO(userSession.getUser());
-        ArrayList<Annotation> annotations 
-                = annotationDao.find(uri, creator, target, bodyValue, motivatedBy, page, pageSize);
+        ArrayList<Annotation> annotations;
+        try {
+            annotations = annotationDao.find(uri, creator, target, bodyValue, motivatedBy, page, pageSize);
+        
+        // handle search exceptions
+        } catch (DAOPersistenceException ex) {
+            LOGGER.error(ex.getMessage(), ex);
+            return getResponseWhenPersistenceError(ex);
+        }
 
+        // Returns result
         if (annotations == null) {
             return getGETResponseWhenNoResult();
         } else if (annotations.isEmpty()) {
             return getGETResponseWhenNoResult();
         } else {
-            Integer totalCount = annotationDao.count(uri, creator, target, bodyValue, motivatedBy);
-            return getGETResponseWhenSuccess(annotations, pageSize, page, totalCount);
+            // count
+            try {
+                int totalCount = annotationDao.count(uri, creator, target, bodyValue, motivatedBy);
+                return getGETResponseWhenSuccess(annotations, pageSize, page, totalCount);
+                
+            // handle count exceptions
+            } catch (DAOPersistenceException ex) {
+                LOGGER.error(ex.getMessage(), ex);
+                return getResponseWhenPersistenceError(ex);
+            } catch (Exception ex) {
+                LOGGER.error(ex.getMessage(), ex);
+                return getResponseWhenInternalError(ex);
+            }
         }
     }
 

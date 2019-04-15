@@ -10,6 +10,7 @@ package opensilex.service.dao;
 import java.util.List;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
@@ -22,7 +23,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.dao.manager.SparqlDAO;
+import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.model.Instant;
 import opensilex.service.model.User;
 import opensilex.service.ontology.Time;
@@ -37,7 +38,7 @@ import org.eclipse.rdf4j.query.BindingSet;
  * Time object DAO.
  * @author Andreas Garcia <andreas.garcia@inra.fr>
  */
-public class TimeDAO extends SparqlDAO<Time> {
+public class TimeDAO extends Rdf4jDAO<Time> {
     final static Logger LOGGER = LoggerFactory.getLogger(TimeDAO.class);
     
     protected static final String DATETIME_SELECT_NAME = "dateTime";
@@ -192,32 +193,32 @@ public class TimeDAO extends SparqlDAO<Time> {
     }
 
     @Override
-    public List<Time> create(List<Time> objects) throws Exception {
+    public List<Time> create(List<Time> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List<Time> objects) throws Exception {
+    public void delete(List<Time> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<Time> update(List<Time> objects) throws Exception {
+    public List<Time> update(List<Time> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Time find(Time object) throws Exception {
+    public Time find(Time object) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Time findById(String id) throws Exception {
+    public Time findById(String id) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void validate(List<Time> objects) throws DAODataErrorAggregateException {
+    public void validate(List<Time> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -37,6 +37,7 @@ import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.EventDAO;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.resource.dto.event.EventGetDTO;
@@ -167,24 +168,42 @@ public class EventResourceService  extends ResourceService {
     ) {
         EventDAO eventDAO = new EventDAO(userSession.getUser());
         
-        // 1. Search events with parameters
-        ArrayList<Event> events = eventDAO.find(
-                uri,
-                type,
-                concernedItemLabel, 
-                concernedItemUri, 
-                startDate, 
-                endDate, 
-                page, 
-                pageSize);
+        // Search events with parameters
+        ArrayList<Event> events;
+        try {
+            events = eventDAO.find(
+                    uri,
+                    type,
+                    concernedItemLabel,
+                    concernedItemUri,
+                    startDate,
+                    endDate,
+                    page,
+                    pageSize);
+        // handle exceptions
+        } catch (DAOPersistenceException ex) {
+            LOGGER.error(ex.getMessage(), ex);
+            return getResponseWhenPersistenceError(ex);
+        }
 
         if (events == null) {
             return getGETResponseWhenNoResult();
         } else if (events.isEmpty()) {
             return getGETResponseWhenNoResult();
         } else {
-            int totalCount = eventDAO.count(uri, type, concernedItemLabel, concernedItemUri, startDate, endDate);
-            return getGETResponseWhenSuccess(events, pageSize, page, totalCount);
+            // count results
+            try {
+                int totalCount = eventDAO.count(uri, type, concernedItemLabel, concernedItemUri, startDate, endDate);
+                return getGETResponseWhenSuccess(events, pageSize, page, totalCount);
+                
+            // handle count exceptions
+            } catch (DAOPersistenceException ex) {
+                LOGGER.error(ex.getMessage(), ex);
+                return getResponseWhenPersistenceError(ex);
+            } catch (Exception ex) {
+                LOGGER.error(ex.getMessage(), ex);
+                return getResponseWhenInternalError(ex);
+            }
         }
     }
     

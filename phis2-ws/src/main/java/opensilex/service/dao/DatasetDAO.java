@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.logging.Level;
 import javax.ws.rs.core.Response;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -424,32 +425,32 @@ public class DatasetDAO extends MongoDAO<Dataset> {
     }
 
     @Override
-    public List<Dataset> create(List<Dataset> objects) throws Exception {
+    public List<Dataset> create(List<Dataset> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List<Dataset> objects) throws Exception {
+    public void delete(List<Dataset> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<Dataset> update(List<Dataset> objects) throws Exception {
+    public List<Dataset> update(List<Dataset> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Dataset find(Dataset object) throws Exception {
+    public Dataset find(Dataset object) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Dataset findById(String id) throws Exception {
+    public Dataset findById(String id) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void validate(List<Dataset> objects) throws DAODataErrorAggregateException {
+    public void validate(List<Dataset> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

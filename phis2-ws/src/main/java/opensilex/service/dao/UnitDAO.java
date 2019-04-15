@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -30,7 +31,7 @@ import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.dao.manager.SparqlDAO;
+import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.ontology.Contexts;
 import opensilex.service.ontology.Rdf;
@@ -49,7 +50,7 @@ import opensilex.service.model.Unit;
  * Unit DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class UnitDAO extends SparqlDAO<Unit> {
+public class UnitDAO extends Rdf4jDAO<Unit> {
     final static Logger LOGGER = LoggerFactory.getLogger(UnitDAO.class);
     
     public String uri;
@@ -116,7 +117,8 @@ public class UnitDAO extends SparqlDAO<Unit> {
                    && !ontologyReference.getProperty().equals(Skos.RELATION_BROADER.toString())) {
                     dataOk = false;
                     checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
-                            "Bad property relation given. Must be one of the following : " + Skos.RELATION_EXACT_MATCH.toString()
+                            "Bad property relation given. Must be one of the following : " 
+                            + Skos.RELATION_EXACT_MATCH.toString()
                             + ", " + Skos.RELATION_CLOSE_MATCH.toString()
                             + ", " + Skos.RELATION_NARROWER.toString()
                             + ", " + Skos.RELATION_BROADER.toString()
@@ -257,7 +259,10 @@ public class UnitDAO extends SparqlDAO<Unit> {
             } catch (MalformedQueryException e) {
                     LOGGER.error(e.getMessage(), e);
                     annotationInsert = false;
-                    insertStatusList.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, "Malformed insertion query: " + e.getMessage()));
+                    insertStatusList.add(new Status(
+                            StatusCodeMsg.QUERY_ERROR, 
+                            StatusCodeMsg.ERR, 
+                            "Malformed insertion query: " + e.getMessage()));
             } 
         }
         
@@ -266,7 +271,10 @@ public class UnitDAO extends SparqlDAO<Unit> {
         results.setCreatedResources(createdResourcesURI);
         if (resultState && !createdResourcesURI.isEmpty()) {
             results.createdResources = createdResourcesURI;
-            results.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, createdResourcesURI.size() + " new resource(s) created."));
+            results.statusList.add(new Status(
+                    StatusCodeMsg.RESOURCES_CREATED, 
+                    StatusCodeMsg.INFO, 
+                    createdResourcesURI.size() + " new resource(s) created."));
         }
         
         return results;
@@ -307,7 +315,11 @@ public class UnitDAO extends SparqlDAO<Unit> {
         } else {
             for (OntologyReference ontologyReference : ontologiesReferences) {
                 query.appendTriplet(uri, ontologyReference.getProperty(), ontologyReference.getObject(), null);
-                query.appendTriplet(ontologyReference.getObject(), Rdfs.RELATION_SEE_ALSO.toString(), ontologyReference.getSeeAlso(), null);
+                query.appendTriplet(
+                        ontologyReference.getObject(), 
+                        Rdfs.RELATION_SEE_ALSO.toString(), 
+                        ontologyReference.getSeeAlso(), 
+                        null);
             }
         }
         
@@ -348,7 +360,8 @@ public class UnitDAO extends SparqlDAO<Unit> {
                 
                 // Get ontology references  
                 SPARQLQueryBuilder queryOntologiesReferences = prepareSearchOntologiesReferencesQuery(unit.getUri());
-                TupleQuery tupleQueryOntologiesReferences = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryOntologiesReferences.toString());
+                TupleQuery tupleQueryOntologiesReferences = this.getConnection()
+                        .prepareTupleQuery(QueryLanguage.SPARQL, queryOntologiesReferences.toString());
                 TupleQueryResult resultOntologiesReferences = tupleQueryOntologiesReferences.evaluate();
                 while (resultOntologiesReferences.hasNext()) {
                     BindingSet bindingSetOntologiesReferences = resultOntologiesReferences.next();
@@ -421,7 +434,8 @@ public class UnitDAO extends SparqlDAO<Unit> {
                         Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery.toString());
                         LOGGER.debug(getTraceabilityLogs() + " query : " + prepareDelete.toString());
                         prepareDelete.execute();
-                        Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, queryInsert.toString());
+                        Update prepareUpdate = this.getConnection()
+                                .prepareUpdate(QueryLanguage.SPARQL, queryInsert.toString());
                         LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                         prepareUpdate.execute();
 
@@ -429,11 +443,15 @@ public class UnitDAO extends SparqlDAO<Unit> {
                     } catch (MalformedQueryException e) {
                         LOGGER.error(e.getMessage(), e);
                         annotationUpdate = false;
-                        updateStatusList.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, "Malformed update query: " + e.getMessage()));
+                        updateStatusList.add(new Status(
+                                StatusCodeMsg.QUERY_ERROR, 
+                                StatusCodeMsg.ERR, 
+                                "Malformed update query: " + e.getMessage()));
                     }   
             } else {
                 annotationUpdate = false;
-                updateStatusList.add(new Status("Unknown instance", StatusCodeMsg.ERR, "Unknown unit " + unitDTO.getUri()));
+                updateStatusList.add(
+                        new Status("Unknown instance", StatusCodeMsg.ERR, "Unknown unit " + unitDTO.getUri()));
             }
         }
         
@@ -457,9 +475,11 @@ public class UnitDAO extends SparqlDAO<Unit> {
         results.statusList = updateStatusList;
         if (resultState && !updatedResourcesURIList.isEmpty()) {
             results.createdResources = updatedResourcesURIList;
-            results.statusList.add(new Status(StatusCodeMsg.RESOURCES_UPDATED, StatusCodeMsg.INFO, updatedResourcesURIList.size() + " resources updated"));
+            results.statusList.add(new Status(
+                    StatusCodeMsg.RESOURCES_UPDATED, 
+                    StatusCodeMsg.INFO, 
+                    updatedResourcesURIList.size() + " resources updated"));
         }
-        
         return results;
     }
     
@@ -478,32 +498,32 @@ public class UnitDAO extends SparqlDAO<Unit> {
     }
 
     @Override
-    public List<Unit> create(List<Unit> objects) throws Exception {
+    public List<Unit> create(List<Unit> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List<Unit> objects) throws Exception {
+    public void delete(List<Unit> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<Unit> update(List<Unit> objects) throws Exception {
+    public List<Unit> update(List<Unit> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Unit find(Unit object) throws Exception {
+    public Unit find(Unit object) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Unit findById(String id) throws Exception {
+    public Unit findById(String id) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void validate(List<Unit> objects) throws DAODataErrorAggregateException {
+    public void validate(List<Unit> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

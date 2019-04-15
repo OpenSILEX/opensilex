@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import javax.ws.rs.core.Response;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -606,8 +607,8 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
                     } else { // If non existing data and inserted
                         insertStatusList.add(new Status("Data inserted", StatusCodeMsg.INFO, String.valueOf(inserted) + " experiments inserted"));
                         //Add the experiments in the triplestore
-                        ExperimentRdf4jDAO experimentDAOSesame = new ExperimentRdf4jDAO();
-                        POSTResultsReturn insertTriplestore = experimentDAOSesame.insertExperiments(experiments);
+                        ExperimentRdf4jDAO experimentRdf4jDao = new ExperimentRdf4jDAO();
+                        POSTResultsReturn insertTriplestore = experimentRdf4jDao.insertExperiments(experiments);
                         if (!insertTriplestore.getDataState()) { //An error occurred
                             insertStatusList.addAll(insertTriplestore.getStatusList());
                             insertionState = false;
@@ -1115,8 +1116,8 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
      * @return the update result.
      */
     private POSTResultsReturn updateLinkedVariables(String experimentUri, List<String> variables) {
-        ExperimentRdf4jDAO experimentDAOSesame = new ExperimentRdf4jDAO();
-        return experimentDAOSesame.updateLinkedVariables(experimentUri, variables);
+        ExperimentRdf4jDAO experimentRdf4jDao = new ExperimentRdf4jDAO();
+        return experimentRdf4jDao.updateLinkedVariables(experimentUri, variables);
     }
     
     /**
@@ -1129,8 +1130,8 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
      * @return the update result.
      */
     private POSTResultsReturn updateLinkedSensors(String experimentUri, List<String> sensors) {
-        ExperimentRdf4jDAO experimentDAOSesame = new ExperimentRdf4jDAO();
-        return experimentDAOSesame.updateLinkedSensors(experimentUri, sensors);
+        ExperimentRdf4jDAO experimentRdf4jDao = new ExperimentRdf4jDAO();
+        return experimentRdf4jDao.updateLinkedSensors(experimentUri, sensors);
     }
     
     /**
@@ -1221,27 +1222,27 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
     }
 
     @Override
-    public List<Experiment> create(List<Experiment> objects) throws Exception {
+    public List<Experiment> create(List<Experiment> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List<Experiment> objects) throws Exception {
+    public void delete(List<Experiment> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<Experiment> update(List<Experiment> objects) throws Exception {
+    public List<Experiment> update(List<Experiment> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Experiment findById(String id) throws Exception {
+    public Experiment findById(String id) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void validate(List<Experiment> objects) throws DAODataErrorAggregateException {
+    public void validate(List<Experiment> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

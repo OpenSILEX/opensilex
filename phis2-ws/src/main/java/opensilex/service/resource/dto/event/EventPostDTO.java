@@ -59,7 +59,7 @@ public class EventPostDTO extends AbstractVerifiedClass {
         
         ArrayList<ConcernedItem> modelConcernedItems = new ArrayList<>();
         this.concernedItemsUris.forEach((concernedItemUri) -> {
-            modelConcernedItems.add(new ConcernedItem(concernedItemUri, null, null));
+            modelConcernedItems.add(new ConcernedItem(concernedItemUri, null, null, null));
         });
         
         DateTime dateTime = Dates.stringToDateTimeWithGivenPattern(this.date, DateFormat.YMDTHMSZZ.toString());

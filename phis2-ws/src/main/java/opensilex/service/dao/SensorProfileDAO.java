@@ -10,6 +10,7 @@ package opensilex.service.dao;
 import java.util.ArrayList;
 import java.util.List;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -25,7 +26,7 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.dao.manager.SparqlDAO;
+import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.ontology.Contexts;
 import opensilex.service.ontology.Rdf;
@@ -45,7 +46,7 @@ import opensilex.service.model.Uri;
  * Sensor profile DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class SensorProfileDAO extends SparqlDAO<SensorProfile> {
+public class SensorProfileDAO extends Rdf4jDAO<SensorProfile> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(SensorProfile.class);
     
@@ -74,8 +75,9 @@ public class SensorProfileDAO extends SparqlDAO<SensorProfile> {
      * Checks the given sensor profiles.
      * @param sensorProfiles
      * @return the result with the list of the founded errors (empty if no errors)
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
-    public POSTResultsReturn check(List<SensorProfileDTO> sensorProfiles) {
+    public POSTResultsReturn check(List<SensorProfileDTO> sensorProfiles) throws DAOPersistenceException {
         POSTResultsReturn sensorProfilesCheck;
         //list of the returned status
         List<Status> checkStatus = new ArrayList<>();
@@ -239,14 +241,15 @@ public class SensorProfileDAO extends SparqlDAO<SensorProfile> {
     
     /**
      * Checks and inserts the given sensor profiles in the triplestore.
-     * /!\ the sensor profiles properties depends of the sensor type. The list
-     * of expected properties is extracted from the triplestore
+     * /!\ the sensor profiles properties depends of the sensor type.
+     * The list of expected properties is extracted from the triplestore
      * @param sensorProfiles
      * @return the insertion result. Message error if errors founded in data, 
      *         the list of the URIs of the sensors concerned by the given profiles 
      *         if the insertion has been done 
+     * @throws opensilex.service.dao.exception.DAOPersistenceException 
      */
-    public POSTResultsReturn checkAndInsert(List<SensorProfileDTO> sensorProfiles) {
+    public POSTResultsReturn checkAndInsert(List<SensorProfileDTO> sensorProfiles) throws DAOPersistenceException {
         POSTResultsReturn checkResult = check(sensorProfiles);
         if (checkResult.getDataState()) {
             return insert(sensorProfiles);
@@ -303,27 +306,27 @@ public class SensorProfileDAO extends SparqlDAO<SensorProfile> {
     }
 
     @Override
-    public void delete(List<SensorProfile> objects) throws Exception {
+    public void delete(List<SensorProfile> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<SensorProfile> update(List<SensorProfile> objects) throws Exception {
+    public List<SensorProfile> update(List<SensorProfile> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public SensorProfile find(SensorProfile object) throws Exception {
+    public SensorProfile find(SensorProfile object) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public SensorProfile findById(String id) throws Exception {
+    public SensorProfile findById(String id) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void validate(List<SensorProfile> objects) throws DAODataErrorAggregateException {
+    public void validate(List<SensorProfile> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

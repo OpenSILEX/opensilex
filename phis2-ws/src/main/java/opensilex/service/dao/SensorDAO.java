@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -33,7 +34,7 @@ import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.dao.manager.SparqlDAO;
+import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.User;
 import opensilex.service.ontology.Contexts;
@@ -52,7 +53,7 @@ import opensilex.service.model.Sensor;
  * Sensor DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class SensorDAO extends SparqlDAO<Sensor> {
+public class SensorDAO extends Rdf4jDAO<Sensor> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(SensorDAO.class);
 
@@ -993,32 +994,32 @@ public class SensorDAO extends SparqlDAO<Sensor> {
     }
 
     @Override
-    public List<Sensor> create(List<Sensor> objects) throws Exception {
+    public List<Sensor> create(List<Sensor> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List<Sensor> objects) throws Exception {
+    public void delete(List<Sensor> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<Sensor> update(List<Sensor> objects) throws Exception {
+    public List<Sensor> update(List<Sensor> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Sensor find(Sensor object) throws Exception {
+    public Sensor find(Sensor object) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Sensor findById(String id) throws Exception {
+    public Sensor findById(String id) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void validate(List<Sensor> objects) throws DAODataErrorAggregateException {
+    public void validate(List<Sensor> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -10,6 +10,7 @@ package opensilex.service.dao;
 import java.util.ArrayList;
 import java.util.List;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -19,7 +20,7 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.dao.manager.SparqlDAO;
+import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.ontology.Rdf;
 import opensilex.service.ontology.Rdfs;
 import opensilex.service.ontology.Oeso;
@@ -30,7 +31,7 @@ import opensilex.service.model.Infrastructure;
  * Infrastructure DAO.
  * @author Vincent Migot <vincent.migot@inra.fr>
  */
-public class InfrastructureDAO extends SparqlDAO<Infrastructure> {
+public class InfrastructureDAO extends Rdf4jDAO<Infrastructure> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(InfrastructureDAO.class);
     
@@ -220,32 +221,32 @@ public class InfrastructureDAO extends SparqlDAO<Infrastructure> {
     }
 
     @Override
-    public List<Infrastructure> create(List<Infrastructure> objects) throws Exception {
+    public List<Infrastructure> create(List<Infrastructure> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List<Infrastructure> objects) throws Exception {
+    public void delete(List<Infrastructure> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<Infrastructure> update(List<Infrastructure> objects) throws Exception {
+    public List<Infrastructure> update(List<Infrastructure> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Infrastructure find(Infrastructure object) throws Exception {
+    public Infrastructure find(Infrastructure object) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Infrastructure findById(String id) throws Exception {
+    public Infrastructure findById(String id) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void validate(List<Infrastructure> objects) throws DAODataErrorAggregateException {
+    public void validate(List<Infrastructure> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

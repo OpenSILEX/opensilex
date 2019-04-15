@@ -10,6 +10,7 @@ package opensilex.service.dao;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
@@ -38,7 +39,7 @@ import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAODataErrorException;
 import opensilex.service.dao.exception.UnknownUriException;
 import opensilex.service.dao.exception.WrongTypeException;
-import opensilex.service.dao.manager.SparqlDAO;
+import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.model.User;
 import opensilex.service.ontology.Contexts;
 import opensilex.service.ontology.Oa;
@@ -57,11 +58,11 @@ import opensilex.service.model.Annotation;
  * to handle errors.
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
-public class AnnotationDAO extends SparqlDAO<Annotation> {
+public class AnnotationDAO extends Rdf4jDAO<Annotation> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(AnnotationDAO.class);
 
-    // constants used for SPARQL names in the SELECT
+    // constants used for SPARQL names in the SELECT statement
     public static final String CREATED = "created";
     public static final String BODY_VALUE = "bodyValue";
     public static final String BODY_VALUES = "bodyValues";
@@ -151,9 +152,10 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
      * @param searchBodyValue
      * @param searchMotivatedBy
      * @return number of total annotation returned with the search field
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
     public Integer count(String searchUri, String searchCreator, String searchTarget, String searchBodyValue, String searchMotivatedBy) 
-            throws RepositoryException, MalformedQueryException, QueryEvaluationException {
+            throws DAOPersistenceException, Exception {
         SPARQLQueryBuilder prepareCount = prepareCount(
                 searchUri, 
                 searchCreator, 
@@ -162,11 +164,18 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
                 searchMotivatedBy);
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
         Integer count = 0;
-        try (TupleQueryResult result = tupleQuery.evaluate()) {
+        try {
+            TupleQueryResult result = tupleQuery.evaluate();
             if (result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 count = Integer.parseInt(bindingSet.getValue(COUNT_ELEMENT_QUERY).stringValue());
             }
+        }
+        catch (QueryEvaluationException ex) {
+            handleRdf4jException(ex);
+        }
+        catch (NumberFormatException ex) {
+            handleCountValueNumberFormatException(ex);
         }
         return count;
     }
@@ -203,6 +212,7 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
 
     /**
      * Inserts the given annotations in the storage.
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      * @note annotations have to be checked before calling this function.
      * @param annotations
      * @return the insertion resultAnnotationUri, with the errors list or the
@@ -211,12 +221,16 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
      * @throws opensilex.service.dao.exception.UnknownUriException
      */
     @Override
-    public List<Annotation> create(List<Annotation> annotations) throws Exception {
+    public List<Annotation> create(List<Annotation> annotations) throws DAOPersistenceException, Exception {
         UriGenerator uriGenerator = new UriGenerator();
-        for (Annotation annotation : annotations) {
-            annotation.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_ANNOTATION.toString(), null, null));
-            UpdateRequest query = prepareInsertQuery(annotation);
-            getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString()).execute();
+        try {
+            for (Annotation annotation : annotations) {
+                annotation.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_ANNOTATION.toString(), null, null));
+                UpdateRequest query = prepareInsertQuery(annotation);
+                getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString()).execute();
+            }
+        } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
+            handleRdf4jException(ex);
         }
         return annotations;
     }
@@ -285,34 +299,38 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
      * Checks the given annotations.
      * @param annotations
      * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
     @Override
-    public void validate(List<Annotation> annotations) throws DAODataErrorAggregateException {
+    public void validate(List<Annotation> annotations) throws DAODataErrorAggregateException, DAOPersistenceException {
         UriDAO uriDao = new UriDAO();
         UserDAO userDao = new UserDAO();
         ArrayList<DAODataErrorException> exceptions = new ArrayList<>();
-
-        annotations.forEach((annotation) -> {
-            // check motivation
-            if (!uriDao.existUri(annotation.getMotivatedBy())) {
-                exceptions.add(new UnknownUriException(annotation.getMotivatedBy(), "the motivation"));
-            }
-            else if (!uriDao.isInstanceOf(annotation.getMotivatedBy(), Oa.CONCEPT_MOTIVATION.toString())) {
-                exceptions.add(new WrongTypeException(annotation.getMotivatedBy(), "the motivation"));
-            }
-
-            // check person
-            if (!userDao.existUserUri(annotation.getCreator())) {
-                exceptions.add(new UnknownUriException(annotation.getCreator(), "the person"));
-            }
-
-            // check target
-            annotation.getTargets().forEach((targetUri) -> {
-                if (!uriDao.existUri(targetUri)) {
-                    exceptions.add(new UnknownUriException(targetUri, "the target"));
+        try {
+            annotations.forEach((annotation) -> {
+                // check motivation
+                if (!uriDao.existUri(annotation.getMotivatedBy())) {
+                    exceptions.add(new UnknownUriException(annotation.getMotivatedBy(), "the motivation"));
                 }
+                else if (!uriDao.isInstanceOf(annotation.getMotivatedBy(), Oa.CONCEPT_MOTIVATION.toString())) {
+                    exceptions.add(new WrongTypeException(annotation.getMotivatedBy(), "the motivation"));
+                }
+
+                // check person
+                if (!userDao.existUserUri(annotation.getCreator())) {
+                    exceptions.add(new UnknownUriException(annotation.getCreator(), "the person"));
+                }
+
+                // check target
+                annotation.getTargets().forEach((targetUri) -> {
+                    if (!uriDao.existUri(targetUri)) {
+                        exceptions.add(new UnknownUriException(targetUri, "the target"));
+                    }
+                });
             });
-        });
+        } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
+            handleRdf4jException(ex);
+        }
         
         if (exceptions.size() > 0) {
             throw new DAODataErrorAggregateException(exceptions);
@@ -329,8 +347,10 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
      * @param motivatedBy
      * @param pageSize
      * @return the list of the annotations found
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
-    public ArrayList<Annotation> find(String uri, String creator, String target, String bodyValue, String motivatedBy, int page, int pageSize) {
+    public ArrayList<Annotation> find(String uri, String creator, String target, String bodyValue, String motivatedBy, int page, int pageSize) 
+            throws DAOPersistenceException {
         setPage(page);
         setPageSize(pageSize);
 
@@ -341,14 +361,18 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
                 target, 
                 bodyValue, 
                 motivatedBy);
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-        ArrayList<Annotation> annotations;
-        
-        // Retreive all information for each URI
-        try (TupleQueryResult resultAnnotationUri = tupleQuery.evaluate()) {
-            annotations = getAnnotationsFromResult(resultAnnotationUri, uri, creator, motivatedBy);
+        ArrayList<Annotation> annotations = null;
+        try {
+            TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+
+            // Retreive all information for each URI
+            try (TupleQueryResult resultAnnotationUri = tupleQuery.evaluate()) {
+                annotations = getAnnotationsFromResult(resultAnnotationUri, uri, creator, motivatedBy);
+            }
+            LOGGER.debug(JsonConverter.ConvertToJson(annotations));
+        } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
+            handleRdf4jException(ex);
         }
-        LOGGER.debug(JsonConverter.ConvertToJson(annotations));
         return annotations;
     }
 
@@ -436,28 +460,30 @@ public class AnnotationDAO extends SparqlDAO<Annotation> {
     }
 
     @Override
-    public void delete(List<Annotation> objects) throws Exception {
+    public void delete(List<Annotation> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<Annotation> update(List<Annotation> objects) throws Exception {
+    public List<Annotation> update(List<Annotation> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Annotation find(Annotation object) throws Exception {
+    public Annotation find(Annotation object) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Annotation findById(String id) throws Exception {
-        List<Annotation> annotations = find(id, null, null, null, null, 0, 1);
-        if(!annotations.isEmpty()) {
-            return annotations.get(0);
+    public Annotation findById(String id) throws DAOPersistenceException, Exception {
+        try {
+            List<Annotation> annotations = find(id, null, null, null, null, 0, 1);
+            if(!annotations.isEmpty()) {
+                return annotations.get(0);
+            }
+        } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
+            handleRdf4jException(ex);
         }
-        else {
-            return null;
-        }
+        return null;
     }
 }

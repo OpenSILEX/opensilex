@@ -10,13 +10,14 @@ package opensilex.service.dao;
 import java.util.ArrayList;
 import java.util.List;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.dao.manager.SparqlDAO;
+import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.ontology.Rdf;
 import opensilex.service.ontology.Rdfs;
 import opensilex.service.ontology.Oeso;
@@ -27,7 +28,7 @@ import opensilex.service.model.Species;
  * Specie DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class SpeciesDAO extends SparqlDAO<Species> {
+public class SpeciesDAO extends Rdf4jDAO<Species> {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(SpeciesDAO.class);
     
@@ -173,32 +174,32 @@ public class SpeciesDAO extends SparqlDAO<Species> {
     }
 
     @Override
-    public List<Species> create(List<Species> objects) throws Exception {
+    public List<Species> create(List<Species> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List<Species> objects) throws Exception {
+    public void delete(List<Species> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<Species> update(List<Species> objects) throws Exception {
+    public List<Species> update(List<Species> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Species find(Species object) throws Exception {
+    public Species find(Species object) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Species findById(String id) throws Exception {
+    public Species findById(String id) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void validate(List<Species> objects) throws DAODataErrorAggregateException {
+    public void validate(List<Species> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

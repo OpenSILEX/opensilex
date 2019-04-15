@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -34,7 +35,7 @@ import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.PropertiesFileManager;
-import opensilex.service.dao.manager.SparqlDAO;
+import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.ontology.Contexts;
 import opensilex.service.ontology.Rdf;
@@ -56,7 +57,7 @@ import opensilex.service.model.Variable;
  * Variable DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class VariableDAO extends SparqlDAO<Variable> {
+public class VariableDAO extends Rdf4jDAO<Variable> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(VariableDAO.class);
     
@@ -70,6 +71,7 @@ public class VariableDAO extends SparqlDAO<Variable> {
     public String label;
     public String comment;
     public ArrayList<OntologyReference> ontologiesReferences = new ArrayList<>();
+    public String traitSKosReference;
 
     public VariableDAO() {
         
@@ -136,6 +138,18 @@ public class VariableDAO extends SparqlDAO<Variable> {
             query.appendTriplet(variableURI, Oeso.RELATION_HAS_TRAIT.toString(), "?trait", null);
         }
         
+        if (traitSKosReference != null){
+            if( trait != null) {
+                query.appendTriplet(trait, "?skosRelation", traitSKosReference, null);
+            } else {
+                query.appendTriplet("?trait", "?skosRelation", traitSKosReference, null);
+            }
+            query.appendFilter("?skosRelation IN(<" + Skos.RELATION_CLOSE_MATCH.toString() + ">, <"
+                                               + Skos.RELATION_EXACT_MATCH.toString() + ">, <"
+                                               + Skos.RELATION_NARROWER.toString() + ">, <"
+                                               + Skos.RELATION_BROADER.toString() + ">)");
+        } 
+        
         if (method != null) {
             query.appendTriplet(variableURI, Oeso.RELATION_HAS_METHOD.toString(), method, null);
         } else {
@@ -184,7 +198,7 @@ public class VariableDAO extends SparqlDAO<Variable> {
         //This is an unclean hot fix
         String tripleStoreServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
         String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "repositoryID");
-        rep = new HTTPRepository(tripleStoreServer, repositoryID); //Stockage triplestore Sesame
+        rep = new HTTPRepository(tripleStoreServer, repositoryID); //Stockage triplestore
         rep.initialize();
         this.setConnection(rep.getConnection());
         this.getConnection().begin();
@@ -385,7 +399,7 @@ public class VariableDAO extends SparqlDAO<Variable> {
                 // storage connection to review: dirty hotfix
                 String tripleStoreServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
                 String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "repositoryID");
-                rep = new HTTPRepository(tripleStoreServer, repositoryID); //Stockage triplestore Sesame
+                rep = new HTTPRepository(tripleStoreServer, repositoryID); //Stockage triplestore
                 rep.initialize();
                 this.setConnection(rep.getConnection());
                 this.getConnection().begin();
@@ -719,32 +733,32 @@ public class VariableDAO extends SparqlDAO<Variable> {
     }
 
     @Override
-    public List<Variable> create(List<Variable> objects) throws Exception {
+    public List<Variable> create(List<Variable> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List<Variable> objects) throws Exception {
+    public void delete(List<Variable> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<Variable> update(List<Variable> objects) throws Exception {
+    public List<Variable> update(List<Variable> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Variable find(Variable object) throws Exception {
+    public Variable find(Variable object) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Variable findById(String id) throws Exception {
+    public Variable findById(String id) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void validate(List<Variable> objects) throws DAODataErrorAggregateException {
+    public void validate(List<Variable> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

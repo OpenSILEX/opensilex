@@ -11,12 +11,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.dao.manager.SparqlDAO;
+import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.model.User;
 import opensilex.service.ontology.Oeso;
 import opensilex.service.resource.dto.acquisitionSession.MetadataFileUAVDTO;
@@ -32,7 +33,7 @@ import opensilex.service.model.Vector;
  * @update [Arnaud Charleroy] 10 September 2018: minor fix on vector data gathering
  * @author Morgane Vidal <morgane.vidal@inra.fr>, Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
-public class AcquisitionSessionDAO extends SparqlDAO<MetadataFileDTO> {
+public class AcquisitionSessionDAO extends Rdf4jDAO<MetadataFileDTO> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(AcquisitionSessionDAO.class);
     
@@ -261,7 +262,7 @@ public class AcquisitionSessionDAO extends SparqlDAO<MetadataFileDTO> {
     }
 
     @Override
-    public void validate(List<MetadataFileDTO> objects) throws DAODataErrorAggregateException {
+    public void validate(List<MetadataFileDTO> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

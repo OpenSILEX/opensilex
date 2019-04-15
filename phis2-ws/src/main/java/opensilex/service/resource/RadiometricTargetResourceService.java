@@ -35,6 +35,7 @@ import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.PropertyDAO;
 import opensilex.service.dao.RadiometricTargetDAO;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.resource.dto.radiometricTarget.RadiometricTargetDTO;
@@ -48,14 +49,17 @@ import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.RadiometricTarget;
+import org.slf4j.LoggerFactory;
 
 /**
  * Radiometric target resource service.
+ * @update [Andreas Garcia] 15 Apr. 2019: handle DAO persistence exceptions thrown by property DAO functions.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Api("/radiometricTargets")
 @Path("/radiometricTargets")
 public class RadiometricTargetResourceService extends ResourceService {
+    final static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(RadiometricTargetResourceService.class);
     
     /**
      * Generates a RadiometricTarget list from a given list of RadiometricTargetPostDTO
@@ -143,17 +147,25 @@ public class RadiometricTargetResourceService extends ResourceService {
             
             radiometricTargetDAO.user = userSession.getUser();
             
-            POSTResultsReturn result = radiometricTargetDAO.checkAndInsert(radiometricTargetPostDTOsToRadiometricTargets(radiometricTargets));
+            POSTResultsReturn result;
+            try {
+                result = radiometricTargetDAO.checkAndInsert(radiometricTargetPostDTOsToRadiometricTargets(radiometricTargets));
             
-            if (result.getHttpStatus().equals(Response.Status.CREATED)) {
-                postResponse = new ResponseFormPOST(result.statusList);
-                postResponse.getMetadata().setDatafiles(result.getCreatedResources());
-            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                    || result.getHttpStatus().equals(Response.Status.OK)
-                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                postResponse = new ResponseFormPOST(result.statusList);
+                if (result.getHttpStatus().equals(Response.Status.CREATED)) {
+                    postResponse = new ResponseFormPOST(result.statusList);
+                    postResponse.getMetadata().setDatafiles(result.getCreatedResources());
+                } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                        || result.getHttpStatus().equals(Response.Status.OK)
+                        || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                    postResponse = new ResponseFormPOST(result.statusList);
+                }
+                return Response.status(result.getHttpStatus()).entity(postResponse).build();
+            } catch (DAOPersistenceException ex) {
+                LOGGER.error(ex.getMessage(), ex);
+                // Request error
+                postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Error in the persistence system"));
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postResponse).build();
             }
-            return Response.status(result.getHttpStatus()).entity(postResponse).build();
         } else {
             postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty radiometric(s) target(s) to add"));
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
@@ -193,17 +205,23 @@ public class RadiometricTargetResourceService extends ResourceService {
 
         radiometricTargetDAO.user = userSession.getUser();
 
-        POSTResultsReturn result = radiometricTargetDAO.checkAndUpdate(radiometricTargetDTOsToRadiometricTargets(radiometricTargets));
-
-        if (result.getHttpStatus().equals(Response.Status.OK)
-                || result.getHttpStatus().equals(Response.Status.CREATED)) {
-            putResponse = new ResponseFormPOST(result.statusList);
-            putResponse.getMetadata().setDatafiles(result.createdResources);
-        } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                || result.getHttpStatus().equals(Response.Status.OK)
-                || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-            putResponse = new ResponseFormPOST(result.statusList);
+        POSTResultsReturn result;
+        try {
+            result = radiometricTargetDAO.checkAndUpdate(radiometricTargetDTOsToRadiometricTargets(radiometricTargets));
+            if (result.getHttpStatus().equals(Response.Status.OK)
+                    || result.getHttpStatus().equals(Response.Status.CREATED)) {
+                putResponse = new ResponseFormPOST(result.statusList);
+                putResponse.getMetadata().setDatafiles(result.createdResources);
+            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                    || result.getHttpStatus().equals(Response.Status.OK)
+                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                putResponse = new ResponseFormPOST(result.statusList);
+            }
+        } catch (DAOPersistenceException ex) {
+            LOGGER.error(ex.getMessage(), ex);
+            return getResponseWhenPersistenceError(ex);
         }
+
         return Response.status(result.getHttpStatus()).entity(putResponse).build();
     }
     
@@ -366,31 +384,36 @@ public class RadiometricTargetResourceService extends ResourceService {
                 example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_URI) 
             @PathParam("uri") @URL @Required String uri) { 
         
-        // 1. Initialize propertyDAO with parameters
-        PropertyDAO propertyDAO = new PropertyDAO();
-        
-        propertyDAO.user = userSession.getUser();
-        
-        // 2. Initialize result variable
-        ArrayList<Status> statusList = new ArrayList<>();
-        ResultForm<RdfResourceDefinitionDTO> getResponse;
-        ArrayList<RdfResourceDefinitionDTO> list = new ArrayList<>();
-        
-        // Get all properties in the given language and fill them in RadiometricTarget object
-        RadiometricTarget radiometricTarget = new RadiometricTarget();
-        radiometricTarget.setUri(uri);
-        if (propertyDAO.getAllPropertiesWithLabels(radiometricTarget, null)) {
-            // Convert the radiometricTarget to a RadiometricTargetDTO
-            list.add(new RadiometricTargetDTO(radiometricTarget));
+        try {
+            // 1. Initialize propertyDAO with parameters
+            PropertyDAO propertyDAO = new PropertyDAO();
             
-            // Return it
-            getResponse = new ResultForm<>(propertyDAO.getPageSize(), propertyDAO.getPage(), list, true, list.size());
-            getResponse.setStatus(statusList);
-            return Response.status(Response.Status.OK).entity(getResponse).build();
-        } else {
-            // No result found
-            getResponse = new ResultForm<>(0, 0, list, true, 0);
-            return noResultFound(getResponse, statusList);
+            propertyDAO.user = userSession.getUser();
+            
+            // 2. Initialize result variable
+            ArrayList<Status> statusList = new ArrayList<>();
+            ResultForm<RdfResourceDefinitionDTO> getResponse;
+            ArrayList<RdfResourceDefinitionDTO> list = new ArrayList<>();
+            
+            // Get all properties in the given language and fill them in RadiometricTarget object
+            RadiometricTarget radiometricTarget = new RadiometricTarget();
+            radiometricTarget.setUri(uri);
+            if (propertyDAO.getAllPropertiesWithLabels(radiometricTarget, null)) {
+                // Convert the radiometricTarget to a RadiometricTargetDTO
+                list.add(new RadiometricTargetDTO(radiometricTarget));
+                
+                // Return it
+                getResponse = new ResultForm<>(propertyDAO.getPageSize(), propertyDAO.getPage(), list, true, list.size());
+                getResponse.setStatus(statusList);
+                return Response.status(Response.Status.OK).entity(getResponse).build();
+            } else {
+                // No result found
+                getResponse = new ResultForm<>(0, 0, list, true, 0);
+                return noResultFound(getResponse, statusList);
+            }
+        } catch (DAOPersistenceException ex) {
+            LOGGER.error(ex.getMessage(), ex);
+            return getResponseWhenPersistenceError(ex);
         }
     }
 }

@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -34,7 +35,7 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.dao.manager.SparqlDAO;
+import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.ontology.Contexts;
 import opensilex.service.ontology.GeoSPARQL;
@@ -54,10 +55,10 @@ import opensilex.service.model.Property;
 import opensilex.service.model.Uri;
 
 /**
- * Scientific object RDF4J DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * Scientific object RDF4J DAO.
  */
-public class ScientificObjectRdf4jDAO extends SparqlDAO<ScientificObject> {
+public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(ScientificObjectRdf4jDAO.class);
     
@@ -794,32 +795,32 @@ public class ScientificObjectRdf4jDAO extends SparqlDAO<ScientificObject> {
     }
 
     @Override
-    public List<ScientificObject> create(List<ScientificObject> objects) throws Exception {
+    public List<ScientificObject> create(List<ScientificObject> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List<ScientificObject> objects) throws Exception {
+    public void delete(List<ScientificObject> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<ScientificObject> update(List<ScientificObject> objects) throws Exception {
+    public List<ScientificObject> update(List<ScientificObject> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public ScientificObject find(ScientificObject object) throws Exception {
+    public ScientificObject find(ScientificObject object) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public ScientificObject findById(String id) throws Exception {
+    public ScientificObject findById(String id) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void validate(List<ScientificObject> objects) throws DAODataErrorAggregateException {
+    public void validate(List<ScientificObject> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

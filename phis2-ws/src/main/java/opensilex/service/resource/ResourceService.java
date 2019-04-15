@@ -13,10 +13,12 @@ import javax.ws.rs.core.Response;
 import opensilex.service.PropertiesFileManager;
 import opensilex.service.authentication.Session;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.dao.exception.ResourceAccessDeniedException;
 import opensilex.service.dao.manager.DAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.injection.SessionInject;
+import static opensilex.service.resource.DocumentResourceService.LOGGER;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.result.ResultForm;
@@ -50,7 +52,7 @@ public abstract class ResourceService {
      * @return 
      */
     protected ArrayList<AbstractVerifiedClass> getDTOsFromObjects (List<? extends Object> objects) {
-        throw new UnsupportedOperationException("Not supported yet: getDTOsFromObjects getDTOsFromObjects.");
+        throw new UnsupportedOperationException("Not supported yet: getDTOsFromObjects function.");
     }
     
     /**
@@ -115,6 +117,19 @@ public abstract class ResourceService {
     }
 
     /**
+     * Gets a response in the case of a persistence system error.
+     * @param exception
+     * @return the response. 
+     */
+    protected Response getResponseWhenPersistenceError(DAOPersistenceException exception) {
+        return getPostResponseFromSingleOperationStatus(
+                Response.Status.INTERNAL_SERVER_ERROR,
+                StatusCodeMsg.PERSISTENCE_ERROR,
+                StatusCodeMsg.ERR,
+                exception.getMessage());
+    }
+
+    /**
      * Gets a response for a GET operation in success.
      * @param objects
      * @param pageSize
@@ -157,6 +172,7 @@ public abstract class ResourceService {
                 return getGETResponseWhenSuccess(objects, 0, 0, 0);
             }
         } catch (Exception ex) {
+            LOGGER.error(ex.getMessage(), ex);
             return getResponseWhenInternalError(ex);
         }
     }
@@ -226,12 +242,17 @@ public abstract class ResourceService {
                 return getPostPutResponseWhenSuccess(impactedUris);
                 
             } catch (ResourceAccessDeniedException ex) {
+                LOGGER.error(ex.getMessage(), ex);
                 return getPostPutResponseWhenResourceAccessDenied(ex);
                 
             } catch (DAODataErrorAggregateException ex) {
+                ex.getExceptions().forEach((exception) -> {
+                        LOGGER.error(ex.getMessage(), exception);
+                });
                 return getPostPutResponseFromDAODataErrorExceptions(ex);
                 
             } catch (Exception ex) {
+                LOGGER.error(ex.getMessage(), ex);
                 return getResponseWhenInternalError(ex);
             }  
         }

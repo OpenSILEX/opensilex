@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -30,7 +31,7 @@ import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.dao.manager.SparqlDAO;
+import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.ontology.Contexts;
 import opensilex.service.ontology.Rdf;
@@ -46,10 +47,10 @@ import opensilex.service.model.OntologyReference;
 import opensilex.service.model.Trait;
 
 /**
- * Trait DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * Trait DAO.
  */
-public class TraitDAO extends SparqlDAO<Trait> {
+public class TraitDAO extends Rdf4jDAO<Trait> {
     final static Logger LOGGER = LoggerFactory.getLogger(TraitDAO.class);
 
     public String uri;
@@ -522,32 +523,32 @@ public class TraitDAO extends SparqlDAO<Trait> {
     } 
 
     @Override
-    public List<Trait> create(List<Trait> objects) throws Exception {
+    public List<Trait> create(List<Trait> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List<Trait> objects) throws Exception {
+    public void delete(List<Trait> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<Trait> update(List<Trait> objects) throws Exception {
+    public List<Trait> update(List<Trait> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Trait find(Trait object) throws Exception {
+    public Trait find(Trait object) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Trait findById(String id) throws Exception {
+    public Trait findById(String id) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void validate(List<Trait> objects) throws DAODataErrorAggregateException {
+    public void validate(List<Trait> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

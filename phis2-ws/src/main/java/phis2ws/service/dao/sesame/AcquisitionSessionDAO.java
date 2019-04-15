@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.repository.RepositoryException;
@@ -262,7 +263,7 @@ public class AcquisitionSessionDAO extends Rdf4jDAO<MetadataFileDTO> {
     }
 
     @Override
-    public void validate(List<MetadataFileDTO> objects) throws DAODataErrorAggregateException {
+    public void validate(List<MetadataFileDTO> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

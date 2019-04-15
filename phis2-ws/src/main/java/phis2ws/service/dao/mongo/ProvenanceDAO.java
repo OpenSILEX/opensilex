@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 import javax.ws.rs.core.Response;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.bson.BSONObject;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -429,32 +430,32 @@ public class ProvenanceDAO extends MongoDAO<Provenance> {
     }
 
     @Override
-    public List<Provenance> create(List<Provenance> objects) throws Exception {
+    public List<Provenance> create(List<Provenance> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List<Provenance> objects) throws Exception {
+    public void delete(List<Provenance> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Provenance find(Provenance object) throws Exception {
+    public Provenance find(Provenance object) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Provenance findById(String id) throws Exception {
+    public Provenance findById(String id) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<Provenance> update(List<Provenance> objects) throws Exception {
+    public List<Provenance> update(List<Provenance> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void validate(List<Provenance> objects) throws DAODataErrorAggregateException {
+    public void validate(List<Provenance> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

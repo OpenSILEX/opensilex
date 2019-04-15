@@ -12,6 +12,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,32 +60,32 @@ public class ShootingConfigurationDAO extends MongoDAO<ShootingConfiguration> {
     }
 
     @Override
-    public List<ShootingConfiguration> create(List<ShootingConfiguration> objects) throws Exception {
+    public List<ShootingConfiguration> create(List<ShootingConfiguration> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List<ShootingConfiguration> objects) throws Exception {
+    public void delete(List<ShootingConfiguration> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<ShootingConfiguration> update(List<ShootingConfiguration> objects) throws Exception {
+    public List<ShootingConfiguration> update(List<ShootingConfiguration> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public ShootingConfiguration find(ShootingConfiguration object) throws Exception {
+    public ShootingConfiguration find(ShootingConfiguration object) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public ShootingConfiguration findById(String id) throws Exception {
+    public ShootingConfiguration findById(String id) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void validate(List<ShootingConfiguration> objects) throws DAODataErrorAggregateException {
+    public void validate(List<ShootingConfiguration> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

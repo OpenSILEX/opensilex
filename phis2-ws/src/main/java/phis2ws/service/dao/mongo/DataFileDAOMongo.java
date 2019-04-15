@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.List;
 import javax.ws.rs.core.Response;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.bson.BSONObject;
 import org.bson.Document;
 import org.slf4j.Logger;
@@ -478,32 +479,32 @@ public class DataFileDAOMongo extends DAOMongo<FileDescription> {
     }
 
     @Override
-    public List<FileDescription> create(List<FileDescription> objects) throws Exception {
+    public List<FileDescription> create(List<FileDescription> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List<FileDescription> objects) throws Exception {
+    public void delete(List<FileDescription> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<FileDescription> update(List<FileDescription> objects) throws Exception {
+    public List<FileDescription> update(List<FileDescription> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public FileDescription find(FileDescription object) throws Exception {
+    public FileDescription find(FileDescription object) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public FileDescription findById(String id) throws Exception {
+    public FileDescription findById(String id) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void validate(List<FileDescription> objects) throws DAODataErrorAggregateException {
+    public void validate(List<FileDescription> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -11,6 +11,7 @@ package phis2ws.service.dao.sesame;
 import java.util.ArrayList;
 import java.util.List;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -214,32 +215,32 @@ public class InfrastructureDAOSesame extends DAOSesame<Infrastructure> {
     }
 
     @Override
-    public List<Infrastructure> create(List<Infrastructure> objects) throws Exception {
+    public List<Infrastructure> create(List<Infrastructure> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List<Infrastructure> objects) throws Exception {
+    public void delete(List<Infrastructure> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<Infrastructure> update(List<Infrastructure> objects) throws Exception {
+    public List<Infrastructure> update(List<Infrastructure> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Infrastructure find(Infrastructure object) throws Exception {
+    public Infrastructure find(Infrastructure object) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Infrastructure findById(String id) throws Exception {
+    public Infrastructure findById(String id) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void validate(List<Infrastructure> objects) throws DAODataErrorAggregateException {
+    public void validate(List<Infrastructure> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

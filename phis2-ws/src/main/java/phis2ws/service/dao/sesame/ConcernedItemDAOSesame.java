@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -324,32 +325,32 @@ public class ConcernedItemDAOSesame extends DAOSesame<ConcernedItem> {
     }
 
     @Override
-    public List<ConcernedItem> create(List<ConcernedItem> objects) throws Exception {
+    public List<ConcernedItem> create(List<ConcernedItem> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List<ConcernedItem> objects) throws Exception {
+    public void delete(List<ConcernedItem> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<ConcernedItem> update(List<ConcernedItem> objects) throws Exception {
+    public List<ConcernedItem> update(List<ConcernedItem> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public ConcernedItem find(ConcernedItem object) throws Exception {
+    public ConcernedItem find(ConcernedItem object) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public ConcernedItem findById(String id) throws Exception {
+    public ConcernedItem findById(String id) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void validate(List<ConcernedItem> objects) throws DAODataErrorAggregateException {
+    public void validate(List<ConcernedItem> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

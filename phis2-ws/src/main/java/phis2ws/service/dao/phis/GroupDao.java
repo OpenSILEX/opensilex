@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import javax.ws.rs.core.Response;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.apache.jena.sparql.AlreadyExists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -573,27 +574,27 @@ public class GroupDao extends DAOPhisBrapi<Group, GroupDTO> {
     }
 
     @Override
-    public List<Group> create(List<Group> objects) throws Exception {
+    public List<Group> create(List<Group> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List<Group> objects) throws Exception {
+    public void delete(List<Group> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<Group> update(List<Group> objects) throws Exception {
+    public List<Group> update(List<Group> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Group findById(String id) throws Exception {
+    public Group findById(String id) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void validate(List<Group> objects) throws DAODataErrorAggregateException {
+    public void validate(List<Group> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.apache.commons.io.IOUtils;
 import phis2ws.service.PropertiesFileManager;
 import phis2ws.service.dao.manager.DAOMongo;
@@ -91,32 +92,32 @@ public class DocumentDaoMongo extends DAOMongo<Document> {
     }
 
     @Override
-    public List<Document> create(List<Document> objects) throws Exception {
+    public List<Document> create(List<Document> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List<Document> objects) throws Exception {
+    public void delete(List<Document> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<Document> update(List<Document> objects) throws Exception {
+    public List<Document> update(List<Document> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Document find(Document object) throws Exception {
+    public Document find(Document object) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Document findById(String id) throws Exception {
+    public Document findById(String id) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void validate(List<Document> objects) throws DAODataErrorAggregateException {
+    public void validate(List<Document> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

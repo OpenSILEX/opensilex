@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -234,32 +235,32 @@ public class VocabularyDAOSesame extends DAOSesame<PropertyVocabularyDTO> {
     }
 
     @Override
-    public List<PropertyVocabularyDTO> create(List<PropertyVocabularyDTO> objects) throws Exception {
+    public List<PropertyVocabularyDTO> create(List<PropertyVocabularyDTO> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(List<PropertyVocabularyDTO> objects) throws Exception {
+    public void delete(List<PropertyVocabularyDTO> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<PropertyVocabularyDTO> update(List<PropertyVocabularyDTO> objects) throws Exception {
+    public List<PropertyVocabularyDTO> update(List<PropertyVocabularyDTO> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public PropertyVocabularyDTO find(PropertyVocabularyDTO object) throws Exception {
+    public PropertyVocabularyDTO find(PropertyVocabularyDTO object) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public PropertyVocabularyDTO findById(String id) throws Exception {
+    public PropertyVocabularyDTO findById(String id) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void validate(List<PropertyVocabularyDTO> objects) throws DAODataErrorAggregateException {
+    public void validate(List<PropertyVocabularyDTO> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

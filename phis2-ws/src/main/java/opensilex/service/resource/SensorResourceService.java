@@ -99,7 +99,7 @@ public class SensorResourceService extends ResourceService {
     /**
      * Searches sensors profile corresponding to the given sensor URI.
      * @param sensorDao
-     * @return the sensor profile of the given sensor uri
+     * @return the sensor profile of the given sensor URI
      */
     private Response getSensorProfileData(SensorProfileDAO sensorDao) {
         ArrayList<SensorProfileDTO> sensorsProfiles;

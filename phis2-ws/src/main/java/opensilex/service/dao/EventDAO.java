@@ -375,8 +375,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
      * @return the query
      * @example
      */
-    private UpdateRequest prepareInsertQuery(Event event) throws Exception {
-        UpdateBuilder updateBuilder = new UpdateBuilder();
+    private UpdateBuilder addInsertToUpdateBuilder(UpdateBuilder updateBuilder, Event event) throws Exception {
         
         // Event URI and simple attributes
         Node graph = NodeFactory.createURI(Contexts.EVENTS.toString());
@@ -387,10 +386,12 @@ public class EventDAO extends Rdf4jDAO<Event> {
         // Event's Instant
         TimeDAO.addInsertInstantToUpdateBuilder(updateBuilder, graph, eventResource, event.getInstant());
         
-        UpdateRequest query = updateBuilder.buildRequest();
-        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
-        
-        return query;
+        // Event's concerned items
+        ConcernedItemDAO concernedItemDAO = new ConcernedItemDAO(
+                user, 
+                Contexts.EVENTS.toString(), 
+                Oeev.concerns.getURI());
+        concernedItemDAO.addInsertLinksToUpdateBuilder(updateBuilder, event.getConcernedItems());
     }
     
     /**
@@ -430,9 +431,12 @@ public class EventDAO extends Rdf4jDAO<Event> {
     
     // Inserts the given event in the storage.
     private void insert(Event event) throws Exception {
+        UpdateBuilder updateBuilder = new UpdateBuilder();
+        
         // Insert event
-        UpdateRequest query = prepareInsertQuery(event);
-
+        addInsertToUpdateBuilder(updateBuilder, event);
+        UpdateRequest query = updateBuilder.buildRequest();
+        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
         try {
             Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
             prepareUpdate.execute();
@@ -674,7 +678,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
         for(Event event : events) {
             Event oldEvent = findById(event.getUri());
             UpdateRequest deleteQuery = prepareDeleteQueryWhenUpdating(oldEvent);
-            UpdateRequest insertQuery = prepareInsertQuery(event);  
+            UpdateRequest insertQuery = addInsertToUpdateBuilder(event);  
             Update prepareDelete = getConnection().prepareUpdate(deleteQuery.toString());  
             Update prepareInsert = getConnection().prepareUpdate(QueryLanguage.SPARQL, insertQuery.toString());
             prepareDelete.execute();

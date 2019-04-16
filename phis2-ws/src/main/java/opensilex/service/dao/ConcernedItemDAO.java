@@ -34,6 +34,7 @@ import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.model.ConcernedItem;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.UpdateExecutionException;
 import org.eclipse.rdf4j.repository.RepositoryException;
 
 /**
@@ -226,26 +227,16 @@ public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
     
     /**
      * Generates an insert query for the links of the given concerned items.
-     * @param graphString
-     * @param objectResource the concerning object's URI
-     * @param concernsRelationUri since "concerns" can designate various
-     * relations in various vocabularies (e.g OESO or OEEV), the URI of the 
-     * relation has to be 
-     * @param concernedItem
-     * @return the query
+     * @param updateBuilder
+     * @param concernedItems
      */
-    private UpdateRequest prepareInsertLinkQuery(List<ConcernedItem> concernedItems) {
-        UpdateBuilder updateBuilder = new UpdateBuilder();
+    public void addInsertLinksToUpdateBuilder(UpdateBuilder updateBuilder, List<ConcernedItem> concernedItems) {
         Node graphNode = NodeFactory.createURI(this.graphString);
         Resource concernsRelation = ResourceFactory.createResource(concernsRelationUri);
         concernedItems.forEach((concernedItem) -> {
             Resource concernedItemResource = ResourceFactory.createResource(concernedItem.getUri());
             updateBuilder.addInsert(graphNode, concernedItem.getObjectLinked(), concernsRelation, concernedItemResource);
         });
-        UpdateRequest query = updateBuilder.buildRequest();
-        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
-        
-        return query;
     }
     
     /**
@@ -314,11 +305,14 @@ public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
     }
 
     @Override
-    public List<ConcernedItem> create(List<ConcernedItem> objects) throws DAOPersistenceException, Exception {
-        UpdateRequest query = prepareInsertLinkQuery(objects);
+    public List<ConcernedItem> create(List<ConcernedItem> objects) throws DAOPersistenceException {
+        UpdateBuilder updateBuilder = new UpdateBuilder();
+        addInsertLinksToUpdateBuilder(updateBuilder, objects);
         try {
+            UpdateRequest query = updateBuilder.buildRequest();
+            LOGGER.debug(SPARQL_QUERY + " " + query.toString());
             getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString()).execute();
-        } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
+        } catch (RepositoryException|MalformedQueryException|UpdateExecutionException ex) {
             handleRdf4jException(ex);
         }
         return objects;

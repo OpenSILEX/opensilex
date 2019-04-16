@@ -36,6 +36,7 @@ import org.eclipse.rdf4j.query.BindingSet;
 
 /**
  * Time object DAO.
+ * @update [Andréas Garcia] 8 Apr. 2019: Manipulate Instant objects. Add update builder delete implementation.
  * @author Andreas Garcia <andreas.garcia@inra.fr>
  */
 public class TimeDAO extends Rdf4jDAO<Time> {

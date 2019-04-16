@@ -9,6 +9,8 @@ package phis2ws.service.dao.sesame;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -32,7 +34,7 @@ import phis2ws.service.view.model.phis.Namespace;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
-public class VocabularyDAOSesame extends DAOSesame<Object> {
+public class VocabularyDAOSesame extends DAOSesame<PropertyVocabularyDTO> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(VocabularyDAOSesame.class);
 
@@ -44,17 +46,6 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
     final static String LABEL_LABEL_EN = "label";
     final static String LABEL_COMMENT_EN = "comment";
     final static String PROPERTY = "property";
-    
-  
-    @Override
-    protected SPARQLQueryBuilder prepareSearchQuery() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 
     /**
      * get the list of rdfs properties usually used
@@ -240,5 +231,35 @@ public class VocabularyDAOSesame extends DAOSesame<Object> {
         // Sort list after addition of specific concepts (order namespace)
         Collections.sort(namespacesList);
         return namespacesList;
+    }
+
+    @Override
+    public List<PropertyVocabularyDTO> create(List<PropertyVocabularyDTO> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void delete(List<PropertyVocabularyDTO> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<PropertyVocabularyDTO> update(List<PropertyVocabularyDTO> objects) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public PropertyVocabularyDTO find(PropertyVocabularyDTO object) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public PropertyVocabularyDTO findById(String id) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void validate(List<PropertyVocabularyDTO> objects) throws DAODataErrorAggregateException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

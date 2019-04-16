@@ -56,7 +56,7 @@ import phis2ws.service.view.brapi.form.ResponseFormPOST;
  * @param <T>
  * @author Arnaud Charleroy
  */
-public abstract class DAOSesame<T> {
+public abstract class DAOSesame<T> extends DAO<T> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(DAOSesame.class);
     protected static final String PROPERTY_FILENAME = "sesame_rdf_config";
@@ -105,14 +105,8 @@ public abstract class DAOSesame<T> {
 
     protected static String resourceType;
 
-    public User user;
     protected Integer page;
     protected Integer pageSize;
-    
-    /**
-     * User IP address
-     */
-    public String remoteUserAdress;
 
     public DAOSesame() {
         try {
@@ -298,32 +292,6 @@ public abstract class DAOSesame<T> {
     }
 
     /**
-     * Create the base of a query to list and recover elements
-     * @return SPARQLQueryBuilder
-     */
-    abstract protected SPARQLQueryBuilder prepareSearchQuery();
-
-    /**
-     * Count the number of elements returned by the execution of a query
-     * @return Integer
-     */
-    public abstract Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException;
-
-    /**
-     * @return logs for traceability
-     */
-    protected String getTraceabilityLogs() {
-        String log = "";
-        if (remoteUserAdress != null) {
-            log += "IP Address " + remoteUserAdress + " - ";
-        }
-        if (user != null) {
-            log += "User : " + user.getEmail() + " - ";
-        }
-        return log;
-    }
-
-    /**
      * Define of user object from an id
      * @param id
      */
@@ -428,4 +396,31 @@ public abstract class DAOSesame<T> {
         }
         return null;
     }
+
+    @Override
+    protected void initConnection() {
+        getConnection().begin();    
+    }
+
+    @Override
+    protected void closeConnection() {
+        getConnection().close();
+    }
+
+    @Override
+    protected void startTransaction() {
+        // transactions are startes automatically in SPARQL.
+    }
+
+    @Override
+    protected void commitTransaction() {
+        getConnection().commit();
+    }
+
+    @Override
+    protected void rollbackTransaction() {
+        getConnection().rollback();
+    }
+    
+    
 }

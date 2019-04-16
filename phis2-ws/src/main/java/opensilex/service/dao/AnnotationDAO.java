@@ -19,7 +19,6 @@ import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
-import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.query.BindingSet;
@@ -49,7 +48,6 @@ import opensilex.service.utils.JsonConverter;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.utils.date.Dates;
 import opensilex.service.model.Annotation;
-import org.eclipse.rdf4j.query.UpdateExecutionException;
 
 /**
  * Annotations DAO.

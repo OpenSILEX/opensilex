@@ -14,7 +14,6 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
-import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
@@ -44,11 +43,6 @@ import opensilex.service.utils.date.Dates;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.model.Annotation;
 import opensilex.service.model.Event;
-import opensilex.service.model.Property;
-import org.apache.jena.query.QueryParseException;
-import org.apache.jena.shared.JenaException;
-import org.eclipse.rdf4j.RDF4JException;
-import org.eclipse.rdf4j.query.UpdateExecutionException;
 
 /**
  * Events DAO.

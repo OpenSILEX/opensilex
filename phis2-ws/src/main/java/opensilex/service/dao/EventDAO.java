@@ -380,6 +380,23 @@ public class EventDAO extends Rdf4jDAO<Event> {
         return event;
     }
     
+    public static void setNewUris (List<Event> events) throws Exception {
+        for(Event event : events) {
+            event.setUri(UriGenerator.generateNewInstanceUri(Oeev.Event.getURI(), null, null));
+            
+            event.getConcernedItems().forEach(concernedItem -> {
+                concernedItem.setObjectLinked(event.getUri());
+            });
+        
+            AnnotationDAO.setNewUris(event.getAnnotations());
+            ArrayList<String> annotationTargets = new ArrayList<>();
+            annotationTargets.add(event.getUri());
+            event.getAnnotations().forEach(annotation -> {
+                annotation.setTargets(annotationTargets);
+            });
+        }
+    }
+    
     /**
      * Generates an insert query for the given event.
      * @param event
@@ -472,6 +489,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
      */
     @Override
     public List<Event> create(List<Event> events) throws DAOPersistenceException, Exception {  
+        setNewUris(events);
         for (Event event : events) {
             create(event);
         }

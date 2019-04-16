@@ -210,6 +210,17 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
         LOGGER.debug(SPARQL_QUERY + " " + query.toString());
         return query;
     }
+    
+    /**
+     * Sets generated URIs to annotations.
+     * @param annotations
+     * @throws Exception 
+     */
+    public static void setNewUris (List<Annotation> annotations) throws Exception {
+        for (Annotation annotation : annotations) {
+            annotation.setUri(UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_ANNOTATION.toString(), null, null));
+        }
+    }
 
     /**
      * Inserts the given annotations in the storage.
@@ -223,13 +234,7 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
      */
     @Override
     public List<Annotation> create(List<Annotation> annotations) throws DAOPersistenceException, Exception {
-        // Generate URIs
-        UriGenerator uriGenerator = new UriGenerator();
-        for (Annotation annotation : annotations) {
-            annotation.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_ANNOTATION.toString(), null, null));
-        }
-            
-        // Insert
+        setNewUris(annotations);
         UpdateBuilder updateBuilder = new UpdateBuilder();
         UpdateRequest query;
         addInsertToUpdateBuilder(updateBuilder, annotations); 

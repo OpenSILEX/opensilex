@@ -223,16 +223,19 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
      */
     @Override
     public List<Annotation> create(List<Annotation> annotations) throws DAOPersistenceException, Exception {
+        // Generate URIs
         UriGenerator uriGenerator = new UriGenerator();
+        for (Annotation annotation : annotations) {
+            annotation.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_ANNOTATION.toString(), null, null));
+        }
+            
+        // Insert
         UpdateBuilder updateBuilder = new UpdateBuilder();
         UpdateRequest query;
+        addInsertToUpdateBuilder(updateBuilder, annotations); 
+        query = updateBuilder.buildRequest();
+        LOGGER.debug(getTraceabilityLogs() + " query : " + query.toString());
         try {
-            for (Annotation annotation : annotations) {
-                annotation.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_ANNOTATION.toString(), null, null));
-                addInsertToUpdateBuilder(updateBuilder, annotation); 
-            }
-            query = updateBuilder.buildRequest();
-            LOGGER.debug(getTraceabilityLogs() + " query : " + query.toString());
             getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString()).execute();
         } catch (RepositoryException|MalformedQueryException|UpdateExecutionException ex) {
             handleRdf4jException(ex);

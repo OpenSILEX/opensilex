@@ -49,6 +49,7 @@ import opensilex.service.utils.JsonConverter;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.utils.date.Dates;
 import opensilex.service.model.Annotation;
+import org.eclipse.rdf4j.query.UpdateExecutionException;
 
 /**
  * Annotations DAO.
@@ -223,20 +224,24 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
     @Override
     public List<Annotation> create(List<Annotation> annotations) throws DAOPersistenceException, Exception {
         UriGenerator uriGenerator = new UriGenerator();
+        UpdateBuilder updateBuilder = new UpdateBuilder();
+        UpdateRequest query;
         try {
             for (Annotation annotation : annotations) {
                 annotation.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_ANNOTATION.toString(), null, null));
-                UpdateRequest query = prepareInsertQuery(annotation);
-                getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString()).execute();
+                addInsertToUpdateBuilder(updateBuilder, annotation); 
             }
-        } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
+            query = updateBuilder.buildRequest();
+            LOGGER.debug(getTraceabilityLogs() + " query : " + query.toString());
+            getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString()).execute();
+        } catch (RepositoryException|MalformedQueryException|UpdateExecutionException ex) {
             handleRdf4jException(ex);
         }
         return annotations;
     }
 
     /**
-     * Generates an insert query for annotations. 
+     * Adds statements to insert an annotation into an update builder. 
      * @example
      * INSERT DATA {
      *  <http://www.phenome-fppn.fr/platform/id/annotation/a2f9674f-3e49-4a02-8770-e5a43a327b37> rdf:type  <http://www.w3.org/ns/oa#Annotation> .
@@ -245,29 +250,27 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
      *  <http://www.phenome-fppn.fr/platform/id/annotation/a2f9674f-3e49-4a02-8770-e5a43a327b37> <http://www.w3.org/ns/oa#bodyValue> "Ustilago maydis infection" .
      *  <http://www.phenome-fppn.fr/platform/id/annotation/a2f9674f-3e49-4a02-8770-e5a43a327b37> <http://www.w3.org/ns/oa#hasTarget> <http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy> . 
      * @param annotation
-     * @return the query
      */
-    private UpdateRequest prepareInsertQuery(Annotation annotation) {
-        UpdateBuilder spql = new UpdateBuilder();
+    private void addInsertToUpdateBuilder(UpdateBuilder updateBuilder, Annotation annotation) {
         
         Node graph = NodeFactory.createURI(Contexts.ANNOTATIONS.toString());
         Resource annotationUri = ResourceFactory.createResource(annotation.getUri());
         Node annotationConcept = NodeFactory.createURI(Oeso.CONCEPT_ANNOTATION.toString());
         
-        spql.addInsert(graph, annotationUri, RDF.type, annotationConcept);
+        updateBuilder.addInsert(graph, annotationUri, RDF.type, annotationConcept);
         
         DateTimeFormatter formatter = DateTimeFormat.forPattern(DateFormats.YMDTHMSZ_FORMAT);
         Literal creationDate = ResourceFactory.createTypedLiteral(
                 annotation.getCreated().toString(formatter), 
                 XSDDatatype.XSDdateTime);
-        spql.addInsert(graph, annotationUri, DCTerms.created, creationDate);
+        updateBuilder.addInsert(graph, annotationUri, DCTerms.created, creationDate);
         
         Node creator =  NodeFactory.createURI(annotation.getCreator());
-        spql.addInsert(graph, annotationUri, DCTerms.creator, creator);
+        updateBuilder.addInsert(graph, annotationUri, DCTerms.creator, creator);
 
         Property relationMotivatedBy = ResourceFactory.createProperty(Oa.RELATION_MOTIVATED_BY.toString());
         Node motivatedByReason =  NodeFactory.createURI(annotation.getMotivatedBy());
-        spql.addInsert(graph, annotationUri, relationMotivatedBy, motivatedByReason);
+        updateBuilder.addInsert(graph, annotationUri, relationMotivatedBy, motivatedByReason);
 
         /**
          * @link https://www.w3.org/TR/annotation-model/#bodies-and-targets
@@ -275,7 +278,7 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
         if (annotation.getBodyValues() != null && !annotation.getBodyValues().isEmpty()) {
             Property relationBodyValue = ResourceFactory.createProperty(Oa.RELATION_BODY_VALUE.toString());
             for (String annotbodyValue : annotation.getBodyValues()) {
-                 spql.addInsert(graph, annotationUri, relationBodyValue, annotbodyValue);
+                 updateBuilder.addInsert(graph, annotationUri, relationBodyValue, annotbodyValue);
             }
         }
         /**
@@ -285,14 +288,9 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
             Property relationHasTarget = ResourceFactory.createProperty(Oa.RELATION_HAS_TARGET.toString());
             for (String targetUri : annotation.getTargets()) {
                 Resource targetResourceUri = ResourceFactory.createResource(targetUri);
-                spql.addInsert(graph, annotationUri, relationHasTarget, targetResourceUri);
+                updateBuilder.addInsert(graph, annotationUri, relationHasTarget, targetResourceUri);
             }
         }
-        
-        UpdateRequest query = spql.buildRequest();
-                
-        LOGGER.debug(getTraceabilityLogs() + " query : " + query.toString());
-        return query;
     }
 
     /**

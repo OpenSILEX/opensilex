@@ -50,7 +50,7 @@ public class TimeDAO extends Rdf4jDAO<Time> {
     
     protected static final String DATE_RANGE_END_DATETIME_SELECT_NAME = "dateRangeEndDateTime";
     protected static final String DATE_RANGE_END_DATETIME_SELECT_NAME_SPARQL = "?" + DATE_RANGE_END_DATETIME_SELECT_NAME;
-    
+
     public TimeDAO(User user) {
         super(user);
     }
@@ -79,11 +79,12 @@ public class TimeDAO extends Rdf4jDAO<Time> {
         
         DateTime filterDate = Dates.stringToDateTimeWithGivenPattern(filterDateString, filterDateFormat);
         
-        String filterDateStringInSparqlDateTimeStampFormat = DateTimeFormat.forPattern(DATETIMESTAMP_FORMAT_SPARQL).print(filterDate);
+        String filterDateStringInSparqlDateTimeStampFormat = 
+                DateTimeFormat.forPattern(DATETIMESTAMP_FORMAT_SPARQL).print(filterDate);
 
-        query.appendToBody("\nBIND(<" + Xsd.FUNCTION_DATETIME.toString() 
-                + ">(str(\"" + filterDateStringInSparqlDateTimeStampFormat 
-                + "\")) as " + filterDateSparqlVariable + ") .");
+        query.appendToBody(
+                "\nBIND(<" + Xsd.FUNCTION_DATETIME.toString() + ">(str(\"" 
+                + filterDateStringInSparqlDateTimeStampFormat + "\")) as " + filterDateSparqlVariable + ") .");
         
         query.appendAndFilter(filterDateSparqlVariable + comparisonSign + dateTimeStampToCompareSparqlVariable);
     }

@@ -45,11 +45,13 @@ import opensilex.service.model.Project;
  * @update [Andreas Garcia] 14 Feb. 2019: use the last inserted experiment
  * number instead of total number of experiment to calculate the number of a
  * new experiment
+ * @update [Andreas Garcia] 15 Apr. 2019: make all functions static because they don't need instantiation.
+ * new experiment
  * @author Morgane Vidal <morgane.vidal@inra.fr>, Arnaud Charleroy <arnaud.charleory@inra.fr>
  * SILEX:todo: 
- *       - Element: User agent uri
- *         Purpose: For now, generated user agent uris are not unic. 
- *         Numbers must be add at the end of user agent uri
+ *       - Element: User agent URI
+ *         Purpose: For now, generated user agent URIs are not unique. 
+ *         Numbers must be add at the end of user agent URI
  *         if two user agents have the same family name and first name.
  *         .e.g:
  *              - First user: Jean Dupont-Marie http://www.phenome-fppn.fr/diaphen/id/agent/jean_dupont-marie

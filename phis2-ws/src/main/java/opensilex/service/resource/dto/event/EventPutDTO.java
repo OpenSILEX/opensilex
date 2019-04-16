@@ -42,7 +42,7 @@ public class EventPutDTO extends AbstractVerifiedClass {
     }
 
     /**
-     * Generates an event model from a DTO.
+     * Generates an event object from a DTO.
      * @return the Event model
      */
     @Override

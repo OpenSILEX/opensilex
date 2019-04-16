@@ -967,6 +967,14 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
         }
         
         //2.1.2 Insert new data
+        //2.1.2a Generate variety URI if needed
+        UriGenerator uriGenerator = new UriGenerator();
+        for (Property property : scientificObject.getProperties()) {
+            if (property.getRdfType() != null && property.getRdfType().equals(Oeso.CONCEPT_VARIETY.toString())) {
+                property.setValue(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_VARIETY.toString(), null, property.getValue()));
+            }
+        }
+        //2.1.2b Insert data
         UpdateRequest insertQuery = prepareInsertOneInContextQuery(scientificObject, context);
         getConnection().begin();
         try {
@@ -979,12 +987,11 @@ public class ScientificObjectDAOSesame extends DAOSesame<ScientificObject> {
             prepareUpdate.execute();
             
             //2.2 Relational database data
-            //2.2.1 Check if it exist in the relational database
-            //3. insert in postgresql
             ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO();
             ScientificObject scientificObjectToSearchInDB = new ScientificObject();
             scientificObjectToSearchInDB.setGeometry(scientificObject.getGeometry());
             scientificObjectToSearchInDB.setUri(scientificObject.getUri());
+            //2.2.1 Check if it exist in the relational database
             if (scientificObjectDAO.existInDB(scientificObjectToSearchInDB)) {
                 //2.2.1a Update old data
                 scientificObjectDAO.updateOneGeometry(scientificObject.getUri(), scientificObject.getGeometry(), scientificObject.getRdfType(), scientificObject.getExperiment());

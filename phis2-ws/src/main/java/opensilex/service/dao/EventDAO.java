@@ -601,38 +601,25 @@ public class EventDAO extends Rdf4jDAO<Event> {
     } 
     
     /**
-     * Generates an delete query for the given event.
+     * Generates an delete query for the given event in the case of an update.
+     * @param updateBuilder
      * @param event
-     * @return the event completed with its new URI.
      * @throws java.lang.Exception
      */
-    private UpdateRequest prepareDeleteQueryWhenUpdating(Event event) throws Exception {
-        UpdateBuilder updateBuilder = new UpdateBuilder();
-        
-        // Event URI and simple attributes
+    public void addDeleteWhenUpdatingToUpdateBuilder(UpdateBuilder updateBuilder, Event event) throws Exception {        
         Node graph = NodeFactory.createURI(Contexts.EVENTS.toString());
         Resource eventResource = ResourceFactory.createResource(event.getUri());
         
         updateBuilder.addDelete(graph, eventResource, RDF.type, event.getType());
         
-        // Instant
         TimeDAO.addDeleteInstantToUpdateBuilder(updateBuilder, graph, eventResource, event.getInstant());
-        
-        // Property links
         PropertyDAO.addDeletePropertyLinksToUpdateBuilder(updateBuilder, graph, eventResource, event.getProperties());
-        
-        // Concerned items
         ConcernedItemDAO.addDeleteConcernedItemLinksToUpdateBuilder(
                 updateBuilder, 
                 graph, 
                 eventResource, 
                 Oeev.concerns.getURI(),
                 event.getConcernedItems());
-        
-        UpdateRequest query = updateBuilder.buildRequest();
-        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
-        
-        return query;
     }
 
     @Override
@@ -642,14 +629,16 @@ public class EventDAO extends Rdf4jDAO<Event> {
 
     @Override
     public List<Event> update(List<Event> events) throws Exception {
+        UpdateBuilder updateBuilder;
         for(Event event : events) {
+            updateBuilder = new UpdateBuilder();
             Event oldEvent = findById(event.getUri());
-            UpdateRequest deleteQuery = prepareDeleteQueryWhenUpdating(oldEvent);
-            UpdateRequest insertQuery = addInsertToUpdateBuilder(event);  
-            Update prepareDelete = getConnection().prepareUpdate(deleteQuery.toString());  
-            Update prepareInsert = getConnection().prepareUpdate(QueryLanguage.SPARQL, insertQuery.toString());
-            prepareDelete.execute();
-            prepareInsert.execute();
+            addDeleteWhenUpdatingToUpdateBuilder(updateBuilder, oldEvent);
+            executeUpdateRequest(updateBuilder);
+            
+            updateBuilder = new UpdateBuilder();
+            addInsertToUpdateBuilder(updateBuilder, event);   
+            executeUpdateRequest(updateBuilder);
         }
         return events;
     }

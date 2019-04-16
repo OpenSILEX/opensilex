@@ -241,7 +241,7 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
     }
 
     /**
-     * Adds statements to insert an annotation into an update builder. 
+     * Adds statements to an update builder to insert an annotation. 
      * @example
      * INSERT DATA {
      *  <http://www.phenome-fppn.fr/platform/id/annotation/a2f9674f-3e49-4a02-8770-e5a43a327b37> rdf:type  <http://www.w3.org/ns/oa#Annotation> .
@@ -249,6 +249,7 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
      *  <http://www.phenome-fppn.fr/platform/id/annotation/a2f9674f-3e49-4a02-8770-e5a43a327b37> <http://purl.org/dc/terms/creator> http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy> .
      *  <http://www.phenome-fppn.fr/platform/id/annotation/a2f9674f-3e49-4a02-8770-e5a43a327b37> <http://www.w3.org/ns/oa#bodyValue> "Ustilago maydis infection" .
      *  <http://www.phenome-fppn.fr/platform/id/annotation/a2f9674f-3e49-4a02-8770-e5a43a327b37> <http://www.w3.org/ns/oa#hasTarget> <http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy> . 
+     * @param updateBuilder
      * @param annotation
      */
     private void addInsertToUpdateBuilder(UpdateBuilder updateBuilder, Annotation annotation) {

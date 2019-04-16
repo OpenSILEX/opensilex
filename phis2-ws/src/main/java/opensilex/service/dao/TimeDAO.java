@@ -144,7 +144,8 @@ public class TimeDAO extends Rdf4jDAO<Time> {
      * @throws java.lang.Exception
      */
     public static void addInsertInstantToUpdateBuilder(UpdateBuilder updateBuilder, Node graph, Resource resourceLinkedToInstant, Instant instant) 
-            throws Exception {
+            throws Exception 
+             {
         // Add insert instant uri with type
         UriGenerator uriGenerator = new UriGenerator();
         String instantUri = uriGenerator.generateNewInstanceUri(Time.Instant.toString(), null, null);

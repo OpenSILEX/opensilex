@@ -27,11 +27,6 @@ public class Instant extends RdfResourceDefinition {
      * DateTime.
      */
     private DateTime dateTime;
-    
-    /**
-     * Annotations.
-     */
-    private ArrayList<Annotation> annotations;
 
     /**
      * @param uri
@@ -57,14 +52,4 @@ public class Instant extends RdfResourceDefinition {
     public void setDateTime(DateTime dateTime) {
         this.dateTime = dateTime;
     }
-
-    public ArrayList<Annotation> getAnnotations() {
-        return annotations;
-    }
-
-    public void setAnnotations(ArrayList<Annotation> annotations) {
-        this.annotations = annotations;
-    }
-    
-    
 }

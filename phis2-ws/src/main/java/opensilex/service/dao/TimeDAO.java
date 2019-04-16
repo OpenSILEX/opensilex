@@ -80,7 +80,9 @@ public class TimeDAO extends Rdf4jDAO<Time> {
         
         String filterDateStringInSparqlDateTimeStampFormat = DateTimeFormat.forPattern(DATETIMESTAMP_FORMAT_SPARQL).print(filterDate);
 
-        query.appendToBody("\nBIND(<" + Xsd.FUNCTION_DATETIME.toString() + ">(str(\"" + filterDateStringInSparqlDateTimeStampFormat + "\")) as " + filterDateSparqlVariable + ") .");
+        query.appendToBody("\nBIND(<" + Xsd.FUNCTION_DATETIME.toString() 
+                + ">(str(\"" + filterDateStringInSparqlDateTimeStampFormat 
+                + "\")) as " + filterDateSparqlVariable + ") .");
         
         query.appendAndFilter(filterDateSparqlVariable + comparisonSign + dateTimeStampToCompareSparqlVariable);
     }

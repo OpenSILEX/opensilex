@@ -246,7 +246,7 @@ public class StudiesResourceService implements BrapiCall {
         studyDAO.user = userSession.getUser();
 
         if (observationVariableDbIds != null) {
-            variableURIs= observationVariableDbIds;
+            variableURIs = observationVariableDbIds;
         }
 
         return getStudyObservations(studyDAO, variableURIs, limit, page);
@@ -503,7 +503,7 @@ public class StudiesResourceService implements BrapiCall {
 
     public Response getObservationUnits (
         @ApiParam(value = "studyDbId", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI ) @PathParam("studyDbId") @URL @Required String studyDbId,
-        @ApiParam(value = "observationLevel", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_TYPE ) @QueryParam("observationLevel") String  observationLevel,
+        @ApiParam(value = "observationLevel", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_TYPE ) @QueryParam("observationLevel") @URL String  observationLevel,
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
     ) throws SQLException {           
@@ -517,17 +517,24 @@ public class StudiesResourceService implements BrapiCall {
         experimentDAO.uri = studyDbId;
         experimentDAO.setPageSize(1);
         experimentDAO.user = userSession.getUser();
-        Experiment experiment = experimentDAO.allPaginate().get(0);
+        
+        if (!experimentDAO.allPaginate().isEmpty()) {
+            Experiment experiment = experimentDAO.allPaginate().get(0);
+            ArrayList<BrapiObservationUnitDTO> observationUnits= getObservationUnitsResult(scientificObjects,experiment);
 
-        ArrayList<BrapiObservationUnitDTO> observationUnits= getObservationUnitsResult(scientificObjects,experiment);
-
-        if (observationUnits.isEmpty()) {
-            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, observationUnits, true);
-            return noResultFound(getResponse, statusList);
+            if (observationUnits.isEmpty()) {
+                BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, observationUnits, true);
+                return noResultFound(getResponse, statusList);
+            } else {
+                BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(limit, page, observationUnits, false);
+                return Response.status(Response.Status.OK).entity(getResponse).build();
+            }  
+            
         } else {
-            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(limit, page, observationUnits, false);
-            return Response.status(Response.Status.OK).entity(getResponse).build();
-        }      
+            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, experimentDAO.allPaginate(), true);
+            return noResultFound(getResponse, statusList);
+        }        
+
     }
 
     private Response noResultFound(BrapiMultiResponseForm getResponse, ArrayList<Status> insertStatusList) {
@@ -608,8 +615,10 @@ public class StudiesResourceService implements BrapiCall {
             for (String variableURI:uniqueVariableURIs) {
                 VariableDaoSesame variableDAO = new VariableDaoSesame();
                 variableDAO.uri = variableURI;
-                Variable variable = variableDAO.allPaginate().get(0);
-                variablesList.add(variable);
+                if (!variableDAO.allPaginate().isEmpty()) {
+                    Variable variable = variableDAO.allPaginate().get(0);
+                    variablesList.add(variable);
+                }                
             }                
         }
 

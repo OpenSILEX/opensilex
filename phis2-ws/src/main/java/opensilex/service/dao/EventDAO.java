@@ -22,7 +22,6 @@ import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
-import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -46,6 +45,9 @@ import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.model.Annotation;
 import opensilex.service.model.Event;
 import opensilex.service.model.Property;
+import org.apache.jena.query.QueryParseException;
+import org.apache.jena.shared.JenaException;
+import org.eclipse.rdf4j.RDF4JException;
 import org.eclipse.rdf4j.query.UpdateExecutionException;
 
 /**
@@ -328,7 +330,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
                 events.add(event);
             }
         } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
-            handleRdf4jException(ex);
+            handleTriplestoreException(ex);
         }
        
         return events;
@@ -375,7 +377,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
                 event.setAnnotations(annotations);
             }
         } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
-            handleRdf4jException(ex);
+            handleTriplestoreException(ex);
         }
         return event;
     }
@@ -399,86 +401,35 @@ public class EventDAO extends Rdf4jDAO<Event> {
     
     /**
      * Generates an insert query for the given event.
+     * @param updateBuilder
      * @param event
-     * @return the query
+     * @throws java.lang.Exception
      * @example
      */
-    private UpdateRequest prepareInsertQuery(Event event) {
-        UpdateBuilder updateBuilder = new UpdateBuilder();
-        
+    public void addInsertToUpdateBuilder(UpdateBuilder updateBuilder, Event event) throws Exception {
         // Event URI and simple attributes
         Node graph = NodeFactory.createURI(Contexts.EVENTS.toString());
         Resource eventResource = ResourceFactory.createResource(event.getUri());
         Node eventType = NodeFactory.createURI(event.getType());
         updateBuilder.addInsert(graph, eventResource, RDF.type, eventType);
         
-        // Event's Instant
-        TimeDAO timeDao = new TimeDAO(this.user);
-        try {
-            timeDao.addInsertToUpdateBuilderWithInstant(
-                    updateBuilder,
-                    graph,
-                    eventResource,
-                    event.getDateTime());
-        } catch (Exception ex) {
-            LOGGER.error(ex.getLocalizedMessage());
-        }
+        TimeDAO.addInsertInstantToUpdateBuilder(
+                updateBuilder,
+                graph,
+                eventResource,
+                event.getDateTime());
         
-        UpdateRequest query = updateBuilder.buildRequest();
-        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
-        
-        return query;
-    }
-    
-    /**
-     * Inserts the given event in the storage.
-     * @param event
-     * @return the event completed with its new URI.
-     * @throws opensilex.service.dao.exception.DAOPersistenceException
-     */
-    public Event create(Event event) throws DAOPersistenceException, Exception {   
-        UriGenerator uriGenerator = new UriGenerator();
         ConcernedItemDAO concernedItemDao = 
                 new ConcernedItemDAO(user, Contexts.EVENTS.toString(), Oeev.concerns.getURI());
-        AnnotationDAO annotationDao = new AnnotationDAO(user);
-        PropertyDAO propertyDao = new PropertyDAO();
-
-        // Generate URI
-        event.setUri(uriGenerator.generateNewInstanceUri(Oeev.Event.getURI(), null, null));
-
-        // Insert event
-        UpdateRequest query = prepareInsertQuery(event);
-
-        try {
-            Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
-            prepareUpdate.execute();
-
-            Resource eventResource = ResourceFactory.createResource(event.getUri());
-
-            // Insert concerned items links
-            concernedItemDao.create(event.getConcernedItems());
-
-            // The annotation
-            ArrayList<String> annotationTargets = new ArrayList<>();
-            annotationTargets.add(event.getUri());
-            event.getAnnotations().forEach(annotation -> {
-                annotation.setTargets(annotationTargets);
-            });
-            event.setAnnotations((ArrayList<Annotation>) annotationDao.create(event.getAnnotations()));
-
-            // The properties links
-            ArrayList<Property> properties = event.getProperties();
-            if (!properties.isEmpty()) {
-                propertyDao.insertLinksBetweenObjectAndProperties(
-                        eventResource,
-                        properties,
-                        Contexts.EVENTS.toString(), 
-                        false);
-            }
-        } catch (RepositoryException|MalformedQueryException|QueryEvaluationException|UpdateExecutionException ex) {
-            handleRdf4jException(ex);
-        }
-        return event;
+        concernedItemDao.addInsertToUpdateBuilder(updateBuilder, event.getConcernedItems());
+        
+        AnnotationDAO.addInsertToUpdateBuilder(updateBuilder, event.getAnnotations());
+        PropertyDAO.addInsertLinksToUpdateBuilder(
+                updateBuilder,
+                eventResource,
+                event.getProperties(),
+                Contexts.EVENTS.toString(), 
+                false);
     }
     
     /**
@@ -491,7 +442,9 @@ public class EventDAO extends Rdf4jDAO<Event> {
     public List<Event> create(List<Event> events) throws DAOPersistenceException, Exception {  
         setNewUris(events);
         for (Event event : events) {
-            create(event);
+            UpdateBuilder updateBuilder = new UpdateBuilder();
+            addInsertToUpdateBuilder(updateBuilder, event);
+            executeUpdateRequest(updateBuilder);
         }
         return events;
     }
@@ -558,7 +511,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
                         }
                     }
                 } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
-                    handleRdf4jException(ex);
+                    handleTriplestoreException(ex);
                 }
             }
 
@@ -650,7 +603,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
             }
         }
         catch (QueryEvaluationException ex) {
-            handleRdf4jException(ex);
+            handleTriplestoreException(ex);
         }
         catch (NumberFormatException ex) {
             handleCountValueNumberFormatException(ex);

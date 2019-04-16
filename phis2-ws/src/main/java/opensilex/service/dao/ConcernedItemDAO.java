@@ -220,7 +220,7 @@ public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
                 }
             }
         } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
-            handleRdf4jException(ex);
+            handleTriplestoreException(ex);
         }
         return concernedItems;
     }
@@ -231,13 +231,16 @@ public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
      * @param concernedItems
      * @example
      */
-    private void addInsertToUpdateBuilder(UpdateBuilder updateBuilder, List<ConcernedItem> concernedItems) {
+    public void addInsertToUpdateBuilder(UpdateBuilder updateBuilder, List<ConcernedItem> concernedItems) {
         Node graphNode = NodeFactory.createURI(this.graphString);
         Resource concernsRelation = ResourceFactory.createResource(concernsRelationUri);
-        concernedItems.forEach((concernedItem) -> {
-            Resource concernedItemResource = ResourceFactory.createResource(concernedItem.getUri());
-            updateBuilder.addInsert(graphNode, concernedItem.getObjectLinked(), concernsRelation, concernedItemResource);
-        });
+        Resource objectLinkedResource;
+        Resource concernedItemResource;
+        for (ConcernedItem concernedItem : concernedItems) {
+            objectLinkedResource = ResourceFactory.createResource(concernedItem.getObjectLinked());
+            concernedItemResource = ResourceFactory.createResource(concernedItem.getUri());
+            updateBuilder.addInsert(graphNode, objectLinkedResource, concernsRelation, concernedItemResource);
+        }
     }
     
     /**
@@ -263,7 +266,7 @@ public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
                 throw new DAODataErrorAggregateException(exceptions);
             }
         } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
-            handleRdf4jException(ex);
+            handleTriplestoreException(ex);
         }
     }
     
@@ -289,14 +292,8 @@ public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
     @Override
     public List<ConcernedItem> create(List<ConcernedItem> objects) throws DAOPersistenceException, Exception {
         UpdateBuilder updateBuilder = new UpdateBuilder();
-        try {
-            addInsertToUpdateBuilder(updateBuilder, objects);
-            UpdateRequest query = updateBuilder.buildRequest();
-            LOGGER.debug(SPARQL_QUERY + " " + query.toString());
-            getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString()).execute();
-        } catch (RepositoryException|MalformedQueryException|UpdateExecutionException ex) {
-            handleRdf4jException(ex);
-        }
+        addInsertToUpdateBuilder(updateBuilder, objects);
+        executeUpdateRequest(updateBuilder);
         return objects;
     }
 

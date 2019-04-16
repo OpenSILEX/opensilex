@@ -173,7 +173,7 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
             }
         }
         catch (QueryEvaluationException ex) {
-            handleRdf4jException(ex);
+            handleTriplestoreException(ex);
         }
         catch (NumberFormatException ex) {
             handleCountValueNumberFormatException(ex);
@@ -236,15 +236,8 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
     public List<Annotation> create(List<Annotation> annotations) throws DAOPersistenceException, Exception {
         setNewUris(annotations);
         UpdateBuilder updateBuilder = new UpdateBuilder();
-        UpdateRequest query;
         addInsertToUpdateBuilder(updateBuilder, annotations); 
-        query = updateBuilder.buildRequest();
-        LOGGER.debug(getTraceabilityLogs() + " query : " + query.toString());
-        try {
-            getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString()).execute();
-        } catch (RepositoryException|MalformedQueryException|UpdateExecutionException ex) {
-            handleRdf4jException(ex);
-        }
+        executeUpdateRequest(updateBuilder);
         return annotations;
     }
 
@@ -260,7 +253,7 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
      *  <http://www.phenome-fppn.fr/platform/id/annotation/a2f9674f-3e49-4a02-8770-e5a43a327b37> <http://www.w3.org/ns/oa#hasTarget> <http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy> . 
      * @param updateBuilder
      */
-    public void addInsertToUpdateBuilder(UpdateBuilder updateBuilder, List<Annotation> annotations) {
+    public static void addInsertToUpdateBuilder(UpdateBuilder updateBuilder, List<Annotation> annotations) {
         
         Node graph = NodeFactory.createURI(Contexts.ANNOTATIONS.toString());
         Node annotationConcept = NodeFactory.createURI(Oeso.CONCEPT_ANNOTATION.toString());
@@ -337,7 +330,7 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
                 });
             });
         } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
-            handleRdf4jException(ex);
+            handleTriplestoreException(ex);
         }
         
         if (exceptions.size() > 0) {
@@ -379,7 +372,7 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
             }
             LOGGER.debug(JsonConverter.ConvertToJson(annotations));
         } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
-            handleRdf4jException(ex);
+            handleTriplestoreException(ex);
         }
         return annotations;
     }
@@ -490,7 +483,7 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
                 return annotations.get(0);
             }
         } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
-            handleRdf4jException(ex);
+            handleTriplestoreException(ex);
         }
         return null;
     }

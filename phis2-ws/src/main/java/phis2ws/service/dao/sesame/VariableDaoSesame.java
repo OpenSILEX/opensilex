@@ -784,7 +784,7 @@ public class VariableDaoSesame extends DAOSesame<Variable> {
 
             varList.add(brapiVar); 
         }
-        return varList;        
+        return varList;    
     }
 
     @Override

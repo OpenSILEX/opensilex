@@ -242,6 +242,7 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
 
     /**
      * Adds statements to an update builder to insert an annotation. 
+     * @param annotations
      * @example
      * INSERT DATA {
      *  <http://www.phenome-fppn.fr/platform/id/annotation/a2f9674f-3e49-4a02-8770-e5a43a327b37> rdf:type  <http://www.w3.org/ns/oa#Annotation> .
@@ -250,48 +251,48 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
      *  <http://www.phenome-fppn.fr/platform/id/annotation/a2f9674f-3e49-4a02-8770-e5a43a327b37> <http://www.w3.org/ns/oa#bodyValue> "Ustilago maydis infection" .
      *  <http://www.phenome-fppn.fr/platform/id/annotation/a2f9674f-3e49-4a02-8770-e5a43a327b37> <http://www.w3.org/ns/oa#hasTarget> <http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy> . 
      * @param updateBuilder
-     * @param annotation
      */
-    private void addInsertToUpdateBuilder(UpdateBuilder updateBuilder, Annotation annotation) {
+    public void addInsertToUpdateBuilder(UpdateBuilder updateBuilder, List<Annotation> annotations) {
         
         Node graph = NodeFactory.createURI(Contexts.ANNOTATIONS.toString());
-        Resource annotationUri = ResourceFactory.createResource(annotation.getUri());
         Node annotationConcept = NodeFactory.createURI(Oeso.CONCEPT_ANNOTATION.toString());
-        
-        updateBuilder.addInsert(graph, annotationUri, RDF.type, annotationConcept);
-        
         DateTimeFormatter formatter = DateTimeFormat.forPattern(DateFormats.YMDTHMSZ_FORMAT);
-        Literal creationDate = ResourceFactory.createTypedLiteral(
-                annotation.getCreated().toString(formatter), 
-                XSDDatatype.XSDdateTime);
-        updateBuilder.addInsert(graph, annotationUri, DCTerms.created, creationDate);
-        
-        Node creator =  NodeFactory.createURI(annotation.getCreator());
-        updateBuilder.addInsert(graph, annotationUri, DCTerms.creator, creator);
-
         Property relationMotivatedBy = ResourceFactory.createProperty(Oa.RELATION_MOTIVATED_BY.toString());
-        Node motivatedByReason =  NodeFactory.createURI(annotation.getMotivatedBy());
-        updateBuilder.addInsert(graph, annotationUri, relationMotivatedBy, motivatedByReason);
+        Property relationBodyValue = ResourceFactory.createProperty(Oa.RELATION_BODY_VALUE.toString());
+        Property relationHasTarget = ResourceFactory.createProperty(Oa.RELATION_HAS_TARGET.toString());
+        
+        annotations.forEach((annotation) -> {
+            Resource annotationUri = ResourceFactory.createResource(annotation.getUri());
+            updateBuilder.addInsert(graph, annotationUri, RDF.type, annotationConcept);
+            Literal creationDate = ResourceFactory.createTypedLiteral(
+                    annotation.getCreated().toString(formatter), 
+                    XSDDatatype.XSDdateTime);
+            updateBuilder.addInsert(graph, annotationUri, DCTerms.created, creationDate);
 
-        /**
-         * @link https://www.w3.org/TR/annotation-model/#bodies-and-targets
-         */
-        if (annotation.getBodyValues() != null && !annotation.getBodyValues().isEmpty()) {
-            Property relationBodyValue = ResourceFactory.createProperty(Oa.RELATION_BODY_VALUE.toString());
-            for (String annotbodyValue : annotation.getBodyValues()) {
-                 updateBuilder.addInsert(graph, annotationUri, relationBodyValue, annotbodyValue);
+            Node creator =  NodeFactory.createURI(annotation.getCreator());
+            updateBuilder.addInsert(graph, annotationUri, DCTerms.creator, creator);
+
+            Node motivatedByReason =  NodeFactory.createURI(annotation.getMotivatedBy());
+            updateBuilder.addInsert(graph, annotationUri, relationMotivatedBy, motivatedByReason);
+
+            /**
+             * @link https://www.w3.org/TR/annotation-model/#bodies-and-targets
+             */
+            if (annotation.getBodyValues() != null && !annotation.getBodyValues().isEmpty()) {
+                annotation.getBodyValues().forEach((annotbodyValue) -> {
+                    updateBuilder.addInsert(graph, annotationUri, relationBodyValue, annotbodyValue);
+                });
             }
-        }
-        /**
-         * @link https://www.w3.org/TR/annotation-model/#bodies-and-targets
-         */
-        if (annotation.getTargets() != null && !annotation.getTargets().isEmpty()) {
-            Property relationHasTarget = ResourceFactory.createProperty(Oa.RELATION_HAS_TARGET.toString());
-            for (String targetUri : annotation.getTargets()) {
-                Resource targetResourceUri = ResourceFactory.createResource(targetUri);
-                updateBuilder.addInsert(graph, annotationUri, relationHasTarget, targetResourceUri);
+            /**
+             * @link https://www.w3.org/TR/annotation-model/#bodies-and-targets
+             */
+            if (annotation.getTargets() != null && !annotation.getTargets().isEmpty()) {
+                for (String targetUri : annotation.getTargets()) {
+                    Resource targetResourceUri = ResourceFactory.createResource(targetUri);
+                    updateBuilder.addInsert(graph, annotationUri, relationHasTarget, targetResourceUri);
+                }
             }
-        }
+        });
     }
 
     /**

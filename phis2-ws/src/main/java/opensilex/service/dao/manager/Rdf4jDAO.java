@@ -45,6 +45,8 @@ import opensilex.service.model.User;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
+import org.apache.jena.shared.JenaException;
+import org.apache.jena.update.UpdateRequest;
 import org.eclipse.rdf4j.RDF4JException;
 
 /**
@@ -206,6 +208,21 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
     
     public void setPageSize(Integer pageSize) {
         this.pageSize = pageSize;
+    }
+    
+    /**
+     * Executes an update request from an update builder. 
+     * @param updateBuilder 
+     * @throws opensilex.service.dao.exception.DAOPersistenceException 
+     */
+    protected void executeUpdateRequest(UpdateBuilder updateBuilder) throws DAOPersistenceException {
+        try {
+            UpdateRequest query = updateBuilder.buildRequest();
+            LOGGER.debug(SPARQL_QUERY + " " + query.toString());
+            getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString()).execute();
+        } catch (JenaException|RDF4JException ex) {
+            handleTriplestoreException(ex);
+        }
     }
 
     /**
@@ -414,33 +431,33 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
     
     /**
      * Handle a RDF4J exception throwing a DAO persistence exception according to the given exception type.
-     * @param rdf4jException
+     * @param exception
      * @throws opensilex.service.dao.exception.DAOPersistenceException 
      */
-    protected void handleRdf4jException(RDF4JException rdf4jException) throws DAOPersistenceException {
+    protected void handleTriplestoreException(RuntimeException exception) throws DAOPersistenceException {
         String daoPersistenceExceptionMessage;
-        if(rdf4jException instanceof RepositoryException) {
+        if(exception instanceof RepositoryException) {
             daoPersistenceExceptionMessage 
-                    = String.format(REPOSITORY_EXCEPTION_GENERIC_MESSAGE_FORMAT, rdf4jException.getMessage());
+                    = String.format(REPOSITORY_EXCEPTION_GENERIC_MESSAGE_FORMAT, exception.getMessage());
         }
-        else if(rdf4jException instanceof MalformedQueryException) {
+        else if(exception instanceof MalformedQueryException) {
             daoPersistenceExceptionMessage 
-                    = String.format(MALFORMED_QUERY_EXCEPTION_MESSAGE_FORMAT, rdf4jException.getMessage());
+                    = String.format(MALFORMED_QUERY_EXCEPTION_MESSAGE_FORMAT, exception.getMessage());
         }
-        else if(rdf4jException instanceof QueryEvaluationException) {
+        else if(exception instanceof QueryEvaluationException) {
             daoPersistenceExceptionMessage 
-                    = String.format(QUERY_EVALUATION_EXCEPTION_MESSAGE_FORMAT, rdf4jException.getMessage());
+                    = String.format(QUERY_EVALUATION_EXCEPTION_MESSAGE_FORMAT, exception.getMessage());
         }
-        else if(rdf4jException instanceof UpdateExecutionException) {
+        else if(exception instanceof UpdateExecutionException) {
             daoPersistenceExceptionMessage 
-                    = String.format(UPDATE_EXECUTION_EXCEPTION_MESSAGE_FORMAT, rdf4jException.getMessage());
+                    = String.format(UPDATE_EXECUTION_EXCEPTION_MESSAGE_FORMAT, exception.getMessage());
         }
         else {
-            daoPersistenceExceptionMessage = rdf4jException.getMessage();
+            daoPersistenceExceptionMessage = DAOPersistenceException.GENERIC_MESSAGE + " " + exception.getMessage();
         }
         
-        LOGGER.error(rdf4jException.getMessage(), rdf4jException);
-        throw new DAOPersistenceException(daoPersistenceExceptionMessage, rdf4jException);
+        LOGGER.error(exception.getMessage(), exception);
+        throw new DAOPersistenceException(daoPersistenceExceptionMessage, exception);
     }
 
     @Override

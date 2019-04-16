@@ -49,6 +49,7 @@ import opensilex.service.utils.JsonConverter;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.utils.date.Dates;
 import opensilex.service.model.Annotation;
+import org.eclipse.rdf4j.query.UpdateExecutionException;
 
 /**
  * Annotations DAO.
@@ -172,7 +173,7 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
             }
         }
         catch (QueryEvaluationException ex) {
-            handleRdf4jException(ex);
+            handleTriplestoreException(ex);
         }
         catch (NumberFormatException ex) {
             handleCountValueNumberFormatException(ex);
@@ -209,6 +210,17 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
         LOGGER.debug(SPARQL_QUERY + " " + query.toString());
         return query;
     }
+    
+    /**
+     * Sets generated URIs to annotations.
+     * @param annotations
+     * @throws Exception 
+     */
+    public static void setNewUris (List<Annotation> annotations) throws Exception {
+        for (Annotation annotation : annotations) {
+            annotation.setUri(UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_ANNOTATION.toString(), null, null));
+        }
+    }
 
     /**
      * Inserts the given annotations in the storage.
@@ -222,21 +234,16 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
      */
     @Override
     public List<Annotation> create(List<Annotation> annotations) throws DAOPersistenceException, Exception {
-        UriGenerator uriGenerator = new UriGenerator();
-        try {
-            for (Annotation annotation : annotations) {
-                annotation.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_ANNOTATION.toString(), null, null));
-                UpdateRequest query = prepareInsertQuery(annotation);
-                getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString()).execute();
-            }
-        } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
-            handleRdf4jException(ex);
-        }
+        setNewUris(annotations);
+        UpdateBuilder updateBuilder = new UpdateBuilder();
+        addInsertToUpdateBuilder(updateBuilder, annotations); 
+        executeUpdateRequest(updateBuilder);
         return annotations;
     }
 
     /**
-     * Generates an insert query for annotations. 
+     * Adds statements to an update builder to insert an annotation. 
+     * @param annotations
      * @example
      * INSERT DATA {
      *  <http://www.phenome-fppn.fr/platform/id/annotation/a2f9674f-3e49-4a02-8770-e5a43a327b37> rdf:type  <http://www.w3.org/ns/oa#Annotation> .
@@ -244,55 +251,49 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
      *  <http://www.phenome-fppn.fr/platform/id/annotation/a2f9674f-3e49-4a02-8770-e5a43a327b37> <http://purl.org/dc/terms/creator> http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy> .
      *  <http://www.phenome-fppn.fr/platform/id/annotation/a2f9674f-3e49-4a02-8770-e5a43a327b37> <http://www.w3.org/ns/oa#bodyValue> "Ustilago maydis infection" .
      *  <http://www.phenome-fppn.fr/platform/id/annotation/a2f9674f-3e49-4a02-8770-e5a43a327b37> <http://www.w3.org/ns/oa#hasTarget> <http://www.phenome-fppn.fr/diaphen/id/agent/arnaud_charleroy> . 
-     * @param annotation
-     * @return the query
+     * @param updateBuilder
      */
-    private UpdateRequest prepareInsertQuery(Annotation annotation) {
-        UpdateBuilder spql = new UpdateBuilder();
+    public static void addInsertToUpdateBuilder(UpdateBuilder updateBuilder, List<Annotation> annotations) {
         
         Node graph = NodeFactory.createURI(Contexts.ANNOTATIONS.toString());
-        Resource annotationUri = ResourceFactory.createResource(annotation.getUri());
         Node annotationConcept = NodeFactory.createURI(Oeso.CONCEPT_ANNOTATION.toString());
-        
-        spql.addInsert(graph, annotationUri, RDF.type, annotationConcept);
-        
         DateTimeFormatter formatter = DateTimeFormat.forPattern(DateFormats.YMDTHMSZ_FORMAT);
-        Literal creationDate = ResourceFactory.createTypedLiteral(
-                annotation.getCreated().toString(formatter), 
-                XSDDatatype.XSDdateTime);
-        spql.addInsert(graph, annotationUri, DCTerms.created, creationDate);
-        
-        Node creator =  NodeFactory.createURI(annotation.getCreator());
-        spql.addInsert(graph, annotationUri, DCTerms.creator, creator);
-
         Property relationMotivatedBy = ResourceFactory.createProperty(Oa.RELATION_MOTIVATED_BY.toString());
-        Node motivatedByReason =  NodeFactory.createURI(annotation.getMotivatedBy());
-        spql.addInsert(graph, annotationUri, relationMotivatedBy, motivatedByReason);
-
-        /**
-         * @link https://www.w3.org/TR/annotation-model/#bodies-and-targets
-         */
-        if (annotation.getBodyValues() != null && !annotation.getBodyValues().isEmpty()) {
-            Property relationBodyValue = ResourceFactory.createProperty(Oa.RELATION_BODY_VALUE.toString());
-            for (String annotbodyValue : annotation.getBodyValues()) {
-                 spql.addInsert(graph, annotationUri, relationBodyValue, annotbodyValue);
-            }
-        }
-        /**
-         * @link https://www.w3.org/TR/annotation-model/#bodies-and-targets
-         */
-        if (annotation.getTargets() != null && !annotation.getTargets().isEmpty()) {
-            Property relationHasTarget = ResourceFactory.createProperty(Oa.RELATION_HAS_TARGET.toString());
-            for (String targetUri : annotation.getTargets()) {
-                Resource targetResourceUri = ResourceFactory.createResource(targetUri);
-                spql.addInsert(graph, annotationUri, relationHasTarget, targetResourceUri);
-            }
-        }
+        Property relationBodyValue = ResourceFactory.createProperty(Oa.RELATION_BODY_VALUE.toString());
+        Property relationHasTarget = ResourceFactory.createProperty(Oa.RELATION_HAS_TARGET.toString());
         
-        UpdateRequest query = spql.buildRequest();
-                
-        LOGGER.debug(getTraceabilityLogs() + " query : " + query.toString());
-        return query;
+        annotations.forEach((annotation) -> {
+            Resource annotationUri = ResourceFactory.createResource(annotation.getUri());
+            updateBuilder.addInsert(graph, annotationUri, RDF.type, annotationConcept);
+            Literal creationDate = ResourceFactory.createTypedLiteral(
+                    annotation.getCreated().toString(formatter), 
+                    XSDDatatype.XSDdateTime);
+            updateBuilder.addInsert(graph, annotationUri, DCTerms.created, creationDate);
+
+            Node creator =  NodeFactory.createURI(annotation.getCreator());
+            updateBuilder.addInsert(graph, annotationUri, DCTerms.creator, creator);
+
+            Node motivatedByReason =  NodeFactory.createURI(annotation.getMotivatedBy());
+            updateBuilder.addInsert(graph, annotationUri, relationMotivatedBy, motivatedByReason);
+
+            /**
+             * @link https://www.w3.org/TR/annotation-model/#bodies-and-targets
+             */
+            if (annotation.getBodyValues() != null && !annotation.getBodyValues().isEmpty()) {
+                annotation.getBodyValues().forEach((annotbodyValue) -> {
+                    updateBuilder.addInsert(graph, annotationUri, relationBodyValue, annotbodyValue);
+                });
+            }
+            /**
+             * @link https://www.w3.org/TR/annotation-model/#bodies-and-targets
+             */
+            if (annotation.getTargets() != null && !annotation.getTargets().isEmpty()) {
+                for (String targetUri : annotation.getTargets()) {
+                    Resource targetResourceUri = ResourceFactory.createResource(targetUri);
+                    updateBuilder.addInsert(graph, annotationUri, relationHasTarget, targetResourceUri);
+                }
+            }
+        });
     }
 
     /**
@@ -329,7 +330,7 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
                 });
             });
         } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
-            handleRdf4jException(ex);
+            handleTriplestoreException(ex);
         }
         
         if (exceptions.size() > 0) {
@@ -371,7 +372,7 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
             }
             LOGGER.debug(JsonConverter.ConvertToJson(annotations));
         } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
-            handleRdf4jException(ex);
+            handleTriplestoreException(ex);
         }
         return annotations;
     }
@@ -482,7 +483,7 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
                 return annotations.get(0);
             }
         } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
-            handleRdf4jException(ex);
+            handleTriplestoreException(ex);
         }
         return null;
     }

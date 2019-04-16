@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.dao.exception.DAODataErrorException;
@@ -210,7 +211,7 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
                 propertyDomains.add(bindingSet.getValue(DOMAIN).toString());
             }
         } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
-            handleRdf4jException(ex);
+            handleTriplestoreException(ex);
         }
         
         return propertyDomains;
@@ -234,7 +235,7 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
                 propertyRangeList.add(bindingSet.getValue(RANGE).toString());
             }
         } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
-            handleRdf4jException(ex);
+            handleTriplestoreException(ex);
         }
         return propertyRangeList;
     }
@@ -596,7 +597,7 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
                 throw new DAODataErrorAggregateException(exceptions);
             }
         } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
-            handleRdf4jException(ex);
+            handleTriplestoreException(ex);
         }
     }
     
@@ -926,7 +927,7 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
                     }
                 }
             } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
-                handleRdf4jException(ex);
+                handleTriplestoreException(ex);
             }
             return true;
         } else {
@@ -936,13 +937,13 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
     
     /**
      * Generates an insert query for the given properties.
-     * @param objectUri the property owner's URI
-     * @param peoperty
+     * @param updateBuilder
+     * @param objectResource
      * @param graphString
-     * @return the query
+     * @param properties
+     * @param createProperties
      */
-    private static UpdateRequest prepareInsertLinksBetweenObjectAndPropertiesQuery(Resource objectResource, ArrayList<Property> properties, String graphString, boolean createProperties) {
-        UpdateBuilder updateBuilder = new UpdateBuilder();
+    public static void addInsertLinksToUpdateBuilder(UpdateBuilder updateBuilder, Resource objectResource, ArrayList<Property> properties, String graphString, boolean createProperties) {
         Node graph = NodeFactory.createURI(graphString);
         for (Property property : properties) {
             if (property.getValue() != null) {
@@ -962,10 +963,6 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
                 }
             }
         }
-        UpdateRequest query = updateBuilder.buildRequest();
-        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
-        
-        return query;
     }
     
     /**
@@ -1007,16 +1004,17 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
         boolean resultState = false;
         boolean linksInserted = true;
         
-        getConnection().begin();
-        UpdateRequest query = prepareInsertLinksBetweenObjectAndPropertiesQuery(
+        getConnection().begin();        
+        
+        UpdateBuilder updateBuilder = new UpdateBuilder();
+        addInsertLinksToUpdateBuilder(
+                updateBuilder,
                 objectResource, 
                 properties, 
                 graph, 
                 createProperties);
-
         try {
-            Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
-            prepareUpdate.execute();
+            executeUpdateRequest(updateBuilder);
         } catch (RepositoryException ex) {
                 LOGGER.error(StatusCodeMsg.ERROR_WHILE_COMMITTING_OR_ROLLING_BACK_TRIPLESTORE_STATEMENT, ex);
         } catch (MalformedQueryException e) {
@@ -1026,6 +1024,13 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
                         StatusCodeMsg.QUERY_ERROR, 
                         StatusCodeMsg.ERR, 
                         StatusCodeMsg.MALFORMED_CREATE_QUERY + " " + e.getMessage()));
+        } catch (DAOPersistenceException ex) {
+                LOGGER.error(ex.getMessage(), ex);
+                linksInserted = false;
+                status.add(new Status(
+                        StatusCodeMsg.QUERY_ERROR, 
+                        StatusCodeMsg.ERR, 
+                        DAOPersistenceException.GENERIC_MESSAGE + " " + ex.getMessage()));
         }
         
         if (linksInserted) {

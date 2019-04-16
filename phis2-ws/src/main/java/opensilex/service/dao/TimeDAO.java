@@ -143,12 +143,10 @@ public class TimeDAO extends Rdf4jDAO<Time> {
      * @param instant
      * @throws java.lang.Exception
      */
-    public static void addInsertInstantToUpdateBuilder(UpdateBuilder updateBuilder, Node graph, Resource resourceLinkedToInstant, Instant instant) 
-            throws Exception 
-             {
-        // Add insert instant uri with type
-        UriGenerator uriGenerator = new UriGenerator();
-        String instantUri = uriGenerator.generateNewInstanceUri(Time.Instant.toString(), null, null);
+    public static void addInsertInstantToUpdateBuilder(UpdateBuilder updateBuilder, Node graph, Instant instant) 
+            throws Exception {
+        // Add insert instant URI with type
+        String instantUri = UriGenerator.generateNewInstanceUri(Time.Instant.toString(), null, null);
         Resource instantResource = ResourceFactory.createResource(instantUri);
         updateBuilder.addInsert(graph, instantResource, RDF.type, Time.Instant);
 

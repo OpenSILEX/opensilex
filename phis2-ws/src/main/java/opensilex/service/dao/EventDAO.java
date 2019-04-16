@@ -22,7 +22,6 @@ import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
-import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -46,6 +45,9 @@ import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.model.Annotation;
 import opensilex.service.model.Event;
 import opensilex.service.model.Property;
+import org.apache.jena.query.QueryParseException;
+import org.apache.jena.shared.JenaException;
+import org.eclipse.rdf4j.RDF4JException;
 import org.eclipse.rdf4j.query.UpdateExecutionException;
 
 /**
@@ -305,7 +307,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
                     events.add(event);
                 }
         } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
-            handleRdf4jException(ex);
+            handleTriplestoreException(ex);
         }
        
         return events;
@@ -364,132 +366,59 @@ public class EventDAO extends Rdf4jDAO<Event> {
                         pageSizeMaxValue));
             }
         } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
-            handleRdf4jException(ex);
+            handleTriplestoreException(ex);
         }
         return event;
     }
     
+    public static void setNewUris (List<Event> events) throws Exception {
+        for(Event event : events) {
+            event.setUri(UriGenerator.generateNewInstanceUri(Oeev.Event.getURI(), null, null));
+            
+            event.getConcernedItems().forEach(concernedItem -> {
+                concernedItem.setObjectLinked(event.getUri());
+            });
+        
+            AnnotationDAO.setNewUris(event.getAnnotations());
+            ArrayList<String> annotationTargets = new ArrayList<>();
+            annotationTargets.add(event.getUri());
+            event.getAnnotations().forEach(annotation -> {
+                annotation.setTargets(annotationTargets);
+            });
+        }
+    }
+    
     /**
      * Generates an insert query for the given event.
+     * @param updateBuilder
      * @param event
-     * @return the query
+     * @throws java.lang.Exception
      * @example
      */
-    private UpdateBuilder addInsertToUpdateBuilder(UpdateBuilder updateBuilder, Event event) throws Exception {
-        
+    public void addInsertToUpdateBuilder(UpdateBuilder updateBuilder, Event event) throws Exception {
         // Event URI and simple attributes
         Node graph = NodeFactory.createURI(Contexts.EVENTS.toString());
         Resource eventResource = ResourceFactory.createResource(event.getUri());
         Node eventType = NodeFactory.createURI(event.getType());
         updateBuilder.addInsert(graph, eventResource, RDF.type, eventType);
         
-        // Event's Instant
-        TimeDAO.addInsertInstantToUpdateBuilder(updateBuilder, graph, eventResource, event.getInstant());
+        TimeDAO.addInsertInstantToUpdateBuilder(
+                updateBuilder,
+                graph,
+                eventResource,
+                event.getInstant());
         
-        // Event's concerned items
-        ConcernedItemDAO concernedItemDAO = new ConcernedItemDAO(
-                user, 
+        ConcernedItemDAO concernedItemDao = 
+                new ConcernedItemDAO(user, Contexts.EVENTS.toString(), Oeev.concerns.getURI());
+        concernedItemDao.addInsertToUpdateBuilder(updateBuilder, event.getConcernedItems());
+        
+        AnnotationDAO.addInsertToUpdateBuilder(updateBuilder, event.getAnnotations());
+        PropertyDAO.addInsertLinksToUpdateBuilder(
+                updateBuilder,
+                eventResource,
+                event.getProperties(),
                 Contexts.EVENTS.toString(), 
-                Oeev.concerns.getURI());
-        concernedItemDAO.addInsertLinksToUpdateBuilder(updateBuilder, event.getConcernedItems());
-    }
-    
-    /**
-     * Generates an delete query for the given event.
-     * @param event
-     * @return the event completed with its new URI.
-     * @throws java.lang.Exception
-     */
-    private UpdateRequest prepareDeleteQueryWhenUpdating(Event event) throws Exception {
-        UpdateBuilder updateBuilder = new UpdateBuilder();
-        
-        // Event URI and simple attributes
-        Node graph = NodeFactory.createURI(Contexts.EVENTS.toString());
-        Resource eventResource = ResourceFactory.createResource(event.getUri());
-        
-        updateBuilder.addDelete(graph, eventResource, RDF.type, event.getType());
-        
-        // Instant
-        TimeDAO.addDeleteInstantToUpdateBuilder(updateBuilder, graph, eventResource, event.getInstant());
-        
-        // Property links
-        PropertyDAO.addDeletePropertyLinksToUpdateBuilder(updateBuilder, graph, eventResource, event.getProperties());
-        
-        // Concerned items
-        ConcernedItemDAO.addDeleteConcernedItemLinksToUpdateBuilder(
-                updateBuilder, 
-                graph, 
-                eventResource, 
-                Oeev.concerns.getURI(),
-                event.getConcernedItems());
-        
-        UpdateRequest query = updateBuilder.buildRequest();
-        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
-        
-        return query;
-    }
-    
-    // Inserts the given event in the storage.
-    private void insert(Event event) throws Exception {
-        UpdateBuilder updateBuilder = new UpdateBuilder();
-        
-        // Insert event
-        addInsertToUpdateBuilder(updateBuilder, event);
-        UpdateRequest query = updateBuilder.buildRequest();
-        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
-        try {
-            Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
-            prepareUpdate.execute();
-
-            Resource eventResource = ResourceFactory.createResource(event.getUri());
-
-            // Insert concerned items links
-            ConcernedItemDAO concernedItemDao = new ConcernedItemDAO(
-                    user, 
-                    Contexts.EVENTS.toString(), 
-                    Oeev.concerns.getURI());
-            concernedItemDao.create(event.getConcernedItems());
-
-            // The properties links
-            PropertyDAO propertyDao = new PropertyDAO();
-            ArrayList<Property> properties = event.getProperties();
-            if (!properties.isEmpty()) {
-                propertyDao.insertLinksBetweenObjectAndProperties(
-                        eventResource,
-                        properties,
-                        Contexts.EVENTS.toString(), 
-                        false);
-            }
-        } catch (RepositoryException|MalformedQueryException|QueryEvaluationException|UpdateExecutionException ex) {
-            handleRdf4jException(ex);
-        }
-    }
-    
-    /**
-     * Generates a new URI and inserts the given event in the storage.
-     * @param event
-     * @return the event completed with its new URI.
-     * @throws java.lang.Exception
-     */
-    private Event create(Event event) throws Exception {
-        
-        UriGenerator uriGenerator = new UriGenerator();
-        AnnotationDAO annotationDao = new AnnotationDAO(user);
-
-        // Generate uri
-        event.setUri(uriGenerator.generateNewInstanceUri(Oeev.Event.getURI(), null, null));
-
-        insert(event);
-        
-        // The annotation
-        ArrayList<String> annotationTargets = new ArrayList<>();
-        annotationTargets.add(event.getUri());
-        event.getAnnotations().forEach(annotation -> {
-            annotation.setTargets(annotationTargets);
-        });
-        event.setAnnotations((ArrayList<Annotation>) annotationDao.create(event.getAnnotations()));
-        
-        return event;
+                false);
     }
     
     /**
@@ -500,8 +429,11 @@ public class EventDAO extends Rdf4jDAO<Event> {
      */
     @Override
     public List<Event> create(List<Event> events) throws DAOPersistenceException, Exception {  
+        setNewUris(events);
         for (Event event : events) {
-            create(event);
+            UpdateBuilder updateBuilder = new UpdateBuilder();
+            addInsertToUpdateBuilder(updateBuilder, event);
+            executeUpdateRequest(updateBuilder);
         }
         return events;
     }
@@ -568,7 +500,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
                         }
                     }
                 } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
-                    handleRdf4jException(ex);
+                    handleTriplestoreException(ex);
                 }
             }
 
@@ -660,7 +592,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
             }
         }
         catch (QueryEvaluationException ex) {
-            handleRdf4jException(ex);
+            handleTriplestoreException(ex);
         }
         catch (NumberFormatException ex) {
             handleCountValueNumberFormatException(ex);

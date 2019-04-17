@@ -9,6 +9,7 @@ package phis2ws.service.documentation;
 
 import javax.inject.Singleton;
 import phis2ws.service.PropertiesFileManager;
+import phis2ws.service.ontologies.Oeso;
 
 /**
  * A class which group documentation informations
@@ -52,6 +53,8 @@ public final class DocumentationAnnotation {
         + "<b>The token also include the response object header. </b>"
         + "For more information, the <b>Response object definition</b> is available at <b><a href=\"http://docs.brapi.apiary.io/#introduction/structure-of-the-response-object:\">Brapi response object</a></b>.";
 
+    public static final String ACTUATOR_POST_DEFINITION = "JSON format to insert actuators";
+    
     public static final String ENVIRONMENT_POST_DEFINITION = "JSON format to insert environment";
     
     public static final String DATA_POST_DEFINITION = "JSON format to insert data";
@@ -129,6 +132,8 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_XSDDATETIME = "2017-06-15T10:51:00+0200";
     public static final String EXAMPLE_DATE = "2017-06-15";
 
+    public static final String EXAMPLE_ACTUATOR_RDF_TYPE = "http://www.opensilex.org/vocabulary/oeso#Actuator";
+    
     // Specific examples
     public static final String EXAMPLE_EXPERIMENT_URI = "http://phenome-fppn.fr/diaphen/DIA2012-1";
     public static final String EXAMPLE_EXPERIMENT_START_DATE = EXAMPLE_DATETIME;

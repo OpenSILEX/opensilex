@@ -19,6 +19,7 @@ import phis2ws.service.dao.mongo.ImageMetadataDaoMongo;
 import phis2ws.service.dao.phis.ExperimentDao;
 import phis2ws.service.dao.phis.GroupDao;
 import phis2ws.service.dao.phis.ProjectDao;
+import phis2ws.service.dao.sesame.ActuatorDAO;
 import phis2ws.service.dao.sesame.ScientificObjectDAOSesame;
 import phis2ws.service.dao.sesame.AnnotationDAOSesame;
 import phis2ws.service.dao.sesame.EventDAOSesame;
@@ -56,6 +57,7 @@ import phis2ws.service.view.model.phis.Project;
  * \SILEX:todo
  */
 public class UriGenerator {    
+    private static final String URI_CODE_ACTUATOR = "a";
     private static final String URI_CODE_AGRONOMICAL_OBJECT = "o";
     private static final String URI_CODE_IMAGE = "i";
     private static final String URI_CODE_METHOD = "m";
@@ -143,6 +145,39 @@ public class UriGenerator {
                 break;
         }
         return PLATFORM_URI + year + "/" + URI_CODE_SENSOR + year.substring(2, 4) + newSensorNumber;
+    }
+    
+    /**
+     * Generate a new actuator URI. A actuator URI has the following pattern:
+     * <prefix>:<year>/<unic_code>
+     * <unic_code> = 1 letter type + 2 numbers year + auto incremented number
+     * with 2 digits (per year) the year corresponds to the year of insertion in
+     * the triplestore
+     * @example http://www.opensilex.org/demo/2017/a17002
+     * @param year the insertion year of the actuator.
+     * @return the new actuator URI
+     */
+    private String generateActuatorUri(String year) {
+        //1. get the current number of actuator in the triplestor for the year
+        ActuatorDAO actuatorDAO = new ActuatorDAO();
+        int lastActuatorIdFromYear = actuatorDAO.getLastIdFromYear(year);
+
+        //2. generate actuator URI
+        int actuatorNumber = lastActuatorIdFromYear + 1;
+        String numberOfActuators = Integer.toString(actuatorNumber);
+        String newActuatorNumber;
+        switch (numberOfActuators.length()) {
+            case 1:
+                newActuatorNumber = "00" + numberOfActuators;
+                break;
+            case 2:
+                newActuatorNumber = "0" + numberOfActuators;
+                break;
+            default:
+                newActuatorNumber = numberOfActuators;
+                break;
+        }
+        return PLATFORM_URI + year + "/" + URI_CODE_ACTUATOR + year.substring(2, 4) + newActuatorNumber;
     }
 
     /**
@@ -588,6 +623,8 @@ public class UriGenerator {
             return generateInstantUri();
         } else if (instanceType.equals(Oeso.CONCEPT_DATA_FILE.toString())) {
             return generateDataFileUri(year, additionalInformation);
+        } else if (instanceType.equals(Oeso.CONCEPT_ACTUATOR.toString())) {
+            return generateActuatorUri(year);
         }
 
         return null;

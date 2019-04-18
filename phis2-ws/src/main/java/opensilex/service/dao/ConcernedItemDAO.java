@@ -14,7 +14,6 @@ import opensilex.service.dao.exception.UnknownUriException;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAODataErrorException;
 import opensilex.service.dao.exception.DAOPersistenceException;
-import opensilex.service.dao.exception.ResourceAccessDeniedException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;

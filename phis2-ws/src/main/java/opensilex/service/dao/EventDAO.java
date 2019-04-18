@@ -22,7 +22,6 @@ import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryException;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.configuration.DateFormat;
@@ -39,9 +38,7 @@ import opensilex.service.ontology.Rdf;
 import opensilex.service.ontology.Rdfs;
 import opensilex.service.ontology.Time;
 import opensilex.service.utils.UriGenerator;
-import opensilex.service.utils.date.Dates;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
-import opensilex.service.model.Annotation;
 import opensilex.service.model.Event;
 
 /**

@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
@@ -156,6 +157,33 @@ public class ActuatorResourceService extends ResourceService {
         }
     }
     
+    /**
+     * Update actuators.
+     * @param actuators
+     * @param context
+     * @example
+     * 
+     * @return the update result.
+     * @example
+     * 
+     */
+    @PUT
+    @ApiOperation(value = "Put actuator(s)",
+                  notes = "Update actuator(s) in the database")
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "actuator(s) updated", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response put(
             @ApiParam(value = DocumentationAnnotation.ACTUATOR_POST_DEFINITION) @Valid ArrayList<ActuatorDTO> actuators,
             @Context HttpServletRequest context) {

@@ -224,6 +224,18 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
      * Generates a query to delete the given actuator.
      * @param actuator
      * @example
+     *      DELETE DATA {
+     *          GRAPH <http://www.opensilex.org/opensilex/set/actuators> {
+     *              <http://www.opensilex.org/opensilex/2019/a19001> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.opensilex.org/vocabulary/oeso#Actuator> .
+     *              <http://www.opensilex.org/opensilex/2019/a19001> <http://www.w3.org/2000/01/rdf-schema#label> "parq03_p" .
+     *              <http://www.opensilex.org/opensilex/2019/a19001> <http://www.opensilex.org/vocabulary/oeso#hasBrand> "Skye Instruments" .
+     *              <http://www.opensilex.org/opensilex/2019/a19001> <http://www.opensilex.org/vocabulary/oeso#personInCharge> "guest@opensilex.org" .
+     *              <http://www.opensilex.org/opensilex/2019/a19001> <http://www.opensilex.org/vocabulary/oeso#hasSerialNumber> "A1E45F32" .
+     *              <http://www.opensilex.org/opensilex/2019/a19001> <http://www.opensilex.org/vocabulary/oeso#dateOfPurchase> "2017-06-15" .
+     *              <http://www.opensilex.org/opensilex/2019/a19001> <http://www.opensilex.org/vocabulary/oeso#inServiceDate> "2017-06-25" .
+     *              <http://www.opensilex.org/opensilex/2019/a19001> <http://www.opensilex.org/vocabulary/oeso#dateOfLastCalibration> "2017-06-30" .
+     *      }
+     * }
      * @return the generated query
      */
     private UpdateRequest prepareDeleteQuery(Actuator actuator) {
@@ -284,7 +296,9 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
                 prepareDelete.execute();
                 
                 //2. Insert new actuators data
-                
+                UpdateRequest insertQuery = prepareInsertQuery(actuator);
+                Update prepareUpdate = getConnection().prepareUpdate(insertQuery.toString());
+                prepareUpdate.execute();
             }
             
             getConnection().commit();
@@ -294,6 +308,10 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
             getConnection().rollback();
             LOGGER.error("Error update actuators", ex);
             throw new RepositoryException(ex); //Throw the exception to return the error.
+        } catch (NotFoundException ex) { //An actuator was not found.
+            getConnection().rollback();
+            LOGGER.error("Error update actuators", ex);
+            throw new NotFoundException(ex); //Throw the exception to return the error.
         }
     }
 
@@ -303,7 +321,7 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
     }
     
     /**
-     * 
+     * Genrates the query to search actuators by the search parameters given.
      * @param page
      * @param pageSize
      * @param uri
@@ -316,7 +334,30 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
      * @param dateOfPurchase
      * @param dateOfLastCalibration
      * @param personInCharge
-     * @return 
+     * @example
+     * SELECT DISTINCT  ?rdfType  ?label  ?brand ?serialNumber  ?inServiceDate ?dateOfPurchase ?dateOfLastCalibration  ?personInCharge 
+     * WHERE {
+     *      <http://www.opensilex.org/opensilex/2019/a19001>  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
+     *      ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.opensilex.org/vocabulary/oeso#Actuator> . 
+     *      OPTIONAL {
+     *          <http://www.opensilex.org/opensilex/2019/a19001> <http://www.w3.org/2000/01/rdf-schema#label> ?label . 
+     *      }
+     *      <http://www.opensilex.org/opensilex/2019/a19001>  <http://www.opensilex.org/vocabulary/oeso#hasBrand>  ?brand  . 
+     *      OPTIONAL {
+     *          <http://www.opensilex.org/opensilex/2019/a19001> <http://www.opensilex.org/vocabulary/oeso#hasSerialNumber> ?serialNumber . 
+     *      }
+     *      OPTIONAL {
+     *          <http://www.opensilex.org/opensilex/2019/a19001> <http://www.opensilex.org/vocabulary/oeso#inServiceDate> ?inServiceDate . 
+     *      }
+     *      OPTIONAL {
+     *          <http://www.opensilex.org/opensilex/2019/a19001> <http://www.opensilex.org/vocabulary/oeso#dateOfPurchase> ?dateOfPurchase . 
+     *      }
+     *      OPTIONAL {
+     *          <http://www.opensilex.org/opensilex/2019/a19001> <http://www.opensilex.org/vocabulary/oeso#dateOfLastCalibration> ?dateOfLastCalibration . 
+     *      }
+     *      <http://www.opensilex.org/opensilex/2019/a19001>  <http://www.opensilex.org/vocabulary/oeso#personInCharge>  ?personInCharge  . 
+     * }
+     * @return the generated query
      */
     protected SPARQLQueryBuilder prepareSearchQuery(Integer page, Integer pageSize, String uri, String rdfType, String label, String brand, String serialNumber, String model, String inServiceDate, String dateOfPurchase, String dateOfLastCalibration, String personInCharge) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
@@ -335,7 +376,7 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
         } else {
             query.appendSelect("?" + RDF_TYPE);
             query.appendTriplet(sensorUri, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
-            query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_SENSING_DEVICE.toString(), null);
+            query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_ACTUATOR.toString(), null);
         }        
 
         if (label != null) {
@@ -406,6 +447,21 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
         return query;
     }
     
+    /**
+     * 
+     * @param bindingSet
+     * @param uri
+     * @param rdfType
+     * @param label
+     * @param brand
+     * @param serialNumber
+     * @param model
+     * @param inServiceDate
+     * @param dateOfPurchase
+     * @param dateOfLastCalibration
+     * @param personInCharge
+     * @return 
+     */
     private Actuator getActuatorFromBindingSet(BindingSet bindingSet, String uri, String rdfType, String label, String brand, String serialNumber, String model, String inServiceDate, String dateOfPurchase, String dateOfLastCalibration, String personInCharge) {
         Actuator actuator = new Actuator();
 
@@ -472,11 +528,11 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
      * @param actuatorUri The actuator uri
      * @return The prepared query
      * @example 
-     * SELECT DISTINCT  ?uri ?label WHERE {
-     *      ?rdfType  rdfs:subClassOf*  <http://www.opensilex.org/vocabulary/oeso#Variable> . 
-     *      ?uri rdf:type ?rdfType .
-     *      ?uri  rdfs:label ?label .
-     *      <http://www.phenome-fppn.fr/2018/a18001> <http://www.opensilex.org/vocabulary/oeso#measures> ?uri
+     * SELECT  ?uri ?label WHERE {
+     *      ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.opensilex.org/vocabulary/oeso#Variable> . 
+     *      ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
+     *      ?uri  <http://www.w3.org/2000/01/rdf-schema#label>  ?label  . 
+     *      <http://www.opensilex.org/opensilex/2019/a19001>  <http://www.opensilex.org/vocabulary/oeso#measures>  ?uri  . 
      * }
      */
     private SPARQLQueryBuilder prepareSearchVariablesQuery(String actuatorUri) {

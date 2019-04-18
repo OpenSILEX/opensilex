@@ -1,8 +1,8 @@
 //******************************************************************************
-//                               EventDAO.java
+//                                EventDAO.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 12 Nov. 2018
+// Creation date: 12  nov. 2018
 // Contact: andreas.garcia@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.dao;
@@ -69,7 +69,8 @@ public class EventDAO extends Rdf4jDAO<Event> {
     }
     
     /**
-     * Sets a search query to select an URI and adds a filter according to it if necessary.
+     * Sets a search query to select an URI and adds a filter according to it 
+     * if necessary
      * @example SparQL filter added:
      *  SELECT DISTINCT  ?uri
      *  WHERE {
@@ -94,7 +95,8 @@ public class EventDAO extends Rdf4jDAO<Event> {
     }
     
     /**
-     * Sets a search query to select a type and to filter according to it if necessary.
+     * Sets a search query to select a type and to filter according to it 
+     * if necessary
      * @example SparQL filter added:
      *  SELECT DISTINCT ?rdfType
      *  WHERE {
@@ -128,7 +130,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
     }
     
     /**
-     * Prepares the event search query.
+     * Prepares the event search query
      * @param uri
      * @param type
      * @example
@@ -187,7 +189,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
     }
     
     /**
-     * Prepares the event search query.
+     * Prepares the event search query
      * @example
      * SELECT  ?uri ?rdfType ?dateTimeStamp 
      * WHERE {
@@ -239,7 +241,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
     }
     
     /**
-     * Searches events.
+     * Searches events stored
      * @param searchUri
      * @param searchType
      * @param searchConcernedItemLabel
@@ -504,7 +506,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
     }
     
     /**
-     * Searches event properties and set them to it.
+     * Searches event properties and set them to it
      * @param event 
      */
     private void setEventProperties(Event event) throws DAOPersistenceException {
@@ -519,7 +521,8 @@ public class EventDAO extends Rdf4jDAO<Event> {
     }
 
     /**
-     * Generates a query to count the results of the research with the searched parameters. 
+     * Generates a query to count the results of the research with the 
+     * searched parameters. 
      * @example 
      * SELECT DISTINCT  (COUNT(DISTINCT ?uri) AS ?count) 
      * WHERE {
@@ -556,7 +559,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
     }
 
     /**
-     * Counts the total number of events filtered with the search fields.
+     * Counts the total number of events filtered with the search fields
      * @param searchUri
      * @param searchType
      * @param searchConcernedItemLabel

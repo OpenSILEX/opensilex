@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                       ${nameAndExt}
+//                                ${nameAndExt}
 // SILEX-PHIS
 // Copyright © INRA ${date?date?string("yyyy")}
 // Creation date: ${date}

@@ -5,7 +5,7 @@
 // Creation date: 25 May 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package opensilex.service.resource.dto;
+package opensilex.service.resource.dto.sensor;
 
 import io.swagger.annotations.ApiModelProperty;
 import javax.validation.constraints.Email;
@@ -22,7 +22,6 @@ import opensilex.service.model.Sensor;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class SensorDTO extends AbstractVerifiedClass {
-
     //uri of the sensor
     private String uri;
     //type of the sensor. Uri of the concept (must be subclass of SensingDevice concept)
@@ -31,6 +30,8 @@ public class SensorDTO extends AbstractVerifiedClass {
     private String label;
     //brand of the sensor
     private String brand;
+    //model of the sensor
+    private String model;
     //serial number of the sensor
     private String serialNumber;
     //in service date of the sensor
@@ -41,7 +42,20 @@ public class SensorDTO extends AbstractVerifiedClass {
     private String dateOfLastCalibration;
     //email of the person in charge of the sensor
     private String personInCharge;
-
+    
+    public SensorDTO(Sensor sensor) {
+        uri = sensor.getUri();
+        rdfType = sensor.getRdfType();
+        label = sensor.getLabel();
+        brand = sensor.getBrand();
+        model = sensor.getModel();
+        serialNumber = sensor.getSerialNumber();
+        inServiceDate = sensor.getInServiceDate();
+        dateOfPurchase = sensor.getDateOfPurchase();
+        dateOfLastCalibration = sensor.getDateOfLastCalibration();
+        personInCharge = sensor.getPersonInCharge();
+    }
+    
     @Override
     public Sensor createObjectFromDTO() {
         Sensor sensor = new Sensor();
@@ -49,6 +63,7 @@ public class SensorDTO extends AbstractVerifiedClass {
         sensor.setRdfType(rdfType);
         sensor.setLabel(label);
         sensor.setBrand(brand);
+        sensor.setModel(model);
         sensor.setSerialNumber(serialNumber);
         sensor.setInServiceDate(inServiceDate);
         sensor.setDateOfPurchase(dateOfPurchase);
@@ -148,5 +163,14 @@ public class SensorDTO extends AbstractVerifiedClass {
 
     public void setPersonInCharge(String personInCharge) {
         this.personInCharge = personInCharge;
+    }
+    
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SENSOR_MODEL)
+    public String getModel() {
+        return model;
+    }
+
+    public void setModel(String model) {
+        this.model = model;
     }
 }

@@ -5,7 +5,7 @@
 // Creation date: 1 avr. 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package phis2ws.service.resources.request.filters;
+package opensilex.service.resource.request.filter;
 
 import java.util.ArrayList;
 import java.util.List;

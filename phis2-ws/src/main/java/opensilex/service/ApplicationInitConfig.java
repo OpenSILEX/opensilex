@@ -53,9 +53,9 @@ public class ApplicationInitConfig extends ResourceConfig {
     
     public ApplicationInitConfig() {
         packages("io.swagger.jaxrs.listing;"
-                + "opensilex.service.resources;"
+                + "opensilex.service.resource;"
                 + "opensilex.service.json;"
-                + "opensilex.service.resources.request.filters");
+                + "opensilex.service.resource.request.filter");
         
         //Swagger
         BeanConfig beanConfig = new BeanConfig();
@@ -65,7 +65,7 @@ public class ApplicationInitConfig extends ResourceConfig {
         beanConfig.setHost(PropertiesFileManager.getConfigFileProperty("service", "host"));
         beanConfig.setBasePath(PropertiesFileManager.getConfigFileProperty("service", "basePath"));
        
-        beanConfig.setResourcePackage("opensilex.service.resources");
+        beanConfig.setResourcePackage("opensilex.service.resource");
         beanConfig.setScan(true);
         
         register(MultiPartFeature.class);

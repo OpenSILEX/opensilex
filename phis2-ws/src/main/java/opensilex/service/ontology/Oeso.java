@@ -252,6 +252,12 @@ public enum Oeso {
             return NAMESPACE.toString() + "hasMethod";
         }
     },
+    RELATION_HAS_MODEL {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasModel";
+        }
+    },
     RELATION_HAS_PLOT {
         @Override
         public String toString() {

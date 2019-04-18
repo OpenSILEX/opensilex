@@ -34,6 +34,9 @@ public class Sensor {
      * Brand.
      */
     private String brand;
+    //model of the sensor
+    private String model;
+    //serial number of the sensor
     
     /**
      * Serial number.
@@ -143,5 +146,13 @@ public class Sensor {
 
     public void setVariables(HashMap<String, String>  variables) {
         this.variables = variables;
+    }
+
+    public String getModel() {
+        return model;
+    }
+
+    public void setModel(String model) {
+        this.model = model;
     }
 }

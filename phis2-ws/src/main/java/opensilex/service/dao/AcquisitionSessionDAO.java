@@ -73,7 +73,6 @@ public class AcquisitionSessionDAO extends Rdf4jDAO<MetadataFileDTO> {
             if (uriDao.isSubClassOf(vectorRdfType, Oeso.CONCEPT_UAV.toString())) {
                 //3. get the number of cameras
                 SensorDAO sensorDAO = new SensorDAO();
-                sensorDAO.rdfType = Oeso.CONCEPT_CAMERA.toString();
                 sizes.add(sensorDAO.countCameras());
 
                 //4. get the number of vectors

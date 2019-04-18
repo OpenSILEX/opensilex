@@ -603,8 +603,9 @@ public class EventDAO extends Rdf4jDAO<Event> {
     public void addDeleteWhenUpdatingToUpdateBuilder(UpdateBuilder updateBuilder, Event event) throws Exception {        
         Node graph = NodeFactory.createURI(Contexts.EVENTS.toString());
         Resource eventResource = ResourceFactory.createResource(event.getUri());
+        Resource eventTypeResource = ResourceFactory.createResource(event.getType());
         
-        updateBuilder.addDelete(graph, eventResource, RDF.type, event.getType());
+        updateBuilder.addDelete(graph, eventResource, RDF.type, eventTypeResource);
         
         TimeDAO.addDeleteInstantToUpdateBuilder(updateBuilder, graph, eventResource, event.getInstant());
         PropertyDAO.addDeletePropertyLinksToUpdateBuilder(updateBuilder, graph, eventResource, event.getProperties());

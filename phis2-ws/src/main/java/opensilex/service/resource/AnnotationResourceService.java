@@ -250,13 +250,13 @@ public class AnnotationResourceService extends ResourceService {
     public Response getAnnotations(String uri, String creator, String target, String bodyValue, String motivatedBy, int page, int pageSize) {
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<AnnotationDTO> getResponse;
-        AnnotationDAO annotationDAOSesame = new AnnotationDAO(userSession.getUser());
+        AnnotationDAO annotationDao = new AnnotationDAO(userSession.getUser());
 
         // Count all annotations for this specific request
-        Integer totalCount = annotationDAOSesame.count(uri, creator, target, bodyValue, motivatedBy);
+        Integer totalCount = annotationDao.count(uri, creator, target, bodyValue, motivatedBy);
         
         // Retreive all annotations returned by the query
-        ArrayList<Annotation> annotations = annotationDAOSesame.searchAnnotations(
+        ArrayList<Annotation> annotations = annotationDao.searchAnnotations(
                 uri, 
                 creator, 
                 target, 

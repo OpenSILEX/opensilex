@@ -29,6 +29,7 @@ import phis2ws.service.configuration.GlobalWebserviceValues;
 import phis2ws.service.dao.sesame.ActuatorDAO;
 import phis2ws.service.documentation.DocumentationAnnotation;
 import phis2ws.service.documentation.StatusCodeMsg;
+import phis2ws.service.resources.dto.actuator.ActuatorDTO;
 import phis2ws.service.resources.dto.actuator.ActuatorPostDTO;
 import phis2ws.service.utils.POSTResultsReturn;
 import phis2ws.service.view.brapi.Status;
@@ -53,6 +54,21 @@ public class ActuatorResourceService extends ResourceService {
         ArrayList<Actuator> actuators = new ArrayList<>();
         
         for (ActuatorPostDTO actuatorDTO : actuatorsDTOs) {
+            actuators.add(actuatorDTO.createObjectFromDTO());
+        }
+        
+        return actuators;
+    }
+    
+    /**
+     * Generates an Actuator list form a given list of ActuatoDTOs
+     * @param actuatorsDTOs
+     * @return 
+     */
+    private List<Actuator> actuatorDTOsToActuators(List<ActuatorDTO> actuatorsDTOs) {
+        ArrayList<Actuator> actuators = new ArrayList<>();
+        
+        for (ActuatorDTO actuatorDTO : actuatorsDTOs) {
             actuators.add(actuatorDTO.createObjectFromDTO());
         }
         
@@ -138,5 +154,28 @@ public class ActuatorResourceService extends ResourceService {
             postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty actuator(s) to add"));
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
+    }
+    
+    public Response put(
+            @ApiParam(value = DocumentationAnnotation.ACTUATOR_POST_DEFINITION) @Valid ArrayList<ActuatorDTO> actuators,
+            @Context HttpServletRequest context) {
+        AbstractResultForm putResponse = null;
+
+        ActuatorDAO actuatorDAO = new ActuatorDAO();
+
+        actuatorDAO.user = userSession.getUser();
+
+        POSTResultsReturn result = actuatorDAO.checkAndUpdate(actuatorDTOsToActuators(actuators));
+
+        if (result.getHttpStatus().equals(Response.Status.OK)
+                || result.getHttpStatus().equals(Response.Status.CREATED)) {
+            putResponse = new ResponseFormPOST(result.statusList);
+            putResponse.getMetadata().setDatafiles(result.createdResources);
+        } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                || result.getHttpStatus().equals(Response.Status.OK)
+                || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+            putResponse = new ResponseFormPOST(result.statusList);
+        }
+        return Response.status(result.getHttpStatus()).entity(putResponse).build();
     }
 }

@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                       ActuatorPostDTO.java
+//                                       ActuatorDTO.java
 // SILEX-PHIS
 // Copyright © INRA 2019
 // Creation date: 17 avr. 2019
@@ -18,10 +18,12 @@ import phis2ws.service.resources.validation.interfaces.URL;
 import phis2ws.service.view.model.phis.Actuator;
 
 /**
- * Actuator DTO for the POST service.
+ *
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class ActuatorPostDTO  extends AbstractVerifiedClass {
+public class ActuatorDTO extends AbstractVerifiedClass {
+    //The URI of the actuator.
+    private String uri;
     //type of the actuator. Uri of the concept (must be subclass of Actuator concept)
     private String rdfType;
     //label of the actuator
@@ -43,6 +45,7 @@ public class ActuatorPostDTO  extends AbstractVerifiedClass {
     @Override
     public Actuator createObjectFromDTO() {
         Actuator actuator = new Actuator();
+        actuator.setUri(uri);
         actuator.setRdfType(rdfType);
         actuator.setLabel(label);
         actuator.setBrand(brand);
@@ -53,6 +56,17 @@ public class ActuatorPostDTO  extends AbstractVerifiedClass {
         actuator.setPersonInCharge(personInCharge);
 
         return actuator;
+    }
+
+    @URL
+    @Required
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_ACTUATOR_URI)
+    public String getUri() {
+        return uri;
+    }
+
+    public void setUri(String uri) {
+        this.uri = uri;
     }
 
     @URL

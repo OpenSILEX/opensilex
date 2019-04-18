@@ -1,8 +1,8 @@
 //******************************************************************************
-//                                       GenericExceptionMapper.java
+//                          GenericExceptionMapper.java
 // SILEX-PHIS
 // Copyright © INRA 2019
-// Creation date: 1 avr. 2019
+// Creation date: 1 Apr. 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.resource.request.filter;
@@ -15,14 +15,14 @@ import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
 /**
- * This class handle generic exception in webservices and display them as JSON
- * @author vincent migot
+ * Handles generic exceptions in web services and displays them as JSON.
+ * @author Vincent Migot <vincent.migot@inra.fr>
  */
 @Provider
 public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
 
     /**
-     * Convert the exception to JSON
+     * Converts the exception to JSON
      * @param exception
      * @return JSON error response
      */
@@ -36,20 +36,22 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
     }
 
     /**
-     * Internal class used to format the exception ,removing useless informations
+     * Internal class used to format the exception, removing useless information.
      */
     private class ErrorMessage {
 
         /**
-         * Title field of the exception containing the class name
+         * Title field of the exception containing the class name.
          */
         private final String title;
+        
         /**
-         * Message of the exception
+         * Message of the exception.
          */
         private final String message;
+        
         /**
-         * Stack trace of the exception as an array
+         * Stack trace of the exception as an array.
          */
         private final List<String> stack = new ArrayList<>();
 

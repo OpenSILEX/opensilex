@@ -21,13 +21,13 @@ public class BrapiVariable {
      * The id of the variable.
      * @example http://www.phenome-fppn.fr/platform/id/variables/v001
      */
-    private String ObservationVariableDbId;
+    private String observationVariableDbId;
     
     /**
      * The label of the variable.
      * @example "Leaf-Area_Index_m2.m2"   
      */
-    private String ObservationVariableName;
+    private String observationVariableName;
     
     //SILEX:todo
     //class ontologyReference and get info
@@ -69,19 +69,19 @@ public class BrapiVariable {
     }
 
     public String getObservationVariableDbId() {
-        return ObservationVariableDbId;
+        return observationVariableDbId;
     }
 
-    public void setObservationVariableDbId(String ObservationVariableDbId) {
-        this.ObservationVariableDbId = ObservationVariableDbId;
+    public void setObservationVariableDbId(String observationVariableDbId) {
+        this.observationVariableDbId = observationVariableDbId;
     }
 
     public String getObservationVariableName() {
-        return ObservationVariableName;
+        return observationVariableDbId;
     }
 
-    public void setObservationVariableName(String ObservationVariableName) {
-        this.ObservationVariableName = ObservationVariableName;
+    public void setObservationVariableName(String observationVariableName) {
+        this.observationVariableName = observationVariableName;
     }
 
     public String getOntologyReference() {

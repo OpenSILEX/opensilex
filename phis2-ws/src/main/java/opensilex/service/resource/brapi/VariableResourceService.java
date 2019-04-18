@@ -39,10 +39,6 @@ import opensilex.service.view.brapi.form.BrapiMultiResponseForm;
 import opensilex.service.view.brapi.form.BrapiSingleResponseForm;
 import opensilex.service.model.BrapiVariable;
 import opensilex.service.model.Call;
-import opensilex.service.model.Variable;
-import opensilex.service.model.BrapiVariableTrait;
-import opensilex.service.model.BrapiMethod;
-import opensilex.service.model.BrapiScale;
 
 /**
  * Variable resource service.
@@ -232,8 +228,12 @@ public class VariableResourceService implements BrapiCall {
      * @return the response with the variables data list 
      */
     private Response getVariablesData(VariableDAO varDAO) {
-        ArrayList<Status> statusList = new ArrayList<>();
-        ArrayList<BrapiVariable> brapiVariables = getBrapiVarData(varDAO);
+        ArrayList<Status> statusList = new ArrayList<>();                
+        //Get number of variables corresponding to the search params
+        Integer totalCount = varDAO.count();
+        //Get the variables to return
+        ArrayList<BrapiVariable> brapiVariables = varDAO.getBrapiVarData();
+
         BrapiMultiResponseForm getResponse;
         if (!brapiVariables.isEmpty()) {
             getResponse = new BrapiMultiResponseForm(varDAO.getPageSize(), varDAO.getPage(), brapiVariables, false);
@@ -252,7 +252,7 @@ public class VariableResourceService implements BrapiCall {
      */
     private Response getOneVariableData(VariableDAO varDAO) {
         ArrayList<Status> statusList = new ArrayList<>();
-        ArrayList<BrapiVariable> brapiVariables = getBrapiVarData(varDAO);
+        ArrayList<BrapiVariable> brapiVariables = varDAO.getBrapiVarData();
         BrapiSingleResponseForm getResponse;
         if (!brapiVariables.isEmpty()){
             BrapiVariable variable = brapiVariables.get(0);
@@ -264,47 +264,5 @@ public class VariableResourceService implements BrapiCall {
             return noResultFound(getNoResponse, statusList);
         }
     }    
-    
-    /**
-     * Gets the list of BrAPI variables from the the DAO corresponding to the search query
-     * @param varDAO
-     * @return the list of BrAPI variables
-     */
-    private ArrayList<BrapiVariable> getBrapiVarData(VariableDAO varDAO) {
-        ArrayList<Variable> variablesList = varDAO.allPaginate();
-        ArrayList<BrapiVariable> varList = new ArrayList();
-        for (Variable var:variablesList) {
-            BrapiVariable brapiVar = new BrapiVariable();
-            brapiVar.setObservationVariableDbId(var.getUri());
-            brapiVar.setObservationVariableName(var.getLabel());
-            brapiVar.setContextOfUse(new ArrayList());
-            brapiVar.setSynonyms(new ArrayList());
-                        
-            //trait 
-            BrapiVariableTrait trait = new BrapiVariableTrait();
-            trait.setTraitDbId(var.getTrait().getUri());
-            trait.setTraitName(var.getTrait().getLabel());
-            trait.setDescription(var.getTrait().getComment());
-            trait.setAlternativeAbbreviations(new ArrayList());
-            trait.setSynonyms(new ArrayList());
-            brapiVar.setTrait(trait);
-            
-            //method
-            BrapiMethod method = new BrapiMethod();
-            method.setMethodDbId(var.getMethod().getUri());
-            method.setMethodName(var.getMethod().getLabel());
-            method.setDescription(var.getMethod().getComment());
-            brapiVar.setMethod(method);
-            
-            //scale
-            BrapiScale scale = new BrapiScale();
-            scale.setScaleDbid(var.getUnit().getUri());
-            scale.setScaleName(var.getUnit().getLabel());
-            scale.setDataType("Numerical");
-            brapiVar.setScale(scale);
-            
-            varList.add(brapiVar); 
-        }
-        return varList;        
-    }
+  
 }

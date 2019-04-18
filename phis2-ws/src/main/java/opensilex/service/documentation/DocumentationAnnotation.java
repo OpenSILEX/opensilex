@@ -147,6 +147,7 @@ public final class DocumentationAnnotation {
 
     public static final String EXAMPLE_SCIENTIFIC_OBJECT_URI = "http://www.phenome-fppn.fr/phenovia/2017/o1032481";
     public static final String EXAMPLE_SCIENTIFIC_OBJECT_TYPE = "http://www.opensilex.org/vocabulary/oeso#Plot";
+    public static final String EXAMPLE_SCIENTIFIC_OBJECT_ALIAS = "Plot01";
 
     public static final String EXAMPLE_IMAGE_TYPE = "http://www.opensilex.org/vocabulary/oeso#HemisphericalImage";
     public static final String EXAMPLE_IMAGE_URI = "http://www.phenome-fppn.fr/phis_field/2017/i170000000000";

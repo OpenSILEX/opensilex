@@ -1,5 +1,5 @@
 //******************************************************************************
-//                          AnnotationResourceService.java
+//                       AnnotationResourceService.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 21 Jun. 2018

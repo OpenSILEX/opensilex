@@ -1,8 +1,8 @@
 //******************************************************************************
-//                            ConcernedItemDAO.java
+//                          ConcernedItemDAOS.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 5 March 2019
+// Creation date: 5 March, 2019
 // Contact: andreas.garcia@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.dao;
@@ -14,6 +14,7 @@ import opensilex.service.dao.exception.UnknownUriException;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAODataErrorException;
 import opensilex.service.dao.exception.DAOPersistenceException;
+import opensilex.service.dao.exception.ResourceAccessDeniedException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -36,7 +37,7 @@ import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.repository.RepositoryException;
 
 /**
- * Concerned items DAO.
+ * DAO for concerned items
  * @author Andreas Garcia <andreas.garcia@inra.fr>
  */
 public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
@@ -113,8 +114,15 @@ public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
         }
     }
     
+    /**         
+            if (searchConcernedItemUri != null) {
+                query.appendAndFilter("regex (str(" + CONCERNED_ITEM_URI_SELECT_NAME_SPARQL + ")" + ", \"" + searchConcernedItemUri + "\", \"i\")");
+            }
+        }
+    }
+    
     /**
-     * Prepares the query to search the concerned items of a object.
+     * Prepares the query to search the concerned items of a object
      * @param searchLabel
      * @param searchUri
      * @param concernsRelationUri since "concerns" can designate various
@@ -242,7 +250,7 @@ public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
     }
     
     /**
-     * Checks the existence of the given list of concerned items.
+     * Checks the existence of the given list of concerned items
      * @param concernedItems
      * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
      * @throws opensilex.service.dao.exception.DAOPersistenceException

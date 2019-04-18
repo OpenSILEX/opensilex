@@ -1,8 +1,8 @@
 //******************************************************************************
-//                                       GenericExceptionMapper.java
+//                          GenericExceptionMapper.java
 // SILEX-PHIS
 // Copyright © INRA 2019
-// Creation date: 1 avr. 2019
+// Creation date: 1 Apr. 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.resource.request.filter;

@@ -37,6 +37,10 @@ import org.slf4j.LoggerFactory;
 import opensilex.service.PropertiesFileManager;
 import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.documentation.StatusCodeMsg;
+import opensilex.service.model.BrapiMethod;
+import opensilex.service.model.BrapiScale;
+import opensilex.service.model.BrapiVariable;
+import opensilex.service.model.BrapiVariableTrait;
 import opensilex.service.ontology.Contexts;
 import opensilex.service.ontology.Rdf;
 import opensilex.service.ontology.Rdfs;
@@ -731,6 +735,48 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
             return false;
         }
     }
+    
+    /**
+     * Get the list of brapi variables from the the DAO
+     * @return the list of brapi variables
+     */
+    public ArrayList<BrapiVariable> getBrapiVarData() {
+        ArrayList<Variable> variablesList = this.allPaginate();
+        ArrayList<BrapiVariable> varList = new ArrayList();
+        for (Variable var:variablesList) {
+            BrapiVariable brapiVar = new BrapiVariable();
+            brapiVar.setObservationVariableDbId(var.getUri());
+            brapiVar.setObservationVariableName(var.getLabel());
+            brapiVar.setContextOfUse(new ArrayList());
+            brapiVar.setSynonyms(new ArrayList());
+
+            //trait 
+            BrapiVariableTrait trait = new BrapiVariableTrait();
+            trait.setTraitDbId(var.getTrait().getUri());
+            trait.setTraitName(var.getTrait().getLabel());
+            trait.setDescription(var.getTrait().getComment());
+            trait.setAlternativeAbbreviations(new ArrayList());
+            trait.setSynonyms(new ArrayList());
+            brapiVar.setTrait(trait);
+
+            //method
+            BrapiMethod method = new BrapiMethod();
+            method.setMethodDbId(var.getMethod().getUri());
+            method.setMethodName(var.getMethod().getLabel());
+            method.setDescription(var.getMethod().getComment());
+            brapiVar.setMethod(method);
+
+            //scale
+            BrapiScale scale = new BrapiScale();
+            scale.setScaleDbid(var.getUnit().getUri());
+            scale.setScaleName(var.getUnit().getLabel());
+            scale.setDataType("Numerical");
+            brapiVar.setScale(scale);
+
+            varList.add(brapiVar); 
+        }
+        return varList;    
+    }    
 
     @Override
     public List<Variable> create(List<Variable> objects) throws DAOPersistenceException, Exception {

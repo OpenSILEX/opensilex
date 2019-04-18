@@ -24,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.dao.manager.PhisDAO;
 import opensilex.service.documentation.StatusCodeMsg;
-import opensilex.service.resource.dto.ScientificObjectDTO;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.sql.SQLQueryBuilder;
 import opensilex.service.view.brapi.Status;
@@ -34,7 +33,7 @@ import opensilex.service.model.ScientificObject;
  * Scientific objects DAO for a relational database.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class ScientificObjectSQLDAO extends PhisDAO<ScientificObject, ScientificObjectDTO> {
+public class ScientificObjectSQLDAO extends PhisDAO<ScientificObject, Object> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(ScientificObjectSQLDAO.class);
     
@@ -52,11 +51,6 @@ public class ScientificObjectSQLDAO extends PhisDAO<ScientificObject, Scientific
         super();
         setTable("agronomical_object");
         setTableAlias("ao");
-    }
-
-    @Override
-    public POSTResultsReturn checkAndInsert(ScientificObjectDTO newObject) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
     private POSTResultsReturn checkAndInsertScientificObjectsList(List<ScientificObject> newScientificObjects) throws Exception {
@@ -177,12 +171,7 @@ public class ScientificObjectSQLDAO extends PhisDAO<ScientificObject, Scientific
         
         return postResult;
     }
-
-    @Override
-    public POSTResultsReturn checkAndUpdateList(List<ScientificObjectDTO> newObjects) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
+    
     @Override
     public Map<String, String> pkeySQLFieldLink() {
        Map<String, String> pkeySQLFieldLink = new HashMap<>();
@@ -317,12 +306,53 @@ public class ScientificObjectSQLDAO extends PhisDAO<ScientificObject, Scientific
             return null;
         }  
     }
-
-    @Override
-    public POSTResultsReturn checkAndInsertList(List<ScientificObjectDTO> newObjects) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    
+    /**
+     * Update the geometry of a scientific object identified by its URI.
+     * @param uri
+     * @param geometry
+     * @param rdfType
+     * @param experiment
+     * @example 
+     *  UPDATE "trial"
+     *  SET "geometry" = ST_GeomFromText("POLYGON(1 0, 0 0, 0 1, 1 0)", 4326)
+     *  WHERE "uri" = "http://www.opensilex.org/demo/o1800000000023"
+     * @return the updated scientific object.
+     * @throws SQLException 
+     */
+    public ScientificObject updateOneGeometry(String uri, String geometry, String rdfType, String experiment) throws Exception {
+        ScientificObject scientificObject = new ScientificObject(uri);
+        scientificObject.setGeometry(geometry);
+        try (Connection connection = dataSource.getConnection(); Statement statement = connection.createStatement()) {
+            if (geometry == null || geometry.isEmpty()) {
+                if (!existInDB(scientificObject)) { //The scientific object must be delete from the database.
+                    String deleteScientificObject = "DELETE FROM \"" + table + "\" WHERE \"" + URI + "\" = '" + uri + "'";
+                    LOGGER.debug(deleteScientificObject);
+                    statement.execute(deleteScientificObject);
+                }
+            } else {
+                if (!existInDB(scientificObject)) { //The scientific object must be inserted in the database.
+                    String insertScientificObject = "INSERT INTO \"" + table + "\" (\"" + URI + "\", \"" + TYPE + "\", \"" + GEOMETRY + "\", \"" + NAMED_GRAPH + "\") "
+                            + "VALUES (\"" + uri + "\", \"" + rdfType + "\", ST_GeomFromText(\"" + geometry + "\", 4326), \"" + experiment + "\")";
+                    
+                    LOGGER.debug(insertScientificObject);
+                    statement.execute(insertScientificObject);
+                } else { //The scientific object already exist in the database and must be updated.
+                    String updateGeometry = "UPDATE \"" + table + "\" "
+                            + "SET \"" + GEOMETRY + "\" = ST_GeomFromText('" + geometry + "', 4326) "
+                            + "WHERE \"" + URI + "\" = '" + uri + "'";
+                    
+                    LOGGER.debug(updateGeometry);
+                    statement.executeUpdate(updateGeometry);
+                }
+            }
+            statement.close();
+            connection.close();
+        }
+        
+        return scientificObject;
     }
-
+    
     @Override
     public List<ScientificObject> create(List<ScientificObject> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -345,6 +375,21 @@ public class ScientificObjectSQLDAO extends PhisDAO<ScientificObject, Scientific
 
     @Override
     public void validate(List<ScientificObject> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public POSTResultsReturn checkAndInsert(Object newObject) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public POSTResultsReturn checkAndInsertList(List<Object> newObjects) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public POSTResultsReturn checkAndUpdateList(List<Object> newObjects) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -15,40 +15,21 @@ import java.util.ArrayList;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ScientificObject {
-    
-    /**
-     * Scientific object URI.
-     */
+    //scientific object uri
     private String uri;
-    
-    /**
-     * Type.
-     */
+    //type of the scientific object
     private String rdfType;
-    
-    /**
-     * Geometry of the scientific object.
-     */
+    //geometry of the scientific object
     private String geometry;
-    
-    /**
-     * Experiment of the scientific object.
-     */
+    //experiment of the scientific object
     private String experiment;
-    
-    /**
-     * Object which has part the scientific object
-     */
+    //object which has part the scientific object
     private String isPartOf;
-    
-    /**
-     * //SILEX:todo
-     * For the moment it is an attribute.
-     * Modify getAO (search) getting all properties, alias included
-     */
-    private String alias;
-       //\SILEX:todo
-    
+    //year of the scientific object
+    private String year;
+    //label of the scientific object
+    private String label;
+    //The properties of the scientific object
     private ArrayList<Property> properties = new ArrayList<>();
 
     public ScientificObject(String uri) {
@@ -56,6 +37,7 @@ public class ScientificObject {
     }
 
     public ScientificObject() {
+       
     }
     
     public String getUri() {
@@ -98,12 +80,12 @@ public class ScientificObject {
         properties.add(property);
     }
 
-    public String getAlias() {
-        return alias;
+    public String getLabel() {
+        return label;
     }
 
-    public void setAlias(String alias) {
-        this.alias = alias;
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     public String getExperiment() {
@@ -120,5 +102,13 @@ public class ScientificObject {
 
     public void setIsPartOf(String isPartOf) {
         this.isPartOf = isPartOf;
+    }
+
+    public String getYear() {
+        return year;
+    }
+
+    public void setYear(String year) {
+        this.year = year;
     }
 }

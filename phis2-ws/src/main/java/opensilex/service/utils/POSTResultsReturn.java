@@ -16,9 +16,9 @@ import javax.ws.rs.core.Response;
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class POSTResultsReturn {
-    private Boolean resultState;
-    private Boolean insertState;
-    private Boolean dataState;
+    private Boolean resultState; // Le résultat de insert et data (bon si les 2 snt ok et faux sinon)
+    private Boolean insertState; // Si l'insertion a été réussie
+    private Boolean dataState; //état des données (si elles sont correctes)
     
     /**
      * Status to return.
@@ -28,7 +28,7 @@ public class POSTResultsReturn {
     /**
      * Custom supplementary status.
      */
-    public List statusList;
+    public List statusList = new ArrayList<>();
     public Boolean AlreadyExist; 
     public String errorMsg;
     public List<String> createdResources = new ArrayList<>();

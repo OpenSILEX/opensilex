@@ -218,6 +218,39 @@ public class ActuatorResourceService extends ResourceService {
         return Response.status(result.getHttpStatus()).entity(putResponse).build();
     }
     
+    /**
+     * Get the data of a given actuator uri.
+     * @param uri
+     * @param pageSize
+     * @param page
+     * @return the informations of the actuator.
+     * @example
+     * {
+     *      "metadata": {
+     *          "pagination": null,
+     *          "status": [],
+     *          "datafiles": []
+     *      },
+     *      "result": {
+     *          "data": [
+     *              {
+     *                 "uri": "http://www.opensilex.org/demo/2019/a19001",
+     *                 "rdfType": "http://www.opensilex.org/vocabulary/oeso#Actuator",
+     *                 "label": "par03_p",
+     *                 "brand": "Skye Instruments",
+     *                 "serialNumber": "A1E345F32",
+     *                 "inServiceDate": "2017-06-15",
+     *                 "dateOfPurchase": "2017-06-15",
+     *                 "dateOfLastCalibration": "2017-06-15",
+     *                 "personInCharge": "admin@opensilex.org",
+     *                 "variables": {
+     *                      "http://www.opensilex.org/demo/id/variables/v001"
+     *                  }
+     *              }
+     *          ]
+     *      }
+     * }
+     */
     @GET
     @Path("{uri}")
     @ApiOperation(value = "Get an actuator",

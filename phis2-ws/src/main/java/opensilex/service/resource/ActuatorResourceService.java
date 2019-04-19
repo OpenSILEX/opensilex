@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import javax.validation.constraints.Email;
 import javax.validation.constraints.Min;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -32,6 +33,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.ActuatorDAO;
@@ -41,6 +43,7 @@ import opensilex.service.model.Actuator;
 import opensilex.service.resource.dto.actuator.ActuatorDTO;
 import opensilex.service.resource.dto.actuator.ActuatorDetailDTO;
 import opensilex.service.resource.dto.actuator.ActuatorPostDTO;
+import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.result.ResultForm;
@@ -293,6 +296,64 @@ public class ActuatorResourceService extends ResourceService {
             statusList.add(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, ex.getMessage()));
             getResponse = new ResultForm<>(0, 0, actuators, true);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(getResponse).build();
+        }
+    }
+    
+    @GET
+    @ApiOperation(value = "Get all actuators corresponding to the search params given",
+                  notes = "Retrieve all actuators authorized for the user corresponding to the searched params given")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Retrieve all actuators", response = ActuatorDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getActuatorsBySearch(
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
+            @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_ACTUATOR_URI) @QueryParam("uri") @URL String uri,
+            @ApiParam(value = "Search by type uri", example = DocumentationAnnotation.EXAMPLE_SENSOR_RDF_TYPE) @QueryParam("rdfType") @URL String rdfType,
+            @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_SENSOR_LABEL) @QueryParam("label") String label,
+            @ApiParam(value = "Search by brand", example = DocumentationAnnotation.EXAMPLE_SENSOR_BRAND) @QueryParam("brand") String brand,
+            @ApiParam(value = "Search by serial number", example = DocumentationAnnotation.EXAMPLE_SENSOR_SERIAL_NUMBER) @QueryParam("serialNumber") String serialNumber,
+            @ApiParam(value = "Search by service date", example = DocumentationAnnotation.EXAMPLE_SENSOR_IN_SERVICE_DATE) @QueryParam("inServiceDate") @Date(DateFormat.YMD) String inServiceDate,
+            @ApiParam(value = "Search by date of purchase", example = DocumentationAnnotation.EXAMPLE_SENSOR_DATE_OF_PURCHASE) @QueryParam("dateOfPurchase") @Date(DateFormat.YMD) String dateOfPurchase,
+            @ApiParam(value = "Search by date of last calibration", example = DocumentationAnnotation.EXAMPLE_SENSOR_DATE_OF_LAST_CALIBRATION) @QueryParam("dateOfLastCalibration") @Date(DateFormat.YMD) String dateOfLastCalibration,
+            @ApiParam(value = "Search by person in charge", example = DocumentationAnnotation.EXAMPLE_USER_EMAIL) @QueryParam("personInCharge") @Email String personInCharge) {
+        
+        ActuatorDAO actuatorDAO = new ActuatorDAO();
+        //1. Get count
+        Integer totalCount = actuatorDAO.count(uri, rdfType, label, brand, serialNumber, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
+        
+        //2. Get actuators
+        ArrayList<Actuator> actuatorsFounded = actuatorDAO.find(page, pageSize, uri, rdfType, label, brand, serialNumber, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
+        
+        //3. Return result
+        ArrayList<Status> statusList = new ArrayList<>();
+        ArrayList<ActuatorDTO> actuatorsToReturn = new ArrayList<>();
+        ResultForm<ActuatorDTO> getResponse;
+        if (actuatorsFounded == null) { //Request failure
+            getResponse = new ResultForm<>(0, 0, actuatorsToReturn, true);
+            return noResultFound(getResponse, statusList);
+        } else if (actuatorsFounded.isEmpty()) { //No result found
+            getResponse = new ResultForm<>(0, 0, actuatorsToReturn, true);
+            return noResultFound(getResponse, statusList);
+        } else { //Results
+            //Convert all objects to DTOs
+            actuatorsFounded.forEach((actuator) -> {
+                actuatorsToReturn.add(new ActuatorDTO(actuator));
+            });
+            
+            getResponse = new ResultForm<>(pageSize, page, actuatorsToReturn, true, totalCount);
+            getResponse.setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
         }
     }
 }

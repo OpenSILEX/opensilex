@@ -41,6 +41,17 @@ public class ActuatorDTO extends AbstractVerifiedClass {
     //email of the person in charge of the actuator
     private String personInCharge;
 
+    public ActuatorDTO(Actuator actuator) {
+        uri = actuator.getUri();
+        rdfType = actuator.getRdfType();
+        label = actuator.getLabel();
+        brand = actuator.getBrand();
+        serialNumber = actuator.getSerialNumber();
+        inServiceDate = actuator.getInServiceDate();
+        dateOfPurchase = actuator.getDateOfPurchase();
+        dateOfLastCalibration = actuator.getDateOfLastCalibration();
+        personInCharge = actuator.getPersonInCharge();
+    }
 
     @Override
     public Actuator createObjectFromDTO() {

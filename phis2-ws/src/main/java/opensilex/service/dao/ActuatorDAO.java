@@ -36,6 +36,7 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.BooleanQuery;
+import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
@@ -329,7 +330,6 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
      * @param label
      * @param brand
      * @param serialNumber
-     * @param model
      * @param inServiceDate
      * @param dateOfPurchase
      * @param dateOfLastCalibration
@@ -359,83 +359,83 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
      * }
      * @return the generated query
      */
-    protected SPARQLQueryBuilder prepareSearchQuery(Integer page, Integer pageSize, String uri, String rdfType, String label, String brand, String serialNumber, String model, String inServiceDate, String dateOfPurchase, String dateOfLastCalibration, String personInCharge) {
+    protected SPARQLQueryBuilder prepareSearchQuery(Integer page, Integer pageSize, String uri, String rdfType, String label, String brand, String serialNumber, String inServiceDate, String dateOfPurchase, String dateOfLastCalibration, String personInCharge) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
 
-        String sensorUri;
+        String actuatorUri;
         if (uri != null) {
-            sensorUri = "<" + uri + ">";
+            actuatorUri = "<" + uri + ">";
         } else {
-            sensorUri = "?" + URI;
-            query.appendSelect(sensorUri);
+            actuatorUri = "?" + URI;
+            query.appendSelect(actuatorUri);
         }
         
         if (rdfType != null) {
-            query.appendTriplet(sensorUri, Rdf.RELATION_TYPE.toString(), rdfType, null);
+            query.appendTriplet(actuatorUri, Rdf.RELATION_TYPE.toString(), rdfType, null);
         } else {
             query.appendSelect("?" + RDF_TYPE);
-            query.appendTriplet(sensorUri, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
+            query.appendTriplet(actuatorUri, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
             query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_ACTUATOR.toString(), null);
         }        
 
         if (label != null) {
-            query.appendTriplet(sensorUri, Rdfs.RELATION_LABEL.toString(), "\"" + label + "\"", null);
+            query.appendTriplet(actuatorUri, Rdfs.RELATION_LABEL.toString(), "\"" + label + "\"", null);
         } else {
             query.appendSelect(" ?" + LABEL);
             query.beginBodyOptional();
-            query.appendToBody(sensorUri + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + LABEL + " . ");
+            query.appendToBody(actuatorUri + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + LABEL + " . ");
             query.endBodyOptional();
         }
 
         if (brand != null) {
-            query.appendTriplet(sensorUri, Oeso.RELATION_HAS_BRAND.toString(), "\"" + brand + "\"", null);
+            query.appendTriplet(actuatorUri, Oeso.RELATION_HAS_BRAND.toString(), "\"" + brand + "\"", null);
         } else {
             query.appendSelect(" ?" + BRAND);
-            query.appendTriplet(sensorUri, Oeso.RELATION_HAS_BRAND.toString(), "?" + BRAND, null);
+            query.appendTriplet(actuatorUri, Oeso.RELATION_HAS_BRAND.toString(), "?" + BRAND, null);
         }
         
         if (serialNumber != null) {
-            query.appendTriplet(sensorUri, Oeso.RELATION_HAS_SERIAL_NUMBER.toString(), "\"" + serialNumber + "\"", null);
+            query.appendTriplet(actuatorUri, Oeso.RELATION_HAS_SERIAL_NUMBER.toString(), "\"" + serialNumber + "\"", null);
         } else {
             query.appendSelect("?" + SERIAL_NUMBER);
             query.beginBodyOptional();
-            query.appendToBody(sensorUri + " <" + Oeso.RELATION_HAS_SERIAL_NUMBER.toString() + "> ?" + SERIAL_NUMBER + " . ");
+            query.appendToBody(actuatorUri + " <" + Oeso.RELATION_HAS_SERIAL_NUMBER.toString() + "> ?" + SERIAL_NUMBER + " . ");
             query.endBodyOptional();
         }
 
         if (inServiceDate != null) {
-            query.appendTriplet(sensorUri, Oeso.RELATION_IN_SERVICE_DATE.toString(), "\"" + inServiceDate + "\"", null);
+            query.appendTriplet(actuatorUri, Oeso.RELATION_IN_SERVICE_DATE.toString(), "\"" + inServiceDate + "\"", null);
         } else {
             query.appendSelect(" ?" + IN_SERVICE_DATE);
             query.beginBodyOptional();
-            query.appendToBody(sensorUri + " <" + Oeso.RELATION_IN_SERVICE_DATE.toString() + "> " + "?" + IN_SERVICE_DATE + " . ");
+            query.appendToBody(actuatorUri + " <" + Oeso.RELATION_IN_SERVICE_DATE.toString() + "> " + "?" + IN_SERVICE_DATE + " . ");
             query.endBodyOptional();
         }
 
         if (dateOfPurchase != null) {
-            query.appendTriplet(sensorUri, Oeso.RELATION_DATE_OF_PURCHASE.toString(), "\"" + dateOfPurchase + "\"", null);
+            query.appendTriplet(actuatorUri, Oeso.RELATION_DATE_OF_PURCHASE.toString(), "\"" + dateOfPurchase + "\"", null);
         } else {
             query.appendSelect("?" + DATE_OF_PURCHASE);
             query.beginBodyOptional();
-            query.appendToBody(sensorUri + " <" + Oeso.RELATION_DATE_OF_PURCHASE.toString() + "> " + "?" + DATE_OF_PURCHASE + " . ");
+            query.appendToBody(actuatorUri + " <" + Oeso.RELATION_DATE_OF_PURCHASE.toString() + "> " + "?" + DATE_OF_PURCHASE + " . ");
             query.endBodyOptional();
         }
 
         if (dateOfLastCalibration != null) {
-            query.appendTriplet(sensorUri, Oeso.RELATION_DATE_OF_LAST_CALIBRATION.toString(), "\"" + dateOfLastCalibration + "\"", null);
+            query.appendTriplet(actuatorUri, Oeso.RELATION_DATE_OF_LAST_CALIBRATION.toString(), "\"" + dateOfLastCalibration + "\"", null);
         } else {
             query.appendSelect("?" + DATE_OF_LAST_CALIBRATION);
             query.beginBodyOptional();
-            query.appendToBody(sensorUri + " <" + Oeso.RELATION_DATE_OF_LAST_CALIBRATION.toString() + "> " + "?" + DATE_OF_LAST_CALIBRATION + " . ");
+            query.appendToBody(actuatorUri + " <" + Oeso.RELATION_DATE_OF_LAST_CALIBRATION.toString() + "> " + "?" + DATE_OF_LAST_CALIBRATION + " . ");
             query.endBodyOptional();
         }
         
         if (personInCharge != null) {
-            query.appendTriplet(sensorUri, Oeso.RELATION_PERSON_IN_CHARGE.toString(), "\"" + personInCharge + "\"", null);
+            query.appendTriplet(actuatorUri, Oeso.RELATION_PERSON_IN_CHARGE.toString(), "\"" + personInCharge + "\"", null);
         } else {
             query.appendSelect(" ?" + PERSON_IN_CHARGE);
-            query.appendTriplet(sensorUri, Oeso.RELATION_PERSON_IN_CHARGE.toString(), "?" + PERSON_IN_CHARGE, null);
+            query.appendTriplet(actuatorUri, Oeso.RELATION_PERSON_IN_CHARGE.toString(), "?" + PERSON_IN_CHARGE, null);
         }
         
         if (page != null && pageSize != null) {
@@ -455,14 +455,13 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
      * @param label
      * @param brand
      * @param serialNumber
-     * @param model
      * @param inServiceDate
      * @param dateOfPurchase
      * @param dateOfLastCalibration
      * @param personInCharge
      * @return 
      */
-    private Actuator getActuatorFromBindingSet(BindingSet bindingSet, String uri, String rdfType, String label, String brand, String serialNumber, String model, String inServiceDate, String dateOfPurchase, String dateOfLastCalibration, String personInCharge) {
+    private Actuator getActuatorFromBindingSet(BindingSet bindingSet, String uri, String rdfType, String label, String brand, String serialNumber, String inServiceDate, String dateOfPurchase, String dateOfLastCalibration, String personInCharge) {
         Actuator actuator = new Actuator();
 
         if (uri != null) {
@@ -575,13 +574,13 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
 
     @Override
     public Actuator findById(String id) throws Exception {
-        SPARQLQueryBuilder findQuery = prepareSearchQuery(null, null, id, null, null, null, null, null, null, null, null, null);
+        SPARQLQueryBuilder findQuery = prepareSearchQuery(null, null, id, null, null, null, null, null, null, null, null);
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, findQuery.toString());
         
         Actuator actuator = new Actuator();
         try(TupleQueryResult result = tupleQuery.evaluate()) {
             if (result.hasNext()) {
-                actuator = getActuatorFromBindingSet(result.next(), id, null, null, null, null, null, null, null, null, null);
+                actuator = getActuatorFromBindingSet(result.next(), id, null, null, null, null, null, null, null, null);
                 
                 //get variables associated to the actuator
                 HashMap<String, String> variables = getVariables(actuator.getUri());
@@ -743,5 +742,111 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
             updateResult.statusList.add(new Status(ex.getMessage(), StatusCodeMsg.ERR, ex.getClass().toString()));
         }
         return updateResult;
+    }
+    
+    /**
+     * Count query generated by the searched parameters given.
+     * @param uri
+     * @param rdfType
+     * @param label
+     * @param brand
+     * @param serialNumber
+     * @param dateOfLastCalibration
+     * @param inServiceDate
+     * @param dateOfPurchase
+     * @param personInCharge
+     * @example 
+     * SELECT DISTINCT  (count(distinct ?uri) as ?count) 
+     * WHERE {
+     *      ?uri  ?0  ?rdfType  . 
+     *      ?rdfType  rdfs:subClassOf*  <http://www.opensilex.org/vocabulary/oeso#Actuator> . 
+     *      OPTIONAL {
+     *          ?uri rdfs:label ?label . 
+     *      }
+     *      ?uri  <http://www.opensilex.org/vocabulary/oeso#hasBrand>  ?brand  . 
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#hasSerialNumber> ?serialNumber . 
+     *      }
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#inServiceDate> ?inServiceDate . 
+     *      }
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#dateOfPurchase> ?dateOfPurchase . 
+     *      }
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#dateOfLastCalibration> ?dateOfLastCalibration . 
+     *      }
+     *      ?uri  <http://www.opensilex.org/vocabulary/oeso#personInCharge>  ?personInCharge  . 
+     * }
+     * @return Query generated to count the actuators, with the searched parameters
+     */
+    private SPARQLQueryBuilder prepareCount(String uri, String rdfType, String label, String brand, String serialNumber, String inServiceDate, String dateOfPurchase, String dateOfLastCalibration, String personInCharge) {
+        SPARQLQueryBuilder query = this.prepareSearchQuery(null, null, uri, rdfType, label, brand, serialNumber, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
+        query.clearSelect();
+        query.clearLimit();
+        query.clearOffset();
+        query.clearGroupBy();
+        query.appendSelect("(COUNT(DISTINCT ?" + URI + ") AS ?" + COUNT_ELEMENT_QUERY + ")");
+        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
+        return query;
+    }
+    
+    /**
+     * Counts the number of actuators by the given searched parameters.
+     * @param uri
+     * @param rdfType
+     * @param label
+     * @param brand
+     * @param serialNumber
+     * @param dateOfLastCalibration
+     * @param inServiceDate
+     * @param dateOfPurchase
+     * @param personInCharge
+     * @return The number of sensors 
+     * @inheritdoc
+     */
+    public Integer count(String uri, String rdfType, String label, String brand, String serialNumber, String inServiceDate, String dateOfPurchase, String dateOfLastCalibration, String personInCharge) throws RepositoryException, MalformedQueryException {
+        SPARQLQueryBuilder prepareCount = prepareCount(uri, rdfType, label, brand, serialNumber, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
+        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
+        Integer count = 0;
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
+            if (result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                count = Integer.parseInt(bindingSet.getValue(COUNT_ELEMENT_QUERY).stringValue());
+            }
+        }
+        return count;
+    }
+    
+    /**
+     * Search all the actuators corresponding to the search params given.
+     * @param page
+     * @param pageSize
+     * @param uri
+     * @param rdfType
+     * @param dateOfPurchase
+     * @param label
+     * @param brand
+     * @param serialNumber
+     * @param dateOfLastCalibration
+     * @param inServiceDate
+     * @param personInCharge
+     * @return the list of the actuators.
+     */
+    public ArrayList<Actuator> find(Integer page, Integer pageSize, String uri, String rdfType, String label, String brand, String serialNumber, String inServiceDate, String dateOfPurchase, String dateOfLastCalibration, String personInCharge) {
+        SPARQLQueryBuilder query = prepareSearchQuery(page, pageSize, uri, rdfType, label, brand, serialNumber, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
+        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        ArrayList<Actuator> actuators = new ArrayList<>();
+
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
+            while (result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                Actuator actuator = getActuatorFromBindingSet(bindingSet, uri, rdfType, label, brand, serialNumber, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
+                HashMap<String, String> variables = getVariables(actuator.getUri());
+                actuator.setVariables(variables);
+                actuators.add(actuator);
+            }
+        }
+        return actuators;
     }
 }

@@ -114,7 +114,7 @@ public class EventResourceService  extends ResourceService {
     @ApiOperation(value = "Get all events corresponding to the search parameters given.", 
             notes = "Retrieve all events authorized for the user corresponding to the " + "search parameters given")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve all events", response = Event.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Retrieve all events", response = EventDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
@@ -168,8 +168,7 @@ public class EventResourceService  extends ResourceService {
                 eventDTOs.add(new EventDTO(event));
             });
             
-            // Return DTOs
-            int resultsCount = eventDAO.count(
+            int eventsCount =  eventDAO.count(
                 uri,
                 type,
                 concernedItemLabel, 
@@ -177,7 +176,7 @@ public class EventResourceService  extends ResourceService {
                 startDate, 
                 endDate);
             
-            responseForm = new ResultForm<>(pageSize, page, eventDTOs, true, resultsCount);
+            responseForm = new ResultForm<>(pageSize, page, eventDTOs, true, eventsCount);
             if (responseForm.getResult().dataSize() == 0) {
                 return noResultFound(responseForm, statusList);
             } else {
@@ -199,32 +198,6 @@ public class EventResourceService  extends ResourceService {
      *   "result": {
      *     "data": [
      *       {
-     *         "annotations": [
-     *           {
-     *             "uri": "http://www.opensilex.org/andreas-dev/id/annotation/c660dab5-9d68-4df3-9da1-882bfd224802",
-     *             "creationDate": "2019-02-27T14:11:04+01:00",
-     *             "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/admin_phis",
-     *             "motivatedBy": "http://www.w3.org/ns/oa#describing",
-     *             "comments": [
-     *               "comment 1"
-     *             ],
-     *             "targets": [
-     *               "http://www.opensilex.org/id/event/12590c87-1c34-426b-a231-beb7acb33415"
-     *             ]
-     *           },
-     *           {
-     *             "uri": "http://www.opensilex.org/andreas-dev/id/annotation/80de8573-eca5-466f-93fe-b97c96185834",
-     *             "creationDate": "2019-02-18T14:05:29+01:00",
-     *             "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/admin_phis",
-     *             "motivatedBy": "http://www.w3.org/ns/oa#describing",
-     *             "comments": [
-     *               "vdvd"
-     *             ],
-     *             "targets": [
-     *               "http://www.opensilex.org/id/event/12590c87-1c34-426b-a231-beb7acb33415"
-     *             ]
-     *           }
-     *         ],
      *         "uri": "http://www.opensilex.org/id/event/12590c87-1c34-426b-a231-beb7acb33415",
      *         "type": "http://www.opensilex.org/vocabulary/oeev#PestAttack",
      *         "concernedItems": [
@@ -254,22 +227,24 @@ public class EventResourceService  extends ResourceService {
      */
     @GET
     @Path("{uri}")
-    @ApiOperation(value = "Get an event's details corresponding to the search uri",
-                  notes = "Get an event's details corresponding to the search uri authorized for the user corresponding to the search uri")
+    @ApiOperation(value = "Get the event corresponding to the search uri",
+                  notes = "Get the event corresponding to the search uri")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Get an event's details", response = RdfResourceDefinitionDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Get an event", response = EventDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-            dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, 
+            required = true,
+            dataType = GlobalWebserviceValues.DATA_TYPE_STRING, 
+            paramType = GlobalWebserviceValues.HEADER,
             value = DocumentationAnnotation.ACCES_TOKEN,
             example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getEventDetailed(
+    public Response getEvent(
         @ApiParam(value = DocumentationAnnotation.EVENT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_EVENT_URI) @PathParam("uri") @URL @Required String uri) {
         
         EventDAO eventDAO = new EventDAO(userSession.getUser());
@@ -298,7 +273,6 @@ public class EventResourceService  extends ResourceService {
             return noResultFound(responseForm, statusList);
         } else { // Results
             
-            // Generate DTO
             eventDTOs.add(new EventDTO(events.get(0)));
             
             responseForm = new ResultForm<>(0, 0, eventDTOs, true, 0);
@@ -309,6 +283,55 @@ public class EventResourceService  extends ResourceService {
                 return Response.status(Response.Status.OK).entity(responseForm).build();
             }
         }
+    }
+    
+    /**
+     * Gets an event's annotations
+     * @param pageSize
+     * @param page
+     * @example
+     * [  
+     *   {
+     *     "uri": "http://www.opensilex.org/phenome-fppn/id/annotation/896325c3-85f7-4ad3-bf96-34ba497108c3",
+     *     "creationDate": "2019-03-11T09:40:03+01:00",
+     *     "creator": "http://www.phenome-fppn.fr/diaphen/id/agent/admin_phis",
+     *     "motivatedBy": "http://www.w3.org/ns/oa#describing",
+     *     "bodyValues": [
+     *       "fth"
+     *     ],
+     *     "targets": [
+     *       "http://www.opensilex.org/phenome-fppn/id/event/c8e0173b-ce8a-4190-ad0b-f30ac07d4edd"
+     *     ]
+     *   }
+     * ]
+     * @param uri
+     * @return an event's annotations
+     */
+    @GET
+    @Path("{uri}/annotations")
+    @ApiOperation(value = "Get an event's annotations",
+                  notes = "Get an event's annotations")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Get an event's annotations", response = RdfResourceDefinitionDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+            dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+            value = DocumentationAnnotation.ACCES_TOKEN,
+            example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getEventAnnotations(
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
+        @ApiParam(value = DocumentationAnnotation.EVENT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_EVENT_URI) @PathParam("uri") @URL @Required String uri) {
+        
+        AnnotationResourceService annotationResourceService = new AnnotationResourceService();
+        annotationResourceService.userSession = userSession;
+        return annotationResourceService.getAnnotations(null, null, uri, null, null, page, pageSize);
     }
         
     /**

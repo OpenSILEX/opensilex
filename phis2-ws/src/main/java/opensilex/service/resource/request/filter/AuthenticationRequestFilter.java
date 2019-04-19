@@ -5,7 +5,7 @@
 // Creation date: May 2016
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package opensilex.service.resources.request.filters;
+package opensilex.service.resource.request.filter;
 
 import java.io.IOException;
 import java.util.regex.Matcher;

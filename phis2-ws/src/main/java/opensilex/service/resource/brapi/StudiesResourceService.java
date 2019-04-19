@@ -380,7 +380,7 @@ public class StudiesResourceService implements BrapiCall {
     }
 
     /**
-     * Retrieve all observationUnits linked to the study
+     * Retrieve all observationUnits linked to the study, ie ScientificObject that participates in an experiment
      * @param studyDbId
      * @param observationLevel
      * @param limit

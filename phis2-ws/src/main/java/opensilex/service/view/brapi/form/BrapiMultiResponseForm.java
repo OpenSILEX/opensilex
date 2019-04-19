@@ -77,6 +77,20 @@ public class BrapiMultiResponseForm<T> {
         result = new BrapiMultiResult(data,  metadata.getPagination(), paginate);
     }  
 
+    /**
+     * Initialize metadata and result fields when there are several elements
+     * @param pageSize the number of results per page
+     * @param currentPage the requested page
+     * @param data list of results
+     * @param paginate true : already paginate
+     *                 false : needs pagination
+     * @param totalCount number of results
+     */
+    public BrapiMultiResponseForm(int pageSize, int currentPage, ArrayList<T> data, boolean paginate, int totalCount) {
+        metadata = new BrapiMetadata(pageSize, currentPage, totalCount);
+        result = new BrapiMultiResult(data,  metadata.getPagination(), paginate);
+    } 
+    
     public BrapiMetadata getMetadata() {
         return metadata;
     }

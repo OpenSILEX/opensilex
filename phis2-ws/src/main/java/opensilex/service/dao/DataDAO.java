@@ -84,18 +84,19 @@ public class DataDAO extends MongoDAO<Data> {
             if (!variableDAO.existAndIsVariable(data.getVariableUri())) {
                 dataOk = false;
                 checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR,
-                        "Unknwon variable : " + data.getVariableUri()));
+                        "Unknown variable : " + data.getVariableUri()));
+            } 
             // 2. Check if the object uri exist
-            } else if (!variableDAO.existUri(data.getObjectUri())) {
+            if (!variableDAO.existUri(data.getObjectUri())) {
                 dataOk = false;
                 checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR,
-                        "Unknwon object : " + data.getObjectUri()));
+                        "Unknown object : " + data.getObjectUri()));
             }
             // 3. Check if the provenance uri exist and is a provenance
             if (!provenanceDAO.existProvenanceUri(data.getProvenanceUri())) {
                 dataOk = false;
                 checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
-                    "Unknwon provenance : " + data.getProvenanceUri()));
+                    "Unknown provenance : " + data.getProvenanceUri()));
             }
         }
 

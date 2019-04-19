@@ -200,7 +200,7 @@ public class RadiometricTargetDAO extends Rdf4jDAO<RadiometricTarget> {
                     if (radiometricTargetCorresponding.isEmpty()) {
                         validData = false;
                         status.add(new Status(StatusCodeMsg.UNKNOWN_URI, StatusCodeMsg.ERR, 
-                                            "Unknwon radiometric target uri " + radiometricTarget.getUri()));
+                                            "Unknown radiometric target uri " + radiometricTarget.getUri()));
                     }
                 }
                 

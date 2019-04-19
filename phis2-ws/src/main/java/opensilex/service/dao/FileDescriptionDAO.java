@@ -271,25 +271,25 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
             // 1. Check if the provenance uri exist and is a provenance
             dataOk = false;
             checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
-                "Unknwon provenance : " + fileDescription.getProvenanceUri()));
+                "Unknown provenance : " + fileDescription.getProvenanceUri()));
         } else if (!scientificObjectDao.existUri(fileDescription.getRdfType())) {
             // 2. Check if the rdf type uri exist, 
             // we use scientificObjectDao for convenience to access existUri method
             dataOk = false;
             checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
-                "Unknwon file rdf type : " + fileDescription.getRdfType()));
+                "Unknown file rdf type : " + fileDescription.getRdfType()));
         } else {
             // 3. Check concerned items consistency
             for(ConcernedItem concernedItem : fileDescription.getConcernedItems()) {
                 if (!scientificObjectDao.existScientificObject(concernedItem.getUri())) {
                     dataOk = false;
                     checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
-                        "Unknwon concerned item : " + concernedItem.getUri()));
+                        "Unknown concerned item : " + concernedItem.getUri()));
                 }
                 if (!scientificObjectDao.existUri(concernedItem.getRdfType())) {
                     dataOk = false;
                     checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
-                        "Unknwon concerned item type : " + concernedItem.getUri()));
+                        "Unknown concerned item type : " + concernedItem.getUri()));
                 }
             }
         }

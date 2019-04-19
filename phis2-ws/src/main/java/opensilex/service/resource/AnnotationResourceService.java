@@ -1,5 +1,5 @@
 //******************************************************************************
-//                          AnnotationResourceService.java
+//                       AnnotationResourceService.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 21 Jun. 2018
@@ -41,18 +41,21 @@ import opensilex.service.resource.dto.annotation.AnnotationDTO;
 import opensilex.service.resource.dto.annotation.AnnotationPostDTO;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.view.brapi.form.ResponseFormGET;
-import opensilex.service.result.ResultForm;
 import opensilex.service.model.Annotation;
+import opensilex.service.result.ResultForm;
 
 /**
  * Annotation resource service.
  * @update [Andréas Garcia] 15 Feb. 2019: search parameters are no longer DAO 
- * class attributes but parameters sent through the search functions
+ * class attributes but parameters sent through the search functions.
+ * @update [Andreas Garcia] 19 Mar. 2019: make getAnnotations public to be 
+ * able to use it from another service.
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 @Api("/annotations")
 @Path("/annotations")
 public class AnnotationResourceService extends ResourceService {
+    
     /**
      * Inserts the given annotations in the triplestore.
      * @example
@@ -234,8 +237,14 @@ public class AnnotationResourceService extends ResourceService {
     }
 
     /**
-     * Searches annotations corresponding to search parameters given by the user.
-     * @param annotationDAO
+     * Searches annotations corresponding to search parameters.
+     * @param uri
+     * @param creator
+     * @param target
+     * @param bodyValue
+     * @param motivatedBy
+     * @param page
+     * @param pageSize
      * @return the annotations corresponding to the search
      */
     private Response getAnnotations(String uri, String creator, String target, String bodyValue, String motivatedBy, int page, int pageSize) {
@@ -247,7 +256,14 @@ public class AnnotationResourceService extends ResourceService {
         Integer totalCount = annotationDao.count(uri, creator, target, bodyValue, motivatedBy);
         
         // Retreive all annotations returned by the query
-        ArrayList<Annotation> annotations = annotationDao.searchAnnotations(uri, creator, target, bodyValue, motivatedBy, page, pageSize);
+        ArrayList<Annotation> annotations = annotationDao.searchAnnotations(
+                uri, 
+                creator, 
+                target, 
+                bodyValue, 
+                motivatedBy, 
+                page, 
+                pageSize);
         
         ArrayList<AnnotationDTO> annotationDTOs = new ArrayList();
 
@@ -262,7 +278,7 @@ public class AnnotationResourceService extends ResourceService {
             annotations.forEach((annotation) -> {
                 annotationDTOs.add(new AnnotationDTO(annotation));
             });
-            getResponse = new ResultForm<>(annotationDao.getPageSize(), annotationDao.getPage(), annotationDTOs, true, totalCount);
+            getResponse = new ResultForm<>(pageSize, page, annotationDTOs, true, totalCount);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }

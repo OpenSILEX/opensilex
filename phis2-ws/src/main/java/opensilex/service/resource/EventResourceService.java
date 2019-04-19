@@ -2,7 +2,7 @@
 //                         EventResourceService.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 13 Nov. 2018
+// Creation date: 13 nov. 2018
 // Contact: andreas.garcia@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.resource;
@@ -37,9 +37,8 @@ import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.EventDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
-import opensilex.service.resource.dto.event.EventDetailedDTO;
 import opensilex.service.resource.dto.event.EventPostDTO;
-import opensilex.service.resource.dto.event.EventSimpleDTO;
+import opensilex.service.resource.dto.event.EventDTO;
 import opensilex.service.resource.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
 import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.Required;
@@ -52,9 +51,10 @@ import opensilex.service.result.ResultForm;
 import opensilex.service.model.Event;
 
 /**
- * Event resource service.
- * @update [Andréas Garcia] 14 Feb. 2019: Add event detail service
- * @update [Andréas Garcia] 5 Mar. 2019: Add event POST service
+ * Service to handle events
+ * @update [Andréas Garcia] 14 Feb., 2019: Add GET detail service
+ * @update [Andréas Garcia] 5 March, 2019: Add POST service
+ * @update [Andréas Garcia] 15 March, 2019: Add GET {uri}/annotations service
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
 @Api("/events")
@@ -63,7 +63,7 @@ public class EventResourceService  extends ResourceService {
     final static Logger LOGGER = LoggerFactory.getLogger(EventResourceService.class);
     
     /**
-     * Searches events with filters.
+     * Searches events with filters
      * @example
      * {
      *  {
@@ -108,7 +108,7 @@ public class EventResourceService  extends ResourceService {
      * @param concernedItemLabel
      * @param startDate
      * @param endDate
-     * @return  list of events filtered
+     * @return  list of all the events filtered
      */
     @GET
     @ApiOperation(value = "Get all events corresponding to the search parameters given.", 
@@ -135,7 +135,8 @@ public class EventResourceService  extends ResourceService {
         @ApiParam(value = "Search by concerned item label", example = DocumentationAnnotation.EXAMPLE_EVENT_CONCERNED_ITEM_LABEL) @QueryParam("concernedItemLabel") String concernedItemLabel, 
         @ApiParam(value = "Search by date - start of the range", example = DocumentationAnnotation.EXAMPLE_EVENT_SEARCH_START_DATE) @QueryParam("startDate") @Date(DateFormat.YMDTHMSZZ) String startDate, 
         @ApiParam(value = "Search by date - end of the range", example = DocumentationAnnotation.EXAMPLE_EVENT_SEARCH_END_DATE) @QueryParam("endDate") @Date(DateFormat.YMDTHMSZZ) String endDate
-    ) {
+    ) {        
+        
         EventDAO eventDAO = new EventDAO(userSession.getUser());
         
         // 1. Search events with parameters
@@ -158,7 +159,7 @@ public class EventResourceService  extends ResourceService {
             responseForm = new ResultForm<>(0, 0, eventDTOs, true, 0);
             return noResultFound(responseForm, statusList);
         } else if (events.isEmpty()) { // No result
-            responseForm = new ResultForm<>(0, 0, eventDTOs, true, 0);
+            responseForm = new ResultForm(0, 0, eventDTOs, true, 0);
             return noResultFound(responseForm, statusList);
         } else { // Results
             
@@ -175,7 +176,8 @@ public class EventResourceService  extends ResourceService {
                 concernedItemUri, 
                 startDate, 
                 endDate);
-            responseForm = new ResultForm<>(eventDAO.getPageSize(), eventDAO.getPage(), eventDTOs, true, resultsCount);
+            
+            responseForm = new ResultForm<>(pageSize, page, eventDTOs, true, eventsCount);
             if (responseForm.getResult().dataSize() == 0) {
                 return noResultFound(responseForm, statusList);
             } else {
@@ -186,7 +188,7 @@ public class EventResourceService  extends ResourceService {
     }
     
     /**
-     * Gets an event from its URI.
+     * Gets an event
      * @example
      * {
      *   "metadata": {
@@ -248,7 +250,7 @@ public class EventResourceService  extends ResourceService {
      *   }
      * }
      * @param uri
-     * @return the event found
+     * @return an event
      */
     @GET
     @Path("{uri}")
@@ -272,16 +274,27 @@ public class EventResourceService  extends ResourceService {
         
         EventDAO eventDAO = new EventDAO(userSession.getUser());
         
-        // 1. Search an event's details with its URI
-        Event event = eventDAO.searchEvent(uri);
+        // 1. Search events with parameters
+        ArrayList<Event> events = eventDAO.searchEvents(
+                uri,
+                null,
+                null, 
+                null, 
+                null, 
+                null, 
+                0, 
+                1);
         
         // 2. Analyse result
         ArrayList<EventDetailedDTO> eventDTOs = new ArrayList();
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<EventDetailedDTO> responseForm;
         
-        if (event == null) { // Request failure
+        if (events == null) { // Request failure
             responseForm = new ResultForm<>(0, 0, eventDTOs, true, 0);
+            return noResultFound(responseForm, statusList);
+        } else if (events.isEmpty()) { // No result
+            responseForm = new ResultForm(0, 0, eventDTOs, true, 0);
             return noResultFound(responseForm, statusList);
         } else { // Results
             
@@ -299,7 +312,7 @@ public class EventResourceService  extends ResourceService {
     }
         
     /**
-     * Service to insert events.
+     * Service to insert events
      * @example
      * {
      *  [

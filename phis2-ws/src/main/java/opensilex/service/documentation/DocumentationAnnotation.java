@@ -53,6 +53,9 @@ public final class DocumentationAnnotation {
         + "<b>The token also include the response object header. </b>"
         + "For more information, the <b>Response object definition</b> is available at <b><a href=\"http://docs.brapi.apiary.io/#introduction/structure-of-the-response-object:\">Brapi response object</a></b>.";
 
+    public static final String ACTUATOR_POST_DEFINITION = "JSON format to insert actuators";
+    public static final String ACTUATOR_URI_DEFINITION = "An actuator URI (Unique Resource Identifier)";
+    
     public static final String ENVIRONMENT_POST_DEFINITION = "JSON format to insert environment";
     
     public static final String DATA_POST_DEFINITION = "JSON format to insert data";
@@ -132,6 +135,8 @@ public final class DocumentationAnnotation {
 
     // Specific examples
     public static final String EXAMPLE_EXPERIMENT_URI = "http://www.opensilex.org/demo/DMO2012-1";
+    public static final String EXAMPLE_ACTUATOR_RDF_TYPE = "http://www.opensilex.org/vocabulary/oeso#Actuator";
+    public static final String EXAMPLE_ACTUATOR_URI = "http://www.opensilex.org/opensilex/2019/a19001";
     public static final String EXAMPLE_EXPERIMENT_START_DATE = EXAMPLE_DATETIME;
     public static final String EXAMPLE_EXPERIMENT_END_DATE = EXAMPLE_DATETIME;
     public static final String EXAMPLE_EXPERIMENT_FIELD = "field";

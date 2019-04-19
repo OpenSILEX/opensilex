@@ -27,6 +27,12 @@ public enum Oeso {
             return NAMESPACE.toString() + "ScientificObject";
         }
     },
+    CONCEPT_ACTUATOR {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "Actuator";
+        }
+    },
     CONCEPT_ANNOTATION {
         @Override
         public String toString() {

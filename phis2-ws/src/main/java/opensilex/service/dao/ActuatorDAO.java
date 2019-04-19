@@ -10,12 +10,14 @@ package opensilex.service.dao;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ws.rs.NotFoundException;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.ResourceAccessDeniedException;
 import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.Actuator;
+import opensilex.service.model.Dataset;
 import opensilex.service.model.User;
 import opensilex.service.ontology.Contexts;
 import opensilex.service.ontology.Oeso;
@@ -848,5 +850,118 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
             }
         }
         return actuators;
+    }
+    
+    /**
+     * Checks the given data to update the list of the measured variables linked to the actuator.
+     * @param actuatorUri
+     * @param variables
+     * @return the check result.
+     */
+    private POSTResultsReturn checkMeasuredVariables(String actuatorUri, List<String> variables) {
+        POSTResultsReturn checkResult;
+        List<Status> checkStatus = new ArrayList<>();
+        
+        boolean dataOk = true;
+        
+        //1. Check if the actuator exist and is an actuator in the triplestore
+        if (existAndIsActuator(actuatorUri)) {
+            VariableDAO variableDao = new VariableDAO();
+            
+            for (String variableUri : variables) {
+                //2. Check for each variable uri given if it exist and if it is really a variable
+                if (!variableDao.existAndIsVariable(variableUri)) {
+                    dataOk = false;
+                    checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
+                        "Unknwon variable : " + variableUri));
+                }
+            }
+            
+            //3. Check if some variables links are removed. We do not check this if some problems has been founded before.
+            if (dataOk) {
+                //Get all the actual variables for the actuator
+                HashMap<String, String> actualMeasuredVariables = getVariables(actuatorUri);
+                DatasetDAO datasetDAO = new DatasetDAO();
+                
+                for(Map.Entry<String, String> varibale : actualMeasuredVariables.entrySet()) {
+                    // Check if link to the variable can be removed.
+                    if (!variables.contains(varibale.getKey())) {
+                        datasetDAO.sensor = actuatorUri;
+                        datasetDAO.variable = varibale.getKey();
+                        ArrayList<Dataset> dataAboutVariableAndSensor = datasetDAO.allPaginate();
+                        
+                        if (dataAboutVariableAndSensor.get(0).getData().size() > 0) {//data founded, the association of the sensor and the variable can not be removed
+                            dataOk = false;
+                            checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
+                                "Existing data for the given actuator (" + actuatorUri + ") and the variable " + varibale.getKey() + ". You cannot remove the link between them."));
+                        }
+                    }
+                }
+            }             
+        } else {
+            dataOk = false;
+            checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
+                    "Unknwon actuator : " + actuatorUri));
+        }
+        
+        checkResult = new POSTResultsReturn(dataOk, null, dataOk);
+        checkResult.statusList = checkStatus;
+        return checkResult;
+    }
+    
+    /**
+     * Updates the list of variables linked to the actuator.
+     * /!\ Prerequisite: the data must have been checked before
+     * @see ActuatorDAO#checkMeasuredVariables(java.lang.String, java.util.List) 
+     * @param actuatorUri
+     * @param variables
+     * @return the update result
+     */
+    private POSTResultsReturn updateMeasuredVariables(String actuatorUri, List<String> variables) {
+        POSTResultsReturn result;
+        List<Status> updateStatus = new ArrayList<>();
+        
+        boolean update = true;
+        
+        
+        //1. Delete old object properties
+        HashMap<String, String> actualMeasuredVariables = getVariables(actuatorUri);
+        List<String> oldMeasuredVariables = new ArrayList<>();
+        actualMeasuredVariables.entrySet().forEach((oldVariable) -> {
+            oldMeasuredVariables.add(oldVariable.getKey());
+        });
+        
+        if (deleteObjectProperties(actuatorUri, Oeso.RELATION_MEASURES.toString(), oldMeasuredVariables)) {
+            //2. Add new object properties
+            if (addObjectProperties(actuatorUri, Oeso.RELATION_MEASURES.toString(), variables, Contexts.SENSORS.toString())) {
+                updateStatus.add(new Status(StatusCodeMsg.RESOURCES_UPDATED, StatusCodeMsg.INFO, "The actuator " + actuatorUri + " has now " + variables.size() + " linked variables"));
+            } else {
+                update = false;
+                updateStatus.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, "An error occurred during the update."));
+            }
+        } else {
+            update = false;
+            updateStatus.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, "An error occurred during the update."));
+        }
+        
+        result = new POSTResultsReturn(update, update, update);
+        result.statusList = updateStatus;
+        result.createdResources.add(actuatorUri); 
+        return result;
+    }
+    
+    /**
+     * Checks and updates the variables measured by the given actuators.
+     * @param actuatorUri
+     * @param variables
+     * @return the update result
+     */
+    public POSTResultsReturn checkAndUpdateMeasuredVariables(String actuatorUri, List<String> variables) {
+        POSTResultsReturn checkResult = checkMeasuredVariables(actuatorUri, variables);
+        if (checkResult.getDataState()) {
+             return updateMeasuredVariables(actuatorUri, variables);
+        } else { //Error in the data
+            return checkResult;
+        }
     }
 }

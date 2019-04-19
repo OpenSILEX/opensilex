@@ -37,6 +37,7 @@ import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.ActuatorDAO;
+import opensilex.service.dao.SensorDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.Actuator;
@@ -355,5 +356,76 @@ public class ActuatorResourceService extends ResourceService {
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }
+    }
+    
+    
+    /**
+     * Actuator PUT service.
+     * @param variables the list of variables measured by the actuator. This list can be empty but not null.
+     * @param uri
+     * @param context
+     * @return the result
+     * @example
+     * {
+     *      "metadata": {
+     *          "pagination": null,
+     *          "status": [
+     *              {
+     *                  "message": "Resources updated",
+     *                  "exception": {
+     *                      "type": "Info",
+     *                      "href": null,
+     *                      "details": "The actuator http://www.opensilex.org/demo/2018/a18533 has now 2 linked variables"
+     *                  }
+     *              }
+     *          ],
+     *      "datafiles": [
+     *          "http://www.opensilex.org/demo/2018/a18533"
+     *      ]
+     *    }
+     * }
+     */
+    @PUT
+    @Path("{uri}/variables")
+    @ApiOperation(value = "Update the measured variables of an actuator")
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "Measured variables of the actuator updated", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response putMeasuredVariables(
+            @ApiParam(value = DocumentationAnnotation.LINK_VARIABLES_DEFINITION) @URL ArrayList<String> variables,
+            @ApiParam(value = DocumentationAnnotation.ACTUATOR_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_ACTUATOR_URI, required = true) @PathParam("uri") @Required @URL String uri,
+            @Context HttpServletRequest context) {
+        AbstractResultForm postResponse = null;
+        
+        ActuatorDAO actuatorDAO = new ActuatorDAO();
+        if (context.getRemoteAddr() != null) {
+            actuatorDAO.remoteUserAdress = context.getRemoteAddr();
+        }
+        
+        actuatorDAO.user = userSession.getUser();
+        
+        POSTResultsReturn result = actuatorDAO.checkAndUpdateMeasuredVariables(uri, variables);
+        
+        if (result.getHttpStatus().equals(Response.Status.CREATED)) {
+            postResponse = new ResponseFormPOST(result.statusList);
+            postResponse.getMetadata().setDatafiles(result.getCreatedResources());
+        } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                || result.getHttpStatus().equals(Response.Status.OK)
+                || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+            postResponse = new ResponseFormPOST(result.statusList);
+        }
+        
+        return Response.status(result.getHttpStatus()).entity(postResponse).build();
     }
 }

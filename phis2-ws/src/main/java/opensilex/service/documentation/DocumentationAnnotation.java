@@ -65,6 +65,7 @@ public final class DocumentationAnnotation {
 
     public static final String SCIENTIFIC_OBJECT_URI_DEFINITION = "Scientific object URI (Unique Resource Identifier)";
     public static final String SCIENTIFIC_OBJECT_POST_DATA_DEFINITION = "JSON format of scientific object data";
+    public static final String EXAMPLE_SCIENTIFIC_OBJECT_ALIAS = "Plot01";
 
     public static final String GROUP_URI_DEFINITION = "A group uri";
     public static final String GROUP_POST_DATA_DEFINITION = "JSON format of group data";
@@ -139,6 +140,7 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_EXPERIMENT_ALIAS = "alias";
     public static final String EXAMPLE_EXPERIMENT_KEYWORDS = "keywords";
     public static final String EXAMPLE_EXPERIMENT_CAMPAIGN = "2012";
+    public static final String EXAMPLE_EXPERIMENT_CROP_SPECIES = "maize";
     
     public static final String EXAMPLE_ENVIRONMENT_VALUE = "1.3";
 
@@ -200,7 +202,8 @@ public final class DocumentationAnnotation {
 
     public static final String EXAMPLE_DATA_INCERTITUDE = "0.4";
     public static final String EXAMPLE_DATA_VALUE = "3.0000000";
-
+    public static final String EXAMPLE_DATA_URI = "http://www.opensilex.org/1e9eb2fbacc7222d3868ae96149a8a16b32b2a1870c67d753376381ebcbb5937/e78da502-ee3f-42d3-828e-aa8cab237f93";
+    
     public static final String EXAMPLE_DOCUMENT_URI = "http://www.phenome-fppn.fr/phis_field/documents/documente597f57ba71d421a86277d830f4b9885";
     public static final String EXAMPLE_DOCUMENT_TYPE = "http://www.opensilex.org/vocabulary/oeso#ScientificDocument";
     public static final String EXAMPLE_DOCUMENT_CREATOR = "John Doe";
@@ -248,9 +251,7 @@ public final class DocumentationAnnotation {
 
     public static final String EXAMPLE_VARIABLE_URI = "http://www.phenome-fppn.fr/diaphen/id/variable/v0000001";
     public static final String EXAMPLE_VARIABLE_LABEL = "LAI";
-
-    public static final String EXAMPLE_DATA_URI = "http://www.opensilex.org/1e9eb2fbacc7222d3868ae96149a8a16b32b2a1870c67d753376381ebcbb5937/e78da502-ee3f-42d3-828e-aa8cab237f93";
-            
+        
     public static final String EVENT_URI_DEFINITION = "An event URI (Unique Resource Identifier)";
     public static final String EXAMPLE_EVENT_URI = "http://www.opensilex.org/id/event/12590c87-1c34-426b-a231-beb7acb33415";
     public static final String EXAMPLE_EVENT_TYPE = "http://www.opensilex.org/vocabulary/oeev#MoveFrom";
@@ -292,8 +293,6 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_ANNOTATION_MOTIVATED_BY = "http://www.w3.org/ns/oa#commenting";
     public static final String EXAMPLE_ANNOTATION_BODY_VALUE = "Ustilago maydis infection";
     public static final String EXAMPLE_ANNOTATION_CREATOR = "http://www.phenome-fppn.fr/diaphen/id/agent/marie_dupond";
-  
-    public static final String EXAMPLE_EXPERIMENT_CROP_SPECIES = "maize";
 
     // API global parameters
     public static final String EXAMPLE_SORTING_ALLOWABLE_VALUES = "asc,desc";

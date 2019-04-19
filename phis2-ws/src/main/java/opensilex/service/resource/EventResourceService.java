@@ -151,9 +151,9 @@ public class EventResourceService  extends ResourceService {
                 pageSize);
         
         // 2. Analyse result
-        ArrayList<EventSimpleDTO> eventDTOs = new ArrayList();
+        ArrayList<EventDTO> eventDTOs = new ArrayList();
         ArrayList<Status> statusList = new ArrayList<>();
-        ResultForm<EventSimpleDTO> responseForm;
+        ResultForm<EventDTO> responseForm;
         
         if (events == null) { // Request failure
             responseForm = new ResultForm<>(0, 0, eventDTOs, true, 0);
@@ -165,7 +165,7 @@ public class EventResourceService  extends ResourceService {
             
             // Generate DTOs
             events.forEach((event) -> {
-                eventDTOs.add(new EventSimpleDTO(event));
+                eventDTOs.add(new EventDTO(event));
             });
             
             // Return DTOs
@@ -177,7 +177,7 @@ public class EventResourceService  extends ResourceService {
                 startDate, 
                 endDate);
             
-            responseForm = new ResultForm<>(pageSize, page, eventDTOs, true, eventsCount);
+            responseForm = new ResultForm<>(pageSize, page, eventDTOs, true, resultsCount);
             if (responseForm.getResult().dataSize() == 0) {
                 return noResultFound(responseForm, statusList);
             } else {
@@ -286,9 +286,9 @@ public class EventResourceService  extends ResourceService {
                 1);
         
         // 2. Analyse result
-        ArrayList<EventDetailedDTO> eventDTOs = new ArrayList();
+        ArrayList<EventDTO> eventDTOs = new ArrayList();
         ArrayList<Status> statusList = new ArrayList<>();
-        ResultForm<EventDetailedDTO> responseForm;
+        ResultForm<EventDTO> responseForm;
         
         if (events == null) { // Request failure
             responseForm = new ResultForm<>(0, 0, eventDTOs, true, 0);
@@ -299,7 +299,7 @@ public class EventResourceService  extends ResourceService {
         } else { // Results
             
             // Generate DTO
-            eventDTOs.add(new EventDetailedDTO(event));
+            eventDTOs.add(new EventDTO(events.get(0)));
             
             responseForm = new ResultForm<>(0, 0, eventDTOs, true, 0);
             if (responseForm.getResult().dataSize() == 0) {

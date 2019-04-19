@@ -217,6 +217,8 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
             
         if (documentMetadata.getExtension() != null) {
             spql.addInsert(graph, documentUri, DCTerms.format, documentMetadata.getExtension());
+        } else {
+            spql.addInsert(graph, documentUri, DCTerms.format, "");
         }
         
         if (documentMetadata.getComment() != null && !documentMetadata.getComment().equals("")) {

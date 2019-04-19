@@ -85,8 +85,9 @@ public class DataDAO extends MongoDAO<Data> {
                 dataOk = false;
                 checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR,
                         "Unknwon variable : " + data.getVariableUri()));
+            } 
             // 2. Check if the object uri exist
-            } else if (!variableDAO.existUri(data.getObjectUri())) {
+            if (!variableDAO.existUri(data.getObjectUri())) {
                 dataOk = false;
                 checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR,
                         "Unknwon object : " + data.getObjectUri()));

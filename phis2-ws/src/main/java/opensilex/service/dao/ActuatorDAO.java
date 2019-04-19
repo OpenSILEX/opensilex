@@ -583,7 +583,7 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
             if (result.hasNext()) {
                 actuator = getActuatorFromBindingSet(result.next(), id, null, null, null, null, null, null, null, null, null);
                 
-                //get variables associated to the sensor
+                //get variables associated to the actuator
                 HashMap<String, String> variables = getVariables(actuator.getUri());
                 actuator.setVariables(variables);
             } else {

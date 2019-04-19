@@ -54,6 +54,7 @@ public final class DocumentationAnnotation {
         + "For more information, the <b>Response object definition</b> is available at <b><a href=\"http://docs.brapi.apiary.io/#introduction/structure-of-the-response-object:\">Brapi response object</a></b>.";
 
     public static final String ACTUATOR_POST_DEFINITION = "JSON format to insert actuators";
+    public static final String ACTUATOR_URI_DEFINITION = "An actuator URI (Unique Resource Identifier)";
     
     public static final String ENVIRONMENT_POST_DEFINITION = "JSON format to insert environment";
     

@@ -18,21 +18,32 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.ActuatorDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.Actuator;
 import opensilex.service.resource.dto.actuator.ActuatorDTO;
+import opensilex.service.resource.dto.actuator.ActuatorDetailDTO;
 import opensilex.service.resource.dto.actuator.ActuatorPostDTO;
+import opensilex.service.resource.validation.interfaces.Required;
+import opensilex.service.resource.validation.interfaces.URL;
+import opensilex.service.result.ResultForm;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.AbstractResultForm;
@@ -205,5 +216,50 @@ public class ActuatorResourceService extends ResourceService {
             putResponse = new ResponseFormPOST(result.statusList);
         }
         return Response.status(result.getHttpStatus()).entity(putResponse).build();
+    }
+    
+    @GET
+    @Path("{uri}")
+    @ApiOperation(value = "Get an actuator",
+                  notes = "Retrieve an actuator. Need URL encoded actuator URI")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Retrieve a sensor", response = ActuatorDetailDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getActuatorDetails(
+        @ApiParam(value = DocumentationAnnotation.ACTUATOR_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_ACTUATOR_URI, required = true) @PathParam("uri") @URL @Required String uri,
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
+        ArrayList<ActuatorDetailDTO> actuators = new ArrayList<>();
+        ArrayList<Status> statusList = new ArrayList<>();
+        ResultForm<ActuatorDetailDTO> getResponse;
+        
+        try {
+            ActuatorDAO actuatorDAO = new ActuatorDAO();
+            
+            ActuatorDetailDTO actuator = new ActuatorDetailDTO(actuatorDAO.findById(uri));
+            
+            actuators.add(actuator);
+
+            getResponse = new ResultForm<>(pageSize, page, actuators, true, 1);
+            getResponse.setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
+        } catch (NotFoundException ex) {
+            getResponse = new ResultForm<>(0, 0, actuators, true);
+            return noResultFound(getResponse, statusList);
+        } catch (Exception ex) {
+            statusList.add(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, ex.getMessage()));
+            getResponse = new ResultForm<>(0, 0, actuators, true);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(getResponse).build();
+        }
     }
 }

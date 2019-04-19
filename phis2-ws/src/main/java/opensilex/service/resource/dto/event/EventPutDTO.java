@@ -64,12 +64,14 @@ public class EventPutDTO extends AbstractVerifiedClass {
     }
 
     @URL
+    @NotNull
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EVENT_URI)
     public String getUri() {
         return uri;
     }
 
     @URL
+    @NotNull
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EVENT_TYPE)
     public String getRdfType() {
         return rdfType;
@@ -80,6 +82,7 @@ public class EventPutDTO extends AbstractVerifiedClass {
     }
 
     @URL
+    @NotNull
     @NotEmpty
     public ArrayList<String> getConcernedItemsUris() {
         return concernedItemsUris;
@@ -92,6 +95,7 @@ public class EventPutDTO extends AbstractVerifiedClass {
     @Date(DateFormat.YMDTHMSZZ)
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EVENT_DATE)
     @Required
+    @NotNull
     public String getDate() {
         return date;
     }

@@ -330,7 +330,31 @@ public class DataResourceService extends ResourceService {
      * Save the metadata of a file already stored in an accessible storage (webPath).
      * @param descriptionsDto
      * @param context
+     * @example
+     * [
+     *      {
+     *  	"rdfType": "http://www.opensilex.org/vocabulary/oeso#HemisphericalImage",
+     *  	"date": "2017-06-15T10:51:00+0200",
+     *  	"webPath": "http://www.opensilex.org/images/example.jpg",
+     *  	"concernedItems": [{
+     *           	"uri": "http://www.opensilex.org/demo/DMO2018-1",
+     *			"typeURI": "http://www.opensilex.org/vocabulary/oeso#Experiment"
+     *           }],
+     *  	"provenanceUri": "http://www.opensilex.org/opensilex/id/provenance/1551805521606",
+     *  	"metadata": {}
+     *      }
+     * ]
      * @return the insertion result. 
+     * @example
+     * {
+     *      "metadata": {
+     *          "pagination": null,
+     *          "status": [],
+     *          "datafiles": [
+     *              "http://www.opensilex.org/opensilex/id/dataFile/HemisphericalImage/ynckimhx54ejoppqewxw2o4aje44kdfvsaimdkptypznrzzbreoa45ae8ad4836741e0ad1a48838bb525bb"
+     *          ]
+     *      }
+     * }
      */
     @POST
     @Path("files")

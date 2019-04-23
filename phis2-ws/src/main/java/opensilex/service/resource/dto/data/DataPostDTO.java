@@ -54,7 +54,7 @@ public class DataPostDTO extends AbstractVerifiedClass {
      * @example 1.2
      */
     protected Object value;
-    
+
     @URL
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SENSOR_URI)
@@ -77,7 +77,7 @@ public class DataPostDTO extends AbstractVerifiedClass {
         this.variableUri = variableUri;
     }
 
-    @Date(DateFormat.YMDTHMSZ)
+    @Date({DateFormat.YMDTHMSZ, DateFormat.YMD})
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_XSDDATETIME)
     public String getDate() {
@@ -112,20 +112,19 @@ public class DataPostDTO extends AbstractVerifiedClass {
     @Override
     public Data createObjectFromDTO() throws ParseException {
         Data data = new Data();
-        
+
         data.setObjectUri(objectUri);
         data.setVariableUri(variableUri);
         data.setProvenanceUri(provenanceUri);
-        
-        SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
-        data.setDate(df.parse(date));
-        
+
+        data.setDate(DateFormat.parseDateOrDateTime(date, false));
+
         try {
-            data.setValue(df.parse(value.toString()));
+            data.setValue(DateFormat.parseDateOrDateTime(value.toString(), false));
         } catch (ParseException ex) {
             data.setValue(value);
         }
-        
+
         return data;
     }
 }

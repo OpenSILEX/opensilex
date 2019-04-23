@@ -1,8 +1,8 @@
 //******************************************************************************
-//                               EventDAO.java
+//                                EventDAO.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 12 Nov. 2018
+// Creation date: 12  nov. 2018
 // Contact: andreas.garcia@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.dao;
@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
+import opensilex.service.dao.exception.ResourceAccessDeniedException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -43,17 +44,18 @@ import opensilex.service.utils.UriGenerator;
 import opensilex.service.utils.date.Dates;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.view.brapi.Status;
-import opensilex.service.model.Annotation;
 import opensilex.service.model.Event;
 import opensilex.service.model.Property;
 
 /**
- * Events DAO.
- * @update [Andreas Garcia] 14 Feb. 2019: Add event detail service
- * @update [Andreas Garcia] 5 March 2019: Add events insertion service
- * @update [Andréas Garcia] 5 March 2019: 
- *      Move the generic function to get a string value from a binding set to mother class
+ * DAO for Events
+ * @update [Andreas Garcia] 14 Feb., 2019: Add event detail service
+ * @update [Andreas Garcia] 5 March, 2019: 
+ *      Add events insertion service
+ *      Move the generic function to get a string value from a binding set to Rdf4jDAO
  *      Move concerned items accesses handling into a new ConcernedItemDAO class
+ * @update [Andreas Garcia] 19 March, 2019: remove annotations handling when
+ * getting events from storage
  * @author Andreas Garcia <andreas.garcia@inra.fr>
  */
 public class EventDAO extends Rdf4jDAO<Event> {
@@ -70,7 +72,8 @@ public class EventDAO extends Rdf4jDAO<Event> {
     }
     
     /**
-     * Sets a search query to select an URI and adds a filter according to it if necessary.
+     * Sets a search query to select an URI and adds a filter according to it 
+     * if necessary
      * @example SparQL filter added:
      *  SELECT DISTINCT  ?uri
      *  WHERE {
@@ -95,7 +98,8 @@ public class EventDAO extends Rdf4jDAO<Event> {
     }
     
     /**
-     * Sets a search query to select a type and to filter according to it if necessary.
+     * Sets a search query to select a type and to filter according to it 
+     * if necessary
      * @example SparQL filter added:
      *  SELECT DISTINCT ?rdfType
      *  WHERE {
@@ -160,7 +164,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
     }
     
     /**
-     * Prepares the event search query.
+     * Prepares the event search query
      * @param uri
      * @param type
      * @example
@@ -206,7 +210,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
     }
     
     /**
-     * Prepares the event search query.
+     * Prepares the event search query
      * @example
      * SELECT  ?uri ?rdfType ?dateTimeStamp 
      * WHERE {
@@ -252,7 +256,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
     }
     
     /**
-     * Searches events.
+     * Searches events stored
      * @param searchUri
      * @param searchType
      * @param searchConcernedItemLabel
@@ -289,36 +293,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
     }
     
     /**
-     * Searches an event.
-     * @param searchUri
-     * @return events
-     */
-    public Event searchEvent(String searchUri) {
-        
-        SPARQLQueryBuilder eventDetailedQuery = prepareSearchQueryEventDetailed(searchUri);
-        
-        // get events from storage
-        TupleQuery eventsTupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, eventDetailedQuery.toString());
-        
-        Event event = null;
-        try (TupleQueryResult eventsResult = eventsTupleQuery.evaluate()) {
-            if (eventsResult.hasNext()) {
-                event = getEventFromBindingSet(eventsResult.next());
-                searchEventPropertiesAndSetThemToIt(event);
-                
-                ConcernedItemDAO concernedItemDao = new ConcernedItemDAO(user);
-                event.setConcernedItems(concernedItemDao.searchConcernedItems(event.getUri(), Oeev.concerns.getURI(), null, null, 0, pageSizeMaxValue));
-                
-                AnnotationDAO annotationDAO = new AnnotationDAO(this.user);
-                ArrayList<Annotation> annotations = annotationDAO.searchAnnotations(null, null, event.getUri(), null, null, 0, pageSizeMaxValue);
-                event.setAnnotations(annotations);
-            }
-        }
-        return event;
-    }
-    
-    /**
-     * Generates an insert query for the given event.
+     * Generates an insert query for the given event
      * @param event
      * @return the query
      * @example
@@ -353,6 +328,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
     /**
      * Inserts the given events in the storage.
      * /!\ Prerequisite: data must have been checked before calling this method
+     * @see EventDAO#check(java.util.List) 
      * @param events
      * @return the insertion result, with the error list or the URI of the 
      *         events inserted
@@ -439,7 +415,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
     }
     
     /**
-     * Checks and eventually inserts events in the storage.
+     * Checks and eventually inserts events in the storage
      * @param events
      * @return the insertion result :
      *           Error message if errors found in data
@@ -455,7 +431,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
     }
     
     /**
-     * Checks the given list of events.
+     * Checks the given list of events
      * @param events
      * @return the result with the list of the found errors (empty if no error)
      */
@@ -516,7 +492,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
     }
     
     /**
-     * Searches event properties and set them to it.
+     * Searches event properties and set them to it
      * @param event 
      */
     private void searchEventPropertiesAndSetThemToIt(Event event) {
@@ -531,7 +507,8 @@ public class EventDAO extends Rdf4jDAO<Event> {
     }
 
     /**
-     * Generates a query to count the results of the research with the searched parameters. 
+     * Generates a query to count the results of the research with the 
+     * searched parameters. 
      * @example 
      * SELECT DISTINCT  (COUNT(DISTINCT ?uri) AS ?count) 
      * WHERE {
@@ -568,7 +545,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
     }
 
     /**
-     * Counts the total number of events filtered with the search fields.
+     * Counts the total number of events filtered with the search fields
      * @param searchUri
      * @param searchType
      * @param searchConcernedItemLabel
@@ -628,7 +605,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
     }
 
     @Override
-    public void validate(List<Event> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
+    public void validate(List<Event> objects) throws DAOPersistenceException, DAODataErrorAggregateException, DAOPersistenceException, ResourceAccessDeniedException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

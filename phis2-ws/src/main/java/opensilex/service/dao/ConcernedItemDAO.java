@@ -1,8 +1,8 @@
 //******************************************************************************
-//                            ConcernedItemDAO.java
+//                          ConcernedItemDAOS.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 5 March 2019
+// Creation date: 5 March, 2019
 // Contact: andreas.garcia@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.dao;
@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
+import opensilex.service.dao.exception.ResourceAccessDeniedException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -92,7 +93,7 @@ public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
     }
     
     /**
-     * Prepares the query to search the concerned items of a object.
+     * Prepares the query to search the concerned items of a object
      * @param searchLabel
      * @param searchUri
      * @param concernsRelationUri since "concerns" can designate various
@@ -153,7 +154,7 @@ public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
     }
     
     /**
-     * Searches an object's concerned items with filters.
+     * Searches an object's concerned items with filters
      * @param objectUri 
      * @param concernsRelationUri since "concerns" can designate various
      * relations in various vocabularies (e.g OESO or OEEV), the URI of the 
@@ -185,7 +186,7 @@ public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
     }
     
     /**
-     * Generates an insert query for the links of the given concerned items.
+     * Generates an insert query for the links of the given concerned items
      * @param graphString
      * @param objectResource the concerning object's URI
      * @param concernsRelationUri since "concerns" can designate various
@@ -210,7 +211,7 @@ public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
     }
     
     /**
-     * Checks the existence of the given list of concerned items.
+     * Checks the existence of the given list of concerned items
      * @param concernedItems
      * @return the result with the list of the found errors (empty if no error)
      */
@@ -245,9 +246,10 @@ public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
      * @param objectResource
      * @param concernsRelationUri since "concerns" can designate various
      * relations in various vocabularies (e.g OESO or OEEV), the URI of the 
-     * relation has to be 
+     * relation has to be specified
      * @param concernedItems
-     * @return the insertion result
+     * @return the insertion result, with the error list or the URI of the 
+     * concerned item link inserted
      */
     public POSTResultsReturn insertLinksWithObject(String graph, Resource objectResource, String concernsRelationUri, ArrayList<ConcernedItem> concernedItems) {
         List<Status> status = new ArrayList<>();
@@ -299,7 +301,7 @@ public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
     }
     
     /**
-     * Gets a concerned item from a binding set.
+     * Gets a concerned item from a binding set
      * @param bindingSet
      * @return concerned item
      */
@@ -340,7 +342,7 @@ public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
     }
 
     @Override
-    public void validate(List<ConcernedItem> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
+    public void validate(List<ConcernedItem> objects) throws DAOPersistenceException, DAODataErrorAggregateException, DAOPersistenceException, ResourceAccessDeniedException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

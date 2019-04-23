@@ -21,7 +21,6 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.update.UpdateRequest;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
-import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
@@ -40,7 +39,7 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.model.ConcernedItem;
 
 /**
- * DAO for concerned items
+ * Concerned items DAO.
  * @author Andreas Garcia <andreas.garcia@inra.fr>
  */
 public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
@@ -90,13 +89,6 @@ public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
 
         if (searchConcernedItemUri != null) {
             query.appendAndFilter("regex (str(" + CONCERNED_ITEM_URI_SELECT_NAME_SPARQL + ")" + ", \"" + searchConcernedItemUri + "\", \"i\")");
-        }
-    }
-    
-    /**         
-            if (searchConcernedItemUri != null) {
-                query.appendAndFilter("regex (str(" + CONCERNED_ITEM_URI_SELECT_NAME_SPARQL + ")" + ", \"" + searchConcernedItemUri + "\", \"i\")");
-            }
         }
     }
     

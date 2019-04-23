@@ -296,7 +296,14 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     /**
      * Generates a query to get all the scientific objects contained in a given scientific object (geo:contains).
      * @param objectURI
-     * @return the generated query.
+     * @example
+     * SELECT DISTINCT  ?child ?rdfType 
+     * WHERE {
+     *      <http://www.opensilex.org/opensilex/2019/o19000030>  <http://www.opengis.net/ont/geosparql#contains*>  ?child  . 
+     *      ?child  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
+     * }
+     * @return the query enabling to select all contained element (geo:contains) in objectURI.
+     *         the query enabling to select all descendants
      */
     private SPARQLQueryBuilder prepareSearchChildrenWithContains(String objectURI, String objectType) {
         SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
@@ -782,6 +789,13 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         }
     }
     
+    /**
+     * Check the given scientific object and context and update the scientific object in the given context.
+     * @param scientificObject
+     * @param context
+     * @return the update result.
+     * @throws Exception 
+     */
     public POSTResultsReturn checkAndUpdateInContext(ScientificObject scientificObject, String context) throws Exception {
         POSTResultsReturn updateResult;
         //1. Check the new data for the scientific object

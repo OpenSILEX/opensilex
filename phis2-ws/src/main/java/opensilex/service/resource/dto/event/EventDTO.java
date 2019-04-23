@@ -2,7 +2,7 @@
 //                              EventDTO.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 13 nov. 2018
+// Creation date: 13 Nov. 2018
 // Contact: andreas.garcia@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.resource.dto.event;
@@ -24,7 +24,7 @@ import opensilex.service.model.Property;
 
 /**
  * Event DTO.
- * @author Andréas Garcia<andreas.garcia@inra.fr>
+ * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
 public class EventDTO extends AbstractVerifiedClass {
     
@@ -36,7 +36,7 @@ public class EventDTO extends AbstractVerifiedClass {
      * //SILEX:info
      * "type" can not be used as a field name in DTOs due to XML interpretation issues.
      * @see https://stackoverflow.com/questions/33104232/eclipselink-missing-class-for-indicator-field-value-of-typ
-     * //\
+     * //\SILEX:info
      */
     @URL
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EVENT_TYPE)

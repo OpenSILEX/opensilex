@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                EventSimpleDTO.java
+//                              EventDTO.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 13 Nov. 2018
@@ -26,18 +26,17 @@ import opensilex.service.model.Property;
  * Event DTO.
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
-public class EventSimpleDTO extends AbstractVerifiedClass {
+public class EventDTO extends AbstractVerifiedClass {
     
     @URL
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EVENT_URI)
     private String uri;
     
     /**
-     * SILEX:info
-     * "type" can not be used as a field name in DTOs due to XML interpretation
-     * issues.
+     * //SILEX:info
+     * "type" can not be used as a field name in DTOs due to XML interpretation issues.
      * @see https://stackoverflow.com/questions/33104232/eclipselink-missing-class-for-indicator-field-value-of-typ
-     * SILEX:info
+     * //\SILEX:info
      */
     @URL
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EVENT_TYPE)
@@ -51,10 +50,10 @@ public class EventSimpleDTO extends AbstractVerifiedClass {
     protected ArrayList<PropertyDTO> properties = new ArrayList<>();
     
     /**
-     * Constructor to create a DTO from an Event model.
+     * Constructor from an Event model.
      * @param event 
      */
-    public EventSimpleDTO(Event event) {
+    public EventDTO(Event event) {
         this.uri = event.getUri();
         this.rdfType = event.getType();
         event.getConcernedItems().forEach((concernedItem) -> {
@@ -76,7 +75,7 @@ public class EventSimpleDTO extends AbstractVerifiedClass {
     }
 
     /**
-     * Generates an event model from de DTO.
+     * Generates an event model from a DTO.
      * @return the Event model
      */
     @Override

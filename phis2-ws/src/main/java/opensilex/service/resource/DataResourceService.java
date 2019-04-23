@@ -329,10 +329,11 @@ public class DataResourceService extends ResourceService {
     /**
      * Save the metadata of a file already stored in an accessible storage (webPath).
      * @param descriptionsDto
+     * @param context
      * @return the insertion result. 
      */
     @POST
-    @Path("file")
+    @Path("files")
     @ApiOperation(value = "Post data file")
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Data file and metadata saved", response = ResponseFormPOST.class),
@@ -345,10 +346,11 @@ public class DataResourceService extends ResourceService {
                           value = DocumentationAnnotation.ACCES_TOKEN,
                           example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)  
     public Response postDataFilePath(
-        @ApiParam(value = "File description with metadata", required = true) @NotNull @Valid @FormDataParam("description") List<FileDescriptionWebPathPostDTO> descriptionsDto
+        @ApiParam(value = "Metadata of the file", required = true) @NotNull @Valid List<FileDescriptionWebPathPostDTO> descriptionsDto,
+        @Context HttpServletRequest context
     ) {
         
         FileDescriptionDAO fileDescriptionDao = new FileDescriptionDAO();

@@ -288,6 +288,7 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
             List<Status> status = new ArrayList<>();
             List<String> createdResources = new ArrayList<>();
             boolean hasError = false;
+            
             for (FileDescription fileDescription : fileDescriptions) {
                 // 2. Create unique index on uri for file rdf type collection
                 //   Mongo won't create index if it already exists
@@ -309,7 +310,8 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
                     fileDescription.setUri(uri);
                     
                     //3. Insert metadata first
-                    fileDescriptionCollection.insertMany(session, fileDescriptions);
+                    fileDescriptionCollection.insertOne(session, fileDescription);
+                    createdResources.add(fileDescription.getUri());
                 } catch (MongoException ex) {
                     // Define that an error occurs
                     hasError = true;

@@ -37,7 +37,6 @@ import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.ActuatorDAO;
-import opensilex.service.dao.SensorDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.Actuator;
@@ -177,10 +176,39 @@ public class ActuatorResourceService extends ResourceService {
      * @param actuators
      * @param context
      * @example
-     * 
+     * [
+     *      {
+     *          "uri": "http://www.opensilex.org/opensilex/2019/a19001",
+     *          "rdfType": "http://www.opensilex.org/vocabulary/oeso#Actuator",
+     *          "label": "par03_p",
+     *          "brand": "Skye Instruments",
+     *          "serialNumber": "A1E345F32",
+     *          "inServiceDate": "2017-06-15",
+     *          "dateOfPurchase": "2017-06-15",
+     *          "dateOfLastCalibration": "2017-06-15",
+     *          "personInCharge": "admin@opensilex.org"
+     *      }
+     * ]
      * @return the update result.
      * @example
-     * 
+     * {
+     *      "metadata": {
+     *          "pagination": null,
+     *          "status": [
+     *              {
+     *                 "message": "Resource(s) updated",
+     *                 "exception": {
+     *                      "type": "Info",
+     *                      "href": null,
+     *                      "details": "Resource(s) updated"
+     *                  }
+     *              }
+     *          ],
+     *          "datafiles": [
+     *              "http://www.opensilex.org/opensilex/2019/a19001"
+     *          ]
+     *      }
+     * }
      */
     @PUT
     @ApiOperation(value = "Put actuator(s)",
@@ -300,6 +328,59 @@ public class ActuatorResourceService extends ResourceService {
         }
     }
     
+    /**
+     * Get actuators by search with the search params. 
+     * @param pageSize
+     * @param page
+     * @param uri
+     * @param rdfType
+     * @param label
+     * @param brand
+     * @param serialNumber
+     * @param inServiceDate
+     * @param dateOfPurchase
+     * @param dateOfLastCalibration
+     * @param personInCharge
+     * @return the list of the actuators.
+     * {
+     *      "metadata": {
+     *          "pagination": {
+     *              "pageSize": 20,
+     *              "currentPage": 0,
+     *              "totalCount": 2,
+     *              "totalPages": 1
+     *          },
+     *          "status": [],
+     *          "datafiles": []
+     *      },
+     *      "result": {
+     *          "data": [
+     *              {
+     *                 "uri": "http://www.opensilex.org/opensilex/2019/a19001",
+     *                 "rdfType": "http://www.opensilex.org/vocabulary/oeso#Actuator",
+     *                 "label": "par03_p",
+     *                 "brand": "Skye Instruments",
+     *                 "serialNumber": "A1E345F32",
+     *                 "inServiceDate": "2017-06-15",
+     *                 "dateOfPurchase": "2017-06-15",
+     *                 "dateOfLastCalibration": "2017-06-15",
+     *                 "personInCharge": "admin@opensilex.org"
+     *              },
+     *              {
+     *                 "uri": "http://www.opensilex.org/opensilex/2019/a19002",
+     *                 "rdfType": "http://www.opensilex.org/vocabulary/oeso#Actuator",
+     *                 "label": "par04_p",
+     *                 "brand": "Skye Instruments",
+     *                 "serialNumber": "A1E345F32",
+     *                 "inServiceDate": "2017-06-15",
+     *                 "dateOfPurchase": "2017-06-15",
+     *                 "dateOfLastCalibration": "2017-06-15",
+     *                 "personInCharge": "admin@opensilex.org"
+     *              }
+     *          ]
+     *      }
+     * }
+     */
     @GET
     @ApiOperation(value = "Get all actuators corresponding to the search params given",
                   notes = "Retrieve all actuators authorized for the user corresponding to the searched params given")

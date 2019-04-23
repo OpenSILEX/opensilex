@@ -18,7 +18,7 @@ import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
 
 /**
- *
+ * DTO for the GET actuator.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ActuatorDTO extends AbstractVerifiedClass {

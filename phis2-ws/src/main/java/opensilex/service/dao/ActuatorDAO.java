@@ -48,7 +48,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
+ * DAO for the actuators. They are stored in the trisplestore.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ActuatorDAO extends Rdf4jDAO<Actuator> {
@@ -285,6 +285,14 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
         return query;
     }
 
+    /**
+     * Update the list of the actuators given. 
+     * /!\ Prerequisite : the actuators must have been checked before, using the check method.
+     * @see ActuatorDAO#check(java.util.List) 
+     * @param actuators
+     * @return the list of the actuators updated.
+     * @throws Exception 
+     */
     @Override
     public List<Actuator> update(List<Actuator> actuators) throws Exception {
         getConnection().begin();
@@ -450,7 +458,7 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
     }
     
     /**
-     * 
+     * Get an actuator from a binding set given resulting from a query to the triplestore.
      * @param bindingSet
      * @param uri
      * @param rdfType
@@ -525,7 +533,6 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
     
     /**
      * Prepare the SPARQL query to return all variables measured by an actuator.
-     * 
      * @param actuatorUri The actuator uri
      * @return The prepared query
      * @example 
@@ -552,7 +559,6 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
     
     /**
      * Return a HashMap of uri => label of the variables measured by the given actuator.
-     * 
      * @param actuator The actuator uri
      * @return HashMap of uri => label
      */
@@ -574,6 +580,12 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
         return variables;
     }
 
+    /**
+     * Find an actuator by its URI.
+     * @param id
+     * @return the actuator if founded.
+     * @throws Exception 
+     */
     @Override
     public Actuator findById(String id) throws Exception {
         SPARQLQueryBuilder findQuery = prepareSearchQuery(null, null, id, null, null, null, null, null, null, null, null);
@@ -650,7 +662,7 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
         if (userDao.isAdmin(user)) {
             //2. check data
             for (Actuator actuator : actuators) {
-                //2.1
+                //2.1 Check if the uri of the actuator exist and corresponds to an actuator.
                 if (actuator.getUri() != null) {
                     if (!existAndIsActuator(actuator.getUri())) {
                          dataOk = false;
@@ -716,6 +728,11 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
         return insertResult;
     }
     
+    /**
+     * Check and update a given list of actuators and return the update result.
+     * @param actuators
+     * @return 
+     */
     public POSTResultsReturn checkAndUpdate(List<Actuator> actuators) {
         POSTResultsReturn updateResult;
         try {

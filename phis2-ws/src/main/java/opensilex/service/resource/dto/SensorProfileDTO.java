@@ -5,8 +5,9 @@
 // Creation date: 28 May 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package opensilex.service.resource.dto.sensor;
+package opensilex.service.resource.dto;
 
+import opensilex.service.resource.dto.rdfResourceDefinition.PropertyDTO;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import javax.validation.Valid;

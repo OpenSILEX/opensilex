@@ -36,7 +36,7 @@ import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.repository.RepositoryException;
 
 /**
- * DAO for concerned items
+ * Concerned items DAO.
  * @author Andreas Garcia <andreas.garcia@inra.fr>
  */
 public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
@@ -110,13 +110,6 @@ public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
         if (searchConcernedItemUri != null) {
             query.appendAndFilter("regex (str(" + CONCERNED_ITEM_URI_SELECT_NAME_SPARQL + "), " 
                     + "\"" + searchConcernedItemUri + "\", \"i\")");
-        }
-    }
-    
-    /**         
-            if (searchConcernedItemUri != null) {
-                query.appendAndFilter("regex (str(" + CONCERNED_ITEM_URI_SELECT_NAME_SPARQL + ")" + ", \"" + searchConcernedItemUri + "\", \"i\")");
-            }
         }
     }
     

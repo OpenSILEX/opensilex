@@ -29,12 +29,6 @@ import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.injection.SessionFactory;
 import opensilex.service.injection.SessionInject;
 import opensilex.service.injection.SessionInjectResolver;
-import opensilex.service.resource.brapi.BrapiCall;
-import opensilex.service.resource.brapi.CallsResourceService;
-import opensilex.service.resource.brapi.StudyDetailsResourceService;
-import opensilex.service.resource.brapi.VariableResourceService;
-import opensilex.service.resource.brapi.TraitsResourceService;
-import opensilex.service.resource.brapi.TokenResourceService;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 
@@ -86,13 +80,6 @@ public class ApplicationInitConfig extends ResourceConfig {
                         .to(new TypeLiteral<InjectionResolver<SessionInject>>() {
                         })
                         .in(Singleton.class);
-                
-                // BrAPI services injection
-                bind(CallsResourceService.class).to(BrapiCall.class);
-                bind(TokenResourceService.class).to(BrapiCall.class);
-                bind(StudyDetailsResourceService.class).to(BrapiCall.class);
-                bind(TraitsResourceService.class).to(BrapiCall.class);
-                bind(VariableResourceService.class).to(BrapiCall.class);
             }
         });
     }

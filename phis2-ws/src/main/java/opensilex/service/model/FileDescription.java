@@ -20,6 +20,7 @@ public class FileDescription {
     private String uri;
     private String filename;
     private String path;
+    private String webPath;
     private String rdfType;
     private Date date;
     private List<ConcernedItem> concernedItems;
@@ -89,5 +90,13 @@ public class FileDescription {
 
     public void setMetadata(Map<String, Object> metadata) {
         this.metadata = metadata;
+    }
+
+    public String getWebPath() {
+        return webPath;
+    }
+
+    public void setWebPath(String webPath) {
+        this.webPath = webPath;
     }
 }

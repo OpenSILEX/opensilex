@@ -59,6 +59,7 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Data;
 import opensilex.service.model.FileDescription;
+import opensilex.service.resource.dto.data.FileDescriptionWebPathPostDTO;
 
 /**
  * Data resource service.
@@ -308,6 +309,83 @@ public class DataResourceService extends ResourceService {
                 description,
                 file
             );
+
+            if (result.getHttpStatus().equals(Response.Status.CREATED)) {
+                postResponse = new ResponseFormPOST(result.statusList);
+                postResponse.getMetadata().setDatafiles(result.getCreatedResources());
+            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                        || result.getHttpStatus().equals(Response.Status.OK)
+                        || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                postResponse = new ResponseFormPOST(result.statusList);
+            }
+
+            return Response.status(result.getHttpStatus()).entity(postResponse).build();
+        } catch (ParseException e) {
+            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
+            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+        }
+    }
+    
+    /**
+     * Save the metadata of a file already stored in an accessible storage (webPath).
+     * @param descriptionsDto
+     * @param context
+     * @example
+     * [
+     *      {
+     *  	"rdfType": "http://www.opensilex.org/vocabulary/oeso#HemisphericalImage",
+     *  	"date": "2017-06-15T10:51:00+0200",
+     *  	"webPath": "http://www.opensilex.org/images/example.jpg",
+     *  	"concernedItems": [{
+     *           	"uri": "http://www.opensilex.org/demo/DMO2018-1",
+     *			"typeURI": "http://www.opensilex.org/vocabulary/oeso#Experiment"
+     *           }],
+     *  	"provenanceUri": "http://www.opensilex.org/opensilex/id/provenance/1551805521606",
+     *  	"metadata": {}
+     *      }
+     * ]
+     * @return the insertion result. 
+     * @example
+     * {
+     *      "metadata": {
+     *          "pagination": null,
+     *          "status": [],
+     *          "datafiles": [
+     *              "http://www.opensilex.org/opensilex/id/dataFile/HemisphericalImage/ynckimhx54ejoppqewxw2o4aje44kdfvsaimdkptypznrzzbreoa45ae8ad4836741e0ad1a48838bb525bb"
+     *          ]
+     *      }
+     * }
+     */
+    @POST
+    @Path("files")
+    @ApiOperation(value = "Post data file")
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "Data file and metadata saved", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)})
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                          dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                          value = DocumentationAnnotation.ACCES_TOKEN,
+                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)  
+    public Response postDataFilePath(
+        @ApiParam(value = "Metadata of the file", required = true) @NotNull @Valid List<FileDescriptionWebPathPostDTO> descriptionsDto,
+        @Context HttpServletRequest context
+    ) {
+        
+        FileDescriptionDAO fileDescriptionDao = new FileDescriptionDAO();
+        AbstractResultForm postResponse = null;
+        try {
+            List<FileDescription> descriptions = new ArrayList<>();
+            for (FileDescriptionWebPathPostDTO description : descriptionsDto) {
+                descriptions.add(description.createObjectFromDTO());
+            }
+            
+            POSTResultsReturn result = fileDescriptionDao.checkAndInsertWithWebPath(descriptions);
 
             if (result.getHttpStatus().equals(Response.Status.CREATED)) {
                 postResponse = new ResponseFormPOST(result.statusList);

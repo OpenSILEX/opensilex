@@ -19,7 +19,7 @@ public final class StatusCodeMsg {
     
     public static final String ACCESS_DENIED = "Access denied";
     public static final String ACCESS_ERROR = "Access error";
-    public static final String ADMINISTRATOR_ONLY = "Request only for administrators";
+    public static final String ADMINISTRATOR_ONLY = "Resource only available for administrators";
     public static final String UNEXPECTED_ERROR = "Unexpected error";
     public static final String ALREADY_EXISTING_DATA = "Already existing data";
     public static final String BAD_CARDINALITY = "Bad cardinality";
@@ -30,10 +30,12 @@ public final class StatusCodeMsg {
     public static final String DATA_REJECTED = "Data rejected";
     public static final String ERR = "Error";
     public static final String ERROR_WHILE_COMMITTING_OR_ROLLING_BACK_TRIPLESTORE_STATEMENT = "Error while committing or rolling back Triplestore statements: ";
-    public static final String EVENT_TO_ADD_IS_EMPTY = "The event to add is empty";
+    public static final String EMPTY_EVENT_LIST = "The event list to create is empty";
+    public static final String EMPTY_ANNOTATION_LIST = "The annotation list to create is empty";
     public static final String EXPECTED_DATE_FORMAT_YMD = "Expected date format : YYYY-MM-DD";
     public static final String FILE_ERROR = "File error";
     public static final String INFO = "Info";
+    public static final String INTERNAL_ERROR = "An internal error occured. Please contact the administrator.";
     public static final String MALFORMED_CREATE_QUERY = "Malformed create query";
     public static final String MALFORMED_UPDATE_QUERY = "Malformed update query";
     public static final String MALFORMED_URI = "Malformed URI";
@@ -42,6 +44,7 @@ public final class StatusCodeMsg {
     public static final String MISSING_FIELDS = "Fields are missing in JSON Data";
     public static final String NO_RESULTS = "No results";
     public static final String POSTGRESQL_ERROR = "PostgresSQL Error";
+    public static final String PERSISTENCE_ERROR = "Persistence system error";
     public static final String QUERY_ERROR = "Query error";
     public static final String URI_TYPE_NOT_IN_DOMAIN_OF_RELATION = "the type of the subject %s is not in the domain of the relation %s";
     public static final String REQUEST_ERROR = "Request error";
@@ -52,10 +55,7 @@ public final class StatusCodeMsg {
     public static final String TRIPLESTOR_ACCESS_ERROR = "Triplestore access error";
     public static final String UNKNOWN_URI = "Unknown URI";
     public static final String UNKNOWN_TYPE = "Unknown type %s";
-    public static final String UNKNOWN_URI_OF_TYPE = "Unknown URI %s of type %s";
     public static final String UNKNOWN_EVENT_URI = "Unknown event URI";
-    public static final String UNKNOWN_CONCERNED_ITEM_URI = "Unknown concerned item's URI %s";
-    public static final String VALUE_TYPE_URI_NOT_IN_RANGE_OF_RELATION = "the type %s of the value %s is not in the range of the relation %s";
-    public static final String WRONG_VALUE = "Wrong value";
+    public static final String WRONG_VALUE = "Wrong value";    
     public static final String INVALID_INPUT_PARAMETERS = "Wrong format parameter(s)";
 }

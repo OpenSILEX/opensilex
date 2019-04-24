@@ -75,8 +75,9 @@ public class SensorProfileDAO extends Rdf4jDAO<SensorProfile> {
      * Checks the given sensor profiles.
      * @param sensorProfiles
      * @return the result with the list of the founded errors (empty if no errors)
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
-    public POSTResultsReturn check(List<SensorProfileDTO> sensorProfiles) {
+    public POSTResultsReturn check(List<SensorProfileDTO> sensorProfiles) throws DAOPersistenceException {
         POSTResultsReturn sensorProfilesCheck;
         //list of the returned status
         List<Status> checkStatus = new ArrayList<>();
@@ -240,14 +241,15 @@ public class SensorProfileDAO extends Rdf4jDAO<SensorProfile> {
     
     /**
      * Checks and inserts the given sensor profiles in the triplestore.
-     * /!\ the sensor profiles properties depends of the sensor type. The list
-     * of expected properties is extracted from the triplestore
+     * /!\ the sensor profiles properties depends of the sensor type.
+     * The list of expected properties is extracted from the triplestore
      * @param sensorProfiles
      * @return the insertion result. Message error if errors founded in data, 
      *         the list of the URIs of the sensors concerned by the given profiles 
      *         if the insertion has been done 
+     * @throws opensilex.service.dao.exception.DAOPersistenceException 
      */
-    public POSTResultsReturn checkAndInsert(List<SensorProfileDTO> sensorProfiles) {
+    public POSTResultsReturn checkAndInsert(List<SensorProfileDTO> sensorProfiles) throws DAOPersistenceException {
         POSTResultsReturn checkResult = check(sensorProfiles);
         if (checkResult.getDataState()) {
             return insert(sensorProfiles);

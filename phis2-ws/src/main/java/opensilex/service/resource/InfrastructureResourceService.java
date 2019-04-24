@@ -28,6 +28,7 @@ import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.InfrastructureDAO;
 import opensilex.service.dao.PropertyDAO;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.ontology.Oeso;
 import opensilex.service.resource.dto.infrastructure.InfrastructureDTO;
@@ -37,14 +38,18 @@ import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Infrastructure;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Infrastructure resource service.
+ * @update [Andréas Garcia] 15 Apr. 2019: handle DAO persistence exceptions thrown by property DAO functions.
  * @author Vincent Migot <vincent.migot@inra.fr>
  */
 @Api("/infrastructures")
 @Path("/infrastructures")
 public class InfrastructureResourceService extends ResourceService {
+    final static Logger LOGGER = LoggerFactory.getLogger(InfrastructureResourceService.class);
     
     /**
      * Searches infrastructures by URI, rdfType. 
@@ -244,18 +249,23 @@ public class InfrastructureResourceService extends ResourceService {
         // Get all properties in the given language and fill them in infrastructure object
         Infrastructure infrastructure = new Infrastructure();
         infrastructure.setUri(uri);
-        if (propertyDAO.getAllPropertiesWithLabels(infrastructure, language)) {
-            // Convert the infrastructure to an InfrastructureDTO
-            list.add(new InfrastructureDTO(infrastructure));
-            
-            // Return it
-            getResponse = new ResultForm<>(propertyDAO.getPageSize(), propertyDAO.getPage(), list, true, list.size());
-            getResponse.setStatus(statusList);
-            return Response.status(Response.Status.OK).entity(getResponse).build();
-        } else {
-            // No result found
-            getResponse = new ResultForm<>(0, 0, list, true, 0);
-            return noResultFound(getResponse, statusList);
+        try {
+            if (propertyDAO.getAllPropertiesWithLabels(infrastructure, language)) {
+                // Convert the infrastructure to an InfrastructureDTO
+                list.add(new InfrastructureDTO(infrastructure));
+                
+                // Return it
+                getResponse = new ResultForm<>(propertyDAO.getPageSize(), propertyDAO.getPage(), list, true, list.size());
+                getResponse.setStatus(statusList);
+                return Response.status(Response.Status.OK).entity(getResponse).build();
+            } else {
+                // No result found
+                getResponse = new ResultForm<>(0, 0, list, true, 0);
+                return noResultFound(getResponse, statusList);
+            }
+        } catch (DAOPersistenceException ex) {
+            LOGGER.error(ex.getMessage(), ex);
+            return getResponseWhenPersistenceError(ex);
         }
     }
 }

@@ -7,7 +7,7 @@
 //******************************************************************************
 package opensilex.service.model;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Concerned item model.
@@ -17,15 +17,17 @@ public class ConcernedItem {
     
     private String uri;
     private String rdfType;
-    private ArrayList<String> labels;
+    private List<String> labels;
+    private String objectLinked;
 
     public ConcernedItem() {
     }
 
-    public ConcernedItem(String uri, String rdfType, ArrayList<String> labels) {
+    public ConcernedItem(String uri, String rdfType, List<String> labels, String objectLinked) {
         this.uri = uri;
         this.rdfType = rdfType;
         this.labels = labels;
+        this.objectLinked = objectLinked;
     }
 
     public String getUri() {
@@ -44,11 +46,19 @@ public class ConcernedItem {
         this.rdfType = rdfType;
     }
 
-    public ArrayList<String> getLabels() {
+    public List<String> getLabels() {
         return labels;
     }
 
-    public void setLabels(ArrayList<String> labels) {
+    public void setLabels(List<String> labels) {
         this.labels = labels;
+    }
+
+    public String getObjectLinked() {
+        return objectLinked;
+    }
+
+    public void setObjectLinked(String objectLinked) {
+        this.objectLinked = objectLinked;
     }
 }

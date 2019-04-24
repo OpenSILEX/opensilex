@@ -50,7 +50,7 @@ public class EventDTO extends AbstractVerifiedClass {
     protected ArrayList<PropertyDTO> properties = new ArrayList<>();
     
     /**
-     * Constructor from an Event model.
+     * Constructor from an Event model
      * @param event 
      */
     public EventDTO(Event event) {
@@ -75,7 +75,7 @@ public class EventDTO extends AbstractVerifiedClass {
     }
 
     /**
-     * Generates an event model from a DTO.
+     * Generates an event model from a DTO
      * @return the Event model
      */
     @Override

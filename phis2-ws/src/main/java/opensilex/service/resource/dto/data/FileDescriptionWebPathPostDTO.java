@@ -1,9 +1,9 @@
 //******************************************************************************
-//                          FileDescriptionPostDTO.java
+//                                FileDescriptionWebPathPostDTO.java
 // SILEX-PHIS
 // Copyright © INRA 2019
-// Creation date: 7 March 2019
-// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Creation date: 23 avr. 2019
+// Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.resource.dto.data;
 
@@ -18,19 +18,19 @@ import java.util.Map;
 import javax.validation.Valid;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.documentation.DocumentationAnnotation;
+import opensilex.service.model.ConcernedItem;
+import opensilex.service.model.FileDescription;
 import opensilex.service.resource.dto.ConcernedItemDTO;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
-import opensilex.service.model.ConcernedItem;
-import opensilex.service.model.FileDescription;
 
 /**
- * File description POST DTO.
- * @author Vincent Migot <vincent.migot@inra.fr>
+ *
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class FileDescriptionPostDTO extends AbstractVerifiedClass {
+public class FileDescriptionWebPathPostDTO extends AbstractVerifiedClass {
     
     /**
      * RDF type of the data file.
@@ -43,6 +43,12 @@ public class FileDescriptionPostDTO extends AbstractVerifiedClass {
      * @example 2018-06-25T15:13:59+0200  
      */
     String date;
+    
+    /**
+     * Web path to the file.
+     * @example http://www.opensilex.org/images/img001.jpg
+     */
+    String webPath;
     
     /**
      * List of concerned items related to the data file.
@@ -114,6 +120,17 @@ public class FileDescriptionPostDTO extends AbstractVerifiedClass {
     public void setMetadata(Map<String, Object> metadata) {
         this.metadata = metadata;
     }
+    
+    @URL
+    @Required
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_DATA_FILE_WEB_PATH)
+    public String getWebPath() {
+        return webPath;
+    }
+
+    public void setWebPath(String webPath) {
+        this.webPath = webPath;
+    }
 
     @Override
     public FileDescription createObjectFromDTO() throws ParseException {
@@ -131,6 +148,7 @@ public class FileDescriptionPostDTO extends AbstractVerifiedClass {
         description.setConcernedItems(items);
         description.setProvenanceUri(getProvenanceUri());
         description.setMetadata(getMetadata());
+        description.setWebPath(getWebPath());
         
         return description;
     }

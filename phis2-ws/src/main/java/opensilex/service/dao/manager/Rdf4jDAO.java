@@ -249,7 +249,11 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
     }
 
     /**
+<<<<<<< HEAD:phis2-ws/src/main/java/phis2ws/service/dao/manager/DAOSesame.java
+     * Check if a given URI exist in the triplestore.
+=======
      * Checks if a URI exists.
+>>>>>>> 14080edfdb41fbc5119c03f87a9e56703a941a3f:phis2-ws/src/main/java/opensilex/service/dao/manager/Rdf4jDAO.java
      * @param uri the uri to test
      * @example
      * ASK {
@@ -284,6 +288,50 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
             return booleanQuery.evaluate();
         } catch (MalformedQueryException | QueryEvaluationException | RepositoryException e) {
             throw (e);
+        }
+    }
+    
+    /**
+     * Check if a given URI exist in a given Graph in the triplestore.
+     * @param uri the uri to test
+     * @param graph
+     * @example
+     * ASK FROM <http://www.mygraph.com> {
+     *  VALUES (?r) { (<http://www.w3.org/2000/01/rdf-schema#Literal>) }
+     *  { ?r ?p ?o }
+     *  UNION
+     *  { ?s ?r ?o }
+     *  UNION
+     *  { ?s ?p ?r }
+     * }
+     * @return true if the uri exist in the graph
+     *         false if it does not exist
+     */
+    public boolean existUriInGraph(String uri, String graph) {
+        if (uri == null) {
+            return false;
+        }
+        if (graph == null) {
+            return false;
+        }
+        try {            
+            String query = "ASK \n" +
+                            "  FROM <" + graph + "> {\n" +
+                            "\n" +
+                            " VALUES (?r) { (<" + uri + ">) }\n" +
+                            " { ?r ?p ?o }\n" +
+                            " UNION\n" +
+                            " { ?s ?r ?o }\n" +
+                            " UNION\n" +
+                            " { ?s ?p ?r }\n" +
+                            "  \n" +
+                            "}";
+            
+            LOGGER.debug(SPARQL_QUERY + query);
+            BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query);
+            return booleanQuery.evaluate();
+        } catch (Exception e) {
+            return false;
         }
     }
 

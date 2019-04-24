@@ -6,7 +6,7 @@
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 
-package opensilex.service.resource.dto;
+package opensilex.service.resource.dto.scientificObject;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ import opensilex.service.resource.validation.interfaces.URL;
  * Scientific object DTO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class ScientificObjectDTO extends AbstractVerifiedClass {
+public class ScientificObjectPostDTO extends AbstractVerifiedClass {
     
     /**
      * Scientific object type.
@@ -68,6 +68,7 @@ public class ScientificObjectDTO extends AbstractVerifiedClass {
         scientificObject.setGeometry(geometry);
         scientificObject.setUriExperiment(experiment);
         scientificObject.setIsPartOf(isPartOf);
+        scientificObject.setYear(year);
         
         if (properties != null) {
             properties.forEach((property) -> {

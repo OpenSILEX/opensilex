@@ -132,6 +132,7 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_DATE = "2017-06-15";
 
     // Specific examples
+    public static final String EXAMPLE_DATA_FILE_WEB_PATH = "http://www.opensilex.org/images/example.jpg";
     public static final String EXAMPLE_EXPERIMENT_URI = "http://www.opensilex.org/demo/DMO2012-1";
     public static final String EXAMPLE_EXPERIMENT_START_DATE = EXAMPLE_DATETIME;
     public static final String EXAMPLE_EXPERIMENT_END_DATE = EXAMPLE_DATETIME;

@@ -511,11 +511,7 @@ public class StudiesResourceService implements BrapiCall {
         ArrayList<Status> statusList = new ArrayList<>();  
 
         ScientificObjectRdf4jDAO scientificObjectsDAO = new ScientificObjectRdf4jDAO();
-        scientificObjectsDAO.experiment = studyDbId;
-        if (observationLevel != null) {
-            scientificObjectsDAO.rdfType = observationLevel;
-        }
-        ArrayList<ScientificObject> scientificObjects = scientificObjectsDAO.allPaginate();
+        ArrayList<ScientificObject> scientificObjects = scientificObjectsDAO.find(null, observationLevel, studyDbId, null);
 
         ExperimentSQLDAO experimentDAO = new ExperimentSQLDAO();
         experimentDAO.uri = studyDbId;
@@ -605,8 +601,7 @@ public class StudiesResourceService implements BrapiCall {
 
         ArrayList<BrapiObservationDTO> observations = new ArrayList();  
         ScientificObjectRdf4jDAO objectDAO = new ScientificObjectRdf4jDAO();
-        objectDAO.experiment = studyDAO.studyDbId;  
-        ArrayList<ScientificObject> objectsList = objectDAO.allPaginate();
+        ArrayList<ScientificObject> objectsList = objectDAO.find(null, null, studyDAO.studyDbId, null);
         ArrayList<Variable> variablesList = new ArrayList();
 
         if (variableURIs.isEmpty()) {  
@@ -657,7 +652,7 @@ public class StudiesResourceService implements BrapiCall {
         for (Data data:dataList){            
             BrapiObservationDTO observation= new BrapiObservationDTO();
             observation.setObservationUnitDbId(object.getUri());
-            observation.setObservationUnitName(object.getAlias());
+            observation.setObservationUnitName(object.getLabel());
             observation.setObservationLevel(object.getRdfType());            
             observation.setStudyDbId(object.getExperiment());
             observation.setObservationVariableDbId(variable.getUri());
@@ -686,7 +681,7 @@ public class StudiesResourceService implements BrapiCall {
         for (ScientificObject object:scientificObjects) {
             BrapiObservationUnitDTO unit = new BrapiObservationUnitDTO(object.getUri());
             unit.setObservationLevel(object.getRdfType());
-            unit.setObservationUnitName(object.getAlias());
+            unit.setObservationUnitName(object.getLabel());
             unit.setStudyDbId(experiment.getUri());
             unit.setStudyName(experiment.getAlias());
             ArrayList<BrapiObservationSummaryDTO> observationsPerObsUnit = new ArrayList(); 

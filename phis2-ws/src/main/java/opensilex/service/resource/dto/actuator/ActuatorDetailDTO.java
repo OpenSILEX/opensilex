@@ -51,6 +51,7 @@ public class ActuatorDetailDTO extends AbstractVerifiedClass {
         rdfType = actuator.getRdfType();
         label = actuator.getLabel();
         brand = actuator.getBrand();
+        model = actuator.getModel();
         serialNumber = actuator.getSerialNumber();
         inServiceDate = actuator.getInServiceDate();
         dateOfPurchase = actuator.getDateOfPurchase();

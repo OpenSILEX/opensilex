@@ -221,11 +221,7 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
     }
 
     /**
-<<<<<<< HEAD:phis2-ws/src/main/java/phis2ws/service/dao/manager/DAOSesame.java
      * Check if a given URI exist in the triplestore.
-=======
-     * Checks if a URI exists.
->>>>>>> 14080edfdb41fbc5119c03f87a9e56703a941a3f:phis2-ws/src/main/java/opensilex/service/dao/manager/Rdf4jDAO.java
      * @param uri the uri to test
      * @example
      * ASK {

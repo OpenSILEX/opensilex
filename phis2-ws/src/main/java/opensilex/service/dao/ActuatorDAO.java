@@ -132,7 +132,7 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
     }
     
     /**
-     * Inster the given actuators in the triplestore.
+     * Insert the given actuators in the triplestore.
      * @param actuators
      * @return The list of actuators inserted
      * @throws Exception 

@@ -71,7 +71,8 @@ public class UriGenerator {
     private static final String URI_CODE_VARIABLE = "v";
     private static final String URI_CODE_VECTOR = "v";
 
-    private static final String PLATFORM_CODE =  PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "infrastructureCode") ;
+    private static final String PLATFORM_CODE = 
+            PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "infrastructureCode") ;
     private static final String PLATFORM_URI = Contexts.PLATFORM.toString();
     private static final String PLATFORM_URI_ID = PLATFORM_URI + "id/";
     private static final String PLATFORM_URI_ID_AGENT = PLATFORM_URI_ID + "agent/";
@@ -87,7 +88,6 @@ public class UriGenerator {
     private static final String PLATFORM_URI_ID_PROVENANCE = PLATFORM_URI_ID + "provenance/";
     
     private static final String EXPERIMENT_URI_SEPARATOR = "-";
-
 
     /**
      * Generates a new vector URI. a vector URI has the following pattern:
@@ -160,7 +160,7 @@ public class UriGenerator {
      * @param year the insertion year of the actuator.
      * @return the new actuator URI
      */
-    private String generateActuatorUri(String year) {
+    private static String generateActuatorUri(String year) {
         //1. get the current number of actuator in the triplestor for the year
         ActuatorDAO actuatorDAO = new ActuatorDAO();
         int lastActuatorIdFromYear = actuatorDAO.getLastIdFromYear(year);

@@ -20,6 +20,8 @@ public class Device {
     protected String label;
     //device brand
     protected String brand;
+    //model of the device
+    private String model;
     //serial number of the device
     protected String serialNumber;
     //first date of device service
@@ -101,5 +103,13 @@ public class Device {
 
     public void setPersonInCharge(String personInCharge) {
         this.personInCharge = personInCharge;
+    }
+    
+    public String getModel() {
+        return model;
+    }
+
+    public void setModel(String model) {
+        this.model = model;
     }
 }

@@ -45,6 +45,12 @@ public enum Oeso {
             return NAMESPACE.toString() + "Camera";
         }
     },
+    CONCEPT_DEVICE {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "Device";
+        }
+    },
     CONCEPT_DOCUMENT {
         @Override
         public String toString() {

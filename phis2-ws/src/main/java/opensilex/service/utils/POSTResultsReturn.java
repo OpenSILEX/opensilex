@@ -31,7 +31,7 @@ public class POSTResultsReturn {
     /**
      * Custom supplementary status.
      */
-    public List statusList;
+    public List statusList = new ArrayList<>();
     public Boolean AlreadyExist; 
     public String errorMsg;
     public List<String> createdResources = new ArrayList<>();

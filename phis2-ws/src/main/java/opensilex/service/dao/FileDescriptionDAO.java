@@ -22,6 +22,7 @@ import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Sorts;
 import java.io.File;
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -254,6 +255,132 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
     }
     
     /**
+     * Check a given list of FileDescription
+     * @param fileDescriptions
+     * @return the check result
+     */
+    private POSTResultsReturn checkList(List<FileDescription> fileDescriptions) {
+        boolean dataOk = true;
+        List<Status> checkStatus = new ArrayList<>();
+        for (FileDescription fileDescription : fileDescriptions) {
+            POSTResultsReturn check = check(fileDescription);
+            if (!check.getDataState()) {
+                checkStatus.addAll(check.getStatusList());
+                dataOk = false;
+            }
+        }
+        POSTResultsReturn result = new POSTResultsReturn(dataOk, null, dataOk);
+        result.statusList = checkStatus;
+        return result;       
+    }
+    
+    /**
+     * Inserts the given data in the MongoDB database.
+     * @param dataList
+     * @return the insertion result
+     */
+    private POSTResultsReturn insertWithWebPath(List<FileDescription> fileDescriptions) {
+        // 1. Initialize transaction
+        MongoClient client = MongoDAO.getMongoClient();
+        POSTResultsReturn result;
+        try (ClientSession session = client.startSession()) {
+            session.startTransaction();
+            result = null;
+            List<Status> status = new ArrayList<>();
+            List<String> createdResources = new ArrayList<>();
+            boolean hasError = false;
+            
+            for (FileDescription fileDescription : fileDescriptions) {
+                // 2. Create unique index on uri for file rdf type collection
+                //   Mongo won't create index if it already exists
+                IndexOptions indexOptions = new IndexOptions().unique(true);
+                String fileCollectionName = getCollectionFromFileType(fileDescription.getRdfType());
+                MongoCollection<FileDescription> fileDescriptionCollection = database.getCollection(fileCollectionName, FileDescription.class);
+                fileDescriptionCollection.createIndex(new BasicDBObject(DB_FIELD_URI, 1), indexOptions);
+                
+                try {
+                    UriGenerator uriGenerator = new UriGenerator();
+                    
+                    Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+                    String key = Long.toString(timestamp.getTime());
+                    String uri = uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);
+                    while (uriExists(fileDescription.getRdfType(), uri)) {
+                        uri = uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);
+                    }
+                    
+                    fileDescription.setUri(uri);
+                    
+                    //3. Insert metadata first
+                    fileDescriptionCollection.insertOne(session, fileDescription);
+                    createdResources.add(fileDescription.getUri());
+                } catch (MongoException ex) {
+                    // Define that an error occurs
+                    hasError = true;
+                    
+                    // Error check if it's because of a duplicated data error
+                    // Add status according to the error type (duplication or unexpected)
+                    if (ex.getCode() == MongoDAO.DUPLICATE_KEY_ERROR_CODE) {
+                        status.add(new Status(
+                                StatusCodeMsg.ALREADY_EXISTING_DATA,
+                                StatusCodeMsg.ERR,
+                                ex.getMessage()
+                        ));
+                    } else {
+                        // Add the original exception message for debugging
+                        status.add(new Status(
+                                StatusCodeMsg.UNEXPECTED_ERROR,
+                                StatusCodeMsg.ERR,
+                                StatusCodeMsg.DATA_REJECTED + " for the file " + fileDescription.getWebPath() + " - " + ex.getMessage()
+                        ));
+                    }
+                } catch (SftpException ex) {
+                    status.add(new Status(
+                            StatusCodeMsg.UNEXPECTED_ERROR,
+                            StatusCodeMsg.ERR,
+                            "An error occurred during file upload, try to submit it again: " + ex.getMessage()
+                    ));
+                    hasError = true;
+                } catch (Exception ex) {
+                    status.add(new Status(
+                            StatusCodeMsg.UNEXPECTED_ERROR,
+                            StatusCodeMsg.ERR,
+                            "Unexpected exception, try to submit it again: " + ex.getMessage()
+                    ));
+                    hasError = true;
+                }
+            }   // 5. Prepare result to return
+            result = new POSTResultsReturn(hasError);
+            result.statusList = status;
+            if (!hasError) {
+                // If no errors commit transaction
+                session.commitTransaction();
+                result.setHttpStatus(Response.Status.CREATED);
+                result.createdResources = createdResources;
+            } else {
+                // If errors abort transaction
+                session.abortTransaction();
+                result.setHttpStatus(Response.Status.INTERNAL_SERVER_ERROR);
+            }
+            // Close transaction session
+        }
+        return result;
+    }
+    
+    /**
+     * Check and insert the given file descriptions.
+     * @param fileDescriptions
+     * @return the insertion result.
+     */
+    public POSTResultsReturn checkAndInsertWithWebPath(List<FileDescription> fileDescriptions) {
+        POSTResultsReturn checkResult = checkList(fileDescriptions);
+        if (checkResult.getDataState()) {
+            return insertWithWebPath(fileDescriptions);
+        } else { //Errors in the data
+            return checkResult;
+        }
+    }
+    
+    /**
      * Checks the given data file description.
      * @param fileDescription
      * @return the check result with the founded errors
@@ -267,30 +394,31 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
         ProvenanceDAO provenanceDAO = new ProvenanceDAO();
         ScientificObjectRdf4jDAO scientificObjectDao = new ScientificObjectRdf4jDAO();
         
+        // 1. Check if the provenance uri exist and is a provenance
         if (!provenanceDAO.existProvenanceUri(fileDescription.getProvenanceUri())) {
-            // 1. Check if the provenance uri exist and is a provenance
             dataOk = false;
             checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
                 "Unknwon provenance : " + fileDescription.getProvenanceUri()));
-        } else if (!scientificObjectDao.existUri(fileDescription.getRdfType())) {
-            // 2. Check if the rdf type uri exist, 
-            // we use scientificObjectDao for convenience to access existUri method
+        } 
+        
+        // 2. Check if the rdf type uri exist, 
+        // we use scientificObjectDao for convenience to access existUri method        
+        if (!scientificObjectDao.existUri(fileDescription.getRdfType())) {
             dataOk = false;
             checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
                 "Unknwon file rdf type : " + fileDescription.getRdfType()));
-        } else {
-            // 3. Check concerned items consistency
-            for(ConcernedItem concernedItem : fileDescription.getConcernedItems()) {
-                if (!scientificObjectDao.existScientificObject(concernedItem.getUri())) {
-                    dataOk = false;
-                    checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
-                        "Unknwon concerned item : " + concernedItem.getUri()));
-                }
-                if (!scientificObjectDao.existUri(concernedItem.getRdfType())) {
-                    dataOk = false;
-                    checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
-                        "Unknwon concerned item type : " + concernedItem.getUri()));
-                }
+        } 
+        // 3. Check concerned items consistency
+        for (ConcernedItem concernedItem : fileDescription.getConcernedItems()) {
+            if (!scientificObjectDao.existScientificObject(concernedItem.getUri())) {
+                dataOk = false;
+                checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
+                    "Unknwon concerned item : " + concernedItem.getUri()));
+            }
+            if (!scientificObjectDao.existUri(concernedItem.getRdfType())) {
+                dataOk = false;
+                checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
+                    "Unknwon concerned item type : " + concernedItem.getUri()));
             }
         }
         

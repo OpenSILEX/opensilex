@@ -133,7 +133,8 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_DATE = "2017-06-15";
 
     // Specific examples
-    public static final String EXAMPLE_EXPERIMENT_URI = "http://phenome-fppn.fr/diaphen/DIA2012-1";
+    public static final String EXAMPLE_DATA_FILE_WEB_PATH = "http://www.opensilex.org/images/example.jpg";
+    public static final String EXAMPLE_EXPERIMENT_URI = "http://www.opensilex.org/demo/DMO2012-1";
     public static final String EXAMPLE_EXPERIMENT_START_DATE = EXAMPLE_DATETIME;
     public static final String EXAMPLE_EXPERIMENT_END_DATE = EXAMPLE_DATETIME;
     public static final String EXAMPLE_EXPERIMENT_FIELD = "field";
@@ -148,7 +149,9 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_FILE_INFORMATION_CHECKSUM = "106fa487baa1728083747de1c6df73e9";
     public static final String EXAMPLE_FILE_INFORMATION_EXTENSION = "jpg";
 
-    public static final String EXAMPLE_SCIENTIFIC_OBJECT_URI = "http://www.phenome-fppn.fr/phenovia/2017/o1032481";
+    public static final String EXAMPLE_SCIENTIFIC_OBJECT_LABEL = "POZ_1";
+    public static final String EXAMPLE_SCIENTIFIC_OBJECT_POLYGON = "POLYGON((0 0, 10 0, 10 10, 0 10, 0 0))";
+    public static final String EXAMPLE_SCIENTIFIC_OBJECT_URI = "http://www.opensilex.org/demo/2018/o18000076";
     public static final String EXAMPLE_SCIENTIFIC_OBJECT_TYPE = "http://www.opensilex.org/vocabulary/oeso#Plot";
 
     public static final String EXAMPLE_IMAGE_TYPE = "http://www.opensilex.org/vocabulary/oeso#HemisphericalImage";
@@ -217,6 +220,7 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_SENSOR_RDF_TYPE = "http://www.opensilex.org/vocabulary/oeso#Sensor";
     public static final String EXAMPLE_SENSOR_LABEL = "par03_p";
     public static final String EXAMPLE_SENSOR_BRAND = "Skye Instruments";
+    public static final String EXAMPLE_SENSOR_MODEL = "m001";
     public static final String EXAMPLE_SENSOR_VARIABLE = "http://www.phenome-fppn.fr/phenovia/id/variables/v001";
     public static final String EXAMPLE_SENSOR_IN_SERVICE_DATE = EXAMPLE_DATE;
     public static final String EXAMPLE_SENSOR_DATE_OF_PURCHASE = EXAMPLE_DATE;

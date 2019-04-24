@@ -22,6 +22,14 @@ public class ScientificObject {
     private String uri;
     
     /**
+     * //SILEX:todo
+     * For the moment it is an attribute.
+     * Modify getAO (search) getting all properties, alias included
+     */
+    private String alias;
+       //\SILEX:todo
+    
+    /**
      * Type.
      */
     private String rdfType;
@@ -40,14 +48,11 @@ public class ScientificObject {
      * Object which has part the scientific object
      */
     private String isPartOf;
-    
-    /**
-     * //SILEX:todo
-     * For the moment it is an attribute.
-     * Modify getAO (search) getting all properties, alias included
-     */
-    private String alias;
-       //\SILEX:todo
+    //year of the scientific object
+    private String year;
+    //label of the scientific object
+    private String label;
+    //The properties of the scientific object
     
     private ArrayList<Property> properties = new ArrayList<>();
 
@@ -98,12 +103,12 @@ public class ScientificObject {
         properties.add(property);
     }
 
-    public String getAlias() {
-        return alias;
+    public String getLabel() {
+        return label;
     }
 
-    public void setAlias(String alias) {
-        this.alias = alias;
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     public String getExperiment() {
@@ -120,5 +125,13 @@ public class ScientificObject {
 
     public void setIsPartOf(String isPartOf) {
         this.isPartOf = isPartOf;
+    }
+
+    public String getYear() {
+        return year;
+    }
+
+    public void setYear(String year) {
+        this.year = year;
     }
 }

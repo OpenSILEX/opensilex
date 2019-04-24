@@ -252,6 +252,12 @@ public enum Oeso {
             return NAMESPACE.toString() + "hasMethod";
         }
     },
+    RELATION_HAS_MODEL {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasModel";
+        }
+    },
     RELATION_HAS_PLOT {
         @Override
         public String toString() {
@@ -268,6 +274,12 @@ public enum Oeso {
         @Override
         public String toString() {
             return NAMESPACE.toString() + "hasReplication";
+        }
+    },
+    RELATION_HAS_SERIAL_NUMBER {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasSerialNumber";
         }
     },
     RELATION_HAS_SHAPE {
@@ -340,12 +352,6 @@ public enum Oeso {
         @Override
         public String toString() {
             return NAMESPACE.toString() + "personInCharge";
-        }
-    },
-    RELATION_HAS_SERIAL_NUMBER {
-        @Override
-        public String toString() {
-            return NAMESPACE.toString() + "hasSerialNumber";
         }
     },
     RELATION_STATUS {

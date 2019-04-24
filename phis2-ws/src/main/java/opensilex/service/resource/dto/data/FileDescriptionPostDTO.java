@@ -67,7 +67,7 @@ public class FileDescriptionPostDTO extends AbstractVerifiedClass {
 
     @URL
     @Required
-    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_RDFTYPE_URI)
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_IMAGE_TYPE)
     public String getRdfType() {
         return rdfType;
     }

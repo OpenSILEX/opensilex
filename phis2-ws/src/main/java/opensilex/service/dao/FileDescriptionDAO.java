@@ -266,6 +266,7 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
             POSTResultsReturn check = check(fileDescription);
             if (!check.getDataState()) {
                 checkStatus.addAll(check.getStatusList());
+                dataOk = false;
             }
         }
         POSTResultsReturn result = new POSTResultsReturn(dataOk, null, dataOk);
@@ -393,30 +394,31 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
         ProvenanceDAO provenanceDAO = new ProvenanceDAO();
         ScientificObjectRdf4jDAO scientificObjectDao = new ScientificObjectRdf4jDAO();
         
+        // 1. Check if the provenance uri exist and is a provenance
         if (!provenanceDAO.existProvenanceUri(fileDescription.getProvenanceUri())) {
-            // 1. Check if the provenance uri exist and is a provenance
+            dataOk = false;
+            checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR,
+                "Unknwon provenance : " + fileDescription.getProvenanceUri()));
+        } 
+        
+        // 2. Check if the rdf type uri exist, 
+        // we use scientificObjectDao for convenience to access existUri method        
+        if (!scientificObjectDao.existUri(fileDescription.getRdfType())) {
             dataOk = false;
             checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
-                "Unknown provenance : " + fileDescription.getProvenanceUri()));
-        } else if (!scientificObjectDao.existUri(fileDescription.getRdfType())) {
-            // 2. Check if the rdf type uri exist, 
-            // we use scientificObjectDao for convenience to access existUri method
-            dataOk = false;
-            checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
-                "Unknown file rdf type : " + fileDescription.getRdfType()));
-        } else {
-            // 3. Check concerned items consistency
-            for(ConcernedItem concernedItem : fileDescription.getConcernedItems()) {
-                if (!scientificObjectDao.existScientificObject(concernedItem.getUri())) {
-                    dataOk = false;
-                    checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
-                        "Unknown concerned item : " + concernedItem.getUri()));
-                }
-                if (!scientificObjectDao.existUri(concernedItem.getRdfType())) {
-                    dataOk = false;
-                    checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
-                        "Unknown concerned item type : " + concernedItem.getUri()));
-                }
+                "Unknwon file rdf type : " + fileDescription.getRdfType()));
+        } 
+        // 3. Check concerned items consistency
+        for (ConcernedItem concernedItem : fileDescription.getConcernedItems()) {
+            if (!scientificObjectDao.existScientificObject(concernedItem.getUri())) {
+                dataOk = false;
+                checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
+                    "Unknwon concerned item : " + concernedItem.getUri()));
+            }
+            if (!scientificObjectDao.existUri(concernedItem.getRdfType())) {
+                dataOk = false;
+                checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
+                    "Unknwon concerned item type : " + concernedItem.getUri()));
             }
         }
         

@@ -8,6 +8,7 @@
 package opensilex.service.dao;
 
 import java.util.List;
+import opensilex.service.configuration.DateFormat;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
@@ -23,15 +24,19 @@ import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.dao.manager.Rdf4jDAO;
+import opensilex.service.model.Instant;
 import opensilex.service.model.User;
 import opensilex.service.ontology.Time;
 import opensilex.service.ontology.Xsd;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.utils.date.Dates;
+import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.utils.sparql.SPARQLStringBuilder;
+import org.eclipse.rdf4j.query.BindingSet;
 
 /**
  * Time object DAO.
+ * @update [Andréas Garcia] 8 Apr. 2019: Manipulate Instant objects. Add update builder delete implementation.
  * @author Andreas Garcia <andreas.garcia@inra.fr>
  */
 public class TimeDAO extends Rdf4jDAO<Time> {
@@ -45,15 +50,6 @@ public class TimeDAO extends Rdf4jDAO<Time> {
     
     protected static final String DATE_RANGE_END_DATETIME_SELECT_NAME = "dateRangeEndDateTime";
     protected static final String DATE_RANGE_END_DATETIME_SELECT_NAME_SPARQL = "?" + DATE_RANGE_END_DATETIME_SELECT_NAME;
-    
-    // constants used for SPARQL names in the SELECT
-    private static final String XSD_DATE_TIME_STAMP_SELECT_NAME = "XSDDateTimeStamp";
-    private static final String XSD_DATE_TIME_STAMP_SELECT_NAME_SPARQL = "?" + XSD_DATE_TIME_STAMP_SELECT_NAME;
-    private static final String TIME_SELECT_NAME = "time";
-    private static final String TIME_SELECT_NAME_SPARQL = "?" + TIME_SELECT_NAME;
-    
-    private static final String DATETIMESTAMP_SELECT_NAME = "dateTimeStamp";
-    private static final String DATETIMESTAMP_SELECT_NAME_SPARQL = "?" + DATETIMESTAMP_SELECT_NAME;
 
     public TimeDAO(User user) {
         super(user);
@@ -79,13 +75,16 @@ public class TimeDAO extends Rdf4jDAO<Time> {
      *   BIND(xsd:dateTime(str("2017-09-10T12:00:00+01:00")) as ?dateRangeStartDateTime) .
      *   FILTER ( (?dateRangeStartDateTime <= ?dateTime) ) 
      */
-    protected void filterSearchQueryWithDateTimeStampComparison( SPARQLStringBuilder query, String filterDateString, String filterDateFormat, String filterDateSparqlVariable, String comparisonSign, String dateTimeStampToCompareSparqlVariable){
+    public static void filterSearchQueryWithDateTimeStampComparison(SPARQLStringBuilder query, String filterDateString, String filterDateFormat, String filterDateSparqlVariable, String comparisonSign, String dateTimeStampToCompareSparqlVariable){
         
         DateTime filterDate = Dates.stringToDateTimeWithGivenPattern(filterDateString, filterDateFormat);
         
-        String filterDateStringInSparqlDateTimeStampFormat = DateTimeFormat.forPattern(DATETIMESTAMP_FORMAT_SPARQL).print(filterDate);
+        String filterDateStringInSparqlDateTimeStampFormat = 
+                DateTimeFormat.forPattern(DATETIMESTAMP_FORMAT_SPARQL).print(filterDate);
 
-        query.appendToBody("\nBIND(<" + Xsd.FUNCTION_DATETIME.toString() + ">(str(\"" + filterDateStringInSparqlDateTimeStampFormat + "\")) as " + filterDateSparqlVariable + ") .");
+        query.appendToBody(
+                "\nBIND(<" + Xsd.FUNCTION_DATETIME.toString() + ">(str(\"" 
+                + filterDateStringInSparqlDateTimeStampFormat + "\")) as " + filterDateSparqlVariable + ") .");
         
         query.appendAndFilter(filterDateSparqlVariable + comparisonSign + dateTimeStampToCompareSparqlVariable);
     }
@@ -97,7 +96,7 @@ public class TimeDAO extends Rdf4jDAO<Time> {
      * @param filterRangeDatesStringFormat
      * @param filterRangeStartDateString
      * @param filterRangeEndDateString
-     * @param dateTimeStampToCompareSparqleVariable the SPARQL variable (?abc 
+     * @param dateTimeStampToCompareSparqlName the SPARQL variable (?abc 
      * format) of the dateTimeStamp to compare to the range
      * @example SparQL code added to the query :
      *   BIND(xsd:dateTime(str(?dateTimeStamp)) as ?dateTime) .
@@ -105,9 +104,18 @@ public class TimeDAO extends Rdf4jDAO<Time> {
      *   BIND(xsd:dateTime(str("2017-09-12T12:00:00+01:00")) as ?dateRangeEndDateTime) .
      *   FILTER ( (?dateRangeStartDateTime <= ?dateTime) && (?dateRangeEndDateTime >= ?dateTime) ) 
      */
-    public void filterSearchQueryWithDateRangeComparisonWithDateTimeStamp(SPARQLStringBuilder query, String filterRangeDatesStringFormat, String filterRangeStartDateString, String filterRangeEndDateString, String dateTimeStampToCompareSparqleVariable){
+    public static void filterSearchQueryWithDateRangeComparisonWithDateTimeStamp(SPARQLQueryBuilder query, String objectUriLinkedToInstant, String instantSparqlName, String filterRangeDatesStringFormat, String filterRangeStartDateString, String filterRangeEndDateString, String dateTimeStampToCompareSparqlName, boolean inGroupBy){
         
-        query.appendToBody("\nBIND(<" + Xsd.FUNCTION_DATETIME.toString() + ">(str(" + dateTimeStampToCompareSparqleVariable + ")) as " + DATETIME_SELECT_NAME_SPARQL + ") .");
+        query.appendSelect(instantSparqlName);
+        query.appendSelect(dateTimeStampToCompareSparqlName);
+        if (inGroupBy) {
+            query.appendGroupBy(instantSparqlName);
+            query.appendGroupBy(dateTimeStampToCompareSparqlName);
+        }
+        query.appendTriplet(objectUriLinkedToInstant, Time.hasTime.toString(), instantSparqlName, null);
+        query.appendTriplet(instantSparqlName, Time.inXSDDateTimeStamp.toString(), dateTimeStampToCompareSparqlName, null);
+        
+        query.appendToBody("\nBIND(<" + Xsd.FUNCTION_DATETIME.toString() + ">(str(" + dateTimeStampToCompareSparqlName + ")) as " + DATETIME_SELECT_NAME_SPARQL + ") .");
         
         if (filterRangeStartDateString != null){
             filterSearchQueryWithDateTimeStampComparison(
@@ -130,28 +138,61 @@ public class TimeDAO extends Rdf4jDAO<Time> {
     }
     
     /**
-     * Inserts an Instant linked to the given URI in the given graph with the 
-     * given date value.
+     * Inserts an Instant linked to the given URI in the given graph with the given date value.
      * @param updateBuilder
      * @param graph
      * @param resourceLinkedToInstant
-     * @param dateTime
+     * @param instant
      * @throws java.lang.Exception
      */
-    public void addInsertToUpdateBuilderWithInstant(UpdateBuilder updateBuilder, Node graph, Resource resourceLinkedToInstant, DateTime dateTime) throws Exception {
-        // Add insert instant uri with type
-        UriGenerator uriGenerator = new UriGenerator();
-        String instantUri = uriGenerator.generateNewInstanceUri(Time.Instant.toString(), null, null);
+    public static void addInsertInstantToUpdateBuilder(UpdateBuilder updateBuilder, Node graph, Resource resourceLinkedToInstant, Instant instant) 
+            throws Exception {
+        // Add insert instant URI with type
+        String instantUri = UriGenerator.generateNewInstanceUri(Time.Instant.toString(), null, null);
         Resource instantResource = ResourceFactory.createResource(instantUri);
         updateBuilder.addInsert(graph, instantResource, RDF.type, Time.Instant);
 
         // Add date time stamp to instant
-        DateTimeFormatter formatter = DateTimeFormat.forPattern(DATETIMESTAMP_FORMAT_SPARQL);
-        Literal dateLiteral = ResourceFactory.createTypedLiteral(dateTime.toString(formatter), XSDDatatype.XSDdateTime);
-        updateBuilder.addInsert(graph, instantResource, Time.inXSDDateTimeStamp, dateLiteral);
+        Literal dateTimeLiteral = getLiteralFromDateTime(instant.getDateTime());
+        updateBuilder.addInsert(graph, instantResource, Time.inXSDDateTimeStamp, dateTimeLiteral);
 
         // Link resource to instant
         updateBuilder.addInsert(graph, resourceLinkedToInstant, Time.hasTime, instantResource);
+    }
+    
+    /**
+     * Adds a delete statement to an update builder for an Instant linked to the given URI in the given graph. 
+     * @param updateBuilder
+     * @param graph
+     * @param linkedResource
+     * @param instant
+     * @throws java.lang.Exception
+     */
+    public static void addDeleteInstantToUpdateBuilder(UpdateBuilder updateBuilder, Node graph, Resource linkedResource, Instant instant) 
+            throws Exception {
+        Resource instantResource = ResourceFactory.createResource(instant.getUri());
+        Literal dateTimeLiteral = getLiteralFromDateTime(instant.getDateTime());
+        updateBuilder.addDelete(graph, instantResource, RDF.type, Time.Instant);
+        updateBuilder.addDelete(graph, instantResource, Time.inXSDDateTimeStamp, dateTimeLiteral);
+        updateBuilder.addDelete(graph, linkedResource, Time.hasTime, instantResource);
+    }
+    
+    public static Instant getInstantFromBindingSet(BindingSet bindingSet, String instantUriSelectName, String dateTimeStampSelectName) {
+        String instantDateTimeString = getStringValueOfSelectNameFromBindingSet(dateTimeStampSelectName, bindingSet);    
+        String instantUri = getStringValueOfSelectNameFromBindingSet(instantUriSelectName, bindingSet);    
+        DateTime InstantDateTime = 
+                Dates.stringToDateTimeWithGivenPattern(instantDateTimeString, DateFormat.YMDTHMSZZ.toString());
+        return new Instant(instantUri, InstantDateTime);
+    }
+    
+    /**
+     * Builds a Literal date from a Datetime date.
+     * @param datetime
+     * @return 
+     */
+    public static Literal getLiteralFromDateTime(DateTime datetime) {
+        DateTimeFormatter formatter = DateTimeFormat.forPattern(DATETIMESTAMP_FORMAT_SPARQL);
+        return ResourceFactory.createTypedLiteral(datetime.toString(formatter), XSDDatatype.XSDdateTime);
     }
 
     @Override

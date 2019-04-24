@@ -16,9 +16,12 @@ import javax.ws.rs.core.Response;
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class POSTResultsReturn {
-    private Boolean resultState; // Le résultat de insert et data (bon si les 2 snt ok et faux sinon)
-    private Boolean insertState; // Si l'insertion a été réussie
-    private Boolean dataState; //état des données (si elles sont correctes)
+    
+    public final static String NEW_RESOURCES_CREATED_MESSAGE = "%d new resource(s) created";
+    
+    private Boolean resultState;
+    private Boolean insertState;
+    private Boolean dataState;
     
     /**
      * Status to return.

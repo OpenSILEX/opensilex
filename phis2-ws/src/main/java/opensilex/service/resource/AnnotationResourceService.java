@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -31,18 +32,17 @@ import javax.ws.rs.core.Response;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.AnnotationDAO;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
-import opensilex.service.utils.POSTResultsReturn;
-import opensilex.service.view.brapi.Status;
-import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.resource.dto.annotation.AnnotationDTO;
 import opensilex.service.resource.dto.annotation.AnnotationPostDTO;
 import opensilex.service.resource.validation.interfaces.URL;
-import opensilex.service.view.brapi.form.ResponseFormGET;
 import opensilex.service.model.Annotation;
-import opensilex.service.result.ResultForm;
+import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Annotation resource service.
@@ -50,14 +50,19 @@ import opensilex.service.result.ResultForm;
  * class attributes but parameters sent through the search functions.
  * @update [Andreas Garcia] 19 Mar. 2019: make getAnnotations public to be 
  * able to use it from another service.
+ * @update [Andréas Garcia] 8 Apr. 2019: Refactor generic functions into the ResourceService class
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 @Api("/annotations")
 @Path("/annotations")
 public class AnnotationResourceService extends ResourceService {
+    final static Logger LOGGER = LoggerFactory.getLogger(SensorResourceService.class);
+    
+    public final static String EMPTY_ANNOTATION_LIST = "the annotation list to add is empty";
     
     /**
      * Inserts the given annotations in the triplestore.
+     * @param annotationsDtos annotationsDtos
      * @example
      * [
      *   {
@@ -71,13 +76,11 @@ public class AnnotationResourceService extends ResourceService {
      *     ]
      *   }
      * ]
-     * @param annotationsDtos annotations list to save.
      * @param context
      * @return
      */
     @POST
-    @ApiOperation(value = "Post annotations",
-            notes = "Register new annotations in the triplestore")
+    @ApiOperation(value = "Post annotations", notes = "Register new annotations in the triplestore")
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Annotations saved", response = ResponseFormPOST.class),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
@@ -90,38 +93,18 @@ public class AnnotationResourceService extends ResourceService {
             value = DocumentationAnnotation.ACCES_TOKEN,
             example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
-    public Response postAnnotations(
-        @ApiParam(value = DocumentationAnnotation.ANNOTATION_POST_DATA_DEFINITION) @Valid ArrayList<AnnotationPostDTO> annotationsDtos,
+    public Response post(
+        @ApiParam(value = DocumentationAnnotation.ANNOTATION_POST_DATA_DEFINITION) 
+            @Valid ArrayList<AnnotationPostDTO> annotationsDtos,
         @Context HttpServletRequest context) {
-
-        AbstractResultForm postResponse = null;
-        //If there are at least one list of annotations
-        if (annotationsDtos != null && !annotationsDtos.isEmpty()) {
-            AnnotationDAO annotationDao = new AnnotationDAO(userSession.getUser());
-            if (context.getRemoteAddr() != null) {
-                annotationDao.remoteUserAdress = context.getRemoteAddr();
-            }
-            
-            ArrayList<Annotation> annotations = new ArrayList<>();
-            annotationsDtos.forEach((annotationDTO) -> {
-                annotations.add(annotationDTO.createObjectFromDTO());
-            });
-            POSTResultsReturn insertResult = annotationDao.checkAndInsert(annotations);
-            
-            // annotations inserted
-            if (insertResult.getHttpStatus().equals(Response.Status.CREATED)) {
-                postResponse = new ResponseFormPOST(insertResult.statusList);
-                postResponse.getMetadata().setDatafiles(insertResult.getCreatedResources());
-            } else if (insertResult.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                    || insertResult.getHttpStatus().equals(Response.Status.OK)
-                    || insertResult.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                postResponse = new ResponseFormPOST(insertResult.statusList);
-            }
-            return Response.status(insertResult.getHttpStatus()).entity(postResponse).build();
-        } else {
-            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty annotations to add"));
-            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+        
+        // Set DAO
+        AnnotationDAO objectDao = new AnnotationDAO(userSession.getUser());
+        if (context.getRemoteAddr() != null) {
+            objectDao.remoteUserAdress = context.getRemoteAddr();
         }
+        
+        return getPostResponse(objectDao, annotationsDtos, context.getRemoteAddr(), StatusCodeMsg.EMPTY_ANNOTATION_LIST);
     }
 
     /**
@@ -181,7 +164,37 @@ public class AnnotationResourceService extends ResourceService {
             @ApiParam(value = "Search by comment", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_BODY_VALUE) @QueryParam("description") String bodyValue,
             @ApiParam(value = "Search by motivation", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_MOTIVATED_BY) @QueryParam("motivatedBy") @URL String motivatedBy) {
 
-        return getAnnotations(uri, creator, target, bodyValue, motivatedBy, page, pageSize);
+        AnnotationDAO annotationDao = new AnnotationDAO(userSession.getUser());
+        ArrayList<Annotation> annotations;
+        try {
+            annotations = annotationDao.find(uri, creator, target, bodyValue, motivatedBy, page, pageSize);
+        
+        // handle search exceptions
+        } catch (DAOPersistenceException ex) {
+            LOGGER.error(ex.getMessage(), ex);
+            return getResponseWhenPersistenceError(ex);
+        }
+
+        // Returns result
+        if (annotations == null) {
+            return getGETResponseWhenNoResult();
+        } else if (annotations.isEmpty()) {
+            return getGETResponseWhenNoResult();
+        } else {
+            // count
+            try {
+                int totalCount = annotationDao.count(uri, creator, target, bodyValue, motivatedBy);
+                return getGETResponseWhenSuccess(annotations, pageSize, page, totalCount);
+                
+            // handle count exceptions
+            } catch (DAOPersistenceException ex) {
+                LOGGER.error(ex.getMessage(), ex);
+                return getResponseWhenPersistenceError(ex);
+            } catch (Exception ex) {
+                LOGGER.error(ex.getMessage(), ex);
+                return getResponseWhenInternalError(ex);
+            }
+        }
     }
 
     /**
@@ -202,8 +215,6 @@ public class AnnotationResourceService extends ResourceService {
      *    ] 
      * } ] } }
      * @param uri
-     * @param pageSize
-     * @param page
      * @return the information about the annotation if it exists
      */
     @GET
@@ -211,7 +222,11 @@ public class AnnotationResourceService extends ResourceService {
     @ApiOperation(value = "Get a annotation",
             notes = "Retrieve a annotation. Need URL encoded annotation URI")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve a annotation", response = AnnotationDTO.class, responseContainer = "List"),
+        @ApiResponse(
+                code = 200, 
+                message = "Retrieve a annotation", 
+                response = AnnotationDTO.class, 
+                responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
@@ -224,63 +239,41 @@ public class AnnotationResourceService extends ResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAnnotationByUri(
-            @ApiParam(value = DocumentationAnnotation.SENSOR_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @URL @PathParam("uri") String uri,
-            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
-            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
-
-        if (uri == null) {
-            final Status status = new Status(StatusCodeMsg.ACCESS_ERROR, StatusCodeMsg.ERR, "Empty annotation uri");
-            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
-        }
-
-        return getAnnotations(uri, null, null, null, null, page, pageSize);
+            @ApiParam(
+                    value = DocumentationAnnotation.SENSOR_URI_DEFINITION, 
+                    required = true, 
+                    example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) 
+                @URL @PathParam("uri") String uri) {
+        
+        return getGETByUriResponseFromDAOResults(new AnnotationDAO(userSession.getUser()), uri);
     }
 
-    /**
-     * Searches annotations corresponding to search parameters.
-     * @param uri
-     * @param creator
-     * @param target
-     * @param bodyValue
-     * @param motivatedBy
-     * @param page
-     * @param pageSize
-     * @return the annotations corresponding to the search
-     */
-    public Response getAnnotations(String uri, String creator, String target, String bodyValue, String motivatedBy, int page, int pageSize) {
-        ArrayList<Status> statusList = new ArrayList<>();
-        ResultForm<AnnotationDTO> getResponse;
-        AnnotationDAO annotationDao = new AnnotationDAO(userSession.getUser());
-
-        // Count all annotations for this specific request
-        Integer totalCount = annotationDao.count(uri, creator, target, bodyValue, motivatedBy);
-        
-        // Retreive all annotations returned by the query
-        ArrayList<Annotation> annotations = annotationDao.searchAnnotations(
-                uri, 
-                creator, 
-                target, 
-                bodyValue, 
-                motivatedBy, 
-                page, 
-                pageSize);
-        
-        ArrayList<AnnotationDTO> annotationDTOs = new ArrayList();
-
-        if (annotations == null) {
-            getResponse = new ResultForm<>(0, 0, annotationDTOs, true);
-            return noResultFound(getResponse, statusList);
-        } else if (annotations.isEmpty()) {
-            getResponse = new ResultForm<>(0, 0, annotationDTOs, true);
-            return noResultFound(getResponse, statusList);
-        } else {
-            // Generate DTOs
-            annotations.forEach((annotation) -> {
-                annotationDTOs.add(new AnnotationDTO(annotation));
-            });
-            getResponse = new ResultForm<>(pageSize, page, annotationDTOs, true, totalCount);
-            getResponse.setStatus(statusList);
-            return Response.status(Response.Status.OK).entity(getResponse).build();
+    @Override
+    protected ArrayList<AbstractVerifiedClass> getDTOsFromObjects(List<? extends Object> objects) {
+        ArrayList<AbstractVerifiedClass> dtos = new ArrayList();
+        // Generate DTOs
+        objects.forEach((object) -> {
+            dtos.add(new AnnotationDTO((Annotation)object));
+        });
+        return dtos;
+    }
+    
+    @Override
+    protected List<? extends Object> getObjectsFromDTOs (List<? extends AbstractVerifiedClass> dtos)
+            throws Exception {
+        List<Object> objects = new ArrayList<>();
+        for (AbstractVerifiedClass objectDto : dtos) {
+            objects.add((Annotation)objectDto.createObjectFromDTO());
         }
+        return objects;
+    }
+    
+    @Override
+    protected List<String> getUrisFromObjects (List<? extends Object> createdObjects) {
+        List<String> createdUris = new ArrayList<>();
+        createdObjects.forEach(object -> {
+            createdUris.add(((Annotation)object).getUri());
+        });
+        return createdUris;
     }
 }

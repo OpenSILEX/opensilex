@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -22,6 +23,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -35,26 +37,26 @@ import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.EventDAO;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
+import opensilex.service.resource.dto.event.EventGetDTO;
 import opensilex.service.resource.dto.event.EventPostDTO;
-import opensilex.service.resource.dto.event.EventDTO;
 import opensilex.service.resource.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
 import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
-import opensilex.service.utils.POSTResultsReturn;
-import opensilex.service.view.brapi.Status;
-import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
-import opensilex.service.result.ResultForm;
 import opensilex.service.model.Event;
+import opensilex.service.resource.dto.event.EventPutDTO;
+import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 
 /**
  * Service to handle events
- * @update [Andréas Garcia] 14 Feb., 2019: Add GET detail service
- * @update [Andréas Garcia] 5 March, 2019: Add POST service
- * @update [Andréas Garcia] 15 March, 2019: Add GET {uri}/annotations service
+ * @update [Andréas Garcia] 14 Feb. 2019: Add GET detail service
+ * @update [Andréas Garcia] 5 Mar. 2019: Add POST service
+ * @update [Andréas Garcia] 15 Mar. 2019: Add GET {uri}/annotations service
+ * @update [Andréas Garcia] 8 Apr. 2019: Refactor generic functions into the ResourceService class
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
 @Api("/events")
@@ -63,7 +65,7 @@ public class EventResourceService  extends ResourceService {
     final static Logger LOGGER = LoggerFactory.getLogger(EventResourceService.class);
     
     /**
-     * Searches events with filters
+     * Searches events with filters.
      * @example
      * {
      *  {
@@ -108,13 +110,17 @@ public class EventResourceService  extends ResourceService {
      * @param concernedItemLabel
      * @param startDate
      * @param endDate
-     * @return  list of all the events filtered
+     * @return  list of events filtered.
      */
     @GET
     @ApiOperation(value = "Get all events corresponding to the search parameters given.", 
             notes = "Retrieve all events authorized for the user corresponding to the " + "search parameters given")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve all events", response = EventDTO.class, responseContainer = "List"),
+        @ApiResponse(
+                code = 200, 
+                message = "Retrieve all events", 
+                response = EventGetDTO.class, 
+                responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
@@ -126,68 +132,83 @@ public class EventResourceService  extends ResourceService {
             value = DocumentationAnnotation.ACCES_TOKEN, 
             example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getEventsBySearch(
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize, 
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page, 
-        @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_EVENT_URI) @QueryParam("uri") @URL String uri, 
-        @ApiParam(value = "Search by type", example = DocumentationAnnotation.EXAMPLE_EVENT_TYPE) @QueryParam("type") @URL String type, 
-        @ApiParam(value = "Search by concerned item uri", example = DocumentationAnnotation.EXAMPLE_EVENT_CONCERNED_ITEM_URI) @QueryParam("concernedItemUri") @URL String concernedItemUri, 
-        @ApiParam(value = "Search by concerned item label", example = DocumentationAnnotation.EXAMPLE_EVENT_CONCERNED_ITEM_LABEL) @QueryParam("concernedItemLabel") String concernedItemLabel, 
-        @ApiParam(value = "Search by date - start of the range", example = DocumentationAnnotation.EXAMPLE_EVENT_SEARCH_START_DATE) @QueryParam("startDate") @Date(DateFormat.YMDTHMSZZ) String startDate, 
-        @ApiParam(value = "Search by date - end of the range", example = DocumentationAnnotation.EXAMPLE_EVENT_SEARCH_END_DATE) @QueryParam("endDate") @Date(DateFormat.YMDTHMSZZ) String endDate
-    ) {        
-        
+    public Response getEvents(
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) 
+            @QueryParam(GlobalWebserviceValues.PAGE_SIZE) 
+            @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) 
+            @Min(0) int pageSize, 
+        @ApiParam(value = DocumentationAnnotation.PAGE) 
+            @QueryParam(GlobalWebserviceValues.PAGE) 
+            @DefaultValue(DefaultBrapiPaginationValues.PAGE)
+            @Min(0) int page, 
+        @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_EVENT_URI) 
+            @QueryParam("uri") 
+            @URL String uri, 
+        @ApiParam(value = "Search by type", example = DocumentationAnnotation.EXAMPLE_EVENT_TYPE) 
+            @QueryParam("type") 
+            @URL String type, 
+        @ApiParam(
+                value = "Search by concerned item uri", 
+                example = DocumentationAnnotation.EXAMPLE_EVENT_CONCERNED_ITEM_URI) 
+            @QueryParam("concernedItemUri") @URL String concernedItemUri, 
+        @ApiParam(
+                value = "Search by concerned item label", 
+                example = DocumentationAnnotation.EXAMPLE_EVENT_CONCERNED_ITEM_LABEL) 
+            @QueryParam("concernedItemLabel") String concernedItemLabel, 
+        @ApiParam(
+                value = "Search by date - start of the range", 
+                example = DocumentationAnnotation.EXAMPLE_EVENT_SEARCH_START_DATE) 
+            @QueryParam("startDate") 
+            @Date(DateFormat.YMDTHMSZZ) String startDate, 
+        @ApiParam(
+                value = "Search by date - end of the range", 
+                example = DocumentationAnnotation.EXAMPLE_EVENT_SEARCH_END_DATE) 
+            @QueryParam("endDate") 
+            @Date(DateFormat.YMDTHMSZZ) String endDate
+    ) {
         EventDAO eventDAO = new EventDAO(userSession.getUser());
         
-        // 1. Search events with parameters
-        ArrayList<Event> events = eventDAO.searchEvents(
-                uri,
-                type,
-                concernedItemLabel, 
-                concernedItemUri, 
-                startDate, 
-                endDate, 
-                page, 
-                pageSize);
-        
-        // 2. Analyse result
-        ArrayList<EventDTO> eventDTOs = new ArrayList();
-        ArrayList<Status> statusList = new ArrayList<>();
-        ResultForm<EventDTO> responseForm;
-        
-        if (events == null) { // Request failure
-            responseForm = new ResultForm<>(0, 0, eventDTOs, true, 0);
-            return noResultFound(responseForm, statusList);
-        } else if (events.isEmpty()) { // No result
-            responseForm = new ResultForm(0, 0, eventDTOs, true, 0);
-            return noResultFound(responseForm, statusList);
-        } else { // Results
-            
-            // Generate DTOs
-            events.forEach((event) -> {
-                eventDTOs.add(new EventDTO(event));
-            });
-            
-            int eventsCount =  eventDAO.count(
-                uri,
-                type,
-                concernedItemLabel, 
-                concernedItemUri, 
-                startDate, 
-                endDate);
-            
-            responseForm = new ResultForm<>(pageSize, page, eventDTOs, true, eventsCount);
-            if (responseForm.getResult().dataSize() == 0) {
-                return noResultFound(responseForm, statusList);
-            } else {
-                responseForm.setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(responseForm).build();
+        // Search events with parameters
+        ArrayList<Event> events;
+        try {
+            events = eventDAO.find(
+                    uri,
+                    type,
+                    concernedItemLabel,
+                    concernedItemUri,
+                    startDate,
+                    endDate,
+                    page,
+                    pageSize);
+        // handle exceptions
+        } catch (DAOPersistenceException ex) {
+            LOGGER.error(ex.getMessage(), ex);
+            return getResponseWhenPersistenceError(ex);
+        }
+
+        if (events == null) {
+            return getGETResponseWhenNoResult();
+        } else if (events.isEmpty()) {
+            return getGETResponseWhenNoResult();
+        } else {
+            // count results
+            try {
+                int totalCount = eventDAO.count(uri, type, concernedItemLabel, concernedItemUri, startDate, endDate);
+                return getGETResponseWhenSuccess(events, pageSize, page, totalCount);
+                
+            // handle count exceptions
+            } catch (DAOPersistenceException ex) {
+                LOGGER.error(ex.getMessage(), ex);
+                return getResponseWhenPersistenceError(ex);
+            } catch (Exception ex) {
+                LOGGER.error(ex.getMessage(), ex);
+                return getResponseWhenInternalError(ex);
             }
         }
     }
     
     /**
-     * Gets an event
+     * Gets an event from its URI.
      * @example
      * {
      *   "metadata": {
@@ -223,14 +244,14 @@ public class EventResourceService  extends ResourceService {
      *   }
      * }
      * @param uri
-     * @return an event
+     * @return the event found
      */
     @GET
     @Path("{uri}")
     @ApiOperation(value = "Get the event corresponding to the search uri",
                   notes = "Get the event corresponding to the search uri")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Get an event", response = EventDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Get an event", response = EventGetDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
@@ -244,49 +265,18 @@ public class EventResourceService  extends ResourceService {
             example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getEvent(
-        @ApiParam(value = DocumentationAnnotation.EVENT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_EVENT_URI) @PathParam("uri") @URL @Required String uri) {
+    public Response getEventByUri(
+        @ApiParam(
+                value = DocumentationAnnotation.EVENT_URI_DEFINITION, 
+                required = true, 
+                example = DocumentationAnnotation.EXAMPLE_EVENT_URI) 
+            @PathParam("uri") @URL @Required String uri) {
         
-        EventDAO eventDAO = new EventDAO(userSession.getUser());
-        
-        // 1. Search events with parameters
-        ArrayList<Event> events = eventDAO.searchEvents(
-                uri,
-                null,
-                null, 
-                null, 
-                null, 
-                null, 
-                0, 
-                1);
-        
-        // 2. Analyse result
-        ArrayList<EventDTO> eventDTOs = new ArrayList();
-        ArrayList<Status> statusList = new ArrayList<>();
-        ResultForm<EventDTO> responseForm;
-        
-        if (events == null) { // Request failure
-            responseForm = new ResultForm<>(0, 0, eventDTOs, true, 0);
-            return noResultFound(responseForm, statusList);
-        } else if (events.isEmpty()) { // No result
-            responseForm = new ResultForm(0, 0, eventDTOs, true, 0);
-            return noResultFound(responseForm, statusList);
-        } else { // Results
-            
-            eventDTOs.add(new EventDTO(events.get(0)));
-            
-            responseForm = new ResultForm<>(0, 0, eventDTOs, true, 0);
-            if (responseForm.getResult().dataSize() == 0) {
-                return noResultFound(responseForm, statusList);
-            } else {
-                responseForm.setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(responseForm).build();
-            }
-        }
+        return getGETByUriResponseFromDAOResults(new EventDAO(userSession.getUser()), uri);
     }
     
     /**
-     * Gets an event's annotations
+     * Gets an event's annotations.
      * @param pageSize
      * @param page
      * @example
@@ -312,7 +302,10 @@ public class EventResourceService  extends ResourceService {
     @ApiOperation(value = "Get an event's annotations",
                   notes = "Get an event's annotations")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Get an event's annotations", response = RdfResourceDefinitionDTO.class, responseContainer = "List"),
+        @ApiResponse(
+                code = 200, message = "Get an event's annotations", 
+                response = RdfResourceDefinitionDTO.class, 
+                responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
@@ -325,13 +318,21 @@ public class EventResourceService  extends ResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getEventAnnotations(
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
-        @ApiParam(value = DocumentationAnnotation.EVENT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_EVENT_URI) @PathParam("uri") @URL @Required String uri) {
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) 
+        @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+        @ApiParam(value = DocumentationAnnotation.PAGE) 
+            @QueryParam(GlobalWebserviceValues.PAGE) 
+            @DefaultValue(DefaultBrapiPaginationValues.PAGE) 
+            @Min(0) int page,
+        @ApiParam(
+                value = DocumentationAnnotation.EVENT_URI_DEFINITION, 
+                required = true, 
+                example = DocumentationAnnotation.EXAMPLE_EVENT_URI) 
+            @PathParam("uri") @URL @Required String uri) {
         
         AnnotationResourceService annotationResourceService = new AnnotationResourceService();
         annotationResourceService.userSession = userSession;
-        return annotationResourceService.getAnnotations(null, null, uri, null, null, page, pageSize);
+        return annotationResourceService.getAnnotationsBySearch(pageSize, page, null, null, uri, null, null);
     }
         
     /**
@@ -363,8 +364,7 @@ public class EventResourceService  extends ResourceService {
      *          The list of the URIs of the created events
      */
     @POST
-    @ApiOperation(value = "POST event(s)", 
-                  notes = "Register event(s)")
+    @ApiOperation(value = "POST event(s)", notes = "Register event(s)")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Event(s) saved", response = ResponseFormPOST.class),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
@@ -381,40 +381,83 @@ public class EventResourceService  extends ResourceService {
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response postEvents(
+    public Response post(
         @ApiParam(value = DocumentationAnnotation.EVENT_POST_DEFINITION) @Valid ArrayList<EventPostDTO> eventsDtos,
         @Context HttpServletRequest context) {
-        AbstractResultForm postResponse = null;
         
-        if (eventsDtos != null && !eventsDtos.isEmpty()) {
-            EventDAO eventDao = new EventDAO(userSession.getUser());
-            
-            if (context.getRemoteAddr() != null) {
-                eventDao.remoteUserAdress = context.getRemoteAddr();
-            }
-            
-            ArrayList<Event> events = new ArrayList<>();
-            eventsDtos.forEach((eventDto) -> {
-                events.add(eventDto.createObjectFromDTO());
-            });
-            POSTResultsReturn result = eventDao.checkAndInsert(events);
-            Response.Status httpStatus = result.getHttpStatus();
-            
-            if (httpStatus.equals(Response.Status.CREATED)) {
-                postResponse = new ResponseFormPOST(result.statusList);
-                postResponse.getMetadata().setDatafiles(result.getCreatedResources());
-            } else if (httpStatus.equals(Response.Status.BAD_REQUEST)
-                    || httpStatus.equals(Response.Status.OK)
-                    || httpStatus.equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                postResponse = new ResponseFormPOST(result.statusList);
-            }
-            return Response.status(httpStatus).entity(postResponse).build();
-        } else {
-            postResponse = new ResponseFormPOST(new Status(
-                    StatusCodeMsg.REQUEST_ERROR, 
-                    StatusCodeMsg.ERR, 
-                    StatusCodeMsg.EVENT_TO_ADD_IS_EMPTY));
-            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+        // Set DAO
+        EventDAO objectDao = new EventDAO(userSession.getUser());
+        if (context.getRemoteAddr() != null) {
+            objectDao.remoteUserAdress = context.getRemoteAddr();
         }
+        
+        // Get POST response
+        return getPostResponse(objectDao, eventsDtos, context.getRemoteAddr(), StatusCodeMsg.EMPTY_EVENT_LIST);
+    }
+    
+    /**
+     * Radiometric target PUT service.
+     * @param eventsDtos
+     * @param context
+     * @return the response of the service.
+     */
+    @PUT
+    @ApiOperation(value = "Update events")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Event(s) updated", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 404, message = "Event(s) not found"),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = GlobalWebserviceValues.AUTHORIZATION, 
+                required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, 
+                paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response put(
+        @ApiParam(value = DocumentationAnnotation.EVENT_PUT_DEFINITION) @Valid ArrayList<EventPutDTO> eventsDtos,
+        @Context HttpServletRequest context) {
+        
+        // Set DAO
+        EventDAO objectDao = new EventDAO(userSession.getUser());
+        if (context.getRemoteAddr() != null) {
+            objectDao.remoteUserAdress = context.getRemoteAddr();
+        }
+        
+        // Get POST response
+        return getPutResponse(objectDao, eventsDtos, context.getRemoteAddr(), StatusCodeMsg.EMPTY_EVENT_LIST);
+    }
+
+    @Override
+    protected ArrayList<AbstractVerifiedClass> getDTOsFromObjects(List<? extends Object> objects) {
+        ArrayList<AbstractVerifiedClass> dtos = new ArrayList();
+        objects.forEach((object) -> {
+            dtos.add(new EventGetDTO((Event)object));
+        });
+        return dtos;
+    }
+    
+    @Override
+    protected List<? extends Object> getObjectsFromDTOs (List<? extends AbstractVerifiedClass> dtos)
+            throws Exception {
+        List<Object> objects = new ArrayList<>();
+        for (AbstractVerifiedClass objectDto : dtos) {
+            objects.add((Event)objectDto.createObjectFromDTO());
+        }
+        return objects;
+    }
+    
+    @Override
+    protected List<String> getUrisFromObjects (List<? extends Object> createdObjects) {
+        List<String> createdUris = new ArrayList<>();
+        createdObjects.forEach(object -> {
+            createdUris.add(((Event)object).getUri());
+        });
+        return createdUris;
     }
 }

@@ -397,7 +397,7 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
         // 1. Check if the provenance uri exist and is a provenance
         if (!provenanceDAO.existProvenanceUri(fileDescription.getProvenanceUri())) {
             dataOk = false;
-            checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR,
+            checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
                 "Unknwon provenance : " + fileDescription.getProvenanceUri()));
         } 
         

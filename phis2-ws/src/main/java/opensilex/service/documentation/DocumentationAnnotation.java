@@ -110,7 +110,8 @@ public final class DocumentationAnnotation {
     
     public static final String PROVENACE_POST_DEFINITION = "JSON format of provenance";
     
-    public static final String EVENT_POST_DEFINITION = "JSON format of a list of events";
+    public static final String EVENT_POST_DEFINITION = "JSON format of a list of events without URIs";
+    public static final String EVENT_PUT_DEFINITION = "JSON format of a list of events with URIs";
 
     public static final String ADMIN_ONLY_NOTES = "This can only be done by a PHIS-SILEX admin.";
     public static final String USER_ONLY_NOTES = "This can only be done by a PHIS-SILEX user.";

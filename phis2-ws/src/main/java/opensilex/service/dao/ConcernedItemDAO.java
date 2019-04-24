@@ -10,33 +10,30 @@ package opensilex.service.dao;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import opensilex.service.dao.exception.UnknownUriException;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAODataErrorException;
 import opensilex.service.dao.exception.DAOPersistenceException;
-import opensilex.service.dao.exception.ResourceAccessDeniedException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
-import org.apache.jena.update.UpdateRequest;
 import org.eclipse.rdf4j.query.BindingSet;
-import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
-import org.eclipse.rdf4j.query.Update;
-import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.dao.manager.Rdf4jDAO;
-import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.User;
 import opensilex.service.ontology.Rdf;
 import opensilex.service.ontology.Rdfs;
-import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
-import opensilex.service.view.brapi.Status;
 import opensilex.service.model.ConcernedItem;
+import org.eclipse.rdf4j.query.MalformedQueryException;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.repository.RepositoryException;
 
 /**
  * Concerned items DAO.
@@ -44,6 +41,18 @@ import opensilex.service.model.ConcernedItem;
  */
 public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
     final static Logger LOGGER = LoggerFactory.getLogger(ConcernedItemDAO.class);
+    
+    /**
+     * Graph in which the DAO will operate.
+     * @example <http://www.opensilex.org/{instance}/set/events>, <http://www.opensilex.org/{instance}/documents>
+     */
+    private final String graphString;
+    
+    /**
+     * Relation URI of "concerns"
+     * @example oeev:concerns, oeso:concerns
+     */
+    private final String concernsRelationUri;
     
     // constants used for SPARQL names in the SELECT
     private static final String CONCERNED_ITEM_URI_SELECT_NAME = "concernedItemUri";
@@ -55,8 +64,10 @@ public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
     private static final String CONCERNED_ITEM_LABELS_SELECT_NAME = "concernedItemLabels";
     private static final String CONCERNED_ITEM_LABELS_SELECT_NAME_SPARQL = "?" + CONCERNED_ITEM_LABELS_SELECT_NAME;
 
-    public ConcernedItemDAO(User user) {
+    public ConcernedItemDAO(User user, String graph, String concernsRelationUri) {
         super(user);
+        this.graphString = graph;
+        this.concernsRelationUri = concernsRelationUri;
     }
     
     /**
@@ -78,17 +89,27 @@ public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
      */
     public static void prepareQueryWithConcernedItemFilters(SPARQLQueryBuilder query, String objectUriSelectNameSparql, String concernsRelationUri, String searchConcernedItemUri, String searchConcernedItemLabel) {
         if (objectUriSelectNameSparql != null) {
-            query.appendTriplet(objectUriSelectNameSparql, concernsRelationUri, CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, null);
+            query.appendTriplet(
+                    objectUriSelectNameSparql, 
+                    concernsRelationUri, 
+                    CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, 
+                    null);
         }
 
         if (searchConcernedItemLabel != null) {
-            query.appendTriplet(CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, Rdfs.RELATION_LABEL.toString(), CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL, null);
+            query.appendTriplet(
+                    CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, 
+                    Rdfs.RELATION_LABEL.toString(), 
+                    CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL, 
+                    null);
 
-            query.appendAndFilter("regex(" + CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL + ", \"" + searchConcernedItemLabel + "\", \"i\")");
+            query.appendAndFilter("regex(" + CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL + ", " 
+                    + "\"" + searchConcernedItemLabel + "\", \"i\")");
         }
 
         if (searchConcernedItemUri != null) {
-            query.appendAndFilter("regex (str(" + CONCERNED_ITEM_URI_SELECT_NAME_SPARQL + ")" + ", \"" + searchConcernedItemUri + "\", \"i\")");
+            query.appendAndFilter("regex (str(" + CONCERNED_ITEM_URI_SELECT_NAME_SPARQL + "), " 
+                    + "\"" + searchConcernedItemUri + "\", \"i\")");
         }
     }
     
@@ -114,7 +135,7 @@ public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
      * @param objectUri
      * @return query
      */
-    protected static SPARQLQueryBuilder prepareConcernedItemsSearchQuery(String objectUri, String concernsRelationUri, String searchUri, String searchLabel) {
+    private SPARQLQueryBuilder prepareConcernedItemsSearchQuery(String objectUri, String searchUri, String searchLabel) {
         
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
@@ -133,7 +154,7 @@ public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
         query.appendGroupBy(CONCERNED_ITEM_TYPE_SELECT_NAME_SPARQL);
         
         //\SILEX:todo 
-        // concerned items' labels and type are made optional FOR THE MOMENT
+        // concerned items labels and type are made optional FOR THE MOMENT
         // because various objects (like experiments, users, groups etc.) are 
         // stored in the triplestore and PostgreSQL. Types and labels are
         // currently stored in PostgreSQL and therefore are inaccessible
@@ -143,182 +164,154 @@ public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
         //     - migrate these properties into the triplestore
         ///SILEX:todo
         query.beginBodyOptional();
-        query.appendTriplet(CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, Rdf.RELATION_TYPE.toString(), CONCERNED_ITEM_TYPE_SELECT_NAME_SPARQL, null);
-        query.appendTriplet(CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, Rdfs.RELATION_LABEL.toString(), CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL, null);
+        query.appendTriplet(
+                CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, 
+                Rdf.RELATION_TYPE.toString(), 
+                CONCERNED_ITEM_TYPE_SELECT_NAME_SPARQL, 
+                null);
+        query.appendTriplet(
+                CONCERNED_ITEM_URI_SELECT_NAME_SPARQL, 
+                Rdfs.RELATION_LABEL.toString(), 
+                CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL, 
+                null);
         query.endBodyOptional();
         
-        query.appendSelectConcat(CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL, SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR, CONCERNED_ITEM_LABELS_SELECT_NAME_SPARQL);
+        query.appendSelectConcat(
+                CONCERNED_ITEM_LABEL_SELECT_NAME_SPARQL, 
+                SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR, 
+                CONCERNED_ITEM_LABELS_SELECT_NAME_SPARQL);
         
         LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
     }
     
     /**
-     * Searches an object's concerned items with filters
+     * Searches an object concerned items with filters.
      * @param objectUri 
-     * @param concernsRelationUri since "concerns" can designate various
-     * relations in various vocabularies (e.g OESO or OEEV), the URI of the 
-     * relation has to be 
      * @param searchUri 
      * @param searchLabel 
      * @param page 
      * @param pageSize 
      * @return  the object's concerned items
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
-    public ArrayList<ConcernedItem> searchConcernedItems(String objectUri, String concernsRelationUri, String searchUri, String searchLabel, int page, int pageSize) {
+    public ArrayList<ConcernedItem> find(String objectUri, String searchUri, String searchLabel, int page, int pageSize) 
+            throws DAOPersistenceException {
         setPage(page);
         setPageSize(pageSize);
         
         ArrayList<ConcernedItem> concernedItems = new ArrayList<>();
-        SPARQLQueryBuilder concernedItemsQuery = prepareConcernedItemsSearchQuery(objectUri, concernsRelationUri, searchUri, searchLabel);
-        TupleQuery concernedItemsTupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, concernedItemsQuery.toString());
+        SPARQLQueryBuilder concernedItemsQuery = prepareConcernedItemsSearchQuery(
+                objectUri, 
+                searchUri, 
+                searchLabel);
+        TupleQuery concernedItemsTupleQuery = getConnection().prepareTupleQuery(
+                QueryLanguage.SPARQL, 
+                concernedItemsQuery.toString());
 
         try (TupleQueryResult concernedItemsTupleQueryResult = concernedItemsTupleQuery.evaluate()) {
             ConcernedItem concernedItem;
             while(concernedItemsTupleQueryResult.hasNext()) {
-                concernedItem = getConcernedItemFromBindingSet(concernedItemsTupleQueryResult.next());
+                concernedItem = getConcernedItemFromBindingSet(concernedItemsTupleQueryResult.next(), objectUri);
                 if (concernedItem.getUri() != null) {
                     concernedItems.add(concernedItem);
                 }
             }
+        } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
+            handleTriplestoreException(ex);
         }
         return concernedItems;
     }
     
     /**
-     * Generates an insert query for the links of the given concerned items
-     * @param graphString
-     * @param objectResource the concerning object's URI
-     * @param concernsRelationUri since "concerns" can designate various
-     * relations in various vocabularies (e.g OESO or OEEV), the URI of the 
-     * relation has to be 
-     * @param concernedItem
-     * @return the query
+     * Adds statements to an update builder to insert concerned items. 
+     * @param updateBuilder
+     * @param concernedItems
      * @example
      */
-    private UpdateRequest prepareInsertLinkQuery(String graphString, Resource objectResource, String concernsRelationUri, ArrayList<ConcernedItem> concernedItems) {
-        UpdateBuilder updateBuilder = new UpdateBuilder();
-        Node graph = NodeFactory.createURI(graphString);
+    public void addInsertToUpdateBuilder(UpdateBuilder updateBuilder, List<ConcernedItem> concernedItems) {
+        Node graphNode = NodeFactory.createURI(this.graphString);
         Resource concernsRelation = ResourceFactory.createResource(concernsRelationUri);
+        Resource objectLinkedResource;
+        Resource concernedItemResource;
         for (ConcernedItem concernedItem : concernedItems) {
-            Resource concernedItemResource = ResourceFactory.createResource(concernedItem.getUri());
-            updateBuilder.addInsert(graph, objectResource, concernsRelation, concernedItemResource);
+            objectLinkedResource = ResourceFactory.createResource(concernedItem.getObjectLinked());
+            concernedItemResource = ResourceFactory.createResource(concernedItem.getUri());
+            updateBuilder.addInsert(graphNode, objectLinkedResource, concernsRelation, concernedItemResource);
         }
-        UpdateRequest query = updateBuilder.buildRequest();
-        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
-        
-        return query;
     }
     
     /**
-     * Checks the existence of the given list of concerned items
-     * @param concernedItems
-     * @return the result with the list of the found errors (empty if no error)
-     */
-    public POSTResultsReturn check(List<ConcernedItem> concernedItems) {
-        POSTResultsReturn checkResult;
-        List<Status> status = new ArrayList<>();
-        
-        for (ConcernedItem concernedItem : concernedItems) {
-            String concernedItemUri = concernedItem.getUri();
-            if (concernedItemUri != null) {
-
-                // Check the URI if given (in case of an update)
-                if (!existUri(concernedItem.getUri())){
-                    status.add(new Status(
-                            StatusCodeMsg.UNKNOWN_URI, 
-                            StatusCodeMsg.ERR, 
-                            String.format(StatusCodeMsg.UNKNOWN_CONCERNED_ITEM_URI, concernedItemUri)));
-                }
-            } 
-        }
-            
-        boolean dataIsValid = status.isEmpty();
-        checkResult = new POSTResultsReturn(dataIsValid, null, dataIsValid);
-        checkResult.statusList = status;
-        return checkResult;   
-    }
-    
-    /**
-     * Inserts the given concerned items in the storage. 
-     * /!\ Prerequisite: data must have been checked before calling this method
-     * @param graph 
-     * @param objectResource
+     * Generates an insert query for the links of the given concerned items links.
+     * @param updateBuilder
+     * @param graph
+     * @param linkedResource
      * @param concernsRelationUri since "concerns" can designate various
      * relations in various vocabularies (e.g OESO or OEEV), the URI of the 
-     * relation has to be specified
+     * relation has to be
      * @param concernedItems
-     * @return the insertion result, with the error list or the URI of the 
-     * concerned item link inserted
      */
-    public POSTResultsReturn insertLinksWithObject(String graph, Resource objectResource, String concernsRelationUri, ArrayList<ConcernedItem> concernedItems) {
-        List<Status> status = new ArrayList<>();
-        List<String> createdResourcesUris = new ArrayList<>();
-        
-        POSTResultsReturn results;
-        boolean resultState = false;
-        boolean linksInserted = true;
-        
-        getConnection().begin();
-            
-        // Insert links
-        UpdateRequest query = prepareInsertLinkQuery(graph, objectResource, concernsRelationUri, concernedItems);
-            
-        try {
-            Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
-            prepareUpdate.execute();
-        } catch (RepositoryException ex) {
-                LOGGER.error(StatusCodeMsg.ERROR_WHILE_COMMITTING_OR_ROLLING_BACK_TRIPLESTORE_STATEMENT, ex);
-        } catch (MalformedQueryException e) {
-                LOGGER.error(e.getMessage(), e);
-                linksInserted = false;
-                status.add(new Status(
-                        StatusCodeMsg.QUERY_ERROR, 
-                        StatusCodeMsg.ERR, 
-                        StatusCodeMsg.MALFORMED_CREATE_QUERY + " " + e.getMessage()));
+    public static void addDeleteConcernedItemLinksToUpdateBuilder(UpdateBuilder updateBuilder, Node graph, Resource linkedResource, String concernsRelationUri, List<ConcernedItem> concernedItems) {
+        org.apache.jena.rdf.model.Property  concernsJenaProperty = 
+                ResourceFactory.createProperty(concernsRelationUri);
+        for (ConcernedItem concernedItem : concernedItems) {
+            Resource concernedItemResource = ResourceFactory.createResource(concernedItem.getUri());
+            updateBuilder.addDelete(graph, linkedResource, concernsJenaProperty, concernedItemResource);
         }
-        
-        if (linksInserted) {
-            resultState = true;
-            getConnection().commit();
-        } else {
-            getConnection().rollback();
-        }
-        
-        if (getConnection() != null) {
-            getConnection().close();
-        }
-        
-        results = new POSTResultsReturn(resultState, linksInserted, true);
-        results.statusList = status;
-        results.setCreatedResources(createdResourcesUris);
-        if (resultState && !createdResourcesUris.isEmpty()) {
-            results.createdResources = createdResourcesUris;
-            results.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, createdResourcesUris.size() + " " + StatusCodeMsg.RESOURCES_CREATED));
-        }
-        
-        return results;
     }
     
     /**
-     * Gets a concerned item from a binding set
+     * Checks the existence of the given list of concerned items.
+     * @param concernedItems
+     * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
+     */
+    @Override
+    public void validate(List<ConcernedItem> concernedItems) 
+            throws DAODataErrorAggregateException, DAOPersistenceException {       
+        ArrayList<DAODataErrorException> exceptions = new ArrayList<>(); 
+        try {
+            concernedItems.forEach((concernedItem) -> {
+                String concernedItemUri = concernedItem.getUri();
+                if (concernedItemUri != null) {
+                    if (!existUri(concernedItem.getUri())) {
+                        exceptions.add(new UnknownUriException(concernedItemUri, "the concerned item"));
+                    }
+                }
+            });
+            if (exceptions.size() > 0) {
+                throw new DAODataErrorAggregateException(exceptions);
+            }
+        } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
+            handleTriplestoreException(ex);
+        }
+    }
+    
+    /**
+     * Gets a concerned item from a binding set.
      * @param bindingSet
+     * @param objectUri
      * @return concerned item
      */
-    private ConcernedItem getConcernedItemFromBindingSet(BindingSet bindingSet) {
-                
-        String concernedItemUri = getStringValueOfSelectNameFromBindingSet(CONCERNED_ITEM_URI_SELECT_NAME, bindingSet);
-        String concernedItemType = getStringValueOfSelectNameFromBindingSet(CONCERNED_ITEM_TYPE_SELECT_NAME, bindingSet);
+    public static ConcernedItem getConcernedItemFromBindingSet(BindingSet bindingSet, String objectUri) {
+        String uri = getStringValueOfSelectNameFromBindingSet(CONCERNED_ITEM_URI_SELECT_NAME, bindingSet);
+        String type = getStringValueOfSelectNameFromBindingSet(CONCERNED_ITEM_TYPE_SELECT_NAME, bindingSet);
         
-        String concernedItemLabelsConcatenated = getStringValueOfSelectNameFromBindingSet(CONCERNED_ITEM_LABELS_SELECT_NAME, bindingSet);
-        ArrayList<String> concernedItemLabels = new ArrayList<>(Arrays.asList(concernedItemLabelsConcatenated.split(SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR)));
+        String labelsConcatenated = getStringValueOfSelectNameFromBindingSet(
+                CONCERNED_ITEM_LABELS_SELECT_NAME, 
+                bindingSet);
+        ArrayList<String> labels = new ArrayList<>(Arrays.asList(labelsConcatenated.split(
+                SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR)));
 
-        return new ConcernedItem(concernedItemUri, concernedItemType, concernedItemLabels);
+        return new ConcernedItem(uri, type, labels, objectUri);
     }
 
     @Override
     public List<ConcernedItem> create(List<ConcernedItem> objects) throws DAOPersistenceException, Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        UpdateBuilder updateBuilder = new UpdateBuilder();
+        addInsertToUpdateBuilder(updateBuilder, objects);
+        executeUpdateRequest(updateBuilder);
+        return objects;
     }
 
     @Override
@@ -338,11 +331,6 @@ public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
 
     @Override
     public ConcernedItem findById(String id) throws DAOPersistenceException, Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void validate(List<ConcernedItem> objects) throws DAOPersistenceException, DAODataErrorAggregateException, DAOPersistenceException, ResourceAccessDeniedException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

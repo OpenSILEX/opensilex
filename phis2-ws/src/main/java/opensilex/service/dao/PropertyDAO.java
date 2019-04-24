@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                 PropertyDA.java
+//                                 PropertyDAO.java
 // SILEX-PHIS
 // Copyright © INRA 2018
 // Creation date: 29 May 2018
@@ -13,13 +13,16 @@ import java.util.List;
 import java.util.Map;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
+import opensilex.service.dao.exception.DAODataErrorException;
+import opensilex.service.dao.exception.TypeNotInDomainException;
+import opensilex.service.dao.exception.UnknownUriException;
+import opensilex.service.dao.exception.UnknownUriOfTypeException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
-import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.BindingSet;
@@ -27,7 +30,6 @@ import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
-import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,45 +47,57 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.model.Cardinality;
 import opensilex.service.model.RdfResourceDefinition;
 import opensilex.service.model.Property;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
 
 //SILEX:todo
-//use this DAO in the agronomical objects DAO
+//use this DAO in the scientific objects DAO.
 //\SILEX:todo
 
 /**
  * Property DAO.
  * @update [Andréas Garcia] 5 March, 2019: Move URI from the class attributes to 
  * the parameters of the DAO functions
+ * @update [Andréas Garcia] 15 Apr. 2019: throw DAO persistence exceptions when querying issues occure in the functions
+ * used by the event DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class PropertyDAO extends Rdf4jDAO<Property> {
     final static Logger LOGGER = LoggerFactory.getLogger(PropertyDAO.class);
         
-    // This attribute is used to restrict available uri to a specific set of subclass
+    // This attribute is used to restrict available uri to a specific set of subclass.
     private Oeso subClassOf;
 
-    //The following attributes are used to search properties in the Triplestore
-    //the property relation name. 
-    //the relation term is used because it only represents the "vocabulary:property" 
-    //and it does not represents everything around such as domain, range, etc. 
-    //which is represented by the "Property" label
+    /* 
+    The following attributes are used to search properties in the Triplestore
+     the property relation name. 
+     the relation term is used because it only represents the "vocabulary:property" 
+     and it does not represents everything around such as domain, range, etc. 
+     which is represented by the "Property" label.
+    */
     private String relation;
     
-    //the domain label used to query Triplestore
+    // the domain label used to query Triplestore.
     private final String DOMAIN = "domain";
-    //the range label used to query Triplestore
+    
+    // the range label used to query Triplestore.
     private final String RANGE = "range";
-    //the cardinality between a property and a concept, used to query the Triplestore
+    
+    // the cardinality between a property and a concept, used to query the Triplestore.
     private final String CARDINALITY = "cardinality";
-    //the restriction between a property and a concept, used to query the Triplestore
+    
+    // the restriction between a property and a concept, used to query the Triplestore.
     private final String RESTRICTION = "restriction";
-    //a blank node, used to query the Triplestore
+    
+    // a blank node, used to query the Triplestore.
     private final String BLANCK_NODE = "_:x";
-    //a property, used to query the Triplestore
+    
+    // a property, used to query the Triplestore.
     protected final String PROPERTY = "property";
-    //a count result, used to query the Triplestore (count properties)
+    
+    // a count result, used to query the Triplestore (count properties).
     private final String COUNT = "count";
-    //the relation, used to query the Triplestore (cardinalities)
+    
+    // the relation, used to query the Triplestore (cardinalities).
     protected final String RELATION = "relation";
     
     protected final String PROPERTY_TYPE = "propertyType";
@@ -118,7 +132,10 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
         query.appendTriplet("<" + searchUri + ">", "<" + Rdf.RELATION_TYPE.toString() + ">", "?" + RDF_TYPE, null);
         
         if (subClassOf != null) {
-            query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", "<" + subClassOf + ">", null);
+            query.appendTriplet("?" + RDF_TYPE, 
+                    "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", 
+                    "<" + subClassOf + ">", 
+                    null);
         }
         
         LOGGER.debug(SPARQL_QUERY + query.toString());
@@ -138,9 +155,11 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
     private SPARQLQueryBuilder prepareGetDomainQuery(String relationUri) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendSelect("?" + DOMAIN);
-        query.appendTriplet(relationUri, 
-                "<" + Rdfs.RELATION_DOMAIN.toString() + "> "
-                        + "/( <" + Owl.RELATION_UNION_OF.toString() + "> / <" + Rdf.RELATION_REST.toString() + ">*/ <" + Rdf.RELATION_FIRST.toString() + ">)*" , "?" + DOMAIN, null);
+        query.appendTriplet(
+                relationUri, 
+                "<" + Rdfs.RELATION_DOMAIN.toString() + "> /( <" + Owl.RELATION_UNION_OF.toString() + "> "
+                    + "/ <" + Rdf.RELATION_REST.toString() + ">*/ <" + Rdf.RELATION_FIRST.toString() + ">)*" ,
+                "?" + DOMAIN, null);
         
         LOGGER.debug(SPARQL_QUERY + " " + query.toString());
         
@@ -159,9 +178,12 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
     private SPARQLQueryBuilder prepareGetRangeQuery(String relationUri) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendSelect("?" + RANGE);
-        query.appendTriplet(relationUri, 
-                "<" + Rdfs.RELATION_RANGE.toString() + "> "
-                        + "/( <" + Owl.RELATION_UNION_OF.toString() + "> / <" + Rdf.RELATION_REST.toString() + ">*/ <" + Rdf.RELATION_FIRST.toString() + ">)*" , "?" + RANGE, null);
+        query.appendTriplet(
+                relationUri, 
+                "<" + Rdfs.RELATION_RANGE.toString() + "> /( <" + Owl.RELATION_UNION_OF.toString() + "> "
+                    + "/ <" + Rdf.RELATION_REST.toString() + ">*/ <" + Rdf.RELATION_FIRST.toString() + ">)*" , 
+                "?" + RANGE, 
+                null);
         
         LOGGER.debug(SPARQL_QUERY + " " + query.toString());
         
@@ -172,17 +194,21 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
      * Gets in the Triplestore the domain of the property if it exists.
      * @param relationUri
      * @return the domain of the property (attributes relation)
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
-    public ArrayList<String> getPropertyDomain(String relationUri) {
+    public ArrayList<String> getPropertyDomain(String relationUri) throws DAOPersistenceException {
         SPARQLQueryBuilder query = prepareGetDomainQuery(relationUri);
         ArrayList<String> propertyDomains = new ArrayList<>();
         
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-        try (TupleQueryResult result = tupleQuery.evaluate()) {
+        try {
+            TupleQueryResult result = tupleQuery.evaluate();
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 propertyDomains.add(bindingSet.getValue(DOMAIN).toString());
             }
+        } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
+            handleTriplestoreException(ex);
         }
         
         return propertyDomains;
@@ -192,32 +218,36 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
      * Gets in the Triplestore the domain of the property if it exists.
      * @param relationUri
      * @return the domain of the property (attributes relation)
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
-    public ArrayList<String> getPropertyRange(String relationUri) {
+    public ArrayList<String> getPropertyRange(String relationUri) throws DAOPersistenceException {
         SPARQLQueryBuilder query = prepareGetRangeQuery(relationUri);
         ArrayList<String> propertyRangeList = new ArrayList<>();
         
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-        try (TupleQueryResult result = tupleQuery.evaluate()) {
+        try {
+            TupleQueryResult result = tupleQuery.evaluate();
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 propertyRangeList.add(bindingSet.getValue(RANGE).toString());
             }
+        } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
+            handleTriplestoreException(ex);
         }
-        
         return propertyRangeList;
     }
     
     /**
-     * Checks if a given relation can be linked to a given rdfType. 
-     * Check if there is a domain and if the rdfType corresponds to the domain.
+     * Checks if a given relation can be linked to a given rdfType.Check if there is a domain and if the rdfType corresponds to the domain.
      * /!\ relation must contain the relation which domain is checked.
      * @param relationUri
      * @param rdfType the RDF type. e.g. http://www.opensilex.org/vocabulary/oeso#RadiometricTarget
      * @return true if the given property can be linked to the given rdfType
      *         false if the given rdfType is not part of the domain of the property.
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
-    public boolean isRelationDomainCompatibleWithRdfType(String relationUri, String rdfType) {
+    public boolean isRelationDomainCompatibleWithRdfType(String relationUri, String rdfType) 
+            throws DAOPersistenceException {
         ArrayList<String> propertyDomains = getPropertyDomain(relationUri);
         UriDAO uriDao = new UriDAO();
         boolean domainOk = false;
@@ -235,15 +265,16 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
     }
     
     /**
-     * Checks if a given relation can be linked to a given rdfType. 
-     * Checks if there is a domain and if the rdfType corresponds to the domain.
+     * Checks if a given relation can be linked to a given rdfType.Checks if there is a domain and if the rdfType corresponds to the domain.
      * /!\ relation must contain the relation which domain is checked.
      * @param relationUri
-     * @param rdfType the rdf type. e.g. http://www.opensilex.org/vocabulary/oeso#RadiometricTarget
+     * @param rdfType the RDF type. e.g. http://www.opensilex.org/vocabulary/oeso#RadiometricTarget
      * @return true if the given property can be linked to the given rdfType
      *         false if the given rdfType is not part of the domain of the property.
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
-    public boolean isRelationRangeCompatibleWithRdfType(String relationUri, String rdfType) {
+    public boolean isRelationRangeCompatibleWithRdfType(String relationUri, String rdfType) 
+            throws DAOPersistenceException {
         ArrayList<String> propertyRangeList = getPropertyRange(relationUri);
         UriDAO uriDao = new UriDAO();
         boolean isRdfTypeCompatible = false;
@@ -413,7 +444,7 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
      * @example
      * SELECT DISTINCT (count(distinct ?property) as ?count) 
      * WHERE {
-     *  <http://www.phenome-fppn.fr/diaphen/2018/s18523>  <http://www.opensilex.org/vocabulary/oeso#hasLens>  ?property  . 
+     *  <http://www.phenome-fppn.fr/diaphen/2018/s18523>  <http://www.opensilex.org/vocabulary/oeso#hasLens>  ?property. 
      * }
      */
     private SPARQLQueryBuilder prepareGetProperties(String objectUri, String relationUri) {
@@ -436,14 +467,14 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
      */
     private HashMap<String, ArrayList<PropertyPostDTO>> orderPropertiesByRelation(ArrayList<PropertyPostDTO> properties) {
         HashMap<String, ArrayList<PropertyPostDTO>> propertiesByRelation = new HashMap<>();
-        for (PropertyPostDTO propertyDTO : properties) {
+        properties.forEach((propertyDTO) -> {
             ArrayList<PropertyPostDTO> propertiesOfRelation = new ArrayList<>();
             if (propertiesByRelation.containsKey(propertyDTO.getRelation())) {
                 propertiesOfRelation = propertiesByRelation.get(propertyDTO.getRelation());
             }
             propertiesOfRelation.add(propertyDTO);
             propertiesByRelation.put(propertyDTO.getRelation(), propertiesOfRelation);
-        }
+        });
         
         return propertiesByRelation;
     }
@@ -464,33 +495,55 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
                     if (cardinality.getRdfType().equals(Owl.RELATION_CARDINALITY.toString())) {
                         if (!numberOfRelations.containsKey(entry.getKey())) { //missing property
                             dataOk = false;
-                            checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.BAD_CARDINALITY + " missing " + entry.getKey()));
-                        } else if (numberOfRelations.get(entry.getKey()) != cardinality.getCardinaity()) { //there is not the required number of properties
+                            checkStatus.add(new Status(
+                                    StatusCodeMsg.DATA_ERROR, 
+                                    StatusCodeMsg.ERR, 
+                                    StatusCodeMsg.BAD_CARDINALITY + " missing " + entry.getKey()));
+                        } else if (numberOfRelations.get(entry.getKey()) != cardinality.getCardinaity()) { 
+                        //there is not the required number of properties
                             dataOk = false;
-                            checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.BAD_CARDINALITY + " for " + entry.getKey()));
+                            checkStatus.add(new Status(
+                                    StatusCodeMsg.DATA_ERROR, 
+                                    StatusCodeMsg.ERR, 
+                                    StatusCodeMsg.BAD_CARDINALITY + " for " + entry.getKey()));
                         }
                     } else if (cardinality.getRdfType().equals(Owl.RELATION_MIN_CARDINALITY.toString())) {
                         if (!numberOfRelations.containsKey(entry.getKey())) { //missing property
                             dataOk = false;
-                            checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.BAD_CARDINALITY + " not enought " + entry.getKey()));
+                            checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, 
+                                    StatusCodeMsg.BAD_CARDINALITY + " not enought " + entry.getKey()));
                         } else if (numberOfRelations.get(entry.getKey()) < cardinality.getCardinaity()) {
                             dataOk = false;
-                            checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.BAD_CARDINALITY + " " + "not enought " + entry.getKey()));
+                            checkStatus.add(new Status(
+                                    StatusCodeMsg.DATA_ERROR, 
+                                    StatusCodeMsg.ERR, 
+                                    StatusCodeMsg.BAD_CARDINALITY + " " + "not enought " + entry.getKey()));
                         }
                     } else if (cardinality.getRdfType().equals(Owl.RELATION_MAX_CARDINALITY.toString())) {
                         if ((numberOfRelations.get(entry.getKey()) != null) 
                                 && (numberOfRelations.get(entry.getKey()) > cardinality.getCardinaity())) {
                             //error, bad cardinality
                             dataOk = false;
-                            checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.BAD_CARDINALITY + " " + "too many " + relation));
+                            checkStatus.add(new Status(
+                                    StatusCodeMsg.DATA_ERROR, 
+                                    StatusCodeMsg.ERR, 
+                                    StatusCodeMsg.BAD_CARDINALITY + " " + "too many " + relation));
                         }
                     } else if (cardinality.getRdfType().equals(Owl.RELATION_QUALIFIED_CARDINALITY.toString())) {
                         if (!numberOfRelations.containsKey(entry.getKey())) { //missing property
                             dataOk = false;
-                            checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.BAD_CARDINALITY + " missing " + entry.getKey()));
-                        } else if (numberOfRelations.get(entry.getKey()) != cardinality.getCardinaity()) { //there is not the required number of properties
+                            checkStatus.add(new Status(
+                                    StatusCodeMsg.DATA_ERROR, 
+                                    StatusCodeMsg.ERR, 
+                                    StatusCodeMsg.BAD_CARDINALITY + " missing " + entry.getKey()));
+                        } else if (numberOfRelations.get(entry.getKey()) != cardinality.getCardinaity()) { 
+                            //there is not the required number of properties
                             dataOk = false;
-                            checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.BAD_CARDINALITY + " for " + entry.getKey() + " expected " + cardinality.getCardinaity()));
+                            checkStatus.add(new Status(
+                                    StatusCodeMsg.DATA_ERROR, 
+                                    StatusCodeMsg.ERR, 
+                                    StatusCodeMsg.BAD_CARDINALITY + " for " + entry.getKey() + " expected " 
+                                            + cardinality.getCardinaity()));
                         }
                     }
                 }
@@ -503,52 +556,46 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
     }
     
     /**
-     * Checks the existence and domain of the given list of properties.
+     * Checks the existence, the domain and range of the given list of properties.
      * @param properties
      * @param ownerType
-     * @return the result with the list of the found errors (empty if no error)
+     * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
-    public POSTResultsReturn checkExistenceRangeDomain(ArrayList<Property> properties, String ownerType) {
-        POSTResultsReturn checkResult;
-        List<Status> status = new ArrayList<>();
-        for (Property property : properties) {
-            // If URI, check value existence with type
-            if (property.getRdfType() != null) {
-                if (!exist(property.getValue(), RDF.type.getURI(), property.getRdfType())) {
-                    status.add(new Status(
-                        StatusCodeMsg.DATA_ERROR, 
-                        StatusCodeMsg.ERR, 
-                        String.format(StatusCodeMsg.UNKNOWN_URI_OF_TYPE, property.getValue(), property.getRdfType())));
+    public void checkExistenceRangeDomain(ArrayList<Property> properties, String ownerType) 
+            throws DAODataErrorAggregateException, DAOPersistenceException {
+        ArrayList<DAODataErrorException> exceptions = new ArrayList<>();
+        try {
+            for (Property property : properties) {
+                // If URI, check value existence with type
+                if (property.getRdfType() != null 
+                        && !exist(property.getValue(), RDF.type.getURI(), property.getRdfType())) {
+                    exceptions.add(new UnknownUriOfTypeException(
+                            property.getValue(), 
+                            property.getRdfType(), 
+                            "the property's value"));
+                }
+
+                // Check relation existence
+                if (existUri(property.getRelation())) {
+                    // Check domain
+                    if (!isRelationDomainCompatibleWithRdfType(property.getRelation(), ownerType)) {
+                        exceptions.add(new TypeNotInDomainException(ownerType, property.getRelation()));
+                    }
+                    // Check range
+                    if (!isRelationRangeCompatibleWithRdfType(property.getRelation(), property.getRdfType())) {
+                        exceptions.add(new TypeNotInDomainException(property.getRdfType(), property.getRelation()));
+                    }
+                } else {
+                    exceptions.add(new UnknownUriException(property.getRelation(), "the property relation"));
                 }
             }
-            
-            // Check relation existence
-            if (existUri(property.getRelation())) {
-                // Check domain
-                if (!isRelationDomainCompatibleWithRdfType(property.getRelation(), ownerType)) {
-                    status.add(new Status(
-                        StatusCodeMsg.DATA_ERROR, 
-                        StatusCodeMsg.ERR, 
-                        String.format(StatusCodeMsg.URI_TYPE_NOT_IN_DOMAIN_OF_RELATION, ownerType, property.getRelation())));
-                }
-                // Check range
-                if (!isRelationRangeCompatibleWithRdfType(property.getRelation(), property.getRdfType())) {
-                    status.add(new Status(
-                        StatusCodeMsg.DATA_ERROR, 
-                        StatusCodeMsg.ERR, 
-                        String.format(StatusCodeMsg.VALUE_TYPE_URI_NOT_IN_RANGE_OF_RELATION, property.getRdfType(), property.getValue(), property.getRelation())));
-                }
-            } else {
-                status.add(new Status(
-                        StatusCodeMsg.DATA_ERROR, 
-                        StatusCodeMsg.ERR, 
-                        StatusCodeMsg.UNKNOWN_URI + " " + property.getRelation()));
+            if (exceptions.size() > 0) {
+                throw new DAODataErrorAggregateException(exceptions);
             }
-        } 
-        boolean dataIsValid = status.isEmpty();
-        checkResult = new POSTResultsReturn(dataIsValid, null, dataIsValid);
-        checkResult.statusList = status;
-        return checkResult;  
+        } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
+            handleTriplestoreException(ex);
+        }
     }
     
     /**
@@ -681,28 +728,32 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
         optional +=" OPTIONAL {";
         optional += "?" + PROPERTY + " <" + Rdfs.RELATION_LABEL + "> ?" + PROPERTY_LABEL;
         if (language != null) {
-            optional += " . FILTER(LANG(?" + PROPERTY_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + PROPERTY_LABEL + "), \"" + language + "\"))";   
+            optional += " . FILTER(LANG(?" + PROPERTY_LABEL + ") = \"\" || LANGMATCHES(LANG(?" 
+                    + PROPERTY_LABEL + "), \"" + language + "\"))";   
         }
         optional += "}";
         // 3. Select property prefered label in the requested language if exists
         optional += " OPTIONAL {";
         optional += " ?" + PROPERTY + " <" + Skos.RELATION_PREF_LABEL + "> ?" + PROPERTY_PREF_LABEL;
         if (language != null) {
-            optional += " . FILTER(LANG(?" + PROPERTY_PREF_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + PROPERTY_PREF_LABEL + "), \"" + language + "\"))";
+            optional += " . FILTER(LANG(?" + PROPERTY_PREF_LABEL + ") = \"\" || LANGMATCHES(LANG(?" 
+                    + PROPERTY_PREF_LABEL + "), \"" + language + "\"))";
         }
         optional += "}";
         // 4. Select relation label in the requested language if exists
         optional += " OPTIONAL {";
         optional += "?" + RELATION + " <" + Rdfs.RELATION_LABEL + "> ?" + RELATION_LABEL;
         if (language != null) {
-            optional += " . FILTER(LANG(?" + RELATION_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + RELATION_LABEL + "), \"" + language + "\"))";
+            optional += " . FILTER(LANG(?" + RELATION_LABEL + ") = \"\" || LANGMATCHES(LANG(?" 
+                    + RELATION_LABEL + "), \"" + language + "\"))";
         }
         optional += "}"; 
         // 5. Select relation prefered label in the requested language if exists
         optional += " OPTIONAL {";
         optional += " ?" + RELATION + " <" + Skos.RELATION_PREF_LABEL + "> ?" + RELATION_PREF_LABEL;
         if (language != null) {
-            optional += " . FILTER(LANG(?" + RELATION_PREF_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + RELATION_PREF_LABEL + "), \"" + language + "\"))";        
+            optional += " . FILTER(LANG(?" + RELATION_PREF_LABEL + ") = \"\" || LANGMATCHES(LANG(?" 
+                    + RELATION_PREF_LABEL + "), \"" + language + "\"))";        
         }
         optional += "}";
         // 6. Select property type (rdf type of the property) if exists
@@ -712,14 +763,16 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
         optional += " . OPTIONAL {";
         optional += "?" + PROPERTY_TYPE + " <" + Rdfs.RELATION_LABEL + "> ?" + PROPERTY_TYPE_LABEL;
         if (language != null) {
-            optional += " . FILTER(LANG(?" + PROPERTY_TYPE_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + PROPERTY_TYPE_LABEL + "), \"" + language + "\"))";
+            optional += " . FILTER(LANG(?" + PROPERTY_TYPE_LABEL + ") = \"\" || LANGMATCHES(LANG(?" 
+                    + PROPERTY_TYPE_LABEL + "), \"" + language + "\"))";
         }
         optional += "}";        
         // 7. Select property type prefered label in the requested language if exists
         optional += " . OPTIONAL {";
         optional += " ?" + PROPERTY_TYPE + " <" + Skos.RELATION_PREF_LABEL + "> ?" + PROPERTY_TYPE_PREF_LABEL;
         if (language != null) {
-            optional += " . FILTER(LANG(?" + PROPERTY_TYPE_PREF_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + PROPERTY_TYPE_PREF_LABEL + "), \"" + language + "\"))";
+            optional += " . FILTER(LANG(?" + PROPERTY_TYPE_PREF_LABEL + ") = \"\" || LANGMATCHES(LANG(?" 
+                    + PROPERTY_TYPE_PREF_LABEL + "), \"" + language + "\"))";
         }
         optional += "}";
         optional += "}";
@@ -729,7 +782,10 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
         // 8. If subClassOf is specified, add filter on uri rdf:type
         if (subClassOf != null) {
             query.appendTriplet("<" + objectUri + ">", Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
-            query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", "<" + subClassOf + ">", null);
+            query.appendTriplet(
+                    "?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", 
+                    "<" + subClassOf + ">", 
+                    null);
         }
         
         if (relationsToIgnore != null)
@@ -766,8 +822,10 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
      * language can be null
      * @return true    if the definition object is correctly filled
      *          false   if the URI doesn't exists
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
-    public boolean getAllPropertiesWithLabels(RdfResourceDefinition definition, String language) {
+    public boolean getAllPropertiesWithLabels(RdfResourceDefinition definition, String language) 
+            throws DAOPersistenceException {
         return getAllPropertiesWithLabelsExceptThoseSpecified(definition, language, null);
     }       
     
@@ -780,8 +838,10 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
      * considered as properties so we ignore them
      * @return true    if the definition object is correctly filled
      *          false   if the URI doesn't exist
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
-    public boolean getAllPropertiesWithLabelsExceptThoseSpecified(RdfResourceDefinition definition, String language, ArrayList<String> propertiesRelationsToIgnore) {
+    public boolean getAllPropertiesWithLabelsExceptThoseSpecified(RdfResourceDefinition definition, String language, ArrayList<String> propertiesRelationsToIgnore) 
+            throws DAOPersistenceException {
         String objectUri = definition.getUri();
         if (this.existUri(objectUri)) {
             /* Prepare and execute the query to retrieve all the relations, 
@@ -792,7 +852,8 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
         
             definition.setUri(objectUri);
         
-            try (TupleQueryResult result = tupleQuery.evaluate()) {
+            try {
+                TupleQueryResult result = tupleQuery.evaluate();
                 while (result.hasNext()) {
                     BindingSet bindingSet = result.next();
 
@@ -827,12 +888,14 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
                         property.addLastRdfTypeLabel(bindingSet.getValue(PROPERTY_TYPE_LABEL).stringValue());
                     }
 
-                    // 7. If definition already own the property, add current property labels to the existing property otherwise define prefered labels and add property to definition
+                    /* 7. If definition already own the property, add current property labels to the existing property 
+                    otherwise define prefered labels and add property to definition */
                     if (definition.hasProperty(property)) {
                         // Retrieve the existing property
                         Property existingProperty = definition.getProperty(property);
 
-                        // Prefered label are ignored in this case because they already are defined in the existing property
+                        /* Prefered label are ignored in this case because they already are defined in the existing 
+                        property */
                         
                         // Merge new labels with previous existing
                         existingProperty.addRdfTypeLabels(property.getRdfTypeLabels());
@@ -860,6 +923,8 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
                         definition.addProperty(property);                    
                     }
                 }
+            } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
+                handleTriplestoreException(ex);
             }
             return true;
         } else {
@@ -869,17 +934,18 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
     
     /**
      * Generates an insert query for the given properties.
-     * @param objectUri the property owner's URI
-     * @param peoperty
+     * @param updateBuilder
+     * @param objectResource
      * @param graphString
-     * @return the query
+     * @param properties
+     * @param createProperties
      */
-    private UpdateRequest prepareInsertLinksBetweenObjectAndPropertiesQuery(Resource objectResource, ArrayList<Property> properties, String graphString, boolean createProperties) {
-        UpdateBuilder updateBuilder = new UpdateBuilder();
+    public static void addInsertLinksToUpdateBuilder(UpdateBuilder updateBuilder, Resource objectResource, ArrayList<Property> properties, String graphString, boolean createProperties) {
         Node graph = NodeFactory.createURI(graphString);
         for (Property property : properties) {
             if (property.getValue() != null) {
-                org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
+                org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory
+                        .createProperty(property.getRelation());
 
                 if (property.getRdfType() != null) {
                     Node propertyValue = NodeFactory.createURI(property.getValue());
@@ -894,10 +960,27 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
                 }
             }
         }
-        UpdateRequest query = updateBuilder.buildRequest();
-        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
-        
-        return query;
+    }
+    
+    /**
+     * Generates an delete query for the given properties links.
+     * @param updateBuilder
+     * @param graph
+     * @param linkedResource
+     * @param properties
+     */
+    public static void addDeletePropertyLinksToUpdateBuilder(UpdateBuilder updateBuilder, Node graph, Resource linkedResource, List<Property> properties) {
+        Object propertyValue;
+        for(Property property : properties) {
+            org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
+
+            if (property.getRdfType() != null) {
+                propertyValue = NodeFactory.createURI(property.getValue());
+            } else {
+                propertyValue = ResourceFactory.createStringLiteral(property.getValue());
+            }
+            updateBuilder.addDelete(graph, linkedResource, propertyRelation, propertyValue);
+        }
     }
     
     /**
@@ -918,12 +1001,17 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
         boolean resultState = false;
         boolean linksInserted = true;
         
-        getConnection().begin();
-        UpdateRequest query = prepareInsertLinksBetweenObjectAndPropertiesQuery(objectResource, properties, graph, createProperties);
-
+        getConnection().begin();        
+        
+        UpdateBuilder updateBuilder = new UpdateBuilder();
+        addInsertLinksToUpdateBuilder(
+                updateBuilder,
+                objectResource, 
+                properties, 
+                graph, 
+                createProperties);
         try {
-            Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
-            prepareUpdate.execute();
+            executeUpdateRequest(updateBuilder);
         } catch (RepositoryException ex) {
                 LOGGER.error(StatusCodeMsg.ERROR_WHILE_COMMITTING_OR_ROLLING_BACK_TRIPLESTORE_STATEMENT, ex);
         } catch (MalformedQueryException e) {
@@ -933,6 +1021,13 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
                         StatusCodeMsg.QUERY_ERROR, 
                         StatusCodeMsg.ERR, 
                         StatusCodeMsg.MALFORMED_CREATE_QUERY + " " + e.getMessage()));
+        } catch (DAOPersistenceException ex) {
+                LOGGER.error(ex.getMessage(), ex);
+                linksInserted = false;
+                status.add(new Status(
+                        StatusCodeMsg.QUERY_ERROR, 
+                        StatusCodeMsg.ERR, 
+                        DAOPersistenceException.GENERIC_MESSAGE + " " + ex.getMessage()));
         }
         
         if (linksInserted) {
@@ -951,7 +1046,10 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
         results.setCreatedResources(createdResourcesUris);
         if (resultState && !createdResourcesUris.isEmpty()) {
             results.createdResources = createdResourcesUris;
-            results.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, createdResourcesUris.size() + " " + StatusCodeMsg.RESOURCES_CREATED));
+            results.statusList.add(new Status(
+                    StatusCodeMsg.RESOURCES_CREATED, 
+                    StatusCodeMsg.INFO, 
+                    createdResourcesUris.size() + " " + StatusCodeMsg.RESOURCES_CREATED));
         }
         
         return results;

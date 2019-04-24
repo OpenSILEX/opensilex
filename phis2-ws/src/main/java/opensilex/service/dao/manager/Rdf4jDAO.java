@@ -39,11 +39,15 @@ import opensilex.service.authentication.TokenManager;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.URINamespaces;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.User;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
+import org.apache.jena.shared.JenaException;
+import org.apache.jena.update.UpdateRequest;
+import org.eclipse.rdf4j.RDF4JException;
 
 /**
  * DAO class to query the triplestore 
@@ -59,6 +63,15 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 public abstract class Rdf4jDAO<T> extends DAO<T> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(Rdf4jDAO.class);
+    
+    final private String REPOSITORY_EXCEPTION_GENERIC_MESSAGE_FORMAT 
+            = "Error while committing or rolling back triplestore statements: %s";
+    final private String MALFORMED_QUERY_EXCEPTION_MESSAGE_FORMAT = "Malformed query: %s";
+    final private String QUERY_EVALUATION_EXCEPTION_MESSAGE_FORMAT = "Error evaluating the query: %s";
+    final private String UPDATE_EXECUTION_EXCEPTION_MESSAGE_FORMAT = "Error executing the update query: %s";
+    final private String COUNT_VALUE_PARSING_EXCEPTION_MESSAGE_FORMAT 
+            = "Error parsing value of " + COUNT_ELEMENT_QUERY + "from binding set";
+    
     protected static final String PROPERTY_FILENAME = "sesame_rdf_config";
     
     /**
@@ -98,7 +111,7 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
     protected static final String LABEL = "label";
     protected static final String COMMENT = "comment";
     
-    protected final String DATETIMESTAMP_FORMAT_SPARQL = DateFormat.YMDTHMSZZ.toString();
+    protected static final String DATETIMESTAMP_FORMAT_SPARQL = DateFormat.YMDTHMSZZ.toString();
     
     // Triplestore relations
     protected static final URINamespaces ONTOLOGIES = new URINamespaces();
@@ -196,6 +209,21 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
     public void setPageSize(Integer pageSize) {
         this.pageSize = pageSize;
     }
+    
+    /**
+     * Executes an update request from an update builder. 
+     * @param updateBuilder 
+     * @throws opensilex.service.dao.exception.DAOPersistenceException 
+     */
+    protected void executeUpdateRequest(UpdateBuilder updateBuilder) throws DAOPersistenceException {
+        try {
+            UpdateRequest query = updateBuilder.buildRequest();
+            LOGGER.debug(SPARQL_QUERY + " " + query.toString());
+            getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString()).execute();
+        } catch (JenaException|RDF4JException ex) {
+            handleTriplestoreException(ex);
+        }
+    }
 
     /**
      * Checks if a subject exists by triplet.
@@ -235,7 +263,7 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
      * @return true if the URI exist in the triplestore
      *         false if it does not exist
      */
-    public boolean existUri(String uri) {
+    public boolean existUri(String uri) throws MalformedQueryException, QueryEvaluationException, RepositoryException {
         if (uri == null) {
             return false;
         }
@@ -255,7 +283,7 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
             BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
             return booleanQuery.evaluate();
         } catch (MalformedQueryException | QueryEvaluationException | RepositoryException e) {
-            return false;
+            throw (e);
         }
     }
     
@@ -428,12 +456,52 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
      * @param bindingSet 
      * @return the string value of the "selectName" variable in the binding set.
      */
-    protected String getStringValueOfSelectNameFromBindingSet(String selectName, BindingSet bindingSet) { 
+    protected static String getStringValueOfSelectNameFromBindingSet(String selectName, BindingSet bindingSet) { 
         Value selectedFieldValue = bindingSet.getValue(selectName);
         if (selectedFieldValue != null) {
             return selectedFieldValue.stringValue();
         }
         return null;
+    }
+    
+    /**
+     * Handle a NumberFormatException when getting the value of the count of results.
+     * @param ex
+     * @throws opensilex.service.dao.exception.DAOPersistenceException 
+     */
+    protected void handleCountValueNumberFormatException(NumberFormatException ex) throws Exception {
+        throw new Exception(String.format(COUNT_VALUE_PARSING_EXCEPTION_MESSAGE_FORMAT, COUNT_ELEMENT_QUERY), ex);
+    }
+    
+    /**
+     * Handle a RDF4J exception throwing a DAO persistence exception according to the given exception type.
+     * @param exception
+     * @throws opensilex.service.dao.exception.DAOPersistenceException 
+     */
+    protected void handleTriplestoreException(RuntimeException exception) throws DAOPersistenceException {
+        String daoPersistenceExceptionMessage;
+        if(exception instanceof RepositoryException) {
+            daoPersistenceExceptionMessage 
+                    = String.format(REPOSITORY_EXCEPTION_GENERIC_MESSAGE_FORMAT, exception.getMessage());
+        }
+        else if(exception instanceof MalformedQueryException) {
+            daoPersistenceExceptionMessage 
+                    = String.format(MALFORMED_QUERY_EXCEPTION_MESSAGE_FORMAT, exception.getMessage());
+        }
+        else if(exception instanceof QueryEvaluationException) {
+            daoPersistenceExceptionMessage 
+                    = String.format(QUERY_EVALUATION_EXCEPTION_MESSAGE_FORMAT, exception.getMessage());
+        }
+        else if(exception instanceof UpdateExecutionException) {
+            daoPersistenceExceptionMessage 
+                    = String.format(UPDATE_EXECUTION_EXCEPTION_MESSAGE_FORMAT, exception.getMessage());
+        }
+        else {
+            daoPersistenceExceptionMessage = DAOPersistenceException.GENERIC_MESSAGE + " " + exception.getMessage();
+        }
+        
+        LOGGER.error(exception.getMessage(), exception);
+        throw new DAOPersistenceException(daoPersistenceExceptionMessage, exception);
     }
 
     @Override

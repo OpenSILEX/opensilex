@@ -1,5 +1,5 @@
 //******************************************************************************
-//                               EventPostDTO.java
+//                                 EventPutDTO.java
 // SILEX-PHIS
 // Copyright © INRA 2019
 // Creation date: 5 Mar. 2019
@@ -15,73 +15,63 @@ import javax.validation.constraints.NotNull;
 import org.joda.time.DateTime;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.documentation.DocumentationAnnotation;
-import opensilex.service.ontology.Oa;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resource.dto.rdfResourceDefinition.PropertyDTO;
 import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.utils.date.Dates;
-import opensilex.service.model.Annotation;
 import opensilex.service.model.ConcernedItem;
 import opensilex.service.model.Event;
 import opensilex.service.model.Property;
+import opensilex.service.resource.validation.interfaces.Required;
 
 /**
- * Event POST DTO.
+ * Event PUT DTO.
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
-public class EventPostDTO extends AbstractVerifiedClass {
-    
-    private final String EVENT_POST_DEFAULT_ANNOTATION_MOTIVATION_INSTANCE = Oa.INSTANCE_DESCRIBING.toString();
-    
-    private String rdfType;
-    private String description;
-    private String creator;
-    private ArrayList<String> concernedItemsUris;
-    private String date;
-    private ArrayList<PropertyDTO> properties;
+public class EventPutDTO extends AbstractVerifiedClass {
+        
+    protected String uri;
+    protected String rdfType;
+    protected ArrayList<String> concernedItemsUris;
+    protected String date;
+    protected ArrayList<PropertyDTO> properties;
 
-    public EventPostDTO() {
+    public EventPutDTO() {
         this.properties = new ArrayList<>();
     }
 
     /**
-     * Generates an event model from de DTO.
+     * Generates an event object from a DTO.
      * @return the Event model
      */
     @Override
     public Event createObjectFromDTO() {
         
-        ArrayList<Property> modelProperties = new ArrayList<>();
+        ArrayList<Property> propertyObjects = new ArrayList<>();
         this.properties.forEach((property) -> {
-            modelProperties.add(property.createObjectFromDTO());
+            propertyObjects.add(property.createObjectFromDTO());
         });
         
         ArrayList<ConcernedItem> modelConcernedItems = new ArrayList<>();
         this.concernedItemsUris.forEach((concernedItemUri) -> {
-            modelConcernedItems.add(new ConcernedItem(concernedItemUri, null, null, null));
+            modelConcernedItems.add(new ConcernedItem(concernedItemUri, null, null, this.uri));
         });
         
         DateTime dateTime = Dates.stringToDateTimeWithGivenPattern(this.date, DateFormat.YMDTHMSZZ.toString());
         
-        ArrayList<String> annotationBodyValues = new ArrayList();
-        annotationBodyValues.add(description);
-        String annotationMotivation = EVENT_POST_DEFAULT_ANNOTATION_MOTIVATION_INSTANCE;
-        Annotation eventAnnotation = new Annotation(
-                null, 
-                DateTime.now(), 
-                creator, 
-                annotationBodyValues, 
-                annotationMotivation, 
-                new ArrayList<>());
-        
-        ArrayList<Annotation> eventAnnotations = new ArrayList<>();
-        eventAnnotations.add(eventAnnotation);
-        
-        return new Event(null, this.rdfType, modelConcernedItems, dateTime, modelProperties, eventAnnotations);
+        return new Event(this.uri, this.rdfType, modelConcernedItems, dateTime, propertyObjects, new ArrayList<>());
     }
 
     @URL
+    @NotNull
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EVENT_URI)
+    public String getUri() {
+        return uri;
+    }
+
+    @URL
+    @NotNull
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EVENT_TYPE)
     public String getRdfType() {
         return rdfType;
@@ -92,6 +82,7 @@ public class EventPostDTO extends AbstractVerifiedClass {
     }
 
     @URL
+    @NotNull
     @NotEmpty
     public ArrayList<String> getConcernedItemsUris() {
         return concernedItemsUris;
@@ -103,6 +94,8 @@ public class EventPostDTO extends AbstractVerifiedClass {
 
     @Date(DateFormat.YMDTHMSZZ)
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EVENT_DATE)
+    @Required
+    @NotNull
     public String getDate() {
         return date;
     }
@@ -119,25 +112,5 @@ public class EventPostDTO extends AbstractVerifiedClass {
 
     public void setProperties(ArrayList<PropertyDTO> properties) {
         this.properties = properties;
-    }
-
-    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EVENT_DESCRIPTION)
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    @URL
-    @NotNull
-    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_ANNOTATION_CREATOR)
-    public String getCreator() {
-        return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator;
     }
 }

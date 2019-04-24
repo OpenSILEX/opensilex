@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
@@ -22,6 +23,7 @@ import javax.validation.constraints.Min;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -38,8 +40,6 @@ import opensilex.service.dao.SensorDAO;
 import opensilex.service.dao.SensorProfileDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
-import opensilex.service.resource.dto.SensorDTO;
-import opensilex.service.resource.dto.SensorProfileDTO;
 import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
@@ -50,6 +50,10 @@ import opensilex.service.view.brapi.form.ResponseFormGET;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Sensor;
+import opensilex.service.resource.dto.sensor.SensorDTO;
+import opensilex.service.resource.dto.sensor.SensorDetailDTO;
+import opensilex.service.resource.dto.sensor.SensorPostDTO;
+import opensilex.service.resource.dto.sensor.SensorProfileDTO;
 
 /**
  * Sensor resource service.
@@ -58,38 +62,6 @@ import opensilex.service.model.Sensor;
 @Api("/sensors")
 @Path("/sensors")
 public class SensorResourceService extends ResourceService {
-    
-    /**
-     * Searches sensors corresponding to search parameters given by a user.
-     * @param sensorDao
-     * @return the sensors corresponding to the search
-     */
-    private Response getSensorsData(SensorDAO sensorDao) {
-        ArrayList<Sensor> sensors;
-        ArrayList<Status> statusList = new ArrayList<>();
-        ResultForm<Sensor> getResponse;
-        
-        //1. count
-        Integer totalCount = sensorDao.count();
-        //2. get sensors
-        sensors = sensorDao.allPaginate();
-        
-        if (sensors == null) {
-            getResponse = new ResultForm<>(0, 0, sensors, true);
-            return noResultFound(getResponse, statusList);
-        } else if (sensors.isEmpty()) {
-            getResponse = new ResultForm<>(0, 0, sensors, true);
-            return noResultFound(getResponse, statusList);
-        } else {
-            getResponse = new ResultForm<>(sensorDao.getPageSize(), sensorDao.getPage(), sensors, true, totalCount);
-            if (getResponse.getResult().dataSize() == 0) {
-                return noResultFound(getResponse, statusList);
-            } else {
-                getResponse.setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(getResponse).build();
-            }
-        }
-    }
     
     /**
      * Searches sensors profile corresponding to the given sensor URI.
@@ -130,6 +102,7 @@ public class SensorResourceService extends ResourceService {
      * @param label
      * @param brand
      * @param serialNumber
+     * @param model
      * @param inServiceDate
      * @param dateOfPurchase
      * @param dateOfLastCalibration
@@ -168,7 +141,7 @@ public class SensorResourceService extends ResourceService {
     @ApiOperation(value = "Get all sensors corresponding to the search params given",
                   notes = "Retrieve all sensors authorized for the user corresponding to the searched params given")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve all sensors", response = Sensor.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Retrieve all sensors", response = SensorDetailDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
@@ -188,45 +161,39 @@ public class SensorResourceService extends ResourceService {
             @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_SENSOR_LABEL) @QueryParam("label") String label,
             @ApiParam(value = "Search by brand", example = DocumentationAnnotation.EXAMPLE_SENSOR_BRAND) @QueryParam("brand") String brand,
             @ApiParam(value = "Search by serial number", example = DocumentationAnnotation.EXAMPLE_SENSOR_SERIAL_NUMBER) @QueryParam("serialNumber") String serialNumber,
+            @ApiParam(value = "Search by model", example = DocumentationAnnotation.EXAMPLE_SENSOR_MODEL) @QueryParam("model") String model,
             @ApiParam(value = "Search by service date", example = DocumentationAnnotation.EXAMPLE_SENSOR_IN_SERVICE_DATE) @QueryParam("inServiceDate") @Date(DateFormat.YMD) String inServiceDate,
             @ApiParam(value = "Search by date of purchase", example = DocumentationAnnotation.EXAMPLE_SENSOR_DATE_OF_PURCHASE) @QueryParam("dateOfPurchase") @Date(DateFormat.YMD) String dateOfPurchase,
             @ApiParam(value = "Search by date of last calibration", example = DocumentationAnnotation.EXAMPLE_SENSOR_DATE_OF_LAST_CALIBRATION) @QueryParam("dateOfLastCalibration") @Date(DateFormat.YMD) String dateOfLastCalibration,
             @ApiParam(value = "Search by person in charge", example = DocumentationAnnotation.EXAMPLE_USER_EMAIL) @QueryParam("personInCharge") @Email String personInCharge) {
         
         SensorDAO sensorDAO = new SensorDAO();
-        if (uri != null) {
-            sensorDAO.uri = uri;
-        }
-        if (rdfType != null) {
-            sensorDAO.rdfType = rdfType;
-        }
-        if (label != null) {
-            sensorDAO.label = label;
-        }
-        if (brand != null) {
-            sensorDAO.brand = brand;
-        }
-        if (serialNumber != null) {
-            sensorDAO.serialNumber = serialNumber;
-        }
-        if (inServiceDate != null) {
-            sensorDAO.inServiceDate = inServiceDate;
-        }
-        if (dateOfPurchase != null) {
-            sensorDAO.dateOfPurchase = dateOfPurchase;
-        }
-        if (dateOfLastCalibration != null) {
-            sensorDAO.dateOfLastCalibration = dateOfLastCalibration;
-        }
-        if (personInCharge != null) {
-            sensorDAO.personInCharge = personInCharge;
-        }
+        //1. Get count
+        Integer totalCount = sensorDAO.count(uri, rdfType, label, brand, serialNumber, model, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
         
-        sensorDAO.user = userSession.getUser();
-        sensorDAO.setPage(page);
-        sensorDAO.setPageSize(pageSize);
+        //2. Get sensors
+        ArrayList<Sensor> sensorsFounded = sensorDAO.find(page, pageSize, uri, rdfType, label, brand, serialNumber, model, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
         
-        return getSensorsData(sensorDAO);
+        //3. Return result
+        ArrayList<Status> statusList = new ArrayList<>();
+        ArrayList<SensorDTO> sensorsToReturn = new ArrayList<>();
+        ResultForm<SensorDTO> getResponse;
+        if (sensorsFounded == null) { //Request failure
+            getResponse = new ResultForm<>(0, 0, sensorsToReturn, true);
+            return noResultFound(getResponse, statusList);
+        } else if (sensorsFounded.isEmpty()) { //No result found
+            getResponse = new ResultForm<>(0, 0, sensorsToReturn, true);
+            return noResultFound(getResponse, statusList);
+        } else { //Results
+            //Convert all objects to DTOs
+            sensorsFounded.forEach((sensor) -> {
+                sensorsToReturn.add(new SensorDTO(sensor));
+            });
+            
+            getResponse = new ResultForm<>(pageSize, page, sensorsToReturn, true, totalCount);
+            getResponse.setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
+        }
     }
 
     /**
@@ -264,7 +231,7 @@ public class SensorResourceService extends ResourceService {
     @ApiOperation(value = "Get a sensor",
                   notes = "Retrieve a sensor. Need URL encoded sensor URI")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve a sensor", response = Sensor.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Retrieve a sensor", response = SensorDetailDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
@@ -280,19 +247,28 @@ public class SensorResourceService extends ResourceService {
         @ApiParam(value = DocumentationAnnotation.SENSOR_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_SENSOR_URI, required = true) @PathParam("uri") @URL @Required String uri,
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
+        ArrayList<SensorDetailDTO> sensors = new ArrayList<>();
+        ArrayList<Status> statusList = new ArrayList<>();
+        ResultForm<SensorDetailDTO> getResponse;
+        
+        try {
+            SensorDAO sensorDAO = new SensorDAO();
+            
+            SensorDetailDTO sensor = new SensorDetailDTO(sensorDAO.findById(uri));
+            
+            sensors.add(sensor);
 
-        if (uri == null) {
-            final Status status = new Status(StatusCodeMsg.ACCESS_ERROR, StatusCodeMsg.ERR, "Empty sensor uri");
-            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
+            getResponse = new ResultForm<>(pageSize, page, sensors, true, 1);
+            getResponse.setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
+        } catch (NotFoundException ex) {
+            getResponse = new ResultForm<>(0, 0, sensors, true);
+            return noResultFound(getResponse, statusList);
+        } catch (Exception ex) {
+            statusList.add(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, ex.getMessage()));
+            getResponse = new ResultForm<>(0, 0, sensors, true);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(getResponse).build();
         }
-
-        SensorDAO sensorDAO = new SensorDAO();
-        sensorDAO.uri = uri;
-        sensorDAO.setPage(page);
-        sensorDAO.setPageSize(pageSize);
-        sensorDAO.user = userSession.getUser();
-
-        return getSensorsData(sensorDAO);
     }
     
     /**
@@ -371,6 +347,21 @@ public class SensorResourceService extends ResourceService {
     }
     
     /**
+     * Generates a Sensor list from a given list of SensorPostDTO
+     * @param sensorDTOs
+     * @return the list of sensors
+     */
+    private List<Sensor> sensorPostDTOsToSensors(List<SensorPostDTO> sensorDTOs) {
+        ArrayList<Sensor> sensors = new ArrayList<>();
+        
+        for (SensorPostDTO sensorPostDTO : sensorDTOs) {
+            sensors.add(sensorPostDTO.createObjectFromDTO());
+        }
+        
+        return sensors;
+    }
+    
+    /**
      * Inserts sensors in the storage.
      * @param sensors list of sensors to insert.
      * @example
@@ -405,7 +396,7 @@ public class SensorResourceService extends ResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response post(
-        @ApiParam (value = DocumentationAnnotation.SENSOR_POST_DEFINITION) @Valid ArrayList<SensorDTO> sensors,
+        @ApiParam (value = DocumentationAnnotation.SENSOR_POST_DEFINITION) @Valid ArrayList<SensorPostDTO> sensors,
         @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         
@@ -418,7 +409,7 @@ public class SensorResourceService extends ResourceService {
             
             sensorDAO.user = userSession.getUser();
             
-            POSTResultsReturn result = sensorDAO.checkAndInsert(sensors);
+            POSTResultsReturn result = sensorDAO.checkAndInsert(sensorPostDTOsToSensors(sensors));
             
             if (result.getHttpStatus().equals(Response.Status.CREATED)) {
                 postResponse = new ResponseFormPOST(result.statusList);
@@ -436,8 +427,23 @@ public class SensorResourceService extends ResourceService {
     }
     
     /**
+     * Generates a Sensor list from a given list of SensorPostDTO
+     * @param sensorDTOs
+     * @return the list of sensors
+     */
+    private List<Sensor> sensorDTOsToSensors(List<SensorDTO> sensorDTOs) {
+        ArrayList<Sensor> sensors = new ArrayList<>();
+        
+        for (SensorDTO sensorPostDTO : sensorDTOs) {
+            sensors.add(sensorPostDTO.createObjectFromDTO());
+        }
+        
+        return sensors;
+    }
+    
+    /**
      * Updates the given sensors.
-     * @example 
+     * @example
      * [
      *   {
      *       "uri": "http://www.phenome-fppn.fr/diaphen/2018/s18142",
@@ -470,31 +476,36 @@ public class SensorResourceService extends ResourceService {
                 example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     public Response put(
-        @ApiParam(value = DocumentationAnnotation.VECTOR_POST_DEFINITION) @Valid ArrayList<SensorDTO> sensors,
+        @ApiParam(value = DocumentationAnnotation.SENSOR_POST_DEFINITION) @Valid ArrayList<SensorDTO> sensors,
         @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         
         if (sensors != null && !sensors.isEmpty()) {
-            SensorDAO sensorDAO = new SensorDAO();
-            if (context.getRemoteAddr() != null) {
-                sensorDAO.remoteUserAdress = context.getRemoteAddr();
+            try {
+                SensorDAO sensorDAO = new SensorDAO();
+                if (context.getRemoteAddr() != null) {
+                    sensorDAO.remoteUserAdress = context.getRemoteAddr();
+                }
+                
+                sensorDAO.user = userSession.getUser();
+                
+                POSTResultsReturn result = sensorDAO.checkAndUpdate(sensorDTOsToSensors(sensors));
+                
+                if (result.getHttpStatus().equals(Response.Status.OK)
+                        || result.getHttpStatus().equals(Response.Status.CREATED)) {
+                    //Code 200, traits modifiés
+                    postResponse = new ResponseFormPOST(result.statusList);
+                    postResponse.getMetadata().setDatafiles(result.createdResources);
+                } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                        || result.getHttpStatus().equals(Response.Status.OK)
+                        || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                    postResponse = new ResponseFormPOST(result.statusList);
+                }
+                return Response.status(result.getHttpStatus()).entity(postResponse).build();
+            } catch (Exception ex) {
+                postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.ERR, StatusCodeMsg.ERR, "An internal server error occurred."));
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postResponse).build();
             }
-            
-            sensorDAO.user = userSession.getUser();
-            
-            POSTResultsReturn result = sensorDAO.checkAndUpdate(sensors);
-            
-            if (result.getHttpStatus().equals(Response.Status.OK)
-                    || result.getHttpStatus().equals(Response.Status.CREATED)) {
-                //Code 200, traits modifiés
-                postResponse = new ResponseFormPOST(result.statusList);
-                postResponse.getMetadata().setDatafiles(result.createdResources);
-            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                    || result.getHttpStatus().equals(Response.Status.OK)
-                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                postResponse = new ResponseFormPOST(result.statusList);
-            }
-            return Response.status(result.getHttpStatus()).entity(postResponse).build();
         } else {
             postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty sensors(s) to update"));
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();

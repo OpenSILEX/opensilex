@@ -1,8 +1,8 @@
 //******************************************************************************
-//                              Sensor.java
+//                                       Sensor.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 14 Mar. 2018
+// Creation date: 14 mars 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.model;
@@ -10,7 +10,7 @@ package opensilex.service.model;
 import java.util.HashMap;
 
 /**
- * Sensor model.
+ * Represents a sensor model
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class Sensor {
@@ -34,6 +34,10 @@ public class Sensor {
      * Brand.
      */
     private String brand;
+    //model of the sensor
+    private String model;
+    //serial number of the sensor
+    
     
     /**
      * Serial number.
@@ -143,5 +147,13 @@ public class Sensor {
 
     public void setVariables(HashMap<String, String>  variables) {
         this.variables = variables;
+    }
+
+    public String getModel() {
+        return model;
+    }
+
+    public void setModel(String model) {
+        this.model = model;
     }
 }

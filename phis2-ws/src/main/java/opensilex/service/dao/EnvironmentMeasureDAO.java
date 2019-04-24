@@ -218,15 +218,15 @@ public class EnvironmentMeasureDAO extends MongoDAO<EnvironmentMeasure> {
         
         boolean dataOk = true;
         
-        SensorDAO sensorDAO = new SensorDAO();
+        DeviceDAO deviceDAO = new DeviceDAO();
         VariableDAO variableDAO = new VariableDAO();
         for (EnvironmentMeasure environmentMeasure : environmentMeasures) {
             //1. Check if the sensorUri exist and is a sensor
-            if (sensorDAO.existAndIsSensor(environmentMeasure.getSensorUri())) {
+            if (deviceDAO.existAndIsDevice(environmentMeasure.getSensorUri())) {
                 //2. Check if the variableUri exist and is a variable
                 if (variableDAO.existAndIsVariable(environmentMeasure.getVariableUri())) {
                     //3. Check if the given sensor measures the given variable. 
-                    if (!sensorDAO.isSensorMeasuringVariable(environmentMeasure.getSensorUri(), environmentMeasure.getVariableUri())) {
+                    if (!deviceDAO.isDeviceMeasuringVariable(environmentMeasure.getSensorUri(), environmentMeasure.getVariableUri())) {
                         dataOk = false;
                         checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
                             "The given sensor (" + environmentMeasure.getSensorUri() + ") "

@@ -160,7 +160,7 @@ public class UriGenerator {
      * @param year the insertion year of the actuator.
      * @return the new actuator URI
      */
-    private String generateActuatorUri(String year) {
+    private static String generateActuatorUri(String year) {
         //1. get the current number of actuator in the triplestor for the year
         ActuatorDAO actuatorDAO = new ActuatorDAO();
         int lastActuatorIdFromYear = actuatorDAO.getLastIdFromYear(year);

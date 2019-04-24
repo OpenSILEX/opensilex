@@ -100,6 +100,7 @@ public class ActuatorResourceService extends ResourceService {
      *          "label": "par03_p",
      *          "brand": "Skye Instruments",
      *          "serialNumber": "A1E345F32",
+     *          "model": "mod01",
      *          "inServiceDate": "2017-06-15",
      *          "dateOfPurchase": "2017-06-15",
      *          "dateOfLastCalibration": "2017-06-15",
@@ -183,6 +184,7 @@ public class ActuatorResourceService extends ResourceService {
      *          "label": "par03_p",
      *          "brand": "Skye Instruments",
      *          "serialNumber": "A1E345F32",
+     *          "model": "mod01",
      *          "inServiceDate": "2017-06-15",
      *          "dateOfPurchase": "2017-06-15",
      *          "dateOfLastCalibration": "2017-06-15",
@@ -405,6 +407,7 @@ public class ActuatorResourceService extends ResourceService {
             @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_SENSOR_LABEL) @QueryParam("label") String label,
             @ApiParam(value = "Search by brand", example = DocumentationAnnotation.EXAMPLE_SENSOR_BRAND) @QueryParam("brand") String brand,
             @ApiParam(value = "Search by serial number", example = DocumentationAnnotation.EXAMPLE_SENSOR_SERIAL_NUMBER) @QueryParam("serialNumber") String serialNumber,
+            @ApiParam(value = "Search by model", example = DocumentationAnnotation.EXAMPLE_SENSOR_MODEL) @QueryParam("model") String model,
             @ApiParam(value = "Search by service date", example = DocumentationAnnotation.EXAMPLE_SENSOR_IN_SERVICE_DATE) @QueryParam("inServiceDate") @Date(DateFormat.YMD) String inServiceDate,
             @ApiParam(value = "Search by date of purchase", example = DocumentationAnnotation.EXAMPLE_SENSOR_DATE_OF_PURCHASE) @QueryParam("dateOfPurchase") @Date(DateFormat.YMD) String dateOfPurchase,
             @ApiParam(value = "Search by date of last calibration", example = DocumentationAnnotation.EXAMPLE_SENSOR_DATE_OF_LAST_CALIBRATION) @QueryParam("dateOfLastCalibration") @Date(DateFormat.YMD) String dateOfLastCalibration,
@@ -412,10 +415,10 @@ public class ActuatorResourceService extends ResourceService {
         
         ActuatorDAO actuatorDAO = new ActuatorDAO();
         //1. Get count
-        Integer totalCount = actuatorDAO.count(uri, rdfType, label, brand, serialNumber, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
+        Integer totalCount = actuatorDAO.count(uri, rdfType, label, brand, serialNumber, model, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
         
         //2. Get actuators
-        ArrayList<Actuator> actuatorsFounded = actuatorDAO.find(page, pageSize, uri, rdfType, label, brand, serialNumber, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
+        ArrayList<Actuator> actuatorsFounded = actuatorDAO.find(page, pageSize, uri, rdfType, label, brand, serialNumber, inServiceDate, model, dateOfPurchase, dateOfLastCalibration, personInCharge);
         
         //3. Return result
         ArrayList<Status> statusList = new ArrayList<>();

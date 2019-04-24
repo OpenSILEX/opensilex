@@ -14,10 +14,6 @@ import java.util.HashMap;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class Sensor extends Device {
-    
-    private String model;
-    //serial number of the sensor
-    
     /**
      * Variables measured by the sensor.
      */
@@ -29,13 +25,5 @@ public class Sensor extends Device {
 
     public void setVariables(HashMap<String, String>  variables) {
         this.variables = variables;
-    }
-
-    public String getModel() {
-        return model;
-    }
-
-    public void setModel(String model) {
-        this.model = model;
     }
 }

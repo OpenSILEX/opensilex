@@ -48,7 +48,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
+ * DAO for the actuators. They are stored in the trisplestore.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ActuatorDAO extends Rdf4jDAO<Actuator> {
@@ -59,6 +59,7 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
     private final String BRAND = "brand";
     private final String SERIAL_NUMBER = "serialNumber";
     private final String IN_SERVICE_DATE = "inServiceDate";
+    private final String MODEL = "model";
     private final String DATE_OF_PURCHASE = "dateOfPurchase";
     private final String DATE_OF_LAST_CALIBRATION = "dateOfLastCalibration";
     private final String PERSON_IN_CHARGE = "personInCharge";
@@ -104,6 +105,11 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
             spql.addInsert(graph, actuatorUri, relationSerialNumber, actuator.getSerialNumber() );
         }
         
+        if (actuator.getModel() != null) {
+            Property relationModel = ResourceFactory.createProperty(Oeso.RELATION_HAS_MODEL.toString());
+            spql.addInsert(graph, actuatorUri, relationModel, actuator.getModel());
+        }
+        
         if (actuator.getDateOfPurchase() != null) {
             Property relationDateOfPurchase = ResourceFactory.createProperty(Oeso.RELATION_DATE_OF_PURCHASE.toString());
             spql.addInsert(graph, actuatorUri, relationDateOfPurchase, actuator.getDateOfPurchase() );
@@ -126,7 +132,7 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
     }
     
     /**
-     * Inster the given actuators in the triplestore.
+     * Insert the given actuators in the triplestore.
      * @param actuators
      * @return The list of actuators inserted
      * @throws Exception 
@@ -264,6 +270,11 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
             updateBuilder.addDelete(graph, actuatorUri, relationSerialNumber, actuator.getSerialNumber() );
         }
         
+        if (actuator.getModel()!= null) {
+            Property relationModel = ResourceFactory.createProperty(Oeso.RELATION_HAS_MODEL.toString());
+            updateBuilder.addDelete(graph, actuatorUri, relationModel, actuator.getModel());
+        }
+        
         if (actuator.getDateOfPurchase() != null) {
             Property relationDateOfPurchase = ResourceFactory.createProperty(Oeso.RELATION_DATE_OF_PURCHASE.toString());
             updateBuilder.addDelete(graph, actuatorUri, relationDateOfPurchase, actuator.getDateOfPurchase() );
@@ -285,6 +296,14 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
         return query;
     }
 
+    /**
+     * Update the list of the actuators given. 
+     * /!\ Prerequisite : the actuators must have been checked before, using the check method.
+     * @see ActuatorDAO#check(java.util.List) 
+     * @param actuators
+     * @return the list of the actuators updated.
+     * @throws Exception 
+     */
     @Override
     public List<Actuator> update(List<Actuator> actuators) throws Exception {
         getConnection().begin();
@@ -361,7 +380,7 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
      * }
      * @return the generated query
      */
-    protected SPARQLQueryBuilder prepareSearchQuery(Integer page, Integer pageSize, String uri, String rdfType, String label, String brand, String serialNumber, String inServiceDate, String dateOfPurchase, String dateOfLastCalibration, String personInCharge) {
+    protected SPARQLQueryBuilder prepareSearchQuery(Integer page, Integer pageSize, String uri, String rdfType, String label, String brand, String serialNumber, String model, String inServiceDate, String dateOfPurchase, String dateOfLastCalibration, String personInCharge) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
 
@@ -404,6 +423,15 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
             query.beginBodyOptional();
             query.appendToBody(actuatorUri + " <" + Oeso.RELATION_HAS_SERIAL_NUMBER.toString() + "> ?" + SERIAL_NUMBER + " . ");
             query.endBodyOptional();
+        }
+        
+        if (model != null) {
+            query.appendTriplet(actuatorUri, Oeso.RELATION_HAS_MODEL.toString(), "\"" + model + "\"", null);
+        } else {
+            query.appendSelect("?" + MODEL);
+            query.beginBodyOptional();
+            query.appendToBody(actuatorUri + " <" + Oeso.RELATION_HAS_MODEL.toString() + "> ?" + MODEL + " . ");
+            query.endBodyOptional(); 
         }
 
         if (inServiceDate != null) {
@@ -450,20 +478,21 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
     }
     
     /**
-     * 
+     * Get an actuator from a binding set given resulting from a query to the triplestore.
      * @param bindingSet
      * @param uri
      * @param rdfType
      * @param label
      * @param brand
      * @param serialNumber
+     * @param model
      * @param inServiceDate
      * @param dateOfPurchase
      * @param dateOfLastCalibration
      * @param personInCharge
      * @return 
      */
-    private Actuator getActuatorFromBindingSet(BindingSet bindingSet, String uri, String rdfType, String label, String brand, String serialNumber, String inServiceDate, String dateOfPurchase, String dateOfLastCalibration, String personInCharge) {
+    private Actuator getActuatorFromBindingSet(BindingSet bindingSet, String uri, String rdfType, String label, String brand, String serialNumber, String model, String inServiceDate, String dateOfPurchase, String dateOfLastCalibration, String personInCharge) {
         Actuator actuator = new Actuator();
 
         if (uri != null) {
@@ -495,6 +524,12 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
         } else if (bindingSet.getValue(SERIAL_NUMBER) != null) {
             actuator.setSerialNumber(bindingSet.getValue(SERIAL_NUMBER).stringValue());
         }
+        
+        if (model != null) {
+            actuator.setModel(model);
+        } else if(bindingSet.getValue(MODEL) != null) {
+            actuator.setModel(bindingSet.getValue(MODEL).stringValue());
+        }
 
         if (inServiceDate != null) {
             actuator.setInServiceDate(inServiceDate);
@@ -525,7 +560,6 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
     
     /**
      * Prepare the SPARQL query to return all variables measured by an actuator.
-     * 
      * @param actuatorUri The actuator uri
      * @return The prepared query
      * @example 
@@ -552,7 +586,6 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
     
     /**
      * Return a HashMap of uri => label of the variables measured by the given actuator.
-     * 
      * @param actuator The actuator uri
      * @return HashMap of uri => label
      */
@@ -574,15 +607,21 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
         return variables;
     }
 
+    /**
+     * Find an actuator by its URI.
+     * @param id
+     * @return the actuator if founded.
+     * @throws Exception 
+     */
     @Override
     public Actuator findById(String id) throws Exception {
-        SPARQLQueryBuilder findQuery = prepareSearchQuery(null, null, id, null, null, null, null, null, null, null, null);
+        SPARQLQueryBuilder findQuery = prepareSearchQuery(null, null, id, null, null, null, null, null, null, null, null, null);
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, findQuery.toString());
         
         Actuator actuator = new Actuator();
         try(TupleQueryResult result = tupleQuery.evaluate()) {
             if (result.hasNext()) {
-                actuator = getActuatorFromBindingSet(result.next(), id, null, null, null, null, null, null, null, null);
+                actuator = getActuatorFromBindingSet(result.next(), id, null, null, null, null, null, null, null, null, null);
                 
                 //get variables associated to the actuator
                 HashMap<String, String> variables = getVariables(actuator.getUri());
@@ -650,7 +689,7 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
         if (userDao.isAdmin(user)) {
             //2. check data
             for (Actuator actuator : actuators) {
-                //2.1
+                //2.1 Check if the uri of the actuator exist and corresponds to an actuator.
                 if (actuator.getUri() != null) {
                     if (!existAndIsActuator(actuator.getUri())) {
                          dataOk = false;
@@ -716,6 +755,11 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
         return insertResult;
     }
     
+    /**
+     * Check and update a given list of actuators and return the update result.
+     * @param actuators
+     * @return 
+     */
     public POSTResultsReturn checkAndUpdate(List<Actuator> actuators) {
         POSTResultsReturn updateResult;
         try {
@@ -782,8 +826,8 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
      * }
      * @return Query generated to count the actuators, with the searched parameters
      */
-    private SPARQLQueryBuilder prepareCount(String uri, String rdfType, String label, String brand, String serialNumber, String inServiceDate, String dateOfPurchase, String dateOfLastCalibration, String personInCharge) {
-        SPARQLQueryBuilder query = this.prepareSearchQuery(null, null, uri, rdfType, label, brand, serialNumber, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
+    private SPARQLQueryBuilder prepareCount(String uri, String rdfType, String label, String brand, String serialNumber, String model, String inServiceDate, String dateOfPurchase, String dateOfLastCalibration, String personInCharge) {
+        SPARQLQueryBuilder query = this.prepareSearchQuery(null, null, uri, rdfType, label, brand, serialNumber, model, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
         query.clearSelect();
         query.clearLimit();
         query.clearOffset();
@@ -807,8 +851,8 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
      * @return The number of sensors 
      * @inheritdoc
      */
-    public Integer count(String uri, String rdfType, String label, String brand, String serialNumber, String inServiceDate, String dateOfPurchase, String dateOfLastCalibration, String personInCharge) throws RepositoryException, MalformedQueryException {
-        SPARQLQueryBuilder prepareCount = prepareCount(uri, rdfType, label, brand, serialNumber, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
+    public Integer count(String uri, String rdfType, String label, String brand, String serialNumber, String model, String inServiceDate, String dateOfPurchase, String dateOfLastCalibration, String personInCharge) throws RepositoryException, MalformedQueryException {
+        SPARQLQueryBuilder prepareCount = prepareCount(uri, rdfType, label, brand, serialNumber, model, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
         Integer count = 0;
         try (TupleQueryResult result = tupleQuery.evaluate()) {
@@ -835,15 +879,15 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
      * @param personInCharge
      * @return the list of the actuators.
      */
-    public ArrayList<Actuator> find(Integer page, Integer pageSize, String uri, String rdfType, String label, String brand, String serialNumber, String inServiceDate, String dateOfPurchase, String dateOfLastCalibration, String personInCharge) {
-        SPARQLQueryBuilder query = prepareSearchQuery(page, pageSize, uri, rdfType, label, brand, serialNumber, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
+    public ArrayList<Actuator> find(Integer page, Integer pageSize, String uri, String rdfType, String label, String brand, String serialNumber, String model, String inServiceDate, String dateOfPurchase, String dateOfLastCalibration, String personInCharge) {
+        SPARQLQueryBuilder query = prepareSearchQuery(page, pageSize, uri, rdfType, label, brand, serialNumber, model, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         ArrayList<Actuator> actuators = new ArrayList<>();
 
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
-                Actuator actuator = getActuatorFromBindingSet(bindingSet, uri, rdfType, label, brand, serialNumber, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
+                Actuator actuator = getActuatorFromBindingSet(bindingSet, uri, rdfType, label, brand, serialNumber, model, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
                 HashMap<String, String> variables = getVariables(actuator.getUri());
                 actuator.setVariables(variables);
                 actuators.add(actuator);

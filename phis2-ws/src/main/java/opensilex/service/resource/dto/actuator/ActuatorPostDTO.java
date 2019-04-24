@@ -28,6 +28,8 @@ public class ActuatorPostDTO  extends AbstractVerifiedClass {
     private String label;
     //brand of the actuator
     private String brand;
+    //model of the actuator
+    private String model;
     //serial number of the actuator
     private String serialNumber;
     //in service date of the actuator
@@ -45,6 +47,7 @@ public class ActuatorPostDTO  extends AbstractVerifiedClass {
         actuator.setRdfType(rdfType);
         actuator.setLabel(label);
         actuator.setBrand(brand);
+        actuator.setModel(model);
         actuator.setSerialNumber(serialNumber);
         actuator.setInServiceDate(inServiceDate);
         actuator.setDateOfPurchase(dateOfPurchase);
@@ -133,5 +136,14 @@ public class ActuatorPostDTO  extends AbstractVerifiedClass {
 
     public void setPersonInCharge(String personInCharge) {
         this.personInCharge = personInCharge;
+    }
+    
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SENSOR_MODEL)
+    public String getModel() {
+        return model;
+    }
+
+    public void setModel(String model) {
+        this.model = model;
     }
 }

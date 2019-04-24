@@ -37,7 +37,6 @@ import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.ActuatorDAO;
-import opensilex.service.dao.SensorDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.Actuator;
@@ -101,6 +100,7 @@ public class ActuatorResourceService extends ResourceService {
      *          "label": "par03_p",
      *          "brand": "Skye Instruments",
      *          "serialNumber": "A1E345F32",
+     *          "model": "mod01",
      *          "inServiceDate": "2017-06-15",
      *          "dateOfPurchase": "2017-06-15",
      *          "dateOfLastCalibration": "2017-06-15",
@@ -177,10 +177,40 @@ public class ActuatorResourceService extends ResourceService {
      * @param actuators
      * @param context
      * @example
-     * 
+     * [
+     *      {
+     *          "uri": "http://www.opensilex.org/opensilex/2019/a19001",
+     *          "rdfType": "http://www.opensilex.org/vocabulary/oeso#Actuator",
+     *          "label": "par03_p",
+     *          "brand": "Skye Instruments",
+     *          "serialNumber": "A1E345F32",
+     *          "model": "mod01",
+     *          "inServiceDate": "2017-06-15",
+     *          "dateOfPurchase": "2017-06-15",
+     *          "dateOfLastCalibration": "2017-06-15",
+     *          "personInCharge": "admin@opensilex.org"
+     *      }
+     * ]
      * @return the update result.
      * @example
-     * 
+     * {
+     *      "metadata": {
+     *          "pagination": null,
+     *          "status": [
+     *              {
+     *                 "message": "Resource(s) updated",
+     *                 "exception": {
+     *                      "type": "Info",
+     *                      "href": null,
+     *                      "details": "Resource(s) updated"
+     *                  }
+     *              }
+     *          ],
+     *          "datafiles": [
+     *              "http://www.opensilex.org/opensilex/2019/a19001"
+     *          ]
+     *      }
+     * }
      */
     @PUT
     @ApiOperation(value = "Put actuator(s)",
@@ -300,6 +330,59 @@ public class ActuatorResourceService extends ResourceService {
         }
     }
     
+    /**
+     * Get actuators by search with the search params. 
+     * @param pageSize
+     * @param page
+     * @param uri
+     * @param rdfType
+     * @param label
+     * @param brand
+     * @param serialNumber
+     * @param inServiceDate
+     * @param dateOfPurchase
+     * @param dateOfLastCalibration
+     * @param personInCharge
+     * @return the list of the actuators.
+     * {
+     *      "metadata": {
+     *          "pagination": {
+     *              "pageSize": 20,
+     *              "currentPage": 0,
+     *              "totalCount": 2,
+     *              "totalPages": 1
+     *          },
+     *          "status": [],
+     *          "datafiles": []
+     *      },
+     *      "result": {
+     *          "data": [
+     *              {
+     *                 "uri": "http://www.opensilex.org/opensilex/2019/a19001",
+     *                 "rdfType": "http://www.opensilex.org/vocabulary/oeso#Actuator",
+     *                 "label": "par03_p",
+     *                 "brand": "Skye Instruments",
+     *                 "serialNumber": "A1E345F32",
+     *                 "inServiceDate": "2017-06-15",
+     *                 "dateOfPurchase": "2017-06-15",
+     *                 "dateOfLastCalibration": "2017-06-15",
+     *                 "personInCharge": "admin@opensilex.org"
+     *              },
+     *              {
+     *                 "uri": "http://www.opensilex.org/opensilex/2019/a19002",
+     *                 "rdfType": "http://www.opensilex.org/vocabulary/oeso#Actuator",
+     *                 "label": "par04_p",
+     *                 "brand": "Skye Instruments",
+     *                 "serialNumber": "A1E345F32",
+     *                 "inServiceDate": "2017-06-15",
+     *                 "dateOfPurchase": "2017-06-15",
+     *                 "dateOfLastCalibration": "2017-06-15",
+     *                 "personInCharge": "admin@opensilex.org"
+     *              }
+     *          ]
+     *      }
+     * }
+     */
     @GET
     @ApiOperation(value = "Get all actuators corresponding to the search params given",
                   notes = "Retrieve all actuators authorized for the user corresponding to the searched params given")
@@ -324,6 +407,7 @@ public class ActuatorResourceService extends ResourceService {
             @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_SENSOR_LABEL) @QueryParam("label") String label,
             @ApiParam(value = "Search by brand", example = DocumentationAnnotation.EXAMPLE_SENSOR_BRAND) @QueryParam("brand") String brand,
             @ApiParam(value = "Search by serial number", example = DocumentationAnnotation.EXAMPLE_SENSOR_SERIAL_NUMBER) @QueryParam("serialNumber") String serialNumber,
+            @ApiParam(value = "Search by model", example = DocumentationAnnotation.EXAMPLE_SENSOR_MODEL) @QueryParam("model") String model,
             @ApiParam(value = "Search by service date", example = DocumentationAnnotation.EXAMPLE_SENSOR_IN_SERVICE_DATE) @QueryParam("inServiceDate") @Date(DateFormat.YMD) String inServiceDate,
             @ApiParam(value = "Search by date of purchase", example = DocumentationAnnotation.EXAMPLE_SENSOR_DATE_OF_PURCHASE) @QueryParam("dateOfPurchase") @Date(DateFormat.YMD) String dateOfPurchase,
             @ApiParam(value = "Search by date of last calibration", example = DocumentationAnnotation.EXAMPLE_SENSOR_DATE_OF_LAST_CALIBRATION) @QueryParam("dateOfLastCalibration") @Date(DateFormat.YMD) String dateOfLastCalibration,
@@ -331,10 +415,10 @@ public class ActuatorResourceService extends ResourceService {
         
         ActuatorDAO actuatorDAO = new ActuatorDAO();
         //1. Get count
-        Integer totalCount = actuatorDAO.count(uri, rdfType, label, brand, serialNumber, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
+        Integer totalCount = actuatorDAO.count(uri, rdfType, label, brand, serialNumber, model, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
         
         //2. Get actuators
-        ArrayList<Actuator> actuatorsFounded = actuatorDAO.find(page, pageSize, uri, rdfType, label, brand, serialNumber, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
+        ArrayList<Actuator> actuatorsFounded = actuatorDAO.find(page, pageSize, uri, rdfType, label, brand, serialNumber, inServiceDate, model, dateOfPurchase, dateOfLastCalibration, personInCharge);
         
         //3. Return result
         ArrayList<Status> statusList = new ArrayList<>();

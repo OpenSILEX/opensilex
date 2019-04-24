@@ -339,6 +339,7 @@ public class ActuatorResourceService extends ResourceService {
      * @param label
      * @param brand
      * @param serialNumber
+     * @param model
      * @param inServiceDate
      * @param dateOfPurchase
      * @param dateOfLastCalibration

@@ -137,8 +137,7 @@ public final class DocumentationAnnotation {
     // Specific examples
     public static final String EXAMPLE_ACTUATOR_RDF_TYPE = "http://www.opensilex.org/vocabulary/oeso#Actuator";
     public static final String EXAMPLE_ACTUATOR_URI = "http://www.opensilex.org/opensilex/2019/a19001";
-    
-    public static final String EXAMPLE_EXPERIMENT_URI = "http://phenome-fppn.fr/diaphen/DIA2012-1";
+    public static final String EXAMPLE_EXPERIMENT_URI = "http://www.opensilex.org/demo/DMO2012-1";
     public static final String EXAMPLE_EXPERIMENT_START_DATE = EXAMPLE_DATETIME;
     public static final String EXAMPLE_EXPERIMENT_END_DATE = EXAMPLE_DATETIME;
     public static final String EXAMPLE_EXPERIMENT_FIELD = "field";
@@ -153,7 +152,9 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_FILE_INFORMATION_CHECKSUM = "106fa487baa1728083747de1c6df73e9";
     public static final String EXAMPLE_FILE_INFORMATION_EXTENSION = "jpg";
 
-    public static final String EXAMPLE_SCIENTIFIC_OBJECT_URI = "http://www.phenome-fppn.fr/phenovia/2017/o1032481";
+    public static final String EXAMPLE_SCIENTIFIC_OBJECT_LABEL = "POZ_1";
+    public static final String EXAMPLE_SCIENTIFIC_OBJECT_POLYGON = "POLYGON((0 0, 10 0, 10 10, 0 10, 0 0))";
+    public static final String EXAMPLE_SCIENTIFIC_OBJECT_URI = "http://www.opensilex.org/demo/2018/o18000076";
     public static final String EXAMPLE_SCIENTIFIC_OBJECT_TYPE = "http://www.opensilex.org/vocabulary/oeso#Plot";
 
     public static final String EXAMPLE_IMAGE_TYPE = "http://www.opensilex.org/vocabulary/oeso#HemisphericalImage";

@@ -83,6 +83,8 @@ public enum DateFormat {
             } else {
                 dateStringToParse += "T00:00:00+" + dateTimezone;
             }
+        } else if (dateStringToParse.endsWith("Z")) {
+            dateStringToParse = dateStringToParse.replaceFirst("(.*)Z$", "$1+0000");
         }
         
         // Parse datetime

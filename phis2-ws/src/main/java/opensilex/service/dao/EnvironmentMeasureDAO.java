@@ -235,12 +235,12 @@ public class EnvironmentMeasureDAO extends MongoDAO<EnvironmentMeasure> {
                 } else {
                     dataOk = false;
                     checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
-                        "Unknwon variable : " + environmentMeasure.getVariableUri()));
+                        "Unknown variable : " + environmentMeasure.getVariableUri()));
                 }
             } else {
                 dataOk = false;
                     checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
-                        "Unknwon sensor : " + environmentMeasure.getSensorUri()));
+                        "Unknown sensor : " + environmentMeasure.getSensorUri()));
             }
         }
         

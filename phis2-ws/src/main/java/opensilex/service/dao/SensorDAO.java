@@ -852,7 +852,7 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
                 if (!variableDao.existAndIsVariable(variableUri)) {
                     dataOk = false;
                     checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
-                        "Unknwon variable : " + variableUri));
+                        "Unknown variable : " + variableUri));
                 }
             }
             
@@ -880,7 +880,7 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
         } else {
             dataOk = false;
             checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
-                    "Unknwon sensor : " + sensorUri));
+                    "Unknown sensor : " + sensorUri));
         }
         
         checkResult = new POSTResultsReturn(dataOk, null, dataOk);

@@ -8,14 +8,14 @@
 package opensilex.service.dao.exception;
 
 /**
- * Semantic inconsistency exception.
+ * Exception to throw when an object type is not in the range of a predicate.
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
 public class TypeNotInRangeException extends SemanticInconsistencyException {
     public final static String GENERIC_MESSAGE = 
-            "The object type is not in the range of the property";
+            "The object type is not in the range of the predicate";
     public final static String DETAILS = 
-            "The type %s of the value %s is not in the range of the property %s";
+            "The type %s of the object %s is not in the range of the predicate %s";
     
     public TypeNotInRangeException() {
         super(GENERIC_MESSAGE);
@@ -33,12 +33,12 @@ public class TypeNotInRangeException extends SemanticInconsistencyException {
         super(message, throwableCause);
     }
     
-    public TypeNotInRangeException(String valueType, String propertyName) {
-        super(String.format(DETAILS, valueType, propertyName));
+    public TypeNotInRangeException(String objectUriOrValue, String objectType, String predicate) {
+        super(String.format(DETAILS, objectType, objectUriOrValue, predicate));
     }
     
-    public TypeNotInRangeException(String valueType, String propertyName, Throwable throwableCause) {
-        super(String.format(DETAILS, valueType, propertyName), throwableCause);
+    public TypeNotInRangeException(String objectUriOrValue, String objectType, String predicate, Throwable throwableCause) {
+        super(String.format(DETAILS, objectType, objectUriOrValue, predicate), throwableCause);
     }
 
     @Override

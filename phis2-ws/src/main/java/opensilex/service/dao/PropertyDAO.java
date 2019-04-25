@@ -557,12 +557,13 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
     
     /**
      * Checks the existence, the domain and range of the given list of properties.
+     * @param subject
      * @param properties
-     * @param ownerType
+     * @param subjectType
      * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
      * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
-    public void checkExistenceRangeDomain(ArrayList<Property> properties, String ownerType) 
+    public void checkExistenceRangeDomain(String subject, String subjectType, ArrayList<Property> properties) 
             throws DAODataErrorAggregateException, DAOPersistenceException {
         ArrayList<DAODataErrorException> exceptions = new ArrayList<>();
         try {
@@ -570,21 +571,20 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
                 // If URI, check value existence with type
                 if (property.getRdfType() != null 
                         && !exist(property.getValue(), RDF.type.getURI(), property.getRdfType())) {
-                    exceptions.add(new UnknownUriOfTypeException(
+                    exceptions.add(new UnknownUriOfTypeException( 
                             property.getValue(), 
-                            property.getRdfType(), 
-                            "the property's value"));
+                            property.getRdfType()));
                 }
 
                 // Check relation existence
                 if (existUri(property.getRelation())) {
                     // Check domain
-                    if (!isRelationDomainCompatibleWithRdfType(property.getRelation(), ownerType)) {
-                        exceptions.add(new TypeNotInDomainException(ownerType, property.getRelation()));
+                    if (!isRelationDomainCompatibleWithRdfType(property.getRelation(), subjectType)) {
+                        exceptions.add(new TypeNotInDomainException(subject, subjectType, property.getRelation()));
                     }
                     // Check range
                     if (!isRelationRangeCompatibleWithRdfType(property.getRelation(), property.getRdfType())) {
-                        exceptions.add(new TypeNotInDomainException(property.getRdfType(), property.getRelation()));
+                        exceptions.add(new TypeNotInDomainException(subject, property.getRdfType(), property.getRelation()));
                     }
                 } else {
                     exceptions.add(new UnknownUriException(property.getRelation(), "the property relation"));

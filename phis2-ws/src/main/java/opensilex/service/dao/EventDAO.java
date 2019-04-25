@@ -478,7 +478,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
 
                         // Check properties
                         try {
-                            propertyDao.checkExistenceRangeDomain(event.getProperties(), event.getType());
+                            propertyDao.checkExistenceRangeDomain(event.getUri(), event.getType(), event.getProperties());
                         }
                         catch (DAODataErrorAggregateException ex) {
                             exceptions.addAll(ex.getExceptions());

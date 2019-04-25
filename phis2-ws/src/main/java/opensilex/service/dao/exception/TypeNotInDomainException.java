@@ -8,7 +8,7 @@
 package opensilex.service.dao.exception;
 
 /**
- * Semantic inconsistency exception.
+ * Exception to throw when a subject type is not in the domain of a predicate.
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
 public class TypeNotInDomainException extends SemanticInconsistencyException {
@@ -33,12 +33,12 @@ public class TypeNotInDomainException extends SemanticInconsistencyException {
         super(message, throwableCause);
     }
     
-    public TypeNotInDomainException(String subject, String subjectType, String predicate) {
-        super(String.format(DETAILS, subjectType, subject, predicate));
+    public TypeNotInDomainException(String subjectUri, String subjectType, String predicate) {
+        super(String.format(DETAILS, subjectType, subjectUri, predicate));
     }
     
-    public TypeNotInDomainException(String subject, String subjectType, String predicate, Throwable throwableCause) {
-        super(String.format(DETAILS, subjectType, subject, predicate), throwableCause);
+    public TypeNotInDomainException(String subjectUri, String subjectType, String predicate, Throwable throwableCause) {
+        super(String.format(DETAILS, subjectType, subjectUri, predicate), throwableCause);
     }
 
     @Override

@@ -1,8 +1,8 @@
 //******************************************************************************
-//                                       Sensor.java
+//                                       Actuator.java
 // SILEX-PHIS
-// Copyright © INRA 2018
-// Creation date: 14 mars 2018
+// Copyright © INRA 2019
+// Creation date: 17 avr. 2019
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.model;
@@ -10,14 +10,12 @@ package opensilex.service.model;
 import java.util.HashMap;
 
 /**
- * Represents a sensor model
+ * Model of an actuator.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class Sensor extends Device {    
-    /**
-     * Variables measured by the sensor.
-     */
-    private HashMap<String, String>  variables;
+public class Actuator extends Device {
+    //variables mesured by the actuator
+    protected HashMap<String, String>  variables;
     
     public HashMap<String, String>  getVariables() {
         return variables;

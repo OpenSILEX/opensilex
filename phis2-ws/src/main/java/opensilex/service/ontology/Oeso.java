@@ -27,6 +27,12 @@ public enum Oeso {
             return NAMESPACE.toString() + "ScientificObject";
         }
     },
+    CONCEPT_ACTUATOR {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "Actuator";
+        }
+    },
     CONCEPT_ANNOTATION {
         @Override
         public String toString() {
@@ -37,6 +43,12 @@ public enum Oeso {
         @Override
         public String toString() {
             return NAMESPACE.toString() + "Camera";
+        }
+    },
+    CONCEPT_DEVICE {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "Device";
         }
     },
     CONCEPT_DOCUMENT {

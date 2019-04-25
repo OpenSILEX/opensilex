@@ -14,6 +14,13 @@ import opensilex.service.PropertiesFileManager;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public enum Contexts {
+    //The actuators context contains all the declared actuators.
+    ACTUATORS {
+        @Override
+        public String toString() {
+            return PLATFORM.toString() + "set/actuators";
+        }
+    },
     //The context which contains all the declared scientific objects
     SCIENTIFIC_OBJECTS {
         @Override

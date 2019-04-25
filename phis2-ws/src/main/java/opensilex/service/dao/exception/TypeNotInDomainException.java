@@ -13,9 +13,9 @@ package opensilex.service.dao.exception;
  */
 public class TypeNotInDomainException extends SemanticInconsistencyException {
     public final static String GENERIC_MESSAGE = 
-            "The object type is not in the domain of the property";
+            "The subject type is not in the domain of the predicate";
     public final static String DETAILS = 
-            "The type %s of the object %s is not in the domain of the property %s";
+            "The type %s of the subject %s is not in the domain of the predicate %s";
     
     public TypeNotInDomainException() {
         super(GENERIC_MESSAGE);
@@ -33,12 +33,12 @@ public class TypeNotInDomainException extends SemanticInconsistencyException {
         super(message, throwableCause);
     }
     
-    public TypeNotInDomainException(String objectType, String propertyName) {
-        super(String.format(DETAILS, objectType, propertyName));
+    public TypeNotInDomainException(String subject, String subjectType, String predicate) {
+        super(String.format(DETAILS, subjectType, subject, predicate));
     }
     
-    public TypeNotInDomainException(String objectType, String propertyName, Throwable throwableCause) {
-        super(String.format(DETAILS, objectType, propertyName), throwableCause);
+    public TypeNotInDomainException(String subject, String subjectType, String predicate, Throwable throwableCause) {
+        super(String.format(DETAILS, subjectType, subject, predicate), throwableCause);
     }
 
     @Override

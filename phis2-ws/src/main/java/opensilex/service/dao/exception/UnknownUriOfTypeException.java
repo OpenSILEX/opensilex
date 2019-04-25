@@ -13,8 +13,8 @@ package opensilex.service.dao.exception;
  */
 public class UnknownUriOfTypeException extends SemanticInconsistencyException {
     
-    public final static String GENERIC_MESSAGE = "Unknown URI with type";
-    public final static String DETAILS = "The URI %s of %s with type %s is unknown";
+    public final static String GENERIC_MESSAGE = "Unknown URI of type";
+    public final static String DETAILS = "There is no URI %s of type %s.";
     
     public UnknownUriOfTypeException() {
         super(DETAILS);
@@ -24,16 +24,12 @@ public class UnknownUriOfTypeException extends SemanticInconsistencyException {
         super(DETAILS, throwableCause);
     }
     
-    public UnknownUriOfTypeException(String uri, String objectOfWhichUriIsUnknown, String typeOfObject) {
-        super(String.format(DETAILS, uri, objectOfWhichUriIsUnknown, typeOfObject));
+    public UnknownUriOfTypeException(String objectUri, String type) {
+        super(String.format(DETAILS, objectUri, type));
     }
     
-    public UnknownUriOfTypeException(String uri, String uriObject, Throwable throwableCause) {
-        super(String.format(DETAILS, uri, uriObject), throwableCause);
-    }
-    
-    public UnknownUriOfTypeException(String uri, String uriObject, String objectOfWhichUriIsUnknown, Throwable throwableCause) {
-        super(String.format(DETAILS, uri, uriObject, objectOfWhichUriIsUnknown), throwableCause);
+    public UnknownUriOfTypeException(String objectUri, String type, Throwable throwableCause) {
+        super(String.format(DETAILS, objectUri, type), throwableCause);
     }
 
     @Override

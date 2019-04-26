@@ -93,7 +93,7 @@ public class EventGetDTO extends AbstractVerifiedClass {
         
         DateTime dateTime = Dates.stringToDateTimeWithGivenPattern(this.date, DateFormat.YMDTHMSZZ.toString());
         
-        return new Event(this.uri, this.rdfType, modelConcernedItems, dateTime, modelProperties, null);
+        return new Event(this.uri, this.rdfType, modelConcernedItems, dateTime, modelProperties);
     }
 
     public String getUri() {

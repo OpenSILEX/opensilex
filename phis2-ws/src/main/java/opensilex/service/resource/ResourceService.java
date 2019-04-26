@@ -162,7 +162,7 @@ public abstract class ResourceService {
         ArrayList<Object> objects = new ArrayList();
         try {
             Object object = dao.findById(uri);
-            objects.add(dao.findById(uri));
+            objects.add(object);
             // Analyse results
             if (object == null) { // Request failure
                 return getGETResponseWhenNoResult();

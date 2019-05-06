@@ -8,8 +8,11 @@
 package opensilex.service.resource.dto.data;
 
 import io.swagger.annotations.ApiModelProperty;
+import java.math.BigDecimal;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.validation.constraints.NotNull;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.documentation.DocumentationAnnotation;
@@ -18,6 +21,7 @@ import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.model.Data;
+import org.apache.commons.validator.routines.BigDecimalValidator;
 
 /**
  * Data POST DTO.
@@ -119,12 +123,36 @@ public class DataPostDTO extends AbstractVerifiedClass {
 
         data.setDate(DateFormat.parseDateOrDateTime(date, false));
 
-        try {
-            data.setValue(DateFormat.parseDateOrDateTime(value.toString(), false));
-        } catch (ParseException ex) {
-            data.setValue(value);
+        String stringValue = value.toString();
+        
+        java.util.Date dateValue = getDateOrNullIfInvalid(stringValue);
+        if (dateValue != null) {
+             data.setValue(dateValue);
+        } else {
+            BigDecimal decimalValue = getBigDecimalOrNullIfInvalid(stringValue);
+            if (decimalValue != null) {
+                data.setValue(decimalValue);
+            } else {
+                data.setValue(value);
+            }
         }
 
         return data;
+    }
+    
+    private java.util.Date getDateOrNullIfInvalid(String value) {
+        try {
+            return DateFormat.parseDateOrDateTime(value, false);
+        } catch (ParseException ex) {
+            return null;
+        }
+    }
+    
+    private BigDecimal getBigDecimalOrNullIfInvalid(String value) {
+        try {
+            return new BigDecimal(value);
+        } catch (NumberFormatException ex) {
+            return null;
+        }
     }
 }

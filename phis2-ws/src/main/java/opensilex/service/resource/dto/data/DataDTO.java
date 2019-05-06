@@ -7,10 +7,12 @@
 //******************************************************************************
 package opensilex.service.resource.dto.data;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.model.Data;
+import org.bson.types.Decimal128;
 
 /**
  * Data DTO.
@@ -69,6 +71,8 @@ public class DataDTO {
         Object dataValue = data.getValue();
         if (dataValue != null && dataValue instanceof Date) {
             setValue(df.format(dataValue));
+        } else if (dataValue != null && dataValue instanceof Decimal128) {
+            setValue(new BigDecimal(dataValue.toString()));
         } else {
             setValue(dataValue);
         }

@@ -65,23 +65,11 @@ public enum DateFormat {
         SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
                 
         if (dateStringToParse.matches("\\d{4}-\\d{2}-\\d{2}")) {
-            SimpleDateFormat dfshort = new SimpleDateFormat(DateFormat.YMD.toString());
-            Date date = dfshort.parse(dateStringToParse);
-            
-            // Compute current server timezone offset
-            int secondOffset = ZoneOffset.systemDefault().getRules().getOffset(date.toInstant()).getTotalSeconds();
-            
-            String dateTimezone = String.format("%02d%02d", 
-                TimeUnit.SECONDS.toHours(secondOffset),
-                TimeUnit.SECONDS.toMinutes(secondOffset) - 
-                TimeUnit.HOURS.toMinutes(TimeUnit.SECONDS.toHours(secondOffset))
-            );
-            
             // Set time depending of isEndDate flag
             if (isEndDate) {
-                dateStringToParse += "T23:59:59+" + dateTimezone;
+                dateStringToParse += "T23:59:59+0000";
             } else {
-                dateStringToParse += "T00:00:00+" + dateTimezone;
+                dateStringToParse += "T00:00:00+0000";
             }
         } else if (dateStringToParse.endsWith("Z")) {
             dateStringToParse = dateStringToParse.replaceFirst("(.*)Z$", "$1+0000");

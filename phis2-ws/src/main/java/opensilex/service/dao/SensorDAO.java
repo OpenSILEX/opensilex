@@ -146,90 +146,104 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
     protected SPARQLQueryBuilder prepareSearchQuery(Integer page, Integer pageSize, String uri, String rdfType, String label, String brand, String serialNumber, String model, String inServiceDate, String dateOfPurchase, String dateOfLastCalibration, String personInCharge) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
-
-        String sensorUri;
-        if (uri != null) {
-            sensorUri = "<" + uri + ">";
-        } else {
-            sensorUri = "?" + URI;
-            query.appendSelect(sensorUri);
-        }
         
+        //URI filter
+        if (uri == null) {
+            uri = "";
+        }
+        query.appendSelect("?" + URI);
+        query.beginBodyOptional();
+        query.appendAndFilter("REGEX ( str(?" + URI + "),\".*" + uri + ".*\",\"i\")");
+        query.endBodyOptional();
+        
+        //RDF Type filter
         if (rdfType != null) {
-            query.appendTriplet(sensorUri, Rdf.RELATION_TYPE.toString(), rdfType, null);
+            query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), rdfType, null);
         } else {
             query.appendSelect("?" + RDF_TYPE);
-            query.appendTriplet(sensorUri, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
+            query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
             query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_SENSING_DEVICE.toString(), null);
-        }        
-
-        if (label != null) {
-            query.appendTriplet(sensorUri, Rdfs.RELATION_LABEL.toString(), "\"" + label + "\"", null);
-        } else {
-            query.appendSelect(" ?" + LABEL);
-            query.beginBodyOptional();
-            query.appendToBody(sensorUri + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + LABEL + " . ");
-            query.endBodyOptional();
-        }
-
-        if (brand != null) {
-            query.appendTriplet(sensorUri, Oeso.RELATION_HAS_BRAND.toString(), "\"" + brand + "\"", null);
-        } else {
-            query.appendSelect(" ?" + BRAND);
-            query.appendTriplet(sensorUri, Oeso.RELATION_HAS_BRAND.toString(), "?" + BRAND, null);
         }
         
-        if (serialNumber != null) {
-            query.appendTriplet(sensorUri, Oeso.RELATION_HAS_SERIAL_NUMBER.toString(), "\"" + serialNumber + "\"", null);
-        } else {
-            query.appendSelect("?" + SERIAL_NUMBER);
-            query.beginBodyOptional();
-            query.appendToBody(sensorUri + " <" + Oeso.RELATION_HAS_SERIAL_NUMBER.toString() + "> ?" + SERIAL_NUMBER + " . ");
-            query.endBodyOptional();
+        //Label filter
+        if (label == null) {
+            label = "";
         }
+        query.appendSelect("?" + LABEL);
+        query.beginBodyOptional();
+        query.appendToBody("?" + URI + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + LABEL + " . ");
+        query.appendAndFilter("REGEX ( ?" + LABEL + ",\".*" + label + ".*\",\"i\")");
+        query.endBodyOptional();
         
-        if (model != null) {
-            query.appendTriplet(sensorUri, Oeso.RELATION_HAS_MODEL.toString(), "\"" + model + "\"", null);
-        } else {
-            query.appendSelect("?" + MODEL);
-            query.beginBodyOptional();
-            query.appendToBody(sensorUri + " <" + Oeso.RELATION_HAS_MODEL.toString() + "> ?" + MODEL + " . ");
-            query.endBodyOptional(); 
+        //Brand filter
+        if (brand == null) {
+            brand = "";
         }
-
-        if (inServiceDate != null) {
-            query.appendTriplet(sensorUri, Oeso.RELATION_IN_SERVICE_DATE.toString(), "\"" + inServiceDate + "\"", null);
-        } else {
-            query.appendSelect(" ?" + IN_SERVICE_DATE);
-            query.beginBodyOptional();
-            query.appendToBody(sensorUri + " <" + Oeso.RELATION_IN_SERVICE_DATE.toString() + "> " + "?" + IN_SERVICE_DATE + " . ");
-            query.endBodyOptional();
-        }
-
-        if (dateOfPurchase != null) {
-            query.appendTriplet(sensorUri, Oeso.RELATION_DATE_OF_PURCHASE.toString(), "\"" + dateOfPurchase + "\"", null);
-        } else {
-            query.appendSelect("?" + DATE_OF_PURCHASE);
-            query.beginBodyOptional();
-            query.appendToBody(sensorUri + " <" + Oeso.RELATION_DATE_OF_PURCHASE.toString() + "> " + "?" + DATE_OF_PURCHASE + " . ");
-            query.endBodyOptional();
-        }
-
-        if (dateOfLastCalibration != null) {
-            query.appendTriplet(sensorUri, Oeso.RELATION_DATE_OF_LAST_CALIBRATION.toString(), "\"" + dateOfLastCalibration + "\"", null);
-        } else {
-            query.appendSelect("?" + DATE_OF_LAST_CALIBRATION);
-            query.beginBodyOptional();
-            query.appendToBody(sensorUri + " <" + Oeso.RELATION_DATE_OF_LAST_CALIBRATION.toString() + "> " + "?" + DATE_OF_LAST_CALIBRATION + " . ");
-            query.endBodyOptional();
-        }
+        query.appendSelect("?" + BRAND);
+        query.beginBodyOptional();
+        query.appendToBody("?" + URI + " <" + Oeso.RELATION_HAS_BRAND.toString() + "> " + "?" + BRAND + " . ");
+        query.appendAndFilter("REGEX ( ?" + BRAND + ",\".*" + brand + ".*\",\"i\")");
+        query.endBodyOptional();
         
-        if (personInCharge != null) {
-            query.appendTriplet(sensorUri, Oeso.RELATION_PERSON_IN_CHARGE.toString(), "\"" + personInCharge + "\"", null);
-        } else {
-            query.appendSelect(" ?" + PERSON_IN_CHARGE);
-            query.appendTriplet(sensorUri, Oeso.RELATION_PERSON_IN_CHARGE.toString(), "?" + PERSON_IN_CHARGE, null);
+        //Serial number filter
+        if (serialNumber == null) {
+            serialNumber = "";
         }
+        query.appendSelect("?" + SERIAL_NUMBER);
+        query.beginBodyOptional();
+        query.appendToBody("?" + URI + " <" + Oeso.RELATION_HAS_SERIAL_NUMBER.toString() + "> " + "?" + SERIAL_NUMBER + " . ");
+        query.appendAndFilter("REGEX ( ?" + SERIAL_NUMBER + ",\".*" + serialNumber + ".*\",\"i\")");
+        query.endBodyOptional();
+        
+        //Model filter
+        if (model == null) {
+            model = "";
+        }
+        query.appendSelect("?" + MODEL);
+        query.beginBodyOptional();
+        query.appendToBody("?" + URI + " <" + Oeso.RELATION_HAS_MODEL.toString() + "> " + "?" + MODEL + " . ");
+        query.appendAndFilter("REGEX ( ?" + MODEL + ",\".*" + model + ".*\",\"i\")");
+        query.endBodyOptional();
+        
+        //In service date filter
+        if (inServiceDate == null) {
+            inServiceDate = "";
+        }
+        query.appendSelect("?" + IN_SERVICE_DATE);
+        query.beginBodyOptional();
+        query.appendToBody("?" + URI + " <" + Oeso.RELATION_IN_SERVICE_DATE.toString() + "> " + "?" + IN_SERVICE_DATE + " . ");
+        query.appendAndFilter("REGEX ( ?" + IN_SERVICE_DATE + ",\".*" + inServiceDate + ".*\",\"i\")");
+        query.endBodyOptional();
+        
+        //Date of purchase filter
+        if (dateOfPurchase == null) {
+            dateOfPurchase = "";
+        }
+        query.appendSelect("?" + DATE_OF_PURCHASE);
+        query.beginBodyOptional();
+        query.appendToBody("?" + URI + " <" + Oeso.RELATION_DATE_OF_PURCHASE.toString() + "> " + "?" + DATE_OF_PURCHASE + " . ");
+        query.appendAndFilter("REGEX ( ?" + DATE_OF_PURCHASE + ",\".*" + dateOfPurchase + ".*\",\"i\")");
+        query.endBodyOptional();
+        
+        //Date of last calibration filter
+        if (dateOfLastCalibration == null) {
+            dateOfLastCalibration = "";
+        }
+        query.appendSelect("?" + DATE_OF_LAST_CALIBRATION);
+        query.beginBodyOptional();
+        query.appendToBody("?" + URI + " <" + Oeso.RELATION_DATE_OF_LAST_CALIBRATION.toString() + "> " + "?" + DATE_OF_LAST_CALIBRATION + " . ");
+        query.appendAndFilter("REGEX ( ?" + DATE_OF_LAST_CALIBRATION + ",\".*" + dateOfLastCalibration + ".*\",\"i\")");
+        query.endBodyOptional();
+        
+        if (personInCharge == null) {
+            personInCharge = "";
+        }
+        query.appendSelect("?" + PERSON_IN_CHARGE);
+        query.beginBodyOptional();
+        query.appendToBody("?" + URI + " <" + Oeso.RELATION_PERSON_IN_CHARGE.toString() + "> " + "?" + PERSON_IN_CHARGE + " . ");
+        query.appendAndFilter("REGEX ( ?" + PERSON_IN_CHARGE + ",\".*" + personInCharge + ".*\",\"i\")");
+        query.endBodyOptional();
+
         
         if (page != null && pageSize != null) {
             query.appendLimit(pageSize);
@@ -378,63 +392,43 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
     private Sensor getSensorFromBindingSet(BindingSet bindingSet, String uri, String rdfType, String label, String brand, String serialNumber, String model, String inServiceDate, String dateOfPurchase, String dateOfLastCalibration, String personInCharge) {
         Sensor sensor = new Sensor();
 
-        if (uri != null) {
-            sensor.setUri(uri);
-        } else if (bindingSet.getValue(URI) != null) {
+        if (bindingSet.getValue(URI) != null) {
             sensor.setUri(bindingSet.getValue(URI).stringValue());
         }
 
-        if (rdfType != null) {
-            sensor.setRdfType(rdfType);
-        } else if (bindingSet.getValue(RDF_TYPE) != null) {
+        if (bindingSet.getValue(RDF_TYPE) != null) {
             sensor.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
         }
 
-        if (label != null) {
-            sensor.setLabel(label);
-        } else if (bindingSet.getValue(LABEL) != null ){
+        if (bindingSet.getValue(LABEL) != null ){
             sensor.setLabel(bindingSet.getValue(LABEL).stringValue());
         }
 
-        if (brand != null) {
-            sensor.setBrand(brand);
-        } else if (bindingSet.getValue(BRAND) != null) {
+        if (bindingSet.getValue(BRAND) != null) {
             sensor.setBrand(bindingSet.getValue(BRAND).stringValue());
         }
         
-        if (serialNumber != null) {
-            sensor.setSerialNumber(serialNumber);
-        } else if (bindingSet.getValue(SERIAL_NUMBER) != null) {
+        if (bindingSet.getValue(SERIAL_NUMBER) != null) {
             sensor.setSerialNumber(bindingSet.getValue(SERIAL_NUMBER).stringValue());
         }
         
-        if (model != null) {
-            sensor.setModel(model);
-        } else if(bindingSet.getValue(MODEL) != null) {
+        if(bindingSet.getValue(MODEL) != null) {
             sensor.setModel(bindingSet.getValue(MODEL).stringValue());
         }
 
-        if (inServiceDate != null) {
-            sensor.setInServiceDate(inServiceDate);
-        } else if (bindingSet.getValue(IN_SERVICE_DATE) != null) {
+        if (bindingSet.getValue(IN_SERVICE_DATE) != null) {
             sensor.setInServiceDate(bindingSet.getValue(IN_SERVICE_DATE).stringValue());
         }
 
-        if (dateOfPurchase != null) {
-            sensor.setDateOfPurchase(dateOfPurchase);
-        } else if (bindingSet.getValue(DATE_OF_PURCHASE) != null) {
+        if (bindingSet.getValue(DATE_OF_PURCHASE) != null) {
             sensor.setDateOfPurchase(bindingSet.getValue(DATE_OF_PURCHASE).stringValue());
         }
 
-        if (dateOfLastCalibration != null) {
-            sensor.setDateOfLastCalibration(dateOfLastCalibration);
-        } else if (bindingSet.getValue(DATE_OF_LAST_CALIBRATION) != null) {
+        if (bindingSet.getValue(DATE_OF_LAST_CALIBRATION) != null) {
             sensor.setDateOfLastCalibration(bindingSet.getValue(DATE_OF_LAST_CALIBRATION).stringValue());
         }
         
-        if (personInCharge != null) {
-            sensor.setPersonInCharge(personInCharge);
-        } else if (bindingSet.getValue(PERSON_IN_CHARGE) != null) {
+        if (bindingSet.getValue(PERSON_IN_CHARGE) != null) {
             sensor.setPersonInCharge(bindingSet.getValue(PERSON_IN_CHARGE).stringValue());
         }
 

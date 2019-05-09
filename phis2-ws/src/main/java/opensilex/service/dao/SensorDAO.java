@@ -172,7 +172,7 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
         query.appendSelect("?" + LABEL);
         query.beginBodyOptional();
         query.appendToBody("?" + URI + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + LABEL + " . ");
-        query.appendAndFilter("REGEX ( ?" + LABEL + ",\".*" + label + ".*\",\"i\")");
+        query.appendToBody("FILTER (REGEX ( ?" + LABEL + ",\".*" + label + ".*\",\"i\")) . ");
         query.endBodyOptional();
         
         //Brand filter
@@ -182,7 +182,7 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
         query.appendSelect("?" + BRAND);
         query.beginBodyOptional();
         query.appendToBody("?" + URI + " <" + Oeso.RELATION_HAS_BRAND.toString() + "> " + "?" + BRAND + " . ");
-        query.appendAndFilter("REGEX ( ?" + BRAND + ",\".*" + brand + ".*\",\"i\")");
+        query.appendToBody("FILTER (REGEX ( ?" + BRAND + ",\".*" + brand + ".*\",\"i\")) . ");
         query.endBodyOptional();
         
         //Serial number filter
@@ -192,7 +192,7 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
         query.appendSelect("?" + SERIAL_NUMBER);
         query.beginBodyOptional();
         query.appendToBody("?" + URI + " <" + Oeso.RELATION_HAS_SERIAL_NUMBER.toString() + "> " + "?" + SERIAL_NUMBER + " . ");
-        query.appendAndFilter("REGEX ( ?" + SERIAL_NUMBER + ",\".*" + serialNumber + ".*\",\"i\")");
+        query.appendToBody("FILTER (REGEX ( ?" + SERIAL_NUMBER + ",\".*" + serialNumber + ".*\",\"i\")) . ");
         query.endBodyOptional();
         
         //Model filter
@@ -202,7 +202,7 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
         query.appendSelect("?" + MODEL);
         query.beginBodyOptional();
         query.appendToBody("?" + URI + " <" + Oeso.RELATION_HAS_MODEL.toString() + "> " + "?" + MODEL + " . ");
-        query.appendAndFilter("REGEX ( ?" + MODEL + ",\".*" + model + ".*\",\"i\")");
+        query.appendToBody("FILTER (REGEX ( ?" + MODEL + ",\".*" + model + ".*\",\"i\")) . ");
         query.endBodyOptional();
         
         //In service date filter
@@ -212,7 +212,7 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
         query.appendSelect("?" + IN_SERVICE_DATE);
         query.beginBodyOptional();
         query.appendToBody("?" + URI + " <" + Oeso.RELATION_IN_SERVICE_DATE.toString() + "> " + "?" + IN_SERVICE_DATE + " . ");
-        query.appendAndFilter("REGEX ( ?" + IN_SERVICE_DATE + ",\".*" + inServiceDate + ".*\",\"i\")");
+        query.appendToBody("FILTER (REGEX ( ?" + IN_SERVICE_DATE + ",\".*" + inServiceDate + ".*\",\"i\")) . ");
         query.endBodyOptional();
         
         //Date of purchase filter
@@ -222,7 +222,7 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
         query.appendSelect("?" + DATE_OF_PURCHASE);
         query.beginBodyOptional();
         query.appendToBody("?" + URI + " <" + Oeso.RELATION_DATE_OF_PURCHASE.toString() + "> " + "?" + DATE_OF_PURCHASE + " . ");
-        query.appendAndFilter("REGEX ( ?" + DATE_OF_PURCHASE + ",\".*" + dateOfPurchase + ".*\",\"i\")");
+        query.appendToBody("FILTER (REGEX ( ?" + DATE_OF_PURCHASE + ",\".*" + dateOfPurchase + ".*\",\"i\")) . ");
         query.endBodyOptional();
         
         //Date of last calibration filter
@@ -232,7 +232,7 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
         query.appendSelect("?" + DATE_OF_LAST_CALIBRATION);
         query.beginBodyOptional();
         query.appendToBody("?" + URI + " <" + Oeso.RELATION_DATE_OF_LAST_CALIBRATION.toString() + "> " + "?" + DATE_OF_LAST_CALIBRATION + " . ");
-        query.appendAndFilter("REGEX ( ?" + DATE_OF_LAST_CALIBRATION + ",\".*" + dateOfLastCalibration + ".*\",\"i\")");
+        query.appendToBody("FILTER (REGEX ( ?" + DATE_OF_LAST_CALIBRATION + ",\".*" + dateOfLastCalibration + ".*\",\"i\")) . ");
         query.endBodyOptional();
         
         if (personInCharge == null) {
@@ -241,7 +241,7 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
         query.appendSelect("?" + PERSON_IN_CHARGE);
         query.beginBodyOptional();
         query.appendToBody("?" + URI + " <" + Oeso.RELATION_PERSON_IN_CHARGE.toString() + "> " + "?" + PERSON_IN_CHARGE + " . ");
-        query.appendAndFilter("REGEX ( ?" + PERSON_IN_CHARGE + ",\".*" + personInCharge + ".*\",\"i\")");
+        query.appendToBody("FILTER (REGEX ( ?" + PERSON_IN_CHARGE + ",\".*" + personInCharge + ".*\",\"i\")) . ");
         query.endBodyOptional();
 
         

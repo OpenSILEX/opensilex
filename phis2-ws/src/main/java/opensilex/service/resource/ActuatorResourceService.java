@@ -419,7 +419,7 @@ public class ActuatorResourceService extends ResourceService {
         Integer totalCount = actuatorDAO.count(uri, rdfType, label, brand, serialNumber, model, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
         
         //2. Get actuators
-        ArrayList<Actuator> actuatorsFounded = actuatorDAO.find(page, pageSize, uri, rdfType, label, brand, serialNumber, inServiceDate, model, dateOfPurchase, dateOfLastCalibration, personInCharge);
+        ArrayList<Actuator> actuatorsFounded = actuatorDAO.find(page, pageSize, uri, rdfType, label, brand, serialNumber, model, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
         
         //3. Return result
         ArrayList<Status> statusList = new ArrayList<>();

@@ -148,13 +148,13 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
         query.appendDistinct(Boolean.TRUE);
         
         //RDF Type filter
-        if (rdfType != null) {
-            query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), rdfType, null);
-        } else {
-            query.appendSelect("?" + RDF_TYPE);
-            query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
-            query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_SENSING_DEVICE.toString(), null);
+        if (rdfType == null) {
+            rdfType = "";
         }
+        query.appendSelect("?" + RDF_TYPE);
+        query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
+        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_SENSING_DEVICE.toString(), null);
+        query.appendAndFilter("REGEX ( str(?" + RDF_TYPE + "),\".*" + rdfType + ".*\",\"i\")");
         
         //URI filter
         if (uri == null) {

@@ -357,28 +357,39 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
      * @param dateOfLastCalibration
      * @param personInCharge
      * @example
-     * SELECT DISTINCT  ?rdfType  ?label  ?brand ?serialNumber  ?inServiceDate ?dateOfPurchase ?dateOfLastCalibration  ?personInCharge 
+     * SELECT DISTINCT  ?rdfType ?uri ?label ?brand ?serialNumber ?model ?inServiceDate 
+     * ?dateOfPurchase ?dateOfLastCalibration ?personInCharge 
      * WHERE {
-     *      <http://www.opensilex.org/opensilex/2019/a19001>  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
+     *      ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
      *      ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.opensilex.org/vocabulary/oeso#Actuator> . 
      *      OPTIONAL {
-     *          <http://www.opensilex.org/opensilex/2019/a19001> <http://www.w3.org/2000/01/rdf-schema#label> ?label . 
-     *      }
-     *      <http://www.opensilex.org/opensilex/2019/a19001>  <http://www.opensilex.org/vocabulary/oeso#hasBrand>  ?brand  . 
-     *      OPTIONAL {
-     *          <http://www.opensilex.org/opensilex/2019/a19001> <http://www.opensilex.org/vocabulary/oeso#hasSerialNumber> ?serialNumber . 
+     *          ?uri <http://www.w3.org/2000/01/rdf-schema#label> ?label . 
      *      }
      *      OPTIONAL {
-     *          <http://www.opensilex.org/opensilex/2019/a19001> <http://www.opensilex.org/vocabulary/oeso#inServiceDate> ?inServiceDate . 
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#hasBrand> ?brand . 
      *      }
      *      OPTIONAL {
-     *          <http://www.opensilex.org/opensilex/2019/a19001> <http://www.opensilex.org/vocabulary/oeso#dateOfPurchase> ?dateOfPurchase . 
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#hasSerialNumber> ?serialNumber . 
      *      }
      *      OPTIONAL {
-     *          <http://www.opensilex.org/opensilex/2019/a19001> <http://www.opensilex.org/vocabulary/oeso#dateOfLastCalibration> ?dateOfLastCalibration . 
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#hasModel> ?model . 
      *      }
-     *      <http://www.opensilex.org/opensilex/2019/a19001>  <http://www.opensilex.org/vocabulary/oeso#personInCharge>  ?personInCharge  . 
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#inServiceDate> ?inServiceDate . 
+     *      }
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#dateOfPurchase> ?dateOfPurchase . 
+     *      }
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#dateOfLastCalibration> ?dateOfLastCalibration . 
+     *      }
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#personInCharge> ?personInCharge . 
+     *      }
+     *      FILTER ( (REGEX ( str(?uri),".*op.*","i")) ) 
      * }
+     * LIMIT 20 
+     * OFFSET 0 
      * @return the generated query
      */
     protected SPARQLQueryBuilder prepareSearchQuery(Integer page, Integer pageSize, String uri, String rdfType, String label, String brand, String serialNumber, String model, String inServiceDate, String dateOfPurchase, String dateOfLastCalibration, String personInCharge) {

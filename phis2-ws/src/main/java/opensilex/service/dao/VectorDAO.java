@@ -126,93 +126,124 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
      * Generates a search query.
      * @return the query to execute.
      * @example 
-     * SELECT DISTINCT ?uri?rdfType ?label ?brand ?inServiceDate?dateOfPurchase 
+     * SELECT DISTINCT  ?rdfType ?uri ?label ?brand ?serialNumber ?inServiceDate 
+     * ?dateOfPurchase ?personInCharge 
      * WHERE {
-     *      ?uri  ?0  ?rdfType  . 
-     *      ?rdfType  rdfs:subClassOf*  <http://www.opensilex.org/vocabulary/oeso#Vector> . 
+     *      ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
+     *      ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.opensilex.org/vocabulary/oeso#Vector> . 
      *      OPTIONAL {
-     *          ?uri rdfs:label ?label . 
+     *          ?uri <http://www.w3.org/2000/01/rdf-schema#label> ?label . 
      *      }
-     *      ?uri  <http://www.opensilex.org/vocabulary/oeso#hasBrand>  ?brand  . 
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#hasBrand> ?brand . 
+     *      }
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#hasSerialNumber> ?serialNumber . 
+     *      }
      *      OPTIONAL {
      *          ?uri <http://www.opensilex.org/vocabulary/oeso#inServiceDate> ?inServiceDate . 
      *      }
      *      OPTIONAL {
      *          ?uri <http://www.opensilex.org/vocabulary/oeso#dateOfPurchase> ?dateOfPurchase . 
-     * }}
+     *      }
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#personInCharge> ?personInCharge . 
+     *      }
+     *      FILTER ( (REGEX ( str(?uri),".*op.*","i")) ) 
+     * }
+     * LIMIT 20 
+     * OFFSET 0
      */
     protected SPARQLQueryBuilder prepareSearchQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
 
-        String sensorUri;
-        if (uri != null) {
-            sensorUri = "<" + uri + ">";
+        //RDF Type filter
+        if (rdfType == null) {
+            rdfType = "";
+        }
+        query.appendSelect("?" + RDF_TYPE);
+        query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
+        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_VECTOR.toString(), null);
+        query.appendAndFilter("REGEX ( str(?" + RDF_TYPE + "),\".*" + rdfType + ".*\",\"i\")");
+        
+        //URI filter
+        if (uri == null) {
+            uri = "";
+        }
+        query.appendSelect("?" + URI);
+        query.appendAndFilter("REGEX ( str(?" + URI + "),\".*" + uri + ".*\",\"i\")");
+        
+        //Label filter
+        query.appendSelect("?" + LABEL);
+        if (label == null) {
+            query.beginBodyOptional();
+            query.appendToBody("?" + URI + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + LABEL + " . ");
+            query.endBodyOptional();
         } else {
-            sensorUri = "?" + URI;
-            query.appendSelect(sensorUri);
+            query.appendTriplet("?" + URI, Rdfs.RELATION_LABEL.toString(), "?" + LABEL, null);
+            query.appendAndFilter("REGEX ( str(?" + LABEL + "),\".*" + label + ".*\",\"i\")");
         }
         
-        if (rdfType != null) {
-            query.appendTriplet(sensorUri, "<" + Rdf.RELATION_TYPE.toString() + ">", rdfType, null);
-        } else {
-            query.appendSelect("?" + RDF_TYPE);
-            query.appendTriplet(sensorUri, "<" + Rdf.RELATION_TYPE.toString() + ">", "?" + RDF_TYPE, null);
-            query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", "<" + Oeso.CONCEPT_VECTOR.toString() + ">", null);
-        }        
-
-        if (label != null) {
-            query.appendTriplet(sensorUri, "<" + Rdfs.RELATION_LABEL.toString() + ">", "\"" + label + "\"", null);
-        } else {
-            query.appendSelect(" ?" + LABEL);
+        //Brand filter
+        query.appendSelect("?" + BRAND);
+        if (brand == null) {
             query.beginBodyOptional();
-            query.appendToBody(sensorUri + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + LABEL + " . ");
+            query.appendToBody("?" + URI + " <" + Oeso.RELATION_HAS_BRAND.toString() + "> " + "?" + BRAND + " . ");
             query.endBodyOptional();
-        }
-
-        if (brand != null) {
-            query.appendTriplet(sensorUri, Oeso.RELATION_HAS_BRAND.toString(), "\"" + brand + "\"", null);
         } else {
-            query.appendSelect(" ?" + BRAND);
-            query.appendTriplet(sensorUri, Oeso.RELATION_HAS_BRAND.toString(), "?" + BRAND, null);
+            query.appendTriplet("?" + URI, Oeso.RELATION_HAS_BRAND.toString(), "?" + BRAND, null);
+            query.appendAndFilter("REGEX ( str(?" + BRAND + "),\".*" + brand + ".*\",\"i\")");
         }
         
-        if (serialNumber != null) {
-            query.appendTriplet(sensorUri, Oeso.RELATION_HAS_SERIAL_NUMBER.toString(), "\"" + serialNumber + "\"", null);
-        } else {
-            query.appendSelect(" ?" + SERIAL_NUMBER);
+        //Serial number filter
+        query.appendSelect("?" + SERIAL_NUMBER);
+        if (serialNumber == null) {
             query.beginBodyOptional();
-            query.appendToBody(sensorUri + " <" + Oeso.RELATION_HAS_SERIAL_NUMBER.toString() + "> " + "?" + SERIAL_NUMBER + " .");
+            query.appendToBody("?" + URI + " <" + Oeso.RELATION_HAS_SERIAL_NUMBER.toString() + "> " + "?" + SERIAL_NUMBER + " . ");
             query.endBodyOptional();
-        }
-
-        if (inServiceDate != null) {
-            query.appendTriplet(sensorUri, Oeso.RELATION_IN_SERVICE_DATE.toString(), "\"" + inServiceDate + "\"", null);
         } else {
-            query.appendSelect(" ?" + IN_SERVICE_DATE);
-            query.beginBodyOptional();
-            query.appendToBody(sensorUri + " <" + Oeso.RELATION_IN_SERVICE_DATE.toString() + "> " + "?" + IN_SERVICE_DATE + " . ");
-            query.endBodyOptional();
-        }
-
-        if (dateOfPurchase != null) {
-            query.appendTriplet(sensorUri, Oeso.RELATION_DATE_OF_PURCHASE.toString(), "\"" + dateOfPurchase + "\"", null);
-        } else {
-            query.appendSelect("?" + DATE_OF_PURCHASE);
-            query.beginBodyOptional();
-            query.appendToBody(sensorUri + " <" + Oeso.RELATION_DATE_OF_PURCHASE.toString() + "> " + "?" + DATE_OF_PURCHASE + " . ");
-            query.endBodyOptional();
+            query.appendTriplet("?" + URI, Oeso.RELATION_HAS_SERIAL_NUMBER.toString(), "?" + SERIAL_NUMBER, null);
+            query.appendAndFilter("REGEX ( str(?" + SERIAL_NUMBER + "),\".*" + serialNumber + ".*\",\"i\")");
         }
         
-        if (personInCharge != null) {
-            query.appendTriplet(sensorUri, Oeso.RELATION_PERSON_IN_CHARGE.toString(), personInCharge, null);
+        //In service date filter
+        query.appendSelect("?" + IN_SERVICE_DATE);
+        if (inServiceDate == null) {
+            query.beginBodyOptional();
+            query.appendToBody("?" + URI + " <" + Oeso.RELATION_IN_SERVICE_DATE.toString() + "> " + "?" + IN_SERVICE_DATE + " . ");
+            query.endBodyOptional();
         } else {
-            query.appendSelect("?" + PERSON_IN_CHARGE);
-            query.appendTriplet(sensorUri, Oeso.RELATION_PERSON_IN_CHARGE.toString(), "?" + PERSON_IN_CHARGE, null);
+            query.appendTriplet("?" + URI, Oeso.RELATION_IN_SERVICE_DATE.toString(), "?" + IN_SERVICE_DATE, null);
+            query.appendAndFilter("REGEX ( str(?" + IN_SERVICE_DATE + "),\".*" + inServiceDate + ".*\",\"i\")");
         }
         
-        query.appendLimit(this.getPageSize());
-        query.appendOffset(this.getPage()* this.getPageSize());
+        //Date of purchase filter
+        query.appendSelect("?" + DATE_OF_PURCHASE);
+        if (dateOfPurchase == null) {
+            query.beginBodyOptional();
+            query.appendToBody("?" + URI + " <" + Oeso.RELATION_DATE_OF_PURCHASE.toString() + "> " + "?" + DATE_OF_PURCHASE + " . ");
+            query.endBodyOptional();
+        } else {
+            query.appendTriplet("?" + URI, Oeso.RELATION_DATE_OF_PURCHASE.toString(), "?" + DATE_OF_PURCHASE, null);
+            query.appendAndFilter("REGEX ( str(?" + DATE_OF_PURCHASE + "),\".*" + dateOfPurchase + ".*\",\"i\")");
+        }
+                
+        //Person in charge filter
+        query.appendSelect("?" + PERSON_IN_CHARGE);
+        if (personInCharge == null) {
+            query.beginBodyOptional();
+            query.appendToBody("?" + URI + " <" + Oeso.RELATION_PERSON_IN_CHARGE.toString() + "> " + "?" + PERSON_IN_CHARGE + " . ");
+            query.endBodyOptional();
+        } else {
+            query.appendTriplet("?" + URI, Oeso.RELATION_PERSON_IN_CHARGE.toString(), "?" + PERSON_IN_CHARGE, null);
+            query.appendAndFilter("REGEX ( str(?" + PERSON_IN_CHARGE + "),\".*" + personInCharge + ".*\",\"i\")");
+        }
+        
+        if (page != null && pageSize != null) {
+            query.appendLimit(pageSize);
+            query.appendOffset(page * pageSize);
+        }
 
         LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
@@ -389,51 +420,35 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
     private Vector getVectorFromBindingSet(BindingSet bindingSet) {
         Vector vector = new Vector();
 
-        if (uri != null) {
-            vector.setUri(uri);
-        } else if (bindingSet.getValue(URI) != null) {
+        if (bindingSet.getValue(URI) != null) {
             vector.setUri(bindingSet.getValue(URI).stringValue());
         }
 
-        if (rdfType != null) {
-            vector.setRdfType(rdfType);
-        } else if (bindingSet.getValue(RDF_TYPE) != null) {
+        if (bindingSet.getValue(RDF_TYPE) != null) {
             vector.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
         }
 
-        if (label != null) {
-            vector.setLabel(label);
-        } else if (bindingSet.getValue(LABEL) != null) {
+        if (bindingSet.getValue(LABEL) != null) {
             vector.setLabel(bindingSet.getValue(LABEL).stringValue());
         }
 
-        if (brand != null) {
-            vector.setBrand(brand);
-        } else if (bindingSet.getValue(BRAND) != null) {
+        if (bindingSet.getValue(BRAND) != null) {
             vector.setBrand(bindingSet.getValue(BRAND).stringValue());
         }
 
-        if (serialNumber != null) {
-            vector.setSerialNumber(serialNumber);
-        } else if (bindingSet.getValue(SERIAL_NUMBER) != null) {
+        if (bindingSet.getValue(SERIAL_NUMBER) != null) {
             vector.setSerialNumber(bindingSet.getValue(SERIAL_NUMBER).stringValue());
         }
         
-        if (inServiceDate != null) {
-            vector.setInServiceDate(inServiceDate);
-        } else if (bindingSet.getValue(IN_SERVICE_DATE) != null) {
+        if (bindingSet.getValue(IN_SERVICE_DATE) != null) {
             vector.setInServiceDate(bindingSet.getValue(IN_SERVICE_DATE).stringValue());
         }
 
-        if (dateOfPurchase != null) {
-            vector.setDateOfPurchase(dateOfPurchase);
-        } else if (bindingSet.getValue(DATE_OF_PURCHASE) != null) {
+        if (bindingSet.getValue(DATE_OF_PURCHASE) != null) {
             vector.setDateOfPurchase(bindingSet.getValue(DATE_OF_PURCHASE).stringValue());
         }
         
-        if (personInCharge != null) {
-            vector.setPersonInCharge(personInCharge);
-        } else if (bindingSet.getValue(PERSON_IN_CHARGE) != null) {
+        if (bindingSet.getValue(PERSON_IN_CHARGE) != null) {
             vector.setPersonInCharge(bindingSet.getValue(PERSON_IN_CHARGE).stringValue());
         }
 

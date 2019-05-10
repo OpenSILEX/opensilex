@@ -141,6 +141,40 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
      * @param dateOfPurchase
      * @param model
      * @param personInCharge
+     * @example
+     * SELECT DISTINCT  ?rdfType ?uri ?label ?brand ?serialNumber ?model 
+     *                  ?inServiceDate ?dateOfPurchase ?dateOfLastCalibration ?personInCharge 
+     * WHERE {
+     *      ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
+     *      ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.opensilex.org/vocabulary/oeso#SensingDevice> . 
+     *      OPTIONAL {
+     *          ?uri <http://www.w3.org/2000/01/rdf-schema#label> ?label . 
+     *      }
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#hasBrand> ?brand . 
+     *      }
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#hasSerialNumber> ?serialNumber . 
+     *      }
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#hasModel> ?model . 
+     *      }
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#inServiceDate> ?inServiceDate . 
+     *      }
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#dateOfPurchase> ?dateOfPurchase . 
+     *      }
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#dateOfLastCalibration> ?dateOfLastCalibration . 
+     *      }
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#personInCharge> ?personInCharge . 
+     *      }
+     *      FILTER ( (REGEX ( str(?uri),".*op.*","i")) ) 
+     *  }
+     *  LIMIT 20 
+     *  OFFSET 0 
      * @return the query to execute.
      */
     protected SPARQLQueryBuilder prepareSearchQuery(Integer page, Integer pageSize, String uri, String rdfType, String label, String brand, String serialNumber, String model, String inServiceDate, String dateOfPurchase, String dateOfLastCalibration, String personInCharge) {

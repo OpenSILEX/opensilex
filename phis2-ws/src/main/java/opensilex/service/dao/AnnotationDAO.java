@@ -392,14 +392,13 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
         try {
             TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 
-            // Retreive all information for each URI
+            // Retreive all information for each annotation
             try (TupleQueryResult result = tupleQuery.evaluate()) {
                 annotations = getAnnotationsWithoutBodyValuesFromResult(result, uri, creator, motivatedBy);
                 if(annotations.size() > 0) {
                     query = prepareSearchQueryForBodyValues(annotations);
                     tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-                    TupleQueryResult bodyValuesResult = tupleQuery.evaluate();
-                    setAnnotationsBodyValuesFromResult(bodyValuesResult, annotations);
+                    setAnnotationsBodyValuesFromResult(tupleQuery.evaluate(), annotations);
                 }
             }
             LOGGER.debug(JsonConverter.ConvertToJson(annotations));

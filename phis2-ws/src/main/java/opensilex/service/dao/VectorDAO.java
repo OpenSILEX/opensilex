@@ -126,20 +126,33 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
      * Generates a search query.
      * @return the query to execute.
      * @example 
-     * SELECT DISTINCT ?uri?rdfType ?label ?brand ?inServiceDate?dateOfPurchase 
+     * SELECT DISTINCT  ?rdfType ?uri ?label ?brand ?serialNumber ?inServiceDate 
+     * ?dateOfPurchase ?personInCharge 
      * WHERE {
-     *      ?uri  ?0  ?rdfType  . 
-     *      ?rdfType  rdfs:subClassOf*  <http://www.opensilex.org/vocabulary/oeso#Vector> . 
+     *      ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
+     *      ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.opensilex.org/vocabulary/oeso#Vector> . 
      *      OPTIONAL {
-     *          ?uri rdfs:label ?label . 
+     *          ?uri <http://www.w3.org/2000/01/rdf-schema#label> ?label . 
      *      }
-     *      ?uri  <http://www.opensilex.org/vocabulary/oeso#hasBrand>  ?brand  . 
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#hasBrand> ?brand . 
+     *      }
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#hasSerialNumber> ?serialNumber . 
+     *      }
      *      OPTIONAL {
      *          ?uri <http://www.opensilex.org/vocabulary/oeso#inServiceDate> ?inServiceDate . 
      *      }
      *      OPTIONAL {
      *          ?uri <http://www.opensilex.org/vocabulary/oeso#dateOfPurchase> ?dateOfPurchase . 
-     * }}
+     *      }
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#personInCharge> ?personInCharge . 
+     *      }
+     *      FILTER ( (REGEX ( str(?uri),".*op.*","i")) ) 
+     * }
+     * LIMIT 20 
+     * OFFSET 0
      */
     protected SPARQLQueryBuilder prepareSearchQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();

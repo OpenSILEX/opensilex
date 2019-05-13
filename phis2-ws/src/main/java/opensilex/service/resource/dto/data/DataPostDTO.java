@@ -10,9 +10,6 @@ package opensilex.service.resource.dto.data;
 import io.swagger.annotations.ApiModelProperty;
 import java.math.BigDecimal;
 import java.text.ParseException;
-import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.validation.constraints.NotNull;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.documentation.DocumentationAnnotation;
@@ -21,7 +18,6 @@ import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.model.Data;
-import org.apache.commons.validator.routines.BigDecimalValidator;
 
 /**
  * Data POST DTO.
@@ -140,6 +136,11 @@ public class DataPostDTO extends AbstractVerifiedClass {
         return data;
     }
     
+    /**
+     * Return Date object from string value or null if it's not a date
+     * @param value
+     * @return Date or null
+     */
     private java.util.Date getDateOrNullIfInvalid(String value) {
         try {
             return DateFormat.parseDateOrDateTime(value, false);
@@ -148,6 +149,11 @@ public class DataPostDTO extends AbstractVerifiedClass {
         }
     }
     
+    /**
+     * Return BigDecimal object from string value or null if it's not a valid number
+     * @param value
+     * @return BigDecimal or null
+     */
     private BigDecimal getBigDecimalOrNullIfInvalid(String value) {
         try {
             return new BigDecimal(value);

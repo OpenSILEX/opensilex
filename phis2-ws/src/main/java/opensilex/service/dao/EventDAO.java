@@ -22,7 +22,6 @@ import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryException;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.configuration.DateFormat;
@@ -39,10 +38,17 @@ import opensilex.service.ontology.Rdf;
 import opensilex.service.ontology.Rdfs;
 import opensilex.service.ontology.Time;
 import opensilex.service.utils.UriGenerator;
-import opensilex.service.utils.date.Dates;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
-import opensilex.service.model.Annotation;
 import opensilex.service.model.Event;
+import opensilex.service.model.Instant;
+import opensilex.service.ontology.Xsd;
+import opensilex.service.utils.date.Dates;
+import opensilex.service.utils.sparql.SPARQLStringBuilder;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.apache.jena.rdf.model.Literal;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 /**
  * Events DAO.
@@ -58,12 +64,21 @@ import opensilex.service.model.Event;
 public class EventDAO extends Rdf4jDAO<Event> {
     final static Logger LOGGER = LoggerFactory.getLogger(EventDAO.class);
     
-    private static final String TIME_SELECT_NAME = "time";
-    private static final String TIME_SELECT_NAME_SPARQL = "?" + TIME_SELECT_NAME;
+    private static final String INSTANT_SELECT_NAME = "instant";
+    private static final String INSTANT_SELECT_NAME_SPARQL = "?" + INSTANT_SELECT_NAME;
     
     private static final String DATETIMESTAMP_SELECT_NAME = "dateTimeStamp";
     private static final String DATETIMESTAMP_SELECT_NAME_SPARQL = "?" + DATETIMESTAMP_SELECT_NAME;
 
+    protected static final String DATETIME_SELECT_NAME = "dateTime";
+    protected static final String DATETIME_SELECT_NAME_SPARQL = "?" + DATETIME_SELECT_NAME;
+    
+    protected static final String DATE_RANGE_START_DATETIME_SELECT_NAME = "dateRangeStartDateTime";
+    protected static final String DATE_RANGE_START_DATETIME_SELECT_NAME_SPARQL = "?" + DATE_RANGE_START_DATETIME_SELECT_NAME;
+    
+    protected static final String DATE_RANGE_END_DATETIME_SELECT_NAME = "dateRangeEndDateTime";
+    protected static final String DATE_RANGE_END_DATETIME_SELECT_NAME_SPARQL = "?" + DATE_RANGE_END_DATETIME_SELECT_NAME;
+    
     public EventDAO(User user) {
         super(user);
     }
@@ -128,49 +143,6 @@ public class EventDAO extends Rdf4jDAO<Event> {
                     null);
         }    
     }
-
-    /**
-     * Sets a search query to select a datetime from an instant and to filter 
-     * according to it if necessary
-     * @example SparQL filter added:
-     *  SELECT DISTINCT ?dateTimeStamp
-     *  WHERE {
-     *    ?uri  <http://www.w3.org/2006/time#hasTime>  ?time  . 
-     *    ?time  <http://www.w3.org/2006/time#inXSDDateTimeStamp>  ?dateTimeStamp  . 
-     *    BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str(?dateTimeStamp)) as ?dateTime) .
-     *    BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str("2017-09-10T12:00:00+01:00")) as ?dateRangeStartDateTime) .
-     *    BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str("2017-09-12T12:00:00+01:00")) as ?dateRangeEndDateTime) .
-     *  }
-     *  GROUP BY ?dateTimeStamp
-     * @param query
-     * @param uriSelectNameSparql
-     * @param searchDateTimeRangeStartString
-     * @param searchDateTimeRangeEndString
-     * @param inGroupBy
-     */
-    private void prepareSearchQueryDateTime(SPARQLQueryBuilder query, String uriSelectNameSparql, String searchDateTimeRangeStartString, String searchDateTimeRangeEndString, boolean inGroupBy) {  
-        
-        query.appendSelect(DATETIMESTAMP_SELECT_NAME_SPARQL);
-        if (inGroupBy) {
-            query.appendGroupBy(DATETIMESTAMP_SELECT_NAME_SPARQL);
-        }
-        query.appendTriplet(uriSelectNameSparql, Time.hasTime.toString(), TIME_SELECT_NAME_SPARQL, null);
-        query.appendTriplet(
-                TIME_SELECT_NAME_SPARQL, 
-                Time.inXSDDateTimeStamp.toString(), 
-                DATETIMESTAMP_SELECT_NAME_SPARQL, 
-                null);
-        
-        if (searchDateTimeRangeStartString != null || searchDateTimeRangeEndString != null) {
-            TimeDAO timeDao = new TimeDAO(this.user);
-            timeDao.filterSearchQueryWithDateRangeComparisonWithDateTimeStamp(
-                    query, 
-                    DateFormat.YMDTHMSZZ.toString(), 
-                    searchDateTimeRangeStartString, 
-                    searchDateTimeRangeEndString, 
-                    DATETIMESTAMP_SELECT_NAME_SPARQL);
-        }
-    }
     
     /**
      * Prepares the event search query
@@ -214,7 +186,15 @@ public class EventDAO extends Rdf4jDAO<Event> {
                 Oeev.concerns.getURI(), 
                 searchConcernedItemUri, 
                 searchConcernedItemLabel); 
-        prepareSearchQueryDateTime(query, uriSelectNameSparql, dateRangeStartString, dateRangeEndString, true); 
+        filterSearchQueryWithDateRangeComparisonWithDateTimeStamp(
+                    query, 
+                    uriSelectNameSparql,
+                    INSTANT_SELECT_NAME_SPARQL,
+                    DateFormat.YMDTHMSZZ.toString(), 
+                    dateRangeStartString, 
+                    dateRangeEndString, 
+                    DATETIMESTAMP_SELECT_NAME_SPARQL,
+                    true);
         
         query.appendLimit(getPageSize());
         query.appendOffset(getPage() * getPageSize());
@@ -248,8 +228,15 @@ public class EventDAO extends Rdf4jDAO<Event> {
                 Oeev.concerns.getURI(), 
                 null, 
                 null); 
-        prepareSearchQueryDateTime(query, uriSelectNameSparql, null, null, false); 
-        
+        filterSearchQueryWithDateRangeComparisonWithDateTimeStamp(
+                    query, 
+                    uriSelectNameSparql,
+                    INSTANT_SELECT_NAME_SPARQL,
+                    DateFormat.YMDTHMSZZ.toString(), 
+                    null, 
+                    null, 
+                    DATETIMESTAMP_SELECT_NAME_SPARQL,
+                    false);
         LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
     }
@@ -265,15 +252,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
                 
         String eventType = getStringValueOfSelectNameFromBindingSet(RDF_TYPE, bindingSet);
         
-        String eventDateTimeString = getStringValueOfSelectNameFromBindingSet(DATETIMESTAMP_SELECT_NAME, bindingSet);    
-        DateTime eventDateTime = null;
-        if (eventDateTimeString != null) {
-            eventDateTime = Dates.stringToDateTimeWithGivenPattern(
-                    eventDateTimeString, 
-                    DateFormat.YMDTHMSZZ.toString());
-        }
-        
-        return new Event(eventUri, eventType, new ArrayList<>(), eventDateTime, new ArrayList<>(), null);
+        return new Event(eventUri, eventType, new ArrayList<>(), null, new ArrayList<>(), null);
     }
     
     /**
@@ -287,8 +266,10 @@ public class EventDAO extends Rdf4jDAO<Event> {
      * @param searchPage
      * @param searchPageSize
      * @return events
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
-    public ArrayList<Event> find(String searchUri, String searchType, String searchConcernedItemLabel, String searchConcernedItemUri, String dateRangeStartString, String dateRangeEndString, int searchPage, int searchPageSize) throws DAOPersistenceException {
+    public ArrayList<Event> find(String searchUri, String searchType, String searchConcernedItemLabel, String searchConcernedItemUri, String dateRangeStartString, String dateRangeEndString, int searchPage, int searchPageSize) 
+            throws DAOPersistenceException {
         
         setPage(searchPage);
         setPageSize(searchPageSize);
@@ -304,27 +285,38 @@ public class EventDAO extends Rdf4jDAO<Event> {
         // get events from storage
         TupleQuery eventsTupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, eventsQuery.toString());
         
-        ArrayList<Event> events;
+        ArrayList<Event> events = new ArrayList<>();
+        ConcernedItemDAO concernedItemDao = new ConcernedItemDAO(
+                user, 
+                Contexts.EVENTS.toString(), 
+                Oeev.concerns.getURI());
         
-        events = new ArrayList<>();
+        // for each event, set its properties and concerned Items
         try {
-            // for each event, set its properties and concerned Items
             TupleQueryResult eventsResult = eventsTupleQuery.evaluate();
             while (eventsResult.hasNext()) {
-                Event event = getEventFromBindingSet(eventsResult.next());
-                setEventProperties(event);
-                ConcernedItemDAO concernedItemDao = new ConcernedItemDAO(
-                        user, 
-                        Contexts.EVENTS.toString(), 
-                        Oeev.concerns.getURI());
-                event.setConcernedItems(concernedItemDao.find(
-                        event.getUri(), 
-                        null, 
-                        null, 
-                        0, 
-                        pageSizeMaxValue));
-                events.add(event);
-            }
+                BindingSet bindingSet = eventsResult.next();
+                Event event = getEventFromBindingSet(bindingSet);
+
+                    // Instant
+                    event.setInstant(getInstantFromBindingSet(
+                            bindingSet,
+                            INSTANT_SELECT_NAME, 
+                            DATETIMESTAMP_SELECT_NAME));
+
+                    // Properties
+                    setEventProperties(event);
+
+                    // Concerned items
+                    event.setConcernedItems(concernedItemDao.find(
+                            event.getUri(), 
+                            null, 
+                            null, 
+                            0, 
+                            pageSizeMaxValue));
+
+                    events.add(event);
+                }
         } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
             handleTriplestoreException(ex);
         }
@@ -341,36 +333,48 @@ public class EventDAO extends Rdf4jDAO<Event> {
     @Override
     public Event findById(String searchUri) throws DAOPersistenceException {        
         SPARQLQueryBuilder eventQuery = prepareSearchQueryEvent(searchUri);
+        ConcernedItemDAO concernedItemDao = new ConcernedItemDAO(
+                user, 
+                Contexts.EVENTS.toString(), 
+                Oeev.concerns.getURI());
+        Event event = null;
         
         // Get event from storage
         TupleQuery eventsTupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, eventQuery.toString());
         
-        Event event = null;
         try {
             TupleQueryResult eventsResult = eventsTupleQuery.evaluate();
             if (eventsResult.hasNext()) {
-                event = getEventFromBindingSet(eventsResult.next());
+                BindingSet bindingSet = eventsResult.next();
+                event = getEventFromBindingSet(bindingSet);
+
+                // Instant
+                event.setInstant(getInstantFromBindingSet(
+                        bindingSet,
+                        INSTANT_SELECT_NAME, 
+                        DATETIMESTAMP_SELECT_NAME));
+
+                // Properties
                 setEventProperties(event);
-                
-                ConcernedItemDAO concernedItemDao = 
-                        new ConcernedItemDAO(user, Contexts.EVENTS.toString(), Oeev.concerns.getURI());
+
+                // Concerned items
                 event.setConcernedItems(concernedItemDao.find(
                         event.getUri(), 
                         null, 
                         null, 
                         0, 
                         pageSizeMaxValue));
-                
+
+                // Annotations
                 AnnotationDAO annotationDAO = new AnnotationDAO(this.user);
-                ArrayList<Annotation> annotations = annotationDAO.find(
+                event.setAnnotations(annotationDAO.find(
                         null, 
                         null, 
                         event.getUri(), 
                         null, 
                         null, 
                         0, 
-                        pageSizeMaxValue);
-                event.setAnnotations(annotations);
+                        pageSizeMaxValue));
             }
         } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
             handleTriplestoreException(ex);
@@ -409,11 +413,11 @@ public class EventDAO extends Rdf4jDAO<Event> {
         Node eventType = NodeFactory.createURI(event.getType());
         updateBuilder.addInsert(graph, eventResource, RDF.type, eventType);
         
-        TimeDAO.addInsertInstantToUpdateBuilder(
+        addInsertInstantToUpdateBuilder(
                 updateBuilder,
                 graph,
                 eventResource,
-                event.getDateTime());
+                event.getInstant());
         
         ConcernedItemDAO concernedItemDao = 
                 new ConcernedItemDAO(user, Contexts.EVENTS.toString(), Oeev.concerns.getURI());
@@ -472,7 +476,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
 
                         // Check the event URI if given (in case of an update)
                         if (event.getUri() != null) {
-                            if (find(event.getUri(), null, null, null, null, null, 0, pageSizeMaxValue).isEmpty()){
+                            if (!existUri(event.getUri())){
                                 exceptions.add(new UnknownUriException(event.getUri(), "the event"));
                             }
                         }
@@ -492,7 +496,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
 
                         // Check properties
                         try {
-                            propertyDao.checkExistenceRangeDomain(event.getProperties(), event.getType());
+                            propertyDao.checkExistenceRangeDomain(event.getUri(), event.getType(), event.getProperties());
                         }
                         catch (DAODataErrorAggregateException ex) {
                             exceptions.addAll(ex.getExceptions());
@@ -606,6 +610,29 @@ public class EventDAO extends Rdf4jDAO<Event> {
             handleCountValueNumberFormatException(ex);
         }
         return count;
+    } 
+    
+    /**
+     * Generates an delete query for the given event in the case of an update.
+     * @param updateBuilder
+     * @param event
+     * @throws java.lang.Exception
+     */
+    public void addDeleteWhenUpdatingToUpdateBuilder(UpdateBuilder updateBuilder, Event event) throws Exception {        
+        Node graph = NodeFactory.createURI(Contexts.EVENTS.toString());
+        Resource eventResource = ResourceFactory.createResource(event.getUri());
+        Resource eventTypeResource = ResourceFactory.createResource(event.getType());
+        
+        updateBuilder.addDelete(graph, eventResource, RDF.type, eventTypeResource);
+        
+        addDeleteInstantToUpdateBuilder(updateBuilder, graph, eventResource, event.getInstant());
+        PropertyDAO.addDeletePropertyLinksToUpdateBuilder(updateBuilder, graph, eventResource, event.getProperties());
+        ConcernedItemDAO.addDeleteConcernedItemLinksToUpdateBuilder(
+                updateBuilder, 
+                graph, 
+                eventResource, 
+                Oeev.concerns.getURI(),
+                event.getConcernedItems());
     }
 
     @Override
@@ -614,12 +641,170 @@ public class EventDAO extends Rdf4jDAO<Event> {
     }
 
     @Override
-    public List<Event> update(List<Event> objects) throws DAOPersistenceException, Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public List<Event> update(List<Event> events) throws Exception {
+        UpdateBuilder updateBuilder;
+        for(Event event : events) {
+            updateBuilder = new UpdateBuilder();
+            Event oldEvent = findById(event.getUri());
+            addDeleteWhenUpdatingToUpdateBuilder(updateBuilder, oldEvent);
+            executeUpdateRequest(updateBuilder);
+            
+            updateBuilder = new UpdateBuilder();
+            addInsertToUpdateBuilder(updateBuilder, event);   
+            executeUpdateRequest(updateBuilder);
+        }
+        return events;
     }
 
     @Override
     public Event find(Event object) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    /** 
+     * Adds a filter to the search query comparing a SPARQL dateTimeStamp 
+     * variable to a date. 
+     * SPARQL dateTimeStamp dates have to be handled in a specific way as 
+     * the comparison operators (<, >, etc.) aren't available for dateTimeStamp
+     * objects.
+     * @see <a href="https://www.w3.org/TR/2013/REC-sparql11-query-20130321/#OperatorMapping">
+     * SparQL Operator Mapping
+     * </a>
+     * @param query
+     * @param filterDateString
+     * @param filterDateFormat
+     * @param filterDateSparqlVariable SPARQL variable (?abc format)
+     * @param comparisonSign e.g >, >=, <, <= 
+     * @param dateTimeStampToCompareSparqlVariable the SPARQL variable 
+     * (?abc format) of the dateTimeStamp to which the date has to be compared
+     * @example SparQL code added to the query :
+     *   BIND(xsd:dateTime(str("2017-09-10T12:00:00+01:00")) as ?dateRangeStartDateTime) .
+     *   FILTER ( (?dateRangeStartDateTime <= ?dateTime) ) 
+     */
+    public static void filterSearchQueryWithDateTimeStampComparison(SPARQLStringBuilder query, String filterDateString, String filterDateFormat, String filterDateSparqlVariable, String comparisonSign, String dateTimeStampToCompareSparqlVariable){
+        
+        DateTime filterDate = Dates.stringToDateTimeWithGivenPattern(filterDateString, filterDateFormat);
+        
+        String filterDateStringInSparqlDateTimeStampFormat = 
+                DateTimeFormat.forPattern(DATETIMESTAMP_FORMAT_SPARQL).print(filterDate);
+
+        query.appendToBody(
+                "\nBIND(<" + Xsd.FUNCTION_DATETIME.toString() + ">(str(\"" 
+                + filterDateStringInSparqlDateTimeStampFormat + "\")) as " + filterDateSparqlVariable + ") .");
+        
+        query.appendAndFilter(filterDateSparqlVariable + comparisonSign + dateTimeStampToCompareSparqlVariable);
+    }
+
+    /**
+     * Appends a filter to select only the results whose datetime is included in 
+     * the date range in parameter.
+     * @param query
+     * @param filterRangeDatesStringFormat
+     * @param filterRangeStartDateString
+     * @param filterRangeEndDateString
+     * @param dateTimeStampToCompareSparqlName the SPARQL variable (?abc 
+     * format) of the dateTimeStamp to compare to the range
+     * @example SparQL code added to the query :
+     *   BIND(xsd:dateTime(str(?dateTimeStamp)) as ?dateTime) .
+     *   BIND(xsd:dateTime(str("2017-09-10T12:00:00+01:00")) as ?dateRangeStartDateTime) .
+     *   BIND(xsd:dateTime(str("2017-09-12T12:00:00+01:00")) as ?dateRangeEndDateTime) .
+     *   FILTER ( (?dateRangeStartDateTime <= ?dateTime) && (?dateRangeEndDateTime >= ?dateTime) ) 
+     */
+    public static void filterSearchQueryWithDateRangeComparisonWithDateTimeStamp(SPARQLQueryBuilder query, String objectUriLinkedToInstant, String instantSparqlName, String filterRangeDatesStringFormat, String filterRangeStartDateString, String filterRangeEndDateString, String dateTimeStampToCompareSparqlName, boolean inGroupBy){
+        
+        query.appendSelect(instantSparqlName);
+        query.appendSelect(dateTimeStampToCompareSparqlName);
+        if (inGroupBy) {
+            query.appendGroupBy(instantSparqlName);
+            query.appendGroupBy(dateTimeStampToCompareSparqlName);
+        }
+        query.appendTriplet(objectUriLinkedToInstant, Time.hasTime.toString(), instantSparqlName, null);
+        query.appendTriplet(instantSparqlName, Time.inXSDDateTimeStamp.toString(), dateTimeStampToCompareSparqlName, null);
+        
+        query.appendToBody("\nBIND(<" + Xsd.FUNCTION_DATETIME.toString() + ">(str(" + dateTimeStampToCompareSparqlName + ")) as " + DATETIME_SELECT_NAME_SPARQL + ") .");
+        
+        if (filterRangeStartDateString != null){
+            filterSearchQueryWithDateTimeStampComparison(
+                    query, 
+                    filterRangeStartDateString, 
+                    filterRangeDatesStringFormat, 
+                    DATE_RANGE_START_DATETIME_SELECT_NAME_SPARQL, 
+                    " <= ", 
+                    DATETIME_SELECT_NAME_SPARQL);
+        }
+        if (filterRangeEndDateString != null){
+            filterSearchQueryWithDateTimeStampComparison(
+                    query, 
+                    filterRangeEndDateString, 
+                    filterRangeDatesStringFormat, 
+                    DATE_RANGE_END_DATETIME_SELECT_NAME_SPARQL, 
+                    " >= ", 
+                    DATETIME_SELECT_NAME_SPARQL);
+        }
+    }
+    
+    /**
+     * Inserts an Instant linked to the given URI in the given graph with the given date value.
+     * @param updateBuilder
+     * @param graph
+     * @param resourceLinkedToInstant
+     * @param instant
+     * @throws java.lang.Exception
+     */
+    public static void addInsertInstantToUpdateBuilder(UpdateBuilder updateBuilder, Node graph, Resource resourceLinkedToInstant, Instant instant) 
+            throws Exception {
+        // Add insert instant URI with type
+        String instantUri = UriGenerator.generateNewInstanceUri(Time.Instant.toString(), null, null);
+        Resource instantResource = ResourceFactory.createResource(instantUri);
+        updateBuilder.addInsert(graph, instantResource, RDF.type, Time.Instant);
+
+        // Add date time stamp to instant
+        Literal dateTimeLiteral = getLiteralFromDateTime(instant.getDateTime());
+        updateBuilder.addInsert(graph, instantResource, Time.inXSDDateTimeStamp, dateTimeLiteral);
+
+        // Link resource to instant
+        updateBuilder.addInsert(graph, resourceLinkedToInstant, Time.hasTime, instantResource);
+    }
+    
+    /**
+     * Adds a delete statement to an update builder for an Instant linked to the given URI in the given graph. 
+     * @param updateBuilder
+     * @param graph
+     * @param linkedResource
+     * @param instant
+     * @throws java.lang.Exception
+     */
+    public static void addDeleteInstantToUpdateBuilder(UpdateBuilder updateBuilder, Node graph, Resource linkedResource, Instant instant) 
+            throws Exception {
+        Resource instantResource = ResourceFactory.createResource(instant.getUri());
+        Literal dateTimeLiteral = getLiteralFromDateTime(instant.getDateTime());
+        updateBuilder.addDelete(graph, instantResource, RDF.type, Time.Instant);
+        updateBuilder.addDelete(graph, instantResource, Time.inXSDDateTimeStamp, dateTimeLiteral);
+        updateBuilder.addDelete(graph, linkedResource, Time.hasTime, instantResource);
+    }
+    
+    /**
+     * Return instant from BindingSet string value
+     * @param bindingSet
+     * @param instantUriSelectName
+     * @param dateTimeStampSelectName
+     * @return 
+     */
+    public static Instant getInstantFromBindingSet(BindingSet bindingSet, String instantUriSelectName, String dateTimeStampSelectName) {
+        String instantDateTimeString = getStringValueOfSelectNameFromBindingSet(dateTimeStampSelectName, bindingSet);    
+        String instantUri = getStringValueOfSelectNameFromBindingSet(instantUriSelectName, bindingSet);    
+        DateTime InstantDateTime = 
+                Dates.stringToDateTimeWithGivenPattern(instantDateTimeString, DateFormat.YMDTHMSZZ.toString());
+        return new Instant(instantUri, InstantDateTime);
+    }
+    
+    /**
+     * Builds a Literal date from a Datetime date.
+     * @param datetime
+     * @return 
+     */
+    public static Literal getLiteralFromDateTime(DateTime datetime) {
+        DateTimeFormatter formatter = DateTimeFormat.forPattern(DATETIMESTAMP_FORMAT_SPARQL);
+        return ResourceFactory.createTypedLiteral(datetime.toString(formatter), XSDDatatype.XSDdateTime);
     }
 }

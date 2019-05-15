@@ -23,10 +23,10 @@ import opensilex.service.model.Event;
 import opensilex.service.model.Property;
 
 /**
- * Event DTO.
+ * DTO representing a event for GET requests.
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
-public class EventDTO extends AbstractVerifiedClass {
+public class EventGetDTO extends AbstractVerifiedClass {
     
     @URL
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EVENT_URI)
@@ -36,7 +36,7 @@ public class EventDTO extends AbstractVerifiedClass {
      * //SILEX:info
      * "type" can not be used as a field name in DTOs due to XML interpretation issues.
      * @see https://stackoverflow.com/questions/33104232/eclipselink-missing-class-for-indicator-field-value-of-typ
-     * //\SILEX:info
+     * //\
      */
     @URL
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EVENT_TYPE)
@@ -53,14 +53,14 @@ public class EventDTO extends AbstractVerifiedClass {
      * Constructor from an Event model
      * @param event 
      */
-    public EventDTO(Event event) {
+    public EventGetDTO(Event event) {
         this.uri = event.getUri();
         this.rdfType = event.getType();
         event.getConcernedItems().forEach((concernedItem) -> {
             this.concernedItems.add(new ConcernedItemWithLabelsDTO(concernedItem));
         });
         
-        DateTime eventDateTime = event.getDateTime();
+        DateTime eventDateTime = event.getInstant().getDateTime();
         if (eventDateTime != null){
             this.date = DateTimeFormat
                     .forPattern(DateFormat.YMDTHMSZZ.toString())
@@ -93,7 +93,7 @@ public class EventDTO extends AbstractVerifiedClass {
         
         DateTime dateTime = Dates.stringToDateTimeWithGivenPattern(this.date, DateFormat.YMDTHMSZZ.toString());
         
-        return new Event(this.uri, this.rdfType, modelConcernedItems, dateTime, modelProperties, null);
+        return new Event(this.uri, this.rdfType, modelConcernedItems, dateTime, modelProperties);
     }
 
     public String getUri() {

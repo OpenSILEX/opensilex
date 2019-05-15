@@ -109,7 +109,7 @@ public abstract class ResourceService {
      * @return the response. 
      */
     protected Response getResponseWhenInternalError(Exception exception) {
-        return getPostResponseFromSingleOperationStatus(
+        return getPostPutResponseFromSingleOperationStatus(
                 Response.Status.INTERNAL_SERVER_ERROR,
                 StatusCodeMsg.INTERNAL_ERROR,
                 StatusCodeMsg.ERR,
@@ -122,7 +122,7 @@ public abstract class ResourceService {
      * @return the response. 
      */
     protected Response getResponseWhenPersistenceError(DAOPersistenceException exception) {
-        return getPostResponseFromSingleOperationStatus(
+        return getPostPutResponseFromSingleOperationStatus(
                 Response.Status.INTERNAL_SERVER_ERROR,
                 StatusCodeMsg.PERSISTENCE_ERROR,
                 StatusCodeMsg.ERR,
@@ -162,7 +162,7 @@ public abstract class ResourceService {
         ArrayList<Object> objects = new ArrayList();
         try {
             Object object = dao.findById(uri);
-            objects.add(dao.findById(uri));
+            objects.add(object);
             // Analyse results
             if (object == null) { // Request failure
                 return getGETResponseWhenNoResult();
@@ -189,29 +189,67 @@ public abstract class ResourceService {
      *         a data error response when the data sent is incorrect.
      */
     protected Response getPostResponse (DAO objectDao, ArrayList<? extends AbstractVerifiedClass> objectsDtos, String userIpAddress, String statusMessageIfEmptyDtosSent) {
+        return getPostPutResponse(objectDao, objectsDtos, userIpAddress, statusMessageIfEmptyDtosSent, true);
+    }
+    
+    /**
+     * Gets a response for a PUT request depending on the results.
+     * @param objectDao DAO of the manipulated object.
+     * @param objectsDtos DTOs sent through the PUT.
+     * @param userIpAddress
+     * @param statusMessageIfEmptyDtosSent
+     * @return a success response when success.
+     *         an internal error response when an non handled exception occured.
+     *         an access denied response when the resource isn't available for the user.
+     *         a data error response when the data sent is incorrect.
+     */
+    protected Response getPutResponse (DAO objectDao, ArrayList<? extends AbstractVerifiedClass> objectsDtos, String userIpAddress, String statusMessageIfEmptyDtosSent) {
+        return getPostPutResponse(objectDao, objectsDtos, userIpAddress, statusMessageIfEmptyDtosSent, false);
+    }
+    
+    /**
+     * Gets a response for a POST or PUT request depending on the results.
+     * @param objectDao DAO of the manipulated object.
+     * @param objectsDtos DTOs sent through the POST or PUT.
+     * @param userIpAddress
+     * @param statusMessageIfEmptyDtosSent
+     * @param isPost is the operation a POST or a PUT.
+     * @return a success response when success.
+     *         an internal error response when an non handled exception occured.
+     *         an access denied response when the resource isn't available for the user.
+     *         a data error response when the data sent is incorrect.
+     */
+    protected Response getPostPutResponse (DAO objectDao, ArrayList<? extends AbstractVerifiedClass> objectsDtos, String userIpAddress, String statusMessageIfEmptyDtosSent, boolean isPost) {
         if (objectsDtos == null || objectsDtos.isEmpty()) {
             // Empty object list
-            return getPostResponseWhenEmptyListGiven(statusMessageIfEmptyDtosSent);
+            return getPostPutResponseWhenEmptyListGiven(statusMessageIfEmptyDtosSent);
         } 
         else {
             try {
                 // Process operation
                 objectDao.remoteUserAdress = userIpAddress;
-                List<? extends Object> createdObjects = objectDao.validateAndCreate(getObjectsFromDTOs(objectsDtos));
+                List<? extends Object> objectsToImpact = getObjectsFromDTOs(objectsDtos);
+                List<? extends Object> impactedObjects;
+                if (isPost) { // POST
+                    impactedObjects = objectDao.validateAndCreate(objectsToImpact);
+                }
+                else { // PUT
+                    impactedObjects = objectDao.validateAndUpdate(objectsToImpact);
+                }
                 
                 // Return according to operation results
-                List<String> createdUris = getUrisFromObjects(createdObjects);
-                return getPostResponseWhenSuccess(createdUris);
+                List<String> impactedUris = getUrisFromObjects(impactedObjects);
+                return getPostPutResponseWhenSuccess(impactedUris);
                 
             } catch (ResourceAccessDeniedException ex) {
                 LOGGER.error(ex.getMessage(), ex);
-                return getPostResponseWhenResourceAccessDenied(ex);
+                return getPostPutResponseWhenResourceAccessDenied(ex);
                 
             } catch (DAODataErrorAggregateException ex) {
                 ex.getExceptions().forEach((exception) -> {
                         LOGGER.error(ex.getMessage(), exception);
                 });
-                return getPostResponseFromDAODataErrorExceptions(ex);
+                return getPostPutResponseFromDAODataErrorExceptions(ex);
                 
             } catch (Exception ex) {
                 LOGGER.error(ex.getMessage(), ex);
@@ -225,7 +263,7 @@ public abstract class ResourceService {
      * @param urisCreated
      * @return the response. 
      */
-    private Response getPostResponseWhenSuccess(List<String> urisCreated) {
+    private Response getPostPutResponseWhenSuccess(List<String> urisCreated) {
         ResponseFormPOST postResponse = new ResponseFormPOST(new Status(
                 StatusCodeMsg.RESOURCES_CREATED, 
                 StatusCodeMsg.INFO, 
@@ -239,7 +277,7 @@ public abstract class ResourceService {
      * @param aggregateException
      * @return the response. 
      */
-    private Response getPostResponseFromDAODataErrorExceptions(DAODataErrorAggregateException aggregateException) {
+    private Response getPostPutResponseFromDAODataErrorExceptions(DAODataErrorAggregateException aggregateException) {
         List<Status> statusList = new ArrayList<>();
         aggregateException.getExceptions().forEach((ex) -> {
             statusList.add(new Status(
@@ -247,7 +285,7 @@ public abstract class ResourceService {
                     StatusCodeMsg.DATA_ERROR, 
                     ex.getMessage()));
         });
-        return getPostResponseFromMultipleOperationStatus(Response.Status.BAD_REQUEST, statusList);
+        return getPostPutResponseFromMultipleOperationStatus(Response.Status.BAD_REQUEST, statusList);
     }
 
     /**
@@ -255,8 +293,8 @@ public abstract class ResourceService {
      * @param statusMessageDetails
      * @return the response. 
      */
-    private Response getPostResponseWhenEmptyListGiven(String statusMessageDetails) {
-        return getPostResponseFromSingleOperationStatus(
+    private Response getPostPutResponseWhenEmptyListGiven(String statusMessageDetails) {
+        return getPostPutResponseFromSingleOperationStatus(
                 Response.Status.BAD_REQUEST,
                 StatusCodeMsg.REQUEST_ERROR,
                 StatusCodeMsg.ERR,
@@ -268,8 +306,8 @@ public abstract class ResourceService {
      * @param exception
      * @return the response. 
      */
-    private Response getPostResponseWhenResourceAccessDenied(ResourceAccessDeniedException exception) {
-        return getPostResponseFromSingleOperationStatus(
+    private Response getPostPutResponseWhenResourceAccessDenied(ResourceAccessDeniedException exception) {
+        return getPostPutResponseFromSingleOperationStatus(
                 Response.Status.BAD_REQUEST,
                 ResourceAccessDeniedException.GENERIC_MESSAGE,
                 StatusCodeMsg.ERR,
@@ -284,7 +322,7 @@ public abstract class ResourceService {
      * @param responseFormDetails
      * @return the response. 
      */
-    private Response getPostResponseFromSingleOperationStatus (Response.Status httpStatus, String responseFormMessage, String responseFormCode, String responseFormDetails) {
+    private Response getPostPutResponseFromSingleOperationStatus (Response.Status httpStatus, String responseFormMessage, String responseFormCode, String responseFormDetails) {
         return buildResponse(httpStatus, new ResponseFormPOST(
                 new Status(responseFormMessage, responseFormCode, responseFormDetails)));
     }
@@ -295,7 +333,7 @@ public abstract class ResourceService {
      * @param statusList
      * @return the response. 
      */
-    private Response getPostResponseFromMultipleOperationStatus (Response.Status httpStatus, List<Status> statusList) {
+    private Response getPostPutResponseFromMultipleOperationStatus (Response.Status httpStatus, List<Status> statusList) {
         return buildResponse(httpStatus, new ResponseFormPOST(statusList));
     }
     

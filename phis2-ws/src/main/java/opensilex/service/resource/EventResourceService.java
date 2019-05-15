@@ -23,6 +23,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -39,7 +40,7 @@ import opensilex.service.dao.EventDAO;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
-import opensilex.service.resource.dto.event.EventDTO;
+import opensilex.service.resource.dto.event.EventGetDTO;
 import opensilex.service.resource.dto.event.EventPostDTO;
 import opensilex.service.resource.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
 import opensilex.service.resource.validation.interfaces.Date;
@@ -47,6 +48,7 @@ import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.model.Event;
+import opensilex.service.resource.dto.event.EventPutDTO;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 
 /**
@@ -117,7 +119,7 @@ public class EventResourceService  extends ResourceService {
         @ApiResponse(
                 code = 200, 
                 message = "Retrieve all events", 
-                response = EventDTO.class, 
+                response = EventGetDTO.class, 
                 responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
@@ -249,7 +251,7 @@ public class EventResourceService  extends ResourceService {
     @ApiOperation(value = "Get the event corresponding to the search uri",
                   notes = "Get the event corresponding to the search uri")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Get an event", response = EventDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Get an event", response = EventGetDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
@@ -379,7 +381,7 @@ public class EventResourceService  extends ResourceService {
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response postEvents(
+    public Response post(
         @ApiParam(value = DocumentationAnnotation.EVENT_POST_DEFINITION) @Valid ArrayList<EventPostDTO> eventsDtos,
         @Context HttpServletRequest context) {
         
@@ -392,12 +394,50 @@ public class EventResourceService  extends ResourceService {
         // Get POST response
         return getPostResponse(objectDao, eventsDtos, context.getRemoteAddr(), StatusCodeMsg.EMPTY_EVENT_LIST);
     }
+    
+    /**
+     * Radiometric target PUT service.
+     * @param eventsDtos
+     * @param context
+     * @return the response of the service.
+     */
+    @PUT
+    @ApiOperation(value = "Update events")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Event(s) updated", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 404, message = "Event(s) not found"),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = GlobalWebserviceValues.AUTHORIZATION, 
+                required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, 
+                paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response put(
+        @ApiParam(value = DocumentationAnnotation.EVENT_PUT_DEFINITION) @Valid ArrayList<EventPutDTO> eventsDtos,
+        @Context HttpServletRequest context) {
+        
+        // Set DAO
+        EventDAO objectDao = new EventDAO(userSession.getUser());
+        if (context.getRemoteAddr() != null) {
+            objectDao.remoteUserAdress = context.getRemoteAddr();
+        }
+        
+        // Get POST response
+        return getPutResponse(objectDao, eventsDtos, context.getRemoteAddr(), StatusCodeMsg.EMPTY_EVENT_LIST);
+    }
 
     @Override
     protected ArrayList<AbstractVerifiedClass> getDTOsFromObjects(List<? extends Object> objects) {
         ArrayList<AbstractVerifiedClass> dtos = new ArrayList();
         objects.forEach((object) -> {
-            dtos.add(new EventDTO((Event)object));
+            dtos.add(new EventGetDTO((Event)object));
         });
         return dtos;
     }

@@ -1,5 +1,5 @@
 //******************************************************************************
-//                            UnknownUriException.java
+//                            WrongTypeException.java
 // SILEX-PHIS
 // Copyright © INRA 2019
 // Creation date: 5 Apr. 2019

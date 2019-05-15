@@ -11,11 +11,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.dao.exception.DAODataErrorException;
 import opensilex.service.dao.exception.TypeNotInDomainException;
+import opensilex.service.dao.exception.TypeNotInRangeException;
 import opensilex.service.dao.exception.UnknownUriException;
 import opensilex.service.dao.exception.UnknownUriOfTypeException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
@@ -24,7 +24,6 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
-import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.BindingSet;
@@ -32,7 +31,6 @@ import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
-import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,7 +65,7 @@ import org.eclipse.rdf4j.query.QueryEvaluationException;
 public class PropertyDAO extends Rdf4jDAO<Property> {
     final static Logger LOGGER = LoggerFactory.getLogger(PropertyDAO.class);
         
-    // This attribute is used to restrict available uri to a specific set of subclass.
+    // Used to restrict available URI to a specific set of subclass.
     private Oeso subClassOf;
 
     /* 
@@ -79,28 +77,28 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
     */
     private String relation;
     
-    // the domain label used to query Triplestore.
+    // Domain label used to query Triplestore.
     private final String DOMAIN = "domain";
     
-    // the range label used to query Triplestore.
+    // Range label used to query Triplestore.
     private final String RANGE = "range";
     
-    // the cardinality between a property and a concept, used to query the Triplestore.
+    // Cardinality between a property and a concept, used to query the Triplestore.
     private final String CARDINALITY = "cardinality";
     
-    // the restriction between a property and a concept, used to query the Triplestore.
+    // Restriction between a property and a concept, used to query the Triplestore.
     private final String RESTRICTION = "restriction";
     
-    // a blank node, used to query the Triplestore.
+    // Blank node, used to query the Triplestore.
     private final String BLANCK_NODE = "_:x";
     
-    // a property, used to query the Triplestore.
+    // A property used to query the Triplestore.
     protected final String PROPERTY = "property";
     
-    // a count result, used to query the Triplestore (count properties).
+    // Count result used to query the Triplestore (count properties).
     private final String COUNT = "count";
     
-    // the relation, used to query the Triplestore (cardinalities).
+    // Relation, used to query the Triplestore (cardinalities).
     protected final String RELATION = "relation";
     
     protected final String PROPERTY_TYPE = "propertyType";
@@ -140,7 +138,6 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
                     "<" + subClassOf + ">", 
                     null);
         }
-        
         LOGGER.debug(SPARQL_QUERY + query.toString());
         
         return query;
@@ -196,7 +193,7 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
     /**
      * Gets in the Triplestore the domain of the property if it exists.
      * @param relationUri
-     * @return the domain of the property (attributes relation)
+     * @return the domain of the property (attributes relation).
      * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
     public ArrayList<String> getPropertyDomain(String relationUri) throws DAOPersistenceException {
@@ -560,12 +557,13 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
     
     /**
      * Checks the existence, the domain and range of the given list of properties.
+     * @param subject
      * @param properties
-     * @param ownerType
+     * @param subjectType
      * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
      * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
-    public void checkExistenceRangeDomain(ArrayList<Property> properties, String ownerType) 
+    public void checkExistenceRangeDomain(String subject, String subjectType, ArrayList<Property> properties) 
             throws DAODataErrorAggregateException, DAOPersistenceException {
         ArrayList<DAODataErrorException> exceptions = new ArrayList<>();
         try {
@@ -573,21 +571,23 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
                 // If URI, check value existence with type
                 if (property.getRdfType() != null 
                         && !exist(property.getValue(), RDF.type.getURI(), property.getRdfType())) {
-                    exceptions.add(new UnknownUriOfTypeException(
+                    exceptions.add(new UnknownUriOfTypeException( 
                             property.getValue(), 
-                            property.getRdfType(), 
-                            "the property's value"));
+                            property.getRdfType()));
                 }
 
                 // Check relation existence
                 if (existUri(property.getRelation())) {
                     // Check domain
-                    if (!isRelationDomainCompatibleWithRdfType(property.getRelation(), ownerType)) {
-                        exceptions.add(new TypeNotInDomainException(ownerType, property.getRelation()));
+                    if (!isRelationDomainCompatibleWithRdfType(property.getRelation(), subjectType)) {
+                        exceptions.add(new TypeNotInDomainException(subject, subjectType, property.getRelation()));
                     }
                     // Check range
                     if (!isRelationRangeCompatibleWithRdfType(property.getRelation(), property.getRdfType())) {
-                        exceptions.add(new TypeNotInDomainException(property.getRdfType(), property.getRelation()));
+                        exceptions.add(new TypeNotInRangeException(
+                                property.getValue(), 
+                                property.getRdfType(), 
+                                property.getRelation()));
                     }
                 } else {
                     exceptions.add(new UnknownUriException(property.getRelation(), "the property relation"));
@@ -962,6 +962,27 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
                     updateBuilder.addInsert(graph, objectResource, propertyRelation, propertyValue);
                 }
             }
+        }
+    }
+    
+    /**
+     * Generates an delete query for the given properties links.
+     * @param updateBuilder
+     * @param graph
+     * @param linkedResource
+     * @param properties
+     */
+    public static void addDeletePropertyLinksToUpdateBuilder(UpdateBuilder updateBuilder, Node graph, Resource linkedResource, List<Property> properties) {
+        Object propertyValue;
+        for(Property property : properties) {
+            org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
+
+            if (property.getRdfType() != null) {
+                propertyValue = NodeFactory.createURI(property.getValue());
+            } else {
+                propertyValue = ResourceFactory.createStringLiteral(property.getValue());
+            }
+            updateBuilder.addDelete(graph, linkedResource, propertyRelation, propertyValue);
         }
     }
     

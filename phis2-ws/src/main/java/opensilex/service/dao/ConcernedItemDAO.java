@@ -14,7 +14,6 @@ import opensilex.service.dao.exception.UnknownUriException;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAODataErrorException;
 import opensilex.service.dao.exception.DAOPersistenceException;
-import opensilex.service.dao.exception.ResourceAccessDeniedException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -243,7 +242,26 @@ public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
     }
     
     /**
-     * Checks the existence of the given list of concerned items
+     * Generates an insert query for the links of the given concerned items links.
+     * @param updateBuilder
+     * @param graph
+     * @param linkedResource
+     * @param concernsRelationUri since "concerns" can designate various
+     * relations in various vocabularies (e.g OESO or OEEV), the URI of the 
+     * relation has to be
+     * @param concernedItems
+     */
+    public static void addDeleteConcernedItemLinksToUpdateBuilder(UpdateBuilder updateBuilder, Node graph, Resource linkedResource, String concernsRelationUri, List<ConcernedItem> concernedItems) {
+        org.apache.jena.rdf.model.Property  concernsJenaProperty = 
+                ResourceFactory.createProperty(concernsRelationUri);
+        for (ConcernedItem concernedItem : concernedItems) {
+            Resource concernedItemResource = ResourceFactory.createResource(concernedItem.getUri());
+            updateBuilder.addDelete(graph, linkedResource, concernsJenaProperty, concernedItemResource);
+        }
+    }
+    
+    /**
+     * Checks the existence of the given list of concerned items.
      * @param concernedItems
      * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
      * @throws opensilex.service.dao.exception.DAOPersistenceException

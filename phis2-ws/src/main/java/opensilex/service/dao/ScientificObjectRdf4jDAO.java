@@ -8,6 +8,9 @@
 //***********************************************************************************************
 package opensilex.service.dao;
 
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -885,12 +888,20 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                     Node propertyRdfType = NodeFactory.createURI(property.getRdfType());
                     updateBuilder.addDelete(graph, scientificObjectUri, propertyRelation, propertyValue);
                     updateBuilder.addDelete(graph, propertyValue, RDF.type, propertyRdfType);
-                } else if (existUri(property.getValue())) { //If there is no Rdf type but the value is an existing URI in the triplestore, it is an object URI.
-                    Node propertyValue = NodeFactory.createURI(property.getValue());
-                    updateBuilder.addDelete(graph, scientificObjectUri, propertyRelation, propertyValue);
-                } else { //The value is a literal
-                    Literal propertyValue = ResourceFactory.createStringLiteral(property.getValue());
-                    updateBuilder.addDelete(graph, scientificObjectUri, propertyRelation, propertyValue);
+                } else  {
+                    boolean propertyIsUrl = true;
+                    try { 
+                        new URL(property.getValue()).toURI();
+                    } catch (MalformedURLException | URISyntaxException e) { 
+                        propertyIsUrl = false; 
+                    } 
+                    if (propertyIsUrl && existUri(property.getValue())) { //If there is no Rdf type but the value is an existing URI in the triplestore, it is an object URI.
+                        Node propertyValue = NodeFactory.createURI(property.getValue());
+                        updateBuilder.addDelete(graph, scientificObjectUri, propertyRelation, propertyValue);
+                    } else { //The value is a literal
+                        Literal propertyValue = ResourceFactory.createStringLiteral(property.getValue());
+                        updateBuilder.addDelete(graph, scientificObjectUri, propertyRelation, propertyValue);
+                    }
                 }
             }
         }
@@ -987,10 +998,9 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         
         //2.1.2 Insert new data
         //2.1.2a Generate variety URI if needed
-        UriGenerator uriGenerator = new UriGenerator();
         for (Property property : scientificObject.getProperties()) {
             if (property.getRdfType() != null && property.getRdfType().equals(Oeso.CONCEPT_VARIETY.toString())) {
-                property.setValue(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_VARIETY.toString(), null, property.getValue()));
+                property.setValue(UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_VARIETY.toString(), null, property.getValue()));
             }
         }
         //2.1.2b Insert data

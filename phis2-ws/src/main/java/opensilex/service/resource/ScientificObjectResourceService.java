@@ -75,21 +75,6 @@ public class ScientificObjectResourceService extends ResourceService {
     }
     
     /**
-     * Transform ScientificObjectPutDTO to ScientificObject
-     * @param scientificObjectPutDTOs
-     * @return the transformed list
-     */
-    private List<ScientificObject> scientificObjectPutDTOsToScientificObjects(List<ScientificObjectPutDTO> scientificObjectPutDTOs) {
-        ArrayList<ScientificObject> scientificObjects = new ArrayList<>();
-        
-        for (ScientificObjectPutDTO scientificObjectDTO : scientificObjectPutDTOs) {
-            scientificObjects.add(scientificObjectDTO.createObjectFromDTO());
-        }
-        
-        return scientificObjects;
-    }
-    
-    /**
      * Enters a set of scientific objects into the storage and associate them to 
      * an experiment if given.
      * @param scientificObjectsDTO scientific objects to save

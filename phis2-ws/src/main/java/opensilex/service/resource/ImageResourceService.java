@@ -76,6 +76,7 @@ import opensilex.service.model.ImageMetadata;
  * @update [Andréas Garcia] Jan. 2019: modify "concern(s)" occurences into "concernedItem(s)"
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
+@Deprecated
 @Api("/images")
 @Path("/images")
 public class ImageResourceService extends ResourceService {
@@ -119,6 +120,7 @@ public class ImageResourceService extends ResourceService {
      *  }
      * @return the URL to save the image(s) if metadata is correct
      */
+    @Deprecated
     @POST
     @ApiOperation(value = "Save a file", notes = DocumentationAnnotation.ADMIN_ONLY_NOTES) 
     @ApiResponses(value = {
@@ -246,6 +248,7 @@ public class ImageResourceService extends ResourceService {
      * @throws URISyntaxException 
      * @throws java.text.ParseException 
      */
+    @Deprecated
     @POST
     @Path("upload")
     @ApiOperation(value = "Post data file", notes = DocumentationAnnotation.USER_ONLY_NOTES 
@@ -419,6 +422,7 @@ public class ImageResourceService extends ResourceService {
      *     ...
      * ]
      */
+    @Deprecated
     @GET
     @ApiOperation(value = "Get all images corresponding to the search params given")
     @ApiResponses(value = {

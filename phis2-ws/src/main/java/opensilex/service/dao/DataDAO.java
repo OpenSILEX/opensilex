@@ -7,6 +7,7 @@
 //******************************************************************************
 package opensilex.service.dao;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.MongoClient;
@@ -56,6 +57,7 @@ public class DataDAO extends MongoDAO<Data> {
     private final static String DB_FIELD_PROVENANCE = "provenance";
     private final static String DB_FIELD_DATE = "date";
     private final static String DB_FIELD_VALUE = "value";
+    private final static String DB_FIELD_SENSOR = "sensor";
     
     public String variableUri;
     public String startDate;
@@ -389,7 +391,7 @@ public class DataDAO extends MongoDAO<Data> {
      * @return the data count
      */
     public int count() {
-                // Get the collection corresponding to variable uri
+        // Get the collection corresponding to variable uri
         String variableCollection = this.getCollectionFromVariable(variableUri);
         MongoCollection<Document> dataVariableCollection = database.getCollection(variableCollection);
 
@@ -398,6 +400,99 @@ public class DataDAO extends MongoDAO<Data> {
         
         // Return the document count
         return (int)dataVariableCollection.countDocuments(query);
+    }
+    
+    /**
+     * Generates the query to search data.
+     * @param variableUri
+     * @param startDate
+     * @param endDate
+     * @param objectsUris
+     * @param provenancesUris
+     * @example 
+     * {
+     *      "variable": "http://www.opensilex.org/opensilex/id/variables/v001", 
+     *      "provenance": "http://www.opensilex.org/opensilex/id/provenance/1552386023784"
+     * }
+     * @return the generated query
+     */
+    protected BasicDBObject prepareSearchQuery(String variableUri, String startDate, String endDate, List<String> objectsUris, List<String> provenancesUris) {
+        BasicDBObject query = new BasicDBObject();
+        
+        //Variable filter
+        query.append(DB_FIELD_VARIABLE, variableUri);
+        
+        //Date filter
+        try {
+            // Define date filter depending if start date and/or end date are defined
+            if (startDate != null) {
+                Date start = DateFormat.parseDateOrDateTime(startDate, false);
+
+                if (endDate != null) {
+                    // In case of start date AND end date defined
+                    Date end = DateFormat.parseDateOrDateTime(endDate, true);
+                    query.append(DB_FIELD_DATE, BasicDBObjectBuilder.start("$gte", start).add("$lte", end).get());
+                } else {
+                    // In case of start date ONLY is defined
+                    query.append(DB_FIELD_DATE, BasicDBObjectBuilder.start("$gte", start).get());
+                }
+            } else if (endDate != null) {
+                // In case of end date ONLY is defined
+                Date end = DateFormat.parseDateOrDateTime(endDate, true);
+                query.append(DB_FIELD_DATE, BasicDBObjectBuilder.start("$lte", end).get());
+            }
+        } catch (ParseException ex) {
+            LOGGER.error("Invalid date format", ex);
+        }
+        
+        // Objects filter
+        if (!objectsUris.isEmpty()) {
+            if (objectsUris.size() > 1) {
+                BasicDBList or = new BasicDBList();
+                for (String objectUri : objectsUris) {
+                    BasicDBObject clause = new BasicDBObject(DB_FIELD_OBJECT, objectUri);
+                    or.add(clause);
+                }
+                query.append("$or", or);
+            } else {
+                query.append(DB_FIELD_OBJECT, objectsUris.get(0));
+            }
+        }
+        
+        //Provenance filter
+        if (!provenancesUris.isEmpty()) {
+            if (provenancesUris.size() > 1) {
+                BasicDBList or = new BasicDBList();
+                for (String provenanceUri : provenancesUris) {
+                    BasicDBObject clause = new BasicDBObject(DB_FIELD_PROVENANCE, provenanceUri);
+                    or.add(clause);
+                }
+                query.append("$or", or);
+            } else {
+                query.append(DB_FIELD_PROVENANCE, provenancesUris.get(0));
+            }
+        }
+        
+        LOGGER.debug(getTraceabilityLogs() + " query : " + query.toString());
+        
+        return query;
+    }
+    
+    /**
+     * Get the number of the data for the given search parameters.
+     * @param variableUri
+     * @param startDate
+     * @param endDate
+     * @param objectsUris
+     * @param provenancesUris
+     * @return the number of data.
+     */
+    public int count(String variableUri, String startDate, String endDate, List<String> objectsUris, List<String> provenancesUris) {
+        MongoCollection<Document> dataCollection = database.getCollection(getCollectionFromVariable(variableUri));
+        
+        BasicDBObject query = prepareSearchQuery(variableUri, startDate, endDate, objectsUris, provenancesUris);
+        
+        return (int)dataCollection.countDocuments(query);
     }
 
     /**
@@ -413,6 +508,79 @@ public class DataDAO extends MongoDAO<Data> {
         query.append(DB_FIELD_URI, uri);
         
         return database.getCollection(variableCollection).countDocuments(query) > 0; 
+    }
+    
+    /**
+     * Find data by the given search params.
+     * @param page
+     * @param pageSize
+     * @param variableUri
+     * @param startDate
+     * @param endDate
+     * @param objectsUris
+     * @param provenancesUris
+     * @return the data founded.
+     */
+    public List<Data> find(Integer page, Integer pageSize, String variableUri, String startDate, String endDate, List<String> objectsUris, List<String> provenancesUris) {
+        // Get the collection corresponding to variable uri
+        String variableCollection = this.getCollectionFromVariable(variableUri);
+        MongoCollection<Document> dataVariableCollection = database.getCollection(variableCollection);
+        
+        // Get the filter query
+        BasicDBObject query = prepareSearchQuery(variableUri, startDate, endDate, objectsUris, provenancesUris);
+        
+        // Get paginated documents
+        FindIterable<Document> dataMongo = dataVariableCollection.find(query);
+        
+        //SILEX:info
+        //Measures are always sort by date, either ascending or descending depending on dateSortAsc parameter
+        //If dateSortAsc=true, sort by date ascending
+        //If dateSortAsc=false, sort by date descending
+        //\SILEX:info
+        if (dateSortAsc) {
+            dataMongo = dataMongo.sort(Sorts.ascending(DB_FIELD_DATE));
+        } else {
+            dataMongo = dataMongo.sort(Sorts.descending(DB_FIELD_DATE));
+        }
+        
+        // Define pagination for the request
+        if (page != null && pageSize != null) {
+            dataMongo = dataMongo.skip(page * pageSize).limit(pageSize);
+        }
+        
+        ArrayList<Data> dataList = new ArrayList<>();
+        
+        // For each document, create a data Instance and add it to the result list
+        try (MongoCursor<Document> measuresCursor = dataMongo.iterator()) {
+            while (measuresCursor.hasNext()) {
+                Document dataDocument = measuresCursor.next();
+                LOGGER.debug(dataDocument.toJson());
+                
+                // Create and define the data object
+                Data data = new Data();
+                data.setVariableUri(variableUri);
+                if (dataDocument.getString(DB_FIELD_URI) != null) {
+                    data.setUri(dataDocument.getString(DB_FIELD_URI));
+                }
+                data.setDate(dataDocument.getDate(DB_FIELD_DATE));
+                data.setValue(dataDocument.get(DB_FIELD_VALUE));
+                
+                if (dataDocument.getString(DB_FIELD_OBJECT) != null) {
+                    data.setObjectUri(dataDocument.getString(DB_FIELD_OBJECT));
+                }
+                
+                if (dataDocument.getString(DB_FIELD_PROVENANCE) != null) {
+                    data.setProvenanceUri(dataDocument.getString(DB_FIELD_PROVENANCE));
+                } else {
+                    data.setProvenanceUri(dataDocument.getString(DB_FIELD_SENSOR));
+                }
+                
+                // Add data to the list
+                dataList.add(data);
+            }
+        }
+        
+        return dataList;
     }
 
     @Override

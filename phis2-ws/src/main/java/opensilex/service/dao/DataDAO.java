@@ -554,7 +554,6 @@ public class DataDAO extends MongoDAO<Data> {
         try (MongoCursor<Document> measuresCursor = dataMongo.iterator()) {
             while (measuresCursor.hasNext()) {
                 Document dataDocument = measuresCursor.next();
-                LOGGER.debug(dataDocument.toJson());
                 
                 // Create and define the data object
                 Data data = new Data();

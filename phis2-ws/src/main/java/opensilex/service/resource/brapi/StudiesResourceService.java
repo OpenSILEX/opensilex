@@ -19,6 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.inject.Singleton;
 import javax.validation.constraints.Min;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -58,7 +59,7 @@ import opensilex.service.view.brapi.form.BrapiSingleResponseForm;
 
 @Api("/brapi/v1/studies")
 @Path("/brapi/v1/studies")
-
+@Singleton
 /**
  * Study services :
  * GET Studies/{studyDbId}

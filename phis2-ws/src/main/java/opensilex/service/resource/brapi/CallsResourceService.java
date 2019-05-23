@@ -14,6 +14,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Pattern;
 import javax.ws.rs.DefaultValue;
@@ -36,6 +37,7 @@ import opensilex.service.model.Call;
 @Api("/brapi/v1/calls")
 @Path("/brapi/v1/calls")
 @Service
+@Singleton
 /**
  * Calls resource service.
  * @see https://brapi.docs.apiary.io/#reference/calls/call-search

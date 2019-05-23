@@ -16,6 +16,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import javax.inject.Singleton;
 import javax.validation.constraints.Min;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -47,6 +48,7 @@ import opensilex.service.model.Call;
  */
 @Api("/brapi/v1/variables")
 @Path("/brapi/v1/variables")
+@Singleton
 public class VariableResourceService implements BrapiCall {
     final static Logger LOGGER = LoggerFactory.getLogger(BrapiVariable.class);
 

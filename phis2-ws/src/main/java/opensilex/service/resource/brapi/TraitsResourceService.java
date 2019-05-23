@@ -16,6 +16,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import javax.inject.Singleton;
 import javax.validation.constraints.Min;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -50,6 +51,7 @@ import opensilex.service.model.Trait;
  */
 @Api("/brapi/v1/traits")
 @Path("/brapi/v1/traits")
+@Singleton
 public class TraitsResourceService implements BrapiCall {
     final static Logger LOGGER = LoggerFactory.getLogger(TraitsResourceService.class);
     

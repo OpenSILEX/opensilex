@@ -764,8 +764,7 @@ public class DataResourceService extends ResourceService {
             // No results
             getResponse = new ResultForm<>(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
-        } else {      
-            
+        } else {
             // Convert all data object to DTO's
             for (Data data : dataList) {
                 if (data.getObjectUri() != null && !objectsUrisAndLabels.containsKey(data.getObjectUri())) { 

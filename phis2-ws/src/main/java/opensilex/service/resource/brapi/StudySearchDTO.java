@@ -7,7 +7,9 @@
 //******************************************************************************
 package opensilex.service.resource.brapi;
 
+import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
+import opensilex.service.documentation.DocumentationAnnotation;
 
 /**
  *

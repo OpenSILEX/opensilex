@@ -98,13 +98,129 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         Call call3 = new Call("studies/{studyDbId}/observationVariables", calldatatypes, callMethods, callVersions);
         Call call4 = new Call("studies/{studyDbId}/observationunits", calldatatypes, callMethods, callVersions);      
         Call call5 = new Call("studies/", calldatatypes, callMethods, callVersions);
+        ArrayList<String> callVersion2 = new ArrayList<>();
+        callVersion2.add("1.2");
+        Call call6 = new Call("studies-search/", calldatatypes, callMethods, callVersion2);
         calls.add(call1);
         calls.add(call2);
         calls.add(call3);
         calls.add(call4);      
         calls.add(call5);
+        calls.add(call6);
         return calls;
     }
+    
+    /**
+     * @param studySearch
+     * @param context
+     * @return result of the studies-search creation request BRAPI V1.2
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
+     */
+    @POST
+    @Path("studies-search")
+    @ApiOperation(value = "search studies",
+                  notes = "search studies")
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "query created", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "Authorization", required = true,
+                          dataType = "string", paramType = "header",
+                          value = DocumentationAnnotation.ACCES_TOKEN,
+                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    
+    public Response postExperiment(
+            @ApiParam(value = DocumentationAnnotation.EXPERIMENT_POST_DATA_DEFINITION) @Valid StudySearchDTO studySearch,
+            @Context HttpServletRequest context) throws DAOPersistenceException {
+        AbstractResultForm postResponse = null;
+
+        // If there is at least an experiment in the data sent      
+        if (studySearch != null) {                    
+            // get studies from postgresql DB
+            StudySQLDAO studySqlDAO = new StudySQLDAO();
+            //get studies from rdf4j based on germplasms;
+            if (studySearch.getGermplasmDbIds() != null) {
+                StudyRDFDAO studyRdfDAO = new StudyRDFDAO();            
+                studyRdfDAO.germplasmDbIds = studySearch.getGermplasmDbIds();            
+                ArrayList<String> studyURIs = studyRdfDAO.getStudiesFromGermplasms();
+                if (!studyURIs.isEmpty()) {
+                    studySqlDAO.studyDbIds = studyURIs;
+                } else {
+                    studyURIs.add("noStudyCorresponding"); //to have no study found in studySQLDAO if no study used those germplasms 
+                    studySqlDAO.studyDbIds = studyURIs;
+                }
+            }
+            
+            if (studySearch.getStudyDbIds() != null) {
+                if (studySqlDAO.studyDbIds != null) {   //if there are studyDbIds and germplasmDbIds, we check the studies are linked to the germplasms
+                    ArrayList<String> studiesList = new ArrayList();
+                    for (String study:studySearch.getStudyDbIds()) {                    
+                        if (studySqlDAO.studyDbIds.contains(study))  {
+                            studiesList.add(study);
+                        }
+                    }
+                    if (studiesList.isEmpty()) {
+                        studiesList.add("noStudyCorresponding");
+                        studySqlDAO.studyDbIds = studiesList;
+                    }
+                    studySqlDAO.studyDbIds = studiesList;                
+                } else {
+                    studySqlDAO.studyDbIds = studySearch.getStudyDbIds();
+                }
+            } 
+            
+            if (studySearch.getCommonCropNames() != null) {
+                studySqlDAO.commonCropNames = studySearch.getCommonCropNames();
+            }
+            
+            if (studySearch.getPage() != null) {
+                studySqlDAO.page = studySearch.getPage();
+            }
+            
+            if (studySearch.getPageSize()!= null) {
+                studySqlDAO.pageSize = studySearch.getPageSize();
+            }
+            
+            if (studySearch.getSeasonDbIds()!= null) {
+                studySqlDAO.seasonDbIds = studySearch.getSeasonDbIds();
+            }
+            
+            if (studySearch.getSortBy()!= null) {
+                studySqlDAO.sortBy = studySearch.getSortBy();
+            }
+            
+            if (studySearch.getSortOrder()!= null) {
+                studySqlDAO.sortOrder = studySearch.getSortOrder();
+            }
+            
+            if (studySearch.getStudyNames()!= null) {
+                studySqlDAO.studyNames = studySearch.getStudyNames();
+            }
+            studySqlDAO.user=userSession.getUser();
+            Integer studiesCount = studySqlDAO.count();
+            ArrayList<StudyDTO> studies = studySqlDAO.allPaginate();
+            ArrayList<Status> statusList = new ArrayList(); 
+            
+            if (studies.isEmpty()) {
+                BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, studies, true);
+                return noResultFound(getResponse, statusList);
+            } else {
+                BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(studySqlDAO.getPageSize(), studySqlDAO.getPage(), studies, false, studiesCount);
+                return Response.status(Response.Status.OK).entity(getResponse).build();
+            } 
+
+        } else {
+            postResponse = new ResponseFormPOST(new Status("Request error", StatusCodeMsg.ERR, "Empty search parameters"));
+            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+        }
+    }
+    
     /**
      * Retrieve studies information
      * @param studyDbId
@@ -114,7 +230,6 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
      * @param locationDbId - not managed
      * @param seasonDbId
      * @param trialDbId - not managed
-     * @param germplasmDbIds - not managed
      * @param active
      * @param sortBy
      * @param sortOrder
@@ -200,9 +315,6 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         if (commonCropName != null) {
             studysqlDAO.commonCropNames.add(commonCropName);
         }    
-//        if (germplasmDbIds != null) {
-//            studysqlDAO.germplasmDbIds = germplasmDbIds;
-//        }  
         if (seasonDbId != null) {
             studysqlDAO.seasonDbIds.add(seasonDbId);
         }         
@@ -837,89 +949,4 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         return observationUnitsList;
     }
     
-    /**
-     * @param studiesSearch
-     * @return result of the studies-search creation request
-     */
-    @POST
-    @Path("studies-search")
-    @ApiOperation(value = "search studies",
-                  notes = "search studies")
-    @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "query created", response = ResponseFormPOST.class),
-        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
-    })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                          dataType = "string", paramType = "header",
-                          value = DocumentationAnnotation.ACCES_TOKEN,
-                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response postExperiment(
-            @ApiParam(value = DocumentationAnnotation.EXPERIMENT_POST_DATA_DEFINITION) @Valid StudySearchDTO studySearch,
-            @Context HttpServletRequest context) throws DAOPersistenceException {
-        AbstractResultForm postResponse = null;
-
-        // If there is at least an experiment in the data sent      
-        if (studySearch != null) {                    
-            // get studies from postgresql DB
-            StudySQLDAO studySqlDAO = new StudySQLDAO();
-            //get studies from rdf4j based on germplasms;
-            if (studySearch.getGermplasmDbIds() != null) {
-                StudyRDFDAO studyRdfDAO = new StudyRDFDAO();            
-                studyRdfDAO.germplasmDbIds = studySearch.getGermplasmDbIds();            
-                ArrayList<String> studyURIs = studyRdfDAO.getStudiesFromGermplasms();
-                if (!studyURIs.isEmpty()) {
-                    studySqlDAO.studyDbIds = studyURIs;
-                }
-            }
-            if (studySearch.getCommonCropNames() != null) {
-                studySqlDAO.commonCropNames = studySearch.getCommonCropNames();
-            }
-            
-            if (studySearch.getPage() != null) {
-                studySqlDAO.page = studySearch.getPage();
-            }
-            
-            if (studySearch.getPageSize()!= null) {
-                studySqlDAO.pageSize = studySearch.getPageSize();
-            }
-            
-            if (studySearch.getSeasonDbIds()!= null) {
-                studySqlDAO.seasonDbIds = studySearch.getSeasonDbIds();
-            }
-            
-            if (studySearch.getSortBy()!= null) {
-                studySqlDAO.sortBy = studySearch.getSortBy();
-            }
-            
-            if (studySearch.getSortOrder()!= null) {
-                studySqlDAO.sortOrder = studySearch.getSortOrder();
-            }
-            
-            if (studySearch.getStudyNames()!= null) {
-                studySqlDAO.studyNames = studySearch.getStudyNames();
-            }
-            studySqlDAO.user=userSession.getUser();
-            Integer studiesCount = studySqlDAO.count();
-            ArrayList<StudyDTO> studies = studySqlDAO.allPaginate();
-            ArrayList<Status> statusList = new ArrayList<>(); 
-            
-            if (studies.isEmpty()) {
-                BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, studies, true);
-                return noResultFound(getResponse, statusList);
-            } else {
-                BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(studySqlDAO.getPageSize(), studySqlDAO.getPage(), studies, false, studiesCount);
-                return Response.status(Response.Status.OK).entity(getResponse).build();
-            } 
-
-        } else {
-            postResponse = new ResponseFormPOST(new Status("Request error", StatusCodeMsg.ERR, "Empty search parameters"));
-            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
-        }
-    }
 }

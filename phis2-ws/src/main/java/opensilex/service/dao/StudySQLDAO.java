@@ -7,6 +7,7 @@
 //******************************************************************************
 package opensilex.service.dao;
 
+import static com.google.common.collect.Iterables.size;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -20,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import static opensilex.service.dao.ExperimentSQLDAO.LOGGER;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.dao.exception.ResourceAccessDeniedException;
@@ -168,6 +170,8 @@ public class StudySQLDAO extends PostgreSQLDAO<StudyDTO> {
         countQuery.appendDistinct();
         countQuery.appendSelect(tableAlias + ".uri");
         
+        LOGGER.debug (countQuery.toString());
+        
         Connection connection = null;
         ResultSet resultSet = null;
         Statement statement = null;
@@ -276,9 +280,14 @@ public class StudySQLDAO extends PostgreSQLDAO<StudyDTO> {
     private String ListToString(ArrayList<String> list) {
         String listInString = "(";
         for (String element:list) {
-            listInString = listInString + element;
+            listInString = listInString + "'" + element + "',";
+            
         }
-        listInString = listInString + ")";
+        //remove last ","
+        listInString = listInString.substring(0, listInString.length()-1);
+
+        listInString = listInString + ")";    
+
         return listInString;
     }
 

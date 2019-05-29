@@ -266,7 +266,7 @@ public class ScientificObjectResourceService extends ResourceService {
         scientificObjectDaoSesame.setPage(page);
         scientificObjectDaoSesame.setPageSize(pageSize);
         
-        ArrayList<ScientificObject> scientificObjects = scientificObjectDaoSesame.find(uri, rdfType, experimentURI, alias);
+        ArrayList<ScientificObject> scientificObjects = scientificObjectDaoSesame.find(page, pageSize, uri, rdfType, experimentURI, alias);
         
         if (scientificObjects == null) { //Request failure
             getResponse = new ResultForm<>(0, 0, scientificObjectsToReturn, true);

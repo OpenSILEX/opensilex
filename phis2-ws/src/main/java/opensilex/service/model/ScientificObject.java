@@ -103,6 +103,10 @@ public class ScientificObject {
         properties.add(property);
     }
 
+    public void setProperties(ArrayList<Property> newProperties) {
+        properties = newProperties;
+    }
+    
     public String getLabel() {
         return label;
     }

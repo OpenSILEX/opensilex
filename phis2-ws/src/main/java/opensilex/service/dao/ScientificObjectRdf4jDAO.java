@@ -629,18 +629,16 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      * @param experiment
      * @param alias
      * @example 
-     * SELECT DISTINCT  ?uri ?alias ?experiment  ?rdfType  ?relation ?property ?propertyType 
+     * SELECT DISTINCT  ?uri ?alias ?experiment  ?rdfType 
      * WHERE {
      *      OPTIONAL {
      *          ?uri <http://www.w3.org/2000/01/rdf-schema#label> ?alias . 
      *      }
      *      ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
      *      ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.opensilex.org/vocabulary/oeso#ScientificObject> . 
-     *      ?uri  ?relation  ?property  . 
      *      OPTIONAL {
-     *          ?uri <http://www.opensilex.org/vocabulary/oeso#participatesIn> ?experiment . ?property <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?propertyType 
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#participatesIn> ?experiment .  
      *      } 
-     *      FILTER ( (REGEX ( str(?uri),".*o.*","i")) ) 
      * }
      * @return the generated query
      */
@@ -1097,5 +1095,57 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     @Override
     public void validate(List<ScientificObject> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    /**
+     * 
+     * @param uri
+     * @param rdfType
+     * @param experimentURI
+     * @param alias
+     * @return 
+     */
+    private SPARQLQueryBuilder prepareCount(String uri, String rdfType, String experimentURI, String alias) {
+        SPARQLQueryBuilder query = prepareSearchQuery(null, null, uri, rdfType, experimentURI, alias);
+        query.clearSelect();
+        query.clearLimit();
+        query.clearOffset();
+        query.clearGroupBy();
+        query.appendSelect("(COUNT(DISTINCT ?" + URI + ") AS ?" + COUNT_ELEMENT_QUERY + ")");
+        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
+        return query;
+    }
+    
+    /**
+     * Count the number of scientific objects by the given search parameters.
+     * @param uri
+     * @param rdfType
+     * @param experimentURI
+     * @param alias
+     * @return The number of scientific objects.
+     * @example
+     * SELECT DISTINCT  (COUNT(DISTINCT ?uri) AS ?count) 
+     * WHERE {
+     *      OPTIONAL {
+     *          ?uri <http://www.w3.org/2000/01/rdf-schema#label> ?alias . 
+     *      }
+     *      ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
+     *      ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.opensilex.org/vocabulary/oeso#ScientificObject> . 
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#participatesIn> ?experiment .  
+     *      } 
+     * }
+     */
+    public Integer count(String uri, String rdfType, String experimentURI, String alias) {
+        SPARQLQueryBuilder prepareCount = prepareCount(uri, rdfType, experimentURI, alias);
+        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
+        Integer count = 0;
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
+            if (result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                count = Integer.parseInt(bindingSet.getValue(COUNT_ELEMENT_QUERY).stringValue());
+            }
+        }
+        return count;
     }
 }

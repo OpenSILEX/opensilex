@@ -378,7 +378,9 @@ public class TraitDAO extends Rdf4jDAO<Trait> {
         Resource traitUri = ResourceFactory.createResource(trait.getUri());
         
         spql.addDelete(graph, traitUri, RDFS.label, trait.getLabel());
-        spql.addDelete(graph, traitUri, RDFS.comment, trait.getComment());
+        if (trait.getComment() != null) {
+            spql.addDelete(graph, traitUri, RDFS.comment, trait.getComment());
+        }
         
         trait.getOntologiesReferences().forEach((ontologyReference) -> {
             Property ontologyProperty = ResourceFactory.createProperty(ontologyReference.getProperty());

@@ -620,11 +620,10 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         String optional = "";
                 
         //URI filter
-        if (uri == null) {
-            uri = "";
-        }
         sparqlQuery.appendSelect("?" + URI);
-        sparqlQuery.appendAndFilter("REGEX ( str(?" + URI + "),\".*" + uri + ".*\",\"i\")");
+        if (uri != null) {
+            sparqlQuery.appendAndFilter("REGEX ( str(?" + URI + "),\".*" + uri + ".*\",\"i\")");
+        }
 
         //Label filter
         sparqlQuery.appendSelect("?" + ALIAS);

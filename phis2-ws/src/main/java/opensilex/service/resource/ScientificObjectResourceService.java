@@ -266,6 +266,10 @@ public class ScientificObjectResourceService extends ResourceService {
         scientificObjectDaoSesame.setPage(page);
         scientificObjectDaoSesame.setPageSize(pageSize);
         
+        //1. Get count
+        Integer totalCount = scientificObjectDaoSesame.count(uri, rdfType, experimentURI, alias);
+        
+        //2. Get list of scientific objects
         ArrayList<ScientificObject> scientificObjects = scientificObjectDaoSesame.find(page, pageSize, uri, rdfType, experimentURI, alias);
         
         if (scientificObjects == null) { //Request failure
@@ -280,7 +284,7 @@ public class ScientificObjectResourceService extends ResourceService {
                 scientificObjectsToReturn.add(new ScientificObjectDTO(scientificObject));
             });
             
-            getResponse = new ResultForm<>(scientificObjectDaoSesame.getPageSize(), scientificObjectDaoSesame.getPage(), scientificObjectsToReturn, false);
+            getResponse = new ResultForm<>(scientificObjectDaoSesame.getPageSize(), scientificObjectDaoSesame.getPage(), scientificObjectsToReturn, true, totalCount);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {

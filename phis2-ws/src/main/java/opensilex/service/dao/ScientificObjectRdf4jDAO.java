@@ -494,17 +494,54 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         return children;
     }
     
+    public SPARQLQueryBuilder prepareSearchScientificObjectProperties(String uri) {
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        
+        query.appendSelect(" ?" + RELATION + " ?" + PROPERTY + " ?" + PROPERTY_TYPE);
+        query.appendTriplet(uri, "?" + RELATION, "?" + PROPERTY, null);
+        
+        query.appendOptional("?" + PROPERTY + " <" + Rdf.RELATION_TYPE.toString() + "> ?" + PROPERTY_TYPE);
+        
+        LOGGER.debug(query.toString());
+        
+        return query;
+    }
+    
+    public ArrayList<Property> findScientificObjectProperties(String uri) {
+        SPARQLQueryBuilder queryProperties = prepareSearchScientificObjectProperties(uri);
+        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryProperties.toString());
+        ArrayList<Property> properties = new ArrayList<>();
+            
+            try (TupleQueryResult result = tupleQuery.evaluate()) {
+                while (result.hasNext()) {
+                    BindingSet bindingSet = result.next();
+                    Property property = new Property();
+                    
+                    property.setRelation(bindingSet.getValue(RELATION).stringValue());
+                    property.setValue(bindingSet.getValue(PROPERTY).stringValue());
+                    if (bindingSet.getValue(PROPERTY_TYPE) != null) {
+                        property.setRdfType(bindingSet.getValue(PROPERTY_TYPE).stringValue());
+                    }
+                    
+                    properties.add(property);
+                }
+            }
+        return properties;
+    }
+    
     /**
      * Find scientific objects by the given list of search params
+     * @param page
      * @param uri
+     * @param pageSize
      * @param rdfType
      * @param experiment
      * @param alias
      * @return scientific objects list, result of the user query, empty if no result
      */
-    public ArrayList<ScientificObject> find(String uri, String rdfType, String experiment, String alias) {
+    public ArrayList<ScientificObject> find(Integer page, Integer pageSize, String uri, String rdfType, String experiment, String alias) {
         try {
-            SPARQLQueryBuilder sparqlQuery = prepareSearchQuery(uri, rdfType, experiment, alias);
+            SPARQLQueryBuilder sparqlQuery = prepareSearchQuery(page, pageSize, uri, rdfType, experiment, alias);
             //SILEX:test
             //For pool connection issues
             rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID);
@@ -527,15 +564,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                     }
                     
                     ScientificObject scientificObject = null;
-                    
-                    Property property = new Property();
-                    
-                    property.setRelation(bindingSet.getValue(RELATION).stringValue());
-                    property.setValue(bindingSet.getValue(PROPERTY).stringValue());
-                    if (bindingSet.getValue(PROPERTY_TYPE) != null) {
-                        property.setRdfType(bindingSet.getValue(PROPERTY_TYPE).stringValue());
-                    }
-                    
+                                        
                     if (alreadyFoundedUri) {
                         scientificObject = foundedScientificObjects.get(actualUri);
                     } else {
@@ -557,7 +586,8 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                         }
                     }
                     
-                    scientificObject.addProperty(property);
+                    //Get scientific object properties
+                    scientificObject.setProperties(findScientificObjectProperties(actualUri));
                     
                     foundedScientificObjects.put(actualUri, scientificObject);
                 }
@@ -592,6 +622,8 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
 
     /**
      * Generates a query to search scientific objects by the given search params.
+     * @param page
+     * @param pageSize
      * @param uri
      * @param rdfType
      * @param experiment
@@ -612,7 +644,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      * }
      * @return the generated query
      */
-    protected SPARQLQueryBuilder prepareSearchQuery(String uri, String rdfType, String experiment, String alias) {    
+    protected SPARQLQueryBuilder prepareSearchQuery(Integer page, Integer pageSize, String uri, String rdfType, String experiment, String alias) {    
         SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
         
         sparqlQuery.appendDistinct(true);
@@ -656,12 +688,12 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                     Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString(), null);
         }
         
-        sparqlQuery.appendSelect(" ?" + RELATION + " ?" + PROPERTY + " ?" + PROPERTY_TYPE);
-        sparqlQuery.appendTriplet("?" + URI, "?" + RELATION, "?" + PROPERTY, null);
-        
-        optional += "?" + PROPERTY + " <" + Rdf.RELATION_TYPE.toString() + "> ?" + PROPERTY_TYPE;
-        
         sparqlQuery.appendOptional(optional);
+        
+        if (page != null && pageSize != null) {
+            sparqlQuery.appendLimit(pageSize);
+            sparqlQuery.appendOffset(page * pageSize);
+        }
         
         LOGGER.debug(SPARQL_QUERY + sparqlQuery.toString());
         
@@ -853,7 +885,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      *         null if this scientific object does not exist.
      */
     public ScientificObject getScientificObjectInContext(String uri, String context) {
-        ArrayList<ScientificObject> scientificObjects = find(uri, null, context, null);
+        ArrayList<ScientificObject> scientificObjects = find(null, null, uri, null, context, null);
         if (!scientificObjects.isEmpty()) {
             return scientificObjects.get(0);
         } else {

@@ -133,7 +133,7 @@ public class VariableResourceService extends ResourceService {
     public Response putVariable(
         @ApiParam(value = DocumentationAnnotation.VARIABLE_POST_DATA_DEFINITION) @Valid ArrayList<VariableDTO> variables,
         @Context HttpServletRequest context) {
-        AbstractResultForm postResponse = null;
+        AbstractResultForm response = null;
         if (variables != null && !variables.isEmpty()) {
             VariableDAO variableDao = new VariableDAO();
             if (context.getRemoteAddr() != null) {
@@ -144,18 +144,18 @@ public class VariableResourceService extends ResourceService {
             
             POSTResultsReturn result = variableDao.checkAndUpdate(variables);
             
-            if (result.getHttpStatus().equals(Response.Status.OK)) {
-                //Code 200, traits modifiés
-                postResponse = new ResponseFormPOST(result.statusList);
+            if (result.getHttpStatus().equals(Response.Status.OK)
+                    || result.getHttpStatus().equals(Response.Status.CREATED)) {
+                response = new ResponseFormPOST(result.statusList);
+                response.getMetadata().setDatafiles(result.createdResources);
             } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                    || result.getHttpStatus().equals(Response.Status.OK)
                     || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                postResponse = new ResponseFormPOST(result.statusList);
+                response = new ResponseFormPOST(result.statusList);
             }
-            return Response.status(result.getHttpStatus()).entity(postResponse).build();
+            return Response.status(result.getHttpStatus()).entity(response).build();
         } else {
-            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty variable(s) to update"));
-            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+            response = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty variable(s) to update"));
+            return Response.status(Response.Status.BAD_REQUEST).entity(response).build();
         }
     }
     

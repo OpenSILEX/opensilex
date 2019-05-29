@@ -395,7 +395,9 @@ public class MethodDAO extends Rdf4jDAO<Method> {
         Resource methodUri = ResourceFactory.createResource(method.getUri());
         
         spql.addDelete(graph, methodUri, RDFS.label, method.getLabel());
-        spql.addDelete(graph, methodUri, RDFS.comment, method.getComment());
+        if (method.getComment() != null) {
+            spql.addDelete(graph, methodUri, RDFS.comment, method.getComment());
+        }
         
         for (OntologyReference ontologyReference : method.getOntologiesReferences()) {
             Property ontologyProperty = ResourceFactory.createProperty(ontologyReference.getProperty());

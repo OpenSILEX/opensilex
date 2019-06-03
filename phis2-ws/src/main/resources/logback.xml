@@ -134,7 +134,7 @@
         <appender-ref ref="SPARQLLOG" />
         <appender-ref ref="ERRORLOG" />
         <appender-ref ref="INFOLOG" />
-        <appender-ref ref="DEBUGLOG" />
+        <!--<appender-ref ref="DEBUGLOG" />-->
         <appender-ref ref="STDOUT" />
     </root>
 </configuration>

@@ -663,8 +663,6 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
         
         sparqlQuery.appendDistinct(true);
-        
-        String optional = "";
                 
         //URI filter
         sparqlQuery.appendSelect("?" + URI);
@@ -674,7 +672,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
 
         //Label filter
         sparqlQuery.appendSelect("?" + ALIAS);
-        if (alias == null) {
+        if (alias == null && !count) {
             sparqlQuery.beginBodyOptional();
             sparqlQuery.appendToBody("?" + URI + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + ALIAS + " . ");
             sparqlQuery.endBodyOptional();
@@ -688,7 +686,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
               sparqlQuery.appendFrom("<" + Contexts.VOCABULARY.toString() + "> \n FROM <" + experiment + ">");
         } else if (!count) {
             sparqlQuery.appendSelect("?" + EXPERIMENT);
-            optional += "?" + URI + " <" + Oeso.RELATION_PARTICIPATES_IN.toString() + "> " + "?" + EXPERIMENT + " . ";
+            sparqlQuery.appendOptional("?" + URI + " <" + Oeso.RELATION_PARTICIPATES_IN.toString() + "> " + "?" + EXPERIMENT + " . ");
         }
         
         //Rdf type filter
@@ -702,8 +700,6 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                     "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", 
                     Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString(), null);
         }
-        
-        sparqlQuery.appendOptional(optional);
         
         if (page != null && pageSize != null) {
             sparqlQuery.appendLimit(pageSize);

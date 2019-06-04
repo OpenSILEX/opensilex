@@ -536,12 +536,12 @@ public class MethodDAO extends Rdf4jDAO<Method> {
         query.endBodyOptional();
         
         //Ontologies references
-        query.appendTriplet(methodURI, "?" + PROPERTY, "?" + OBJECT, null);
-        query.appendOptional("{?" + OBJECT + " <" + Rdfs.RELATION_SEE_ALSO.toString() + "> ?" + SEE_ALSO + "}");
-        query.appendFilter("?" + PROPERTY + " IN(<" + Skos.RELATION_CLOSE_MATCH.toString() + ">, <"
+        query.appendOptional(methodURI + " ?" + PROPERTY + " ?" + OBJECT + " . "                
+                + "?" + OBJECT + " <" + Rdfs.RELATION_SEE_ALSO.toString() + "> ?" + SEE_ALSO + " . "
+                + " FILTER (?" + PROPERTY + " IN(<" + Skos.RELATION_CLOSE_MATCH.toString() + ">, <"
                                            + Skos.RELATION_EXACT_MATCH.toString() + ">, <"
                                            + Skos.RELATION_NARROWER.toString() + ">, <"
-                                           + Skos.RELATION_BROADER.toString() + ">)");
+                                           + Skos.RELATION_BROADER.toString() + ">))");
         
         LOGGER.debug(SPARQL_QUERY + query.toString());
         
@@ -570,25 +570,21 @@ public class MethodDAO extends Rdf4jDAO<Method> {
         Method method = new Method();
         method.setUri(id);
         try(TupleQueryResult result = tupleQuery.evaluate()) {
-            if (result.hasNext()) {
-                while (result.hasNext()) {
-                    BindingSet row = result.next();
-                    
-                    if (method.getLabel() == null && row.getValue(LABEL) != null) {
-                        method.setLabel(row.getValue(LABEL).stringValue());
-                    }
-                    
-                    if (method.getComment() == null && row.getValue(COMMENT) != null) {
-                        method.setComment(row.getValue(COMMENT).stringValue());
-                    }
-                    
-                    OntologyReference ontologyReference = getOntologyReferenceFromBindingSet(row);
-                    if (ontologyReference != null) {
-                        method.addOntologyReference(ontologyReference);
-                    }
+            while (result.hasNext()) {
+                BindingSet row = result.next();
+
+                if (method.getLabel() == null && row.getValue(LABEL) != null) {
+                    method.setLabel(row.getValue(LABEL).stringValue());
                 }
-            } else {
-                throw new NotFoundException(id + " not found.");
+
+                if (method.getComment() == null && row.getValue(COMMENT) != null) {
+                    method.setComment(row.getValue(COMMENT).stringValue());
+                }
+
+                OntologyReference ontologyReference = getOntologyReferenceFromBindingSet(row);
+                if (ontologyReference != null) {
+                    method.addOntologyReference(ontologyReference);
+                }
             }
         }
         return method;

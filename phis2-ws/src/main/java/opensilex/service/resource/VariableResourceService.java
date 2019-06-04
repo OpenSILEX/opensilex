@@ -45,6 +45,7 @@ import opensilex.service.view.brapi.form.ResponseFormGET;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Variable;
+import static opensilex.service.resource.SensorResourceService.LOGGER;
 import opensilex.service.resource.dto.variable.VariableDetailDTO;
 
 /**
@@ -302,6 +303,8 @@ public class VariableResourceService extends ResourceService {
             VariableDAO variableDao = new VariableDAO();
             
             VariableDetailDTO variable = new VariableDetailDTO(variableDao.findById(uri));
+            
+            LOGGER.debug("variable : " + variable.getLabel() + " " + variable.getUri());
             
             variables.add(variable);
 

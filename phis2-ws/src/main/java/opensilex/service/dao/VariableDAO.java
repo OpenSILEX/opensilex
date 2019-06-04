@@ -10,6 +10,7 @@ package opensilex.service.dao;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import javax.ws.rs.NotFoundException;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
@@ -76,6 +77,10 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
     public String comment;
     public ArrayList<OntologyReference> ontologiesReferences = new ArrayList<>();
     public String traitSKosReference;
+    protected static final String SKOS_RELATION = "skosRelation";
+    protected static final String OBJECT = "object";
+    protected static final String SEE_ALSO = "seeAlso";
+    protected static final String PROPERTY = "property";
 
     public VariableDAO() {
         
@@ -464,20 +469,13 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
         query.appendDistinct(Boolean.TRUE);
         query.appendGraph(Contexts.VARIABLES.toString());
         
-        if (ontologiesReferences.isEmpty()) {
-            query.appendSelect(" ?property ?object ?seeAlso");
-            query.appendTriplet(uri, "?property", "?object", null);
-            query.appendOptional("{?object <" + Rdfs.RELATION_SEE_ALSO.toString() + "> ?seeAlso}");
-            query.appendFilter("?property IN(<" + Skos.RELATION_CLOSE_MATCH.toString() + ">, <"
-                                               + Skos.RELATION_EXACT_MATCH.toString() + ">, <"
-                                               + Skos.RELATION_NARROWER.toString() + ">, <"
-                                               + Skos.RELATION_BROADER.toString() + ">)");
-        } else {
-            for (OntologyReference ontologyReference : ontologiesReferences) {
-                query.appendTriplet(uri, ontologyReference.getProperty(), ontologyReference.getObject(), null);
-                query.appendTriplet(ontologyReference.getObject(), Rdfs.RELATION_SEE_ALSO.toString(), ontologyReference.getSeeAlso(), null);
-            }
-        }
+        query.appendSelect(" ?" + PROPERTY + " ?" + OBJECT + " ?" + SEE_ALSO);
+        query.appendTriplet(uri, "?" + PROPERTY, "?" + OBJECT, null);
+        query.appendOptional("{?" + OBJECT + " <" + Rdfs.RELATION_SEE_ALSO.toString() + "> ?" + SEE_ALSO + "}");
+        query.appendFilter("?" + PROPERTY + " IN(<" + Skos.RELATION_CLOSE_MATCH.toString() + ">, <"
+                                           + Skos.RELATION_EXACT_MATCH.toString() + ">, <"
+                                           + Skos.RELATION_NARROWER.toString() + ">, <"
+                                           + Skos.RELATION_BROADER.toString() + ">)");
         
         LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
@@ -794,15 +792,135 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
     public List<Variable> update(List<Variable> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-
     @Override
     public Variable find(Variable object) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+    
+    private Variable getVariableFromBindingSet(BindingSet bindingSet) {
+        Variable variable = new Variable();
+        
+        if (bindingSet.getValue(URI) != null) {
+            variable.setUri(bindingSet.getValue(URI).stringValue());
+        }
+        
+        if (bindingSet.getValue(LABEL) != null) {
+            variable.setLabel(bindingSet.getValue(LABEL).stringValue());
+        }
+        
+        if (bindingSet.getValue(COMMENT) != null) {
+            variable.setComment(bindingSet.getValue(COMMENT).stringValue());
+        }
+        
+        if (bindingSet.getValue(TRAIT) != null) {
+            Trait foundedTrait = new Trait(bindingSet.getValue(TRAIT).stringValue());
+            variable.setTrait(foundedTrait);
+        }
+        
+        if (bindingSet.getValue(METHOD) != null) {
+            Method foundedMethod = new Method(bindingSet.getValue(METHOD).stringValue());
+            variable.setMethod(foundedMethod);
+        }
+        
+        if (bindingSet.getValue(UNIT) != null) {
+            Unit foundedUnit = new Unit(bindingSet.getValue(UNIT).stringValue());
+            variable.setUnit(foundedUnit);
+        }
+        
+        return variable;
+    }
+    
+    protected SPARQLQueryBuilder prepareSearchByUri(String uri) {
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        query.appendDistinct(Boolean.TRUE);
+        
+        query.appendGraph(Contexts.VARIABLES.toString());
+        
+        String variableURI = "<" + uri + ">";
+        query.appendTriplet(variableURI, Rdf.RELATION_TYPE.toString(), Oeso.CONCEPT_VARIABLE.toString(), null);
+        
+        query.appendSelect(" ?" + LABEL + " ?" + COMMENT + " ?" + TRAIT + " ?" + METHOD + " ?" + UNIT);
+        
+        //Label
+        query.appendTriplet(variableURI, Rdfs.RELATION_LABEL.toString(), "?" + LABEL, null);
+        
+        //Comment
+        query.beginBodyOptional();
+        query.appendToBody(variableURI + " <" + Rdfs.RELATION_COMMENT.toString() + "> " + "?" + COMMENT + " . ");
+        query.endBodyOptional();
+                
+        //Trait
+        query.appendTriplet(variableURI, Oeso.RELATION_HAS_TRAIT.toString(), "?" + TRAIT, null);
+        
+        //Method
+        query.appendTriplet(variableURI, Oeso.RELATION_HAS_METHOD.toString(), "?" + METHOD, null);
+        
+        //Unit
+        query.appendTriplet(variableURI, Oeso.RELATION_HAS_UNIT.toString(), "?" + UNIT, null);
+        
+        LOGGER.debug(SPARQL_QUERY + query.toString());
+        
+        return query;
+    }
+    
+    /**
+     * Get the ontology references of a given uri.
+     * @param uri
+     * @return 
+     */
+    private ArrayList<OntologyReference> getOntologyReferences(String uri) {
+        ArrayList<OntologyReference> ontologyReferences = new ArrayList<>();
+        
+        SPARQLQueryBuilder queryOntologiesReferences = prepareSearchOntologiesReferencesQuery(uri);
+        TupleQuery tupleQueryOntologiesReferences = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryOntologiesReferences.toString());
+        TupleQueryResult resultOntologiesReferences = tupleQueryOntologiesReferences.evaluate();
+        while (resultOntologiesReferences.hasNext()) {
+            BindingSet bindingSetOntologiesReferences = resultOntologiesReferences.next();
+            if (bindingSetOntologiesReferences.getValue(OBJECT) != null
+                    && bindingSetOntologiesReferences.getValue(PROPERTY) != null) {
+                OntologyReference ontologyReference = new OntologyReference();
+                ontologyReference.setObject(bindingSetOntologiesReferences.getValue(OBJECT).toString());
+                ontologyReference.setProperty(bindingSetOntologiesReferences.getValue(PROPERTY).toString());
+                if (bindingSetOntologiesReferences.getValue(SEE_ALSO) != null) {
+                    ontologyReference.setSeeAlso(bindingSetOntologiesReferences.getValue(SEE_ALSO).toString());
+                }
+
+                ontologyReferences.add(ontologyReference);
+            }
+        }
+        
+        return ontologyReferences;
+    }
 
     @Override
     public Variable findById(String id) throws DAOPersistenceException, Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        SPARQLQueryBuilder query = prepareSearchByUri(id);
+        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        
+        Variable variable = new Variable();
+        variable.setUri(id);
+        try(TupleQueryResult result = tupleQuery.evaluate()) {
+            if (result.hasNext()) {
+                variable = getVariableFromBindingSet(result.next());
+                variable.setOntologiesReferences(getOntologyReferences(id));
+                
+                //Get method informations
+                MethodDAO methodDAO = new MethodDAO();
+                variable.setMethod(methodDAO.findById(variable.getMethod().getUri()));
+                
+                //Get unit informations
+                UnitDAO unitDAO = new UnitDAO();
+                variable.setUnit(unitDAO.findById(variable.getUnit().getUri()));
+                
+                //Get trait informations
+                TraitDAO traitDAO = new TraitDAO();
+                variable.setTrait(traitDAO.findById(variable.getTrait().getUri()));
+                
+            } else {
+                throw new NotFoundException(id + " not found.");
+            }
+        }
+        return variable;
     }
 
     @Override

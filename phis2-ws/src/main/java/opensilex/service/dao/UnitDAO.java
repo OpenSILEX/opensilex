@@ -543,12 +543,12 @@ public class UnitDAO extends Rdf4jDAO<Unit> {
         query.endBodyOptional();
         
         //Ontologies references
-        query.appendTriplet(methodURI, "?" + PROPERTY, "?" + OBJECT, null);
-        query.appendOptional("{?" + OBJECT + " <" + Rdfs.RELATION_SEE_ALSO.toString() + "> ?" + SEE_ALSO + "}");
-        query.appendFilter("?" + PROPERTY + " IN(<" + Skos.RELATION_CLOSE_MATCH.toString() + ">, <"
+        query.appendOptional(methodURI + " ?" + PROPERTY + " ?" + OBJECT + " . "                
+                + "?" + OBJECT + " <" + Rdfs.RELATION_SEE_ALSO.toString() + "> ?" + SEE_ALSO + " . "
+                + " FILTER (?" + PROPERTY + " IN(<" + Skos.RELATION_CLOSE_MATCH.toString() + ">, <"
                                            + Skos.RELATION_EXACT_MATCH.toString() + ">, <"
                                            + Skos.RELATION_NARROWER.toString() + ">, <"
-                                           + Skos.RELATION_BROADER.toString() + ">)");
+                                           + Skos.RELATION_BROADER.toString() + ">))");
         
         LOGGER.debug(SPARQL_QUERY + query.toString());
         
@@ -577,25 +577,21 @@ public class UnitDAO extends Rdf4jDAO<Unit> {
         Unit unit = new Unit();
         unit.setUri(id);
         try(TupleQueryResult result = tupleQuery.evaluate()) {
-            if (result.hasNext()) {
-                while (result.hasNext()) {
-                    BindingSet row = result.next();
-                    
-                    if (unit.getLabel() == null && row.getValue(LABEL) != null) {
-                        unit.setLabel(row.getValue(LABEL).stringValue());
-                    }
-                    
-                    if (unit.getComment() == null && row.getValue(COMMENT) != null) {
-                        unit.setComment(row.getValue(COMMENT).stringValue());
-                    }
-                    
-                    OntologyReference ontologyReference = getOntologyReferenceFromBindingSet(row);
-                    if (ontologyReference != null) {
-                        unit.addOntologyReference(ontologyReference);
-                    }
+            while (result.hasNext()) {
+                BindingSet row = result.next();
+
+                if (unit.getLabel() == null && row.getValue(LABEL) != null) {
+                    unit.setLabel(row.getValue(LABEL).stringValue());
                 }
-            } else {
-                throw new NotFoundException(id + " not found.");
+
+                if (unit.getComment() == null && row.getValue(COMMENT) != null) {
+                    unit.setComment(row.getValue(COMMENT).stringValue());
+                }
+
+                OntologyReference ontologyReference = getOntologyReferenceFromBindingSet(row);
+                if (ontologyReference != null) {
+                    unit.addOntologyReference(ontologyReference);
+                }
             }
         }
         return unit;

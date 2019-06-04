@@ -554,26 +554,26 @@ public class TraitDAO extends Rdf4jDAO<Trait> {
         
         query.appendGraph(Contexts.VARIABLES.toString());
         
-        String methodURI = "<" + uri + ">";
-        query.appendTriplet(methodURI, Rdf.RELATION_TYPE.toString(), Oeso.CONCEPT_UNIT.toString(), null);
+        String labelURI = "<" + uri + ">";
+        query.appendTriplet(labelURI, Rdf.RELATION_TYPE.toString(), Oeso.CONCEPT_UNIT.toString(), null);
         
         query.appendSelect(" ?" + LABEL + " ?" + COMMENT + " ?" + PROPERTY + " ?" + OBJECT + " ?" + SEE_ALSO);
         
         //Label
-        query.appendTriplet(methodURI, Rdfs.RELATION_LABEL.toString(), "?" + LABEL, null);
+        query.appendTriplet(labelURI, Rdfs.RELATION_LABEL.toString(), "?" + LABEL, null);
         
         //Comment
         query.beginBodyOptional();
-        query.appendToBody(methodURI + " <" + Rdfs.RELATION_COMMENT.toString() + "> " + "?" + COMMENT + " . ");
+        query.appendToBody(labelURI + " <" + Rdfs.RELATION_COMMENT.toString() + "> " + "?" + COMMENT + " . ");
         query.endBodyOptional();
         
         //Ontologies references
-        query.appendTriplet(methodURI, "?" + PROPERTY, "?" + OBJECT, null);
-        query.appendOptional("{?" + OBJECT + " <" + Rdfs.RELATION_SEE_ALSO.toString() + "> ?" + SEE_ALSO + "}");
-        query.appendFilter("?" + PROPERTY + " IN(<" + Skos.RELATION_CLOSE_MATCH.toString() + ">, <"
+        query.appendOptional(labelURI + " ?" + PROPERTY + " ?" + OBJECT + " . "                
+                + "?" + OBJECT + " <" + Rdfs.RELATION_SEE_ALSO.toString() + "> ?" + SEE_ALSO + " . "
+                + " FILTER (?" + PROPERTY + " IN(<" + Skos.RELATION_CLOSE_MATCH.toString() + ">, <"
                                            + Skos.RELATION_EXACT_MATCH.toString() + ">, <"
                                            + Skos.RELATION_NARROWER.toString() + ">, <"
-                                           + Skos.RELATION_BROADER.toString() + ">)");
+                                           + Skos.RELATION_BROADER.toString() + ">))");
         
         LOGGER.debug(SPARQL_QUERY + query.toString());
         
@@ -602,25 +602,21 @@ public class TraitDAO extends Rdf4jDAO<Trait> {
         Trait trait = new Trait();
         trait.setUri(id);
         try(TupleQueryResult result = tupleQuery.evaluate()) {
-            if (result.hasNext()) {
-                while (result.hasNext()) {
-                    BindingSet row = result.next();
-                    
-                    if (trait.getLabel() == null && row.getValue(LABEL) != null) {
-                        trait.setLabel(row.getValue(LABEL).stringValue());
-                    }
-                    
-                    if (trait.getComment() == null && row.getValue(COMMENT) != null) {
-                        trait.setComment(row.getValue(COMMENT).stringValue());
-                    }
-                    
-                    OntologyReference ontologyReference = getOntologyReferenceFromBindingSet(row);
-                    if (ontologyReference != null) {
-                        trait.addOntologyReference(ontologyReference);
-                    }
+            while (result.hasNext()) {
+                BindingSet row = result.next();
+
+                if (trait.getLabel() == null && row.getValue(LABEL) != null) {
+                    trait.setLabel(row.getValue(LABEL).stringValue());
                 }
-            } else {
-                throw new NotFoundException(id + " not found.");
+
+                if (trait.getComment() == null && row.getValue(COMMENT) != null) {
+                    trait.setComment(row.getValue(COMMENT).stringValue());
+                }
+
+                OntologyReference ontologyReference = getOntologyReferenceFromBindingSet(row);
+                if (ontologyReference != null) {
+                    trait.addOntologyReference(ontologyReference);
+                }
             }
         }
         return trait;

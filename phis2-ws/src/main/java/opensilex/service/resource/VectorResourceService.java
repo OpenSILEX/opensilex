@@ -147,14 +147,14 @@ public class VectorResourceService extends ResourceService {
     public Response getVectorsBySearch(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
-            @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_VECTOR_URI) @QueryParam("uri") @URL String uri,
+            @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_VECTOR_URI) @QueryParam("uri") String uri,
             @ApiParam(value = "Search by rdf type", example = DocumentationAnnotation.EXAMPLE_VECTOR_RDF_TYPE) @QueryParam("rdfType") @URL String rdfType,
             @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_VECTOR_LABEL) @QueryParam("label") String label,
             @ApiParam(value = "Search by brand", example = DocumentationAnnotation.EXAMPLE_VECTOR_BRAND) @QueryParam("brand") String brand,
             @ApiParam(value = "Search by serial number", example = DocumentationAnnotation.EXAMPLE_VECTOR_SERIAL_NUMBER) @QueryParam("serialNumber") String serialNumber,
             @ApiParam(value = "Search by service date", example = DocumentationAnnotation.EXAMPLE_VECTOR_IN_SERVICE_DATE) @QueryParam("inServiceDate") @Date(DateFormat.YMD) String inServiceDate,
             @ApiParam(value = "Search by date of purchase", example = DocumentationAnnotation.EXAMPLE_VECTOR_DATE_OF_PURCHASE) @QueryParam("dateOfPurchase") @Date(DateFormat.YMD) String dateOfPurchase,
-            @ApiParam(value = "Search by person in charge", example = DocumentationAnnotation.EXAMPLE_VECTOR_PERSON_IN_CHARGE) @QueryParam("personInCharge") @Email String personInCharge) {
+            @ApiParam(value = "Search by person in charge", example = DocumentationAnnotation.EXAMPLE_VECTOR_PERSON_IN_CHARGE) @QueryParam("personInCharge") String personInCharge) {
         
         VectorDAO vectorDAO = new VectorDAO();
         if (uri != null) {

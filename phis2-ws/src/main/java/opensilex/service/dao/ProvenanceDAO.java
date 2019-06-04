@@ -17,7 +17,9 @@ import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import javax.ws.rs.core.Response;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
@@ -427,6 +429,58 @@ public class ProvenanceDAO extends MongoDAO<Provenance> {
             }
         }
         return provenances;
+    }
+    
+    /**
+     * Find the list of uris of provenances with the given label (like).
+     * @param label
+     * @example
+     * {"label": {"$regex": "provenance", "$options": ""}}
+     * @return the list of provenances uris.
+     */
+    public Map<String, String> findUriAndLabelsByLabel(String label) {
+        MongoCollection<Document> provenanceCollection = database.getCollection(provenanceCollectionName);
+        BasicDBObject query = new BasicDBObject();
+        query.put("label",  java.util.regex.Pattern.compile(label));
+        
+        LOGGER.debug(query.toJson());
+        
+        FindIterable<Document> provenancesMongo = provenanceCollection.find(query);
+        Map<String, String> provenances = new HashMap();
+        
+        try (MongoCursor<Document> datasetCursor = provenancesMongo.iterator()) {
+            while (datasetCursor.hasNext()) {
+                Document provenanceDocument = datasetCursor.next();
+                provenances.put(provenanceDocument.getString("uri"), provenanceDocument.getString("label"));
+            }
+        }
+        
+        return provenances;
+    }
+    
+    /**
+     * Find the label of a provenance from its uri.
+     * @param uri
+     * @example
+     * {"uri": {"$regex": "http://www.opensilex.org/opensilex/id/provenance/1552386023784", "$options": ""}}
+     * @return the label of the provenance
+     */
+    public String findLabelByUri(String uri) {
+        MongoCollection<Document> provenanceCollection = database.getCollection(provenanceCollectionName);
+        BasicDBObject query = new BasicDBObject();
+        query.put("uri",  java.util.regex.Pattern.compile(uri));
+        LOGGER.debug(query.toJson());
+        
+        FindIterable<Document> provenancesMongo = provenanceCollection.find(query);
+        
+        try (MongoCursor<Document> provenanceCursor = provenancesMongo.iterator()) {
+            if (provenanceCursor.hasNext()) {
+                Document provenanceDocument = provenanceCursor.next();
+                return provenanceDocument.getString("label");
+            } else {
+                return null;
+            }
+        }
     }
 
     @Override

@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import javax.inject.Singleton;
 import javax.validation.constraints.Min;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -68,7 +69,7 @@ import org.slf4j.LoggerFactory;
 
 @Api("/brapi/v1/studies")
 @Path("/brapi/v1/studies")
-
+@Singleton
 /**
  * Study services :
  * GET Studies/{studyDbId}

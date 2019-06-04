@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.inject.Singleton;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -74,6 +75,7 @@ import opensilex.service.model.Call;
  */
 @Api(value = "/brapi/v1/token")
 @Path("brapi/v1/token")
+@Singleton
 public class TokenResourceService implements BrapiCall{
     
     final static Logger LOGGER = LoggerFactory.getLogger(TokenResourceService.class);

@@ -79,7 +79,36 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
     }
     
     /**
-     * Query generated with the searched parameters.
+     * Generates a query to search the body values of annotations.
+     * @param annotations
+     * @example
+     * SELECT  ?uri ?bodyValue WHERE {
+     *      ?uri  <http://www.w3.org/ns/oa#bodyValue>  ?bodyValue  .
+     *      FILTER (
+     *          (regex(str(?uri), "http://www.opensilex.org/andreas-dev/id/annotation/7dfcd6e1-bc6e-4553-85c7-295ab971f2fc")) 
+     *          || (regex(str(?uri), "http://www.opensilex.org/andreas-dev/id/annotation/0e92c41b-93df-4395-bc24-6e5373022be7"))
+     *      ) 
+     * }
+     * @return query generated with the searched parameter above
+     */
+    private SPARQLQueryBuilder prepareSearchQueryForBodyValues(List<Annotation> annotations) {
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        
+        query.appendSelect(URI_SELECT_NAME_SPARQL);
+        query.appendSelect("?" + BODY_VALUE);
+        
+        annotations.forEach(annotation -> {
+            query.appendOrFilter("regex(str(" + URI_SELECT_NAME_SPARQL + ")" + ", \"" + annotation.getUri() + "\")");
+        });
+        query.appendTriplet(URI_SELECT_NAME_SPARQL, Oa.RELATION_BODY_VALUE.toString(), "?" + BODY_VALUE, null);
+        
+        LOGGER.debug(SPARQL_QUERY + query.toString());
+        return query;
+    }
+    
+    /**
+     * Query generated with the searched parameters. 
+     * It doesn't return body values but it applies a body value filter if provided.
      * @param uri
      * @param creator
      * @param target
@@ -95,7 +124,7 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
      * LIMIT 20
      * @return query generated with the searched parameter above
      */
-    private SPARQLQueryBuilder prepareSearchQuery(String uri, String creator, String target, String bodyValue, String motivatedBy) {
+    private SPARQLQueryBuilder prepareSearchQueryWithoutBodyValues(String uri, String creator, String target, String bodyValue, String motivatedBy) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
 
         String annotationUri;
@@ -133,7 +162,6 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
             query.appendTriplet(annotationUri, Oa.RELATION_HAS_TARGET.toString(), target, null);
         }
 
-        query.appendSelectConcat("?" + BODY_VALUE, SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR, "?" + BODY_VALUES);
         query.appendTriplet(annotationUri, Oa.RELATION_BODY_VALUE.toString(), "?" + BODY_VALUE, null);
         if (bodyValue != null) {
             query.appendFilter("regex(STR(?" + BODY_VALUE + "), '" + bodyValue + "', 'i')");
@@ -194,7 +222,7 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
      * @return query generated with the searched parameters
      */
     private SPARQLQueryBuilder prepareCount(String searchUri, String searchCreator, String searchTarget, String searchBodyValue, String searchMotivatedBy) {
-        SPARQLQueryBuilder query = this.prepareSearchQuery(
+        SPARQLQueryBuilder query = prepareSearchQueryWithoutBodyValues(
                 searchUri, 
                 searchCreator, 
                 searchTarget, 
@@ -354,7 +382,7 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
         setPageSize(pageSize);
 
         // retrieve URI list
-        SPARQLQueryBuilder query = prepareSearchQuery(
+        SPARQLQueryBuilder query = prepareSearchQueryWithoutBodyValues(
                 uri, 
                 creator, 
                 target, 
@@ -364,15 +392,41 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
         try {
             TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 
-            // Retreive all information for each URI
-            try (TupleQueryResult resultAnnotationUri = tupleQuery.evaluate()) {
-                annotations = getAnnotationsFromResult(resultAnnotationUri, uri, creator, motivatedBy);
+            // Retreive all information for each annotation
+            try (TupleQueryResult result = tupleQuery.evaluate()) {
+                annotations = getAnnotationsWithoutBodyValuesFromResult(result, uri, creator, motivatedBy);
+                if(annotations.size() > 0) {
+                    query = prepareSearchQueryForBodyValues(annotations);
+                    tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+                    setAnnotationsBodyValuesFromResult(tupleQuery.evaluate(), annotations);
+                }
             }
             LOGGER.debug(JsonConverter.ConvertToJson(annotations));
         } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
             handleTriplestoreException(ex);
         }
         return annotations;
+    }
+
+    /**
+     * Set the body values of annotations from a query result.
+     * @param result
+     * @param annotations 
+     */
+    private void setAnnotationsBodyValuesFromResult(TupleQueryResult result, List<Annotation> annotations) {
+
+        while (result.hasNext()) {
+            BindingSet bindingSet = result.next();
+            
+            String annotationUri = getStringValueOfSelectNameFromBindingSet(URI, bindingSet);
+            String bodyValue = getStringValueOfSelectNameFromBindingSet(BODY_VALUE, bindingSet);
+            
+            annotations.stream()
+                    .filter(annotation -> annotationUri.equals(annotation.getUri()))
+                    .findFirst()
+                    .get()
+                    .addBodyValue(bodyValue);                    
+        }
     }
 
     /**
@@ -383,7 +437,7 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
      * @param searchMotivatedBy search motivated by
      * @return annotations with data extracted from the given bindingSets
      */
-    private ArrayList<Annotation> getAnnotationsFromResult(TupleQueryResult result, String searchUri, String searchCreator, String searchMotivatedBy) {
+    private ArrayList<Annotation> getAnnotationsWithoutBodyValuesFromResult(TupleQueryResult result, String searchUri, String searchCreator, String searchMotivatedBy) {
         ArrayList<Annotation> annotations = new ArrayList<>();
         UriDAO uriDao = new UriDAO();
         while (result.hasNext()) {
@@ -419,17 +473,6 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
                     annotationCreator = bindingSet.getValue(CREATOR).stringValue();
                 }
 
-                ArrayList<String> annotationBodyValues = null;
-                if (bindingSet.getValue(BODY_VALUES) != null) {
-                    //SILEX:info
-                    // concat query return a list with comma separated value in one column
-                    //\SILEX:info
-                    annotationBodyValues = new ArrayList<>(Arrays.asList(bindingSet
-                            .getValue(BODY_VALUES)
-                            .stringValue()
-                            .split(SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR)));
-                }
-
                 String annotationMotivation;
                 if (searchMotivatedBy != null) {
                     annotationMotivation = searchMotivatedBy;
@@ -450,7 +493,7 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
                         annotationUri, 
                         annotationCreated, 
                         annotationCreator, 
-                        annotationBodyValues, 
+                        null, 
                         annotationMotivation, 
                         annotationTargets));
             }

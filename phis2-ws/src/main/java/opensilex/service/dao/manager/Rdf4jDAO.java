@@ -7,7 +7,10 @@
 //******************************************************************************
 package opensilex.service.dao.manager;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
@@ -42,6 +45,8 @@ import opensilex.service.configuration.URINamespaces;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.User;
+import opensilex.service.ontology.Rdf;
+import opensilex.service.ontology.Rdfs;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
@@ -502,6 +507,84 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
         
         LOGGER.error(exception.getMessage(), exception);
         throw new DAOPersistenceException(daoPersistenceExceptionMessage, exception);
+    }
+    
+    /**
+     * Get the list of URIs corresponding to the given label (like).
+     * @param rdfType
+     * @example
+     * SELECT DISTINCT  ?uri ?label WHERE {
+     *      ?uri  <http://www.w3.org/2000/01/rdf-schema#label>  ?label  . 
+     *      ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
+     *      ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.opensilex.org/vocabulary/oeso#ScientificObject> . 
+     *      FILTER ( (REGEX ( str(?label),".*2.*","i")) ) 
+     * }
+     * @param label
+     * @return the list of URIs
+     */
+    public Map<String, List<String>> findUriAndLabelsByLabelAndRdfType(String label, String rdfType) {
+        //1. Generate the query
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        query.appendSelect("?" + URI + " ?" + LABEL);
+        query.appendDistinct(Boolean.TRUE);
+        query.appendTriplet("?" + URI, Rdfs.RELATION_LABEL.toString(), "?" + LABEL, null);
+        query.appendAndFilter("REGEX ( str(?" + LABEL + "),\".*" + label + ".*\",\"i\")");
+        query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
+        query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF + ">*", rdfType, null);
+        LOGGER.debug(query.toString());
+        
+        Map<String, List<String>> urisAndLabels = new HashMap<>();
+        
+        //2. Get the result of the query
+        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
+            while (result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                if (urisAndLabels.containsKey(bindingSet.getValue(URI).stringValue())) {
+                    List<String> labels = urisAndLabels.get(bindingSet.getValue(URI).stringValue());
+                    labels.add(bindingSet.getValue(LABEL).stringValue());
+                    urisAndLabels.put(bindingSet.getValue(URI).stringValue(), labels);
+                } else {
+                    List<String> labels = new ArrayList<>();
+                    labels.add(bindingSet.getValue(LABEL).stringValue());
+                    urisAndLabels.put(bindingSet.getValue(URI).stringValue(), labels);
+                }
+            }
+        }
+        
+        return urisAndLabels;
+    }
+    
+    /**
+     * Get the list of labels for a given uri.
+     * @param uri
+     * @example 
+     * SELECT DISTINCT  ?label 
+     * WHERE {
+     *  <http://www.opensilex.org/opensilex/2019/o19000060>  <http://www.w3.org/2000/01/rdf-schema#label>  ?label  . 
+     * }
+     * @return the list of labels.
+     */
+    public List<String> findLabelsForUri(String uri) {
+        //1. Generate the query
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        query.appendSelect("?" + LABEL);
+        query.appendDistinct(Boolean.TRUE);
+        query.appendTriplet(uri, Rdfs.RELATION_LABEL.toString(), "?" + LABEL, null);
+        LOGGER.debug(query.toString());
+        
+        List<String> labels = new ArrayList<>();
+        
+        //2. Get the result of the query
+        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
+            while (result.hasNext()) {
+                BindingSet bindingSet = result.next();  
+                labels.add(bindingSet.getValue(LABEL).stringValue());
+            }
+        }
+        
+        return labels;
     }
 
     @Override

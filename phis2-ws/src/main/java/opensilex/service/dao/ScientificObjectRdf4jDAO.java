@@ -8,6 +8,9 @@
 //***********************************************************************************************
 package opensilex.service.dao;
 
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -517,7 +520,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                     BindingSet bindingSet = result.next();
                     boolean alreadyFoundedUri = false;
                     
-                    String actualUri = uri != null ? uri : bindingSet.getValue(URI).stringValue();
+                    String actualUri = bindingSet.getValue(URI).stringValue();
                     
                     if (foundedScientificObjects.containsKey(actualUri)) {
                         alreadyFoundedUri = true;
@@ -545,11 +548,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                             scientificObject.setExperiment(bindingSet.getValue(EXPERIMENT).stringValue());
                         }
                         
-                        if (alias != null) {
-                            scientificObject.setLabel(alias);
-                        } else {
-                            scientificObject.setLabel(bindingSet.getValue(ALIAS).stringValue());
-                        }
+                        scientificObject.setLabel(bindingSet.getValue(ALIAS).stringValue());
                         
                         if (rdfType != null) {
                             scientificObject.setRdfType(rdfType);
@@ -598,51 +597,60 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      * @param experiment
      * @param alias
      * @example 
-     *      SELECT DISTINCT   ?uri ?experiment  ?alias  ?rdfType  ?relation ?property WHERE {
-     *           ?uri  <http://www.w3.org/2000/01/rdf-schema#label>  ?alias  . 
-     *           ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
-     *           ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.opensilex.org/vocabulary/oeso#ScientificObject> . 
-     *           ?uri  ?relation  ?property  . 
-     *              OPTIONAL {
-     *                  ?uri <http://www.opensilex.org/vocabulary/oeso#participatesIn> ?experiment 
-     *              } 
+     * SELECT DISTINCT  ?uri ?alias ?experiment  ?rdfType  ?relation ?property ?propertyType 
+     * WHERE {
+     *      OPTIONAL {
+     *          ?uri <http://www.w3.org/2000/01/rdf-schema#label> ?alias . 
      *      }
+     *      ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
+     *      ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.opensilex.org/vocabulary/oeso#ScientificObject> . 
+     *      ?uri  ?relation  ?property  . 
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#participatesIn> ?experiment . ?property <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?propertyType 
+     *      } 
+     *      FILTER ( (REGEX ( str(?uri),".*o.*","i")) ) 
+     * }
      * @return the generated query
      */
     protected SPARQLQueryBuilder prepareSearchQuery(String uri, String rdfType, String experiment, String alias) {    
         SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
         
         sparqlQuery.appendDistinct(true);
-                
-        String scientificObjectURI;
-        String optional = "";
         
-        if (uri != null ) {
-            scientificObjectURI = "<" + uri + ">";
+        String optional = "";
+                
+        //URI filter
+        if (uri == null) {
+            uri = "";
+        }
+        sparqlQuery.appendSelect("?" + URI);
+        sparqlQuery.appendAndFilter("REGEX ( str(?" + URI + "),\".*" + uri + ".*\",\"i\")");
+
+        //Label filter
+        sparqlQuery.appendSelect("?" + ALIAS);
+        if (alias == null) {
+            sparqlQuery.beginBodyOptional();
+            sparqlQuery.appendToBody("?" + URI + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + ALIAS + " . ");
+            sparqlQuery.endBodyOptional();
         } else {
-            scientificObjectURI = "?" + URI;
-            sparqlQuery.appendSelect(" ?" + URI);
+            sparqlQuery.appendTriplet("?" + URI, Rdfs.RELATION_LABEL.toString(), "?" + ALIAS, null);
+            sparqlQuery.appendAndFilter("REGEX ( str(?" + ALIAS + "),\".*" + alias + ".*\",\"i\")");
         }
         
+        //Experiment filter
         if (experiment != null) {
               sparqlQuery.appendFrom("<" + Contexts.VOCABULARY.toString() + "> \n FROM <" + experiment + ">");
         } else {
             sparqlQuery.appendSelect("?" + EXPERIMENT);
-            optional += scientificObjectURI + " <" + Oeso.RELATION_PARTICIPATES_IN.toString() + "> " + "?" + EXPERIMENT + " . ";
+            optional += "?" + URI + " <" + Oeso.RELATION_PARTICIPATES_IN.toString() + "> " + "?" + EXPERIMENT + " . ";
         }
         
-        if (alias != null) {
-            sparqlQuery.appendTriplet(scientificObjectURI, Rdfs.RELATION_LABEL.toString(), "\"" + alias + "\"", null);
-        } else {
-            sparqlQuery.appendSelect(" ?" + ALIAS);
-            sparqlQuery.appendTriplet(scientificObjectURI, Rdfs.RELATION_LABEL.toString(), "?" + ALIAS, null);
-        }
-        
+        //Rdf type filter
         if (rdfType != null) {
-            sparqlQuery.appendTriplet(scientificObjectURI, Rdf.RELATION_TYPE.toString(), rdfType, null);
+            sparqlQuery.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), rdfType, null);
         } else {
             sparqlQuery.appendSelect(" ?" + RDF_TYPE);
-            sparqlQuery.appendTriplet(scientificObjectURI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
+            sparqlQuery.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
             sparqlQuery.appendTriplet(
                     "?" + RDF_TYPE, 
                     "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", 
@@ -650,7 +658,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         }
         
         sparqlQuery.appendSelect(" ?" + RELATION + " ?" + PROPERTY + " ?" + PROPERTY_TYPE);
-        sparqlQuery.appendTriplet(scientificObjectURI, "?" + RELATION, "?" + PROPERTY, null);
+        sparqlQuery.appendTriplet("?" + URI, "?" + RELATION, "?" + PROPERTY, null);
         
         optional += "?" + PROPERTY + " <" + Rdf.RELATION_TYPE.toString() + "> ?" + PROPERTY_TYPE;
         
@@ -885,12 +893,20 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                     Node propertyRdfType = NodeFactory.createURI(property.getRdfType());
                     updateBuilder.addDelete(graph, scientificObjectUri, propertyRelation, propertyValue);
                     updateBuilder.addDelete(graph, propertyValue, RDF.type, propertyRdfType);
-                } else if (existUri(property.getValue())) { //If there is no Rdf type but the value is an existing URI in the triplestore, it is an object URI.
-                    Node propertyValue = NodeFactory.createURI(property.getValue());
-                    updateBuilder.addDelete(graph, scientificObjectUri, propertyRelation, propertyValue);
-                } else { //The value is a literal
-                    Literal propertyValue = ResourceFactory.createStringLiteral(property.getValue());
-                    updateBuilder.addDelete(graph, scientificObjectUri, propertyRelation, propertyValue);
+                } else  {
+                    boolean propertyIsUrl = true;
+                    try { 
+                        new URL(property.getValue()).toURI();
+                    } catch (MalformedURLException | URISyntaxException e) { 
+                        propertyIsUrl = false; 
+                    } 
+                    if (propertyIsUrl && existUri(property.getValue())) { //If there is no Rdf type but the value is an existing URI in the triplestore, it is an object URI.
+                        Node propertyValue = NodeFactory.createURI(property.getValue());
+                        updateBuilder.addDelete(graph, scientificObjectUri, propertyRelation, propertyValue);
+                    } else { //The value is a literal
+                        Literal propertyValue = ResourceFactory.createStringLiteral(property.getValue());
+                        updateBuilder.addDelete(graph, scientificObjectUri, propertyRelation, propertyValue);
+                    }
                 }
             }
         }
@@ -987,10 +1003,9 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         
         //2.1.2 Insert new data
         //2.1.2a Generate variety URI if needed
-        UriGenerator uriGenerator = new UriGenerator();
         for (Property property : scientificObject.getProperties()) {
             if (property.getRdfType() != null && property.getRdfType().equals(Oeso.CONCEPT_VARIETY.toString())) {
-                property.setValue(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_VARIETY.toString(), null, property.getValue()));
+                property.setValue(UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_VARIETY.toString(), null, property.getValue()));
             }
         }
         //2.1.2b Insert data

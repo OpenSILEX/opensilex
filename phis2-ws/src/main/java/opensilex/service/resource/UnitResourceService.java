@@ -131,7 +131,7 @@ public class UnitResourceService extends ResourceService {
     public Response putUnit(
         @ApiParam(value = DocumentationAnnotation.UNIT_POST_DATA_DEFINITION) @Valid ArrayList<UnitDTO> units,
         @Context HttpServletRequest context) {
-        AbstractResultForm postResponse = null;
+        AbstractResultForm response = null;
         if (units != null && !units.isEmpty()) {
             UnitDAO unitDao = new UnitDAO();
             if (context.getRemoteAddr() != null) {
@@ -142,18 +142,19 @@ public class UnitResourceService extends ResourceService {
             
             POSTResultsReturn result = unitDao.checkAndUpdate(units);
             
-            if (result.getHttpStatus().equals(Response.Status.OK)) {
-                //Code 200: units updated
-                postResponse = new ResponseFormPOST(result.statusList);
+            if (result.getHttpStatus().equals(Response.Status.OK)
+                    || result.getHttpStatus().equals(Response.Status.CREATED)) {
+                response = new ResponseFormPOST(result.statusList);
+                response.getMetadata().setDatafiles(result.createdResources);
             } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
                     || result.getHttpStatus().equals(Response.Status.OK)
                     || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                postResponse = new ResponseFormPOST(result.statusList);
+                response = new ResponseFormPOST(result.statusList);
             }
-            return Response.status(result.getHttpStatus()).entity(postResponse).build();
+            return Response.status(result.getHttpStatus()).entity(response).build();
         } else {
-            postResponse = new ResponseFormPOST(new Status("Request error", StatusCodeMsg.ERR, "Empty unit(s) to update"));
-            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+            response = new ResponseFormPOST(new Status("Request error", StatusCodeMsg.ERR, "Empty unit(s) to update"));
+            return Response.status(Response.Status.BAD_REQUEST).entity(response).build();
         }
     }
 

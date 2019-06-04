@@ -10,6 +10,10 @@ package opensilex.service.dao;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import javax.ws.rs.NotFoundException;
+import static opensilex.service.dao.VariableDAO.OBJECT;
+import static opensilex.service.dao.VariableDAO.PROPERTY;
+import static opensilex.service.dao.VariableDAO.SEE_ALSO;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
@@ -543,10 +547,83 @@ public class TraitDAO extends Rdf4jDAO<Trait> {
     public Trait find(Trait object) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+    
+    private SPARQLQueryBuilder prepareSearchByUri(String uri) {
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        query.appendDistinct(Boolean.TRUE); //???????
+        
+        query.appendGraph(Contexts.VARIABLES.toString());
+        
+        String methodURI = "<" + uri + ">";
+        query.appendTriplet(methodURI, Rdf.RELATION_TYPE.toString(), Oeso.CONCEPT_UNIT.toString(), null);
+        
+        query.appendSelect(" ?" + LABEL + " ?" + COMMENT + " ?" + PROPERTY + " ?" + OBJECT + " ?" + SEE_ALSO);
+        
+        //Label
+        query.appendTriplet(methodURI, Rdfs.RELATION_LABEL.toString(), "?" + LABEL, null);
+        
+        //Comment
+        query.beginBodyOptional();
+        query.appendToBody(methodURI + " <" + Rdfs.RELATION_COMMENT.toString() + "> " + "?" + COMMENT + " . ");
+        query.endBodyOptional();
+        
+        //Ontologies references
+        query.appendTriplet(methodURI, "?" + PROPERTY, "?" + OBJECT, null);
+        query.appendOptional("{?" + OBJECT + " <" + Rdfs.RELATION_SEE_ALSO.toString() + "> ?" + SEE_ALSO + "}");
+        query.appendFilter("?" + PROPERTY + " IN(<" + Skos.RELATION_CLOSE_MATCH.toString() + ">, <"
+                                           + Skos.RELATION_EXACT_MATCH.toString() + ">, <"
+                                           + Skos.RELATION_NARROWER.toString() + ">, <"
+                                           + Skos.RELATION_BROADER.toString() + ">)");
+        
+        LOGGER.debug(SPARQL_QUERY + query.toString());
+        
+        return query;
+    }
 
+    private OntologyReference getOntologyReferenceFromBindingSet(BindingSet bindingSet) {
+        if (bindingSet.getValue(OBJECT) != null
+                    && bindingSet.getValue(PROPERTY) != null) {
+            OntologyReference ontologyReference = new OntologyReference();
+            ontologyReference.setObject(bindingSet.getValue(OBJECT).toString());
+            ontologyReference.setProperty(bindingSet.getValue(PROPERTY).toString());
+            if (bindingSet.getValue(SEE_ALSO) != null) {
+                ontologyReference.setSeeAlso(bindingSet.getValue(SEE_ALSO).toString());
+            }
+            return ontologyReference;
+        }
+        return null;
+    }
+    
     @Override
     public Trait findById(String id) throws DAOPersistenceException, Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        SPARQLQueryBuilder query = prepareSearchByUri(id);
+        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        
+        Trait trait = new Trait();
+        trait.setUri(id);
+        try(TupleQueryResult result = tupleQuery.evaluate()) {
+            if (result.hasNext()) {
+                while (result.hasNext()) {
+                    BindingSet row = result.next();
+                    
+                    if (trait.getLabel() == null && row.getValue(LABEL) != null) {
+                        trait.setLabel(row.getValue(LABEL).stringValue());
+                    }
+                    
+                    if (trait.getComment() == null && row.getValue(COMMENT) != null) {
+                        trait.setComment(row.getValue(COMMENT).stringValue());
+                    }
+                    
+                    OntologyReference ontologyReference = getOntologyReferenceFromBindingSet(row);
+                    if (ontologyReference != null) {
+                        trait.addOntologyReference(ontologyReference);
+                    }
+                }
+            } else {
+                throw new NotFoundException(id + " not found.");
+            }
+        }
+        return trait;
     }
 
     @Override

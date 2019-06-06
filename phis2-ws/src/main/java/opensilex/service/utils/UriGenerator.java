@@ -27,7 +27,6 @@ import opensilex.service.dao.EventDAO;
 import opensilex.service.dao.MethodDAO;
 import opensilex.service.dao.RadiometricTargetDAO;
 import opensilex.service.dao.SensorDAO;
-import opensilex.service.dao.TimeDAO;
 import opensilex.service.dao.UriDAO;
 import opensilex.service.dao.TraitDAO;
 import opensilex.service.dao.UnitDAO;
@@ -396,7 +395,7 @@ public class UriGenerator {
      */
     private static String generateInstantUri() {
         // To check if the URI already exists
-        TimeDAO timeDao = new TimeDAO(null);
+        EventDAO timeDao = new EventDAO(null);
         String newInstantUri = PLATFORM_URI_ID_INSTANT + UUID.randomUUID();
         while (timeDao.existUri(newInstantUri)) {
             newInstantUri = PLATFORM_URI_ID_INSTANT + UUID.randomUUID();

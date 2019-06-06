@@ -75,22 +75,8 @@ public class ScientificObjectResourceService extends ResourceService {
     }
     
     /**
-     * Transform ScientificObjectPutDTO to ScientificObject
-     * @param scientificObjectPutDTOs
-     * @return the transformed list
-     */
-    private List<ScientificObject> scientificObjectPutDTOsToScientificObjects(List<ScientificObjectPutDTO> scientificObjectPutDTOs) {
-        ArrayList<ScientificObject> scientificObjects = new ArrayList<>();
-        
-        for (ScientificObjectPutDTO scientificObjectDTO : scientificObjectPutDTOs) {
-            scientificObjects.add(scientificObjectDTO.createObjectFromDTO());
-        }
-        
-        return scientificObjects;
-    }
-    
-    /**
-     * Enter a set of scientific objects into the triplestore and associate them to an experiment if it is given
+     * Enters a set of scientific objects into the storage and associate them to 
+     * an experiment if given.
      * @param scientificObjectsDTO scientific objects to save
      * @param context query context element to get the ip address information of the user
      * @example 
@@ -266,7 +252,7 @@ public class ScientificObjectResourceService extends ResourceService {
     public Response getScientificObjectsBySearch(
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
-        @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_URI) @QueryParam("uri") @URL String uri,
+        @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_URI) @QueryParam("uri") String uri,
         @ApiParam(value = "Search by experiment URI", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI) @QueryParam("experiment") @URL String experimentURI,
         @ApiParam(value = "Search by alias", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_ALIAS) @QueryParam("alias") String alias,
         @ApiParam(value = "Search by rdfType", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_TYPE) @QueryParam("rdfType") @URL String rdfType
@@ -280,7 +266,11 @@ public class ScientificObjectResourceService extends ResourceService {
         scientificObjectDaoSesame.setPage(page);
         scientificObjectDaoSesame.setPageSize(pageSize);
         
-        ArrayList<ScientificObject> scientificObjects = scientificObjectDaoSesame.find(uri, rdfType, experimentURI, alias);
+        //1. Get count
+        Integer totalCount = scientificObjectDaoSesame.count(uri, rdfType, experimentURI, alias);
+        
+        //2. Get list of scientific objects
+        ArrayList<ScientificObject> scientificObjects = scientificObjectDaoSesame.find(page, pageSize, uri, rdfType, experimentURI, alias);
         
         if (scientificObjects == null) { //Request failure
             getResponse = new ResultForm<>(0, 0, scientificObjectsToReturn, true);
@@ -294,7 +284,7 @@ public class ScientificObjectResourceService extends ResourceService {
                 scientificObjectsToReturn.add(new ScientificObjectDTO(scientificObject));
             });
             
-            getResponse = new ResultForm<>(scientificObjectDaoSesame.getPageSize(), scientificObjectDaoSesame.getPage(), scientificObjectsToReturn, false);
+            getResponse = new ResultForm<>(scientificObjectDaoSesame.getPageSize(), scientificObjectDaoSesame.getPage(), scientificObjectsToReturn, true, totalCount);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {

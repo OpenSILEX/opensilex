@@ -49,6 +49,7 @@ import opensilex.service.model.Dataset;
  * Datasets resource service.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
+@Deprecated
 @Api("/datasets")
 @Path("/datasets") 
 public class DatasetResourceService extends ResourceService {
@@ -77,6 +78,7 @@ public class DatasetResourceService extends ResourceService {
      * @return the query result with the list of provenance uri if the datasets 
      *         has been saved in the database
      */
+    @Deprecated
     @POST
     @ApiOperation(value = "Post dataset")
     @ApiResponses(value = {
@@ -178,6 +180,7 @@ public class DatasetResourceService extends ResourceService {
      *          ]
      *      }
      */
+    @Deprecated
     @GET
     @ApiOperation(value = "Get all data corresponding to the search params given")
     @ApiResponses(value = {

@@ -14,7 +14,6 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.resource.validation.interfaces.Required;
-import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.model.RdfResourceDefinition;
 import opensilex.service.model.Property;
@@ -24,13 +23,7 @@ import opensilex.service.model.Property;
  * @see PropertyDTO
  * @author Vincent Migot <vincent.migot@inra.fr>
  */
-public class RdfResourceDefinitionDTO extends AbstractVerifiedClass {
-
-    //uri of the rdf resource
-    protected String uri;
-    
-    //label of the rdf resource
-    protected String label;
+public class RdfResourceDefinitionDTO extends RdfResourceDTO {
     
     //list of the properties of the rdf resource
     protected ArrayList<PropertyDTO> properties = new ArrayList<>();
@@ -39,6 +32,7 @@ public class RdfResourceDefinitionDTO extends AbstractVerifiedClass {
      * Default empty constructor
      */
     public RdfResourceDefinitionDTO() {
+        
     }
      
     /**
@@ -82,20 +76,24 @@ public class RdfResourceDefinitionDTO extends AbstractVerifiedClass {
     @URL
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_URI)
+    @Override
     public String getUri() {
         return uri;
     }
 
+    @Override
     public void setUri(String uri) {
         this.uri = uri;
     }
 
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_VECTOR_LABEL)
+    @Override
     public String getLabel() {
         return label;
     }
 
+    @Override
     public void setLabel(String label) {
         this.label = label;
     }

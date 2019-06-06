@@ -395,7 +395,9 @@ public class UnitDAO extends Rdf4jDAO<Unit> {
         Resource unitUri = ResourceFactory.createResource(unit.getUri());
         
         spql.addDelete(graph, unitUri, RDFS.label, unit.getLabel());
-        spql.addDelete(graph, unitUri, RDFS.comment, unit.getComment());
+        if (unit.getComment() != null) {
+            spql.addDelete(graph, unitUri, RDFS.comment, unit.getComment());
+        }
         
         unit.getOntologiesReferences().forEach((ontologyReference) -> {
             Property ontologyProperty = ResourceFactory.createProperty(ontologyReference.getProperty());

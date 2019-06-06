@@ -89,16 +89,16 @@ public class Annotation {
         return bodyValues;
     }
 
-    public void setBodiesValue(ArrayList<String> bodiesValue) {
-        this.bodyValues = bodiesValue;
+    public void setBodyValues(ArrayList<String> bodyValues) {
+        this.bodyValues = bodyValues;
     }
 
-    public void addBody(String body) {
+    public void addBodyValue(String bodyValue) {
         // If null arraylist is initialized
         if (this.bodyValues == null) {
             this.bodyValues = new ArrayList<>();
         }
-        this.bodyValues.add(body);
+        this.bodyValues.add(bodyValue);
     }
 
     public ArrayList<String> getTargets() {

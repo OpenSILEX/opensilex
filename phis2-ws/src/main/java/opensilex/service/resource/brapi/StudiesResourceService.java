@@ -19,6 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.inject.Singleton;
 import javax.validation.constraints.Min;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -58,7 +59,7 @@ import opensilex.service.view.brapi.form.BrapiSingleResponseForm;
 
 @Api("/brapi/v1/studies")
 @Path("/brapi/v1/studies")
-
+@Singleton
 /**
  * Study services :
  * GET Studies/{studyDbId}
@@ -511,7 +512,7 @@ public class StudiesResourceService implements BrapiCall {
         ArrayList<Status> statusList = new ArrayList<>();  
 
         ScientificObjectRdf4jDAO scientificObjectsDAO = new ScientificObjectRdf4jDAO();
-        ArrayList<ScientificObject> scientificObjects = scientificObjectsDAO.find(null, observationLevel, studyDbId, null);
+        ArrayList<ScientificObject> scientificObjects = scientificObjectsDAO.find(null, null, null, observationLevel, studyDbId, null);
 
         ExperimentSQLDAO experimentDAO = new ExperimentSQLDAO();
         experimentDAO.uri = studyDbId;
@@ -601,7 +602,7 @@ public class StudiesResourceService implements BrapiCall {
 
         ArrayList<BrapiObservationDTO> observations = new ArrayList();  
         ScientificObjectRdf4jDAO objectDAO = new ScientificObjectRdf4jDAO();
-        ArrayList<ScientificObject> objectsList = objectDAO.find(null, null, studyDAO.studyDbId, null);
+        ArrayList<ScientificObject> objectsList = objectDAO.find(null, null, null, null, studyDAO.studyDbId, null);
         ArrayList<Variable> variablesList = new ArrayList();
 
         if (variableURIs.isEmpty()) {  

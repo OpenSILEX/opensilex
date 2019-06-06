@@ -59,18 +59,38 @@ public class Event extends RdfResourceDefinition {
     /**
      * @param uri
      * @param type
-     * @param concernedItems
+     * @param concernedItemsUris
      * @param dateTime
      * @param properties
      * @param annotations
      */
-    public Event(String uri, String type, List<ConcernedItem> concernedItems, DateTime dateTime, ArrayList<Property> properties, List<Annotation> annotations) {
+    public Event(String uri, String type, List<String> concernedItemsUris, DateTime dateTime, ArrayList<Property> properties, List<Annotation> annotations) {
+        this.uri = uri;
+        this.type = type;
+        
+        this.concernedItems = new ArrayList<>();
+        concernedItemsUris.forEach((concernedItemUri) -> {
+            this.concernedItems.add(new ConcernedItem(concernedItemUri, null, null, uri));
+        });
+        
+        this.instant = new Instant(null, dateTime);
+        this.properties = properties;
+        this.annotations = annotations;
+    }
+
+    /**
+     * @param uri
+     * @param type
+     * @param concernedItems
+     * @param dateTime
+     * @param properties
+     */
+    public Event(String uri, String type, List<ConcernedItem> concernedItems, DateTime dateTime, ArrayList<Property> properties) {
         this.uri = uri;
         this.type = type;
         this.concernedItems = concernedItems;
         this.instant = new Instant(null, dateTime);
         this.properties = properties;
-        this.annotations = annotations;
     }
     
     public void addConcernedItem(ConcernedItem concernedItem) {
@@ -107,5 +127,32 @@ public class Event extends RdfResourceDefinition {
 
     public void setAnnotations(List<Annotation> annotations) {
         this.annotations = annotations;
+    }
+
+    public void setUri(String uri) {
+        super.setUri(uri);
+        
+        if(concernedItems != null) {
+            concernedItems.forEach(concernedItem -> {
+               concernedItem.setObjectLinked(uri);
+            });
+        }
+        
+        if(annotations != null) {
+            annotations.forEach(annotation -> {
+                boolean uriIsAlreadyTarget = false;
+                if(annotation.getTargets() != null) {
+                    for (String target : annotation.getTargets()) {
+                        if(target.equals(uri)) {
+                            uriIsAlreadyTarget = true;
+                            break;
+                        }
+                    }
+                    if (!uriIsAlreadyTarget) {
+                        annotation.getTargets().add(uri);
+                    }
+                }
+            });
+        }
     }
 }

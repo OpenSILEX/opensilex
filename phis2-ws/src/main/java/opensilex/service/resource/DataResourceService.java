@@ -19,7 +19,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -43,6 +45,9 @@ import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.DataDAO;
 import opensilex.service.dao.FileDescriptionDAO;
+import opensilex.service.dao.ProvenanceDAO;
+import opensilex.service.dao.ScientificObjectRdf4jDAO;
+import opensilex.service.dao.VariableDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.resource.dto.data.DataDTO;
@@ -59,6 +64,8 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Data;
 import opensilex.service.model.FileDescription;
+import opensilex.service.ontology.Oeso;
+import opensilex.service.resource.dto.data.DataSearchDTO;
 import opensilex.service.resource.dto.data.FileDescriptionWebPathPostDTO;
 
 /**
@@ -607,6 +614,182 @@ public class DataResourceService extends ResourceService {
             
             // Return list of DTO
             getResponse = new ResultForm<>(fileDescriptionDao.getPageSize(), fileDescriptionDao.getPage(), list, true, (int)totalCount);
+            getResponse.setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
+        }
+    }
+    
+    /**
+     * Service to search data
+     * @param pageSize
+     * @param page
+     * @param variableUri
+     * @param startDate
+     * @param endDate
+     * @param objectUri
+     * @param objectLabel
+     * @param provenanceUri
+     * @param provenanceLabel
+     * @param dateSortAsc
+     * @return list of the data corresponding to the search params given
+     * @example
+     * {
+     *      "metadata": {
+     *          "pagination": {
+     *              "pageSize": 20,
+     *              "currentPage": 0,
+     *              "totalCount": 3,
+     *              "totalPages": 1
+     *          },
+     *          "status": [],
+     *          "datafiles": []
+     *      },
+     *      "result": {
+     *          "data": [
+     *              {
+     *                 "uri": "http://www.opensilex.org/opensilex/id/data/k3zilz2rrjhkxo4ppy43372rr5hyrbehjuf2stecbekvkxyqcjdq84b1df953972418a8d5808ba2bca3baedfsf",
+     *                 "provenance": {
+     *                      "uri": "http://www.opensilex.org/opensilex/id/provenance/1552386023784",
+     *                      "label": "provenance-label"
+     *                  },
+     *                 "object": {
+     *                     "uri": "http://www.opensilex.org/opensilex/2019/o19000060",
+     *                     "labels": [
+     *                         "2"
+     *                     ]
+     *                  },
+     *                 "variable": {
+     *                     "uri": "http://www.opensilex.org/opensilex/id/variables/v001",
+     *                     "label": "trait_method_unit"
+     *                 },
+     *                 "date": "2014-01-04T00:55:00+0100",
+     *                 "value": "19"
+     *              },
+     *          ]
+     *      }
+     *  }
+     */
+    @GET
+    @Path("search")
+    @ApiOperation(value = "Get data corresponding to the search parameters given.",
+                  notes = "Retrieve all data corresponding to the search parameters given,"
+                          + "<br/>Date parameters could be either a datetime like: " + DocumentationAnnotation.EXAMPLE_XSDDATETIME 
+                          + "<br/>or simply a date like: " + DocumentationAnnotation.EXAMPLE_DATE)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Retrieve all data", response = Data.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                          dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                          value = DocumentationAnnotation.ACCES_TOKEN,
+                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Produces(MediaType.APPLICATION_JSON)  
+    public Response getDataSearch(
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
+        @ApiParam(value = "Search by variable uri", example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI) @QueryParam("variableUri") @URL @Required String variableUri,
+        @ApiParam(value = "Search by minimal date", example = DocumentationAnnotation.EXAMPLE_XSDDATETIME) @QueryParam("startDate") @Date({DateFormat.YMDTHMSZ, DateFormat.YMD}) String startDate,
+        @ApiParam(value = "Search by maximal date", example = DocumentationAnnotation.EXAMPLE_XSDDATETIME) @QueryParam("endDate") @Date({DateFormat.YMDTHMSZ, DateFormat.YMD}) String endDate,
+        @ApiParam(value = "Search by object uri", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_URI) @QueryParam("objectUri") @URL String objectUri,
+        @ApiParam(value = "Search by object label", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_ALIAS) @QueryParam("objectLabel") String objectLabel,
+        @ApiParam(value = "Search by provenance uri", example = DocumentationAnnotation.EXAMPLE_PROVENANCE_URI) @QueryParam("provenanceUri") @URL String provenanceUri,
+        @ApiParam(value = "Search by provenance label", example = DocumentationAnnotation.EXAMPLE_PROVENANCE_LABEL) @QueryParam("provenanceLabel") String provenanceLabel,
+        @ApiParam(value = "Date search result order ('true' for ascending and 'false' for descending)", example = "true") @QueryParam("dateSortAsc") boolean dateSortAsc
+    ) {
+        ArrayList<DataSearchDTO> list = new ArrayList<>();
+        ArrayList<Status> statusList = new ArrayList<>();
+        ResultForm<DataSearchDTO> getResponse;
+        
+        DataDAO dataDAO = new DataDAO();
+        
+        List<String> objectsUris = new ArrayList<>();
+        List<String> provenancesUris = new ArrayList<>();
+        
+        Map<String, List<String>> objectsUrisAndLabels = new HashMap<>();
+        Map<String, String> provenancesUrisAndLabels = new HashMap<>();
+        
+        //1. Get list of objects uris corresponding to the label given if needed.
+        ScientificObjectRdf4jDAO scientificObjectDAO = new ScientificObjectRdf4jDAO();
+        if (objectUri != null && !objectUri.isEmpty()) {
+            objectsUrisAndLabels.put(objectUri, scientificObjectDAO.findLabelsForUri(objectUri));
+        } else if (objectLabel != null && !objectLabel.isEmpty()) { //We need to get the list of the uris of the scientific object with this label (like)
+            objectsUrisAndLabels = scientificObjectDAO.findUriAndLabelsByLabelAndRdfType(objectLabel, Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString());
+        }
+        
+        for (String uri : objectsUrisAndLabels.keySet()) {
+            objectsUris.add(uri);
+        }
+        
+        //2. Get list of provenances uris corresponding to the label given if needed.
+        ProvenanceDAO provenanceDAO = new ProvenanceDAO();
+        if (provenanceUri != null && !provenanceUri.isEmpty()) {
+            //If the provenance URI is given, we need the provenance label
+            provenancesUris.add(provenanceUri);
+        } else if (provenanceLabel != null && !provenanceLabel.isEmpty()) { 
+            //If the provenance URI is empty and a label is given, we search the provenance(s) with the given label (like)
+            provenancesUrisAndLabels = provenanceDAO.findUriAndLabelsByLabel(provenanceLabel);
+        }
+        
+        for (String uri : provenancesUrisAndLabels.keySet()) {
+            provenancesUris.add(uri);
+        }
+        
+        //3. Get variable label
+        VariableDAO variableDAO = new VariableDAO();
+        if (!variableDAO.existAndIsVariable(variableUri)) {
+            // Request failure
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
+            statusList.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Unknown variable URI : " + variableUri));
+            getResponse.setStatus(statusList);
+            return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
+        }
+        String variableLabel = variableDAO.findLabelsForUri(variableUri).get(0);
+        
+        //4. Get count
+        Integer totalCount = dataDAO.count(variableUri, startDate, endDate, objectsUris, provenancesUris);
+        
+        //5. Get data
+        List<Data> dataList = dataDAO.find(page, pageSize, variableUri, startDate, endDate, objectsUris, provenancesUris);      
+        
+        //6. Return result
+        if (dataList == null) {
+            // Request failure
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
+            return noResultFound(getResponse, statusList);
+        } else if (dataList.isEmpty()) {
+            // No results
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
+            return noResultFound(getResponse, statusList);
+        } else {
+            // Convert all data object to DTO's
+            for (Data data : dataList) {
+                if (data.getObjectUri() != null && !objectsUrisAndLabels.containsKey(data.getObjectUri())) { 
+                    //We need to get the labels of the object
+                    objectsUrisAndLabels.put(data.getObjectUri(), scientificObjectDAO.findLabelsForUri(data.getObjectUri()));
+                }
+                
+                if (!provenancesUrisAndLabels.containsKey(data.getProvenanceUri())) {
+                    //We need to get the label of the provenance
+                    provenancesUrisAndLabels.put(data.getProvenanceUri(), provenanceDAO.findLabelByUri(data.getProvenanceUri()));
+                }
+                
+                //Get provenance label
+                String dataProvenanceLabel = provenancesUrisAndLabels.get(data.getProvenanceUri());
+                //Get object labels
+                List<String> dataObjectLabels = new ArrayList<>();
+                if (objectsUrisAndLabels.get(data.getObjectUri()) != null) {
+                    dataObjectLabels = objectsUrisAndLabels.get(data.getObjectUri());
+                }
+                
+                list.add(new DataSearchDTO(data, dataProvenanceLabel, dataObjectLabels, variableLabel));
+            }
+            
+            // Return list of DTO
+            getResponse = new ResultForm<>(pageSize, page, list, true, totalCount);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }

@@ -1,13 +1,12 @@
 //******************************************************************************
-//                                Event.java
+//                                Instant.java
 // SILEX-PHIS
-// Copyright © INRA 2018
-// Creation date: 12 Nov. 2018
+// Copyright © INRA 2019
+// Creation date: 12 Apr. 2019
 // Contact: andreas.garcia@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.model;
 
-import java.util.ArrayList;
 import opensilex.service.ontology.Time;
 import org.joda.time.DateTime;
 

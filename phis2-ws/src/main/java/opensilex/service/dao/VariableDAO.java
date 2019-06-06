@@ -10,7 +10,6 @@ package opensilex.service.dao;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
 import javax.ws.rs.NotFoundException;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
@@ -914,7 +913,6 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         
         Variable variable = new Variable();
-        variable.setUri(id);
         try(TupleQueryResult result = tupleQuery.evaluate()) {
             if (result.hasNext()) {
                 variable = getVariableFromBindingSet(result.next());
@@ -935,6 +933,8 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
             } else {
                 throw new NotFoundException(id + " not found.");
             }
+            
+            variable.setUri(id);
         }
         return variable;
     }

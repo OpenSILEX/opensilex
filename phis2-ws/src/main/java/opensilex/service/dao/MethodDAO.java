@@ -516,6 +516,11 @@ public class MethodDAO extends Rdf4jDAO<Method> {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    /**
+     * Prepare query to get method by it's URI
+     * @param uri
+     * @return 
+     */
     private SPARQLQueryBuilder prepareSearchByUri(String uri) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE); //???????
@@ -548,6 +553,11 @@ public class MethodDAO extends Rdf4jDAO<Method> {
         return query;
     }
 
+    /**
+     * Map binding set value to OntologyReference object
+     * @param bindingSet
+     * @return 
+     */
     private OntologyReference getOntologyReferenceFromBindingSet(BindingSet bindingSet) {
         if (bindingSet.getValue(OBJECT) != null
                     && bindingSet.getValue(PROPERTY) != null) {
@@ -562,6 +572,13 @@ public class MethodDAO extends Rdf4jDAO<Method> {
         return null;
     }
     
+    /**
+     * Find a method by it's id
+     * @param id
+     * @return
+     * @throws DAOPersistenceException
+     * @throws Exception 
+     */
     @Override
     public Method findById(String id) throws DAOPersistenceException, Exception {
         SPARQLQueryBuilder query = prepareSearchByUri(id);

@@ -10,7 +10,6 @@ package opensilex.service.dao;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import javax.ws.rs.NotFoundException;
 import static opensilex.service.dao.VariableDAO.OBJECT;
 import static opensilex.service.dao.VariableDAO.PROPERTY;
 import static opensilex.service.dao.VariableDAO.SEE_ALSO;
@@ -523,9 +522,14 @@ public class UnitDAO extends Rdf4jDAO<Unit> {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
+    /**
+     * Prepare query to get a unit by it's URI
+     * @param uri
+     * @return 
+     */
     private SPARQLQueryBuilder prepareSearchByUri(String uri) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
-        query.appendDistinct(Boolean.TRUE); //???????
+        query.appendDistinct(Boolean.TRUE);
         
         query.appendGraph(Contexts.VARIABLES.toString());
         
@@ -555,6 +559,11 @@ public class UnitDAO extends Rdf4jDAO<Unit> {
         return query;
     }
 
+    /**
+     * Map binding set value to OntologyReference object
+     * @param bindingSet
+     * @return 
+     */
     private OntologyReference getOntologyReferenceFromBindingSet(BindingSet bindingSet) {
         if (bindingSet.getValue(OBJECT) != null
                     && bindingSet.getValue(PROPERTY) != null) {
@@ -569,6 +578,13 @@ public class UnitDAO extends Rdf4jDAO<Unit> {
         return null;
     }
     
+    /**
+     * Find a unit by it's id
+     * @param id
+     * @return
+     * @throws DAOPersistenceException
+     * @throws Exception 
+     */
     @Override
     public Unit findById(String id) throws DAOPersistenceException, Exception {
         SPARQLQueryBuilder query = prepareSearchByUri(id);

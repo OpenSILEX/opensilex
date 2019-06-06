@@ -548,6 +548,11 @@ public class TraitDAO extends Rdf4jDAO<Trait> {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
+    /**
+     * Prepare query to get a trait by it's URI
+     * @param uri
+     * @return 
+     */
     private SPARQLQueryBuilder prepareSearchByUri(String uri) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE); //???????
@@ -580,6 +585,11 @@ public class TraitDAO extends Rdf4jDAO<Trait> {
         return query;
     }
 
+    /**
+     * Map binding set value to OntologyReference object
+     * @param bindingSet
+     * @return 
+     */
     private OntologyReference getOntologyReferenceFromBindingSet(BindingSet bindingSet) {
         if (bindingSet.getValue(OBJECT) != null
                     && bindingSet.getValue(PROPERTY) != null) {
@@ -594,6 +604,14 @@ public class TraitDAO extends Rdf4jDAO<Trait> {
         return null;
     }
     
+    /**
+     * Return Trait corresponding to given id
+     * 
+     * @param id
+     * @return
+     * @throws DAOPersistenceException
+     * @throws Exception 
+     */
     @Override
     public Trait findById(String id) throws DAOPersistenceException, Exception {
         SPARQLQueryBuilder query = prepareSearchByUri(id);

@@ -611,7 +611,7 @@ public class StudiesResourceService implements BrapiCall {
         if (variableURIs.isEmpty()) {  
             VariableDAO variableDaoSesame = new VariableDAO();
             //if variableURIs is empty, we look for all variables observations
-            variablesList = variableDaoSesame.getAll(false); 
+            variablesList = variableDaoSesame.getAll(false, false); 
 
         } else {            
             //in case a variable uri is duplicated, we keep distinct uris

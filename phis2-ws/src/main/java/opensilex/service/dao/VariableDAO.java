@@ -481,11 +481,14 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
         return query;
     }
     
-    /**
-     * @return objects found
-     */
-    public ArrayList<Variable> allPaginate() {
+    public ArrayList<Variable> getAll(boolean usePagination) {
         SPARQLQueryBuilder query = prepareSearchQuery();
+        
+        if (!usePagination) {
+            query.clearLimit();
+            query.clearOffset();
+        }
+                
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         ArrayList<Variable> variables = new ArrayList<>();
         
@@ -533,38 +536,17 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
                     unitDao.uri = bindingSet.getValue(UNIT).stringValue();
                 }
                 
-                //Get ontology references 
-                SPARQLQueryBuilder queryOntologiesReferences = prepareSearchOntologiesReferencesQuery(variable.getUri());
-                TupleQuery tupleQueryOntologiesReferences = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryOntologiesReferences.toString());
-                TupleQueryResult resultOntologiesReferences = tupleQueryOntologiesReferences.evaluate();
-                while (resultOntologiesReferences.hasNext()) {
-                    BindingSet bindingSetOntologiesReferences = resultOntologiesReferences.next();
-                    if (bindingSetOntologiesReferences.getValue("object") != null
-                            && bindingSetOntologiesReferences.getValue("property") != null) {
-                        OntologyReference ontologyReference = new OntologyReference();
-                        ontologyReference.setObject(bindingSetOntologiesReferences.getValue("object").toString());
-                        ontologyReference.setProperty(bindingSetOntologiesReferences.getValue("property").toString());
-                        if (bindingSetOntologiesReferences.getValue("seeAlso") != null) {
-                            ontologyReference.setSeeAlso(bindingSetOntologiesReferences.getValue("seeAlso").toString());
-                        }
-                        
-                        variable.addOntologyReference(ontologyReference);
-                    }
-                }
-                
-                // Get the trait, method and unit information
-                ArrayList<Trait> traits = traitDao.allPaginate();
-                ArrayList<Method> methods = methodDao.allPaginate();
-                ArrayList<Unit> units = unitDao.allPaginate();
-                variable.setTrait(traits.get(0));
-                variable.setMethod(methods.get(0));
-                variable.setUnit(units.get(0));
-                
                 variables.add(variable);
             }
         }
         
         return variables;
+    }
+    /**
+     * @return objects found
+     */
+    public ArrayList<Variable> allPaginate() {
+        return getAll(true);
     }
     
     /**
@@ -617,12 +599,11 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
         boolean resultState = false;
         
         for (VariableDTO variableDTO : variablesDTO) {
-            //1. Delete existing data
-            //1.1 Get information to modify (to delete the right triplets)
-            uri = variableDTO.getUri();
-            ArrayList<Variable> variablesCorresponding = allPaginate();
-            if (variablesCorresponding.size() > 0) {
-                UpdateRequest deleteQuery = prepareDeleteQuery(variablesCorresponding.get(0));
+            try {
+                //1. Delete existing data
+                //1.1 Get information to modify (to delete the right triplets)
+                Variable variableCorresponding = findById(variableDTO.getUri());
+                UpdateRequest deleteQuery = prepareDeleteQuery(variableCorresponding);
 
                 //2. Insert the new data
                 UpdateRequest queryInsert = prepareInsertQuery(variableDTO);
@@ -642,7 +623,7 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
                         annotationUpdate = false;
                         updateStatusList.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, "Malformed update query: " + e.getMessage()));
                     }   
-            } else {
+            } catch (Exception ex) {
                 annotationUpdate = false;
                 updateStatusList.add(new Status("Unknown instance", StatusCodeMsg.ERR, "Unknown variable " + variableDTO.getUri()));
             }
@@ -744,38 +725,48 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
         ArrayList<Variable> variablesList = this.allPaginate();
         ArrayList<BrapiVariable> varList = new ArrayList();
         for (Variable var:variablesList) {
-            BrapiVariable brapiVar = new BrapiVariable();
-            brapiVar.setObservationVariableDbId(var.getUri());
-            brapiVar.setObservationVariableName(var.getLabel());
-            brapiVar.setContextOfUse(new ArrayList());
-            brapiVar.setSynonyms(new ArrayList());
+            try {
+                Variable details = findById(var.getUri());
+                varList.add(getBrapiVariable(details)); 
+            } catch (Exception ex) {
+                // Ignore variable not found;
+            }
 
-            //trait 
-            BrapiVariableTrait trait = new BrapiVariableTrait();
-            trait.setTraitDbId(var.getTrait().getUri());
-            trait.setTraitName(var.getTrait().getLabel());
-            trait.setDescription(var.getTrait().getComment());
-            trait.setAlternativeAbbreviations(new ArrayList());
-            trait.setSynonyms(new ArrayList());
-            brapiVar.setTrait(trait);
-
-            //method
-            BrapiMethod method = new BrapiMethod();
-            method.setMethodDbId(var.getMethod().getUri());
-            method.setMethodName(var.getMethod().getLabel());
-            method.setDescription(var.getMethod().getComment());
-            brapiVar.setMethod(method);
-
-            //scale
-            BrapiScale scale = new BrapiScale();
-            scale.setScaleDbid(var.getUnit().getUri());
-            scale.setScaleName(var.getUnit().getLabel());
-            scale.setDataType("Numerical");
-            brapiVar.setScale(scale);
-
-            varList.add(brapiVar); 
         }
         return varList;    
+    }
+    
+    public BrapiVariable getBrapiVariable(Variable var) {
+        BrapiVariable brapiVar = new BrapiVariable();
+        brapiVar.setObservationVariableDbId(var.getUri());
+        brapiVar.setObservationVariableName(var.getLabel());
+        brapiVar.setContextOfUse(new ArrayList());
+        brapiVar.setSynonyms(new ArrayList());
+
+        //trait 
+        BrapiVariableTrait trait = new BrapiVariableTrait();
+        trait.setTraitDbId(var.getTrait().getUri());
+        trait.setTraitName(var.getTrait().getLabel());
+        trait.setDescription(var.getTrait().getComment());
+        trait.setAlternativeAbbreviations(new ArrayList());
+        trait.setSynonyms(new ArrayList());
+        brapiVar.setTrait(trait);
+
+        //method
+        BrapiMethod method = new BrapiMethod();
+        method.setMethodDbId(var.getMethod().getUri());
+        method.setMethodName(var.getMethod().getLabel());
+        method.setDescription(var.getMethod().getComment());
+        brapiVar.setMethod(method);
+
+        //scale
+        BrapiScale scale = new BrapiScale();
+        scale.setScaleDbid(var.getUnit().getUri());
+        scale.setScaleName(var.getUnit().getLabel());
+        scale.setDataType("Numerical");
+        brapiVar.setScale(scale);
+        
+        return brapiVar;
     }
 
     @Override
@@ -923,6 +914,12 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
         return variable;
     }
 
+    public BrapiVariable findBrapiVariableById(String id) throws Exception {
+        Variable variable = this.findById(id);
+        
+        return getBrapiVariable(variable);
+    }
+    
     @Override
     public void validate(List<Variable> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.

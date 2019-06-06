@@ -163,39 +163,6 @@ public class VariableResourceService extends ResourceService {
     }
     
     /**
-     * Get variables data.
-     * @param variableDao
-     * @return the variables found
-     * SILEX:todo
-     * Add other search criterias than URI and label
-     * \SILEX:todo
-     */
-    private Response getVariablesData(VariableDAO variableDao) {
-        ArrayList<Variable> variables;
-        ArrayList<Status> statusList = new ArrayList<>();
-        ResultForm<Variable> getResponse;
-        
-        // 1. Get number of variables corresponding to the search params
-        Integer totalCount = variableDao.count();
-        
-        //2. Get the variables to return
-        variables = variableDao.allPaginate();
-        
-        //3. Return the result
-        if (variables == null) { //Request error
-            getResponse = new ResultForm<>(0, 0, variables, true, 0);
-            return noResultFound(getResponse, statusList);
-        } else if (variables.isEmpty()) { //No result
-            getResponse = new ResultForm<>(0, 0, variables, true, 0);
-            return noResultFound(getResponse, statusList);
-        } else { //Results founded. Return the results
-            getResponse = new ResultForm<>(variableDao.getPageSize(), variableDao.getPage(), variables, true, totalCount);
-            getResponse.setStatus(statusList);
-            return Response.status(Response.Status.OK).entity(getResponse).build();
-        }
-    }
-    
-    /**
      * Variable GET service.
      * @param pageSize
      * @param page
@@ -258,7 +225,28 @@ public class VariableResourceService extends ResourceService {
         variableDao.setPage(page);
         variableDao.setPageSize(pageSize);
         
-        return getVariablesData(variableDao);
+        ArrayList<Variable> variables;
+        ArrayList<Status> statusList = new ArrayList<>();
+        ResultForm<Variable> getResponse;
+        
+        // 1. Get number of variables corresponding to the search params
+        Integer totalCount = variableDao.count();
+        
+        //2. Get the variables to return
+        variables = variableDao.allPaginate();
+        
+        //3. Return the result
+        if (variables == null) { //Request error
+            getResponse = new ResultForm<>(0, 0, variables, true, 0);
+            return noResultFound(getResponse, statusList);
+        } else if (variables.isEmpty()) { //No result
+            getResponse = new ResultForm<>(0, 0, variables, true, 0);
+            return noResultFound(getResponse, statusList);
+        } else { //Results founded. Return the results
+            getResponse = new ResultForm<>(variableDao.getPageSize(), variableDao.getPage(), variables, true, totalCount);
+            getResponse.setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
+        }
     }
     
     /**

@@ -1127,8 +1127,6 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 Sensor sensor = getSensorFromBindingSet(bindingSet, uri, rdfType, label, brand, serialNumber, model, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
-                HashMap<String, String> variables = getVariables(sensor.getUri());
-                sensor.setVariables(variables);
                 sensors.add(sensor);
             }
         }

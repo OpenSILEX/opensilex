@@ -5,7 +5,7 @@
 // Creation date: 2 mai 2019
 // Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package opensilex.service.resource.brapi;
+package opensilex.service.dao;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +22,7 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryException;
 
 /**
- * StudySearch RDF DAO - used to filter studies on the germplasms
+ * Study RDF DAO - used to filter studies on the germplasms
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class StudyRDFDAO extends Rdf4jDAO {

@@ -10,8 +10,8 @@ package opensilex.service.resource.dto.experiment;
 import java.util.ArrayList;
 
 /**
- *
- * @author boizetal
+ * Represents the response of get studies et post studies-search
+ * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class StudyDTO {
     private String active;

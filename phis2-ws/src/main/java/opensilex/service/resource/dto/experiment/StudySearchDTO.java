@@ -3,17 +3,16 @@
 // SILEX-PHIS
 // Copyright © INRA 2019
 // Creation date: 1 mai 2019
-// Contact: Expression userEmail is undefined on line 6, column 15 in file:///home/boizetal/OpenSilex/phis-ws/phis2-ws/licenseheader.txt., anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package opensilex.service.resource.brapi;
+package opensilex.service.resource.dto.experiment;
 
-import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
-import opensilex.service.documentation.DocumentationAnnotation;
+import javax.validation.constraints.NotNull;
 
 /**
- *
- * @author boizetal
+ * Represents the request body of POST studies-search 
+ * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class StudySearchDTO {
     private ArrayList<String> commonCropNames;
@@ -30,7 +29,9 @@ public class StudySearchDTO {
     private ArrayList<String> trialDbIds;
     private String sortBy;
     private String sortOrder;
+    @NotNull
     private Integer page;
+    @NotNull
     private Integer pageSize;
 
     public StudySearchDTO() {
@@ -147,7 +148,7 @@ public class StudySearchDTO {
     public void setSortOrder(String sortOrder) {
         this.sortOrder = sortOrder;
     }
-
+    
     public Integer getPage() {
         return page;
     }

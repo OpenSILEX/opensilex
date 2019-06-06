@@ -7,6 +7,8 @@
 //******************************************************************************
 package opensilex.service.resource.brapi;
 
+import opensilex.service.resource.dto.experiment.StudySearchDTO;
+import opensilex.service.dao.StudyRDFDAO;
 import opensilex.service.resource.dto.experiment.StudyDTO;
 import opensilex.service.dao.StudySQLDAO;
 import io.swagger.annotations.Api;
@@ -114,7 +116,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
     /**
      * @param studySearch
      * @param context
-     * @return result of the studies-search creation request BRAPI V1.2
+     * @return result of the studies-search request BRAPI V1.2
      * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
     @POST
@@ -136,12 +138,11 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     
-    public Response postExperiment(
+    public Response postStudiesSearch(
             @ApiParam(value = DocumentationAnnotation.EXPERIMENT_POST_DATA_DEFINITION) @Valid StudySearchDTO studySearch,
             @Context HttpServletRequest context) throws DAOPersistenceException {
         AbstractResultForm postResponse = null;
-
-        // If there is at least an experiment in the data sent      
+     
         if (studySearch != null) {                    
             // get studies from postgresql DB
             StudySQLDAO studySqlDAO = new StudySQLDAO();
@@ -159,7 +160,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
             }
             
             if (studySearch.getStudyDbIds() != null) {
-                if (studySqlDAO.studyDbIds != null) {   //if there are studyDbIds and germplasmDbIds, we check the studies are linked to the germplasms
+                if (studySqlDAO.studyDbIds != null) {   //if there are studyDbIds and germplasmDbIds, we check if studies and germplasms correspond
                     ArrayList<String> studiesList = new ArrayList();
                     for (String study:studySearch.getStudyDbIds()) {                    
                         if (studySqlDAO.studyDbIds.contains(study))  {
@@ -194,6 +195,9 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
             
             if (studySearch.getSortBy()!= null) {
                 studySqlDAO.sortBy = studySearch.getSortBy();
+                //SILEX:info
+                //can't sort on germplasm
+                //\SILEX:info
             }
             
             if (studySearch.getSortOrder()!= null) {

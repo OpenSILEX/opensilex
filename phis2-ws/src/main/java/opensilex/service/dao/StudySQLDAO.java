@@ -7,7 +7,6 @@
 //******************************************************************************
 package opensilex.service.dao;
 
-import static com.google.common.collect.Iterables.size;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,7 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import static opensilex.service.dao.ExperimentSQLDAO.LOGGER;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.dao.exception.ResourceAccessDeniedException;
@@ -34,8 +32,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
- * @author boizetal
+ * Study SQL DAO 
+ * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class StudySQLDAO extends PostgreSQLDAO<StudyDTO> {
     
@@ -169,6 +167,7 @@ public class StudySQLDAO extends PostgreSQLDAO<StudyDTO> {
         countQuery.appendCount();
         countQuery.appendDistinct();
         countQuery.appendSelect(tableAlias + ".uri");
+        countQuery.orderBy = null;
         
         LOGGER.debug (countQuery.toString());
         
@@ -239,7 +238,7 @@ public class StudySQLDAO extends PostgreSQLDAO<StudyDTO> {
         }        
         if (studyNames != null) {
             if (!studyNames.isEmpty()) {
-                query.appendANDWhereConditions(sqlFields.get("studyDbId"), ListToString(studyNames), "IN", null, tableAlias);
+                query.appendANDWhereConditions(sqlFields.get("studyName"), ListToString(studyNames), "IN", null, tableAlias);
             }
         }
         if (commonCropNames != null) {

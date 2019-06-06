@@ -200,6 +200,70 @@ public class VariableResourceService extends ResourceService {
         @ApiParam(value = "Search by method", example = DocumentationAnnotation.EXAMPLE_METHOD_URI) @QueryParam("method") @URL String method,
         @ApiParam(value = "Search by unit", example = DocumentationAnnotation.EXAMPLE_UNIT_URI) @QueryParam("unit") @URL String unit
     ) {
+        return this.search(
+            pageSize,
+            page,
+            uri,
+            label,
+            trait,
+            traitSKosReference,
+            method,
+            unit,
+            false
+        );
+    }
+    
+    @GET
+    @Path("details")
+    @ApiOperation(value = "Get all variables details corresponding to the searched params given",
+                  notes = "Retrieve all variables with details authorized for the user corresponding to the user corresponding to the searched params given")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Retrieve all variables with details ", response = Variable.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getVariablesDetailsBySearch(
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
+        @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI) @QueryParam("uri") @URL String uri,
+        @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_VARIABLE_LABEL) @QueryParam("label") String label,
+        @ApiParam(value = "Search by trait", example = DocumentationAnnotation.EXAMPLE_TRAIT_URI) @QueryParam("trait") @URL String trait,
+        @ApiParam(value = "Search by skos trait reference", example = DocumentationAnnotation.EXAMPLE_SKOS_REFERECENCE_URI) @QueryParam("traitSKosReference") @URL String traitSKosReference,
+        @ApiParam(value = "Search by method", example = DocumentationAnnotation.EXAMPLE_METHOD_URI) @QueryParam("method") @URL String method,
+        @ApiParam(value = "Search by unit", example = DocumentationAnnotation.EXAMPLE_UNIT_URI) @QueryParam("unit") @URL String unit
+    ) {
+        return this.search(
+            pageSize,
+            page,
+            uri,
+            label,
+            trait,
+            traitSKosReference,
+            method,
+            unit,
+            true
+        );
+    }
+    
+    private Response search(
+        int pageSize,
+        int page,
+        String uri,
+        String label,
+        String trait,
+        String traitSKosReference,
+        String method,
+        String unit,
+        boolean withDetail
+    ) {
         VariableDAO variableDao = new VariableDAO();
         
         if (uri != null) {
@@ -233,7 +297,11 @@ public class VariableResourceService extends ResourceService {
         Integer totalCount = variableDao.count();
         
         //2. Get the variables to return
-        variables = variableDao.allPaginate();
+        if (withDetail) {
+            variables = variableDao.allPaginateDetails();
+        } else {
+            variables = variableDao.allPaginate();
+        }
         
         //3. Return the result
         if (variables == null) { //Request error

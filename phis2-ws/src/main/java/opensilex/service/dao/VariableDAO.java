@@ -10,6 +10,7 @@ package opensilex.service.dao;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import javax.ws.rs.NotFoundException;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
@@ -481,7 +482,7 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
         return query;
     }
     
-    public ArrayList<Variable> getAll(boolean usePagination) {
+    public ArrayList<Variable> getAll(boolean usePagination, boolean withTraitMethodUnit) {
         SPARQLQueryBuilder query = prepareSearchQuery();
         
         if (!usePagination) {
@@ -536,17 +537,41 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
                     unitDao.uri = bindingSet.getValue(UNIT).stringValue();
                 }
                 
+                if (withTraitMethodUnit) {
+                    try {
+                        //Get method informations
+                        variable.setMethod(methodDao.findById(methodDao.uri));
+                        
+                        //Get unit informations
+                        variable.setUnit(unitDao.findById(unitDao.uri));
+
+                        //Get trait informations
+                        variable.setTrait(traitDao.findById(traitDao.uri));
+
+                    } catch (Exception ex) {
+                        // Ignore trait method and units not found
+                    }
+
+                }
                 variables.add(variable);
             }
         }
         
         return variables;
     }
+    
     /**
      * @return objects found
      */
     public ArrayList<Variable> allPaginate() {
-        return getAll(true);
+        return getAll(true, false);
+    }
+    
+    /**
+     * @return objects found
+     */
+    public ArrayList<Variable> allPaginateDetails() {
+        return getAll(true, true);
     }
     
     /**

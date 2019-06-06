@@ -555,7 +555,7 @@ public class TraitDAO extends Rdf4jDAO<Trait> {
         query.appendGraph(Contexts.VARIABLES.toString());
         
         String labelURI = "<" + uri + ">";
-        query.appendTriplet(labelURI, Rdf.RELATION_TYPE.toString(), Oeso.CONCEPT_UNIT.toString(), null);
+        query.appendTriplet(labelURI, Rdf.RELATION_TYPE.toString(), Oeso.CONCEPT_TRAIT.toString(), null);
         
         query.appendSelect(" ?" + LABEL + " ?" + COMMENT + " ?" + PROPERTY + " ?" + OBJECT + " ?" + SEE_ALSO);
         

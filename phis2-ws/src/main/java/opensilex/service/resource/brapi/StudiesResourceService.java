@@ -366,9 +366,12 @@ public class StudiesResourceService implements BrapiCall {
             if (!variableURIs.contains(obs.getObservationVariableDbId())){
                 variableURIs.add(obs.getObservationVariableDbId());
                 VariableDAO varDAO = new VariableDAO();
-                varDAO.uri = obs.getObservationVariableDbId();
-                BrapiVariable obsVariable = varDAO.getBrapiVarData().get(0);
-                obsVariablesList.add(obsVariable);               
+                try {
+                    BrapiVariable obsVariable = varDAO.findBrapiVariableById(obs.getObservationVariableDbId());
+                    obsVariablesList.add(obsVariable);  
+                } catch (Exception ex) {
+                    // Ignore unknonw variable id
+                }
             }            
         }
         if (observationsList.isEmpty()) {
@@ -608,18 +611,20 @@ public class StudiesResourceService implements BrapiCall {
         if (variableURIs.isEmpty()) {  
             VariableDAO variableDaoSesame = new VariableDAO();
             //if variableURIs is empty, we look for all variables observations
-            variablesList = variableDaoSesame.allPaginate(); 
+            variablesList = variableDaoSesame.getAll(false); 
 
         } else {            
             //in case a variable uri is duplicated, we keep distinct uris
             List<String> uniqueVariableURIs= variableURIs.stream().distinct().collect(Collectors.toList());
             for (String variableURI:uniqueVariableURIs) {
                 VariableDAO variableDAO = new VariableDAO();
-                variableDAO.uri = variableURI;
-                if (!variableDAO.allPaginate().isEmpty()) {
-                    Variable variable = variableDAO.allPaginate().get(0);
+                try {
+                    Variable variable = variableDAO.findById(variableURI);
                     variablesList.add(variable);
-                }                
+                } catch (Exception ex) {
+                    // ignore unknown variables
+                }
+
             }                
         }
 

@@ -139,12 +139,11 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
      */
     @Override
     public List<Actuator> create(List<Actuator> actuators) throws Exception {
-        UriGenerator uriGenerator = new UriGenerator();
         getConnection().begin();
         try {
             for (Actuator actuator : actuators) {
                 //1. Generate the URI of the actuator
-                actuator.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_ACTUATOR.toString(), null, null));
+                actuator.setUri(UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_ACTUATOR.toString(), null, null));
 
                 //2. Insert actuator
                 UpdateRequest updateQuery = prepareInsertQuery(actuator);

@@ -20,6 +20,7 @@ import javax.validation.constraints.Min;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -44,6 +45,8 @@ import opensilex.service.view.brapi.form.ResponseFormGET;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Variable;
+import static opensilex.service.resource.SensorResourceService.LOGGER;
+import opensilex.service.resource.dto.variable.VariableDetailDTO;
 
 /**
  * Variable resource service.
@@ -160,39 +163,6 @@ public class VariableResourceService extends ResourceService {
     }
     
     /**
-     * Get variables data.
-     * @param variableDao
-     * @return the variables found
-     * SILEX:todo
-     * Add other search criterias than URI and label
-     * \SILEX:todo
-     */
-    private Response getVariablesData(VariableDAO variableDao) {
-        ArrayList<Variable> variables;
-        ArrayList<Status> statusList = new ArrayList<>();
-        ResultForm<Variable> getResponse;
-        
-        // 1. Get number of variables corresponding to the search params
-        Integer totalCount = variableDao.count();
-        
-        //2. Get the variables to return
-        variables = variableDao.allPaginate();
-        
-        //3. Return the result
-        if (variables == null) { //Request error
-            getResponse = new ResultForm<>(0, 0, variables, true, 0);
-            return noResultFound(getResponse, statusList);
-        } else if (variables.isEmpty()) { //No result
-            getResponse = new ResultForm<>(0, 0, variables, true, 0);
-            return noResultFound(getResponse, statusList);
-        } else { //Results founded. Return the results
-            getResponse = new ResultForm<>(variableDao.getPageSize(), variableDao.getPage(), variables, true, totalCount);
-            getResponse.setStatus(statusList);
-            return Response.status(Response.Status.OK).entity(getResponse).build();
-        }
-    }
-    
-    /**
      * Variable GET service.
      * @param pageSize
      * @param page
@@ -255,13 +225,34 @@ public class VariableResourceService extends ResourceService {
         variableDao.setPage(page);
         variableDao.setPageSize(pageSize);
         
-        return getVariablesData(variableDao);
+        ArrayList<Variable> variables;
+        ArrayList<Status> statusList = new ArrayList<>();
+        ResultForm<Variable> getResponse;
+        
+        // 1. Get number of variables corresponding to the search params
+        Integer totalCount = variableDao.count();
+        
+        //2. Get the variables to return
+        variables = variableDao.allPaginate();
+        
+        //3. Return the result
+        if (variables == null) { //Request error
+            getResponse = new ResultForm<>(0, 0, variables, true, 0);
+            return noResultFound(getResponse, statusList);
+        } else if (variables.isEmpty()) { //No result
+            getResponse = new ResultForm<>(0, 0, variables, true, 0);
+            return noResultFound(getResponse, statusList);
+        } else { //Results founded. Return the results
+            getResponse = new ResultForm<>(variableDao.getPageSize(), variableDao.getPage(), variables, true, totalCount);
+            getResponse.setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
+        }
     }
     
     /**
      * Single variable GET service by URI.
-     * @param variable
-     * @param limit
+     * @param uri
+     * @param pageSize
      * @param page
      * @return the variable found
      */
@@ -283,21 +274,38 @@ public class VariableResourceService extends ResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getVariableDetail(
-        @ApiParam(value = DocumentationAnnotation.VARIABLE_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI) @PathParam("variable") @URL @Required String variable,
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
+        @ApiParam(value = DocumentationAnnotation.VARIABLE_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI) @PathParam("variable") @URL @Required String uri,
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
         
-        if (variable == null) {
+        if (uri == null) {
             final Status status = new Status(StatusCodeMsg.ACCESS_ERROR, StatusCodeMsg.ERR, "Empty variable URI");
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
         }
         
-        VariableDAO variableDao = new VariableDAO();
-        variableDao.uri = variable;
-        variableDao.setPageSize(limit);
-        variableDao.setPage(page);
-        variableDao.user = userSession.getUser();
+        ArrayList<VariableDetailDTO> variables = new ArrayList<>();
+        ArrayList<Status> statusList = new ArrayList<>();
+        ResultForm<VariableDetailDTO> getResponse;
         
-        return getVariablesData(variableDao);
+        try {
+            VariableDAO variableDao = new VariableDAO();
+            
+            VariableDetailDTO variable = new VariableDetailDTO(variableDao.findById(uri));
+            
+            LOGGER.debug("variable : " + variable.getLabel() + " " + variable.getUri());
+            
+            variables.add(variable);
+
+            getResponse = new ResultForm<>(pageSize, page, variables, true, 1);
+            getResponse.setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
+        } catch (NotFoundException ex) {
+            getResponse = new ResultForm<>(0, 0, variables, true);
+            return noResultFound(getResponse, statusList);
+        } catch (Exception ex) {
+            statusList.add(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, ex.getMessage()));
+            getResponse = new ResultForm<>(0, 0, variables, true);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(getResponse).build();
+        }
     }
 }

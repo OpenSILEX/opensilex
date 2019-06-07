@@ -233,35 +233,40 @@ public class StudySQLDAO extends PostgreSQLDAO<StudyDTO> {
         
         if (studyDbIds != null) {
             if (!studyDbIds.isEmpty()) {
-                query.appendANDWhereConditions(sqlFields.get("studyDbId"), ListToString(studyDbIds), "IN", null, tableAlias);
+                query.appendINConditions(sqlFields.get("studyDbId"), studyDbIds, tableAlias);
             }
         }        
         if (studyNames != null) {
             if (!studyNames.isEmpty()) {
-                query.appendANDWhereConditions(sqlFields.get("studyName"), ListToString(studyNames), "IN", null, tableAlias);
+                query.appendINConditions(sqlFields.get("studyName"), studyNames, tableAlias);
             }
         }
         if (commonCropNames != null) {
             if (!commonCropNames.isEmpty()) {
-                query.appendANDWhereConditions(sqlFields.get("commonCropName"), ListToString(commonCropNames), "IN", null, tableAlias);
+                query.appendINConditions(sqlFields.get("commonCropName"), commonCropNames, tableAlias);
             }
         }
         if (seasonDbIds != null) {
             if (!seasonDbIds.isEmpty()) {
-                query.appendANDWhereConditions(sqlFields.get("commonCropName"), ListToString(seasonDbIds), "IN", null, tableAlias);
+                query.appendINConditions(sqlFields.get("season"), seasonDbIds, tableAlias);
             }
         }
         
         if (active != null) {
+            if (query.where.length() > 0) {
+                query.addAND();
+            }             
+            query.where += "(";
             DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
             Date todayDate = new Date();
-            if (active == "true") {                
-                query.appendANDWhereConditions("start_date", dateFormat.format(todayDate), "<=", table, tableAlias);
-                query.appendANDWhereConditions("end_date", dateFormat.format(todayDate), ">=", table, tableAlias);
-            } else if (active=="false") {
-                query.appendANDWhereConditions("start_date", dateFormat.format(todayDate), ">", table, tableAlias);
-                query.appendORWhereConditions("end_date", dateFormat.format(todayDate), "<", table, tableAlias);
+            if ("true".equals(active)) {                
+                query.appendWhereConditions("start_date", dateFormat.format(todayDate), "<=", null, tableAlias);
+                query.appendANDWhereConditions("end_date", dateFormat.format(todayDate), ">=", null, tableAlias);
+            } else if ("false".equals(active)) {
+                query.appendWhereConditions("start_date", dateFormat.format(todayDate), ">", null, tableAlias);
+                query.appendORWhereConditions("end_date", dateFormat.format(todayDate), "<", null, tableAlias);
             }
+            query.where += ")";
         }
         
         if (sortBy != null) {

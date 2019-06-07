@@ -231,13 +231,7 @@ public class SQLQueryBuilder {
             } else {
                 this.where += " = ";
             }
-            
-            if (!"IN".equals(operator)) {
-                this.where += "'" + value + "'";
-            } else {
-                this.where += value;
-            }
-            
+            this.where += "'" + value + "'";
             if (type != null) {
                 this.where += type;
             }

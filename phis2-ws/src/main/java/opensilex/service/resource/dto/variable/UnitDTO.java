@@ -7,6 +7,8 @@
 //******************************************************************************
 package opensilex.service.resource.dto.variable;
 
+import java.util.ArrayList;
+import opensilex.service.model.OntologyReference;
 import opensilex.service.model.Unit;
 import opensilex.service.resource.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
 
@@ -15,7 +17,10 @@ import opensilex.service.resource.dto.rdfResourceDefinition.RdfResourceDefinitio
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class UnitDTO extends RdfResourceDefinitionDTO {
+    
+    protected ArrayList<OntologyReference> ontologiesReferences;
     public UnitDTO(Unit unit) {
         super(unit);
+        ontologiesReferences = unit.getOntologiesReferences();
     }
 }

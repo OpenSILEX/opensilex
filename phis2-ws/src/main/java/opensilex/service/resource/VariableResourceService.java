@@ -253,6 +253,20 @@ public class VariableResourceService extends ResourceService {
         );
     }
     
+    /**
+     * Get list of variable according to the given search parameters
+     * if withDetail is set to true, it will return variables with all traits, metods and units proeprties
+     * @param pageSize
+     * @param page
+     * @param uri
+     * @param label
+     * @param trait
+     * @param traitSKosReference
+     * @param method
+     * @param unit
+     * @param withDetail
+     * @return 
+     */
     private Response search(
         int pageSize,
         int page,

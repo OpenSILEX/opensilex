@@ -518,6 +518,20 @@ public class MethodDAO extends Rdf4jDAO<Method> {
 
     /**
      * Prepare query to get method by it's URI
+     * @example
+     * SELECT DISTINCT   ?label ?comment ?property ?object ?seeAlso WHERE {
+     * GRAPH <http://www.phenome-fppn.fr/diaphen/variables> { 
+     *      <http://www.phenome-fppn.fr/diaphen/id/methods/m001>  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  <http://www.opensilex.org/vocabulary/oeso#Method> . 
+     *      <http://www.phenome-fppn.fr/diaphen/id/methods/m001>  <http://www.w3.org/2000/01/rdf-schema#label>  ?label  . 
+     *      OPTIONAL {
+     *          <http://www.phenome-fppn.fr/diaphen/id/methods/m001> <http://www.w3.org/2000/01/rdf-schema#comment> ?comment . 
+     *      }
+     *      OPTIONAL {
+     *          <http://www.phenome-fppn.fr/diaphen/id/methods/m001> ?property ?object . 
+     *          ?object <http://www.w3.org/2000/01/rdf-schema#seeAlso> ?seeAlso .  
+     *          FILTER (?property IN(<http://www.w3.org/2008/05/skos#closeMatch>, <http://www.w3.org/2008/05/skos#exactMatch>, <http://www.w3.org/2008/05/skos#narrower>, <http://www.w3.org/2008/05/skos#broader>)) 
+     *      } 
+     *  }}
      * @param uri
      * @return 
      */

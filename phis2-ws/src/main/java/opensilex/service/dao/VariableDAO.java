@@ -461,6 +461,15 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
     
     /**
      * @param uri
+     * @example
+     *  SELECT DISTINCT   ?property ?object ?seeAlso WHERE {
+     *  GRAPH <http://www.phenome-fppn.fr/diaphen/variables> { 
+     *      <http://www.phenome-fppn.fr/diaphen/id/variables/v001>  ?property  ?object  . 
+     *      OPTIONAL {
+     *          {?object <http://www.w3.org/2000/01/rdf-schema#seeAlso> ?seeAlso} 
+     *      } 
+     *      FILTER ( (?property IN(<http://www.w3.org/2008/05/skos#closeMatch>, <http://www.w3.org/2008/05/skos#exactMatch>, <http://www.w3.org/2008/05/skos#narrower>, <http://www.w3.org/2008/05/skos#broader>)) ) 
+     *  }}
      * @return ontology references
      */
     private SPARQLQueryBuilder prepareSearchOntologiesReferencesQuery(String uri) {
@@ -845,6 +854,23 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
         return variable;
     }
     
+    /**
+     * Return searchQuery for variable by uri
+     * @example 
+     *   SELECT DISTINCT   ?label ?comment ?trait ?method ?unit WHERE {
+     *   GRAPH <http://www.phenome-fppn.fr/diaphen/variables> { 
+     *      <http://www.phenome-fppn.fr/diaphen/id/variables/v004>  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  <http://www.opensilex.org/vocabulary/oeso#Variable> . 
+     *      <http://www.phenome-fppn.fr/diaphen/id/variables/v004>  <http://www.w3.org/2000/01/rdf-schema#label>  ?label  . 
+     *      OPTIONAL {
+     *          <http://www.phenome-fppn.fr/diaphen/id/variables/v004> <http://www.w3.org/2000/01/rdf-schema#comment> ?comment . 
+     *      }
+     *      <http://www.phenome-fppn.fr/diaphen/id/variables/v004>  <http://www.opensilex.org/vocabulary/oeso#hasTrait>  ?trait  . 
+     *      <http://www.phenome-fppn.fr/diaphen/id/variables/v004>  <http://www.opensilex.org/vocabulary/oeso#hasMethod>  ?method  . 
+     *      <http://www.phenome-fppn.fr/diaphen/id/variables/v004>  <http://www.opensilex.org/vocabulary/oeso#hasUnit>  ?unit  . 
+     * }}
+     * @param uri
+     * @return 
+     */
     protected SPARQLQueryBuilder prepareSearchByUri(String uri) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);

@@ -200,17 +200,7 @@ public class VariableResourceService extends ResourceService {
         @ApiParam(value = "Search by method", example = DocumentationAnnotation.EXAMPLE_METHOD_URI) @QueryParam("method") @URL String method,
         @ApiParam(value = "Search by unit", example = DocumentationAnnotation.EXAMPLE_UNIT_URI) @QueryParam("unit") @URL String unit
     ) {
-        return this.search(
-            pageSize,
-            page,
-            uri,
-            label,
-            trait,
-            traitSKosReference,
-            method,
-            unit,
-            false
-        );
+        return this.search(pageSize, page, uri, label, trait, traitSKosReference, method, unit, false);
     }
     
     @GET
@@ -240,17 +230,7 @@ public class VariableResourceService extends ResourceService {
         @ApiParam(value = "Search by method", example = DocumentationAnnotation.EXAMPLE_METHOD_URI) @QueryParam("method") @URL String method,
         @ApiParam(value = "Search by unit", example = DocumentationAnnotation.EXAMPLE_UNIT_URI) @QueryParam("unit") @URL String unit
     ) {
-        return this.search(
-            pageSize,
-            page,
-            uri,
-            label,
-            trait,
-            traitSKosReference,
-            method,
-            unit,
-            true
-        );
+        return this.search(pageSize, page, uri, label, trait, traitSKosReference, method, unit, true);
     }
     
     /**

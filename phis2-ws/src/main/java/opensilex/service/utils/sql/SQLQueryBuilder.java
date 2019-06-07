@@ -231,7 +231,7 @@ public class SQLQueryBuilder {
             } else {
                 this.where += " = ";
             }
-                this.where += "'" + value + "'";
+            this.where += "'" + value + "'";
             if (type != null) {
                 this.where += type;
             }

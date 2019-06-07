@@ -300,7 +300,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
     public Response getStudies (
         @ApiParam(value = "Search by studyDbId", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI ) @QueryParam("studyDbId") @URL String studyDbId,
         @ApiParam(value = "Search by commonCropName", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_CROP_SPECIES ) @QueryParam("commonCropName") String commonCropName,
-        @ApiParam(value = "Search by studyTypeDbId - NOT COVERED YET", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_CROP_SPECIES) @QueryParam("studyTypeDbId") String studyTypeDbId,
+        @ApiParam(value = "Search by studyTypeDbId - NOT COVERED YET") @QueryParam("studyTypeDbId") String studyTypeDbId,
         @ApiParam(value = "Search by programDbId - NOT COVERED YET ") @QueryParam("programDbId ") String programDbId,
         @ApiParam(value = "Search by locationDbId - NOT COVERED YET") @QueryParam("locationDbId") String locationDbId,
         @ApiParam(value = "Search by seasonDbId", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_CAMPAIGN ) @QueryParam("seasonDbId") String seasonDbId,
@@ -312,7 +312,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
         ) throws SQLException {               
 
-        StudySQLDAO studysqlDAO = new StudySQLDAO();
+         StudySQLDAO studysqlDAO = new StudySQLDAO();
 
         if (studyDbId != null) {
             studysqlDAO.studyDbIds.add(studyDbId);
@@ -502,6 +502,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         List<String> variableURIs = new ArrayList();
 
         if (studyDbId != null) {
+            studyDAO.studyDbIds = new ArrayList();
             studyDAO.studyDbIds.add(studyDbId);
         }      
 
@@ -614,6 +615,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         StudySQLDAO studyDAO = new StudySQLDAO();
 
         if (studyDbId != null) {
+            studyDAO.studyDbIds = new ArrayList();
             studyDAO.studyDbIds.add(studyDbId);
         }      
 
@@ -774,7 +776,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         ArrayList<Status> statusList = new ArrayList<>();  
 
         ScientificObjectRdf4jDAO scientificObjectsDAO = new ScientificObjectRdf4jDAO();
-        ArrayList<ScientificObject> scientificObjects = scientificObjectsDAO.find(null, observationLevel, studyDbId, null);
+        ArrayList<ScientificObject> scientificObjects = scientificObjectsDAO.find(null, null, null, observationLevel, studyDbId, null);
 
         ExperimentSQLDAO experimentDAO = new ExperimentSQLDAO();
         experimentDAO.uri = studyDbId;
@@ -845,8 +847,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
 
         ArrayList<BrapiObservationDTO> observations = new ArrayList();  
         ScientificObjectRdf4jDAO objectDAO = new ScientificObjectRdf4jDAO();
-        
-        ArrayList<ScientificObject> objectsList = objectDAO.find(null, null, studyDAO.studyDbIds.get(0), null);
+        ArrayList<ScientificObject> objectsList = objectDAO.find(null, null, null, null, studyDAO.studyDbIds.get(0), null);
         ArrayList<Variable> variablesList = new ArrayList();
 
         if (variableURIs.isEmpty()) {  

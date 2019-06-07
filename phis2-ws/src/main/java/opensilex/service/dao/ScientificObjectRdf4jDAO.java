@@ -463,7 +463,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                     children.put(bindingSet.getValue(CHILD).stringValue(), scientificObject);
                 }
             }
-            
+                
         } else if (!layerDTO.getObjectType().equals(Oeso.CONCEPT_EXPERIMENT.toString())) { 
             // If only direct descendants needed and not an experimentation
             //SILEX:test
@@ -495,16 +495,69 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     }
     
     /**
-     * Find scientific objects by the given list of search params
+     * Generates the query to get the list of properties for a given scientific object
      * @param uri
+     * @return 
+     * @example
+     * SELECT   ?relation ?property ?propertyType 
+     * WHERE {
+     *      <http://www.opensilex.org/opensilex/2019/o19000115>  ?relation  ?property  . 
+     *      OPTIONAL {?property <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?propertyType } 
+     * }
+     */
+    public SPARQLQueryBuilder prepareSearchScientificObjectProperties(String uri) {
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        
+        query.appendSelect(" ?" + RELATION + " ?" + PROPERTY + " ?" + PROPERTY_TYPE);
+        query.appendTriplet(uri, "?" + RELATION, "?" + PROPERTY, null);
+        
+        query.appendOptional("?" + PROPERTY + " <" + Rdf.RELATION_TYPE.toString() + "> ?" + PROPERTY_TYPE);
+        
+        LOGGER.debug(query.toString());
+        
+        return query;
+    }
+    
+    /**
+     * Get the properties of a given scientific object uri.
+     * @param uri
+     * @return the list of properties
+     */
+    public ArrayList<Property> findScientificObjectProperties(String uri) {
+        SPARQLQueryBuilder queryProperties = prepareSearchScientificObjectProperties(uri);
+        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryProperties.toString());
+        ArrayList<Property> properties = new ArrayList<>();
+            
+            try (TupleQueryResult result = tupleQuery.evaluate()) {
+                while (result.hasNext()) {
+                    BindingSet bindingSet = result.next();
+                    Property property = new Property();
+                    
+                    property.setRelation(bindingSet.getValue(RELATION).stringValue());
+                    property.setValue(bindingSet.getValue(PROPERTY).stringValue());
+                    if (bindingSet.getValue(PROPERTY_TYPE) != null) {
+                        property.setRdfType(bindingSet.getValue(PROPERTY_TYPE).stringValue());
+                    }
+                    
+                    properties.add(property);
+                }
+            }
+        return properties;
+    }
+    
+    /**
+     * Find scientific objects by the given list of search params
+     * @param page
+     * @param uri
+     * @param pageSize
      * @param rdfType
      * @param experiment
      * @param alias
      * @return scientific objects list, result of the user query, empty if no result
      */
-    public ArrayList<ScientificObject> find(String uri, String rdfType, String experiment, String alias) {
+    public ArrayList<ScientificObject> find(Integer page, Integer pageSize, String uri, String rdfType, String experiment, String alias) {
         try {
-            SPARQLQueryBuilder sparqlQuery = prepareSearchQuery(uri, rdfType, experiment, alias);
+            SPARQLQueryBuilder sparqlQuery = prepareSearchQuery(false, page, pageSize, uri, rdfType, experiment, alias);
             //SILEX:test
             //For pool connection issues
             rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID);
@@ -527,15 +580,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                     }
                     
                     ScientificObject scientificObject = null;
-                    
-                    Property property = new Property();
-                    
-                    property.setRelation(bindingSet.getValue(RELATION).stringValue());
-                    property.setValue(bindingSet.getValue(PROPERTY).stringValue());
-                    if (bindingSet.getValue(PROPERTY_TYPE) != null) {
-                        property.setRdfType(bindingSet.getValue(PROPERTY_TYPE).stringValue());
-                    }
-                    
+                                        
                     if (alreadyFoundedUri) {
                         scientificObject = foundedScientificObjects.get(actualUri);
                     } else {
@@ -557,7 +602,8 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                         }
                     }
                     
-                    scientificObject.addProperty(property);
+                    //Get scientific object properties
+                    scientificObject.setProperties(findScientificObjectProperties(actualUri));
                     
                     foundedScientificObjects.put(actualUri, scientificObject);
                 }
@@ -592,47 +638,45 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
 
     /**
      * Generates a query to search scientific objects by the given search params.
+     * @param page
+     * @param pageSize
      * @param uri
      * @param rdfType
      * @param experiment
      * @param alias
+     * @param count true if the query will be used to count number of scientific objects corresponding to the search result. False if not.
      * @example 
-     * SELECT DISTINCT  ?uri ?alias ?experiment  ?rdfType  ?relation ?property ?propertyType 
+     * SELECT DISTINCT  ?uri ?alias ?experiment  ?rdfType 
      * WHERE {
      *      OPTIONAL {
      *          ?uri <http://www.w3.org/2000/01/rdf-schema#label> ?alias . 
      *      }
      *      ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
      *      ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.opensilex.org/vocabulary/oeso#ScientificObject> . 
-     *      ?uri  ?relation  ?property  . 
      *      OPTIONAL {
-     *          ?uri <http://www.opensilex.org/vocabulary/oeso#participatesIn> ?experiment . ?property <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?propertyType 
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#participatesIn> ?experiment .  
      *      } 
-     *      FILTER ( (REGEX ( str(?uri),".*o.*","i")) ) 
      * }
      * @return the generated query
      */
-    protected SPARQLQueryBuilder prepareSearchQuery(String uri, String rdfType, String experiment, String alias) {    
+    protected SPARQLQueryBuilder prepareSearchQuery(boolean count, Integer page, Integer pageSize, String uri, String rdfType, String experiment, String alias) {    
         SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
         
         sparqlQuery.appendDistinct(true);
-        
-        String optional = "";
                 
         //URI filter
-        if (uri == null) {
-            uri = "";
-        }
         sparqlQuery.appendSelect("?" + URI);
-        sparqlQuery.appendAndFilter("REGEX ( str(?" + URI + "),\".*" + uri + ".*\",\"i\")");
+        if (uri != null) {
+            sparqlQuery.appendAndFilter("REGEX ( str(?" + URI + "),\".*" + uri + ".*\",\"i\")");
+        }
 
         //Label filter
         sparqlQuery.appendSelect("?" + ALIAS);
-        if (alias == null) {
+        if (alias == null && !count) {
             sparqlQuery.beginBodyOptional();
             sparqlQuery.appendToBody("?" + URI + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + ALIAS + " . ");
             sparqlQuery.endBodyOptional();
-        } else {
+        } else if (!count) {
             sparqlQuery.appendTriplet("?" + URI, Rdfs.RELATION_LABEL.toString(), "?" + ALIAS, null);
             sparqlQuery.appendAndFilter("REGEX ( str(?" + ALIAS + "),\".*" + alias + ".*\",\"i\")");
         }
@@ -640,9 +684,9 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         //Experiment filter
         if (experiment != null) {
               sparqlQuery.appendFrom("<" + Contexts.VOCABULARY.toString() + "> \n FROM <" + experiment + ">");
-        } else {
+        } else if (!count) {
             sparqlQuery.appendSelect("?" + EXPERIMENT);
-            optional += "?" + URI + " <" + Oeso.RELATION_PARTICIPATES_IN.toString() + "> " + "?" + EXPERIMENT + " . ";
+            sparqlQuery.appendOptional("?" + URI + " <" + Oeso.RELATION_PARTICIPATES_IN.toString() + "> " + "?" + EXPERIMENT + " . ");
         }
         
         //Rdf type filter
@@ -657,12 +701,10 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                     Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString(), null);
         }
         
-        sparqlQuery.appendSelect(" ?" + RELATION + " ?" + PROPERTY + " ?" + PROPERTY_TYPE);
-        sparqlQuery.appendTriplet("?" + URI, "?" + RELATION, "?" + PROPERTY, null);
-        
-        optional += "?" + PROPERTY + " <" + Rdf.RELATION_TYPE.toString() + "> ?" + PROPERTY_TYPE;
-        
-        sparqlQuery.appendOptional(optional);
+        if (page != null && pageSize != null) {
+            sparqlQuery.appendLimit(pageSize);
+            sparqlQuery.appendOffset(page * pageSize);
+        }
         
         LOGGER.debug(SPARQL_QUERY + sparqlQuery.toString());
         
@@ -854,7 +896,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      *         null if this scientific object does not exist.
      */
     public ScientificObject getScientificObjectInContext(String uri, String context) {
-        ArrayList<ScientificObject> scientificObjects = find(uri, null, context, null);
+        ArrayList<ScientificObject> scientificObjects = find(null, null, uri, null, context, null);
         if (!scientificObjects.isEmpty()) {
             return scientificObjects.get(0);
         } else {
@@ -1066,5 +1108,57 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     @Override
     public void validate(List<ScientificObject> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    /**
+     * Generates the query to count the number of scientific objects corresponding to the search params given.
+     * @param uri
+     * @param rdfType
+     * @param experimentURI
+     * @param alias
+     * @return The generated query
+     * @example
+     * SELECT DISTINCT  (COUNT(DISTINCT ?uri) AS ?count) 
+     * WHERE {
+     *      OPTIONAL {
+     *          ?uri <http://www.w3.org/2000/01/rdf-schema#label> ?alias . 
+     *      }
+     *      ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
+     *      ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.opensilex.org/vocabulary/oeso#ScientificObject> . 
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#participatesIn> ?experiment .  
+     *      } 
+     * }
+     */
+    private SPARQLQueryBuilder prepareCount(String uri, String rdfType, String experimentURI, String alias) {
+        SPARQLQueryBuilder query = prepareSearchQuery(true, null, null, uri, rdfType, experimentURI, alias);
+        query.clearSelect();
+        query.clearLimit();
+        query.clearOffset();
+        query.clearGroupBy();
+        query.appendSelect("(COUNT(DISTINCT ?" + URI + ") AS ?" + COUNT_ELEMENT_QUERY + ")");
+        LOGGER.debug(SPARQL_QUERY + " " + query.toString());
+        return query;
+    }
+    
+    /**
+     * Count the number of scientific objects by the given search parameters.
+     * @param uri
+     * @param rdfType
+     * @param experimentURI
+     * @param alias
+     * @return The number of scientific objects.
+     */
+    public Integer count(String uri, String rdfType, String experimentURI, String alias) {
+        SPARQLQueryBuilder prepareCount = prepareCount(uri, rdfType, experimentURI, alias);
+        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
+        Integer count = 0;
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
+            if (result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                count = Integer.parseInt(bindingSet.getValue(COUNT_ELEMENT_QUERY).stringValue());
+            }
+        }
+        return count;
     }
 }

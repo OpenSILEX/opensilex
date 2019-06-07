@@ -315,12 +315,15 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
          StudySQLDAO studysqlDAO = new StudySQLDAO();
 
         if (studyDbId != null) {
+            studysqlDAO.studyDbIds = new ArrayList();
             studysqlDAO.studyDbIds.add(studyDbId);
         }     
         if (commonCropName != null) {
+            studysqlDAO.commonCropNames = new ArrayList();
             studysqlDAO.commonCropNames.add(commonCropName);
         }    
         if (seasonDbId != null) {
+            studysqlDAO.seasonDbIds = new ArrayList();
             studysqlDAO.seasonDbIds.add(seasonDbId);
         }         
         if (sortBy != null) {
@@ -334,7 +337,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         }
         
         studysqlDAO.setPageSize(pageSize);
-        studysqlDAO.setPage(page);
+         studysqlDAO.setPage(page);
         studysqlDAO.user=userSession.getUser();
         
         ArrayList<Status> statusList = new ArrayList<>(); 

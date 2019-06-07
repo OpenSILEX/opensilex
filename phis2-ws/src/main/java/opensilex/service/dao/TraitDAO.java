@@ -10,7 +10,6 @@ package opensilex.service.dao;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import javax.ws.rs.NotFoundException;
 import static opensilex.service.dao.VariableDAO.OBJECT;
 import static opensilex.service.dao.VariableDAO.PROPERTY;
 import static opensilex.service.dao.VariableDAO.SEE_ALSO;

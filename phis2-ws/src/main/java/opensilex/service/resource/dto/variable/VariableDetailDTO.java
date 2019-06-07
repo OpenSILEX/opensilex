@@ -7,6 +7,8 @@
 //******************************************************************************
 package opensilex.service.resource.dto.variable;
 
+import java.util.ArrayList;
+import opensilex.service.model.OntologyReference;
 import opensilex.service.model.Variable;
 import opensilex.service.resource.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
 
@@ -18,6 +20,7 @@ public class VariableDetailDTO extends RdfResourceDefinitionDTO {
     protected TraitDTO trait;
     protected MethodDTO method;
     protected UnitDTO unit;
+    protected ArrayList<OntologyReference> ontologiesReferences;
     
     public VariableDetailDTO(Variable variable) {
         super(variable);
@@ -25,6 +28,7 @@ public class VariableDetailDTO extends RdfResourceDefinitionDTO {
         trait = new TraitDTO(variable.getTrait());
         method = new MethodDTO(variable.getMethod());
         unit = new UnitDTO(variable.getUnit());
+        ontologiesReferences = variable.getOntologiesReferences();
     }
 
     public TraitDTO getTrait() {

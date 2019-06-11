@@ -1170,13 +1170,14 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
     }
     
     /**
-     * Gets the campaign last experiment URI.
+     * Gets the campaign last experiment id.
      * @example
      *  SELECT uri, regexp_matches(uri, '.*2019-[0-9]{1,2}$') 
      *  FROM trial
      *  WHERE campaign = '2019';
      * @param campaign
-     * @return the campaign last experiment URI
+     * @return the campaign last experiment number. 
+     * Use a regex to get only experiments corresponding to our current experiments uri format.
      */
     public Integer getCampaignLastExperimentUri(String campaign) {
         String query = "SELECT uri, regexp_matches(uri, '.*" + campaign + "-[0-9]{1,2}$') "

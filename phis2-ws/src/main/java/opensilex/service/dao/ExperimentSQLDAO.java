@@ -1172,20 +1172,17 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
     /**
      * Gets the campaign last experiment URI.
      * @example
-     *  SELECT count(e.uri)
-     *  FROM experiment e
-     *  WHERE e.campaign="2019"
+     *  SELECT uri, regexp_matches(uri, '.*2019-[0-9]{1,2}$') 
+     *  FROM trial
+     *  WHERE campaign = '2019';
      * @param campaign
      * @return the campaign last experiment URI
      */
-    public String getCampaignLastExperimentUri(String campaign) {
-        SQLQueryBuilder query = new SQLQueryBuilder();
-        query.appendMax();
-        query.appendDistinct();
-        query.appendSelect(tableAlias + ".uri");
-        query.appendFrom(table, tableAlias);
-        query.appendWhereConditions("campaign", campaign, "=", null, tableAlias);
-       
+    public Integer getCampaignLastExperimentUri(String campaign) {
+        String query = "SELECT uri, regexp_matches(uri, '.*" + campaign + "-[0-9]{1,2}$') "
+                     + "FROM trial "
+                     + "WHERE campaign = '" + campaign + "';";
+        
         Connection connection = null;
         ResultSet resultSet = null;
         Statement statement = null;
@@ -1193,14 +1190,17 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
         try {
             connection = dataSource.getConnection();
             statement = connection.createStatement();
-            LOGGER.debug("query: " + query.toString());
-            resultSet = statement.executeQuery(query.toString());
-
-            if (resultSet.next()) {
-                return resultSet.getString(1);
-            } else {
-                return null;
+            LOGGER.debug("query: " + query);
+            resultSet = statement.executeQuery(query);
+            Integer maxExperimentNumber = 0;
+            while(resultSet.next()) {
+                String[] foundedUriSplit = resultSet.getString("uri").split("-");
+                if (Integer.parseInt(foundedUriSplit[1]) > maxExperimentNumber) {
+                    maxExperimentNumber = Integer.parseInt(foundedUriSplit[1]);
+                }
             }
+            
+            return maxExperimentNumber;
         } catch (SQLException e) {
             LOGGER.error(e.getMessage(), e);
             return null;

@@ -1196,8 +1196,8 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
             Integer maxExperimentNumber = 0;
             while(resultSet.next()) {
                 String[] foundedUriSplit = resultSet.getString("uri").split("-");
-                if (Integer.parseInt(foundedUriSplit[1]) > maxExperimentNumber) {
-                    maxExperimentNumber = Integer.parseInt(foundedUriSplit[1]);
+                if (Integer.parseInt(foundedUriSplit[foundedUriSplit.length-1]) > maxExperimentNumber) {
+                    maxExperimentNumber = Integer.parseInt(foundedUriSplit[foundedUriSplit.length-1]);
                 }
             }
             

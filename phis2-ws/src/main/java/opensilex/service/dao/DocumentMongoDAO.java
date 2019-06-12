@@ -43,16 +43,14 @@ public class DocumentMongoDAO extends MongoDAO<Document> {
     
     /**
      * Inserts a file.
-     * @param filePath
      * @param fileUri
+     * @param file
      * @return POSTResultsReturn
      */
-    public POSTResultsReturn insertFile(String filePath, String fileUri) {
+    public POSTResultsReturn insertFile(String fileUri, File file) {
         POSTResultsReturn result = null;
         List<Status> insertStatusList = new ArrayList<>();
         try {
-            File file = new File(filePath);
-            
             GridFSInputFile in = gridFS.createFile(file);
             in.put("uri", fileUri);
             in.save();

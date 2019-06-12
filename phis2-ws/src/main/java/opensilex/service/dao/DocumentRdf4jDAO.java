@@ -8,6 +8,7 @@
 //******************************************************************************
 package opensilex.service.dao;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -163,9 +164,9 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
      * @return true document saved in mongodb
      *         false an error occurred
      */
-    private POSTResultsReturn saveFileInMongoDB(String filePath, String fileURI) {
+    private POSTResultsReturn saveFileInMongoDB(String fileURI, File file) {
         DocumentMongoDAO documentDaoMongo = new DocumentMongoDAO();
-        return documentDaoMongo.insertFile(filePath, fileURI);
+        return documentDaoMongo.insertFile(fileURI, file);
     }
     
     /**
@@ -281,9 +282,10 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
     /**
      * Insert document's metadata in the triplestore and the file in mongo
      * @param documentsMetadata
+     * @param file
      * @return the insert result, with each error or information
      */
-    public POSTResultsReturn insert(List<DocumentMetadataDTO> documentsMetadata) {
+    public POSTResultsReturn insert(List<DocumentMetadataDTO> documentsMetadata, File file) {
         List<Status> insertStatus = new ArrayList<>(); // returned status, Failed or Info
         List<String> createdResourcesURIs = new ArrayList<>();
 
@@ -303,7 +305,7 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
             final String documentName = generateDocumentsURI(); 
             
             annotObject.setUri(documentName);
-            POSTResultsReturn saveFileResult = saveFileInMongoDB(annotObject.getServerFilePath(), documentName);
+            POSTResultsReturn saveFileResult = saveFileInMongoDB(documentName, file);
             insertStatus.addAll(saveFileResult.statusList);
             
             //Document has been save

@@ -181,7 +181,7 @@ public class DocumentResourceService extends ResourceService {
     
     /**
      * Address of the file to send.
-     * @param in File
+     * @param file File
      * @param docUri Document URI
      * @param headers Request header
      * @param request
@@ -207,7 +207,7 @@ public class DocumentResourceService extends ResourceService {
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postDocumentFile(
-            @ApiParam(value = "File to upload") File in,
+            @ApiParam(value = "File to upload") File file,
             @ApiParam(value = "URI given from \"/documents\" path for upload") @QueryParam("uri") @URL String docUri,
             @Context HttpHeaders headers,
             @Context HttpServletRequest request) throws URISyntaxException {
@@ -228,7 +228,7 @@ public class DocumentResourceService extends ResourceService {
         }
         
         // Check md5 checksum 
-        String hash = getHash(in);
+        String hash = getHash(file);
         if (hash != null && !WAITING_ANNOT_INFORMATION.get(docUri).getChecksum().equals(hash)) {
             statusList.add(new Status("MD5 error", "Error", "Checksum MD5 doesn't match. Corrupted File."));
             postResponse = new ResponseFormPOST(statusList);
@@ -238,84 +238,13 @@ public class DocumentResourceService extends ResourceService {
         String media = WAITING_ANNOT_INFORMATION.get(docUri).getDocumentType();
         media = media.substring(media.lastIndexOf("#") + 1, media.length());
         
-        //SILEX:info
-        // Manage authentication error
-        //SILEX:info
-        FileUploader jsch = null;    
-        try {
-            jsch = new FileUploader();
-        } catch (Exception exp) {
-            LOGGER.error(exp.getMessage(), exp);
-            throw new WebApplicationException(Response
-                    .status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(new ResponseFormPOST(new Status(
-                            "FileUploaderException",
-                            StatusCodeMsg.ERR,
-                            "Problem with file system configuration")))
-                    .build());
-        }
-        //SILEX:conception
-        // Add a class to group constants for properties
-        //\SILEX:conception
-        final String webAppApiDocsName = PropertiesFileManager.getConfigFileProperty("service", "webAppApiDocsName");
-        try {
-            WAITING_ANNOT_FILE_CHECK.put(docUri, Boolean.TRUE); // Processing file
-            LOGGER.debug(jsch.getSFTPWorkingDirectory() + "/" + media);
-            // Create document directory if it doesn't exists
-            File documentDirectory = new File(jsch.getSFTPWorkingDirectory());
-            if (!documentDirectory.isDirectory()) {
-                if (!documentDirectory.mkdirs()) {
-                    LOGGER.error("Can't create " + webAppApiDocsName + " temporary documents directory");
-                    throw new WebApplicationException(
-                            Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                            .entity(new ResponseFormPOST(new Status(
-                                    "Can't create " + webAppApiDocsName + " temporary documents directory", 
-                                    StatusCodeMsg.ERR, 
-                                    null)))
-                            .build());
-                }else{
-                    // Add good rights on the document directory which is on the server
-                    try {
-                        Runtime.getRuntime().exec("chmod -R 755 " + jsch.getSFTPWorkingDirectory());
-                        LOGGER.info( webAppApiDocsName + " temporary documents directory rights successfully updated");
-                    } catch (IOException e) {
-                        LOGGER.error("Can't change rights on " + webAppApiDocsName + " temporary documents directory");
-                    }
-                }
-            }
-            //SILEX:test
-            jsch.getChannelSftp().cd(jsch.getSFTPWorkingDirectory());
-            //\SILEX:test
-        } catch (SftpException e) {
-            statusList.add(new Status("SftException", StatusCodeMsg.ERR, e.getMessage()));
-            LOGGER.error(e.getMessage(), e);
-        }
-        
-        final String serverFileName = 
-                ResourcesUtils.getUniqueID() 
-                + "." + WAITING_ANNOT_INFORMATION.get(docUri).getExtension();
-        final String serverFilePath = jsch.getSFTPWorkingDirectory() + "/" + serverFileName;
-        
-        boolean fileTransfered = jsch.fileTransfer(in, serverFileName);
-        jsch.closeConnection();
-        
-        if (!fileTransfered) { // File hasn't been saved
-            statusList.add(new Status(
-                    "File upload error", 
-                    "Error", 
-                    "Problem during file upload. Try to submit it again " + docUri));
-            postResponse = new ResponseFormPOST(statusList);
-            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
-        }
-        
-        WAITING_ANNOT_INFORMATION.get(docUri).setServerFilePath(serverFilePath);
         DocumentRdf4jDAO documentsDao = new DocumentRdf4jDAO();
         if (request.getRemoteAddr() != null) {
             documentsDao.remoteUserAdress = request.getRemoteAddr();
         }
         documentsDao.user = userSession.getUser();
         final POSTResultsReturn insertAnnotationJSON = 
-                documentsDao.insert(Arrays.asList(WAITING_ANNOT_INFORMATION.get(docUri)));
+                documentsDao.insert(Arrays.asList(WAITING_ANNOT_INFORMATION.get(docUri)), file);
 
         postResponse = new ResponseFormPOST(insertAnnotationJSON.statusList);
 

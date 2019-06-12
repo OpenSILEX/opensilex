@@ -8,7 +8,6 @@
 //******************************************************************************
 package opensilex.service.resource;
 
-import com.jcraft.jsch.SftpException;
 import com.twmacinta.util.MD5;
 
 import io.swagger.annotations.Api;
@@ -42,7 +41,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -67,7 +65,6 @@ import opensilex.service.resource.dto.DocumentMetadataDTO;
 import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.utils.DocumentWaitingCheck;
-import opensilex.service.utils.FileUploader;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.ResourcesUtils;
 import opensilex.service.view.brapi.Status;

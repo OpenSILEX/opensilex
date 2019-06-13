@@ -522,20 +522,25 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     public ArrayList<Property> findScientificObjectProperties(String uri) {
         SPARQLQueryBuilder queryProperties = prepareSearchScientificObjectProperties(uri);
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryProperties.toString());
+        List<String> foundedProperties = new ArrayList<>();
         ArrayList<Property> properties = new ArrayList<>();
             
             try (TupleQueryResult result = tupleQuery.evaluate()) {
                 while (result.hasNext()) {
                     BindingSet bindingSet = result.next();
-                    Property property = new Property();
                     
-                    property.setRelation(bindingSet.getValue(RELATION).stringValue());
-                    property.setValue(bindingSet.getValue(PROPERTY).stringValue());
-                    if (bindingSet.getValue(PROPERTY_TYPE) != null) {
-                        property.setRdfType(bindingSet.getValue(PROPERTY_TYPE).stringValue());
-                    }
+                    if (!foundedProperties.contains(bindingSet.getValue(PROPERTY).stringValue())) {
+                        Property property = new Property();
                     
-                    properties.add(property);
+                        property.setRelation(bindingSet.getValue(RELATION).stringValue());
+                        property.setValue(bindingSet.getValue(PROPERTY).stringValue());
+                        if (bindingSet.getValue(PROPERTY_TYPE) != null) {
+                            property.setRdfType(bindingSet.getValue(PROPERTY_TYPE).stringValue());
+                        }
+
+                        properties.add(property);
+                        foundedProperties.add(bindingSet.getValue(PROPERTY).stringValue());
+                    };
                 }
             }
         return properties;

@@ -3,11 +3,12 @@
 // SILEX-PHIS
 // Copyright © INRA 2019
 // Creation date: 1 mai 2019
-// Contact: Expression userEmail is undefined on line 6, column 15 in file:///home/boizetal/OpenSilex/phis-ws/phis2-ws/licenseheader.txt., anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.resource.dto.experiment;
 
 import java.util.ArrayList;
+import opensilex.service.resource.brapi.AdditionalInfo;
 
 /**
  * Represents the response of get studies et post studies-search
@@ -15,7 +16,7 @@ import java.util.ArrayList;
  */
 public class StudyDTO {
     private String active;
-    private String additionalInfo;
+    private AdditionalInfo additionalInfo;
     private String commonCropName;
     private String documentationURL;
     private String endDate;
@@ -42,11 +43,11 @@ public class StudyDTO {
         this.active = active;
     }
 
-    public String getAdditionalInfo() {
+    public AdditionalInfo getAdditionalInfo() {
         return additionalInfo;
     }
 
-    public void setAdditionalInfo(String additionalInfo) {
+    public void setAdditionalInfo(AdditionalInfo additionalInfo) {
         this.additionalInfo = additionalInfo;
     }
 
@@ -185,6 +186,5 @@ public class StudyDTO {
     public void setTrialName(String trialName) {
         this.trialName = trialName;
     }
-
 
 }

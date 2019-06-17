@@ -472,17 +472,11 @@ public class UriGenerator {
      */
     private static String generateExperimentUri(String campaign) {
         //1. Get the campaign last experiment URI
-        String campaignLastExperimentUri = (new ExperimentSQLDAO()).getCampaignLastExperimentUri(campaign);
+        Integer campaignLastExperimentUri = (new ExperimentSQLDAO()).getCampaignLastExperimentUri(campaign);
         //2. Generate the URI of the experiment
-        int newExperimentNumber;
-        if (campaignLastExperimentUri == null) {
-            newExperimentNumber = 1;
-        }
-        else {
-            String[] uriSplitted = campaignLastExperimentUri.split(EXPERIMENT_URI_SEPARATOR);
-            int campaignLastExperimentNumber = Integer.parseInt(uriSplitted[uriSplitted.length - 1]);
-            newExperimentNumber = campaignLastExperimentNumber + 1;
-        }
+        
+        Integer newExperimentNumber = campaignLastExperimentUri + 1;
+        
         return PLATFORM_URI + PLATFORM_CODE + campaign + EXPERIMENT_URI_SEPARATOR + newExperimentNumber;
     }
     

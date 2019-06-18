@@ -295,6 +295,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         studysqlDAO.user=userSession.getUser();
 
         if (studyDbId != null) {
+            studysqlDAO.studyDbIds = new ArrayList();
             studysqlDAO.studyDbIds.add(studyDbId);
         }      
 

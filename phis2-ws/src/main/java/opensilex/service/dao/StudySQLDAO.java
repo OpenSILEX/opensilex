@@ -26,7 +26,9 @@ import opensilex.service.dao.exception.ResourceAccessDeniedException;
 import opensilex.service.dao.manager.PostgreSQLDAO;
 import opensilex.service.datasource.PostgreSQLDataSource;
 import opensilex.service.model.Experiment;
+import opensilex.service.resource.brapi.AdditionalInfo;
 import opensilex.service.resource.dto.experiment.StudyDTO;
+import opensilex.service.utils.sql.JoinAttributes;
 import opensilex.service.utils.sql.SQLQueryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +42,7 @@ public class StudySQLDAO extends PostgreSQLDAO<StudyDTO> {
     final static Logger LOGGER = LoggerFactory.getLogger(StudySQLDAO.class);
     
     public String active;
-    public ArrayList<String> commonCropNames;
+    public String commonCropName;
     public ArrayList<String> seasonDbIds;
     public ArrayList<String> studyDbIds;
     public ArrayList<String> studyNames;
@@ -63,6 +65,7 @@ public class StudySQLDAO extends PostgreSQLDAO<StudyDTO> {
         createSQLFields.put("studyName", "alias");
         createSQLFields.put("commonCropName", "crop_species");  
         createSQLFields.put("season", "campaign");  
+        createSQLFields.put("keywords", "keywords"); 
         return createSQLFields;
     }
 
@@ -89,7 +92,7 @@ public class StudySQLDAO extends PostgreSQLDAO<StudyDTO> {
     
     @Override
     public ArrayList<StudyDTO> allPaginate() {
-        ResultSet queryResult = null;
+                ResultSet queryResult = null;
         Connection connection = null;
         Statement statement = null;
         ArrayList<StudyDTO> studies = new ArrayList();
@@ -119,6 +122,9 @@ public class StudySQLDAO extends PostgreSQLDAO<StudyDTO> {
                 study.setCommonCropName(queryResult.getString(sqlFields.get("commonCropName")));
                 study.setStartDate(queryResult.getString(sqlFields.get("startDate")));
                 study.setEndDate(queryResult.getString(sqlFields.get("endDate")));
+                AdditionalInfo addInfo = new AdditionalInfo();
+                addInfo.setKeywords(queryResult.getString(sqlFields.get("keywords")));
+                study.setAdditionalInfo(addInfo);
                 ArrayList<String> seasons = new ArrayList();
                 seasons.add(queryResult.getString(sqlFields.get("season")));
                 study.setSeasons(seasons);
@@ -130,7 +136,7 @@ public class StudySQLDAO extends PostgreSQLDAO<StudyDTO> {
                 } else {
                     study.setActive("false");                        
                 }
-//              
+                
                 //SILEX:INFO
                 //check if the user has access to the study  
                 Experiment experiment = new Experiment(study.getStudyDbId());
@@ -139,7 +145,10 @@ public class StudySQLDAO extends PostgreSQLDAO<StudyDTO> {
                     studies.add(study);
                 }
                 //\SILEX:INFO
+                
             }
+            
+            studies = getStudiesProject(studies, statement);
                       
         } catch (SQLException ex) {
             java.util.logging.Logger.getLogger(StudySQLDAO.class.getName()).log(Level.SEVERE, null, ex);
@@ -158,6 +167,7 @@ public class StudySQLDAO extends PostgreSQLDAO<StudyDTO> {
                 java.util.logging.Logger.getLogger(ExperimentSQLDAO.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+        
         return studies;
     }
 
@@ -241,10 +251,8 @@ public class StudySQLDAO extends PostgreSQLDAO<StudyDTO> {
                 query.appendINConditions(sqlFields.get("studyName"), studyNames, tableAlias);
             }
         }
-        if (commonCropNames != null) {
-            if (!commonCropNames.isEmpty()) {
-                query.appendINConditions(sqlFields.get("commonCropName"), commonCropNames, tableAlias);
-            }
+        if (commonCropName != null) {
+            query.appendANDWhereConditions(sqlFields.get("commonCropName"), commonCropName, "CONTAINS_OPERATOR", null, tableAlias);
         }
         if (seasonDbIds != null) {
             if (!seasonDbIds.isEmpty()) {
@@ -281,20 +289,6 @@ public class StudySQLDAO extends PostgreSQLDAO<StudyDTO> {
         return query;
     }
     
-    private String ListToString(ArrayList<String> list) {
-        String listInString = "(";
-        for (String element:list) {
-            listInString = listInString + "'" + element + "',";
-            
-        }
-        //remove last ","
-        listInString = listInString.substring(0, listInString.length()-1);
-
-        listInString = listInString + ")";    
-
-        return listInString;
-    }
-
     @Override
     public List<StudyDTO> create(List<StudyDTO> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -319,5 +313,38 @@ public class StudySQLDAO extends PostgreSQLDAO<StudyDTO> {
     public void validate(List<StudyDTO> objects) throws DAOPersistenceException, DAODataErrorAggregateException, DAOPersistenceException, ResourceAccessDeniedException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-        
+
+    /**
+     * Gets studies projects.
+     * @param experiments ArrayList<Experiment> list of experiments for which 
+     * the list of projects is also needed
+     * @param statement Statement
+     * @return the list given in parameter with the project list for each
+     * experiment
+     * @throws SQLException 
+     */
+    private ArrayList<StudyDTO> getStudiesProject(ArrayList<StudyDTO> studies, Statement statement) 
+            throws SQLException {
+
+        for (StudyDTO study : studies) {
+            ResultSet queryResult = null;
+            SQLQueryBuilder query = new SQLQueryBuilder();
+            query.appendSelect("p.acronyme, p.uri");
+            query.appendFrom("at_trial_project", "tp");
+            query.appendANDWhereConditionIfNeeded("trial_uri", study.getStudyDbId(), "=", null, "tp");
+            query.appendJoin(JoinAttributes.INNERJOIN, "project", "p", "p.uri = tp.project_uri");
+            LOGGER.debug (query.toString());
+            queryResult = statement.executeQuery(query.toString());
+            while (queryResult.next()) {
+                if (study.getAdditionalInfo() != null) {
+                    study.getAdditionalInfo().addProjectsNames(queryResult.getString("acronyme"));
+                } else {
+                    AdditionalInfo addInfo = new AdditionalInfo();
+                    addInfo.addProjectsNames(queryResult.getString("acronyme"));
+                    study.setAdditionalInfo(addInfo);
+                }
+            }
+        }
+        return studies;
+    }
 }

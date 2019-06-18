@@ -15,7 +15,7 @@ import javax.validation.constraints.NotNull;
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class StudySearchDTO {
-    private ArrayList<String> commonCropNames;
+    private String commonCropName;
     private ArrayList<String> germplasmDbIds;
     private ArrayList<String> locationDbIds;
     private ArrayList<String> observationVariableDbIds;
@@ -24,8 +24,7 @@ public class StudySearchDTO {
     private ArrayList<String> seasonDbIds;
     private ArrayList<String> studyDbIds;
     private ArrayList<String> studyNames;
-    private ArrayList<String> studyTypeDbIds;
-    private ArrayList<String> studyTypeNames;
+    private String studyType;
     private ArrayList<String> trialDbIds;
     private String sortBy;
     private String sortOrder;
@@ -37,12 +36,12 @@ public class StudySearchDTO {
     public StudySearchDTO() {
     }
 
-    public ArrayList<String> getCommonCropNames() {
-        return commonCropNames;
+    public String getCommonCropName() {
+        return commonCropName;
     }
 
-    public void setCommonCropNames(ArrayList<String> commonCropNames) {
-        this.commonCropNames = commonCropNames;
+    public void setCommonCropName(String commonCropName) {
+        this.commonCropName = commonCropName;
     }
 
     public ArrayList<String> getGermplasmDbIds() {
@@ -109,20 +108,12 @@ public class StudySearchDTO {
         this.studyNames = studyNames;
     }
 
-    public ArrayList<String> getStudyTypeDbIds() {
-        return studyTypeDbIds;
+    public String getStudyType() {
+        return studyType;
     }
 
-    public void setStudyTypeDbIds(ArrayList<String> studyTypeDbIds) {
-        this.studyTypeDbIds = studyTypeDbIds;
-    }
-
-    public ArrayList<String> getStudyTypeNames() {
-        return studyTypeNames;
-    }
-
-    public void setStudyTypeNames(ArrayList<String> studyTypeNames) {
-        this.studyTypeNames = studyTypeNames;
+    public void setStudyType(String studyType) {
+        this.studyType = studyType;
     }
 
     public ArrayList<String> getTrialDbIds() {

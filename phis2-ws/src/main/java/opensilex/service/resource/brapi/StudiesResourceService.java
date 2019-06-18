@@ -196,8 +196,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
             studysqlDAO.studyDbIds.add(studyDbId);
         }     
         if (commonCropName != null) {
-            studysqlDAO.commonCropNames = new ArrayList();
-            studysqlDAO.commonCropNames.add(commonCropName);
+            studysqlDAO.commonCropName = commonCropName;
         }    
         if (seasonDbId != null) {
             studysqlDAO.seasonDbIds = new ArrayList();

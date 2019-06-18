@@ -42,7 +42,7 @@ public class StudySQLDAO extends PostgreSQLDAO<StudyDTO> {
     final static Logger LOGGER = LoggerFactory.getLogger(StudySQLDAO.class);
     
     public String active;
-    public ArrayList<String> commonCropNames;
+    public String commonCropName;
     public ArrayList<String> seasonDbIds;
     public ArrayList<String> studyDbIds;
     public ArrayList<String> studyNames;
@@ -251,10 +251,8 @@ public class StudySQLDAO extends PostgreSQLDAO<StudyDTO> {
                 query.appendINConditions(sqlFields.get("studyName"), studyNames, tableAlias);
             }
         }
-        if (commonCropNames != null) {
-            if (!commonCropNames.isEmpty()) {
-                query.appendINConditions(sqlFields.get("commonCropName"), commonCropNames, tableAlias);
-            }
+        if (commonCropName != null) {
+            query.appendANDWhereConditions(sqlFields.get("commonCropName"), commonCropName, "CONTAINS_OPERATOR", null, tableAlias);
         }
         if (seasonDbIds != null) {
             if (!seasonDbIds.isEmpty()) {
@@ -291,22 +289,6 @@ public class StudySQLDAO extends PostgreSQLDAO<StudyDTO> {
         return query;
     }
     
-    private String ListToString(ArrayList<String> list) {
-        String listInString = "(";
-        for (String element:list) {
-            listInString = listInString + "'" + element + "',";
-            
-        }
-        //remove last ","
-        listInString = listInString.substring(0, listInString.length()-1);
-
-        listInString = listInString + ")";    
-
-        return listInString;
-    }
-    
-
-
     @Override
     public List<StudyDTO> create(List<StudyDTO> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.

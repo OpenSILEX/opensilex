@@ -145,8 +145,8 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
                 }
             } 
             
-            if (studySearch.getCommonCropNames() != null) {
-                studySqlDAO.commonCropNames = studySearch.getCommonCropNames();
+            if (studySearch.getCommonCropName() != null) {
+                studySqlDAO.commonCropName = studySearch.getCommonCropName();
             }
             
             if (studySearch.getPage() != null) {
@@ -287,8 +287,7 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
             studysqlDAO.studyDbIds.add(studyDbId);
         }     
         if (commonCropName != null) {
-            studysqlDAO.commonCropNames = new ArrayList();
-            studysqlDAO.commonCropNames.add(commonCropName);
+            studysqlDAO.commonCropName = commonCropName;
         }    
         if (seasonDbId != null) {
             studysqlDAO.seasonDbIds = new ArrayList();

@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.swagger.annotations.ApiModelProperty;
 import javax.mail.internet.InternetAddress;
 import org.opensilex.utils.deserializer.EmailDeserializer;
-import org.opensilex.server.rest.validation.Required;
+import org.opensilex.server.rest.validation.interfaces.Required;
 
 /**
  *

@@ -20,4 +20,5 @@ public @interface SPARQLResource {
     
     Class<?> ontology();
     String resource();
+    String graph() default "";
 }

@@ -6,7 +6,7 @@
 // Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, 
 // pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.server.rest.validation;
+package org.opensilex.server.rest.validation.interfaces;
 
 /**
  * Multiple annotations which provides required annotation

@@ -19,7 +19,6 @@ import org.opensilex.module.core.service.sparql.annotations.SPARQLProperty;
 import org.opensilex.module.core.service.sparql.annotations.SPARQLResource;
 import org.opensilex.module.core.service.sparql.annotations.SPARQLResourceURI;
 import javax.mail.internet.InternetAddress;
-import org.apache.jena.vocabulary.DC;
 import org.opensilex.module.core.ontology.Oeso;
 
 /**

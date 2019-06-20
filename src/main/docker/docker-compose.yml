@@ -1,6 +1,18 @@
 version: "3.5"
 
 services:
+   rdf4j:
+      container_name: rdf4j
+      build: './rdf4j'
+      networks:
+         - backend
+      ports:
+         - "8080"
+      volumes:
+         - rdf4j_data:/var/rdf4j
+      environment:
+         - JAVA_OPTS='-Dorg.eclipse.rdf4j.appdata.basedir=/var/rdf4j/'
+         
    mongodb:
       container_name: mongodb
       image: 'bitnami/mongodb:latest'
@@ -12,21 +24,9 @@ services:
       labels:
          kompose.service.type: nodeport
       ports:
-         - "8662:27017"
+         - "27017"
       volumes:
          - mongodb_data:/bitnami
-
-   rdf4j:
-      container_name: rdf4j
-      build: './rdf4j'
-      networks:
-         - backend
-      ports:
-         - "8661:8080"
-      volumes:
-         - rdf4j_data:/var/rdf4j
-      environment:
-         - JAVA_OPTS='-Dorg.eclipse.rdf4j.appdata.basedir=/var/rdf4j/'
       
 networks:
    backend:

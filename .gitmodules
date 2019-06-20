@@ -1,0 +1,4 @@
+[submodule "phis-ws"]
+	path = phis-ws
+	url = git@github.com:OpenSILEX/phis-ws.git
+	branch = opensilex-module

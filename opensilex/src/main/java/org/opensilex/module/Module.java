@@ -104,7 +104,7 @@ public abstract class Module {
      */
     public List<String> apiPackages() {
         List<String> list = new ArrayList<>();
-        list.add(getClass().getPackageName());
+        list.add(getClass().getPackage().getName());
 
         return list;
     }

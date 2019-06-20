@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -283,7 +284,7 @@ public class ConfigTest {
 
             String prefix = "test:\n  ";
             for (int i = 1; i <= depth; i++) {
-                prefix += "inception:\n  " + "  ".repeat(i);
+                prefix += "inception:\n  " + StringUtils.repeat("  ", i);
             }
 
             Method primitiveMethod = TestConfig.class.getMethod(p.primitiveKey, new Class<?>[]{});

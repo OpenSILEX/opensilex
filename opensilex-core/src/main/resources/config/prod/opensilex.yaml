@@ -1,0 +1,17 @@
+opensilex-core:
+    debug: false
+    defaultLanguage: en
+        
+    rdf4j:
+        host: localhost
+        port: 8080
+        repository: repository
+        path: rdf4j-server
+
+    mongoDB:
+        host: localhost
+        port: 27017
+        database: database
+
+    fs:
+        directory: path/to/storage

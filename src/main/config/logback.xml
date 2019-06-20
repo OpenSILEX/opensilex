@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="false">
+    <!-- configuration variables-->
+    <property name="logPattern" value="%d{dd MMM yyyy;HH:mm:ss.SSS} [%thread] %-5level %logger{20} - %msg%n" />
+    <property resource="app.properties" />
+    
+    <!-- output -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${logger.level}</level>
+        </filter>
+        <encoder>
+            <pattern>${logPattern}</pattern>
+        </encoder>
+    </appender>
+    
+    <!-- standard log output-->
+    <appender name="STDLOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${logger.level}</level>
+        </filter>
+        <file>${logger.directory}/opensilex.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${logger.directory}/opensilex-%d{yyyy-MM-dd}.%i.html</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>    
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>    
+        <encoder>
+            <pattern>${logPattern}</pattern>
+        </encoder>
+    </appender> 
+    
+    <if condition='property("logger.traceRequest").contains("true")'>
+        <then>
+            <!-- trace log output for relationnal database -->
+            <appender name="DBLOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+                <filter class="ch.qos.logback.core.filter.EvaluatorFilter">      
+                    <evaluator> <!-- defaults to type ch.qos.logback.classic.boolex.JaninoEventEvaluator -->
+                        <expression> return (logger.contains("DaoPhisBrapi") || logger.contains("DaoEnvironment") || logger.contains("SQLDAO"));</expression>
+                    </evaluator>
+                    <OnMismatch>DENY</OnMismatch>
+                    <OnMatch>ACCEPT</OnMatch>
+                </filter>
+                <filter class="ch.qos.logback.classic.filter.LevelFilter">
+                    <level>TRACE</level>
+                    <onMatch>ACCEPT</onMatch>
+                    <onMismatch>DENY</onMismatch>
+                </filter>
+                <file>${logger.directory}/opensilex-SQL.log</file>
+                <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+                    <fileNamePattern>${logger.directory}/opensilex-SQL-%d{yyyy-MM-dd}.%i.html</fileNamePattern>
+                    <maxFileSize>50MB</maxFileSize>    
+                    <maxHistory>30</maxHistory>
+                    <totalSizeCap>1GB</totalSizeCap>
+                </rollingPolicy>    
+                <encoder>
+                    <pattern>${logPattern}</pattern>
+                </encoder>
+            </appender> 
+
+            <!--trace log output for graph database -->
+            <appender name="SPARQLLOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+                <filter class="ch.qos.logback.core.filter.EvaluatorFilter">      
+                    <evaluator> <!-- defaults to type ch.qos.logback.classic.boolex.JaninoEventEvaluator -->
+                        <expression>return logger.contains("DaoSesame");</expression>
+                    </evaluator>
+                    <OnMismatch>DENY</OnMismatch>
+                    <OnMatch>ACCEPT</OnMatch>
+                </filter>
+                <filter class="ch.qos.logback.classic.filter.LevelFilter">
+                    <level>TRACE</level>
+                    <onMatch>ACCEPT</onMatch>
+                    <onMismatch>DENY</onMismatch>
+                </filter>
+                <file>${logger.directory}/opensilex-SPARQL.log</file>
+                <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+                    <fileNamePattern>${logger.directory}/opensilex-SPARQL-%d{yyyy-MM-dd}.%i.html</fileNamePattern>
+                    <maxFileSize>50MB</maxFileSize>    
+                    <maxHistory>30</maxHistory>
+                    <totalSizeCap>1GB</totalSizeCap>
+                </rollingPolicy>                
+                <encoder>
+                    <pattern>${logPattern}</pattern>
+                </encoder>
+            </appender> 
+        </then>
+    </if>
+    
+    <!-- define log level output for specific packages -->
+    <logger name="org.mongodb.driver" level="WARN"/>
+    <logger name="org.apache" level="WARN"/>
+    <logger name="org.apache.tomcat" level="WARN"/>
+    <logger name="org.glassfish.jersey" level="WARN"/>
+    <logger name="io.swagger" level="WARN"/>
+    <logger name="org.reflections" level="WARN"/>
+    <logger name="org.openrdf" level="WARN"/>
+    <logger name="org.cfg4j" level="WARN" />
+    <logger name="ch.qos.logback" level="WARN" />
+    
+     appender by log type 
+    <if condition='property("logger.traceRequest").contains("true")'>
+        <then>
+            <root level="ALL">
+                <appender-ref ref="DBLOG" />
+                <appender-ref ref="SPARQLLOG" />
+                <appender-ref ref="STDLOG" />
+                <appender-ref ref="STDOUT" />
+            </root>
+        </then>
+        <else>
+            <root level="ALL">
+                <appender-ref ref="STDLOG" />
+                <appender-ref ref="STDOUT" />
+            </root>
+        </else>
+    </if>
+</configuration>

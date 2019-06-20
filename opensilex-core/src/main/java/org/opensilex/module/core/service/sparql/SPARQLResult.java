@@ -1,0 +1,19 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.opensilex.module.core.service.sparql;
+
+import java.util.function.BiConsumer;
+
+/**
+ *
+ * @author vincent
+ */
+public interface SPARQLResult {
+
+    public String getStringValue(String key);
+    
+    public void forEach(BiConsumer<? super String, ? super String> action);
+}

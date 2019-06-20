@@ -1,0 +1,7 @@
+*.flattened-pom.xml
+/target/
+/opensilex/target/
+/opensilex-core/target/
+/opensilex-dev-tools/target/
+/opensilex-parent/target/
+/phis-ws/phis2-ws/target/

@@ -1,0 +1,48 @@
+//******************************************************************************
+//                            HelpPrinterCommand.java
+// OpenSILEX
+// Copyright © INRA 2019
+// Creation date: 02 April 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
+package org.opensilex.cli.help;
+
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.HelpCommand;
+import picocli.CommandLine.Mixin;
+
+/**
+ * Utility class used as super class for commands which are only a regroup of 
+ * other commands and which only has purpose of displaying help for them
+ */
+@Command(
+        description = "Calling this command will simply display help message with all subcommands",
+        subcommands = {
+            HelpCommand.class
+        },
+        headerHeading = HelpFactory.CLI_HEADER_HEADING,
+        synopsisHeading = HelpFactory.CLI_SYNOPSYS_HEADING,
+        descriptionHeading = HelpFactory.CLI_DESCRIPTION_HEADING,
+        parameterListHeading = HelpFactory.CLI_PARAMETER_LIST_HEADING,
+        optionListHeading = HelpFactory.CLI_OPTION_LIST_HEADING,
+        commandListHeading = HelpFactory.CLI_COMMAND_LIST_HEADING,
+        footer = HelpFactory.CLI_FOOTER
+)
+public abstract class HelpPrinterCommand implements Runnable {
+
+    /**
+     * Generic help option
+     */
+    @Mixin
+    private HelpOption help = new HelpOption();
+
+    /**
+     * Display help if called with no arguments
+     */
+    @Override
+    public void run() {
+        CommandLine.usage(this, System.out);
+    }
+
+}

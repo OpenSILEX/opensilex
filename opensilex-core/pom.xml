@@ -1,0 +1,102 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.opensilex</groupId>
+    <artifactId>opensilex-core</artifactId>
+    <packaging>jar</packaging>
+    <name>opensilex-core</name>
+    <version>${revision}</version>
+    
+    <url>https://www.opensilex.org/</url>
+    
+    <properties>
+        <revision>1.0.0-SNAPSHOT</revision>
+        <rdf4j.version>2.5.2</rdf4j.version>
+        <hibernate-ogm.version>5.4.1.Final</hibernate-ogm.version>
+    </properties>
+    
+    <parent>
+        <groupId>org.opensilex</groupId>
+        <artifactId>opensilex-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>../opensilex-parent/pom.xml</relativePath>
+    </parent>
+    
+    <!-- Hibernate OGM support -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.hibernate.ogm</groupId>
+                <artifactId>hibernate-ogm-bom</artifactId>
+                <version>${hibernate-ogm.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    
+    <dependencies>
+        <!-- OpenSilex Base -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <!-- OpenSilex Base test -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+        </dependency>
+        <!-- Hibernate OGM - MongoDB -->
+        <dependency>
+            <groupId>org.hibernate.javax.persistence</groupId>
+            <artifactId>hibernate-jpa-api-2.2-parent</artifactId>
+            <version>1.0.0.Beta2</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.ogm</groupId>
+            <artifactId>hibernate-ogm-mongodb</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.narayana.jta</groupId>
+            <artifactId>narayana-jta</artifactId>
+            <version>5.9.5.Final</version>
+        </dependency>
+        <!-- RDF4J -->
+        <dependency>
+            <groupId>org.eclipse.rdf4j</groupId>
+            <artifactId>rdf4j-client</artifactId>
+            <version>${rdf4j.version}</version>
+        </dependency>  
+        <!-- RDF4J Testing -->
+        <dependency>
+            <groupId>org.eclipse.rdf4j</groupId>
+            <artifactId>rdf4j-repository-sail</artifactId>
+            <version>${rdf4j.version}</version>
+            <scope>test</scope>
+        </dependency>  
+        <dependency>
+            <groupId>org.eclipse.rdf4j</groupId>
+            <artifactId>rdf4j-repository-http</artifactId>
+            <version>${rdf4j.version}</version>
+            <scope>test</scope>
+        </dependency>  
+        <dependency>
+            <groupId>org.eclipse.rdf4j</groupId>
+            <artifactId>rdf4j-sail-nativerdf</artifactId>
+            <version>${rdf4j.version}</version>
+            <scope>test</scope>
+        </dependency>  
+        <dependency>
+            <groupId>org.eclipse.rdf4j</groupId>
+            <artifactId>rdf4j-sail-memory</artifactId>
+            <version>${rdf4j.version}</version>
+            <scope>test</scope>
+        </dependency>  
+    </dependencies>
+</project>
+

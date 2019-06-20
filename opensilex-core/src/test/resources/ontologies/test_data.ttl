@@ -1,0 +1,10 @@
+@prefix test: <http://test.opensilex.org/>
+@prefix testA: <http://test.opensilex.org/a/>
+@prefix testB: <http://test.opensilex.org/b/>
+
+testB:001
+    a test:B .
+
+testA:001
+    a test:A ;
+    test:hasALinkToB testB:002 .

@@ -6,6 +6,9 @@ services:
       image: 'bitnami/mongodb:latest'
       networks:
          - backend
+      environment:
+        - MONGODB_REPLICA_SET_MODE=primary
+        - MONGODB_REPLICA_SET_NAME=opensilex
       labels:
          kompose.service.type: nodeport
       ports:

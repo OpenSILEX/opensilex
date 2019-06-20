@@ -1,111 +1,91 @@
-# OpenSILEX
-# Phenotyping Hybrid Information System (PHIS)
-
-## Introduction
+OpenSILEX OpenSilex Developper's documentation for PHIS
+=======================================================
 
 This repository contains source code for Phenotyping Hybrid Information System (PHIS) as an OpenSILEX instance
 
-## Installation
+# Pre-requesite softwares
 
-### Prerequesite
+First you need to have these software installed :
 
-In order to intall and run PHIS from source you must have the following software installed:
+- [Java JDK 8](https://jdk.java.net/java-se-ri/8)
+- [Maven 3.6.1](https://maven.apache.org/install.html)
+- [Git 2.17.1](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 
-- **Git** at least version 1.8.2, see: <https://git-scm.com/book/en/v2/Getting-Started-Installing-Git>
-- **Java** at least version 8, see: <https://www.oracle.com/technetwork/java/javase/overview/index.html>
-- **Maven** at least version 3.5, see: <https://maven.apache.org/install.html>
-- **Tomcat** at least version 8, see: <https://tomcat.apache.org/>
+The install process is tested with these versions of the software.
 
-You will also need this databases available on your system :
+You should create also a directory where you have full read/write permissions which will be referenced as ```<BASE_DIR>``` in this documentation.
 
-- [MongoDB 4.0](https://docs.mongodb.com/manual/administration/install-on-linux/) *for noSQL databases*
-- [PostgreSQL 9.5](https://www.postgresql.org/docs/9.5/release-9-5.html) *for SQL databases*
-- [PostGIS 2.2](https://postgis.net/docs/postgis_installation.html#install_short_version) (minimal PostGIS version)
-- [RDF4J 2.4.5](http://rdf4j.org/download/) *for triplestores*
-
-### Get sources
-
-Run this command to get all sources:
+# Download sources
 
 ```
-git clone --recursive https://github.com/OpenSILEX/opensilex-phis.git
+cd <BASE_DIR>
+git clone --recurse-submodules https://github.com/OpenSILEX/opensilex-dev.git
 ```
 
-### Configure
+# Install Databases
 
-Edit src/main/config/dev/opensilex.yaml file with your favorite text editor and set the following parameters:
+## Install with docker
 
+First install docker and docker-compose
 
-logger:
->    directory: *Path to logs file*
->
->    level: DEBUG
->
->    traceRequest: true
+- [docker installation](https://docs.docker.com/install/)
+- [docker-compose installation](https://docs.docker.com/compose/install/)
 
-opensilex-core-rdf4j:
->    repository: *RDF4J repository name*
->
->    host: *Optional: default value to localhost*
->
->    port: *Optional: default value to 8080*
->
->    path: *Optional: rdf4j-server*
-
-opensilex-core-mongo:
->    database: *MongoDb database name*
->
->    host: *Optional: default value to localhost*
->
->    port: *Optional: default value to 27017*  
-
-phis-ws-pg:
->    database: *PostgreSQL database name*
->
->    username: *PostgreSQL user name*
->
->    password: *PostgreSQL user password*
->
->    host: *Optional: default value to localhost*
->
->    port: *Optional: default value to 5432*
-
-phis-ws-service:
->    infrastructure: *Custom ontology suffix for generated uri*
->
->    uploadFileServerUsername: *Linux user name*
->
->    uploadFileServerPassword: *Linux user password*
->
->    uploadFileServerDirectory: *Path to file storage directory*
->
->    layerFileServerDirectory: *Path to layers storage directory*
->
->    layerFileServerAddress: *Uri to get layers*
->
->    uploadImageServerDirectory: *Path to image storage directory*
->
->    imageFileServerDirectory: *Uri to image storage directory*
-
-### Build war file
-
-Go into the root opensilex-phis folder and run this command to build the project:
+Then download OpenSILEX docker repository and start images (the last command may be run with sudo) :
 
 ```
+cd <BASE_DIR>
+cd opensilex-dev/src/main/docker
+docker-compose up -d
+docker exec -it --user root rdf4j /bin/bash /tmp/seed-data.sh
+```
+
+You now should have a running RDF4J and MongoDB servers.
+
+## Install manually
+
+Install RDF4J and MongoDB:
+
+- [RDF4J](https://rdf4j.eclipse.org/documentation/server-workbench-console/)
+- [MongoDB](https://docs.mongodb.com/manual/installation/)
+
+Once MongoDB is installed you must [enable Replica Set feature](https://docs.mongodb.com/manual/tutorial/deploy-replica-set/)
+
+# Build project
+
+```
+cd <BASE_DIR>
+cd opensilex-dev
 mvn clean install
 ```
 
-The resulting war file will be created: ./target/opensilex-ws-1.0.0-SNAPSHOT.war
+# Initialize configuration
 
-You can also specify a version for the build with the following command line:
+// TODO 
+
+This command will initialize a configuration file in ```<BASE_DIR>/opensilex-dev/opensilex-debug/src/main/config/localhost.yaml```:
 
 ```
-mvn clean install -Drevision=X.X.X
+cd <BASE_DIR>
+cd opensilex-dev/opensilex-debug
+mvn exec:exec "-Dexec.args=-classpath %classpath debug.opensilex.InitConfig" org.codehaus.mojo:exec-maven-plugin:1.6.0:exec
 ```
 
-The resulting war file will be created: ./target/opensilex-ws-X.X.X.war
+If you used the docker installation for databases you shoudn't have anything to change in the configuration file.
+Otherwise you shoud adjust the parameters to fit your configuration.
+
+# Start OpenSILEX
+
+// TODO
+
+Run the following command to start OpenSILEX server:
+
+```
+cd <BASE_DIR>
+cd opensilex-dev/opensilex-debug
+mvn exec:exec "-Dexec.args=-classpath %classpath debug.opensilex.Main" -Dexec.executable=java org.codehaus.mojo:exec-maven-plugin:1.6.0:exec
+```
+
+If you use the default configuration, you can now access the OpenSILEX API on: [http://localhost:8666/](http://localhost:8666/)
 
 
-### Deploy
-
-Simply copy the created war file to Tomcat "webapps" folder and access it threw the tomcat manager

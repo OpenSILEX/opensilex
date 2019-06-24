@@ -7,6 +7,7 @@
 //******************************************************************************
 package opensilex.service.resource.dto.experiment;
 
+import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import javax.validation.constraints.NotNull;
 
@@ -31,6 +32,7 @@ public class StudySearchDTO {
     @NotNull
     private Integer page;
     @NotNull
+    @ApiModelProperty(example = "20")
     private Integer pageSize;
 
     public StudySearchDTO() {

@@ -6,8 +6,6 @@
 package org.opensilex.module.core.api.project;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -61,6 +59,7 @@ public class ProjectAPI implements RestApplicationAPI {
         @ApiParam(value = CoreAPIDocumentation.PAGE_SIZE) @QueryParam(PARAM_PAGE_SIZE) @DefaultValue(DEFAULT_PAGE_SIZE) @Min(1) int limit,
         @ApiParam(value = CoreAPIDocumentation.PAGE) @QueryParam(PARAM_PAGE) @DefaultValue(DEFAULT_PAGE) @Min(0) int page) {
         
-        
+        // TODO
+        return null;
     }
 }

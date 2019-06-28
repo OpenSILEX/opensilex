@@ -129,6 +129,11 @@ public class SPARQLService implements SPARQLConnection, Service {
 
     public <T> T getByURI(Class<T> objectClass, URI uri) throws Exception {
         SPARQLClassDescriptor<T> descriptor = SPARQLClassDescriptor.getForClass(objectClass);
+        return descriptor.createInstance(uri, this);
+    }
+    
+    public <T> T loadByURI(Class<T> objectClass, URI uri) throws Exception {
+        SPARQLClassDescriptor<T> descriptor = SPARQLClassDescriptor.getForClass(objectClass);
         SelectBuilder select = descriptor.getSelectBuilder();
         select.addBind(descriptor.getURIFieldName(), uri);
 

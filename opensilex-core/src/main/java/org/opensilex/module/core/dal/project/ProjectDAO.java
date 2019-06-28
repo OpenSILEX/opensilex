@@ -13,13 +13,14 @@ import org.opensilex.module.core.service.sparql.SPARQLService;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ProjectDAO {
-    private SPARQLService sparql;
+    
+    private final SPARQLService sparql;
     
     public ProjectDAO(SPARQLService sparql) {
         this.sparql = sparql;
     }
     
-    public Project getProjectByUri(URI uri) {
-        
+    public Project getProjectByUri(URI uri) throws Exception {
+        return sparql.getByURI(Project.class, uri);
     }
 }

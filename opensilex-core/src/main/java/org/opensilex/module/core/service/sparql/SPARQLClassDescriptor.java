@@ -30,6 +30,7 @@ import org.opensilex.module.core.service.sparql.exceptions.SPARQLInvalidClassDes
 import org.opensilex.utils.deserializer.Deserializers;
 import org.opensilex.utils.ontology.Ontology;
 import org.opensilex.utils.ClassInfo;
+import sun.jvm.hotspot.ui.SAEditorPane;
 
 /**
  *
@@ -321,6 +322,12 @@ public class SPARQLClassDescriptor<T> {
         }
     }
 
+    public T createInstance(URI uri, SPARQLService service) throws Exception {
+        SPARQLProxyResource<T> proxy = new SPARQLProxyResource<>(uri, objectClass, service);
+        
+        return proxy.getInstance();
+    }
+    
     public T createInstance(SPARQLResult result, SPARQLService service) throws Exception {
         URI uri = new URI(result.getStringValue(getURIFieldName()));
 

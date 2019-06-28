@@ -23,7 +23,7 @@ class SPARQLProxyResource<T> extends SPARQLProxy<T> {
 
     @Override
     protected T loadData() throws Exception {
-        return service.getByURI(type, uri);
+        return service.loadByURI(type, uri);
     }
 
 }

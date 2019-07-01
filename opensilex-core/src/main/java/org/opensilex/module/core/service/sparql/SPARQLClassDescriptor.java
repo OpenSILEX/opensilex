@@ -22,15 +22,12 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
-import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import org.opensilex.module.core.service.sparql.exceptions.SPARQLInvalidClassDescriptorException;
 import org.opensilex.utils.deserializer.Deserializers;
-import org.opensilex.utils.ontology.Ontology;
 import org.opensilex.utils.ClassInfo;
-import sun.jvm.hotspot.ui.SAEditorPane;
 
 /**
  *

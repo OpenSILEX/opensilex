@@ -16,9 +16,16 @@ import org.opensilex.module.ModuleConfig;
  */
 public class CoreModule extends Module {
 
-    protected String configId = "opensilex-core";
-    protected Class<? extends ModuleConfig> configClass =  CoreConfig.class;
-        
+    @Override
+    public Class<? extends ModuleConfig> getConfigClass() {
+        return CoreConfig.class;
+    }
+
+    @Override
+    public String getConfigId() {
+        return "opensilex-core";
+    }
+
     @Override
     public List<String> getPackagesToScan() {
         List<String> list = super.getPackagesToScan();

@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -143,7 +145,10 @@ public class ClassInfo {
 
             return pom;
         } else {
-            return Paths.get(jarFile.getAbsolutePath()).resolve("opensilex-pom.xml").toFile();
+            return Paths.get(
+                    jarFile.getAbsolutePath()
+//                    URLDecoder.decode(jarFile.getAbsolutePath(), StandardCharsets.UTF_8.name())
+            ).resolve("opensilex-pom.xml").toFile();
         }
 
     }

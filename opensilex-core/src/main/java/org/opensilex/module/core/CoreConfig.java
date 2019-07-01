@@ -47,19 +47,19 @@ public interface CoreConfig extends ModuleConfig {
                     + "serviceClass: org.opensilex.service.sparql.SPARQLService,"
                     + "connectionClass: org.opensilex.service.sparql.rdf4j.RDF4JConnection,"
                     + "configId: opensilex-core-service-sparql,"
-                    + "configClass: org.opensilex.service.sparql.rdf4j.RDF4JConfig"
+                    + "configClass: org.opensilex.module.core.service.sparql.rdf4j"
                 + "}",
                 "nosql: {"
                     + "serviceClass: org.opensilex.service.nosql.NoSQLService,"
                     + "connectionClass: org.opensilex.service.nosql.ogm.OgmConnection,"
                     + "configId: opensilex-core-service-nosql,"
-                    + "configClass: org.opensilex.service.nosql.ogm.OgmConfig"
+                    + "configClass: org.opensilex.module.core.service.nosql.ogm"
                 + "}",
                 "fs: {"
                     + "serviceClass: org.opensilex.service.fs.FileStorageService,"
                     + "connectionClass: org.opensilex.service.fs.local.LocalFileSystemConnection,"
                     + "configId: opensilex-core-service-fs,"                     
-                    + "configClass: org.opensilex.service.fs.local.LocalFileSystemConfig"
+                    + "configClass: org.opensilex.module.core.service.fs.local.LocalFileSystemConfig"
                 + "}"              
             }
     )

@@ -9,15 +9,17 @@ package org.opensilex.module;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.opensilex.OpenSilex;
@@ -30,9 +32,6 @@ import org.slf4j.LoggerFactory;
  * application Simply extends this class to create a module.
  */
 public abstract class Module {
-
-    protected String configId;
-    protected Class<? extends ModuleConfig> configClass;
 
     private final static Logger LOGGER = LoggerFactory.getLogger(Module.class);
 
@@ -131,7 +130,11 @@ public abstract class Module {
                 File jarFile = Paths.get(sourceLocation.toURI()).toFile();
                 ZipFile zipFile = new ZipFile(jarFile);
                 ZipEntry entry = zipFile.getEntry(yamlPath);
-                return zipFile.getInputStream(entry);
+                FileSystem fs = FileSystems.newFileSystem(Paths.get(jarFile.getAbsolutePath()), null);
+                Path cfgFile = fs.getPath(yamlPath);
+                if (Files.exists(cfgFile)) {
+                    return zipFile.getInputStream(entry);
+                }
 
             } else {
                 File cfgFile = Paths.get(sourceLocation.toURI().resolve(yamlPath)).toFile();
@@ -178,10 +181,10 @@ public abstract class Module {
     }
 
     public String getConfigId() {
-        return configId;
+        return null;
     }
 
     public Class<? extends ModuleConfig> getConfigClass() {
-        return configClass;
+        return null;
     }
 }

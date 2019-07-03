@@ -129,6 +129,8 @@ public final class DocumentationAnnotation {
     public static final String DEEP ="true or false deppending if you want instances of concept progenity";
     
     public static final String CALL_DATATYPE_DEFINITION = "The data format supported by the call";
+    
+    public static final String GERMPLASM_POST_DEFINITION = "JSON format of germplasm data";
 
     // Global examples
     public static final String EXAMPLE_DATETIME = "2017-06-15 10:51:00+0200";

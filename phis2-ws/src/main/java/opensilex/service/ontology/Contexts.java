@@ -99,6 +99,13 @@ public enum Contexts {
         public String toString() {
             return PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "vocabularyContext");
         }
+    },
+    //The context which contains the germplasm
+    GERMPLASM {
+        @Override
+        public String toString() {
+            return PLATFORM.toString() + "germplasm"; 
+        }
     }
 }
 

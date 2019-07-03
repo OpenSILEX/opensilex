@@ -383,5 +383,35 @@ public enum Oeso {
         public String toString() {
             return NAMESPACE.toString() + "DataFile";
         }
-    };
+    },
+    RELATION_HAS_ACCESSION_NAME {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasAccessionName";
+        }
+    },
+    CONCEPT_GERMPLASM {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "GermplasmDescriptor";
+        }
+    },    
+    RELATION_HAS_ACCESSION_NUMBER {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasAccessionNumber";
+        }
+    },
+    RELATION_HAS_PLANT_MATERIAL_LOT {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasPlantMaterialLot";
+        }
+    },
+    RELATION_FROM_INSTITUTE {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "fromInstitute";
+        }
+    }
 }

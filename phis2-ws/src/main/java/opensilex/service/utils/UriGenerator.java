@@ -24,6 +24,7 @@ import opensilex.service.dao.ProjectDAO;
 import opensilex.service.dao.ScientificObjectRdf4jDAO;
 import opensilex.service.dao.AnnotationDAO;
 import opensilex.service.dao.EventDAO;
+import opensilex.service.dao.GermplasmDAO;
 import opensilex.service.dao.MethodDAO;
 import opensilex.service.dao.RadiometricTargetDAO;
 import opensilex.service.dao.SensorDAO;
@@ -69,6 +70,7 @@ public class UriGenerator {
     private static final String URI_CODE_UNIT = "u";
     private static final String URI_CODE_VARIABLE = "v";
     private static final String URI_CODE_VECTOR = "v";
+    private static final String URI_CODE_GERMPLASM = "g";
 
     private static final String PLATFORM_CODE =  PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "infrastructureCode") ;
     private static final String PLATFORM_URI = Contexts.PLATFORM.toString();
@@ -84,6 +86,7 @@ public class UriGenerator {
     private static final String PLATFORM_URI_ID_VARIABLES = PLATFORM_URI_ID + "variables/";
     private static final String PLATFORM_URI_ID_VARIETY = PLATFORM_URI + "v/";
     private static final String PLATFORM_URI_ID_PROVENANCE = PLATFORM_URI_ID + "provenance/";
+    private static final String PLATFORM_URI_ID_GERMPLASM = PLATFORM_URI_ID + "germplasms/";
     
     private static final String EXPERIMENT_URI_SEPARATOR = "-";
 
@@ -622,7 +625,36 @@ public class UriGenerator {
             return generateDataFileUri(year, additionalInformation);
         } else if (instanceType.equals(Oeso.CONCEPT_ACTUATOR.toString())) {
             return generateActuatorUri(year);
+        } else if (instanceType.equals(Oeso.CONCEPT_GERMPLASM.toString())) {
+            return generateGermplasmURI();
         }
         return null;
+    }
+    
+    /**
+     * Generates a new agronomical object URI. A sensor URI has the following
+     * form:
+     * <prefix>:<year>/<unic_code>
+     * <unic_code> = 1 letter type + 2 numbers year + auto incremented number
+     * with 6 digits (per year) the year corresponds to the year of insertion in
+     * the triplestore.
+     * @example http://www.phenome-fppn.fr/diaphen/2017/o17000001
+     * @param year the insertion year of the agronomical object.
+     * @return the new agronomical object URI
+     */
+    private static String generateGermplasmURI() {
+        //1. get the higher germplasm id (i.e. the last inserted variable)
+        GermplasmDAO germplasmDAO = new GermplasmDAO();
+        int lastVariableId = germplasmDAO.getLastId();
+
+        //2. generate variable URI
+        int newGermplasmId = lastVariableId + 1;
+        String germplasmId = Integer.toString(newGermplasmId);
+
+        while (germplasmId.length() < 3) {
+            germplasmId = "0" + germplasmId;
+        }
+
+        return PLATFORM_URI_ID_GERMPLASM + URI_CODE_GERMPLASM + germplasmId;
     }
 }

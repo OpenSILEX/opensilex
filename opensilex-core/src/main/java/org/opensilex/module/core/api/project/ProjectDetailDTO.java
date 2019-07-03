@@ -10,17 +10,19 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import org.opensilex.module.core.dal.project.Project;
+import org.opensilex.module.core.dal.user.User;
 
 /**
- *
+ * DTO corresponding to the GET detail of a project
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ProjectDetailDTO {
     private URI uri;
     private String name;
-    private List<URI> relatedProject = new ArrayList<>();
+    private List<URI> relatedProjects = new ArrayList<>();
     private String shortname;
-    private String financialSupport;
+    private FinancialSupportDTO financialSupport;
     private String financialName;
     private Date dateStart;
     private Date dateEnd;
@@ -33,124 +35,94 @@ public class ProjectDetailDTO {
     private List<ContactDTO> administrativeContacts = new ArrayList<>();
     private List<ContactDTO> coordinatorContacts = new ArrayList<>();
 
+    public ProjectDetailDTO(Project project) {
+        uri = project.getUri();
+        name = project.getName();
+        
+        for (Project relatedProject : project.getRelatedProjects()) {
+            relatedProjects.add(relatedProject.getUri());
+        }
+        
+        shortname = project.getShortname();
+        financialSupport = new FinancialSupportDTO(project.getFinancialSupport());
+        financialName = project.getFinancialReference();
+        dateStart = project.getStartDate();
+        dateEnd = project.getEndDate();
+        keywords = project.getKeywords();
+        description = project.getDescription();
+        objective = project.getObjective();
+        website = project.getHomePage();
+        
+        for (User user : project.getScientificContacts()) {
+            scientificContacts.add(new ContactDTO(user));
+        }
+        
+        for (User user : project.getAdministrativeContacts()) {
+            administrativeContacts.add(new ContactDTO(user));
+        }
+        
+        for (User user : project.getCoordinators()) {
+            coordinatorContacts.add(new ContactDTO(user));
+        }
+    }    
+    
     public URI getUri() {
         return uri;
-    }
-
-    public void setUri(URI uri) {
-        this.uri = uri;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getFinancialSupport() {
+    public FinancialSupportDTO getFinancialSupport() {
         return financialSupport;
-    }
-
-    public void setFinancialSupport(String financialSupport) {
-        this.financialSupport = financialSupport;
     }
 
     public String getFinancialName() {
         return financialName;
     }
 
-    public void setFinancialName(String financialName) {
-        this.financialName = financialName;
-    }
-
-
     public String getDescription() {
         return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public String getObjective() {
         return objective;
     }
 
-    public void setObjective(String objective) {
-        this.objective = objective;
-    }
-
     public List<ContactDTO> getScientificContacts() {
         return scientificContacts;
-    }
-
-    public void setScientificContacts(List<ContactDTO> scientificContacts) {
-        this.scientificContacts = scientificContacts;
     }
 
     public List<ContactDTO> getAdministrativeContacts() {
         return administrativeContacts;
     }
 
-    public void setAdministrativeContacts(List<ContactDTO> administrativeContacts) {
-        this.administrativeContacts = administrativeContacts;
-    }
-
     public List<ContactDTO> getCoordinatorContacts() {
         return coordinatorContacts;
     }
 
-    public void setCoordinatorContacts(List<ContactDTO> coordinatorContacts) {
-        this.coordinatorContacts = coordinatorContacts;
-    }
-
-    public List<URI> getRelatedProject() {
-        return relatedProject;
-    }
-
-    public void setRelatedProject(List<URI> relatedProject) {
-        this.relatedProject = relatedProject;
+    public List<URI> getRelatedProjects() {
+        return relatedProjects;
     }
 
     public String getShortname() {
         return shortname;
     }
 
-    public void setShortname(String shortname) {
-        this.shortname = shortname;
-    }
-
     public Date getDateStart() {
         return dateStart;
-    }
-
-    public void setDateStart(Date dateStart) {
-        this.dateStart = dateStart;
     }
 
     public Date getDateEnd() {
         return dateEnd;
     }
 
-    public void setDateEnd(Date dateEnd) {
-        this.dateEnd = dateEnd;
-    }
-
     public List<String> getKeywords() {
         return keywords;
     }
 
-    public void setKeywords(List<String> keywords) {
-        this.keywords = keywords;
-    }
-
     public URL getWebsite() {
         return website;
-    }
-
-    public void setWebsite(URL website) {
-        this.website = website;
     }
 }

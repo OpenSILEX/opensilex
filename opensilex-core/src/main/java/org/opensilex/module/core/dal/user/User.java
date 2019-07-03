@@ -27,12 +27,15 @@ import org.opensilex.module.core.ontology.Oeso;
  */
 @SPARQLResource(
         ontology = FOAF.class,
-        resource = "Person"
+        resource = "Agent"
 )
 public class User {
 
     @SPARQLResourceURI()
     private URI uri;
+    
+    private String firstname;
+    private String lastname;
 
     @SPARQLProperty(
             ontology = FOAF.class,
@@ -53,6 +56,14 @@ public class User {
 
     public InternetAddress getEmail() {
         return email;
+    }
+
+    public String getFirstname() {
+        return firstname;
+    }
+
+    public String getLastname() {
+        return lastname;
     }
 
     public String getName() {

@@ -16,21 +16,25 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URI;
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
-import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import org.opensilex.module.core.service.sparql.exceptions.SPARQLInvalidClassDescriptorException;
 import org.opensilex.utils.deserializer.Deserializers;
-import org.opensilex.utils.ontology.Ontology;
 import org.opensilex.utils.ClassInfo;
-import sun.jvm.hotspot.ui.SAEditorPane;
+import org.apache.jena.sparql.core.Var;
 
 /**
  *
@@ -62,9 +66,9 @@ public class SPARQLClassDescriptor<T> {
 
     private BiMap<Method, Field> fieldsBySetter;
 
-    private List<Field> optionalFields;
+    private List<Field> optionalFields = new ArrayList<>();
 
-    private List<Field> reverseRelationFields;
+    private List<Field> reverseRelationFields = new ArrayList<>();
 
     @SuppressWarnings("rawtypes")
     private SPARQLClassDescriptor(Class<T> objectClass) throws SPARQLInvalidClassDescriptorException {
@@ -83,13 +87,15 @@ public class SPARQLClassDescriptor<T> {
             Field resourceField = resourceOntology.getField(sResource.resource());
             RDFType = (Resource) resourceField.get(null);
 
-            for (Field field : objectClass.getFields()) {
+            for (Field field : objectClass.getDeclaredFields()) {
+                field.setAccessible(true);
                 SPARQLProperty sProperty = field.getAnnotation(SPARQLProperty.class);
 
                 if (sProperty != null) {
                     Class propertyOntology = sProperty.ontology();
                     Field propertyField = propertyOntology.getField(sProperty.property());
                     Property property = (Property) propertyField.get(null);
+
                     Type fieldType = field.getGenericType();
 
                     if (ClassInfo.isGenericType(fieldType)) {
@@ -123,11 +129,13 @@ public class SPARQLClassDescriptor<T> {
                     if (sProperty.inverse()) {
                         reverseRelationFields.add(field);
                     }
+                    fieldsByName.put(field.getName(), field);
                 } else {
                     SPARQLResourceURI sURI = field.getAnnotation(SPARQLResourceURI.class);
                     if (sURI != null) {
                         if (fieldURI == null) {
                             fieldURI = field;
+                            fieldsByName.put(field.getName(), field);
                         } else {
                             throw new SPARQLInvalidClassDescriptorException(
                                     objectClass,
@@ -138,7 +146,6 @@ public class SPARQLClassDescriptor<T> {
                         }
                     }
                 }
-                fieldsByName.put(fieldURI.getName(), fieldURI);
             }
 
             if (fieldURI == null) {
@@ -146,7 +153,7 @@ public class SPARQLClassDescriptor<T> {
             }
 
             initFieldAccessorMaps();
-
+            initCacheCleaner();
         } catch (IllegalAccessException
                 | IllegalArgumentException
                 | NoSuchFieldException
@@ -189,8 +196,6 @@ public class SPARQLClassDescriptor<T> {
         fieldsByGetter = HashBiMap.create(fieldsByName.size());
         fieldsBySetter = HashBiMap.create(fieldsByName.size());
         for (Method method : methods) {
-            String accessorName = method.getName();
-
             if (isGetter(method)) {
                 Field getter = findFieldByGetterName(method.getName());
                 if (getter != null) {
@@ -324,10 +329,10 @@ public class SPARQLClassDescriptor<T> {
 
     public T createInstance(URI uri, SPARQLService service) throws Exception {
         SPARQLProxyResource<T> proxy = new SPARQLProxyResource<>(uri, objectClass, service);
-        
+
         return proxy.getInstance();
     }
-    
+
     public T createInstance(SPARQLResult result, SPARQLService service) throws Exception {
         URI uri = new URI(result.getStringValue(getURIFieldName()));
 
@@ -407,7 +412,7 @@ public class SPARQLClassDescriptor<T> {
 
             String uriFieldName = getURIFieldName();
             selectBuilder.addVar(uriFieldName);
-            selectBuilder.addWhere(uriFieldName, RDF.type, getRDFType());
+            selectBuilder.addWhere(selectBuilder.makeVar(uriFieldName), RDF.type, getRDFType());
 
             dataProperties.forEach((Field field, Property property) -> {
                 selectBuilder.addVar(field.getName());
@@ -424,18 +429,20 @@ public class SPARQLClassDescriptor<T> {
     }
 
     private void addSelectProperty(SelectBuilder select, String uriFieldName, Property property, Field field) {
-        String name = field.getName();
+        Var uriFieldVar = select.makeVar(uriFieldName);
+        Var propertyFieldVar = select.makeVar(field.getName());
+
         if (isReverseRelation(field)) {
             if (isOptional(field)) {
-                select.addOptional(name, property, uriFieldName);
+                select.addOptional(propertyFieldVar, property, uriFieldVar);
             } else {
-                select.addWhere(name, property, uriFieldName);
+                select.addWhere(propertyFieldVar, property, uriFieldVar);
             }
         } else {
             if (isOptional(field)) {
-                select.addOptional(uriFieldName, property, name);
+                select.addOptional(uriFieldVar, property, propertyFieldVar);
             } else {
-                select.addWhere(uriFieldName, property, name);
+                select.addWhere(uriFieldVar, property, propertyFieldVar);
             }
         }
     }
@@ -482,11 +489,21 @@ public class SPARQLClassDescriptor<T> {
         return delete;
     }
 
-    public void addDeleteBuilder(URI uri, UpdateBuilder delete) {
+    public UpdateBuilder getDeleteBuilder(List<URI> uris) {
+        UpdateBuilder delete = new UpdateBuilder();
+
+        uris.forEach((URI uri) -> {
+            addDeleteBuilder(uri, delete);
+        });
+
+        return delete;
+    }
+    
+    protected void addDeleteBuilder(URI uri, UpdateBuilder delete) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    public void addDeleteBuilder(T instance, UpdateBuilder delete) {
+    protected void addDeleteBuilder(T instance, UpdateBuilder delete) {
         addDeleteBuilder(getUri(instance), delete);
     }
 
@@ -499,4 +516,55 @@ public class SPARQLClassDescriptor<T> {
         }
     }
 
+    // TODO put in some Cache Manager
+    private Map<URI, T> instanceCache = new ConcurrentHashMap<>();
+    private Map<URI, LocalTime> instanceLastUsage = new ConcurrentHashMap<>();
+
+    protected void putCacheInstance(URI uri, T obj) {
+        instanceCache.put(uri, obj);
+        instanceLastUsage.put(uri, LocalTime.now());
+    }
+
+    protected boolean hasCacheInstance(URI uri) {
+        return instanceCache.containsKey(uri);
+    }
+        
+    protected T getCacheInstance(URI uri) {
+        T obj = null;
+        if (hasCacheInstance(uri)) {
+            obj = instanceCache.get(uri);
+            instanceLastUsage.put(uri, LocalTime.now());
+        }
+        return obj;
+    }
+
+    private volatile boolean cleaningInstances = false;
+    
+    private void initCacheCleaner() {
+        ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
+        exec.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                if (!cleaningInstances) {
+                    cleaningInstances = true;
+                    LocalTime timeLimit = LocalTime.now().minus(
+                            INSTANCE_CACHE_DURATION_VALUE, 
+                            INSTANCE_CACHE_DURATION_UNIT.toChronoUnit()
+                    );
+                    instanceLastUsage.entrySet().forEach((entry) -> {
+                        if (entry.getValue().isBefore(timeLimit)) {
+                            URI uri = entry.getKey();
+                            instanceCache.remove(uri);
+                            instanceLastUsage.remove(uri);
+                        }
+                    });
+                    cleaningInstances = false;
+                }
+            }
+        }, 0, INSTANCE_CACHE_DURATION_VALUE, INSTANCE_CACHE_DURATION_UNIT);
+    }
+    
+    
+    private final static int INSTANCE_CACHE_DURATION_VALUE = 10;
+    private final static TimeUnit INSTANCE_CACHE_DURATION_UNIT = TimeUnit.MINUTES;
 }

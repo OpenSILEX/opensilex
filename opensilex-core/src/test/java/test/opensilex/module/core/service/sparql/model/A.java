@@ -28,4 +28,22 @@ public class A {
         property = "hasALinkToB"
     )
     private B b;
+
+    public URI getUri() {
+        return uri;
+    }
+
+    public void setUri(URI uri) {
+        this.uri = uri;
+    }
+
+    public B getB() {
+        return b;
+    }
+
+    public void setB(B b) {
+        this.b = b;
+    }
+    
+    
 }

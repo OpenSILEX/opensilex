@@ -7,4 +7,4 @@ testB:001
 
 testA:001
     a test:A ;
-    test:hasALinkToB testB:002 .
+    test:hasALinkToB testB:001 .

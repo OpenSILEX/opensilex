@@ -7,6 +7,7 @@ package test.opensilex.module.core.service.sparql;
 
 import test.opensilex.module.core.service.sparql.model.TEST_ONTOLOGY;
 import java.io.InputStream;
+import java.net.URI;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -20,6 +21,10 @@ import org.opensilex.module.core.service.sparql.SPARQLService;
 import org.opensilex.module.core.service.sparql.SPARQLConnection;
 import org.opensilex.module.core.service.sparql.exceptions.SPARQLQueryException;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import test.opensilex.module.core.service.sparql.model.A;
+import test.opensilex.module.core.service.sparql.model.B;
 
 /**
  *
@@ -45,7 +50,7 @@ public abstract class SPARQLServiceTest<T extends SPARQLConnection> {
 
     @After
     public void destroy() throws SPARQLQueryException {
-//        service.clearGraph(TEST_ONTOLOGY.GRAPH);
+        service.clearGraph(TEST_ONTOLOGY.GRAPH);
         closeConnection();
     }
 
@@ -65,5 +70,17 @@ public abstract class SPARQLServiceTest<T extends SPARQLConnection> {
         askQuery.addWhere(clazz, RDF.type, owlClassNode);
         boolean classExists = service.executeAskQuery(askQuery);
         assertTrue("Class " + clazz.getLocalName() + " must exists in test ontology", classExists);
+    }
+    
+    @Test
+    public void testSelectQuery() throws Exception {
+        URI objectURI = new URI("http://test.opensilex.org/a/001");
+        A aInstance = service.getByURI(A.class, objectURI);
+        
+        assertEquals("Instance URI must be the same", objectURI, aInstance.getUri());
+        
+        B b = aInstance.getB();
+        
+        assertNotNull("Instance object relation should exists", b);
     }
 }

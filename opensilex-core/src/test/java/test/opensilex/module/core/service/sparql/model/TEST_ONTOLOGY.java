@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFLanguages;
@@ -38,4 +39,5 @@ public class TEST_ONTOLOGY {
 
     public static final Resource B = Ontology.resource(NAMESPACE, "B");
 
+    public static final Property hasALinkToB = Ontology.property(NAMESPACE, "hasALinkToB");
 }

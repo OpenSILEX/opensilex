@@ -131,7 +131,7 @@
             <groupId>org.codehaus.janino</groupId>
             <artifactId>janino</artifactId>
             <version>3.0.12</version>
-        </dependency>  
+        </dependency>
     </dependencies>
 
     <build>
@@ -204,6 +204,8 @@
                                     <exclude>jakarta.annotation:jakarta.annotation-api</exclude>
                                     <exclude>org.glassfish.hk2.external:jakarta.inject</exclude>
                                     <exclude>commons-logging:commons-logging</exclude>
+                                    <exclude>javax.activation:javax.activation-api</exclude>
+                                    <exclude>javax.mail:javax.mail-api</exclude>
                                 </excludes>
                             </artifactSet>
                         </configuration>

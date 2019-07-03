@@ -21,6 +21,7 @@ import org.apache.jena.arq.querybuilder.Order;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
@@ -129,13 +130,21 @@ public class SPARQLService implements SPARQLConnection, Service {
 
     public <T> T getByURI(Class<T> objectClass, URI uri) throws Exception {
         SPARQLClassDescriptor<T> descriptor = SPARQLClassDescriptor.getForClass(objectClass);
-        return descriptor.createInstance(uri, this);
+        T instance;
+        if (descriptor.hasCacheInstance(uri)) {
+            instance = descriptor.getCacheInstance(uri);
+        } else {
+            instance = descriptor.createInstance(uri, this);
+        }
+        return instance;
     }
-    
-    public <T> T loadByURI(Class<T> objectClass, URI uri) throws Exception {
+
+    protected <T> T loadByURI(Class<T> objectClass, URI uri) throws Exception {
         SPARQLClassDescriptor<T> descriptor = SPARQLClassDescriptor.getForClass(objectClass);
         SelectBuilder select = descriptor.getSelectBuilder();
-        select.addBind(descriptor.getURIFieldName(), uri);
+        Node nodeURI = NodeFactory.createURI(uri.toString());
+        select.setVar(descriptor.getURIFieldName(), nodeURI);
+        select.addValueVar(descriptor.getURIFieldName(), "<" + nodeURI.getURI() + ">");
 
         List<SPARQLResult> results = executeSelectQuery(select);
 
@@ -273,11 +282,7 @@ public class SPARQLService implements SPARQLConnection, Service {
     public <T> void delete(Class<T> objectClass, List<URI> uris) throws Exception {
         SPARQLClassDescriptor<T> descriptor = SPARQLClassDescriptor.getForClass(objectClass);
 
-        UpdateBuilder delete = new UpdateBuilder();
-
-        uris.forEach((URI uri) -> {
-            descriptor.addDeleteBuilder(uri, delete);
-        });
+        UpdateBuilder delete = descriptor.getDeleteBuilder(uris);
 
         executeUpdateQuery(delete);
     }

@@ -50,6 +50,12 @@
             <scope>test</scope>
             <classifier>tests</classifier>
         </dependency>
+        <!-- Proxy class library -->
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+            <version>1.9.13</version>
+        </dependency>
         <!-- Hibernate OGM - MongoDB -->
         <dependency>
             <groupId>org.hibernate.javax.persistence</groupId>

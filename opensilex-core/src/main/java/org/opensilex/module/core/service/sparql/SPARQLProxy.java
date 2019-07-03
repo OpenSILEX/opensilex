@@ -7,6 +7,9 @@ package org.opensilex.module.core.service.sparql;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.implementation.InvocationHandlerAdapter;
+import net.bytebuddy.matcher.ElementMatchers;
 
 /**
  *
@@ -25,10 +28,21 @@ abstract class SPARQLProxy<T> implements InvocationHandler {
 
     @SuppressWarnings("unchecked")
     public T getInstance() {
-        return (T) java.lang.reflect.Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
-                new Class<?>[]{type},
-                this
-        );
+        Class<? extends T> proxy = new ByteBuddy()
+                .subclass(type)
+                .method(ElementMatchers.any())
+                .intercept(InvocationHandlerAdapter.of(this))
+                .make()
+                .load(Thread.currentThread().getContextClassLoader())
+                .getLoaded();
+        
+        try  {
+            return proxy.getConstructor().newInstance();
+        } catch (Exception ex) {
+            // TODO log error
+        }
+        
+        return null;
     }
 
     private boolean loaded = false;

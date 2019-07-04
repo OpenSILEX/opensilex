@@ -757,8 +757,8 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     }
     
     /**
-     * sort the given scientific objects per year.
-     * @param scientificObjects
+     * Sort the given scientific objects per year.
+     * @param scientificObjects the scientific objects to sort by year.
      * @return the list of the scientific objects sorted per year.
      */
     private HashMap<Integer, ArrayList<ScientificObject>> sortByYear(List<ScientificObject> scientificObjects) {
@@ -768,16 +768,18 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         while (iteratorScientificObjects.hasNext()) {
             ScientificObject scientificObject = iteratorScientificObjects.next();
             Integer year = Calendar.getInstance().get(Calendar.YEAR);
+            //If the scientific object has no year, it is the current year.
             if (scientificObject.getYear() != null) {
                 year = Integer.getInteger(scientificObject.getYear());
             }
             ArrayList<ScientificObject> newScientificObjectList;
+            //If no scientific object for the year have already been founded, add a new year in the map.
             if (!sortedScientificObjects.containsKey(year)) {
                 newScientificObjectList = new ArrayList<>();
             } else {
                 newScientificObjectList = sortedScientificObjects.get(year);
             }
-            
+            //Add the scientific object in the map for its year.
             newScientificObjectList.add(scientificObject);
             sortedScientificObjects.put(year, newScientificObjectList);
         }
@@ -789,6 +791,9 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      * Generates uris for the given scientific objects, per year.
      * @param scientificObjecstSortedByYear
      * @return the list of the scientific objects with their uris.
+     * SILEX:warning
+     * There are risks of collision due to insertion time for the generated URIs.
+     * \SILEX:warning
      */
     private ArrayList<ScientificObject> generateUrisByYear(HashMap<Integer, ArrayList<ScientificObject>> scientificObjecstSortedByYear) {
         ArrayList<ScientificObject> scientificObjects = new ArrayList<>();
@@ -813,6 +818,9 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         boolean annotationInsert = true; // True if the insertion have been done.
 
         //1. Generate Uris For all the scientific objects
+        //SILEX:warning
+        //See the SILEX:warning about collisions of generateUrisByYear(scientificObjecstSortedByYear).
+        //\SILEX:warning
         ArrayList<ScientificObject> scientificObjectsReadyToInsert = generateUrisByYear(sortByYear(scientificObjects));
         
         final Iterator<ScientificObject> iteratorScientificObjects = scientificObjectsReadyToInsert.iterator();

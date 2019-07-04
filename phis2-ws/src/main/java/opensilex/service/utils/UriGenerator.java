@@ -562,6 +562,12 @@ public class UriGenerator {
         return encodedString + randomId;
     }
     
+    /**
+     * Generates scientific objects uris for a year. The number depends on the given numberOfUrisToGenerate.
+     * @param year
+     * @param numberOfUrisToGenerate
+     * @return the list of uri generated
+     */
     public static List<String> generateScientificObjectUris(String year, Integer numberOfUrisToGenerate) {
         if (year == null) {
             year = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));

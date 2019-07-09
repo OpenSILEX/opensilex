@@ -345,8 +345,12 @@ public class VariableResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
         }
         
+        //SILEX:info
+        // quick fix : use the search method instead of the get detail because 
+        //data is missing in the DTO of the get detail.
         return this.search(pageSize, page, uri, null, null, null, null, null, true);
-//        
+        
+        //GET detail
 //        ArrayList<VariableDetailDTO> variables = new ArrayList<>();
 //        ArrayList<Status> statusList = new ArrayList<>();
 //        ResultForm<VariableDetailDTO> getResponse;
@@ -369,5 +373,7 @@ public class VariableResourceService extends ResourceService {
 //            getResponse = new ResultForm<>(0, 0, variables, true);
 //            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(getResponse).build();
 //        }
+
+        //\SILEX:info
     }
 }

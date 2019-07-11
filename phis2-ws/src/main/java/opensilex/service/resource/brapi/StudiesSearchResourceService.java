@@ -151,10 +151,14 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
             
             if (studySearch.getPage() != null) {
                 studySqlDAO.page = studySearch.getPage();
+            } else {
+                studySqlDAO.page = 0;
             }
             
             if (studySearch.getPageSize()!= null) {
                 studySqlDAO.pageSize = studySearch.getPageSize();
+            } else {
+                studySqlDAO.pageSize = 20;
             }
             
             if (studySearch.getSeasonDbIds()!= null) {

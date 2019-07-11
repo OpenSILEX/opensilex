@@ -12,6 +12,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -176,25 +177,36 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         //Returned status list
         List<Status> checkStatusList = new ArrayList<>();
         
+        //Caches
+        List<String> scientificObjectTypesCache = new ArrayList<>();
+        List<String> isPartOfCache = new ArrayList<>();
+        List<String> propertyUriCache = new ArrayList<>();
+        
         boolean dataOk = true;
         for (ScientificObject scientificObject : scientificObjects) {
             //Check if the types are present in the ontology
             UriDAO uriDao = new UriDAO();
 
-            if (!uriDao.isSubClassOf(scientificObject.getRdfType(), Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString())) {
-                dataOk = false;
-                checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Wrong scientific object type value. See ontology"));
+            if (!scientificObjectTypesCache.contains(scientificObject.getRdfType())) {
+                if (!uriDao.isSubClassOf(scientificObject.getRdfType(), Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString())) {
+                    dataOk = false;
+                    checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Wrong scientific object type value. See ontology"));
+                } else {
+                    scientificObjectTypesCache.add(scientificObject.getRdfType());
+                }
             }
             
             //Check if the uri of the isPartOf object exists
             if (scientificObject.getIsPartOf() != null) {
-                if (existUri(scientificObject.getIsPartOf())) {
+                if (!isPartOfCache.contains(scientificObject.getIsPartOf()) && existUri(scientificObject.getIsPartOf())) {
                     //1. Get isPartOf object type
                     uriDao.uri = scientificObject.getIsPartOf();
                     ArrayList<Uri> typesResult = uriDao.getAskTypeAnswer();
                     if (!uriDao.isSubClassOf(typesResult.get(0).getRdfType(), Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString())) {
                         dataOk = false;
                         checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "is part of object type is not scientific object"));
+                    } else {
+                        isPartOfCache.add(scientificObject.getIsPartOf());
                     }
                 } else {
                     dataOk = false;
@@ -221,10 +233,14 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                     }
                 }                
                 
-                //Check if property exists in the ontology Vocabulary --> see how to check rdfs                
-                if (existUri(property.getRelation()) == false) {
-                    dataOk = false;
-                    checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "the property relation " + property.getRelation() + " doesn't exist in the ontology"));
+                //Check if property exists in the ontology Vocabulary --> see how to check rdfs
+                if (!propertyUriCache.contains(property.getRelation())) {
+                    if (existUri(property.getRelation()) == false) {
+                        dataOk = false;
+                        checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "the property relation " + property.getRelation() + " doesn't exist in the ontology"));
+                    } else {
+                        propertyUriCache.add(property.getRelation());
+                    }
                 }
             }
         
@@ -522,20 +538,25 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     public ArrayList<Property> findScientificObjectProperties(String uri) {
         SPARQLQueryBuilder queryProperties = prepareSearchScientificObjectProperties(uri);
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryProperties.toString());
+        List<String> foundedProperties = new ArrayList<>();
         ArrayList<Property> properties = new ArrayList<>();
             
             try (TupleQueryResult result = tupleQuery.evaluate()) {
                 while (result.hasNext()) {
                     BindingSet bindingSet = result.next();
-                    Property property = new Property();
                     
-                    property.setRelation(bindingSet.getValue(RELATION).stringValue());
-                    property.setValue(bindingSet.getValue(PROPERTY).stringValue());
-                    if (bindingSet.getValue(PROPERTY_TYPE) != null) {
-                        property.setRdfType(bindingSet.getValue(PROPERTY_TYPE).stringValue());
-                    }
+                    if (!foundedProperties.contains(bindingSet.getValue(PROPERTY).stringValue())) {
+                        Property property = new Property();
                     
-                    properties.add(property);
+                        property.setRelation(bindingSet.getValue(RELATION).stringValue());
+                        property.setValue(bindingSet.getValue(PROPERTY).stringValue());
+                        if (bindingSet.getValue(PROPERTY_TYPE) != null) {
+                            property.setRdfType(bindingSet.getValue(PROPERTY_TYPE).stringValue());
+                        }
+
+                        properties.add(property);
+                        foundedProperties.add(bindingSet.getValue(PROPERTY).stringValue());
+                    };
                 }
             }
         return properties;
@@ -735,28 +756,80 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         return query;
     }
     
+    /**
+     * Sort the given scientific objects per year.
+     * @param scientificObjects the scientific objects to sort by year.
+     * @return the list of the scientific objects sorted per year.
+     */
+    private HashMap<Integer, ArrayList<ScientificObject>> sortByYear(List<ScientificObject> scientificObjects) {
+        HashMap<Integer, ArrayList<ScientificObject>> sortedScientificObjects = new HashMap<>();
+        
+        final Iterator<ScientificObject> iteratorScientificObjects = scientificObjects.iterator();
+        while (iteratorScientificObjects.hasNext()) {
+            ScientificObject scientificObject = iteratorScientificObjects.next();
+            Integer year = Calendar.getInstance().get(Calendar.YEAR);
+            //If the scientific object has no year, it is the current year.
+            if (scientificObject.getYear() != null) {
+                year = Integer.getInteger(scientificObject.getYear());
+            }
+            ArrayList<ScientificObject> newScientificObjectList;
+            //If no scientific object for the year have already been founded, add a new year in the map.
+            if (!sortedScientificObjects.containsKey(year)) {
+                newScientificObjectList = new ArrayList<>();
+            } else {
+                newScientificObjectList = sortedScientificObjects.get(year);
+            }
+            //Add the scientific object in the map for its year.
+            newScientificObjectList.add(scientificObject);
+            sortedScientificObjects.put(year, newScientificObjectList);
+        }
+        
+        return sortedScientificObjects;
+    }
+    
+    /**
+     * Generates uris for the given scientific objects, per year.
+     * @param scientificObjecstSortedByYear
+     * @return the list of the scientific objects with their uris.
+     * SILEX:warning
+     * There are risks of collision due to insertion time for the generated URIs.
+     * \SILEX:warning
+     */
+    private ArrayList<ScientificObject> generateUrisByYear(HashMap<Integer, ArrayList<ScientificObject>> scientificObjecstSortedByYear) {
+        ArrayList<ScientificObject> scientificObjects = new ArrayList<>();
+        for (Entry<Integer, ArrayList<ScientificObject>> entry : scientificObjecstSortedByYear.entrySet()) {
+            List<String> scientificObjectUris = UriGenerator.generateScientificObjectUris(Integer.toString(entry.getKey()), entry.getValue().size());
+            
+            int numSo = 0;
+            for (ScientificObject scientificObject : entry.getValue()) {
+                scientificObject.setUri(scientificObjectUris.get(numSo));
+                scientificObjects.add(scientificObject);
+                numSo++;
+            }
+        }
+        
+        return scientificObjects;
+    }
+    
     @Override
     public List create(List<ScientificObject> scientificObjects) throws Exception {
         
         boolean resultState = false; // To know if the data are ok and have been inserted.
         boolean annotationInsert = true; // True if the insertion have been done.
+
+        //1. Generate Uris For all the scientific objects
+        //SILEX:warning
+        //See the SILEX:warning about collisions of generateUrisByYear(scientificObjecstSortedByYear).
+        //\SILEX:warning
+        ArrayList<ScientificObject> scientificObjectsReadyToInsert = generateUrisByYear(sortByYear(scientificObjects));
         
-        final Iterator<ScientificObject> iteratorScientificObjects = scientificObjects.iterator();
+        final Iterator<ScientificObject> iteratorScientificObjects = scientificObjectsReadyToInsert.iterator();
         
-        UriGenerator uriGenerator = new UriGenerator();
+        //2. Register in triplestore
+        UpdateBuilder spql = new UpdateBuilder();
         
         while (iteratorScientificObjects.hasNext() && annotationInsert) {
             ScientificObject scientificObject = iteratorScientificObjects.next();
-            
-            try {
-                //1. Generates scientific object URI.
-                scientificObject.setUri(uriGenerator.generateNewInstanceUri(scientificObject.getRdfType(), scientificObject.getYear(), null));
-            } catch (Exception ex) { // In the scientific object case, no exception should be raised
-                annotationInsert = false;
-            }
-            
-            //2. Register in triplestore
-            UpdateBuilder spql = new UpdateBuilder();
             
             Resource scientificObjectUri = ResourceFactory.createResource(scientificObject.getUri());
             Node scientificObjectType = NodeFactory.createURI(scientificObject.getRdfType());
@@ -781,7 +854,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                         
                         String propertyURI;
                         try {
-                            propertyURI = uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_VARIETY.toString(), null, property.getValue());
+                            propertyURI = UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_VARIETY.toString(), null, property.getValue());
                             Node propertyNode = NodeFactory.createURI(propertyURI);
                             Node propertyType = NodeFactory.createURI(property.getRdfType());
                             org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
@@ -805,7 +878,6 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
 
                     spql.addInsert(graph, scientificObjectUri, propertyRelation, propertyLiteral);         
                 }
-                
             }
             
             //isPartOf : the object which has part the element must not be a plot    
@@ -815,29 +887,27 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                 
                 spql.addInsert(graph, scientificObjectUri, relationIsPartOf, agronomicalObjectPartOf);  
             }
-            
-            this.getConnection().begin();
-            Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spql.buildRequest().toString());
-            LOGGER.debug(getTraceabilityLogs() + SPARQL_QUERY + prepareUpdate.toString());
-            prepareUpdate.execute();
+        }
+        
+        this.getConnection().begin();
+        Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spql.buildRequest().toString());
+        LOGGER.debug(getTraceabilityLogs() + SPARQL_QUERY + prepareUpdate.toString());
+        prepareUpdate.execute();
 
-            if (annotationInsert) {
-                resultState = true;
-                this.getConnection().commit();
-            } else {
-                // Rollback on the transaction.
-                this.getConnection().rollback();
-            }
+        if (annotationInsert) {
+            resultState = true;
+            this.getConnection().commit();
             
             //3. insert in postgresql
             ScientificObjectSQLDAO scientificObjectDAO = new ScientificObjectSQLDAO();
-            ArrayList<ScientificObject> aos = new ArrayList<>();
-            aos.add(scientificObject);
-            scientificObjectDAO.checkAndInsertListAO(aos);
+            scientificObjectDAO.checkAndInsertListAO(scientificObjectsReadyToInsert);
+        } else {
+            // Rollback on the transaction.
+            this.getConnection().rollback();
         }
         
         if (resultState) {
-            return scientificObjects;
+            return scientificObjectsReadyToInsert;
         } else {
             return new ArrayList<>();
         }

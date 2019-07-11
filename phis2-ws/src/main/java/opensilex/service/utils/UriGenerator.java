@@ -11,7 +11,9 @@ import java.time.Instant;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.UUID;
 import org.apache.commons.codec.binary.Base32;
 import org.apache.jena.sparql.AlreadyExists;
@@ -472,17 +474,11 @@ public class UriGenerator {
      */
     private static String generateExperimentUri(String campaign) {
         //1. Get the campaign last experiment URI
-        String campaignLastExperimentUri = (new ExperimentSQLDAO()).getCampaignLastExperimentUri(campaign);
+        Integer campaignLastExperimentUri = (new ExperimentSQLDAO()).getCampaignLastExperimentUri(campaign);
         //2. Generate the URI of the experiment
-        int newExperimentNumber;
-        if (campaignLastExperimentUri == null) {
-            newExperimentNumber = 1;
-        }
-        else {
-            String[] uriSplitted = campaignLastExperimentUri.split(EXPERIMENT_URI_SEPARATOR);
-            int campaignLastExperimentNumber = Integer.parseInt(uriSplitted[uriSplitted.length - 1]);
-            newExperimentNumber = campaignLastExperimentNumber + 1;
-        }
+        
+        Integer newExperimentNumber = campaignLastExperimentUri + 1;
+        
         return PLATFORM_URI + PLATFORM_CODE + campaign + EXPERIMENT_URI_SEPARATOR + newExperimentNumber;
     }
     
@@ -564,6 +560,40 @@ public class UriGenerator {
         String randomId = UUID.randomUUID().toString().replaceAll("-", "");
         
         return encodedString + randomId;
+    }
+    
+    /**
+     * Generates scientific objects uris for a year. The number depends on the given numberOfUrisToGenerate.
+     * @param year
+     * @param numberOfUrisToGenerate
+     * @return the list of uri generated
+     */
+    public static List<String> generateScientificObjectUris(String year, Integer numberOfUrisToGenerate) {
+        if (year == null) {
+            year = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
+        }
+        
+        //1. get the highest number for the year 
+        //(i.e. the last inserted agronomical object for the year)
+        ScientificObjectRdf4jDAO scientificObjectDAO = new ScientificObjectRdf4jDAO();
+        int lastAgronomicalObjectIdFromYear = scientificObjectDAO.getLastScientificObjectIdFromYear(year);
+
+        //2. generates URIs
+        List<String> scientificObjectUris = new ArrayList<>();
+        int agronomicalObjectNumber = lastAgronomicalObjectIdFromYear + 1;
+        
+        for (int i = 0; i < numberOfUrisToGenerate; i++) {
+            String agronomicalObjectId = Integer.toString(agronomicalObjectNumber);
+
+            while (agronomicalObjectId.length() < 6) {
+                agronomicalObjectId = "0" + agronomicalObjectId;
+            }
+
+            scientificObjectUris.add(PLATFORM_URI + year + "/" + URI_CODE_AGRONOMICAL_OBJECT + year.substring(2, 4) + agronomicalObjectId);
+            agronomicalObjectNumber++;
+        }
+        
+        return scientificObjectUris;
     }
 
     /**

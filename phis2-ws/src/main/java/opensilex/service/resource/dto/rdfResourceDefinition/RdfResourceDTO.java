@@ -7,6 +7,7 @@
 //******************************************************************************
 package opensilex.service.resource.dto.rdfResourceDefinition;
 
+import opensilex.service.model.RdfResourceDefinition;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 
 /**
@@ -28,6 +29,11 @@ public class RdfResourceDTO extends AbstractVerifiedClass {
     public RdfResourceDTO(String uri, String label) {
         this.uri = uri;
         this.label = label;
+    }
+    
+    public RdfResourceDTO(RdfResourceDefinition rdfResourceDefinition) {
+        uri = rdfResourceDefinition.getUri();
+        label = rdfResourceDefinition.getLabel();
     }
 
     @Override

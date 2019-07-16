@@ -95,7 +95,7 @@ public class UserResourceService extends ResourceService {
     @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
     @ApiParam(value = "Search by email", example = DocumentationAnnotation.EXAMPLE_USER_EMAIL) @QueryParam("email") @Email String email,
     @ApiParam(value = "Search by first name", example = DocumentationAnnotation.EXAMPLE_USER_FIRST_NAME) @QueryParam("firstName") String firstName,
-    @ApiParam(value = "Search by family name", example = DocumentationAnnotation.EXAMPLE_USER_FAMILY_NAME) @QueryParam("familyName") String familyName,
+    @ApiParam(value = "Search by family name", example = DocumentationAnnotation.EXAMPLE_USER_LASTNAME) @QueryParam("familyName") String familyName,
     @ApiParam(value = "Search by address", example = DocumentationAnnotation.EXAMPLE_USER_ADDRESS) @QueryParam("address") String address,
     @ApiParam(value = "Search by phone", example = DocumentationAnnotation.EXAMPLE_USER_PHONE) @QueryParam("phone") String phone,
     @ApiParam(value = "Search by affiliation", example = DocumentationAnnotation.EXAMPLE_USER_AFFILIATION) @QueryParam("affiliation") String affiliation,

@@ -37,5 +37,18 @@ public enum Foaf {
         public String toString() {
             return NAMESPACE.toString() + "Person";
         }
+    },
+    
+    RELATION_HOME_PAGE {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "homePage";
+        }
+    },
+    RELATION_NAME {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "name";
+        }
     }
 }

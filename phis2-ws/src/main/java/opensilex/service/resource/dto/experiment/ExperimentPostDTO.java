@@ -15,9 +15,9 @@ import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.URL;
-import opensilex.service.model.Contact;
+import opensilex.service.model.ContactPostgreSQL;
 import opensilex.service.model.Group;
-import opensilex.service.model.Project;
+import opensilex.service.model.ProjectPostgres;
 import opensilex.service.model.Experiment;
 
 /**
@@ -38,7 +38,7 @@ public class ExperimentPostDTO extends AbstractVerifiedClass {
     private String cropSpecies;
     private ArrayList<String> projectsUris;
     private ArrayList<String> groupsUris;
-    private ArrayList<Contact> contacts;
+    private ArrayList<ContactPostgreSQL> contacts;
     
     @Override
     public Experiment createObjectFromDTO() {
@@ -56,7 +56,7 @@ public class ExperimentPostDTO extends AbstractVerifiedClass {
         
         if (projectsUris != null) {
             for (String projectURI : projectsUris) {
-                Project project = new Project(projectURI);
+                ProjectPostgres project = new ProjectPostgres(projectURI);
                 experiment.addProject(project);
             }
         }
@@ -69,7 +69,7 @@ public class ExperimentPostDTO extends AbstractVerifiedClass {
         }
         
         if (contacts != null && !contacts.isEmpty()) {
-            for (Contact contact : contacts) {
+            for (ContactPostgreSQL contact : contacts) {
                 experiment.addContact(contact);
             }
         }
@@ -189,11 +189,11 @@ public class ExperimentPostDTO extends AbstractVerifiedClass {
     }
     
     @Valid
-    public ArrayList<Contact> getContacts() {
+    public ArrayList<ContactPostgreSQL> getContacts() {
         return contacts;
     }
     
-    public void setContacts(ArrayList<Contact> contacts) {
+    public void setContacts(ArrayList<ContactPostgreSQL> contacts) {
         this.contacts = contacts;
     }
 }

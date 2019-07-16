@@ -14,18 +14,13 @@ import opensilex.service.PropertiesFileManager;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public enum Contexts {
+    
+    
     //The actuators context contains all the declared actuators.
     ACTUATORS {
         @Override
         public String toString() {
             return PLATFORM.toString() + "set/actuators";
-        }
-    },
-    //The context which contains all the declared scientific objects
-    SCIENTIFIC_OBJECTS {
-        @Override
-        public String toString() {
-            return PLATFORM.toString() + "scientificObjects";
         }
     },
     //The context which contains all the declared annotations
@@ -35,18 +30,11 @@ public enum Contexts {
             return PLATFORM.toString() + "set/annotation";
         }
     },
-    //The context which contains all the declared radiometric targets
-    RADIOMETRIC_TARGETS {
+    //The context which contains all the declared documents metadata
+    DOCUMENTS {
         @Override
         public String toString() {
-            return PLATFORM.toString() + "set/radiometricTargets";
-        }
-    },
-    //The context which contains all the declared infrastructures
-    INFRASTRUCTURES {
-        @Override
-        public String toString() {
-            return PLATFORM.toString() + "set/infrastructure";
+            return PLATFORM.toString() + "documents";
         }
     },
     //The context which contains all the declared events
@@ -56,18 +44,11 @@ public enum Contexts {
             return PLATFORM.toString() + "set/events";
         }
     },
-    //The context which contains all the declared sensors
-    SENSORS {
+    //The context which contains all the declared infrastructures
+    INFRASTRUCTURES {
         @Override
         public String toString() {
-            return PLATFORM.toString() + "sensors";
-        }
-    },
-    //The context which contains all the declared documents metadata
-    DOCUMENTS {
-        @Override
-        public String toString() {
-            return PLATFORM.toString() + "documents";
+            return PLATFORM.toString() + "set/infrastructure";
         }
     },
     //The context platform. 
@@ -77,6 +58,34 @@ public enum Contexts {
         public String toString() {
             return PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "baseURI") 
                     + PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "infrastructure") + "/";
+        }
+    },
+    //The context which contains all the declared projects
+    PROJECTS {
+        @Override
+        public String toString() {
+            return PLATFORM.toString() + "set/projects";
+        }
+    },
+    //The context which contains all the declared radiometric targets
+    RADIOMETRIC_TARGETS {
+        @Override
+        public String toString() {
+            return PLATFORM.toString() + "set/radiometricTargets";
+        }
+    },
+    //The context which contains all the declared scientific objects
+    SCIENTIFIC_OBJECTS {
+        @Override
+        public String toString() {
+            return PLATFORM.toString() + "scientificObjects";
+        }
+    },
+    //The context which contains all the declared sensors
+    SENSORS {
+        @Override
+        public String toString() {
+            return PLATFORM.toString() + "sensors";
         }
     },
     //The context which contains the variables, traits, methods and units.

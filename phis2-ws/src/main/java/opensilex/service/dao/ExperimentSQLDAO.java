@@ -35,9 +35,9 @@ import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.utils.sql.JoinAttributes;
 import opensilex.service.utils.sql.SQLQueryBuilder;
-import opensilex.service.model.Contact;
+import opensilex.service.model.ContactPostgreSQL;
 import opensilex.service.model.Group;
-import opensilex.service.model.Project;
+import opensilex.service.model.ProjectPostgres;
 import opensilex.service.model.Experiment;
 
 /**
@@ -340,7 +340,7 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
             
             ResultSet queryResult = statement.executeQuery(query.toString());
             while (queryResult.next()) {
-                Project project = new Project(queryResult.getString("uri"));
+                ProjectPostgres project = new ProjectPostgres(queryResult.getString("uri"));
                 project.setAcronyme(queryResult.getString("acronyme"));
                 experiment.addProject(project);
             }
@@ -367,7 +367,7 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
             
             ResultSet queryResult = statement.executeQuery(query.toString());
             while (queryResult.next()) {
-                Contact contact = new Contact();
+                ContactPostgreSQL contact = new ContactPostgreSQL();
                 contact.setEmail(queryResult.getString("email"));
                 contact.setFirstName(queryResult.getString("first_name"));
                 contact.setFamilyName(queryResult.getString("family_name"));
@@ -546,7 +546,7 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
                         createdResourcesURIs.add(experiment.getUri());
                         
                         // Inserts the trial project link
-                        for (Project project : experiment.getProjects()) {
+                        for (ProjectPostgres project : experiment.getProjects()) {
                             insertPreparedStatementAtExperimentProject.setString(1, project.getUri());
                             insertPreparedStatementAtExperimentProject.setString(2, experiment.getUri());
                             LOGGER.debug(log + " query : " + insertPreparedStatementAtExperimentProject.toString());
@@ -562,7 +562,7 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
                         }
                         
                         // Inserts link between the trial and the contact user
-                        for (Contact contact : experiment.getContacts()) {
+                        for (ContactPostgreSQL contact : experiment.getContacts()) {
                             insertPreparedStatementAtExperimentUsers.setString(1, experiment.getUri());
                             insertPreparedStatementAtExperimentUsers.setString(2, contact.getEmail());
                             insertPreparedStatementAtExperimentUsers.setString(3, contact.getType());
@@ -888,7 +888,7 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
                     
                     // Insertion of projects
                     if (experiment.getProjects() != null && !experiment.getProjects().isEmpty()) {
-                        for (Project project : experiment.getProjects()) {
+                        for (ProjectPostgres project : experiment.getProjects()) {
                             insertPreparedStatementProject.setString(1, experiment.getUri());
                             insertPreparedStatementProject.setString(2, project.getUri());
                             insertPreparedStatementProject.execute();
@@ -918,7 +918,7 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
                     
                     // Insertion of contacts
                     if (experiment.getContacts() != null && !experiment.getContacts().isEmpty()) {
-                        for (Contact contact : experiment.getContacts()) {
+                        for (ContactPostgreSQL contact : experiment.getContacts()) {
                             insertPreparedStatementContact.setString(1, experiment.getUri());
                             insertPreparedStatementContact.setString(2, contact.getEmail());
                             insertPreparedStatementContact.setString(3, contact.getType());

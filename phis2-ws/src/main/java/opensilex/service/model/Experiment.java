@@ -27,7 +27,7 @@ public class Experiment {
     private String objective;
     private String cropSpecies;
     
-    private ArrayList<ProjectPostgres> projects = new ArrayList<>();
+    private ArrayList<Project> projects = new ArrayList<>();
     private ArrayList<Group> groups = new ArrayList<>();
     private ArrayList<ContactPostgreSQL> contacts = new ArrayList<>();
     private HashMap<String, String> variables = new HashMap<>();
@@ -137,11 +137,11 @@ public class Experiment {
         this.contacts.add(contact);
     }
     
-    public ArrayList<ProjectPostgres> getProjects() {
+    public ArrayList<Project> getProjects() {
         return this.projects;
     }
     
-    public void addProject(ProjectPostgres project) {
+    public void addProject(Project project) {
         this.projects.add(project);
     }
     

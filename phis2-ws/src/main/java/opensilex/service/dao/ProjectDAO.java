@@ -928,4 +928,31 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         }
         return count;
     }
+    
+    /**
+     * Get the shortname of a project.
+     * @param uri the URI of the project.
+     * @example
+     * SELECT ?shortname
+     * WHERE {
+     *      <http://www.opensilex.org/demo/set/projects/DROPS> oeso:hasShortname ?shortname
+     * }
+     * @return the shortname, null if no shortname founded.
+     */
+    public String getShortnameFromURI(String uri) {
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        query.appendDistinct(Boolean.TRUE);
+        query.appendTriplet(uri, Oeso.RELATION_HAS_SHORTNAME.toString(), "?" + SHORTNAME, null);
+        
+        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
+            if (result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                return bindingSet.getValue(SHORTNAME).stringValue();
+            }
+        }
+        
+        return null;
+    }
 }

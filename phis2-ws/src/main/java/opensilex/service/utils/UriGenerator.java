@@ -13,7 +13,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.apache.commons.codec.binary.Base32;
 import org.apache.jena.sparql.AlreadyExists;
@@ -133,12 +135,7 @@ public class UriGenerator {
      * @return the new sensor URI
      */
     private static String generateSensorUri(String year) {
-        //1. get the current number of sensors in the triplestor for the year
-        SensorDAO sensorDAO = new SensorDAO();
-        int lastSensorIdFromYear = sensorDAO.getLastIdFromYear(year);
-
-        //2. generate sensor URI
-        int sensorNumber = lastSensorIdFromYear + 1;
+        int sensorNumber = getNextSensorID(year);
         String numberOfSensors = Integer.toString(sensorNumber);
         String newSensorNumber;
         switch (numberOfSensors.length()) {
@@ -152,7 +149,37 @@ public class UriGenerator {
                 newSensorNumber = numberOfSensors;
                 break;
         }
-        return PLATFORM_URI + year + "/" + URI_CODE_SENSOR + year.substring(2, 4) + newSensorNumber;
+        return getSensorUriPatternByYear(year) + newSensorNumber;
+    }
+    
+    /**
+     * Internal variable to store the last sensor ID by year
+     */
+    private static Map<String, Integer> sensorLastIDByYear = new HashMap<>();
+    
+    /**
+     * Return the next unit ID by incrementing unitLastID variable and initializing it before if needed
+     * @return next unit ID
+     */
+    private static int getNextSensorID(String year) {
+        if (!sensorLastIDByYear.containsKey(year)) {
+            SensorDAO sensorDAO = new SensorDAO();
+            sensorLastIDByYear.put(year, sensorDAO.getLastIdFromYear(year));
+        }
+        
+        int sensorLastID = sensorLastIDByYear.get(year);
+        sensorLastID++;
+        sensorLastIDByYear.put(year, sensorLastID);
+        return sensorLastID;
+    }
+    
+    /**
+     * Return sensor uri pattern <prefix>:<year>/<unic_code>
+     * @param year
+     * @return prefix
+     */
+    public static String getSensorUriPatternByYear(String year) {
+        return PLATFORM_URI + year + "/" + URI_CODE_SENSOR + year.substring(2, 4);
     }
     
     /**

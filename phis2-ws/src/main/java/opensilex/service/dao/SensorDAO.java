@@ -57,6 +57,7 @@ import org.apache.jena.query.SortCondition;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprList;
+import org.apache.jena.sparql.path.PathFactory;
 import org.apache.jena.vocabulary.XSD;
 
 /**
@@ -104,7 +105,7 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
         query.addWhere(uri, RDF.type, type);
         // Filter by type subclass of sensing device
         Node sensorConcept = NodeFactory.createURI(Oeso.CONCEPT_SENSING_DEVICE.toString());
-        query.addWhere(uri, RDFS.subClassOf, sensorConcept);
+        query.addWhere(type, PathFactory.pathZeroOrMore1(PathFactory.pathLink(RDFS.subClassOf.asNode())), sensorConcept);
         
         ExprFactory expr = new ExprFactory();
         

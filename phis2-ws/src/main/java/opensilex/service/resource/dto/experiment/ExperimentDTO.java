@@ -19,8 +19,8 @@ import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.model.ContactPostgreSQL;
 import opensilex.service.model.Group;
-import opensilex.service.model.ProjectPostgres;
 import opensilex.service.model.Experiment;
+import opensilex.service.model.Project;
 
 /**
  * Experiment DTO.
@@ -61,7 +61,8 @@ public class ExperimentDTO extends AbstractVerifiedClass {
         
         if (projectsUris != null) {
             for (String projectURI : projectsUris) {
-                ProjectPostgres project = new ProjectPostgres(projectURI);
+                Project project = new Project();
+                project.setUri(projectURI);
                 experiment.addProject(project);
             }
         }

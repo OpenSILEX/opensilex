@@ -8,6 +8,7 @@
 package opensilex.service.dao;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +49,15 @@ import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.model.Dataset;
 import opensilex.service.model.Sensor;
+import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
+import org.apache.jena.arq.querybuilder.ExprFactory;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.SortCondition;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.ExprList;
+import org.apache.jena.vocabulary.XSD;
 
 /**
  * Sensor DAO.
@@ -73,23 +83,49 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
     //person in charge of the sensor(s)
     private final String PERSON_IN_CHARGE = "personInCharge";
 
+    private static final String TYPE = "type";
+    private static final String MAX_ID = "maxID";
+    
     /**
      * Prepares a query to get the higher id of the sensors.
      * @return 
      */
-    private SPARQLQueryBuilder prepareGetLastIdFromYear(String year) {
-        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+    private Query prepareGetLastIdFromYear(String year) {
+        SelectBuilder query = new SelectBuilder();
         
-        query.appendSelect("?" + URI);
-        query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?type", null);
-        query.appendTriplet("?type", "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_SENSING_DEVICE.toString(), null);
-        query.appendFilter("regex(str(?uri), \".*/" + year + "/.*\")");
-        query.appendOrderBy("desc(?uri)");
-        query.appendLimit(1);
+        Var uri = makeVar(URI);
+        Var type = makeVar(TYPE);
+        Var maxID = makeVar(MAX_ID);
         
-        LOGGER.debug(query.toString());
+        // Select the highest identifier
+        query.addVar(maxID);
         
-        return query;
+        // Get sensor type
+        query.addWhere(uri, RDF.type, type);
+        // Filter by type subclass of sensing device
+        Node sensorConcept = NodeFactory.createURI(Oeso.CONCEPT_SENSING_DEVICE.toString());
+        query.addWhere(uri, RDFS.subClassOf, sensorConcept);
+        
+        ExprFactory expr = new ExprFactory();
+        
+        // Filter by year prefix
+        Expr yearFilter =  expr.regex(expr.str(uri), ".*/" + year + "/.*", "");
+        query.addFilter(yearFilter);
+        
+        // Binding to extract the last part of the URI as a MAX_ID integer
+        Expr indexBinding =  expr.function(
+            XSD.integer.getURI(), 
+            ExprList.create(Arrays.asList(
+                expr.strafter(expr.str(uri), UriGenerator.getSensorUriPatternByYear(year)))
+            )
+        );
+        query.addBind(indexBinding, maxID);
+        
+        // Order MAX_ID integer from highest to lowest and select the first value
+        query.addOrderBy(new SortCondition(maxID,  Query.ORDER_DESCENDING));
+        query.setLimit(1);
+        
+        return query.build();
     }
     
     /**
@@ -98,7 +134,7 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
      * @return the id
      */
     public int getLastIdFromYear(String year) {
-        SPARQLQueryBuilder query = prepareGetLastIdFromYear(year);
+        Query query = prepareGetLastIdFromYear(year);
 
         //get last sensor uri inserted
         TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
@@ -106,24 +142,11 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
 
         getConnection().close();
         
-        String uriSensor = null;
-        
         if (result.hasNext()) {
             BindingSet bindingSet = result.next();
-            uriSensor = bindingSet.getValue(URI).stringValue();
-        }
-        
-        if (uriSensor == null) {
-            return 0;
+            return Integer.valueOf(bindingSet.getValue(MAX_ID).stringValue());
         } else {
-            //2018 -> 18. to get /s18
-            String split = "/s" + year.substring(2, 4);
-            String[] parts = uriSensor.split(split);
-            if (parts.length > 1) {
-                return Integer.parseInt(parts[1]);
-            } else {
-                return 0;
-            }
+            return 0;
         }
     }
     
@@ -632,8 +655,6 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
         boolean resultState = false;
         boolean annotationInsert = true;
         
-        UriGenerator uriGenerator = new UriGenerator();
-        
         //SILEX:test
         //Triplestore connection has to be checked (this is kind of an hot fix)
         this.getConnection().begin();
@@ -641,7 +662,7 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
         
         for (Sensor sensor : sensors) {
             try {
-                sensor.setUri(uriGenerator.generateNewInstanceUri(sensor.getRdfType(), null, null));
+                sensor.setUri(UriGenerator.generateNewInstanceUri(sensor.getRdfType(), null, null));
             } catch (Exception ex) { //In the sensors case, no exception should be raised
                 annotationInsert = false;
             }

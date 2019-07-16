@@ -329,12 +329,10 @@ public class DataFileDAO extends MongoDAO<FileDescription> {
                       + "/dataFiles/"
                       + fileCollectionName + "/";
             
-            UriGenerator uriGenerator = new UriGenerator();
-            
             String key = fileDescription.getFilename() + fileDescription.getDate();
-            String uri = uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);
+            String uri = UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);
             while (uriExists(fileDescription.getRdfType(), uri)) {
-                uri = uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);
+                uri = UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);
             }
             
             fileDescription.setUri(uri);

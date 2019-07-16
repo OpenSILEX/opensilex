@@ -551,8 +551,6 @@ public class UserDAO extends PhisDAO<User, UserDTO> {
             int inserted = 0;
             int exists = 0;
 
-            UriGenerator uriGenerator = new UriGenerator();
-
             try {
                 //batch
                 boolean insertionLeft = true;
@@ -588,7 +586,7 @@ public class UserDAO extends PhisDAO<User, UserDTO> {
                             // create uri suffix
                             String userUriSuffix = ResourcesUtils.createUserUriSuffix(u.getFirstName(), u.getFamilyName());
                             // set uri to agent
-                            u.setUri(uriGenerator.generateNewInstanceUri(Foaf.CONCEPT_AGENT.toString(), null, userUriSuffix));
+                            u.setUri(UriGenerator.generateNewInstanceUri(Foaf.CONCEPT_AGENT.toString(), null, userUriSuffix));
                         }
                         insertPreparedStatementUser.setString(10, u.getUri());
 

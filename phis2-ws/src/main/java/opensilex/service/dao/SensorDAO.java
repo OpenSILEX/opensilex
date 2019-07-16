@@ -631,8 +631,6 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
         boolean resultState = false;
         boolean annotationInsert = true;
         
-        UriGenerator uriGenerator = new UriGenerator();
-        
         //SILEX:test
         //Triplestore connection has to be checked (this is kind of an hot fix)
         this.getConnection().begin();
@@ -640,7 +638,7 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
         
         for (Sensor sensor : sensors) {
             try {
-                sensor.setUri(uriGenerator.generateNewInstanceUri(sensor.getRdfType(), null, null));
+                sensor.setUri(UriGenerator.generateNewInstanceUri(sensor.getRdfType(), null, null));
             } catch (Exception ex) { //In the sensors case, no exception should be raised
                 annotationInsert = false;
             }

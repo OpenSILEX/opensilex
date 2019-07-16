@@ -8,6 +8,7 @@
 package opensilex.service.dao;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import javax.ws.rs.NotFoundException;
@@ -57,6 +58,15 @@ import opensilex.service.model.OntologyReference;
 import opensilex.service.model.Trait;
 import opensilex.service.model.Unit;
 import opensilex.service.model.Variable;
+import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
+import org.apache.jena.arq.querybuilder.ExprFactory;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.SortCondition;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.ExprList;
+import org.apache.jena.vocabulary.XSD;
 
 /**
  * Variable DAO.
@@ -82,6 +92,8 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
     protected static final String SEE_ALSO = "seeAlso";
     protected static final String PROPERTY = "property";
 
+    private static final String MAX_ID = "maxID";
+        
     public VariableDAO() {
         
     }
@@ -184,15 +196,34 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
      * Prepares a query to get the higher id of the variables.
      * @return 
      */
-    private SPARQLQueryBuilder prepareGetLastId() {
-        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+    private Query prepareGetLastId() {
+        SelectBuilder query = new SelectBuilder();
         
-        query.appendSelect("?" + URI);
-        query.appendTriplet("?uri", Rdf.RELATION_TYPE.toString(), Oeso.CONCEPT_VARIABLE.toString(), null);
-        query.appendOrderBy("DESC(?" + URI + ")");
-        query.appendLimit(1);
+        Var uri = makeVar(URI);
+        Var maxID = makeVar(MAX_ID);
         
-        return query;
+        // Select the highest identifier
+        query.addVar(maxID);
+        
+        // Filter by variable
+        Node methodConcept = NodeFactory.createURI(Oeso.CONCEPT_VARIABLE.toString());
+        query.addWhere(uri, RDF.type, methodConcept);
+        
+        // Binding to extract the last part of the URI as a MAX_ID integer
+        ExprFactory expr = new ExprFactory();
+        Expr indexBinding =  expr.function(
+            XSD.integer.getURI(), 
+            ExprList.create(Arrays.asList(
+                expr.strafter(expr.str(uri), UriGenerator.PLATFORM_URI_ID_VARIABLES))
+            )
+        );
+        query.addBind(indexBinding, maxID);
+        
+        // Order MAX_ID integer from highest to lowest and select the first value
+        query.addOrderBy(new SortCondition(maxID,  Query.ORDER_DESCENDING));
+        query.setLimit(1);
+        
+        return query.build();
     }
     
     /**
@@ -200,46 +231,17 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
      * @return the id
      */
     public int getLastId() {
-        SPARQLQueryBuilder query = prepareGetLastId();
-        
-        //SILEX:test
-        //All the triplestore connection has to been checked and updated
-        //This is an unclean hot fix
-        String tripleStoreServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
-        String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "repositoryID");
-        rep = new HTTPRepository(tripleStoreServer, repositoryID); //Stockage triplestore
-        rep.initialize();
-        this.setConnection(rep.getConnection());
-        this.getConnection().begin();
-        //\SILEX:test
+        Query query = prepareGetLastId();
 
-        //get last variable uri inserted
+        //get last variable uri ID inserted
         TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         TupleQueryResult result = tupleQuery.evaluate();
 
-        //SILEX:test
-        //For the pool connection problems
-        getConnection().commit();
-        getConnection().close();
-        //\SILEX:test
-        
-        String uriVariable = null;
-        
         if (result.hasNext()) {
             BindingSet bindingSet = result.next();
-            uriVariable = bindingSet.getValue(URI).stringValue();
-        }
-        
-        if (uriVariable == null) {
-            return 0;
+            return Integer.valueOf(bindingSet.getValue(MAX_ID).stringValue());
         } else {
-            String split = "variables/v";
-            String[] parts = uriVariable.split(split);
-            if (parts.length > 1) {
-                return Integer.parseInt(parts[1]);
-            } else {
-                return 0;
-            }
+            return 0;
         }
     }
 
@@ -389,14 +391,13 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
         boolean resultState = false;
         boolean annotationInsert = true;
         
-        UriGenerator uriGenerator = new UriGenerator();
         final Iterator<VariableDTO> iteratorVariablesDTO = variablesDTO.iterator();      
         
         while (iteratorVariablesDTO.hasNext() && annotationInsert) {
             VariableDTO variableDTO = iteratorVariablesDTO.next();
             
             try {
-                variableDTO.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_VARIABLE.toString(), null, null));
+                variableDTO.setUri(UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_VARIABLE.toString(), null, null));
             } catch (Exception ex) { //In the variable case, no exception should be raised
                 annotationInsert = false;
             }

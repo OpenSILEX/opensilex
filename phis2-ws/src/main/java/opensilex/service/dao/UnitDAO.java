@@ -8,6 +8,7 @@
 package opensilex.service.dao;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import static opensilex.service.dao.VariableDAO.OBJECT;
@@ -48,6 +49,15 @@ import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.model.OntologyReference;
 import opensilex.service.model.Unit;
+import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
+import org.apache.jena.arq.querybuilder.ExprFactory;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.SortCondition;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.ExprList;
+import org.apache.jena.vocabulary.XSD;
 
 /**
  * Unit DAO.
@@ -61,6 +71,8 @@ public class UnitDAO extends Rdf4jDAO<Unit> {
     public String comment;
     public ArrayList<OntologyReference> ontologiesReferences = new ArrayList<>();
 
+    private static final String MAX_ID = "maxID";
+        
     protected SPARQLQueryBuilder prepareSearchQuery() {
         //SILEX:todo
         // Add search by ontology references
@@ -139,15 +151,34 @@ public class UnitDAO extends Rdf4jDAO<Unit> {
      * Prepares a query to get the higher id of the units.
      * @return 
      */
-    private SPARQLQueryBuilder prepareGetLastId() {
-        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+    private Query prepareGetLastId() {
+        SelectBuilder query = new SelectBuilder();
         
-        query.appendSelect("?uri");
-        query.appendTriplet("?uri", Rdf.RELATION_TYPE.toString(), Oeso.CONCEPT_UNIT.toString(), null);
-        query.appendOrderBy("DESC(?uri)");
-        query.appendLimit(1);
+        Var uri = makeVar(URI);
+        Var maxID = makeVar(MAX_ID);
         
-        return query;
+        // Select the highest identifier
+        query.addVar(maxID);
+        
+        // Filter by unit
+        Node methodConcept = NodeFactory.createURI(Oeso.CONCEPT_UNIT.toString());
+        query.addWhere(uri, RDF.type, methodConcept);
+        
+        // Binding to extract the last part of the URI as a MAX_ID integer
+        ExprFactory expr = new ExprFactory();
+        Expr indexBinding =  expr.function(
+            XSD.integer.getURI(), 
+            ExprList.create(Arrays.asList(
+                expr.strafter(expr.str(uri), UriGenerator.PLATFORM_URI_ID_UNITS))
+            )
+        );
+        query.addBind(indexBinding, maxID);
+        
+        // Order MAX_ID integer from highest to lowest and select the first value
+        query.addOrderBy(new SortCondition(maxID,  Query.ORDER_DESCENDING));
+        query.setLimit(1);
+        
+        return query.build();
     }
     
     /**
@@ -155,29 +186,17 @@ public class UnitDAO extends Rdf4jDAO<Unit> {
      * @return the id
      */
     public int getLastId() {
-        SPARQLQueryBuilder query = prepareGetLastId();
+        Query query = prepareGetLastId();
 
-        //get last unit uri inserted
+        //get last unit uri ID inserted
         TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         TupleQueryResult result = tupleQuery.evaluate();
-        
-        String uriUnit = null;
-        
+
         if (result.hasNext()) {
             BindingSet bindingSet = result.next();
-            uriUnit = bindingSet.getValue("uri").stringValue();
-        }
-        
-        if (uriUnit == null) {
-            return 0;
+            return Integer.valueOf(bindingSet.getValue(MAX_ID).stringValue());
         } else {
-            String split = "units/u";
-            String[] parts = uriUnit.split(split);
-            if (parts.length > 1) {
-                return Integer.parseInt(parts[1]);
-            } else {
-                return 0;
-            }
+            return 0;
         }
     }
     
@@ -226,13 +245,12 @@ public class UnitDAO extends Rdf4jDAO<Unit> {
         boolean resultState = false;
         boolean annotationInsert = true;
         
-        UriGenerator uriGenerator = new UriGenerator();
         final Iterator<UnitDTO> iteratorUnitDTO = unitsDTO.iterator();
         
         while (iteratorUnitDTO.hasNext() && annotationInsert) {
             UnitDTO unitDTO = iteratorUnitDTO.next();
             try {
-                unitDTO.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_UNIT.toString(), null, null));
+                unitDTO.setUri(UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_UNIT.toString(), null, null));
             } catch (Exception ex) { //In the unit case, no exception should be raised
                 annotationInsert = false;
             }

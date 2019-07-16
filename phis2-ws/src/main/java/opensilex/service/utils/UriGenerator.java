@@ -79,17 +79,21 @@ public class UriGenerator {
     private static final String PLATFORM_URI_ID_ANNOTATION = PLATFORM_URI_ID + "annotation/";
     private static final String PLATFORM_URI_ID_EVENT = PLATFORM_URI_ID + "event/";
     private static final String PLATFORM_URI_ID_INSTANT = PLATFORM_URI_ID + "instant/";
-    private static final String PLATFORM_URI_ID_METHOD = PLATFORM_URI_ID + "methods/";
+    public static final String PLATFORM_URI_ID_METHOD = PLATFORM_URI_ID + "methods/" + URI_CODE_METHOD;
     private static final String PLATFORM_URI_ID_RADIOMETRIC_TARGET = PLATFORM_URI_ID + "radiometricTargets/";
-    private static final String PLATFORM_URI_ID_TRAITS = PLATFORM_URI_ID + "traits/";
-    private static final String PLATFORM_URI_ID_UNITS = PLATFORM_URI_ID + "units/";
-    private static final String PLATFORM_URI_ID_VARIABLES = PLATFORM_URI_ID + "variables/";
+    public static final String PLATFORM_URI_ID_TRAITS = PLATFORM_URI_ID + "traits/" + URI_CODE_TRAIT;
+    public static final String PLATFORM_URI_ID_UNITS = PLATFORM_URI_ID + "units/" + URI_CODE_UNIT;
+    public static final String PLATFORM_URI_ID_VARIABLES = PLATFORM_URI_ID + "variables/" + URI_CODE_VARIABLE;
     private static final String PLATFORM_URI_ID_VARIETY = PLATFORM_URI + "v/";
     private static final String PLATFORM_URI_ID_PROVENANCE = PLATFORM_URI_ID + "provenance/";
     
     private static final String EXPERIMENT_URI_SEPARATOR = "-";
 
-
+    /**
+     * Prevent URI generator to be instanciated
+     */
+    private UriGenerator() {}
+    
     /**
      * Generates a new vector URI. a vector URI has the following pattern:
      * <prefix>:<year>/<unic_code>
@@ -220,19 +224,34 @@ public class UriGenerator {
      * @return the new variable URI
      */
     private static String generateVariableUri() {
-        //1. get the higher variable id (i.e. the last inserted variable)
-        VariableDAO variableDAO = new VariableDAO();
-        int lastVariableId = variableDAO.getLastId();
-
-        //2. generate variable URI
-        int newVariableId = lastVariableId + 1;
-        String variableId = Integer.toString(newVariableId);
+        // Generate trait URI based on next id
+        String variableId = Integer.toString(getNextVariableID());        
 
         while (variableId.length() < 3) {
             variableId = "0" + variableId;
         }
 
-        return PLATFORM_URI_ID_VARIABLES + URI_CODE_VARIABLE + variableId;
+        return PLATFORM_URI_ID_VARIABLES + variableId;
+    }
+    
+    /**
+     * Internal variable to store the last variable ID
+     */
+    private static Integer variableLastID;
+    
+    /**
+     * Return the next variable ID by incrementing variableLastID variable and initializing it before if needed
+     * @return next variable ID
+     */
+    private static int getNextVariableID() {
+        if (variableLastID == null) {
+            VariableDAO variableDAO = new VariableDAO();
+            variableLastID = variableDAO.getLastId();
+        }
+        
+        variableLastID++;
+        
+        return variableLastID;
     }
 
     /**
@@ -243,19 +262,34 @@ public class UriGenerator {
      * @return the new trait URI
      */
     private static String generateTraitUri() {
-        //1. get the highest trait id (i.e. the last inserted trait)
-        TraitDAO traitDAO = new TraitDAO();
-        int lastTraitId = traitDAO.getLastId();
-
-        //2. generate trait URI
-        int newTraitId = lastTraitId + 1;
-        String traitId = Integer.toString(newTraitId);
+        // Generate trait URI based on next id
+        String traitId = Integer.toString(getNextTraitID());
 
         while (traitId.length() < 3) {
             traitId = "0" + traitId;
         }
 
-        return PLATFORM_URI_ID_TRAITS + URI_CODE_TRAIT + traitId;
+        return PLATFORM_URI_ID_TRAITS + traitId;
+    }
+    
+    /**
+     * Internal variable to store the last trait ID
+     */
+    private static Integer traitLastID;
+
+    /**
+     * Return the next trait ID by incrementing traitLastID variable and initializing it before if needed
+     * @return next trait ID
+     */
+    private static int getNextTraitID() {
+        if (traitLastID == null) {
+            TraitDAO traitDAO = new TraitDAO();
+            traitLastID = traitDAO.getLastId();
+        }
+        
+        traitLastID++;
+        
+        return traitLastID;
     }
 
     /**
@@ -266,19 +300,34 @@ public class UriGenerator {
      * @return the new method URI
      */
     private static String generateMethodUri() {
-        //1. get the highest method id (i.e. the last inserted method)
-        MethodDAO methodDAO = new MethodDAO();
-        int lastMethodId = methodDAO.getLastId();
-
-        //2. generate method URI
-        int newMethodId = lastMethodId + 1;
-        String methodId = Integer.toString(newMethodId);
+        // Generate method URI based on next id
+        String methodId = Integer.toString(getNextMethodID());
 
         while (methodId.length() < 3) {
             methodId = "0" + methodId;
         }
 
-        return PLATFORM_URI_ID_METHOD + URI_CODE_METHOD + methodId;
+        return PLATFORM_URI_ID_METHOD + methodId;
+    }
+    
+    /**
+     * Internal variable to store the last method ID
+     */
+    private static Integer methodLastID;
+
+    /**
+     * Return the next method ID by incrementing methodLastID variable and initializing it before if needed
+     * @return next method ID
+     */
+    private static int getNextMethodID() {
+        if (methodLastID == null) {
+            MethodDAO methodDAO = new MethodDAO();
+            methodLastID = methodDAO.getLastId();
+        }
+        
+        methodLastID++;
+        
+        return methodLastID;
     }
 
     /**
@@ -289,19 +338,34 @@ public class UriGenerator {
      * @return the new unit URI
      */
     private static String generateUnitUri() {
-        //1. get the highest unit id (i.e. the last inserted unit)
-        UnitDAO unitDAO = new UnitDAO();
-        int lastUnitId = unitDAO.getLastId();
-
-        //2. generates unit URI
-        int newUnitId = lastUnitId + 1;
-        String unitId = Integer.toString(newUnitId);
+        // Generate unit URI based on next id
+        String unitId = Integer.toString(getNextUnitID());
 
         while (unitId.length() < 3) {
             unitId = "0" + unitId;
         }
 
-        return PLATFORM_URI_ID_UNITS + URI_CODE_UNIT + unitId;
+        return PLATFORM_URI_ID_UNITS + unitId;
+    }
+
+    /**
+     * Internal variable to store the last unit ID
+     */
+    private static Integer unitLastID;
+    
+    /**
+     * Return the next unit ID by incrementing unitLastID variable and initializing it before if needed
+     * @return next unit ID
+     */
+    private static int getNextUnitID() {
+        if (unitLastID == null) {
+            UnitDAO unitDAO = new UnitDAO();
+            unitLastID = unitDAO.getLastId();
+        }
+        
+        unitLastID++;
+        
+        return unitLastID;
     }
     
     /**
@@ -568,7 +632,7 @@ public class UriGenerator {
      * @param numberOfUrisToGenerate
      * @return the list of uri generated
      */
-    public static List<String> generateScientificObjectUris(String year, Integer numberOfUrisToGenerate) {
+    public synchronized static List<String> generateScientificObjectUris(String year, Integer numberOfUrisToGenerate) {
         if (year == null) {
             year = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
         }
@@ -607,7 +671,7 @@ public class UriGenerator {
      * @return the generated URI
      * @throws java.lang.Exception
      */
-    public static String generateNewInstanceUri(String instanceType, String year, String additionalInformation) 
+    public synchronized static String generateNewInstanceUri(String instanceType, String year, String additionalInformation) 
             throws Exception {
         if (year == null) {
             year = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));

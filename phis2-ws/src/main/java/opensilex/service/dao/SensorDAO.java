@@ -63,7 +63,7 @@ import org.apache.jena.vocabulary.XSD;
 /**
  * Sensor DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
-  * @update [Vincent Migot] 17 July 2019: Update getLastIdFromYear method to fix bug and limitation in URI generation
+ * @update [Vincent Migot] 17 July 2019: Update getLastIdFromYear method to fix bug and limitation in URI generation
  */
 public class SensorDAO extends Rdf4jDAO<Sensor> {
 

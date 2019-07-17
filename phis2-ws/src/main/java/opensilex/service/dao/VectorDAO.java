@@ -60,6 +60,7 @@ import org.eclipse.rdf4j.query.Update;
 /**
  * Vector DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @update [Vincent Migot] 17 July 2019: Update getLastIdFromYear method to fix bug and limitation in URI generation
  */
 public class VectorDAO extends Rdf4jDAO<Vector> {
     
@@ -365,14 +366,18 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
     
     /**
      * Prepares a query to get the higher id of the vector.
-     * @return the generated query
      * @example
-     * SELECT ?uri WHERE {
-     *  ?uri  rdf:type  ?type  . 
-     *  ?type  rdfs:subClassOf*  <http://www.opensilex.org/vocabulary/oeso#Vector> . 
-     *  FILTER ( regex(str(?uri), ".*\/2018/.*") ) 
+     * <pre>
+     * SELECT  ?maxID WHERE {
+     *      ?uri a ?type .
+     *      ?type (rdfs:subClassOf)* <http://www.opensilex.org/vocabulary/oeso#SensingDevice>
+     *      FILTER regex(str(?uri), ".* /2019/.*", "")
+     *      BIND(xsd:integer(strafter(str(?uri), "http://www.opensilex.org/diaphen/2019/s19")) AS ?maxID)
      * }
-     * ORDER BY desc(?uri)
+     * ORDER BY DESC(?maxID)
+     * LIMIT 1
+     * </pre>
+     * @return 
      */
     private Query prepareGetLastIdFromYear(String year) {
         SelectBuilder query = new SelectBuilder();

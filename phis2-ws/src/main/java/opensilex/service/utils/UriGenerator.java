@@ -59,6 +59,7 @@ import opensilex.service.model.Project;
  *              - First user: Jean Dupont-Marie http://www.phenome-fppn.fr/diaphen/id/agent/jean_dupont-marie
  *              - Second user: Jean Dupont-Marie http://www.phenome-fppn.fr/diaphen/id/agent/jean_dupont-marie01
  * \SILEX:todo
+ * @update [Vincent Migot] 17 July 2019: Add syncronization on public methods to prevent URI duplication
  */
 public class UriGenerator {    
     private static final String URI_CODE_ACTUATOR = "a";
@@ -224,7 +225,7 @@ public class UriGenerator {
      * @return the new variable URI
      */
     private static String generateVariableUri() {
-        // Generate trait URI based on next id
+        // Generate variable URI based on next id
         String variableId = Integer.toString(getNextVariableID());        
 
         while (variableId.length() < 3) {
@@ -662,6 +663,7 @@ public class UriGenerator {
 
     /**
      * Generates the URI of a new instance of instanceType.
+     * This method is syncronized to prevent URI duplication in case of multiple thread request for new URIs
      * @param instanceType the RDF type of the instance (a concept URI)
      * @param year year of the creation of the element. If it is null, it will
      * be the current year

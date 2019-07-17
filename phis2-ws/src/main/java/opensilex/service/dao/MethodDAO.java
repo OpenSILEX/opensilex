@@ -62,6 +62,7 @@ import org.apache.jena.vocabulary.XSD;
 /**
  * Method DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @update [Vincent Migot] 17 July 2019: Update getLastId method to fix bug and limitation in URI generation
  */
 public class MethodDAO extends Rdf4jDAO<Method> {
 
@@ -158,6 +159,15 @@ public class MethodDAO extends Rdf4jDAO<Method> {
     
     /**
      * Prepares a query to get the higher id of the methods.
+     * @example
+     * <pre>
+     * SELECT ?maxID WHERE {
+     *   ?uri a <http://www.opensilex.org/vocabulary/oeso#Method>
+     *   BIND(xsd:integer>(strafter(str(?uri), "http://www.opensilex.org/diaphen/id/methods/m")) AS ?maxID)
+     * }
+     * ORDER BY DESC(?maxID)
+     * LIMIT 1
+     * </pre>
      * @return 
      */
     private Query prepareGetLastId() {

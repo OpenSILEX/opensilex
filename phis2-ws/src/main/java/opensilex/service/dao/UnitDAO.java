@@ -62,6 +62,7 @@ import org.apache.jena.vocabulary.XSD;
 /**
  * Unit DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @update [Vincent Migot] 17 July 2019: Update getLastId method to fix bug and limitation in URI generation
  */
 public class UnitDAO extends Rdf4jDAO<Unit> {
     final static Logger LOGGER = LoggerFactory.getLogger(UnitDAO.class);
@@ -149,6 +150,15 @@ public class UnitDAO extends Rdf4jDAO<Unit> {
     
     /**
      * Prepares a query to get the higher id of the units.
+     * @example
+     * <pre>
+     * SELECT ?maxID WHERE {
+     *   ?uri a <http://www.opensilex.org/vocabulary/oeso#Unit>
+     *   BIND(xsd:integer>(strafter(str(?uri), "http://www.opensilex.org/diaphen/id/units/u")) AS ?maxID)
+     * }
+     * ORDER BY DESC(?maxID)
+     * LIMIT 1
+     * </pre>
      * @return 
      */
     private Query prepareGetLastId() {

@@ -71,6 +71,7 @@ import org.apache.jena.vocabulary.XSD;
 /**
  * Variable DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @update [Vincent Migot] 17 July 2019: Update getLastId method to fix bug and limitation in URI generation
  */
 public class VariableDAO extends Rdf4jDAO<Variable> {
     
@@ -195,6 +196,15 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
     /**
      * Prepares a query to get the higher id of the variables.
      * @return 
+     * @example
+     * <pre>
+     * SELECT ?maxID WHERE {
+     *   ?uri a <http://www.opensilex.org/vocabulary/oeso#Variable>
+     *   BIND(xsd:integer>(strafter(str(?uri), "http://www.opensilex.org/diaphen/id/variables/v")) AS ?maxID)
+     * }
+     * ORDER BY DESC(?maxID)
+     * LIMIT 1
+     * </pre>
      */
     private Query prepareGetLastId() {
         SelectBuilder query = new SelectBuilder();

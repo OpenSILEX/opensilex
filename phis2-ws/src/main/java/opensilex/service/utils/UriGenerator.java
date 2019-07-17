@@ -107,13 +107,9 @@ public class UriGenerator {
      * @return the new vector URI
      */
     private static String generateVectorUri(String year) {
-        //1. get the actual number of vectors in the triplestor for the year
-        VectorDAO vectorDAO = new VectorDAO();
-        int lastVectorIdFromYear = vectorDAO.getLastIdFromYear(year);
-
-        //2. generate vectors URI
-        String numberOfVectors = Integer.toString(lastVectorIdFromYear + 1);
-
+        // get last vectors ID
+        int vectorNumber = getNextVectorID(year);
+        String numberOfVectors = Integer.toString(vectorNumber);
         String newVectorNumber;
 
         if (numberOfVectors.length() == 1) {
@@ -121,10 +117,39 @@ public class UriGenerator {
         } else {
             newVectorNumber = numberOfVectors;
         }
-
-        return PLATFORM_URI + year + "/" + URI_CODE_VECTOR + year.substring(2, 4) + newVectorNumber;
+        return getVectorUriPatternByYear(year) + newVectorNumber;
+    }
+    
+    /**
+     * Internal variable to store the last vector ID by year
+     */
+    private static Map<String, Integer> vectorLastIDByYear = new HashMap<>();
+    
+    /**
+     * Return the next unit ID by incrementing unitLastID variable and initializing it before if needed
+     * @return next unit ID
+     */
+    private static int getNextVectorID(String year) {
+        if (!vectorLastIDByYear.containsKey(year)) {
+            VectorDAO vectorDAO = new VectorDAO();
+            vectorLastIDByYear.put(year, vectorDAO.getLastIdFromYear(year));
+        }
+        
+        int vectorLastID = vectorLastIDByYear.get(year);
+        vectorLastID++;
+        vectorLastIDByYear.put(year, vectorLastID);
+        return vectorLastID;
     }
 
+    /**
+     * Return vector uri pattern <prefix>:<year>/<unic_code>
+     * @param year
+     * @return prefix
+     */
+    public static String getVectorUriPatternByYear(String year) {
+        return PLATFORM_URI + year + "/" + URI_CODE_VECTOR + year.substring(2, 4);
+    }
+    
     /**
      * Generates a new sensor URI. A sensor URI has the following pattern:
      * <prefix>:<year>/<unic_code>

@@ -8,17 +8,13 @@
 package opensilex.service.dao;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
-import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.ResourceFactory;
-import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.BindingSet;
@@ -27,7 +23,6 @@ import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
-import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.slf4j.Logger;
@@ -35,16 +30,32 @@ import org.slf4j.LoggerFactory;
 import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.User;
-import opensilex.service.ontology.Contexts;
 import opensilex.service.ontology.Rdf;
 import opensilex.service.ontology.Rdfs;
 import opensilex.service.ontology.Oeso;
-import opensilex.service.resource.dto.VectorDTO;
-import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
-import opensilex.service.view.brapi.Status;
 import opensilex.service.model.Vector;
+import opensilex.service.ontology.Contexts;
+import opensilex.service.resource.dto.VectorDTO;
+import opensilex.service.utils.POSTResultsReturn;
+import opensilex.service.view.brapi.Status;
+import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
+import org.apache.jena.arq.querybuilder.ExprFactory;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.SortCondition;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.ExprList;
+import org.apache.jena.sparql.path.PathFactory;
+import org.apache.jena.update.UpdateRequest;
+import org.apache.jena.vocabulary.XSD;
+import org.eclipse.rdf4j.query.Update;
 
 /**
  * Vector DAO.
@@ -77,6 +88,9 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
     public String personInCharge;
     private final String PERSON_IN_CHARGE = "personInCharge";
         
+    private static final String TYPE = "type";
+    private static final String MAX_ID = "maxID";
+    
     /**
      * Generates the query to get the number of vectors in the triplestore for 
      * a specific year.
@@ -360,19 +374,42 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
      * }
      * ORDER BY desc(?uri)
      */
-    private SPARQLQueryBuilder prepareGetLastIdFromYear(String year) {
-        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+    private Query prepareGetLastIdFromYear(String year) {
+        SelectBuilder query = new SelectBuilder();
         
-        query.appendSelect("?" + URI);
-        query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?type", null);
-        query.appendTriplet("?type", "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_VECTOR.toString(), null);
-        query.appendFilter("regex(str(?uri), \".*/" + year + "/.*\")");
-        query.appendOrderBy("desc(?uri)");
-        query.appendLimit(1);
+        Var uri = makeVar(URI);
+        Var type = makeVar(TYPE);
+        Var maxID = makeVar(MAX_ID);
         
-        LOGGER.debug(query.toString());
+        // Select the highest identifier
+        query.addVar(maxID);
         
-        return query;
+        // Get sensor type
+        query.addWhere(uri, RDF.type, type);
+        // Filter by type subclass of vector
+        Node sensorConcept = NodeFactory.createURI(Oeso.CONCEPT_VECTOR.toString());
+        query.addWhere(type, PathFactory.pathZeroOrMore1(PathFactory.pathLink(RDFS.subClassOf.asNode())), sensorConcept);
+        
+        ExprFactory expr = new ExprFactory();
+        
+        // Filter by year prefix
+        Expr yearFilter =  expr.regex(expr.str(uri), ".*/" + year + "/.*", "");
+        query.addFilter(yearFilter);
+        
+        // Binding to extract the last part of the URI as a MAX_ID integer
+        Expr indexBinding =  expr.function(
+            XSD.integer.getURI(), 
+            ExprList.create(Arrays.asList(
+                expr.strafter(expr.str(uri), UriGenerator.getVectorUriPatternByYear(year)))
+            )
+        );
+        query.addBind(indexBinding, maxID);
+        
+        // Order MAX_ID integer from highest to lowest and select the first value
+        query.addOrderBy(new SortCondition(maxID,  Query.ORDER_DESCENDING));
+        query.setLimit(1);
+        
+        return query.build();
     }
     
     /**
@@ -381,7 +418,7 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
      * @return the id
      */
     public int getLastIdFromYear(String year) {
-        SPARQLQueryBuilder query = prepareGetLastIdFromYear(year);
+        Query query = prepareGetLastIdFromYear(year);
 
         //get last vector uri inserted
         TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());

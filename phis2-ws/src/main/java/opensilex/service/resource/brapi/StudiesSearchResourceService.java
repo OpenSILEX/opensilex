@@ -77,7 +77,7 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
         callMethods.add("POST");
         ArrayList<String> callVersions = new ArrayList<>();
         callVersions.add("1.2");
-        Call call1 = new Call("studies-search/", calldatatypes, callMethods, callVersions);
+        Call call1 = new Call("studies-search", calldatatypes, callMethods, callVersions);
         calls.add(call1);
         return calls;
     }
@@ -269,7 +269,7 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
     })
     @Produces(MediaType.APPLICATION_JSON)   
 
-    public Response getStudies (
+    public Response getStudiesSearch (
         @ApiParam(value = "Search by studyDbId", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI ) @QueryParam("studyDbId") @URL String studyDbId,
         @ApiParam(value = "Search by commonCropName", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_CROP_SPECIES ) @QueryParam("commonCropName") String commonCropName,
         @ApiParam(value = "Search by studyTypeDbId - NOT COVERED YET") @QueryParam("studyTypeDbId") String studyTypeDbId,
@@ -308,7 +308,7 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
         }
         
         studysqlDAO.setPageSize(pageSize);
-         studysqlDAO.setPage(page);
+        studysqlDAO.setPage(page);
         studysqlDAO.user=userSession.getUser();
         
         ArrayList<Status> statusList = new ArrayList<>(); 

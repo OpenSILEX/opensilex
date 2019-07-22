@@ -737,25 +737,11 @@ public class UriGenerator {
         if (year == null) {
             year = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
         }
-        
-        //1. get the highest number for the year 
-        //(i.e. the last inserted agronomical object for the year)
-        ScientificObjectRdf4jDAO scientificObjectDAO = new ScientificObjectRdf4jDAO();
-        int lastAgronomicalObjectIdFromYear = scientificObjectDAO.getLastScientificObjectIdFromYear(year);
 
-        //2. generates URIs
         List<String> scientificObjectUris = new ArrayList<>();
-        int agronomicalObjectNumber = lastAgronomicalObjectIdFromYear + 1;
         
         for (int i = 0; i < numberOfUrisToGenerate; i++) {
-            String agronomicalObjectId = Integer.toString(agronomicalObjectNumber);
-
-            while (agronomicalObjectId.length() < 6) {
-                agronomicalObjectId = "0" + agronomicalObjectId;
-            }
-
-            scientificObjectUris.add(PLATFORM_URI + year + "/" + URI_CODE_SCIENTIFIC_OBJECT + year.substring(2, 4) + agronomicalObjectId);
-            agronomicalObjectNumber++;
+            scientificObjectUris.add(generateScientificObjectUri(year));
         }
         
         return scientificObjectUris;

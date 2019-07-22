@@ -76,7 +76,6 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
     private final String DATE_OF_LAST_CALIBRATION = "dateOfLastCalibration";
     private final String PERSON_IN_CHARGE = "personInCharge";
 
-    private static final String TYPE = "type";
     private static final String MAX_ID = "maxID";
     
     /**
@@ -195,7 +194,7 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
         SelectBuilder query = new SelectBuilder();
         
         Var uri = makeVar(URI);
-        Var type = makeVar(TYPE);
+        Var type = makeVar(RDF_TYPE);
         Var maxID = makeVar(MAX_ID);
         
         // Select the highest identifier
@@ -247,20 +246,9 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
         
         if (result.hasNext()) {
             BindingSet bindingSet = result.next();
-            uriActuator = bindingSet.getValue(URI).stringValue();
-        }
-        
-        if (uriActuator == null) {
-            return 0;
+            return Integer.valueOf(bindingSet.getValue(MAX_ID).stringValue());
         } else {
-            //2018 -> 18. to get /s18
-            String split = "/a" + year.substring(2, 4);
-            String[] parts = uriActuator.split(split);
-            if (parts.length > 1) {
-                return Integer.parseInt(parts[1]);
-            } else {
-                return 0;
-            }
+            return 0;
         }
     }
 

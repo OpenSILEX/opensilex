@@ -19,8 +19,17 @@ import opensilex.service.documentation.DocumentationAnnotation;
 public class Uri {
     String uri;
     String rdfType;
+    String label;
     private Map<String, String> properties = new HashMap<>();
     private Map<String,String> annotations = new HashMap<>();
+
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
     
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI)
     public String getUri() {

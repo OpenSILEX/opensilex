@@ -63,6 +63,7 @@ import org.apache.jena.vocabulary.XSD;
 /**
  * Sensor DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @update [Vincent Migot] 17 July 2019: Update getLastIdFromYear method to fix bug and limitation in URI generation
  */
 public class SensorDAO extends Rdf4jDAO<Sensor> {
 
@@ -89,6 +90,17 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
     
     /**
      * Prepares a query to get the higher id of the sensors.
+     * @example
+     * <pre>
+     * SELECT  ?maxID WHERE {
+     *      ?uri a ?type .
+     *      ?type (rdfs:subClassOf)* <http://www.opensilex.org/vocabulary/oeso#SensingDevice>
+     *      FILTER regex(str(?uri), ".* /2019/.*", "")
+     *      BIND(xsd:integer(strafter(str(?uri), "http://www.opensilex.org/diaphen/2019/s19")) AS ?maxID)
+     * }
+     * ORDER BY DESC(?maxID)
+     * LIMIT 1
+     * </pre>
      * @return 
      */
     private Query prepareGetLastIdFromYear(String year) {

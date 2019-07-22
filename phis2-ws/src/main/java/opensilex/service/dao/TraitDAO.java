@@ -60,8 +60,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @author Morgane Vidal <morgane.vidal@inra.fr>
  * Trait DAO.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @update [Vincent Migot] 17 July 2019: Update getLastId method to fix bug and limitation in URI generation
  */
 public class TraitDAO extends Rdf4jDAO<Trait> {
     final static Logger LOGGER = LoggerFactory.getLogger(TraitDAO.class);
@@ -119,6 +120,15 @@ public class TraitDAO extends Rdf4jDAO<Trait> {
     
     /**
      * Prepares a query to get the higher id of the traits.
+     * @example
+     * <pre>
+     * SELECT ?maxID WHERE {
+     *   ?uri a <http://www.opensilex.org/vocabulary/oeso#Trait>
+     *   BIND(xsd:integer>(strafter(str(?uri), "http://www.opensilex.org/diaphen/id/traits/t")) AS ?maxID)
+     * }
+     * ORDER BY DESC(?maxID)
+     * LIMIT 1
+     * </pre>
      * @return 
      */
     private Query prepareGetLastId() {

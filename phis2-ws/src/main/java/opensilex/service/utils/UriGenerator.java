@@ -61,6 +61,7 @@ import opensilex.service.model.Project;
  *              - First user: Jean Dupont-Marie http://www.phenome-fppn.fr/diaphen/id/agent/jean_dupont-marie
  *              - Second user: Jean Dupont-Marie http://www.phenome-fppn.fr/diaphen/id/agent/jean_dupont-marie01
  * \SILEX:todo
+ * @update [Vincent Migot] 17 July 2019: Add syncronization on public methods to prevent URI duplication
  */
 public class UriGenerator {    
     private static final String URI_CODE_ACTUATOR = "a";
@@ -184,7 +185,7 @@ public class UriGenerator {
     private static Map<String, Integer> sensorLastIDByYear = new HashMap<>();
     
     /**
-     * Return the next unit ID by incrementing unitLastID variable and initializing it before if needed
+     * Return the next sensor ID by incrementing unitLastID variable and initializing it before if needed
      * @return next unit ID
      */
     private static int getNextSensorID(String year) {
@@ -219,12 +220,7 @@ public class UriGenerator {
      * @return the new actuator URI
      */
     private static String generateActuatorUri(String year) {
-        //1. get the current number of actuator in the triplestor for the year
-        ActuatorDAO actuatorDAO = new ActuatorDAO();
-        int lastActuatorIdFromYear = actuatorDAO.getLastIdFromYear(year);
-
-        //2. generate actuator URI
-        int actuatorNumber = lastActuatorIdFromYear + 1;
+        int actuatorNumber = getNextActuatorID(year);
         String numberOfActuators = Integer.toString(actuatorNumber);
         String newActuatorNumber;
         switch (numberOfActuators.length()) {
@@ -238,7 +234,37 @@ public class UriGenerator {
                 newActuatorNumber = numberOfActuators;
                 break;
         }
-        return PLATFORM_URI + year + "/" + URI_CODE_ACTUATOR + year.substring(2, 4) + newActuatorNumber;
+        return getActuatorUriPatternByYear(year) + newActuatorNumber;        
+    }
+
+    /**
+     * Internal variable to store the last actuator ID by year
+     */
+    private static Map<String, Integer> actuatorLastIDByYear = new HashMap<>();
+    
+    /**
+     * Return the next actuator ID by incrementing unitLastID variable and initializing it before if needed
+     * @return next unit ID
+     */
+    private static int getNextActuatorID(String year) {
+        if (!actuatorLastIDByYear.containsKey(year)) {
+            ActuatorDAO actuatorDAO = new ActuatorDAO();
+            actuatorLastIDByYear.put(year, actuatorDAO.getLastIdFromYear(year));
+        }
+        
+        int actuatorLastID = actuatorLastIDByYear.get(year);
+        actuatorLastID++;
+        actuatorLastIDByYear.put(year, actuatorLastID);
+        return actuatorLastID;
+    }
+    
+    /**
+     * Return actuator uri pattern <prefix>:<year>/<unic_code>
+     * @param year
+     * @return prefix
+     */
+    public static String getActuatorUriPatternByYear(String year) {
+        return PLATFORM_URI + year + "/" + URI_CODE_ACTUATOR + year.substring(2, 4);
     }
 
     /**
@@ -277,7 +303,7 @@ public class UriGenerator {
      * @return the new variable URI
      */
     private static String generateVariableUri() {
-        // Generate trait URI based on next id
+        // Generate variable URI based on next id
         String variableId = Integer.toString(getNextVariableID());        
 
         while (variableId.length() < 3) {
@@ -715,6 +741,7 @@ public class UriGenerator {
 
     /**
      * Generates the URI of a new instance of instanceType.
+     * This method is syncronized to prevent URI duplication in case of multiple thread request for new URIs
      * @param instanceType the RDF type of the instance (a concept URI)
      * @param year year of the creation of the element. If it is null, it will
      * be the current year

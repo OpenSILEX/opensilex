@@ -88,8 +88,6 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     private final String CHILD = "child";
     private final String RELATION = "relation";
     
-    private static final String URI_CODE_SCIENTIFIC_OBJECT = "o";
-    
     private static final String MAX_ID = "maxID";
     
     public ScientificObjectRdf4jDAO() {

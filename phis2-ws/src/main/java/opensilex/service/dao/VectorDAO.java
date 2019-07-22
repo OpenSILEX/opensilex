@@ -431,24 +431,11 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
 
         getConnection().close();
         
-        String uriVector = null;
-        
         if (result.hasNext()) {
             BindingSet bindingSet = result.next();
-            uriVector = bindingSet.getValue(URI).stringValue();
-        }
-        
-        if (uriVector == null) {
-            return 0;
+            return Integer.valueOf(bindingSet.getValue(MAX_ID).stringValue());
         } else {
-            //2018 -> 18. to get /v18
-            String split = "/v" + year.substring(2, 4);
-            String[] parts = uriVector.split(split);
-            if (parts.length > 1) {
-                return Integer.parseInt(parts[1]);
-            } else {
-                return 0;
-            }
+            return 0;
         }
     }
     

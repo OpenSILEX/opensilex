@@ -119,12 +119,11 @@ public class ProjectDAO extends PhisDAO<Project, ProjectDTO> {
 
                 insertPreparedStatementProject = connection.prepareStatement(insertGabProject);
                 insertPreparedStatementProjectContact = connection.prepareStatement(insertGabProjectContact);
-                UriGenerator uriGenerator = new UriGenerator();
                 
                 for (Project project : projects) {
                     try {
                         // Generate project URI
-                        project.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_PROJECT.toString(), null, project.getAcronyme()));
+                        project.setUri(UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_PROJECT.toString(), null, project.getAcronyme()));
                         
                         insertionLeft = true;
                         insertPreparedStatementProject.setString(1, project.getUri());

@@ -514,12 +514,10 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
                 insertPreparedStatementAtGroupExperiment = con.prepareStatement(insertGabAtExperimentGroup);
                 insertPreparedStatementAtExperimentUsers = con.prepareStatement(insertGabAtExperimentUsers);
                 
-                UriGenerator uriGenerator = new UriGenerator();
-                
                 for (Experiment experiment : experiments) {
                     if (!existInDB(experiment)) {
                         insertionLeft = true;
-                        experiment.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_EXPERIMENT.toString(), experiment.getCampaign(), null));
+                        experiment.setUri(UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_EXPERIMENT.toString(), experiment.getCampaign(), null));
                         insertPreparedStatementExperiments.setString(1, experiment.getUri());
                         insertPreparedStatementExperiments.setString(2, experiment.getStartDate());
                         insertPreparedStatementExperiments.setString(3, experiment.getEndDate()); 

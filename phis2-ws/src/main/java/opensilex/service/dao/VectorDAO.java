@@ -89,7 +89,6 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
     public String personInCharge;
     private final String PERSON_IN_CHARGE = "personInCharge";
         
-    private static final String TYPE = "type";
     private static final String MAX_ID = "maxID";
     
     /**
@@ -383,7 +382,7 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
         SelectBuilder query = new SelectBuilder();
         
         Var uri = makeVar(URI);
-        Var type = makeVar(TYPE);
+        Var type = makeVar(RDF_TYPE);
         Var maxID = makeVar(MAX_ID);
         
         // Select the highest identifier

@@ -184,7 +184,7 @@ public class UriGenerator {
     private static Map<String, Integer> sensorLastIDByYear = new HashMap<>();
     
     /**
-     * Return the next unit ID by incrementing unitLastID variable and initializing it before if needed
+     * Return the next sensor ID by incrementing unitLastID variable and initializing it before if needed
      * @return next unit ID
      */
     private static int getNextSensorID(String year) {
@@ -219,12 +219,7 @@ public class UriGenerator {
      * @return the new actuator URI
      */
     private static String generateActuatorUri(String year) {
-        //1. get the current number of actuator in the triplestor for the year
-        ActuatorDAO actuatorDAO = new ActuatorDAO();
-        int lastActuatorIdFromYear = actuatorDAO.getLastIdFromYear(year);
-
-        //2. generate actuator URI
-        int actuatorNumber = lastActuatorIdFromYear + 1;
+        int actuatorNumber = getNextActuatorID(year);
         String numberOfActuators = Integer.toString(actuatorNumber);
         String newActuatorNumber;
         switch (numberOfActuators.length()) {
@@ -238,7 +233,37 @@ public class UriGenerator {
                 newActuatorNumber = numberOfActuators;
                 break;
         }
-        return PLATFORM_URI + year + "/" + URI_CODE_ACTUATOR + year.substring(2, 4) + newActuatorNumber;
+        return getActuatorUriPatternByYear(year) + newActuatorNumber;        
+    }
+
+    /**
+     * Internal variable to store the last actuator ID by year
+     */
+    private static Map<String, Integer> actuatorLastIDByYear = new HashMap<>();
+    
+    /**
+     * Return the next actuator ID by incrementing unitLastID variable and initializing it before if needed
+     * @return next unit ID
+     */
+    private static int getNextActuatorID(String year) {
+        if (!actuatorLastIDByYear.containsKey(year)) {
+            ActuatorDAO actuatorDAO = new ActuatorDAO();
+            actuatorLastIDByYear.put(year, actuatorDAO.getLastIdFromYear(year));
+        }
+        
+        int actuatorLastID = actuatorLastIDByYear.get(year);
+        actuatorLastID++;
+        actuatorLastIDByYear.put(year, actuatorLastID);
+        return actuatorLastID;
+    }
+    
+    /**
+     * Return actuator uri pattern <prefix>:<year>/<unic_code>
+     * @param year
+     * @return prefix
+     */
+    public static String getActuatorUriPatternByYear(String year) {
+        return PLATFORM_URI + year + "/" + URI_CODE_ACTUATOR + year.substring(2, 4);
     }
 
     /**

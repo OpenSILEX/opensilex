@@ -85,7 +85,6 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
     //person in charge of the sensor(s)
     private final String PERSON_IN_CHARGE = "personInCharge";
 
-    private static final String TYPE = "type";
     private static final String MAX_ID = "maxID";
     
     /**
@@ -107,7 +106,7 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
         SelectBuilder query = new SelectBuilder();
         
         Var uri = makeVar(URI);
-        Var type = makeVar(TYPE);
+        Var type = makeVar(RDF_TYPE);
         Var maxID = makeVar(MAX_ID);
         
         // Select the highest identifier

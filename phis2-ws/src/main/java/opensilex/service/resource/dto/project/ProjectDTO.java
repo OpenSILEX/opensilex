@@ -10,11 +10,13 @@ package opensilex.service.resource.dto.project;
 import io.swagger.annotations.ApiModelProperty;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.model.Project;
+import opensilex.service.resource.ProjectResourceService;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resource.dto.rdfResourceDefinition.RdfResourceDTO;
 
 /**
  * This class is the project DTO for the get project by search.
+ * @see ProjectResourceService#getBySearch(int, int, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String) 
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ProjectDTO extends AbstractVerifiedClass {

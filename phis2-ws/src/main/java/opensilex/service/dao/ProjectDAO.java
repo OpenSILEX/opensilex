@@ -50,7 +50,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
+ * The DAO for the projects. They are stored in the triplestore.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ProjectDAO extends Rdf4jDAO<Project> {
@@ -75,6 +75,21 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
     private final String SCIENTIFIC_CONTACT = "scientificContact";
     private final String SHORTNAME = "shortname";
     
+    /**
+     * Generates the query to insert a project.
+     * @param project
+     * @example
+     * INSERT DATA {
+     *      GRAPH <http://www.opensilex.org/opensilex/set/projects> {
+     *          <http://www.opensilex.org/opensilex/qdfg> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.opensilex.org/vocabulary/oeso#Project> .
+     *          <http://www.opensilex.org/opensilex/qdfg> <http://xmlns.com/foaf/0.1/name> "DROPS" .
+     *          <http://www.opensilex.org/opensilex/qdfg> <http://www.opensilex.org/vocabulary/oeso#hasShortname> "DROPS" .
+     *          <http://www.opensilex.org/opensilex/qdfg> <http://www.opensilex.org/vocabulary/oeso#startDate> "2019-07-01" .
+     *          <http://www.opensilex.org/opensilex/qdfg> <http://www.opensilex.org/vocabulary/oeso#endDate> "2019-08-09" .
+     *      }
+     * }
+     * @return the generated query
+     */
     private UpdateRequest prepareInsertQuery(Project project) {
         UpdateBuilder spql = new UpdateBuilder();
         
@@ -172,6 +187,13 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         return query;
     }
 
+    /**
+     * Insert in the triplestore the given list of projects.
+     * @param projects
+     * @return the inserted projects.
+     * @throws DAOPersistenceException
+     * @throws Exception 
+     */
     @Override
     public List<Project> create(List<Project> projects) throws DAOPersistenceException, Exception {
         getConnection().begin();
@@ -198,6 +220,21 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
+    /**
+     * Generates the query to delete properties of a project.
+     * @param project
+     * @return the generated query.
+     * @example
+     * DELETE DATA {
+     *      GRAPH <http://www.opensilex.org/opensilex/set/projects> {
+     *          <http://www.opensilex.org/opensilex/qdfg> <http://xmlns.com/foaf/0.1/name> "DROPS" .
+     *          <http://www.opensilex.org/opensilex/qdfg> <http://www.opensilex.org/vocabulary/oeso#hasShortname> "DROPS" .
+     *          <http://www.opensilex.org/opensilex/qdfg> <http://www.opensilex.org/vocabulary/oeso#startDate> "2019-07-01" .
+     *          <http://www.opensilex.org/opensilex/qdfg> <http://www.opensilex.org/vocabulary/oeso#endDate> "2019-08-09" .
+     *      }
+     * }
+     * 
+     */
     private UpdateRequest prepareDeleteQuery(Project project) {
         UpdateBuilder updateBuilder = new UpdateBuilder();
         
@@ -294,6 +331,13 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         return query;
     }
 
+    /**
+     * Update the given projects with their new properties.
+     * @param projects
+     * @return the list of the updated projects.
+     * @throws DAOPersistenceException
+     * @throws Exception 
+     */
     @Override
     public List<Project> update(List<Project> projects) throws DAOPersistenceException, Exception {
         getConnection().begin();
@@ -332,6 +376,11 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
+    /**
+     * Get a Project from a given binding set
+     * @param bindingSet
+     * @return the project.
+     */
     private Project getProjectFromBindingSet(BindingSet bindingSet) {
         Project project = new Project();
         if (bindingSet.getValue(URI) != null) {
@@ -466,6 +515,49 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         return projects;
     }
     
+    /**
+     * Generates the query to get the data of a project by its URI.
+     * @param uri
+     * @example 
+     * SELECT   ?name  ?shortname  ?dateStart  ?dateEnd  ?objective  ?description  ?coordinator  
+     *          ?scientificContact  ?administrativeContact  ?relatedProjectURI ?relatedProjectName  ?financialFundingURI ?financialFundingLabel  ?financialReference  ?keyword  ?homePage WHERE {
+     *              <http://www.opensilex.org/opensilex/qdfg>  <http://xmlns.com/foaf/0.1/name>  ?name  . 
+     *              <http://www.opensilex.org/opensilex/qdfg>  <http://www.opensilex.org/vocabulary/oeso#hasShortname>  ?shortname  . 
+     *              <http://www.opensilex.org/opensilex/qdfg>  <http://www.opensilex.org/vocabulary/oeso#startDate>  ?dateStart  . 
+     *              <http://www.opensilex.org/opensilex/qdfg>  <http://www.opensilex.org/vocabulary/oeso#endDate>  ?dateEnd  . 
+     *              OPTIONAL {
+     *                  <http://www.opensilex.org/opensilex/qdfg> <http://www.opensilex.org/vocabulary/oeso#hasObjective> ?objective
+     *              }
+     *              OPTIONAL {
+     *                  <http://www.opensilex.org/opensilex/qdfg> <http://purl.org/dc/terms/description> ?description
+     *              }
+     *              OPTIONAL {
+     *                  <http://www.opensilex.org/opensilex/qdfg> <http://www.opensilex.org/vocabulary/oeso#hasCoordinator> ?coordinator
+     *              }
+     *              OPTIONAL {
+     *                  <http://www.opensilex.org/opensilex/qdfg> <http://www.opensilex.org/vocabulary/oeso#hasScientificContact> ?scientificContact
+     *              }
+     *              OPTIONAL {
+     *                  <http://www.opensilex.org/opensilex/qdfg> <http://www.opensilex.org/vocabulary/oeso#hasAdministrativeContact> ?administrativeContact
+     *              }
+     *              OPTIONAL {
+     *                  <http://www.opensilex.org/opensilex/qdfg> <http://www.opensilex.org/vocabulary/oeso#hasRelatedProject>/^<http://www.opensilex.org/vocabulary/oeso#hasRelatedProject> ?relatedProjectURI . ?relatedProjectURI <http://xmlns.com/foaf/0.1/name> ?relatedProjectName
+     *              }
+     *              OPTIONAL {
+     *                  <http://www.opensilex.org/opensilex/qdfg> <http://www.opensilex.org/vocabulary/oeso#hasFinancialFunding> ?financialFundingURI . ?financialFundingURI <http://www.w3.org/2000/01/rdf-schema#label> ?financialFundingLabel
+     *              }
+     *              OPTIONAL {
+     *                  <http://www.opensilex.org/opensilex/qdfg> <http://www.opensilex.org/vocabulary/oeso#hasFinancialReference> ?financialReference
+     *              }
+     *              OPTIONAL {
+     *                  <http://www.opensilex.org/opensilex/qdfg> <http://www.opensilex.org/vocabulary/oeso#hasKeyword> ?keyword
+     *              }
+     *              OPTIONAL {
+     *                  <http://www.opensilex.org/opensilex/qdfg> <http://xmlns.com/foaf/0.1/homepage> ?homePage
+     *              }
+     * }
+     * @return the generated query?
+     */
     protected SPARQLQueryBuilder prepareSearchByURI(String uri) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         
@@ -554,6 +646,13 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         return query;
     } 
 
+    /**
+     * Find a project by its URI.
+     * @param id
+     * @return the project properties.
+     * @throws DAOPersistenceException
+     * @throws Exception 
+     */
     @Override
     public Project findById(String id) throws DAOPersistenceException, Exception {
         
@@ -780,6 +879,12 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         return check;
     }
     
+    /**
+     * Generates URIs for a list of given projects.
+     * @param projects
+     * @return the list of projects updated with their URIs.
+     * @throws Exception 
+     */
     public List<Project> getProjectsWithGeneratedURIs(List<Project> projects) throws Exception {
         for (Project project : projects) {
             project.setUri(UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_PROJECT.toString(), null, project.getShortname()));
@@ -825,6 +930,11 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         return insertResult;
     }
     
+    /**
+     * Check the given projects properties and update them.
+     * @param projects
+     * @return the update result.
+     */
     public POSTResultsReturn checkAndUpdate(List<Project> projects) {
         POSTResultsReturn updateResult;
         try {
@@ -855,6 +965,56 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         return updateResult;
     }
     
+    /**
+     * Generates the query to search projects by the given search parameters.
+     * @param page
+     * @param pageSize
+     * @param uri
+     * @param name
+     * @param shortname
+     * @param financialFunding
+     * @param financialReference
+     * @param description
+     * @param startDate
+     * @param endDate
+     * @param homePage
+     * @param objective
+     * @return the generated query.
+     * @example
+     * SELECT DISTINCT  ?uri ?name ?shortname ?financialFundingURI ?financialFundingLabel ?financialReference 
+     *                  ?description ?dateStart ?dateEnd ?homePage ?objective 
+     * WHERE {
+     *      ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
+     *      ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.opensilex.org/vocabulary/oeso#Project> . 
+     *      OPTIONAL {
+     *          ?uri <http://xmlns.com/foaf/0.1/name> ?name . 
+     *      }
+     *      OPTIONAL {
+     *          ?uri<http://www.opensilex.org/vocabulary/oeso#hasShortname> ?shortname . 
+     *      }
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#hasFinancialFunding> ?financialFundingURI . 
+     *      }
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#hasFinancialReference> ?financialReference . 
+     *      }
+     *      OPTIONAL {
+     *          ?uri <http://purl.org/dc/terms/description> ?description
+     *      }
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#startDate> ?dateStart
+     *      }
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#endDate> ?dateEnd
+     *      }
+     *      OPTIONAL {
+     *          ?uri <http://xmlns.com/foaf/0.1/homepage> ?homePage
+     *      }
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#hasObjective> ?objective
+     *      }
+     * }
+     */
     protected SPARQLQueryBuilder prepareSearchQuery(Integer page, Integer pageSize, String uri, String name, String shortname, 
             String financialFunding, String financialReference, String description, String startDate, String endDate, String homePage, String objective) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
@@ -970,6 +1130,53 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         return query;
     }
     
+    /**
+     * Generates the count the number of projects that matches the given filter parameters.
+     * @param uri
+     * @param name
+     * @param shortname
+     * @param financialFunding
+     * @param financialReference
+     * @param description
+     * @param startDate
+     * @param endDate
+     * @param homePage
+     * @param objective
+     * @return the generated query
+     * @example
+     * SELECT DISTINCT  (COUNT(DISTINCT ?uri) AS ?count) 
+     * WHERE {
+     *      ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
+     *      ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.opensilex.org/vocabulary/oeso#Project> . 
+     *      OPTIONAL {
+     *          ?uri <http://xmlns.com/foaf/0.1/name> ?name . 
+     *      }
+     *      OPTIONAL {
+     *          ?uri<http://www.opensilex.org/vocabulary/oeso#hasShortname> ?shortname . 
+     *      }
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#hasFinancialFunding> ?financialFundingURI . 
+     *      }
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#hasFinancialReference> ?financialReference . 
+     *      }
+     *      OPTIONAL {
+     *          ?uri <http://purl.org/dc/terms/description> ?description
+     *      }
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#startDate> ?dateStart
+     *      }
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#endDate> ?dateEnd
+     *      }
+     *      OPTIONAL {
+     *          ?uri <http://xmlns.com/foaf/0.1/homepage> ?homePage
+     *      }
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#hasObjective> ?objective
+     *      }
+     * }
+     */
     public SPARQLQueryBuilder prepareCount(String uri, String name, String shortname, String financialFunding, String financialReference, 
             String description, String startDate, String endDate, String homePage, String objective) {
         SPARQLQueryBuilder query = this.prepareSearchQuery(null, null, uri, name, shortname, financialFunding, financialReference, description, startDate, endDate, homePage, objective);
@@ -982,6 +1189,20 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         return query;
     }
     
+    /**
+     * Count the number of projects that matched the given filter parameters.
+     * @param uri
+     * @param name
+     * @param shortname
+     * @param financialFunding
+     * @param financialReference
+     * @param description
+     * @param startDate
+     * @param endDate
+     * @param homePage
+     * @param objective
+     * @return the number of projects.
+     */
     public Integer count(String uri, String name, String shortname, String financialFunding, String financialReference, 
             String description, String startDate, String endDate, String homePage, String objective) {
         SPARQLQueryBuilder prepareCount = prepareCount(uri, name, shortname, financialFunding, financialReference, description, startDate, endDate, homePage, objective);

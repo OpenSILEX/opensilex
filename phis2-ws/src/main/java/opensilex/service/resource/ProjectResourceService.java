@@ -32,26 +32,19 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.ProjectDAO;
-import opensilex.service.dao.ProjectPostgreSQLDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.Project;
-import opensilex.service.resource.dto.project.ProjectPostgresDTO;
-import opensilex.service.resource.dto.project.ProjectPostgresPostDTO;
-import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.AbstractResultForm;
-import opensilex.service.view.brapi.form.ResponseFormGET;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
-import opensilex.service.model.ProjectPostgres;
 import opensilex.service.resource.dto.project.ProjectDTO;
 import opensilex.service.resource.dto.project.ProjectDetailDTO;
 import opensilex.service.resource.dto.project.ProjectPostDTO;
@@ -66,7 +59,6 @@ import org.slf4j.LoggerFactory;
 @Api("/projects")
 @Path("projects")
 public class ProjectResourceService extends ResourceService {
-    
     /**
      * Transform a list of ProjectPostDTO to a list of Project
      * @param projectsDTOs

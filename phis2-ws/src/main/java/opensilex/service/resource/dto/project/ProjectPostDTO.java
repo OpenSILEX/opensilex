@@ -15,6 +15,7 @@ import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.model.Contact;
 import opensilex.service.model.Project;
 import opensilex.service.model.RdfResourceDefinition;
+import opensilex.service.resource.ProjectResourceService;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.Required;
@@ -22,6 +23,7 @@ import opensilex.service.resource.validation.interfaces.URL;
 
 /**
  * The DTO for the POST of projects.
+ * @see ProjectResourceService#post(java.util.ArrayList, javax.servlet.http.HttpServletRequest) 
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ProjectPostDTO extends AbstractVerifiedClass {

@@ -450,13 +450,14 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
                 Project project = getProjectFromBindingSet(bindingSet);
                 
                 //Get financial funding
-                if (project.getFinancialFunding() != null 
-                        && foundedFinancialFunding.containsKey(project.getFinancialFunding().getUri())) {
-                    project.setFinancialFunding(foundedFinancialFunding.get(project.getFinancialFunding().getUri()));
-                } else { //The financial funding have not been met before so we get it.
-                    RdfResourceDefinition financialFunding = getFinancialFunding(project.getFinancialFunding().getUri());
-                    project.setFinancialFunding(financialFunding);
-                    foundedFinancialFunding.put(financialFunding.getUri(), financialFunding);
+                if (project.getFinancialFunding() != null ) {
+                    if (foundedFinancialFunding.containsKey(project.getFinancialFunding().getUri())) {
+                        project.setFinancialFunding(foundedFinancialFunding.get(project.getFinancialFunding().getUri()));
+                    } else { //The financial funding have not been met before so we get it.
+                        RdfResourceDefinition financialFunding = getFinancialFunding(project.getFinancialFunding().getUri());
+                        project.setFinancialFunding(financialFunding);
+                        foundedFinancialFunding.put(financialFunding.getUri(), financialFunding);
+                    }
                 }
                 
                 projects.add(project);

@@ -9,11 +9,9 @@ package opensilex.service.resource.dto.germplasm;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
-import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.model.Germplasm;
 import opensilex.service.resource.dto.experiment.ExperimentDTO;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
-import opensilex.service.resource.validation.interfaces.URL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

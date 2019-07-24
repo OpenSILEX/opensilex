@@ -3,14 +3,13 @@
 // SILEX-PHIS
 // Copyright © INRA 2019
 // Creation date: 24 juin 2019
-// Contact: alice.boizet@inra.fr, column 15 in file:///home/boizetal/OpenSilex/phis-ws/phis2-ws/licenseheader.txt., anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.resource.dto.germplasm;
 
 import java.util.ArrayList;
 import opensilex.service.model.Germplasm;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
-import opensilex.service.resource.validation.interfaces.Required;
 
 /**
  * GermplasmPostDTO

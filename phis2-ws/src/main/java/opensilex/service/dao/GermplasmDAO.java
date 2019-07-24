@@ -3,23 +3,19 @@
 // SILEX-PHIS
 // Copyright © INRA 2019
 // Creation date: 1 juil. 2019
-// Contact: Expression userEmail is undefined on line 6, column 15 in file:///home/boizetal/OpenSilex/phis-ws/phis2-ws/licenseheader.txt., anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.dao;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
-import opensilex.service.PropertiesFileManager;
-import static opensilex.service.dao.SensorDAO.LOGGER;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.dao.exception.ResourceAccessDeniedException;
 import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.Germplasm;
-import opensilex.service.model.Sensor;
-import opensilex.service.model.User;
 import opensilex.service.ontology.Contexts;
 import opensilex.service.ontology.Oeso;
 import opensilex.service.ontology.Rdf;
@@ -28,21 +24,29 @@ import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.view.brapi.Status;
+import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
+import org.apache.jena.arq.querybuilder.ExprFactory;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.SortCondition;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.ExprList;
 import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.apache.jena.vocabulary.XSD;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
-import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,9 +61,11 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
     private final String SPECIES = "species";
     private final String VARIETY = "variety";
     private final String ACCESSION_NUMBER = "accessionNumber";
-    private final String PLANT_MATERIAL_LOT = "plantMaterialLot";    
+    //private final String PLANT_MATERIAL_LOT = "plantMaterialLot";    
     private final String INSTITUTE_CODE = "instituteCode";    
     private final String INSTITUTE_NAME = "instituteName"; 
+    
+    private static final String MAX_ID = "maxID";
     
     @Override
     public List<Germplasm> create(List<Germplasm> objects) throws DAOPersistenceException, Exception {
@@ -142,7 +148,8 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
         boolean resultState = false;
         boolean annotationInsert = true;
         
-        UriGenerator uriGenerator = new UriGenerator();
+        
+        //UriGenerator uriGenerator = new UriGenerator();
         
         //SILEX:test
         //Triplestore connection has to be checked (this is kind of an hot fix)
@@ -151,7 +158,7 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
         
         for (Germplasm germplasm : germplasmList) {
             try {
-                germplasm.setGermplasmDbId(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_GERMPLASM.toString(), null, null));
+                germplasm.setGermplasmDbId(UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_GERMPLASM.toString(), null, null));
             } catch (Exception ex) { //In the sensors case, no exception should be raised
                 annotationInsert = false;
             }
@@ -185,22 +192,20 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
         return results;
     }
     
-        /**
-     * Generates an insert query for sensors.
+    /**
+     * Generates an insert query for germplasm list.
      * @example
      * INSERT DATA {
      *  GRAPH <http://www.phenome-fppn.fr/diaphen/sensors> { 
-     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  rdf:type  <http://www.opensilex.org/vocabulary/oeso#Thermocouple> . 
-     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  rdfs:label  "par03_p"  . 
-     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.opensilex.org/vocabulary/oeso#hasBrand>  "Homemade"  . 
-     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.opensilex.org/vocabulary/oeso#inServiceDate>  "2017-06-15"  . 
-     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.opensilex.org/vocabulary/oeso#personInCharge>  "morgane.vidal@inra.fr"  . 
-     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.opensilex.org/vocabulary/oeso#serialNumber>  "A1E345F32"  . 
-     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.opensilex.org/vocabulary/oeso#dateOfPurchase>  "2017-06-15"  . 
-     *      <http://www.phenome-fppn.fr/diaphen/2018/v18142>  <http://www.opensilex.org/vocabulary/oeso#dateOfLastCalibration>  "2017-06-15"  . 
+     *      <http://www.phenome-fppn.fr/platform/id/germplasm/g001>  rdf:type  <http://www.opensilex.org/vocabulary/oeso#Germplasm> . 
+     *      <http://www.phenome-fppn.fr/platform/id/germplasm/g001>  rdfs:label  "B73_INRA"  . 
+     *      <http://www.phenome-fppn.fr/platform/id/germplasm/g001>  <http://www.opensilex.org/vocabulary/oeso#hasGenus>  "Zea"  . 
+     *      <http://www.phenome-fppn.fr/platform/id/germplasm/g001>  <http://www.opensilex.org/vocabulary/oeso#hasSpecies>  "http://aims.fao.org/aos/agrovoc/c_12332"  . 
+     *      <http://www.phenome-fppn.fr/platform/id/germplasm/g001>  <http://www.opensilex.org/vocabulary/oeso#hasVariety>  "B73"  . 
+     *      <http://www.phenome-fppn.fr/platform/id/germplasm/g001>  <http://www.opensilex.org/vocabulary/oeso#hasAccessionNumber>  "B73_INRA"  . 
      *  }
      * }
-     * @param sensor
+     * @param germplasm
      * @return the query
      */
     private UpdateRequest prepareInsertQuery(Germplasm germplasm) {
@@ -210,7 +215,7 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
         
         Resource germplasmURI = ResourceFactory.createResource(germplasm.getGermplasmDbId());
         
-        Node germplasmType = NodeFactory.createURI("http://www.opensilex.org/vocabulary/oeso#GermplasmDescriptor");
+        Node germplasmType = NodeFactory.createURI("http://www.opensilex.org/vocabulary/oeso#Germplasm");
         
         spql.addInsert(graph, germplasmURI, RDF.type, germplasmType);
         
@@ -268,15 +273,35 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
      * Prepares a query to get the higher id of the variables.
      * @return 
      */
-    private SPARQLQueryBuilder prepareGetLastId() {
-        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+    private Query prepareGetLastId() {
+        SelectBuilder query = new SelectBuilder();
         
-        query.appendSelect("?" + URI);
-        query.appendTriplet("?uri", Rdf.RELATION_TYPE.toString(), Oeso.CONCEPT_GERMPLASM.toString(), null);
-        query.appendOrderBy("DESC(?" + URI + ")");
-        query.appendLimit(1);
+        Var uri = makeVar(URI);
+        Var maxID = makeVar(MAX_ID);
         
-        return query;
+        // Select the highest identifier
+        query.addVar(maxID);
+        
+        // Filter by variable
+        Node methodConcept = NodeFactory.createURI(Oeso.CONCEPT_GERMPLASM.toString());
+        query.addWhere(uri, RDF.type, methodConcept);
+        
+        // Binding to extract the last part of the URI as a MAX_ID integer
+        ExprFactory expr = new ExprFactory();
+        Expr indexBinding =  expr.function(
+            XSD.integer.getURI(), 
+            ExprList.create(Arrays.asList(
+                expr.strafter(expr.str(uri), UriGenerator.PLATFORM_URI_ID_GERMPLASM))
+            )
+        );
+        query.addBind(indexBinding, maxID);
+        
+        // Order MAX_ID integer from highest to lowest and select the first value
+        query.addOrderBy(new SortCondition(maxID,  Query.ORDER_DESCENDING));
+        query.setLimit(1);
+        
+        return query.build();
+
     }
     
     
@@ -285,46 +310,16 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
      * @return the id
      */
     public int getLastId() {
-        SPARQLQueryBuilder query = prepareGetLastId();
-        
-        //SILEX:test
-        //All the triplestore connection has to been checked and updated
-        //This is an unclean hot fix
-        String tripleStoreServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
-        String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "repositoryID");
-        rep = new HTTPRepository(tripleStoreServer, repositoryID); //Stockage triplestore
-        rep.initialize();
-        this.setConnection(rep.getConnection());
-        this.getConnection().begin();
-        //\SILEX:test
-
-        //get last variable uri inserted
+        Query query = prepareGetLastId();
+        //get last variable uri ID inserted
         TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         TupleQueryResult result = tupleQuery.evaluate();
 
-        //SILEX:test
-        //For the pool connection problems
-        getConnection().commit();
-        getConnection().close();
-        //\SILEX:test
-        
-        String uriVariable = null;
-        
         if (result.hasNext()) {
             BindingSet bindingSet = result.next();
-            uriVariable = bindingSet.getValue(URI).stringValue();
-        }
-        
-        if (uriVariable == null) {
-            return 0;
+            return Integer.valueOf(bindingSet.getValue(MAX_ID).stringValue());
         } else {
-            String split = "variables/v";
-            String[] parts = uriVariable.split(split);
-            if (parts.length > 1) {
-                return Integer.parseInt(parts[1]);
-            } else {
-                return 0;
-            }
+            return 0;
         }
     }
     

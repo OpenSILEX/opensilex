@@ -34,12 +34,10 @@ import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.GermplasmDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
-import opensilex.service.model.Call;
 import opensilex.service.model.Germplasm;
 import opensilex.service.resource.ResourceService;
 import opensilex.service.resource.dto.germplasm.GermplasmDTO;
 import opensilex.service.resource.dto.germplasm.GermplasmPostDTO;
-import opensilex.service.resource.dto.sensor.SensorDetailDTO;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.result.ResultForm;
 import opensilex.service.utils.POSTResultsReturn;
@@ -55,28 +53,8 @@ import org.slf4j.LoggerFactory;
  */
 @Api("/germplasm")
 @Path("/germplasm")
-public class GermplasmResourceService extends ResourceService implements BrapiCall {
+public class GermplasmResourceService extends ResourceService {
     final static Logger LOGGER = LoggerFactory.getLogger(GermplasmResourceService.class);
-    
-         /**
-     * Overriding BrapiCall method
-     * @date 27 Aug 2018
-     * @return Calls call information
-     */
-    @Override
-    public ArrayList<Call> callInfo() {
-        ArrayList<Call> calls = new ArrayList();
-        ArrayList<String> calldatatypes = new ArrayList<>();
-        calldatatypes.add("json");
-        ArrayList<String> callMethods = new ArrayList<>();
-        callMethods.add("GET");
-        callMethods.add("POST");
-        ArrayList<String> callVersions = new ArrayList<>();
-        callVersions.add("1.2");
-        Call call = new Call("germplasm", calldatatypes, callMethods, callVersions);
-        calls.add(call);       
-        return calls;
-    }
     
     /**
      * Inserts germplasm in the storage.
@@ -170,14 +148,14 @@ public class GermplasmResourceService extends ResourceService implements BrapiCa
     public Response getGermplasmBySearch(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
-            @ApiParam(value = "Search by studyDbId", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("germplasmDbId") String uri,
-            @ApiParam(value = "Search by germplasmName", example = DocumentationAnnotation.EXAMPLE_SENSOR_RDF_TYPE) @QueryParam("germplasmName") @URL String germplasmName,
-            @ApiParam(value = "Search by accessionNumber", example = DocumentationAnnotation.EXAMPLE_SENSOR_LABEL) @QueryParam("accessionNumber") String accessionNumber,
-            @ApiParam(value = "Search by genus", example = DocumentationAnnotation.EXAMPLE_SENSOR_BRAND) @QueryParam("genus") String genus,            
-            @ApiParam(value = "Search by species", example = DocumentationAnnotation.EXAMPLE_SENSOR_BRAND) @QueryParam("species") String species,
-            @ApiParam(value = "Search by subtaxa (variety)", example = DocumentationAnnotation.EXAMPLE_SENSOR_SERIAL_NUMBER) @QueryParam("subtaxa") String variety,
-            @ApiParam(value = "Search by instituteCode", example = DocumentationAnnotation.EXAMPLE_SENSOR_SERIAL_NUMBER) @QueryParam("instituteCode") String instituteCode,
-            @ApiParam(value = "Search by instituteName", example = DocumentationAnnotation.EXAMPLE_SENSOR_SERIAL_NUMBER) @QueryParam("instituteName") String instituteName ) {
+            @ApiParam(value = "Search by germplasmDbId", example = DocumentationAnnotation.EXAMPLE_GERMPLASM_URI) @QueryParam("germplasmDbId") String uri,
+            @ApiParam(value = "Search by germplasmName", example = DocumentationAnnotation.EXAMPLE_GERMPLASM_NAME) @QueryParam("germplasmName") @URL String germplasmName,
+            @ApiParam(value = "Search by accessionNumber", example = DocumentationAnnotation.EXAMPLE_ACCESSION_NUMBER) @QueryParam("accessionNumber") String accessionNumber,
+            @ApiParam(value = "Search by genus", example = DocumentationAnnotation.EXAMPLE_GENUS) @QueryParam("genus") String genus,            
+            @ApiParam(value = "Search by species uri", example = DocumentationAnnotation.EXAMPLE_SPECIES_URI) @QueryParam("species") String species,
+            @ApiParam(value = "Search by subtaxa (variety)", example = DocumentationAnnotation.EXAMPLE_VARIETY) @QueryParam("subtaxa") String variety,
+            @ApiParam(value = "Search by instituteCode", example = DocumentationAnnotation.EXAMPLE_INSTITUTE_CODE) @QueryParam("instituteCode") String instituteCode,
+            @ApiParam(value = "Search by instituteName", example = DocumentationAnnotation.EXAMPLE_INSTITUTE_NAME) @QueryParam("instituteName") String instituteName ) {
         
         GermplasmDAO germplasmDAO = new GermplasmDAO();
         //1. Get count

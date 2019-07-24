@@ -89,7 +89,7 @@ public class UriGenerator {
     public static final String PLATFORM_URI_ID_VARIABLES = PLATFORM_URI_ID + "variables/" + URI_CODE_VARIABLE;
     private static final String PLATFORM_URI_ID_VARIETY = PLATFORM_URI + "v/";
     private static final String PLATFORM_URI_ID_PROVENANCE = PLATFORM_URI_ID + "provenance/";
-    private static final String PLATFORM_URI_ID_GERMPLASM = PLATFORM_URI_ID + "germplasms/";
+    public static final String PLATFORM_URI_ID_GERMPLASM = PLATFORM_URI_ID + "germplasm/";
     
     private static final String EXPERIMENT_URI_SEPARATOR = "-";
 
@@ -745,18 +745,34 @@ public class UriGenerator {
      * @return the new agronomical object URI
      */
     private static String generateGermplasmURI() {
-        //1. get the higher germplasm id (i.e. the last inserted variable)
-        GermplasmDAO germplasmDAO = new GermplasmDAO();
-        int lastVariableId = germplasmDAO.getLastId();
-
-        //2. generate variable URI
-        int newGermplasmId = lastVariableId + 1;
-        String germplasmId = Integer.toString(newGermplasmId);
+        
+        // Generate germplasm URI based on next id
+        String germplasmId = Integer.toString(getNextGermplasmID());        
 
         while (germplasmId.length() < 3) {
             germplasmId = "0" + germplasmId;
         }
 
         return PLATFORM_URI_ID_GERMPLASM + URI_CODE_GERMPLASM + germplasmId;
+    }
+    
+    /**
+     * Internal germplasm to store the last germplasm ID
+     */
+    private static Integer germplasmLastID;
+    
+    /**
+     * Return the next variable ID by incrementing variableLastID variable and initializing it before if needed
+     * @return next variable ID
+     */
+    private static int getNextGermplasmID() {
+        if (germplasmLastID == null) {
+            GermplasmDAO germplasmDAO = new GermplasmDAO();
+            germplasmLastID = germplasmDAO.getLastId();
+        }
+        
+        germplasmLastID++;
+        
+        return germplasmLastID;
     }
 }

@@ -74,7 +74,13 @@ public enum Oeso {
         public String toString() {
             return NAMESPACE.toString() + "Genotype";
         }
-    },
+    },  
+    CONCEPT_GERMPLASM {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "Germplasm";
+        }
+    },  
     CONCEPT_INFRASTRUCTURE {
         @Override
         public String toString() {
@@ -234,6 +240,18 @@ public enum Oeso {
             return NAMESPACE.toString() + "hasVariety";
         }
     },
+     RELATION_HAS_ACCESSION_NUMBER {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasAccessionNumber";
+        }
+    },
+    RELATION_HAS_ACQUISITION_DATE {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasAcquisitionDate";
+        }
+    },
     RELATION_HAS_ALIAS {
         @Override
         public String toString() {
@@ -246,16 +264,52 @@ public enum Oeso {
             return NAMESPACE.toString() + "hasBrand";
         }
     },
+    RELATION_HAS_COMMON_CROP_NAME {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasContact";
+        }
+    },
     RELATION_HAS_CONTACT {
         @Override
         public String toString() {
             return NAMESPACE.toString() + "hasContact";
         }
     },
+    RELATION_HAS_DOCUMENTATION_URL {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasDocumentationURL";
+        }
+    },
     RELATION_HAS_EXPERIMENT_MODALITIES {
         @Override
         public String toString() {
             return NAMESPACE.toString() + "hasExperimentModalities";
+        }
+    },  
+    RELATION_HAS_GENUS{
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasGenus";
+        }
+    },  
+    RELATION_HAS_GERMPLASM{
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasGermplasm";
+        }
+    },  
+    RELATION_HAS_INSTITUTE_CODE {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasInstituteCode";
+        }
+    },
+    RELATION_HAS_INSTITUTE_NAME {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasInstituteName";
         }
     },
     RELATION_HAS_METHOD {
@@ -384,34 +438,12 @@ public enum Oeso {
             return NAMESPACE.toString() + "DataFile";
         }
     },
-    RELATION_HAS_ACCESSION_NAME {
-        @Override
-        public String toString() {
-            return NAMESPACE.toString() + "hasAccessionName";
-        }
-    },
-    CONCEPT_GERMPLASM {
-        @Override
-        public String toString() {
-            return NAMESPACE.toString() + "GermplasmDescriptor";
-        }
-    },    
-    RELATION_HAS_ACCESSION_NUMBER {
-        @Override
-        public String toString() {
-            return NAMESPACE.toString() + "hasAccessionNumber";
-        }
-    },
+
     RELATION_HAS_PLANT_MATERIAL_LOT {
         @Override
         public String toString() {
             return NAMESPACE.toString() + "hasPlantMaterialLot";
         }
     },
-    RELATION_FROM_INSTITUTE {
-        @Override
-        public String toString() {
-            return NAMESPACE.toString() + "fromInstitute";
-        }
-    }
+
 }

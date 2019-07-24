@@ -5,7 +5,7 @@
 // Creation date: 1 juil. 2019
 // Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package opensilex.service.resource;
+package opensilex.service.resource.brapi;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -29,20 +29,17 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.GermplasmDAO;
-import opensilex.service.dao.SensorDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
+import opensilex.service.model.Call;
 import opensilex.service.model.Germplasm;
-import opensilex.service.model.Sensor;
+import opensilex.service.resource.ResourceService;
 import opensilex.service.resource.dto.germplasm.GermplasmDTO;
 import opensilex.service.resource.dto.germplasm.GermplasmPostDTO;
-import opensilex.service.resource.dto.sensor.SensorDTO;
 import opensilex.service.resource.dto.sensor.SensorDetailDTO;
-import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.result.ResultForm;
 import opensilex.service.utils.POSTResultsReturn;
@@ -58,8 +55,28 @@ import org.slf4j.LoggerFactory;
  */
 @Api("/germplasm")
 @Path("/germplasm")
-public class GermplasmResourceService extends ResourceService {
+public class GermplasmResourceService extends ResourceService implements BrapiCall {
     final static Logger LOGGER = LoggerFactory.getLogger(GermplasmResourceService.class);
+    
+         /**
+     * Overriding BrapiCall method
+     * @date 27 Aug 2018
+     * @return Calls call information
+     */
+    @Override
+    public ArrayList<Call> callInfo() {
+        ArrayList<Call> calls = new ArrayList();
+        ArrayList<String> calldatatypes = new ArrayList<>();
+        calldatatypes.add("json");
+        ArrayList<String> callMethods = new ArrayList<>();
+        callMethods.add("GET");
+        callMethods.add("POST");
+        ArrayList<String> callVersions = new ArrayList<>();
+        callVersions.add("1.2");
+        Call call = new Call("germplasm", calldatatypes, callMethods, callVersions);
+        calls.add(call);       
+        return calls;
+    }
     
     /**
      * Inserts germplasm in the storage.
@@ -138,7 +155,7 @@ public class GermplasmResourceService extends ResourceService {
     @ApiOperation(value = "Get all germplasm corresponding to the search params given",
                   notes = "Retrieve all germplasm authorized for the user corresponding to the searched params given")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve all germplasm", response = SensorDetailDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Retrieve all germplasm", response = GermplasmDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
@@ -153,18 +170,21 @@ public class GermplasmResourceService extends ResourceService {
     public Response getGermplasmBySearch(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
-            @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("uri") String uri,
-            @ApiParam(value = "Search by accessionName", example = DocumentationAnnotation.EXAMPLE_SENSOR_RDF_TYPE) @QueryParam("accessionName") @URL String accessionName,
+            @ApiParam(value = "Search by studyDbId", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("germplasmDbId") String uri,
+            @ApiParam(value = "Search by germplasmName", example = DocumentationAnnotation.EXAMPLE_SENSOR_RDF_TYPE) @QueryParam("germplasmName") @URL String germplasmName,
             @ApiParam(value = "Search by accessionNumber", example = DocumentationAnnotation.EXAMPLE_SENSOR_LABEL) @QueryParam("accessionNumber") String accessionNumber,
+            @ApiParam(value = "Search by genus", example = DocumentationAnnotation.EXAMPLE_SENSOR_BRAND) @QueryParam("genus") String genus,            
             @ApiParam(value = "Search by species", example = DocumentationAnnotation.EXAMPLE_SENSOR_BRAND) @QueryParam("species") String species,
-            @ApiParam(value = "Search by variety", example = DocumentationAnnotation.EXAMPLE_SENSOR_SERIAL_NUMBER) @QueryParam("variety") String variety ) {
+            @ApiParam(value = "Search by subtaxa (variety)", example = DocumentationAnnotation.EXAMPLE_SENSOR_SERIAL_NUMBER) @QueryParam("subtaxa") String variety,
+            @ApiParam(value = "Search by instituteCode", example = DocumentationAnnotation.EXAMPLE_SENSOR_SERIAL_NUMBER) @QueryParam("instituteCode") String instituteCode,
+            @ApiParam(value = "Search by instituteName", example = DocumentationAnnotation.EXAMPLE_SENSOR_SERIAL_NUMBER) @QueryParam("instituteName") String instituteName ) {
         
         GermplasmDAO germplasmDAO = new GermplasmDAO();
         //1. Get count
-        Integer totalCount = germplasmDAO.count(uri, accessionName, accessionNumber, species, variety);
+        Integer totalCount = germplasmDAO.count(uri, germplasmName, accessionNumber, genus, species, variety, instituteCode, instituteName);
         
         //2. Get sensors
-        ArrayList<Germplasm> germplasmFounded = germplasmDAO.find(page, pageSize, uri, accessionName, accessionNumber, species, variety);
+        ArrayList<Germplasm> germplasmFounded = germplasmDAO.find(page, pageSize, uri, germplasmName, accessionNumber, genus, species, variety, instituteCode, instituteName);
         
         //3. Return result
         ArrayList<Status> statusList = new ArrayList<>();

@@ -25,62 +25,47 @@ public class GermplasmDTO extends AbstractVerifiedClass {
     
     final static Logger LOGGER = LoggerFactory.getLogger(ExperimentDTO.class);
     
-    @URL
-    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SENSOR_URI)
-    private String uri;
-    private String species;
-    private String variety;
     private String accessionNumber;
-    private String accessionName;
-    private ArrayList<String> plantMaterialLots;
-    private String institute;
+    private String acquisitionDate;
+    private String biologicalStatusOfAccessionCode;
+    private String breedingMethodDbId;
+    private String commonCropName;
+    private String countryOfOrigin;
+    private String defaultDisplayName;
+    private String documentationURL;
+    private ArrayList<String> donors;
+    private String genus;
+    private String germplasmGenus;
+    private String germplasmDbId; //uri
+    private String germplasmName;
+    private String germplasmPUI;
+    private String germplasmSpecies;
+    private String instituteCode;
+    private String instituteName;
+    private String pedigree;
+    private String seedsource;    
+    private String species;
+    private String speciesAuthority;
+    private String subtaxa; //variety
+    private String subtaxaAuthority;
+    private ArrayList<String> synonyms;
+    private ArrayList<String> taxonIds;
+    private ArrayList<String> typeOfGermplasmStorageCode;
 
     public GermplasmDTO(Germplasm germplasm) {
-        uri = germplasm.getUri();
-        species = germplasm.getSpecies();
-        variety = germplasm.getVariety();
-        accessionName = germplasm.getAccessionName();
         accessionNumber = germplasm.getAccessionNumber();
-        plantMaterialLots = germplasm.getPlantMaterialLots();
-        institute = germplasm.getInstitute();
-    }
-
-    @Override
-    public Germplasm createObjectFromDTO() throws Exception {
-        Germplasm germplasm = new Germplasm();
-        germplasm.setUri(uri);
-        germplasm.setSpecies(species);
-        germplasm.setVariety(variety);
-        germplasm.setAccessionName(accessionName);
-        germplasm.setAccessionNumber(accessionNumber);
-        germplasm.setPlantMaterialLots(plantMaterialLots);
-        germplasm.setInstitute(institute);
-                
-        return germplasm;
-    }
-
-    public String getUri() {
-        return uri;
-    }
-
-    public void setUri(String uri) {
-        this.uri = uri;
-    }
-
-    public String getSpecies() {
-        return species;
-    }
-
-    public void setSpecies(String species) {
-        this.species = species;
-    }
-
-    public String getVariety() {
-        return variety;
-    }
-
-    public void setVariety(String variety) {
-        this.variety = variety;
+        biologicalStatusOfAccessionCode = germplasm.getBiologicalStatusOfAccessionCode();
+        commonCropName = germplasm.getCommonCropName();
+        documentationURL = germplasm.getDocumentationURL();
+        genus = germplasm.getGenus();
+        germplasmGenus = germplasm.getGenus();
+        germplasmDbId = germplasm.getGermplasmDbId();
+        germplasmSpecies = germplasm.getSpecies();
+        instituteCode = germplasm.getInstituteCode();
+        instituteName = germplasm.getInstituteName();
+        species = germplasm.getSpecies();
+        subtaxa = germplasm.getSubtaxa();
+        synonyms = germplasm.getSynonyms();   
     }
 
     public String getAccessionNumber() {
@@ -91,29 +76,209 @@ public class GermplasmDTO extends AbstractVerifiedClass {
         this.accessionNumber = accessionNumber;
     }
 
-    public String getAccessionName() {
-        return accessionName;
+    public String getAcquisitionDate() {
+        return acquisitionDate;
     }
 
-    public void setAccessionName(String accessionName) {
-        this.accessionName = accessionName;
+    public void setAcquisitionDate(String acquisitionDate) {
+        this.acquisitionDate = acquisitionDate;
     }
 
-    public ArrayList<String> getPlantMaterialLots() {
-        return plantMaterialLots;
+    public String getBiologicalStatusOfAccessionCode() {
+        return biologicalStatusOfAccessionCode;
     }
 
-    public void setPlantMaterialLots(ArrayList<String> plantMaterialLots) {
-        this.plantMaterialLots = plantMaterialLots;
+    public void setBiologicalStatusOfAccessionCode(String biologicalStatusOfAccessionCode) {
+        this.biologicalStatusOfAccessionCode = biologicalStatusOfAccessionCode;
     }
 
-    public String getInstitute() {
-        return institute;
+    public String getBreedingMethodDbId() {
+        return breedingMethodDbId;
     }
 
-    public void setInstitute(String institute) {
-        this.institute = institute;
+    public void setBreedingMethodDbId(String breedingMethodDbId) {
+        this.breedingMethodDbId = breedingMethodDbId;
     }
-    
+
+    public String getCommonCropName() {
+        return commonCropName;
+    }
+
+    public void setCommonCropName(String commonCropName) {
+        this.commonCropName = commonCropName;
+    }
+
+    public String getCountryOfOrigin() {
+        return countryOfOrigin;
+    }
+
+    public void setCountryOfOrigin(String countryOfOrigin) {
+        this.countryOfOrigin = countryOfOrigin;
+    }
+
+    public String getDefaultDisplayName() {
+        return defaultDisplayName;
+    }
+
+    public void setDefaultDisplayName(String defaultDisplayName) {
+        this.defaultDisplayName = defaultDisplayName;
+    }
+
+    public String getDocumentationURL() {
+        return documentationURL;
+    }
+
+    public void setDocumentationURL(String documentationURL) {
+        this.documentationURL = documentationURL;
+    }
+
+    public ArrayList<String> getDonors() {
+        return donors;
+    }
+
+    public void setDonors(ArrayList<String> donors) {
+        this.donors = donors;
+    }
+
+    public String getGenus() {
+        return genus;
+    }
+
+    public void setGenus(String genus) {
+        this.genus = genus;
+    }
+
+    public String getGermplasmGenus() {
+        return germplasmGenus;
+    }
+
+    public void setGermplasmGenus(String germplasmGenus) {
+        this.germplasmGenus = germplasmGenus;
+    }
+
+    public String getGermplasmDbId() {
+        return germplasmDbId;
+    }
+
+    public void setGermplasmDbId(String germplasmDbId) {
+        this.germplasmDbId = germplasmDbId;
+    }
+
+    public String getGermplasmName() {
+        return germplasmName;
+    }
+
+    public void setGermplasmName(String germplasmName) {
+        this.germplasmName = germplasmName;
+    }
+
+    public String getGermplasmPUI() {
+        return germplasmPUI;
+    }
+
+    public void setGermplasmPUI(String germplasmPUI) {
+        this.germplasmPUI = germplasmPUI;
+    }
+
+    public String getGermplasmSpecies() {
+        return germplasmSpecies;
+    }
+
+    public void setGermplasmSpecies(String germplasmSpecies) {
+        this.germplasmSpecies = germplasmSpecies;
+    }
+
+    public String getInstituteCode() {
+        return instituteCode;
+    }
+
+    public void setInstituteCode(String instituteCode) {
+        this.instituteCode = instituteCode;
+    }
+
+    public String getInstituteName() {
+        return instituteName;
+    }
+
+    public void setInstituteName(String instituteName) {
+        this.instituteName = instituteName;
+    }
+
+    public String getPedigree() {
+        return pedigree;
+    }
+
+    public void setPedigree(String pedigree) {
+        this.pedigree = pedigree;
+    }
+
+    public String getSeedsource() {
+        return seedsource;
+    }
+
+    public void setSeedsource(String seedsource) {
+        this.seedsource = seedsource;
+    }
+
+    public String getSpecies() {
+        return species;
+    }
+
+    public void setSpecies(String species) {
+        this.species = species;
+    }
+
+    public String getSpeciesAuthority() {
+        return speciesAuthority;
+    }
+
+    public void setSpeciesAuthority(String speciesAuthority) {
+        this.speciesAuthority = speciesAuthority;
+    }
+
+    public String getSubtaxa() {
+        return subtaxa;
+    }
+
+    public void setSubtaxa(String subtaxa) {
+        this.subtaxa = subtaxa;
+    }
+
+    public String getSubtaxaAuthority() {
+        return subtaxaAuthority;
+    }
+
+    public void setSubtaxaAuthority(String subtaxaAuthority) {
+        this.subtaxaAuthority = subtaxaAuthority;
+    }
+
+    public ArrayList<String> getSynonyms() {
+        return synonyms;
+    }
+
+    public void setSynonyms(ArrayList<String> synonyms) {
+        this.synonyms = synonyms;
+    }
+
+    public ArrayList<String> getTaxonIds() {
+        return taxonIds;
+    }
+
+    public void setTaxonIds(ArrayList<String> taxonIds) {
+        this.taxonIds = taxonIds;
+    }
+
+    public ArrayList<String> getTypeOfGermplasmStorageCode() {
+        return typeOfGermplasmStorageCode;
+    }
+
+    public void setTypeOfGermplasmStorageCode(ArrayList<String> typeOfGermplasmStorageCode) {
+        this.typeOfGermplasmStorageCode = typeOfGermplasmStorageCode;
+    }
+
+    @Override
+    public Object createObjectFromDTO() throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
     
 }

@@ -276,10 +276,10 @@ public enum Oeso {
             return NAMESPACE.toString() + "hasFinancialReference";
         }
     },
-    RELATION_HAS_FINANCIAL_SUPPORT {
+    RELATION_HAS_FINANCIAL_FUNDING {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "hasFinancialSupport";
+            return NAMESPACE.toString() + "hasFinancialFunding";
         }
     },
     RELATION_HAS_KEYWORD {
@@ -384,16 +384,16 @@ public enum Oeso {
             return NAMESPACE.toString() + "inServiceDate";
         }
     },
-    RELATION_IS_ADMINISTRATIVE_CONTACT_OF {
+    RELATION_HAS_ADMINISTRATIVE_CONTACT {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "isAdministrativeContactOf";
+            return NAMESPACE.toString() + "hasAdministrativeContact";
         }
     },
-    RELATION_IS_COORDINATOR_OF {
+    RELATION_HAS_COORDINATOR {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "isCoordinatorOf";
+            return NAMESPACE.toString() + "hasCoordinator";
         }
     },
     RELATION_IS_PART_OF {
@@ -402,10 +402,10 @@ public enum Oeso {
             return NAMESPACE.toString() + "isPartOf";
         }
     },
-    RELATION_IS_SCIENTIFIC_CONTACT_OF {
+    RELATION_HAS_SCIENTIFIC_CONTACT {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "isScientificContactOf";
+            return NAMESPACE.toString() + "hasScientificContact";
         }
     },
     RELATION_MEASURES {

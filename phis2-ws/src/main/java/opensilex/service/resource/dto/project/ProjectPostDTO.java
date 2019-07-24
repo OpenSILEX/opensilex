@@ -32,8 +32,8 @@ public class ProjectPostDTO extends AbstractVerifiedClass {
     private String shortname;
     //The list of projects URI related to the project.
     private List<String> relatedProjects = new ArrayList<>();
-    //The URI of the financial support type.
-    private String financialSupport;
+    //The URI of the financial funding type.
+    private String financialFunding;
     private String financialReference;
     //The description of the project.
     private String description;
@@ -65,9 +65,9 @@ public class ProjectPostDTO extends AbstractVerifiedClass {
             project.addRelatedProject(relatedProject);
         }
         
-        if (financialSupport != null) {
-            RdfResourceDefinition financialSupportDef = new RdfResourceDefinition(financialSupport);
-            project.setFinancialSupport(financialSupportDef);
+        if (financialFunding != null) {
+            RdfResourceDefinition financialFundingDef = new RdfResourceDefinition(financialFunding);
+            project.setFinancialFunding(financialFundingDef);
         }
         project.setFinancialReference(financialReference);
         
@@ -138,12 +138,12 @@ public class ProjectPostDTO extends AbstractVerifiedClass {
     }
     
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROJECT_FINANCIAL_URI)
-    public String getFinancialSupport() {
-        return financialSupport;
+    public String getFinancialFunding() {
+        return financialFunding;
     }
 
-    public void setFinancialSupport(String financialSupport) {
-        this.financialSupport = financialSupport;
+    public void setFinancialFunding(String financialFunding) {
+        this.financialFunding = financialFunding;
     }
     
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROJECT_DESCRIPTION)

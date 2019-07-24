@@ -196,6 +196,9 @@ public class UserDAO extends PhisDAO<User, UserDTO> {
             if (result.next()) {
                 valid = true;
             }
+            if (con != null) {
+                con.close();
+            }
 
         } catch (SQLException ex) {
             LOGGER.error(ex.getMessage(), ex);

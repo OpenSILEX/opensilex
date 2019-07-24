@@ -34,8 +34,8 @@ public class ProjectDetailDTO extends AbstractVerifiedClass {
     private String shortname;
     //Projects related to the current project
     private List<RdfResourceDTO> relatedProjects = new ArrayList<>();
-    //Financial support of the project
-    private RdfResourceDTO financialSupport;
+    //Financial funding of the project
+    private RdfResourceDTO financialFunding;
     //Financial reference of the project
     private String financialReference;
     //dcterms:description of the project
@@ -69,8 +69,8 @@ public class ProjectDetailDTO extends AbstractVerifiedClass {
         homePage = project.getHomePage();
         objective = project.getObjective();
         
-        if (project.getFinancialSupport() != null) {
-            financialSupport = new RdfResourceDTO(project.getFinancialSupport());
+        if (project.getFinancialFunding() != null) {
+            financialFunding = new RdfResourceDTO(project.getFinancialFunding());
         }
         
         for (RdfResourceDefinition relatedProject : project.getRelatedProjects()) {
@@ -130,12 +130,12 @@ public class ProjectDetailDTO extends AbstractVerifiedClass {
         this.relatedProjects = relatedProjects;
     }
     
-    public RdfResourceDTO getFinancialSupport() {
-        return financialSupport;
+    public RdfResourceDTO getFinancialFunding() {
+        return financialFunding;
     }
 
-    public void setFinancialSupport(RdfResourceDTO financialSupport) {
-        this.financialSupport = financialSupport;
+    public void setFinancialFunding(RdfResourceDTO financialFunding) {
+        this.financialFunding = financialFunding;
     }
 
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROJECT_FINANCIAL_REFERENCE)

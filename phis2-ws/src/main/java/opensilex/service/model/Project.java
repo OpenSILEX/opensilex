@@ -24,7 +24,7 @@ public class Project {
     //Projects related to the current project
     private List<RdfResourceDefinition> relatedProjects = new ArrayList<>();
     //Financial support of the project
-    private RdfResourceDefinition financialSupport;
+    private RdfResourceDefinition financialFunding;
     //Financial reference of the project
     private String financialReference;
     //dcterms:description of the project
@@ -98,12 +98,12 @@ public class Project {
         return false;
     }
 
-    public RdfResourceDefinition getFinancialSupport() {
-        return financialSupport;
+    public RdfResourceDefinition getFinancialFunding() {
+        return financialFunding;
     }
 
-    public void setFinancialSupport(RdfResourceDefinition financialSupport) {
-        this.financialSupport = financialSupport;
+    public void setFinancialFunding(RdfResourceDefinition financialFunding) {
+        this.financialFunding = financialFunding;
     }
 
     public String getFinancialReference() {

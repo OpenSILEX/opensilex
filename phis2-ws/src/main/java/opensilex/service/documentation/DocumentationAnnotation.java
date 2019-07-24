@@ -169,7 +169,7 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_PROJECT_SHORTNAME = "P T";
     public static final String EXAMPLE_PROJECT_SUBPROJECT_TYPE = "subproject type";
     public static final String EXAMPLE_PROJECT_FINANCIAL_REFERENCE = "financial reference";
-    public static final String EXAMPLE_PROJECT_FINANCIAL_SUPPORT = "financial name";
+    public static final String EXAMPLE_PROJECT_FINANCIAL_FUNDING = "financial name";
     public static final String EXAMPLE_PROJECT_FINANCIAL_URI = "http://www.opensilex.org/demo/REF001";
     public static final String EXAMPLE_PROJECT_DATE_START = "2015-07-07";
     public static final String EXAMPLE_PROJECT_DATE_END = "2016-07-07";

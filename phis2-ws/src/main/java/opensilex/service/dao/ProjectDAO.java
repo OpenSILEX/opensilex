@@ -8,7 +8,9 @@
 package opensilex.service.dao;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ws.rs.NotFoundException;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
@@ -62,8 +64,8 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
     private final String DATE_START = "dateStart";
     private final String DESCRIPTION = "description";
     private final String FINANCIAL_REFERENCE = "financialReference";
-    private final String FINANCIAL_SUPPORT_LABEL = "financialSupportLabel";
-    private final String FINANCIAL_SUPPORT_URI = "financialSupportURI";
+    private final String FINANCIAL_FUNDING_LABEL = "financialFundingLabel";
+    private final String FINANCIAL_FUNDING_URI = "financialFundingURI";
     private final String HOME_PAGE = "homePage";
     private final String KEYWORD = "keyword";
     private final String NAME = "name";
@@ -98,11 +100,11 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
             }
         }
         
-        //oeso:hasFinancialSupport
-        if (project.getFinancialSupport() != null) {
-            Property relationHasFinancialSupport = ResourceFactory.createProperty(Oeso.RELATION_HAS_FINANCIAL_SUPPORT.toString());
-            Resource financialSupport = ResourceFactory.createResource(project.getFinancialSupport().getUri());
-            spql.addInsert(graph, projectURI, relationHasFinancialSupport, financialSupport);
+        //oeso:hasFinancialFunding
+        if (project.getFinancialFunding() != null) {
+            Property relationHasFinancialFunfing = ResourceFactory.createProperty(Oeso.RELATION_HAS_FINANCIAL_FUNDING.toString());
+            Resource financialFunding = ResourceFactory.createResource(project.getFinancialFunding().getUri());
+            spql.addInsert(graph, projectURI, relationHasFinancialFunfing, financialFunding);
         }
         //oeso:hasFinancialReference
         if (project.getFinancialReference() != null) {
@@ -135,28 +137,28 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
             spql.addInsert(graph, projectURI, FOAF.homepage, project.getHomePage());
         }
         
-        //oeso:isAdministrativeContactOf
+        //oeso:hasAdministrativeContact
         if (!project.getAdministrativeContacts().isEmpty()) {
-            Property relationIsAdministrativeContactOf = ResourceFactory.createProperty(Oeso.RELATION_IS_ADMINISTRATIVE_CONTACT_OF.toString());
+            Property relationIsAdministrativeContactOf = ResourceFactory.createProperty(Oeso.RELATION_HAS_ADMINISTRATIVE_CONTACT.toString());
             for (Contact contact : project.getAdministrativeContacts()) {
                 Resource administrativeContact = ResourceFactory.createResource(contact.getUri());
-                spql.addInsert(graph, administrativeContact, relationIsAdministrativeContactOf, projectURI);
+                spql.addInsert(graph, projectURI, relationIsAdministrativeContactOf, administrativeContact);
             }
         }
-        //oeso:isCoordinatorOf
+        //oeso:hasCoordinator
         if (!project.getCoordinators().isEmpty()) {
-            Property relationIsCoordinatorOf = ResourceFactory.createProperty(Oeso.RELATION_IS_COORDINATOR_OF.toString());
+            Property relationIsCoordinatorOf = ResourceFactory.createProperty(Oeso.RELATION_HAS_COORDINATOR.toString());
             for (Contact contact : project.getCoordinators()) {
                 Resource coordinator = ResourceFactory.createResource(contact.getUri());
-                spql.addInsert(graph, coordinator, relationIsCoordinatorOf, projectURI);
+                spql.addInsert(graph, projectURI, relationIsCoordinatorOf, coordinator);
             }
         }
-        //oeso:isScientificContactOf
+        //oeso:hasScientificContact
         if (!project.getScientificContacts().isEmpty()) {
-            Property relationIsScientificContactOf = ResourceFactory.createProperty(Oeso.RELATION_IS_SCIENTIFIC_CONTACT_OF.toString());
+            Property relationIsScientificContactOf = ResourceFactory.createProperty(Oeso.RELATION_HAS_SCIENTIFIC_CONTACT.toString());
             for (Contact contact : project.getScientificContacts()) {
                 Resource scientificContact = ResourceFactory.createResource(contact.getUri());
-                spql.addInsert(graph, scientificContact, relationIsScientificContactOf, projectURI);
+                spql.addInsert(graph, projectURI, relationIsScientificContactOf, scientificContact);
             }
         }
         //oeso:hasObjective
@@ -218,11 +220,11 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
             updateBuilder.addDelete(graph, projectURI, relationHasRelatedProject, relatedProjectResource);
         }
         
-        //financial support
-        if (project.getFinancialSupport() != null) {
-            Property relationHasFinancialSupport = ResourceFactory.createProperty(Oeso.RELATION_HAS_FINANCIAL_SUPPORT.toString());
-            Resource financialSupport = ResourceFactory.createResource(project.getFinancialSupport().getUri());
-            updateBuilder.addDelete(graph, projectURI, relationHasFinancialSupport, financialSupport);
+        //financial funding
+        if (project.getFinancialFunding() != null) {
+            Property relationHasFinancialFunding = ResourceFactory.createProperty(Oeso.RELATION_HAS_FINANCIAL_FUNDING.toString());
+            Resource financialFunding = ResourceFactory.createResource(project.getFinancialFunding().getUri());
+            updateBuilder.addDelete(graph, projectURI, relationHasFinancialFunding, financialFunding);
         }
         
         //financial reference
@@ -261,24 +263,24 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         }
         
         //administrative contacts
-        Property relationIsAdministrativeContactOf = ResourceFactory.createProperty(Oeso.RELATION_IS_ADMINISTRATIVE_CONTACT_OF.toString());
+        Property relationIsAdministrativeContactOf = ResourceFactory.createProperty(Oeso.RELATION_HAS_ADMINISTRATIVE_CONTACT.toString());
         for (Contact administrativeContact : project.getAdministrativeContacts()) {
             Resource administrativeContactResource = ResourceFactory.createResource(administrativeContact.getUri());
-            updateBuilder.addDelete(graph, administrativeContactResource, relationIsAdministrativeContactOf, projectURI);
+            updateBuilder.addDelete(graph, projectURI, relationIsAdministrativeContactOf, administrativeContactResource);
         }
         
         //coordinators
-        Property relationIsCoordinatorOf = ResourceFactory.createProperty(Oeso.RELATION_IS_COORDINATOR_OF.toString());
+        Property relationIsCoordinatorOf = ResourceFactory.createProperty(Oeso.RELATION_HAS_COORDINATOR.toString());
         for (Contact coordinator : project.getCoordinators()) {
             Resource coordinatorResource = ResourceFactory.createResource(coordinator.getUri());
-            updateBuilder.addDelete(graph, coordinatorResource, relationIsCoordinatorOf, projectURI);
+            updateBuilder.addDelete(graph, projectURI, relationIsCoordinatorOf, coordinatorResource);
         }
         
         // scientific contacts
-        Property relationIsScientificContactOf = ResourceFactory.createProperty(Oeso.RELATION_IS_SCIENTIFIC_CONTACT_OF.toString());
+        Property relationIsScientificContactOf = ResourceFactory.createProperty(Oeso.RELATION_HAS_SCIENTIFIC_CONTACT.toString());
         for (Contact contact : project.getScientificContacts()) {
             Resource scientificContactResource = ResourceFactory.createResource(contact.getUri());
-            updateBuilder.addDelete(graph, scientificContactResource, relationIsScientificContactOf, projectURI);
+            updateBuilder.addDelete(graph, projectURI, relationIsScientificContactOf, scientificContactResource);
         }
         
         //objective
@@ -338,18 +340,17 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         }
         
         if (bindingSet.getValue(NAME) != null) {
-            project.setName(bindingSet.getValue(URI).stringValue());
+            project.setName(bindingSet.getValue(NAME).stringValue());
         }
         
         if (bindingSet.getValue(SHORTNAME) != null) {
             project.setShortname(bindingSet.getValue(SHORTNAME).stringValue());
         }
         
-        if (bindingSet.getValue(FINANCIAL_SUPPORT_URI) != null) {
-            RdfResourceDefinition financialSupport = new RdfResourceDefinition();
-            financialSupport.setUri(bindingSet.getValue(FINANCIAL_SUPPORT_URI).stringValue());
-            financialSupport.setLabel(bindingSet.getValue(FINANCIAL_SUPPORT_LABEL).stringValue());
-            project.setFinancialSupport(financialSupport);
+        if (bindingSet.getValue(FINANCIAL_FUNDING_URI) != null) {
+            RdfResourceDefinition financialFunding = new RdfResourceDefinition();
+            financialFunding.setUri(bindingSet.getValue(FINANCIAL_FUNDING_URI).stringValue());
+            project.setFinancialFunding(financialFunding);
         }
         
         if (bindingSet.getValue(FINANCIAL_REFERENCE) != null) {
@@ -379,17 +380,86 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         return project;
     }
     
-    public ArrayList<Project> find(Integer page, Integer pageSize, String uri, String name, String shortname, String financialSupport, 
+    /**
+     * Get the label of a financial funding
+     * /!\ in this case, the financial funding is supposed to exist.
+     * @param uri
+     * @return the financial funding with the label
+     */
+    public RdfResourceDefinition getFinancialFunding(String uri) {
+        RdfResourceDefinition financialFunding = new RdfResourceDefinition(uri);
+        SPARQLQueryBuilder queryFinancialFunding = prepareGetFinancialFundingLabel(uri);  
+        TupleQuery tupleQueryFinancialFunding = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryFinancialFunding.toString());
+        try (TupleQueryResult result = tupleQueryFinancialFunding.evaluate()) {
+            if (result.hasNext()) {
+                BindingSet bindingSetFinancialFunding = result.next();
+                
+                financialFunding.setLabel(bindingSetFinancialFunding.getValue(FINANCIAL_FUNDING_LABEL).stringValue());
+            }
+        }
+        
+        return financialFunding;
+    }
+    
+    /**
+     * Generates the query to get the labels of a given financial funding.
+     * @param uri
+     * @return the query
+     * @example
+     * SELECT ?label
+     * WHERE {
+     *      <http://www.opensilex.org/vocabulary/oeso#anrsupport> rdfs:label ?label
+     * }
+     */
+    protected SPARQLQueryBuilder prepareGetFinancialFundingLabel(String uri) {
+        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+        query.appendDistinct(Boolean.TRUE);
+        
+        query.appendSelect("?" + FINANCIAL_FUNDING_LABEL);
+        query.appendTriplet(uri, Rdfs.RELATION_LABEL.toString(), "?" + FINANCIAL_FUNDING_LABEL, null);        
+        
+        return query;
+    }
+    
+    /**
+     * Get projects filtered by the given search params.
+     * @param page
+     * @param pageSize
+     * @param uri
+     * @param name
+     * @param shortname
+     * @param financialfunding
+     * @param financialReference
+     * @param description
+     * @param startDate
+     * @param endDate
+     * @param homePage
+     * @param objective
+     * @return the list of projects that matches the filter parameters.
+     */
+    public ArrayList<Project> find(Integer page, Integer pageSize, String uri, String name, String shortname, String financialfunding, 
             String financialReference, String description, String startDate, String endDate, String homePage, String objective) {
         
-        SPARQLQueryBuilder query = prepareSearchQuery(page, pageSize, uri, name, shortname, financialSupport, financialReference, description, startDate, endDate, homePage, objective);
+        SPARQLQueryBuilder query = prepareSearchQuery(page, pageSize, uri, name, shortname, financialfunding, financialReference, description, startDate, endDate, homePage, objective);
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         ArrayList<Project> projects = new ArrayList<>();
+        Map<String, RdfResourceDefinition>  foundedFinancialFunding = new HashMap<>();
 
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 Project project = getProjectFromBindingSet(bindingSet);
+                
+                //Get financial funding
+                if (project.getFinancialFunding() != null 
+                        && foundedFinancialFunding.containsKey(project.getFinancialFunding().getUri())) {
+                    project.setFinancialFunding(foundedFinancialFunding.get(project.getFinancialFunding().getUri()));
+                } else { //The financial funding have not been met before so we get it.
+                    RdfResourceDefinition financialFunding = getFinancialFunding(project.getFinancialFunding().getUri());
+                    project.setFinancialFunding(financialFunding);
+                    foundedFinancialFunding.put(financialFunding.getUri(), financialFunding);
+                }
+                
                 projects.add(project);
             }
         }
@@ -430,19 +500,19 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         //coordinators
         query.appendSelect(" ?" + COORDINATOR);
         query.beginBodyOptional();
-        query.appendToBody("?" + COORDINATOR + " <" + Oeso.RELATION_IS_COORDINATOR_OF.toString() + "> <" + uri + ">");
+        query.appendToBody("<" + uri + ">" + " <" + Oeso.RELATION_HAS_COORDINATOR.toString() + "> ?" + COORDINATOR);
         query.endBodyOptional();
         
         //scientific contacts
         query.appendSelect(" ?" + SCIENTIFIC_CONTACT);
         query.beginBodyOptional();
-        query.appendToBody("?" + SCIENTIFIC_CONTACT + " <" + Oeso.RELATION_IS_SCIENTIFIC_CONTACT_OF.toString() + "> <" + uri + ">");
+        query.appendToBody("<" + uri + ">" + " <" + Oeso.RELATION_HAS_SCIENTIFIC_CONTACT.toString() + "> ?" + SCIENTIFIC_CONTACT);
         query.endBodyOptional();
         
         //administrative contacts
         query.appendSelect(" ?" + ADMINISTRATIVE_CONTACT);
         query.beginBodyOptional();
-        query.appendToBody("?" + ADMINISTRATIVE_CONTACT + " <" + Oeso.RELATION_IS_ADMINISTRATIVE_CONTACT_OF.toString() + "> <" + uri + ">");
+        query.appendToBody("<" + uri + ">" + " <" + Oeso.RELATION_HAS_ADMINISTRATIVE_CONTACT.toString() + "> ?" + ADMINISTRATIVE_CONTACT);
         query.endBodyOptional();
         
         //related projects
@@ -455,11 +525,11 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         query.appendToBody(" ?" + RELATED_PROJECT_URI + " <" + Foaf.RELATION_NAME.toString() + "> ?" + RELATED_PROJECT_NAME);
         query.endBodyOptional();
         
-        //financial support
-        query.appendSelect(" ?" + FINANCIAL_SUPPORT_URI + " ?" + FINANCIAL_SUPPORT_LABEL);
+        //financial funding
+        query.appendSelect(" ?" + FINANCIAL_FUNDING_URI + " ?" + FINANCIAL_FUNDING_LABEL);
         query.beginBodyOptional();
-        query.appendToBody("<" + uri + "> <" + Oeso.RELATION_HAS_FINANCIAL_SUPPORT.toString() + "> ?" + FINANCIAL_SUPPORT_URI + " . ");
-        query.appendToBody("?" + FINANCIAL_SUPPORT_URI + " <" + Rdfs.RELATION_LABEL.toString() + "> ?" + FINANCIAL_SUPPORT_LABEL);
+        query.appendToBody("<" + uri + "> <" + Oeso.RELATION_HAS_FINANCIAL_FUNDING.toString() + "> ?" + FINANCIAL_FUNDING_URI + " . ");
+        query.appendToBody("?" + FINANCIAL_FUNDING_URI + " <" + Rdfs.RELATION_LABEL.toString() + "> ?" + FINANCIAL_FUNDING_LABEL);
         query.endBodyOptional();
         
         //financial reference
@@ -515,12 +585,12 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
                         }                        
                     }
                     
-                    //financial support
-                    if (project.getFinancialSupport() == null && bindingSet.getValue(FINANCIAL_SUPPORT_URI) != null) {
-                        RdfResourceDefinition financialSupport = new RdfResourceDefinition(bindingSet.getValue(FINANCIAL_SUPPORT_URI).stringValue());
-                        financialSupport.setLabel(bindingSet.getValue(FINANCIAL_SUPPORT_LABEL).stringValue());
+                    //financial funding
+                    if (project.getFinancialFunding() == null && bindingSet.getValue(FINANCIAL_FUNDING_URI) != null) {
+                        RdfResourceDefinition financialFunding = new RdfResourceDefinition(bindingSet.getValue(FINANCIAL_FUNDING_URI).stringValue());
+                        financialFunding.setLabel(bindingSet.getValue(FINANCIAL_FUNDING_LABEL).stringValue());
                         
-                        project.setFinancialSupport(financialSupport);
+                        project.setFinancialFunding(financialFunding);
                     }
                     
                     //financial reference
@@ -632,7 +702,7 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         //Caches
         List<String> relatedProjectsCache = new ArrayList<>();
         List<String> contactsCache = new ArrayList<>();
-        List<String> financialSupportCache = new ArrayList<>();
+        List<String> financialFundingCache = new ArrayList<>();
         UserDAO userDAO = new UserDAO();
         
         for (Project project : projects) {        
@@ -658,14 +728,14 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
                 }
             }
 
-            //3. Check if the given financial support exist.
-            if (project.getFinancialSupport() != null 
-                    && !financialSupportCache.contains(project.getFinancialSupport().getUri())) {
-                if (!existUri(project.getFinancialSupport().getUri())) {
+            //3. Check if the given financial funding exist.
+            if (project.getFinancialFunding() != null 
+                    && !financialFundingCache.contains(project.getFinancialFunding().getUri())) {
+                if (!existUri(project.getFinancialFunding().getUri())) {
                     dataOk = false;
-                    checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Unknown financial support: " + project.getFinancialSupport().getUri()));
+                    checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Unknown financial funding: " + project.getFinancialFunding().getUri()));
                 } else {
-                    financialSupportCache.add(project.getFinancialSupport().getUri());
+                    financialFundingCache.add(project.getFinancialFunding().getUri());
                 }
             }
 
@@ -786,7 +856,7 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
     }
     
     protected SPARQLQueryBuilder prepareSearchQuery(Integer page, Integer pageSize, String uri, String name, String shortname, 
-            String financialSupport, String financialReference, String description, String startDate, String endDate, String homePage, String objective) {
+            String financialFunding, String financialReference, String description, String startDate, String endDate, String homePage, String objective) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
         
@@ -820,17 +890,14 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
             query.appendAndFilter("REGEX ( str(?" + SHORTNAME + "),\".*" + shortname + ".*\",\"i\")");
         }
         
-        //financialSupport filter
-        query.appendSelect("?" + FINANCIAL_SUPPORT_URI + " ?" + FINANCIAL_SUPPORT_LABEL);
-        if (financialSupport == null) {
+        //financialFunding filter
+        query.appendSelect("?" + FINANCIAL_FUNDING_URI + " ?" + FINANCIAL_FUNDING_LABEL);
+        if (financialFunding == null) {
             query.beginBodyOptional();
-            query.appendToBody("?" + URI + " <" + Oeso.RELATION_HAS_FINANCIAL_SUPPORT.toString() + "> " + "?" + FINANCIAL_SUPPORT_URI + " . "
-                             + "?" + FINANCIAL_SUPPORT_URI + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + FINANCIAL_SUPPORT_LABEL);
+            query.appendToBody("?" + URI + " <" + Oeso.RELATION_HAS_FINANCIAL_FUNDING.toString() + "> " + "?" + FINANCIAL_FUNDING_URI + " . ");
             query.endBodyOptional();
         } else {
-            query.appendTriplet("?" + URI, Oeso.RELATION_HAS_FINANCIAL_SUPPORT.toString(), "?" + FINANCIAL_SUPPORT_URI, null);
-            query.appendTriplet("?" + FINANCIAL_SUPPORT_URI, Rdfs.RELATION_LABEL.toString(), "?" + FINANCIAL_SUPPORT_LABEL, null);
-            query.appendAndFilter("REGEX ( str(?" + FINANCIAL_SUPPORT_LABEL + "),\".*" + financialSupport + ".*\",\"i\")");
+            query.appendTriplet("?" + URI, Oeso.RELATION_HAS_FINANCIAL_FUNDING.toString(), "?" + FINANCIAL_FUNDING_URI, null);
         }
         
         //financialReference filter
@@ -903,9 +970,9 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         return query;
     }
     
-    public SPARQLQueryBuilder prepareCount(String uri, String name, String shortname, String financialSupport, String financialReference, 
+    public SPARQLQueryBuilder prepareCount(String uri, String name, String shortname, String financialFunding, String financialReference, 
             String description, String startDate, String endDate, String homePage, String objective) {
-        SPARQLQueryBuilder query = this.prepareSearchQuery(null, null, uri, name, shortname, financialSupport, financialReference, description, startDate, endDate, homePage, objective);
+        SPARQLQueryBuilder query = this.prepareSearchQuery(null, null, uri, name, shortname, financialFunding, financialReference, description, startDate, endDate, homePage, objective);
         query.clearSelect();
         query.clearLimit();
         query.clearOffset();
@@ -915,9 +982,9 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         return query;
     }
     
-    public Integer count(String uri, String name, String shortname, String financialSupport, String financialReference, 
+    public Integer count(String uri, String name, String shortname, String financialFunding, String financialReference, 
             String description, String startDate, String endDate, String homePage, String objective) {
-        SPARQLQueryBuilder prepareCount = prepareCount(uri, name, shortname, financialSupport, financialReference, description, startDate, endDate, homePage, objective);
+        SPARQLQueryBuilder prepareCount = prepareCount(uri, name, shortname, financialFunding, financialReference, description, startDate, endDate, homePage, objective);
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
         Integer count = 0;
         try (TupleQueryResult result = tupleQuery.evaluate()) {

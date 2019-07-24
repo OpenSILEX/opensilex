@@ -109,7 +109,7 @@ public class ProjectResourceService extends ResourceService {
      *          "relatedProjects": [
      *              "http://www.opensilex.org/opensilex/DROPS"
      *          ],
-     *          "financialSupport": http://www.opensilex.org/vocabulary/oeso#inra",
+     *          "financialFunding": http://www.opensilex.org/vocabulary/oeso#inra",
      *          "financialReference": "financial reference",
      *          "description": "This project is about maize.",
      *          "startDate": "2016-07-07",
@@ -178,7 +178,7 @@ public class ProjectResourceService extends ResourceService {
      *          "relatedProjects": [
      *              "http://www.opensilex.org/opensilex/DROPS"
      *          ],
-     *          "financialSupport": "http://www.opensilex.org/vocabulary/oeso#inra",
+     *          "financialFunding": "http://www.opensilex.org/vocabulary/oeso#inra",
      *          "financialReference": "financial reference",
      *          "description": "This project is about maize.",
      *          "startDate": "2016-07-07",
@@ -249,7 +249,7 @@ public class ProjectResourceService extends ResourceService {
      *                 "name": "projectTest",
      *                 "shortname": "P T",
      *                 "relatedProjects": [],
-     *                 "financialSupport": null,
+     *                 "financialFunding": null,
      *                 "financialReference": null,
      *                 "description": "This project is about maize.",
      *                 "startDate": "2015-07-07",
@@ -314,7 +314,7 @@ public class ProjectResourceService extends ResourceService {
      * @param uri
      * @param name
      * @param shortname
-     * @param financialSupport
+     * @param financialFunding
      * @param financialReference
      * @param description
      * @param startDate
@@ -340,7 +340,7 @@ public class ProjectResourceService extends ResourceService {
      *                  "uri": "http://www.opensilex.org/opensilex/2019/a19012",
      *                  "name": "http://www.opensilex.org/opensilex/2019/a19012",
      *                  "shortname": "DROPS",
-     *                  "financialSupport": {
+     *                  "financialFunding": {
      *                      "uri": "http://www.opensilex.org/vocabulary/oeso#inra",
      *                      "label": "INRA"
      *                  },
@@ -355,7 +355,7 @@ public class ProjectResourceService extends ResourceService {
      *                 "uri": "http://www.opensilex.org/opensilex/DROPS",
      *                 "name": "http://www.opensilex.org/opensilex/DROPS",
      *                 "shortname": "P T",
-     *                 "financialSupport": null,
+     *                 "financialFunding": null,
      *                 "financialReference": null,
      *                 "description": "This project is about maize.",
      *                 "startDate": "2015-07-07",
@@ -388,7 +388,7 @@ public class ProjectResourceService extends ResourceService {
         @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_PROJECT_URI) @QueryParam("uri") String uri,
         @ApiParam(value = "Search by project name", example = DocumentationAnnotation.EXAMPLE_PROJECT_NAME) @QueryParam("name") String name,
         @ApiParam(value = "Search by shortname", example = DocumentationAnnotation.EXAMPLE_PROJECT_SHORTNAME) @QueryParam("shortname") String shortname,
-        @ApiParam(value = "Search by financial support", example = DocumentationAnnotation.EXAMPLE_PROJECT_FINANCIAL_SUPPORT) @QueryParam("financialSupport") String financialSupport,
+        @ApiParam(value = "Search by financial funding", example = DocumentationAnnotation.EXAMPLE_PROJECT_FINANCIAL_FUNDING) @QueryParam("financialFunding") String financialFunding,
         @ApiParam(value = "Search by financial reference", example = DocumentationAnnotation.EXAMPLE_PROJECT_FINANCIAL_REFERENCE) @QueryParam("financialReference") String financialReference,
         @ApiParam(value = "Search by description", example = DocumentationAnnotation.EXAMPLE_PROJECT_DESCRIPTION) @QueryParam("description") String description,
         @ApiParam(value = "Search by start date", example = DocumentationAnnotation.EXAMPLE_PROJECT_DATE_START) @QueryParam("startDate") String startDate,
@@ -399,10 +399,10 @@ public class ProjectResourceService extends ResourceService {
         ProjectDAO projectDAO = new ProjectDAO();
         
         //1. Get count
-        Integer totalCount = projectDAO.count(uri, name, shortname, financialSupport, financialReference, description, startDate, endDate, homePage, objective);
+        Integer totalCount = projectDAO.count(uri, name, shortname, financialFunding, financialReference, description, startDate, endDate, homePage, objective);
         
         //2. Get projects
-        ArrayList<Project> projectsFounded = projectDAO.find(page, pageSize, uri, name, shortname, financialSupport, financialReference, description, startDate, endDate, homePage, objective);
+        ArrayList<Project> projectsFounded = projectDAO.find(page, pageSize, uri, name, shortname, financialFunding, financialReference, description, startDate, endDate, homePage, objective);
         
         //3. Return result
         ArrayList<Status> statusList = new ArrayList<>();
@@ -425,272 +425,4 @@ public class ProjectResourceService extends ResourceService {
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }
     }
-    
-    
-    /**
-     * Project GET service.
-     * @param limit
-     * @param page
-     * @param uri
-     * @param name
-     * @param acronyme
-     * @param subprojectType
-     * @param financialSupport
-     * @param financialName
-     * @param dateStart
-     * @param dateEnd
-     * @param keywords
-     * @param parentProject
-     * @param website
-     * @return the projects found
-     */
-    //@GET
-//    @ApiOperation(value = "Get all projects corresponding to the searched params given",
-//                  notes = "Retrieve all projects authorized for the user corresponding to the searched params given")
-//    @ApiResponses(value = {
-//        @ApiResponse(code = 200, message = "Retrieve all projects", response = ProjectPostgres.class, responseContainer = "List"),
-//        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-//        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-//        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
-//    @ApiImplicitParams({
-//        @ApiImplicitParam(name = "Authorization", required = true,
-//                          dataType = "string", paramType = "header",
-//                          value = DocumentationAnnotation.ACCES_TOKEN,
-//                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")})
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public Response getProjectsBySearch(
-//    @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
-//    @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
-//    @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_PROJECT_URI) @QueryParam("uri") @URL String uri,
-//    @ApiParam(value = "Search by name", example = DocumentationAnnotation.EXAMPLE_PROJECT_NAME) @QueryParam("name") String name,
-//    @ApiParam(value = "Search by acronyme", example = DocumentationAnnotation.EXAMPLE_PROJECT_SHORTNAME) @QueryParam("acronyme") String acronyme,
-//    @ApiParam(value = "Search by subproject type", example = DocumentationAnnotation.EXAMPLE_PROJECT_SUBPROJECT_TYPE) @QueryParam("subprojectType") String subprojectType,
-//    @ApiParam(value = "Search by financial support", example = DocumentationAnnotation.EXAMPLE_PROJECT_FINANCIAL_REFERENCE) @QueryParam("financialSupport") String financialSupport,
-//    @ApiParam(value = "Search by financial name", example = DocumentationAnnotation.EXAMPLE_PROJECT_FINANCIAL_SUPPORT) @QueryParam("financialName") String financialName,
-//    @ApiParam(value = "Search by date start", example = DocumentationAnnotation.EXAMPLE_PROJECT_DATE_START) @QueryParam("dateStart") @Date(DateFormat.YMD) String dateStart,
-//    @ApiParam(value = "Search by date end", example = DocumentationAnnotation.EXAMPLE_PROJECT_DATE_END) @QueryParam("dateEnd") @Date(DateFormat.YMD) String dateEnd,
-//    @ApiParam(value = "Searcg by keywords", example = DocumentationAnnotation.EXAMPLE_PROJECT_KEYWORDS) @QueryParam("keywords") String keywords,
-//    @ApiParam(value = "Search by parent project", example = DocumentationAnnotation.EXAMPLE_PROJECT_PARENT_PROJECT) @QueryParam("parentProject") String parentProject,
-//    @ApiParam(value = "Search by website", example = DocumentationAnnotation.EXAMPLE_PROJECT_HOME_PAGE) @QueryParam("website") @URL String website)  {
-//        
-//        ProjectPostgreSQLDAO projectDao = new ProjectPostgreSQLDAO();
-//        if (uri != null) {
-//            projectDao.uri = uri;
-//        }
-//        if (name != null) {
-//            projectDao.name = name;
-//        }
-//        if (acronyme != null) {
-//            projectDao.acronyme = acronyme;
-//        }
-//        if (subprojectType != null) {
-//            projectDao.subprojectType = subprojectType;
-//        }
-//        if (financialSupport != null) {
-//            projectDao.financialSupport = financialSupport;
-//        }
-//        if (financialName != null) {
-//            projectDao.financialName = financialName;
-//        }
-//        if (dateStart != null) {
-//            projectDao.dateStart = dateStart;
-//        }
-//        if (dateEnd != null) {
-//            projectDao.dateEnd = dateEnd;
-//        }
-//        if (keywords != null) {
-//            projectDao.keywords = keywords;
-//        }
-//        if (parentProject != null) {
-//            projectDao.parentProject = parentProject;
-//        }
-//        if (website != null) {
-//            projectDao.website = website;
-//        }
-//        
-//        projectDao.user = userSession.getUser();
-//        projectDao.setPageSize(limit);
-//        projectDao.setPage(page);
-//        
-//        return getProjectsData(projectDao);
-//    }
-//    
-//    /**
-//     * Single project GET service from URI.
-//     * @param projectURI
-//     * @param limit
-//     * @param page
-//     * @return the project found
-//     */
-////    @GET
-////    @Path("{projectURI}")
-//    @ApiOperation(value = "Get a project",
-//                  notes = "Retrieve a project. Need URL encoded project URI (Unique Resource Identifier)")
-//    @ApiResponses(value = {
-//        @ApiResponse(code = 200, message = "Retrieve a project.", response = ProjectPostgres.class, responseContainer = "List"),
-//        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-//        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-//        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
-//    })
-//    @ApiImplicitParams({
-//        @ApiImplicitParam(name = "Authorization", required = true,
-//                          dataType = "string", paramType = "header",
-//                          value = DocumentationAnnotation.ACCES_TOKEN,
-//                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-//    })
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public Response getProjectDetails(
-//    @ApiParam(value = DocumentationAnnotation.PROJECT_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_PROJECT_URI, required = true) @PathParam("projectURI") @URL @Required String projectURI,
-//    @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
-//    @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
-//        if (projectURI == null) {
-//            final Status status = new Status("Access error", StatusCodeMsg.ERR, "Empty Project URI");
-//            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
-//        }
-//        
-//        ProjectPostgreSQLDAO projectDao = new ProjectPostgreSQLDAO(projectURI);
-//        projectDao.setPageSize(limit);
-//        projectDao.setPage(page);
-//        
-//        projectDao.user = userSession.getUser();
-//        
-//        return getProjectsData(projectDao);
-//    }
-//    
-//    /**
-//     * Project POST service.
-//     * @param projects
-//     * @param context
-//     * @return the project creation result
-//     */
-////    @POST
-//    @ApiOperation(value = "Post a project",
-//                  notes = "Register a new project in the database")
-//    @ApiResponses(value = {
-//        @ApiResponse(code = 201, message = "Project saved", response = ResponseFormPOST.class),
-//        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-//        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-//        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)})
-//    @ApiImplicitParams({
-//        @ApiImplicitParam(name = "Authorization", required = true,
-//                          dataType = "string", paramType = "header",
-//                          value = DocumentationAnnotation.ACCES_TOKEN,
-//                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")})
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public Response postProject(
-//            @ApiParam(value = DocumentationAnnotation.PROJECT_POST_DATA_DEFINITION) @Valid ArrayList<ProjectPostgresPostDTO> projects,
-//            @Context HttpServletRequest context) {
-//        AbstractResultForm postResponse = null;
-//        
-//        // If there is at least a project
-//        if (projects != null && !projects.isEmpty()) {
-//            ProjectPostgreSQLDAO projectDao = new ProjectPostgreSQLDAO();
-//            if (projectDao.remoteUserAdress != null) {
-//                projectDao.remoteUserAdress = context.getRemoteAddr();
-//            }
-//
-//            projectDao.user = userSession.getUser();
-//
-//            // Check and insert projects
-//            POSTResultsReturn result = projectDao.checkAndInsert(projects);
-//
-//            if (result.getHttpStatus().equals(Response.Status.CREATED)) { //201: projects inserted
-//                postResponse = new ResponseFormPOST(result.statusList);
-//                postResponse.getMetadata().setDatafiles(result.getCreatedResources());
-//            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-//                    || result.getHttpStatus().equals(Response.Status.OK)
-//                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)
-//                    || result.getHttpStatus().equals(Response.Status.CONFLICT)) {
-//                postResponse = new ResponseFormPOST(result.statusList);
-//            }
-//            return Response.status(result.getHttpStatus()).entity(postResponse).build();
-//        } else {
-//            postResponse = new ResponseFormPOST(new Status("Request error", StatusCodeMsg.ERR, "Empty projects(s) to add"));
-//            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
-//        }
-//    }
-//    
-//    /**
-//     * Project PUT service.
-//     * @param projects
-//     * @param context
-//     * @return the update result
-//     */
-//  //  @PUT
-//    @ApiOperation(value = "Update project")
-//    @ApiResponses(value = {
-//        @ApiResponse(code = 200, message = "Project updated", response = ResponseFormPOST.class),
-//        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-//        @ApiResponse(code = 404, message = "Project not found"),
-//        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
-//    })
-//    @ApiImplicitParams({
-//        @ApiImplicitParam(name = "Authorization", required = true,
-//                          dataType = "string", paramType = "header",
-//                          value = DocumentationAnnotation.ACCES_TOKEN,
-//                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-//    })
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public Response putProject(
-//    @ApiParam(value = DocumentationAnnotation.PROJECT_POST_DATA_DEFINITION) @Valid ArrayList<ProjectPostgresDTO> projects,
-//    @Context HttpServletRequest context) {
-//        AbstractResultForm postResponse = null;
-//        
-//        if (projects != null && !projects.isEmpty()) {
-//            ProjectPostgreSQLDAO projectDao = new ProjectPostgreSQLDAO();
-//            if (projectDao.remoteUserAdress != null) {
-//                projectDao.remoteUserAdress = context.getRemoteAddr();
-//            }
-//            projectDao.user = userSession.getUser();
-//            
-//            // Check and update projects
-//            POSTResultsReturn result = projectDao.checkAndUpdateList(projects);
-//            
-//            if (result.getHttpStatus().equals(Response.Status.OK)) { //200: projects updated
-//                postResponse = new ResponseFormPOST(result.statusList);
-//                return Response.status(result.getHttpStatus()).entity(postResponse).build();
-//            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-//                    || result.getHttpStatus().equals(Response.Status.OK)
-//                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-//                postResponse = new ResponseFormPOST(result.statusList);
-//            }
-//            return Response.status(result.getHttpStatus()).entity(postResponse).build();
-//        } else {
-//            postResponse = new ResponseFormPOST(new Status("Request error", StatusCodeMsg.ERR, "Empty projects(s) to update"));
-//            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
-//        }
-//    }
-//        
-//    /**
-//     * Gets projects data.
-//     * @param projectDao
-//     * @return the projects found
-//     */
-//    private Response getProjectsData(ProjectPostgreSQLDAO projectDao) {
-//        ArrayList<ProjectPostgres> projects = new ArrayList<>();
-//        ArrayList<Status> statusList = new ArrayList<>();
-//        ResultForm<ProjectPostgres> getResponse;
-//        Integer projectsCount = projectDao.count();
-//        
-//        if (projectsCount != null && projectsCount == 0) {
-//            getResponse = new ResultForm<>(projectDao.getPageSize(), projectDao.getPage(), projects, true, projectsCount);
-//            return noResultFound(getResponse, statusList);
-//        } else {
-//            projects = projectDao.allPaginate();
-//            
-//            if (projects == null || projectsCount == null) { //sql error
-//                getResponse = new ResultForm<>(0, 0, projects, true, projectsCount);
-//                return sqlError(getResponse, statusList);
-//            } else if (projects.isEmpty()) { // no result found
-//                getResponse = new ResultForm<>(projectDao.getPageSize(), projectDao.getPage(), projects, false, projectsCount);
-//                return noResultFound(getResponse, statusList);
-//            } else { //results founded
-//                getResponse = new ResultForm<>(projectDao.getPageSize(), projectDao.getPage(), projects, true, projectsCount);
-//                getResponse.setStatus(statusList);
-//                return Response.status(Response.Status.OK).entity(getResponse).build();
-//            }
-//        }
-//    }
 }

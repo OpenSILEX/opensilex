@@ -14,6 +14,7 @@ import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.model.Contact;
 import opensilex.service.model.Project;
 import opensilex.service.model.RdfResourceDefinition;
+import opensilex.service.resource.ProjectResourceService;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resource.dto.provenance.ContactDTO;
 import opensilex.service.resource.dto.rdfResourceDefinition.RdfResourceDTO;
@@ -22,6 +23,7 @@ import opensilex.service.resource.dto.rdfResourceDefinition.RdfResourceDTO;
  * Details of a project.
  * @see http://www.dublincore.org/specifications/dublin-core/dcmi-terms/
  * @see http://xmlns.com/foaf/spec/
+ * @see ProjectResourceService#getById(java.lang.String, int, int) 
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ProjectDetailDTO extends AbstractVerifiedClass {

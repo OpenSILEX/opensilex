@@ -24,11 +24,11 @@ import opensilex.service.dao.ActuatorDAO;
 import opensilex.service.dao.ExperimentSQLDAO;
 import opensilex.service.dao.ImageMetadataMongoDAO;
 import opensilex.service.dao.GroupDAO;
-import opensilex.service.dao.ProjectDAO;
 import opensilex.service.dao.ScientificObjectRdf4jDAO;
 import opensilex.service.dao.AnnotationDAO;
 import opensilex.service.dao.EventDAO;
 import opensilex.service.dao.MethodDAO;
+import opensilex.service.dao.ProjectDAO;
 import opensilex.service.dao.RadiometricTargetDAO;
 import opensilex.service.dao.SensorDAO;
 import opensilex.service.dao.UriDAO;
@@ -42,7 +42,6 @@ import opensilex.service.ontology.Oeev;
 import opensilex.service.ontology.Oeso;
 import opensilex.service.ontology.Time;
 import opensilex.service.model.Group;
-import opensilex.service.model.Project;
 
 /**
  * URI generator. Used for various objects (vector, sensor, ...).
@@ -621,8 +620,7 @@ public class UriGenerator {
         String projectUri = PLATFORM_URI + projectAcronyme;
         //2. check if URI exists
         ProjectDAO projectDAO = new ProjectDAO();
-        Project project = new Project(projectUri);
-        if (projectDAO.existInDB(project)) {
+        if (projectDAO.existUri(projectUri)) {
             throw new AlreadyExists("The project uri " + projectUri + " already exist in the triplestore.");
         }
         

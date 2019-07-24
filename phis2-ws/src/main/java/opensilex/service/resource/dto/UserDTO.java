@@ -89,7 +89,7 @@ public class UserDTO extends AbstractVerifiedClass {
         this.firstName = firstName;
     }
     
-    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_USER_FAMILY_NAME)
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_USER_LASTNAME)
     public String getFamilyName() {
         return familyName;
     }

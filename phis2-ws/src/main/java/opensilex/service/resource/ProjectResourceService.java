@@ -49,6 +49,8 @@ import opensilex.service.resource.dto.project.ProjectDTO;
 import opensilex.service.resource.dto.project.ProjectDetailDTO;
 import opensilex.service.resource.dto.project.ProjectPostDTO;
 import opensilex.service.resource.dto.project.ProjectPutDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Project resource service.
@@ -57,7 +59,6 @@ import opensilex.service.resource.dto.project.ProjectPutDTO;
 @Api("/projects")
 @Path("projects")
 public class ProjectResourceService extends ResourceService {
-    
     /**
      * Transform a list of ProjectPostDTO to a list of Project
      * @param projectsDTOs

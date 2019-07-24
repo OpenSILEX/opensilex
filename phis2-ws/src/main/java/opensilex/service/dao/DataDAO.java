@@ -118,11 +118,10 @@ public class DataDAO extends MongoDAO<Data> {
 
         String key = data.getVariableUri() + data.getObjectUri() + data.getProvenanceUri() + data.getDate();
         try {
-            UriGenerator uriGenerator = new UriGenerator();
-            String uri = uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA.toString(), null, key);
+            String uri = UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA.toString(), null, key);
 
             while (uriExists(data.getVariableUri(), uri)) {
-                uri = uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA.toString(), null, key);
+                uri = UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA.toString(), null, key);
             }
             
             data.setUri(uri);

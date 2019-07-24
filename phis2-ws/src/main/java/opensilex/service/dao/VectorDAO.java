@@ -583,14 +583,13 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
         boolean resultState = false; //to know if data has been well inserted
         boolean annotationInsert = true; //
         
-        UriGenerator uriGenerator = new UriGenerator();
         //SILEX:test
         //Triplestore connection has to be checked (this is kind of an hot fix)
         this.getConnection().begin();
         //\SILEX:test
         vectors.stream().map((vectorDTO) -> vectorDTO.createObjectFromDTO()).map((vector) -> {
             try {
-                vector.setUri(uriGenerator.generateNewInstanceUri(vector.getRdfType(), null, null));
+                vector.setUri(UriGenerator.generateNewInstanceUri(vector.getRdfType(), null, null));
             } catch (Exception ex) { //In the vectors case, no exception should be raised
                 java.util.logging.Logger.getLogger(VectorDAO.class.getName()).log(Level.SEVERE, null, ex);
             }

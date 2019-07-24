@@ -345,29 +345,35 @@ public class VariableResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
         }
         
-        ArrayList<VariableDetailDTO> variables = new ArrayList<>();
-        ArrayList<Status> statusList = new ArrayList<>();
-        ResultForm<VariableDetailDTO> getResponse;
+        //SILEX:info
+        // quick fix : use the search method instead of the get detail because 
+        //data is missing in the DTO of the get detail.
+        return this.search(pageSize, page, uri, null, null, null, null, null, true);
         
-        try {
-            VariableDAO variableDao = new VariableDAO();
-            
-            VariableDetailDTO variable = new VariableDetailDTO(variableDao.findById(uri));
-            
-            LOGGER.debug("variable : " + variable.getLabel() + " " + variable.getUri());
-            
-            variables.add(variable);
+        //GET detail
+//        ArrayList<VariableDetailDTO> variables = new ArrayList<>();
+//        ArrayList<Status> statusList = new ArrayList<>();
+//        ResultForm<VariableDetailDTO> getResponse;
+//        
+//        try {
+//            VariableDAO variableDao = new VariableDAO();
+//            
+//            VariableDetailDTO variable = new VariableDetailDTO(variableDao.findById(uri));
+//            
+//            variables.add(variable);
+//
+//            getResponse = new ResultForm<>(pageSize, page, variables, true, 1);
+//            getResponse.setStatus(statusList);
+//            return Response.status(Response.Status.OK).entity(getResponse).build();
+//        } catch (NotFoundException ex) {
+//            getResponse = new ResultForm<>(0, 0, variables, true);
+//            return noResultFound(getResponse, statusList);
+//        } catch (Exception ex) {
+//            statusList.add(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, ex.getMessage()));
+//            getResponse = new ResultForm<>(0, 0, variables, true);
+//            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(getResponse).build();
+//        }
 
-            getResponse = new ResultForm<>(pageSize, page, variables, true, 1);
-            getResponse.setStatus(statusList);
-            return Response.status(Response.Status.OK).entity(getResponse).build();
-        } catch (NotFoundException ex) {
-            getResponse = new ResultForm<>(0, 0, variables, true);
-            return noResultFound(getResponse, statusList);
-        } catch (Exception ex) {
-            statusList.add(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, ex.getMessage()));
-            getResponse = new ResultForm<>(0, 0, variables, true);
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(getResponse).build();
-        }
+        //\SILEX:info
     }
 }

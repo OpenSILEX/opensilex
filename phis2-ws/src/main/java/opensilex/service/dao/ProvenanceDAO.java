@@ -158,10 +158,9 @@ public class ProvenanceDAO extends MongoDAO<Provenance> {
         
         //1. Prepare all the documents to insert
         List<Document> provenancesDocuments = new ArrayList<>();
-        UriGenerator uriGenerator = new UriGenerator();
         for (Provenance provenance : provenances) {
             //1. Generates the provenance uri
-            provenance.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_PROVENANCE.toString(), null, null));
+            provenance.setUri(UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_PROVENANCE.toString(), null, null));
             
             //2. Generates the document insert
             provenancesDocuments.add(prepareInsertProvenanceDocument(provenance));

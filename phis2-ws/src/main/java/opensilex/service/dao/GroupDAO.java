@@ -107,12 +107,11 @@ public class GroupDAO extends PhisDAO<Group, GroupDTO> {
 
                 insertPreparedStatement = connection.prepareStatement(insertGab);
                 insertPreparedStatementGroupUser = connection.prepareStatement(insertGabGroupUsers);
-                UriGenerator uriGenerator = new UriGenerator();
                 
                 for (Group group : groups) {
                     try {
                         // Generate group URI
-                        group.setUri(uriGenerator.generateNewInstanceUri(Foaf.CONCEPT_GROUP.toString(), null, group.getName()));
+                        group.setUri(UriGenerator.generateNewInstanceUri(Foaf.CONCEPT_GROUP.toString(), null, group.getName()));
                         insertionLeft = true;
                         insertPreparedStatement.setString(1, group.getUri());
                         insertPreparedStatement.setString(2, group.getName());

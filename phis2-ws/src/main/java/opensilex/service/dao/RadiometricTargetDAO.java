@@ -299,13 +299,11 @@ public class RadiometricTargetDAO extends Rdf4jDAO<RadiometricTarget> {
         boolean resultState = false;
         boolean insert = true;
         
-        UriGenerator uriGenerator = new UriGenerator();
-        
         getConnection().begin();
         for (RadiometricTarget radiometricTarget : radiometricTargets) {
             try {
                 //Generate uri
-                radiometricTarget.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_RADIOMETRIC_TARGET.toString(), null, null));
+                radiometricTarget.setUri(UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_RADIOMETRIC_TARGET.toString(), null, null));
             } catch (Exception ex) { //In the radiometric target case, no exception should be raised
                 insert = false;
             }

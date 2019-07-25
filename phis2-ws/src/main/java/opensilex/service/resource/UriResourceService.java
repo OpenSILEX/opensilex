@@ -192,6 +192,7 @@ public class UriResourceService extends ResourceService {
      * Gets all the instances of an URI.
      * @param uri
      * @param deep verify subclass or not
+     * @param language
      * @param limit
      * @param page
      * @update [Arnaud Charleroy] 18 Jul. 2018: change deep string type to real 
@@ -217,7 +218,8 @@ public class UriResourceService extends ResourceService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getInstancesByConcept(
             @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @Required @URL @PathParam("uri") String uri,
-            @ApiParam(value = DocumentationAnnotation.DEEP) @QueryParam("deep") @DefaultValue(DocumentationAnnotation.EXAMPLE_DEEP) Boolean deep, 
+            @ApiParam(value = DocumentationAnnotation.DEEP) @QueryParam("deep") @DefaultValue(DocumentationAnnotation.EXAMPLE_DEEP) Boolean deep,
+            @ApiParam(value = DocumentationAnnotation.DEEP) @QueryParam("language") @DefaultValue(DocumentationAnnotation.EXAMPLE_LANGUAGE) String language,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
 
@@ -230,6 +232,12 @@ public class UriResourceService extends ResourceService {
             uriDao.deep = deep;
         } else {
             uriDao.deep = true;
+        }
+        
+        if (language != null) {
+            uriDao.language = language;
+        } else {
+            uriDao.language = DEFAULT_LANGUAGE;
         }
 
         uriDao.setPageSize(limit);

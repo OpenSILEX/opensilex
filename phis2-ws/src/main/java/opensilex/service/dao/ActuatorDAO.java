@@ -242,8 +242,6 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
 
         getConnection().close();
         
-        String uriActuator = null;
-        
         if (result.hasNext()) {
             BindingSet bindingSet = result.next();
             return Integer.valueOf(bindingSet.getValue(MAX_ID).stringValue());

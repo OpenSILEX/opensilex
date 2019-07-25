@@ -61,7 +61,6 @@ import org.slf4j.LoggerFactory;
 
 @Api("/brapi/v1/studies")
 @Path("/brapi/v1/studies")
-@Singleton
 /**
  * Study services :
  * GET Studies/{studyDbId}

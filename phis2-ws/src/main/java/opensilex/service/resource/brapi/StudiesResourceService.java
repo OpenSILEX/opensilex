@@ -67,40 +67,9 @@ import org.slf4j.LoggerFactory;
  * GET Studies/{studyDbId}/observations
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
-public class StudiesResourceService extends ResourceService implements BrapiCall {    
+public class StudiesResourceService extends ResourceService {    
     
     final static Logger LOGGER = LoggerFactory.getLogger(StudiesResourceService.class);
-
-     /**
-     * Overriding BrapiCall method
-     * @date 27 Aug 2018
-     * @return Calls call information
-     */
-    @Override
-    public ArrayList<Call> callInfo() {
-        ArrayList<Call> calls = new ArrayList();
-        ArrayList<String> calldatatypes = new ArrayList<>();
-        calldatatypes.add("json");
-        ArrayList<String> callMethods = new ArrayList<>();
-        callMethods.add("GET");
-        ArrayList<String> callVersions = new ArrayList<>();
-        callVersions.add("1.3");
-        Call call1 = new Call("studies/{studyDbId}", calldatatypes, callMethods, callVersions);
-        Call call2 = new Call("studies/{studyDbId}/observations", calldatatypes, callMethods, callVersions);
-        Call call3 = new Call("studies/{studyDbId}/observationVariables", calldatatypes, callMethods, callVersions);
-        Call call4 = new Call("studies/{studyDbId}/observationunits", calldatatypes, callMethods, callVersions);      
-        Call call5 = new Call("studies", calldatatypes, callMethods, callVersions);
-        ArrayList<String> callVersion2 = new ArrayList<>();
-        callVersion2.add("1.2");
-        Call call6 = new Call("studies/{studyDbId}/observationvariables", calldatatypes, callMethods, callVersion2);
-        calls.add(call1);
-        calls.add(call2);
-        calls.add(call3);
-        calls.add(call4);      
-        calls.add(call5);
-        calls.add(call6);
-        return calls;
-    }
        
     /**
      * Retrieve studies information

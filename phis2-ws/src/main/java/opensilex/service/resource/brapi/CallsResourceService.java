@@ -13,8 +13,6 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Pattern;
 import javax.ws.rs.DefaultValue;
@@ -24,29 +22,23 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.glassfish.hk2.api.IterableProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.BrapiMultiResponseForm;
 import opensilex.service.model.Call;
-import org.jvnet.hk2.annotations.Service;
+import java.util.ServiceLoader;
+
 
 @Api("/brapi/v1/calls")
 @Path("/brapi/v1/calls")
-@Service
-@Singleton
 /**
  * Calls resource service.
  * @see https://brapi.docs.apiary.io/#reference/calls/call-search
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class CallsResourceService implements BrapiCall {
-
-    final static Logger LOGGER = LoggerFactory.getLogger(CallsResourceService.class);
-
+  
     /**
      * Overriding BrapiCall method.
      * @return Calls call information
@@ -64,12 +56,8 @@ public class CallsResourceService implements BrapiCall {
         calls.add(call);
         return calls;
     }
+    
 
-    /**
-     * Dependency injection to get all BrapiCalls callInfo() outputs.
-     */
-    @Inject
-    IterableProvider<BrapiCall> brapiCallsList;
 
     /**
      * Calls GET service.
@@ -104,9 +92,12 @@ public class CallsResourceService implements BrapiCall {
 
         ArrayList<Status> statusList = new ArrayList();
         ArrayList<Call> callsInfoList = new ArrayList();
-
-        for (BrapiCall brapiCall : brapiCallsList) {            
-            ArrayList<Call> calls = brapiCall.callInfo();
+        
+        /**
+         * get all BrapiCalls callInfo() outputs.
+         */
+        ServiceLoader.load(BrapiCall.class, getClass().getClassLoader()).forEach((BrapiCall service) -> {
+            ArrayList<Call> calls = service.callInfo();
             ArrayList<String> datatypesList = new ArrayList();
             calls.forEach((call) -> {
                 datatypesList.addAll(call.getDataTypes());
@@ -114,7 +105,7 @@ public class CallsResourceService implements BrapiCall {
             if (dataType == null || datatypesList.contains(dataType) == true) {
                 callsInfoList.addAll(calls);
             }
-        }
+        });
 
         BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(limit, page, callsInfoList, false);
         getResponse.getMetadata().setStatus(statusList);

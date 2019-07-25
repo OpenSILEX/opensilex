@@ -7,9 +7,11 @@
 //******************************************************************************
 package opensilex.service.resource.brapi;
 
+
 import java.util.ArrayList;
-import org.glassfish.jersey.spi.Contract;
+
 import opensilex.service.model.Call;
+import org.jvnet.hk2.annotations.Contract;
 
 /**
  * Interface for dependency injection in order to get Calls attributes.

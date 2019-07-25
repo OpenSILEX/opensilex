@@ -22,7 +22,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import javax.inject.Singleton;
 import javax.validation.constraints.Min;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -57,9 +56,29 @@ import org.slf4j.LoggerFactory;
  * GET Studies/{studyDbId}/observations
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
-public class StudiesSearchResourceService extends ResourceService {    
+public class StudiesSearchResourceService extends ResourceService implements BrapiCall {    
     
     final static Logger LOGGER = LoggerFactory.getLogger(StudiesSearchResourceService.class);
+    
+    /**
+     * Overriding BrapiCall method
+     * @date 27 Aug 2018
+     * @return Calls call information
+     */
+    @Override
+    public ArrayList<Call> callInfo() {
+        ArrayList<Call> calls = new ArrayList();
+        ArrayList<String> calldatatypes = new ArrayList<>();
+        calldatatypes.add("json");
+        ArrayList<String> callMethods = new ArrayList<>();
+        callMethods.add("GET");
+        callMethods.add("POST");
+        ArrayList<String> callVersions = new ArrayList<>();
+        callVersions.add("1.2");
+        Call call1 = new Call("studies-search", calldatatypes, callMethods, callVersions);
+        calls.add(call1);
+        return calls;
+    }
     
     /**
      * @param studySearch

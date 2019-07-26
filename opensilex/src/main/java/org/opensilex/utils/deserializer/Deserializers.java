@@ -44,7 +44,7 @@ public class Deserializers {
         }
 
     }
-
+    
     private static Map<Class<?>, Deserializer<?>> buildDeserializersMap() {
         HashMap<Class<?>, Deserializer<?>> deserializersMap = new HashMap<>();
 

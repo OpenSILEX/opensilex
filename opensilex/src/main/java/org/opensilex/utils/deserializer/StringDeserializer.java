@@ -5,6 +5,9 @@
  */
 package org.opensilex.utils.deserializer;
 
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+
 /**
  *
  * @author vincent
@@ -14,5 +17,10 @@ public class StringDeserializer implements Deserializer<String> {
     @Override
     public String fromString(String value) throws Exception {
         return value;
+    }
+
+    @Override
+    public Node getNode(Object value) throws Exception {
+        return NodeFactory.createLiteral(value.toString());
     }
 }

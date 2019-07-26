@@ -13,15 +13,15 @@ import org.apache.jena.graph.NodeFactory;
  *
  * @author vincent
  */
-public class IntegerDeserializer implements Deserializer<Integer> {
+public class ShortDeserializer implements Deserializer<Short> {
 
     @Override
-    public Integer fromString(String value) throws Exception {
-        return Integer.valueOf(value);
+    public Short fromString(String value) throws Exception {
+        return Short.valueOf(value);
     }
 
     @Override
     public Node getNode(Object value) throws Exception {
-         return NodeFactory.createLiteralByValue(value, XSDDatatype.XSDinteger);
+        return NodeFactory.createLiteralByValue(value, XSDDatatype.XSDshort);
     }
 }

@@ -5,7 +5,6 @@
  */
 package org.opensilex.utils.deserializer;
 
-import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 
@@ -13,15 +12,15 @@ import org.apache.jena.graph.NodeFactory;
  *
  * @author vincent
  */
-public class IntegerDeserializer implements Deserializer<Integer> {
+public class CharDeserializer implements Deserializer<Character> {
 
     @Override
-    public Integer fromString(String value) throws Exception {
-        return Integer.valueOf(value);
+    public Character fromString(String value) throws Exception {
+        return value.charAt(0);
     }
 
     @Override
     public Node getNode(Object value) throws Exception {
-         return NodeFactory.createLiteralByValue(value, XSDDatatype.XSDinteger);
+        return NodeFactory.createLiteral(value.toString().substring(0, 1));
     }
 }

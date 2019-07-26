@@ -12,6 +12,7 @@ package org.opensilex.utils.deserializer;
 public class DeserializerNotFoundException extends Exception {
 
     public DeserializerNotFoundException(Class<?> clazz) {
+        super("Deserializer not found for class: " + clazz.getCanonicalName());
     }
-    
+
 }

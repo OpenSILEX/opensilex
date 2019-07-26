@@ -5,6 +5,8 @@
  */
 package org.opensilex.utils.deserializer;
 
+import org.apache.jena.graph.Node;
+
 /**
  *
  * @author vincent
@@ -13,4 +15,5 @@ public interface Deserializer<T> {
 
     public T fromString(String value) throws Exception;
 
+    public Node getNode(Object value) throws Exception;
 }

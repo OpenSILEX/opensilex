@@ -5,7 +5,7 @@
  */
 package org.opensilex.utils.deserializer;
 
-import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
@@ -15,16 +15,16 @@ import org.apache.jena.graph.NodeFactory;
  *
  * @author vincent
  */
-public class DateDeserializer implements Deserializer<LocalDate> {
+public class DateTimeDeserializer implements Deserializer<OffsetDateTime> {
 
     @Override
-    public LocalDate fromString(String value) throws Exception {
-        return LocalDate.parse(value);
+    public OffsetDateTime fromString(String value) throws Exception {
+        return  OffsetDateTime.parse(value, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
     }
 
     @Override
     public Node getNode(Object value) throws Exception {
-        LocalDate date = (LocalDate) value;
-        return NodeFactory.createLiteralByValue(date.format(DateTimeFormatter.ISO_DATE), XSDDatatype.XSDdate) ;
+        OffsetDateTime date = (OffsetDateTime) value;
+        return NodeFactory.createLiteralByValue(date.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME), XSDDatatype.XSDdateTime) ;
     }
 }

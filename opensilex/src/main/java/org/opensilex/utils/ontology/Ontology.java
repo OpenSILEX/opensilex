@@ -5,6 +5,9 @@
  */
 package org.opensilex.utils.ontology;
 
+import java.net.URI;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
@@ -29,5 +32,9 @@ public abstract class Ontology {
         
     public static final Property property(String namespace, String local) {
         return ResourceFactory.createProperty(namespace, local);
+    }
+    
+    public static final Node nodeURI(URI uri) {
+        return NodeFactory.createURI(uri.toString());
     }
 }

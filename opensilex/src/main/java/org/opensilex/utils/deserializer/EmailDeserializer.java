@@ -14,6 +14,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.io.IOException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 
 /**
  *
@@ -37,7 +39,12 @@ public class EmailDeserializer
     public InternetAddress fromString(String value) throws AddressException {
         return new InternetAddress(value);
     }
-    
+
+    @Override
+    public Node getNode(Object value) throws Exception {
+        return NodeFactory.createLiteral(value.toString());
+    }
+
     private class EmailDeserializationException extends JsonProcessingException {
 
         private static final long serialVersionUID = 1L;

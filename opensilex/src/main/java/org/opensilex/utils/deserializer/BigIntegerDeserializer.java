@@ -6,6 +6,9 @@
 package org.opensilex.utils.deserializer;
 
 import java.math.BigInteger;
+import org.apache.jena.graph.Node;
+import org.apache.jena.sparql.expr.NodeValue;
+import org.apache.jena.sparql.expr.nodevalue.NodeValueInteger;
 
 /**
  *
@@ -16,5 +19,11 @@ public class BigIntegerDeserializer implements Deserializer<BigInteger> {
     @Override
     public BigInteger fromString(String value) throws Exception {
         return new BigInteger(value);
+    }
+
+    @Override
+    public Node getNode(Object value) throws Exception {
+        NodeValue v = new NodeValueInteger((BigInteger) value);
+        return v.asNode();
     }
 }

@@ -9,10 +9,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -72,8 +71,17 @@ public class ClassInfo {
         return clazz.isInterface();
     }
 
+    public static Class<?> getGenericTypeFromField(Field field) {
+        if (isGenericType(field.getGenericType())) {
+            ParameterizedType parameterized = (ParameterizedType) field.getGenericType();
+            return (Class<?>) ClassInfo.getGenericTypeParameter(parameterized);
+        }
+        
+        return null;
+    }
+    
     public static Class<?> getGenericTypeFromClass(Class<?> clazz) {
-        if (ClassInfo.isGenericType(clazz)) {
+        if (isGenericType(clazz)) {
             Type type = (Type) clazz;
             ParameterizedType parameterized = (ParameterizedType) type;
             return (Class<?>) ClassInfo.getGenericTypeParameter(parameterized);

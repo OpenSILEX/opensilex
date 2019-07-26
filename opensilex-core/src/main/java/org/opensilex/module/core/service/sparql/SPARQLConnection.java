@@ -22,28 +22,31 @@ import org.opensilex.service.ServiceConnection;
  * @author vincent
  */
 public interface SPARQLConnection extends ServiceConnection {
-    
+
     public boolean executeAskQuery(AskBuilder ask) throws SPARQLQueryException;
 
     public List<SPARQLResult> executeDescribeQuery(DescribeBuilder describe) throws SPARQLQueryException;
-    
+
     public List<SPARQLResult> executeConstructQuery(ConstructBuilder construct) throws SPARQLQueryException;
-    
+
     public List<SPARQLResult> executeSelectQuery(SelectBuilder select, Consumer<SPARQLResult> resultHandler) throws SPARQLQueryException;
 
     public default List<SPARQLResult> executeSelectQuery(SelectBuilder select) throws SPARQLQueryException {
         return executeSelectQuery(select, null);
     }
-    
+
     public void executeUpdateQuery(UpdateBuilder update) throws SPARQLQueryException;
+
+    public void executeDeleteQuery(UpdateBuilder update) throws SPARQLQueryException;
 
     public void clearGraph(Node graph) throws SPARQLQueryException;
 
+    public void clear() throws SPARQLQueryException;
+
     public void startTransaction() throws SPARQLTransactionException;
-    
+
     public void commitTransaction() throws SPARQLTransactionException;
-    
+
     public void rollbackTransaction() throws SPARQLTransactionException;
 
-    
 }

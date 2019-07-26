@@ -3,13 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.module.core.service.sparql;
+package org.opensilex.module.core.service.sparql.mapping;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.implementation.InvocationHandlerAdapter;
 import net.bytebuddy.matcher.ElementMatchers;
+import org.opensilex.module.core.service.sparql.SPARQLService;
 
 /**
  *
@@ -35,25 +36,30 @@ abstract class SPARQLProxy<T> implements InvocationHandler {
                 .make()
                 .load(Thread.currentThread().getContextClassLoader())
                 .getLoaded();
-        
-        try  {
+
+        try {
             return proxy.getConstructor().newInstance();
         } catch (Exception ex) {
             // TODO log error
         }
-        
+
         return null;
     }
 
     private boolean loaded = false;
 
-    @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+    protected T loadIfNeeded() throws Exception {
         if (!loaded) {
             instance = loadData();
             loaded = true;
         }
+        
+        return instance;
+    }
 
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        loadIfNeeded();
         return method.invoke(instance, args);
     }
 

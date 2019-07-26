@@ -3,15 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.module.core.service.sparql;
+package org.opensilex.module.core.service.sparql.mapping;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
-import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.rdf.model.Property;
-import org.opensilex.utils.deserializer.Deserializer;
-import org.opensilex.utils.deserializer.Deserializers;
+import org.opensilex.module.core.service.sparql.SPARQLService;
 
 /**
  *
@@ -23,12 +20,14 @@ abstract public class SPARQLProxyList<T> extends SPARQLProxy<List> {
     protected final URI uri;
     protected final Property property;
     protected final Class<T> genericType;
+    protected final boolean isReverseRelation;
 
-    public SPARQLProxyList(URI uri, Property property, Class<T> genericType, SPARQLService service) {
+    public SPARQLProxyList(URI uri, Property property, Class<T> genericType, boolean isReverseRelation, SPARQLService service) {
         super(List.class, service);
         this.property = property;
         this.uri = uri;
         this.genericType = genericType;
+        this.isReverseRelation = isReverseRelation;
     }
 
     @Override

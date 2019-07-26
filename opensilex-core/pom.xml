@@ -12,7 +12,7 @@
     <properties>
         <revision>1.0.0-SNAPSHOT</revision>
         <rdf4j.version>2.5.2</rdf4j.version>
-        <hibernate-ogm.version>5.4.1.Final</hibernate-ogm.version>
+        <data.nucleus.version>5.2.1</data.nucleus.version>
     </properties>
     
     <parent>
@@ -21,19 +21,6 @@
         <version>${revision}</version>
         <relativePath>../opensilex-parent/pom.xml</relativePath>
     </parent>
-    
-    <!-- Hibernate OGM support -->
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.hibernate.ogm</groupId>
-                <artifactId>hibernate-ogm-bom</artifactId>
-                <version>${hibernate-ogm.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
     
     <dependencies>
         <!-- OpenSilex Base -->
@@ -56,17 +43,29 @@
             <artifactId>byte-buddy</artifactId>
             <version>1.9.13</version>
         </dependency>
-        <!-- Hibernate OGM - MongoDB -->
+        <!-- DataNucleus - Big data object mapping -->
         <dependency>
-            <groupId>org.hibernate.javax.persistence</groupId>
-            <artifactId>hibernate-jpa-api-2.2-parent</artifactId>
-            <version>1.0.0.Beta2</version>
-            <type>pom</type>
+            <groupId>org.datanucleus</groupId>
+            <artifactId>datanucleus-core</artifactId>
+            <version>${data.nucleus.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.hibernate.ogm</groupId>
-            <artifactId>hibernate-ogm-mongodb</artifactId>
+            <groupId>org.datanucleus</groupId>
+            <artifactId>javax.jdo</artifactId>
+            <version>3.2.0-m12</version>
         </dependency>
+        <dependency>
+            <groupId>org.datanucleus</groupId>
+            <artifactId>datanucleus-api-jdo</artifactId>
+            <version>${data.nucleus.version}</version>
+        </dependency>
+        <!-- DataNucleus - MongoDB -->
+        <dependency>
+            <groupId>org.datanucleus</groupId>
+            <artifactId>datanucleus-mongodb</artifactId>
+            <version>5.2.0-release</version>
+        </dependency>
+        <!-- DataNucleus - JTA Transaction -->
         <dependency>
             <groupId>org.jboss.narayana.jta</groupId>
             <artifactId>narayana-jta</artifactId>

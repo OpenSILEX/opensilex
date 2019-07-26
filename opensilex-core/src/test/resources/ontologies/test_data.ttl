@@ -1,10 +1,34 @@
 @prefix test: <http://test.opensilex.org/>
 @prefix testA: <http://test.opensilex.org/a/>
 @prefix testB: <http://test.opensilex.org/b/>
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>
 
 testB:001
-    a test:B .
-
+    a test:B ;
+    test:hasInt -6 ;
+    test:hasLong "9"^^xsd:long ;
+    test:hasBoolean false ;
+    test:hasFloat "-2.425"^^xsd:float ;
+    test:hasDouble "3.5"^^xsd:double ;
+    test:hasChar "X" ;
+    test:hasShort "-2"^^xsd:short  ;
+    test:hasByte "-4"^^xsd:byte ;
+    test:hasStringList "A" ;
+    test:hasStringList "B" ;
+    test:hasStringList "C" ;
+    test:hasStringList "D" .
+    
 testA:001
     a test:A ;
-    test:hasALinkToB testB:001 .
+    test:hasRelationToB testB:001 ;
+    test:hasString "azerty" ;
+    test:hasInt 4 ;
+    test:hasLong "-5"^^xsd:long ;
+    test:hasBoolean true ;
+    test:hasFloat "3.25"^^xsd:float ;
+    test:hasDouble "-24.005"^^xsd:double ;
+    test:hasChar "Z" ;
+    test:hasShort "8"^^xsd:short  ;
+    test:hasByte "10"^^xsd:byte ;
+    test:hasDate "2017-12-10"^^xsd:date ;
+    test:hasDateTime "2017-05-01T09:30:10+06:00"^^xsd:dateTime .

@@ -3,9 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.module.core.service.sparql;
+package org.opensilex.module.core.service.sparql.mapping;
 
 import java.net.URI;
+import org.opensilex.module.core.service.sparql.SPARQLService;
 
 /**
  *

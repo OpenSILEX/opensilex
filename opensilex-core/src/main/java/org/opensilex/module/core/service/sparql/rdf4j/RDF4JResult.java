@@ -7,6 +7,7 @@ package org.opensilex.module.core.service.sparql.rdf4j;
 
 import java.util.function.BiConsumer;
 import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.Binding;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.opensilex.module.core.service.sparql.SPARQLResult;
@@ -31,7 +32,12 @@ public class RDF4JResult implements SPARQLResult {
 
     @Override
     public String getStringValue(String key) {
-        return bindingSet.getValue(key).stringValue();
+        Value binding = bindingSet.getValue(key);
+        if (binding == null) {
+            return null;
+        } else {
+            return bindingSet.getValue(key).stringValue();
+        }
     }
 
     @Override

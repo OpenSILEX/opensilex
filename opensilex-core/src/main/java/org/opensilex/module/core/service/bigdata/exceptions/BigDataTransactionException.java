@@ -3,15 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.module.core.service.nosql.exceptions;
+package org.opensilex.module.core.service.bigdata.exceptions;
 
 /**
  *
  * @author vincent
  */
-public class NoSQLTransactionException extends Exception {
+public class BigDataTransactionException extends Exception {
 
-    public NoSQLTransactionException(Exception ex) {
+    public BigDataTransactionException(Exception ex) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     

@@ -9,16 +9,16 @@ package org.opensilex.module.core.service.sparql.exceptions;
  *
  * @author vincent
  */
-public class SPARQLInvalidClassDescriptorException extends SPARQLException {
+public class SPARQLInvalidClassDefinitionException extends SPARQLException {
 
     private final Class<?> objectClass;
     
-    public SPARQLInvalidClassDescriptorException(Class<?> objectClass, String message) {
+    public SPARQLInvalidClassDefinitionException(Class<?> objectClass, String message) {
         super(message);
         this.objectClass = objectClass;
     }
         
-    public SPARQLInvalidClassDescriptorException(Class<?> objectClass, String message, Throwable cause) {
+    public SPARQLInvalidClassDefinitionException(Class<?> objectClass, String message, Throwable cause) {
         super(message, cause);
         this.objectClass = objectClass;
     }

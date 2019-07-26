@@ -13,8 +13,6 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Pattern;
 import javax.ws.rs.DefaultValue;
@@ -24,7 +22,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.glassfish.hk2.api.IterableProvider;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.view.brapi.Status;
@@ -57,9 +54,7 @@ public class CallsResourceService implements BrapiCall {
         Call call = new Call("calls", calldatatypes, callMethods, callVersions);
         calls.add(call);
         return calls;
-    }
-    
-
+    } 
 
     /**
      * Calls GET service.

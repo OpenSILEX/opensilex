@@ -59,7 +59,6 @@ import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.BrapiMultiResponseForm;
 import opensilex.service.view.brapi.form.BrapiSingleResponseForm;
-import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

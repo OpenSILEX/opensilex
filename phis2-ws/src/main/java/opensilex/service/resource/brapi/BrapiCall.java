@@ -9,9 +9,7 @@ package opensilex.service.resource.brapi;
 
 
 import java.util.ArrayList;
-
 import opensilex.service.model.Call;
-import org.jvnet.hk2.annotations.Contract;
 
 /**
  * Interface for dependency injection in order to get Calls attributes.
@@ -20,7 +18,6 @@ import org.jvnet.hk2.annotations.Contract;
  * TraitsResourceService as an example)
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
-@Contract
 public interface BrapiCall {
 
     ArrayList<Call> callInfo();

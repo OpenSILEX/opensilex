@@ -1133,7 +1133,7 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
     }
     
     /**
-     * Generates the count the number of projects that matches the given filter parameters.
+     * Counts the number of projects that matches the given filter parameters.
      * @param uri
      * @param name
      * @param shortname

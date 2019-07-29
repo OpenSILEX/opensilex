@@ -55,9 +55,7 @@ public class CallsResourceService implements BrapiCall {
         Call call = new Call("calls", calldatatypes, callMethods, callVersions);
         calls.add(call);
         return calls;
-    }
-    
-
+    } 
 
     /**
      * Calls GET service.

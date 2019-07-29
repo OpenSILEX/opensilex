@@ -148,7 +148,8 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         
         //foaf:homePage
         if (project.getHomePage() != null) {
-            spql.addInsert(graph, projectURI, FOAF.homepage, project.getHomePage());
+            Resource homePage = ResourceFactory.createResource(project.getHomePage());
+            spql.addInsert(graph, projectURI, FOAF.homepage, homePage);
         }
         
         //oeso:hasAdministrativeContact
@@ -613,7 +614,7 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         //SILEX:info 
         //Get the relation and its inverse.
         //\SILEX:info
-        query.appendToBody("<" + uri + "> <" + Oeso.RELATION_HAS_RELATED_PROJECT.toString() + ">/^<" + Oeso.RELATION_HAS_RELATED_PROJECT.toString() + "> ?" + RELATED_PROJECT_URI + " .");
+        query.appendToBody("<" + uri + "> <" + Oeso.RELATION_HAS_RELATED_PROJECT.toString() + "> ?" + RELATED_PROJECT_URI + " .");
         query.appendToBody(" ?" + RELATED_PROJECT_URI + " <" + Foaf.RELATION_NAME.toString() + "> ?" + RELATED_PROJECT_NAME);
         query.endBodyOptional();
         

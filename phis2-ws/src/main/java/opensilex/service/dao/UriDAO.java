@@ -196,10 +196,11 @@ public class UriDAO extends Rdf4jDAO<Uri> {
      * Searches instances by URI, concept
      * @return SPARQLQueryBuilder the query
      * query example :
-     * SELECT DISTINCT ?instance ?subclass 
+     * SELECT DISTINCT ?instance ?subclass ?label
      * WHERE { 
      *    ?subclass rdfs:subClassOf* <http://www.w3.org/ns/oa#Motivation> . 
      *    ?instance rdf:type ?subclass . 
+     *    ?instance rdfs:label ?label
      * }
      */
     protected SPARQLQueryBuilder prepareInstanceSearchQuery() {

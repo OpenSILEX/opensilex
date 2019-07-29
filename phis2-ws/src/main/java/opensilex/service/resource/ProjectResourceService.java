@@ -49,8 +49,6 @@ import opensilex.service.resource.dto.project.ProjectDTO;
 import opensilex.service.resource.dto.project.ProjectDetailDTO;
 import opensilex.service.resource.dto.project.ProjectPostDTO;
 import opensilex.service.resource.dto.project.ProjectPutDTO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Project resource service.

@@ -334,7 +334,7 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
         for (Experiment experiment : experiments) {
             //1. Get projects linked to the experiment
             SQLQueryBuilder query = new SQLQueryBuilder();
-            query.appendSelect("tp.uri");
+            query.appendSelect("tp.project_uri");
             query.appendFrom("at_trial_project", "tp");
             query.appendANDWhereConditionIfNeeded("trial_uri", experiment.getUri(), "=", null, "tp");
             
@@ -342,7 +342,7 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
             ProjectDAO projectDAO = new ProjectDAO();
             while (queryResult.next()) {
                 Project project = new Project();
-                project.setUri(queryResult.getString("uri"));
+                project.setUri(queryResult.getString("project_uri"));
                 
                 //2. Get project shortname
                 project.setShortname(projectDAO.getShortnameFromURI(project.getUri()));

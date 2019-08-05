@@ -1,41 +1,50 @@
 //******************************************************************************
-//                                    Project.java 
+//                                Project.java
 // SILEX-PHIS
-// Copyright © INRA 2017
-// Creation date: March 2017
+// Copyright © INRA 2019
+// Creation date: 9 juil. 2019
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.model;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Project model.
+ *
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class Project {
+    //URI of the project
     private String uri;
+    //Foaf:name of the project
     private String name;
-    private String acronyme;
-    private String subprojectType;
-    private String financialSupport;
-    private String financialName;
-    private String dateStart;
-    private String dateEnd;
-    private String keywords;
+    //Shortname of the project
+    private String shortname;
+    //Projects related to the current project
+    private List<RdfResourceDefinition> relatedProjects = new ArrayList<>();
+    //Financial support of the project
+    private RdfResourceDefinition financialFunding;
+    //Financial reference of the project
+    private String financialReference;
+    //dcterms:description of the project
     private String description;
+    //Start date of the project
+    private String startDate;
+    //End date of the project
+    private String endDate;
+    //Keywords of the project
+    private List<String> keywords = new ArrayList<>();
+    //Foaf:homePage of the project
+    private String homePage;
+    //Administrative contacts of the project
+    private List<Contact> administrativeContacts = new ArrayList<>();
+    //Coordinators of the project
+    private List<Contact> coordinators = new ArrayList<>();
+    //Scientific contacts of the project
+    private List<Contact> scientificContacts = new ArrayList<>();
+    //Objective of the project
     private String objective;
-    private String parentProject;
-    private String website;
-    
-    private ArrayList<Contact> contacts = new ArrayList<>();
-    
-    public Project() {
-    }
-    
-    public Project(String uri) {
-        this.uri = uri;
-    }
 
     public String getUri() {
         return uri;
@@ -53,60 +62,56 @@ public class Project {
         this.name = name;
     }
 
-    public String getAcronyme() {
-        return acronyme;
+    public String getShortname() {
+        return shortname;
     }
 
-    public void setAcronyme(String acronyme) {
-        this.acronyme = acronyme;
+    public void setShortname(String shortname) {
+        this.shortname = shortname;
     }
 
-    public String getSubprojectType() {
-        return subprojectType;
+    public List<RdfResourceDefinition> getRelatedProjects() {
+        return relatedProjects;
     }
 
-    public void setSubprojectType(String subprojectType) {
-        this.subprojectType = subprojectType;
+    public void setRelatedProjects(List<RdfResourceDefinition> relatedProjects) {
+        this.relatedProjects = relatedProjects;
+    }
+    
+    public void addRelatedProject(RdfResourceDefinition relatedProject) {
+        relatedProjects.add(relatedProject);
+    }
+    
+    /**
+     * Check if the given uri is a project related to the current project. 
+     * @param projectUri
+     * @return true if related projects contains the given uri, 
+     *         false if the given project uri is not in relatedProject list.
+     */
+    public boolean containsRelatedProject(String projectUri) {
+        for (RdfResourceDefinition project : relatedProjects) {
+            if (project.getUri().equals(projectUri)) {
+                return true;
+            }
+        }
+            
+        return false;
     }
 
-    public String getFinancialSupport() {
-        return financialSupport;
+    public RdfResourceDefinition getFinancialFunding() {
+        return financialFunding;
     }
 
-    public void setFinancialSupport(String financialSupport) {
-        this.financialSupport = financialSupport;
+    public void setFinancialFunding(RdfResourceDefinition financialFunding) {
+        this.financialFunding = financialFunding;
     }
 
-    public String getFinancialName() {
-        return financialName;
+    public String getFinancialReference() {
+        return financialReference;
     }
 
-    public void setFinancialName(String financialName) {
-        this.financialName = financialName;
-    }
-
-    public String getDateStart() {
-        return dateStart;
-    }
-
-    public void setDateStart(String dateStart) {
-        this.dateStart = dateStart;
-    }
-
-    public String getDateEnd() {
-        return dateEnd;
-    }
-
-    public void setDateEnd(String dateEnd) {
-        this.dateEnd = dateEnd;
-    }
-
-    public String getKeywords() {
-        return keywords;
-    }
-
-    public void setKeywords(String keywords) {
-        this.keywords = keywords;
+    public void setFinancialReference(String financialReference) {
+        this.financialReference = financialReference;
     }
 
     public String getDescription() {
@@ -117,56 +122,131 @@ public class Project {
         this.description = description;
     }
 
+    public String getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(String startDate) {
+        this.startDate = startDate;
+    }
+
+    public String getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(String endDate) {
+        this.endDate = endDate;
+    }
+
+    public List<String> getKeywords() {
+        return keywords;
+    }
+    
+    public void addKeyword(String keyword) {
+        keywords.add(keyword);
+    }
+
+    public void setKeywords(List<String> keywords) {
+        this.keywords = keywords;
+    }
+
+    public String getHomePage() {
+        return homePage;
+    }
+
+    public void setHomePage(String homePage) {
+        this.homePage = homePage;
+    }
+
+    public List<Contact> getAdministrativeContacts() {
+        return administrativeContacts;
+    }
+    
+    /**
+     * Check if the given uri is in the administrative contact list. 
+     * @param contactUri
+     * @return true if administrative contact contains the given uri, 
+     *         false if the given uri is not in administrative contact.
+     */
+    public boolean containsAdministrativeContact(String contactUri) {
+        for (Contact contact : administrativeContacts) {
+            if (contact.getUri().equals(contactUri)) {
+                return true;
+            }
+        }
+            
+        return false;
+    }
+
+    public void setAdministrativeContacts(List<Contact> administrativeContacts) {
+        this.administrativeContacts = administrativeContacts;
+    }
+    
+    public void addAdministrativeContact(Contact admisitrativeContact) {
+        administrativeContacts.add(admisitrativeContact);
+    }
+
+    public List<Contact> getCoordinators() {
+        return coordinators;
+    }
+
+    public void setCoordinators(List<Contact> coordinators) {
+        this.coordinators = coordinators;
+    }
+    
+    public void addCoordinator(Contact coordinator) {
+        coordinators.add(coordinator);
+    }
+    
+    /**
+     * Check if the given uri is in the coordinators list. 
+     * @param contactUri
+     * @return true if coordinators contains the given uri, 
+     *         false if the given uri is not in coordinators list.
+     */
+    public boolean containsCoordinator(String contactUri) {
+        for (Contact contact : coordinators) {
+            if (contact.getUri().equals(contactUri)) {
+                return true;
+            }
+        }
+            
+        return false;
+    }
+
+    public List<Contact> getScientificContacts() {
+        return scientificContacts;
+    }
+
+    public void setScientificContacts(List<Contact> scientificContacts) {
+        this.scientificContacts = scientificContacts;
+    }
+    
+    public void addScientificContact(Contact scientificContact) {
+        scientificContacts.add(scientificContact);
+    }
+
+    /**
+     * Check if the given uri is in the scientific contact list. 
+     * @param contactUri
+     * @return true if scientific contacts contains the given uri, 
+     *         false if the given uri is not in scientific contacts list.
+     */
+    public boolean containsScientificContact(String contactUri) {
+        for (Contact contact : scientificContacts) {
+            if (contact.getUri().equals(contactUri)) {
+                return true;
+            }
+        }
+            
+        return false;
+    }
+    
     public String getObjective() {
         return objective;
     }
 
     public void setObjective(String objective) {
         this.objective = objective;
-    }
-
-    public String getParentProject() {
-        return parentProject;
-    }
-
-    public void setParentProject(String parentProject) {
-        this.parentProject = parentProject;
-    }
-
-    public String getWebsite() {
-        return website;
-    }
-
-    public void setWebsite(String website) {
-        this.website = website;
-    }
-
-    public ArrayList<Contact> getContacts() {
-        return contacts;
-    }
-    
-    public void addContact(Contact contact) {
-        this.contacts.add(contact);
-    }
-    
-    /**
-     * Compares to another project. Compares attributes one by one.
-     * @param project Project to compare with
-     * @return true if equal, false otherwise
-     */
-    public boolean equals(Project project) {
-        return this.uri.equals(project.uri)
-            && this.name.equals(project.name)
-            && this.acronyme.equals(project.acronyme)
-            && this.subprojectType.equals(project.subprojectType)
-            && this.financialSupport.equals(project.financialSupport)
-            && this.financialName.equals(project.financialName)
-            && this.dateStart.equals(project.dateStart)
-            && this.dateEnd.equals(project.dateEnd)
-            && this.keywords.equals(project.keywords)
-            && this.description.equals(project.description)
-            && this.objective.equals(project.objective)
-            && this.parentProject.equals(project.parentProject)
-            && this.website.equals(project.website);
     }
 }

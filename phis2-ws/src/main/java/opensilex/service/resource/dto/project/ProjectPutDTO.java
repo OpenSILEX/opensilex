@@ -1,8 +1,8 @@
 //******************************************************************************
-//                                ProjectPostDTO.java
+//                                ProjectPutDTO.java
 // SILEX-PHIS
 // Copyright © INRA 2019
-// Creation date: 11 juil. 2019
+// Creation date: 12 juil. 2019
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.resource.dto.project;
@@ -22,12 +22,13 @@ import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
 
 /**
- * The DTO for the POST of projects.
- * @see ProjectResourceService#post(java.util.ArrayList, javax.servlet.http.HttpServletRequest) 
+ * The DTO for the PUT projects service.
+ * @see ProjectResourceService#put(java.util.ArrayList, javax.servlet.http.HttpServletRequest) 
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class ProjectPostDTO extends AbstractVerifiedClass {
-
+public class ProjectPutDTO extends AbstractVerifiedClass {
+    //URI of the project to update.
+    private String uri;
     //The name of the project.
     private String name;
     //A shortname for the project
@@ -59,6 +60,7 @@ public class ProjectPostDTO extends AbstractVerifiedClass {
     @Override
     public Project createObjectFromDTO() {
         Project project = new Project();
+        project.setUri(uri);
         project.setName(name);
         project.setShortname(shortname);
         
@@ -100,6 +102,15 @@ public class ProjectPostDTO extends AbstractVerifiedClass {
         project.setObjective(objective);
         
         return project;
+    }
+
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROJECT_URI)
+    public String getUri() {
+        return uri;
+    }
+
+    public void setUri(String uri) {
+        this.uri = uri;
     }
 
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROJECT_FINANCIAL_REFERENCE)

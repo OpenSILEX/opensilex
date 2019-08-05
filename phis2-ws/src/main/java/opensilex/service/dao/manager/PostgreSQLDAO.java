@@ -66,7 +66,7 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
     protected static final String SQL_SELECT_QUERY = "SQL query : ";
     
     protected Integer page;
-    protected Integer pageSize;
+    protected Integer pageSize = 20;
     
     /**
      * DAO main table

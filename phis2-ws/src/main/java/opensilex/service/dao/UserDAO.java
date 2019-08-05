@@ -196,6 +196,9 @@ public class UserDAO extends PhisDAO<User, UserDTO> {
             if (result.next()) {
                 valid = true;
             }
+            if (con != null) {
+                con.close();
+            }
 
         } catch (SQLException ex) {
             LOGGER.error(ex.getMessage(), ex);
@@ -300,6 +303,7 @@ public class UserDAO extends PhisDAO<User, UserDTO> {
         createSQLFields.put("orcid", "orcid");
         createSQLFields.put("admin", "isadmin");
         createSQLFields.put("available", "available");
+        createSQLFields.put("uri", "uri");
 
         return createSQLFields;
     }
@@ -423,6 +427,8 @@ public class UserDAO extends PhisDAO<User, UserDTO> {
             query.appendLimit(String.valueOf(pageSize));
             query.appendOffset(Integer.toString(this.getPage() * this.getPageSize()));
 
+            LOGGER.debug(query.toString());
+            
             queryResult = statement.executeQuery(query.toString());
 
             while (queryResult.next()) {
@@ -895,7 +901,14 @@ public class UserDAO extends PhisDAO<User, UserDTO> {
 
     @Override
     public User findById(String id) throws DAOPersistenceException, Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        uri = id;
+        ArrayList<User> users = allPaginate();
+        
+        if (users.size() ==  1) {
+            return users.get(0);
+        } else {
+            return null;
+        }
     }
 
     @Override

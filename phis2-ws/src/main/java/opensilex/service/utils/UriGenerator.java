@@ -89,6 +89,7 @@ public class UriGenerator {
     private static final String PLATFORM_URI_ID_VARIETY = PLATFORM_URI + "v/";
     private static final String PLATFORM_URI_ID_PROVENANCE = PLATFORM_URI_ID + "provenance/";
     public static final String PLATFORM_URI_ID_GERMPLASM = PLATFORM_URI_ID + "germplasm/";
+    private static final String PLATFORM_URI_ID_ACCESSION = PLATFORM_URI_ID + "accession/";
     
     private static final String EXPERIMENT_URI_SEPARATOR = "-";
 
@@ -405,6 +406,10 @@ public class UriGenerator {
     private static String generateVarietyUri(String variety) {
         return PLATFORM_URI_ID_VARIETY + variety.toLowerCase();
     }
+    
+    private static String generateAccessionUri(String accessionNumber) {
+        return PLATFORM_URI_ID_ACCESSION + accessionNumber;
+    }
 
     /**
      * Generates a new agent URI. A agent URI follows the pattern:
@@ -698,6 +703,8 @@ public class UriGenerator {
             return generateAgronomicalObjectUri(year);
         } else if (Oeso.CONCEPT_VARIETY.toString().equals(instanceType)) {
             return generateVarietyUri(additionalInformation);
+        } else if (Oeso.CONCEPT_ACCESSION.toString().equals(instanceType)) {
+            return generateAccessionUri(additionalInformation);
         } else if (uriDao.isSubClassOf(instanceType, Oeso.CONCEPT_IMAGE.toString())) {
             return generateImageUri(year, additionalInformation);
         } else if (instanceType.equals(Foaf.CONCEPT_AGENT.toString()) 

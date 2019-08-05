@@ -7,7 +7,6 @@
 //******************************************************************************
 package opensilex.service.resource.dto.germplasm;
 
-import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import opensilex.service.model.Germplasm;
 import opensilex.service.resource.dto.experiment.ExperimentDTO;
@@ -52,18 +51,13 @@ public class GermplasmDTO extends AbstractVerifiedClass {
 
     public GermplasmDTO(Germplasm germplasm) {
         accessionNumber = germplasm.getAccessionNumber();
-        biologicalStatusOfAccessionCode = germplasm.getBiologicalStatusOfAccessionCode();
-        commonCropName = germplasm.getCommonCropName();
-        documentationURL = germplasm.getDocumentationURL();
-        genus = germplasm.getGenus();
-        germplasmGenus = germplasm.getGenus();
-        germplasmDbId = germplasm.getGermplasmDbId();
-        germplasmSpecies = germplasm.getSpecies();
-        instituteCode = germplasm.getInstituteCode();
-        instituteName = germplasm.getInstituteName();
-        species = germplasm.getSpecies();
-        subtaxa = germplasm.getSubtaxa();
-        synonyms = germplasm.getSynonyms();   
+
+        //genus = germplasm.getGenus();
+        //germplasmGenus = germplasm.getGenus();
+        germplasmDbId = germplasm.getGermplasmURI();
+        germplasmSpecies = germplasm.getSpeciesURI();
+        species = germplasm.getSpeciesLabel();
+        subtaxa = germplasm.getVarietyLabel(); 
     }
 
     public String getAccessionNumber() {

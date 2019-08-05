@@ -27,6 +27,12 @@ public enum Oeso {
             return NAMESPACE.toString() + "ScientificObject";
         }
     },
+    CONCEPT_ACCESSION {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "Accession";
+        }
+    },
     CONCEPT_ACTUATOR {
         @Override
         public String toString() {
@@ -252,10 +258,10 @@ public enum Oeso {
             return NAMESPACE.toString() + "hasVariety";
         }
     },
-     RELATION_HAS_ACCESSION_NUMBER {
+     RELATION_HAS_ACCESSION{
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "hasAccessionNumber";
+            return NAMESPACE.toString() + "hasAccession";
         }
     },
     RELATION_HAS_ACQUISITION_DATE {

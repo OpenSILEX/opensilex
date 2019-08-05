@@ -90,10 +90,7 @@ public class GermplasmResourceService extends ResourceService {
         
         if (germplasm != null && !germplasm.isEmpty()) {
             GermplasmDAO germplasmDAO = new GermplasmDAO();
-            
-            if (context.getRemoteAddr() != null) {
-                germplasmDAO.remoteUserAdress = context.getRemoteAddr();
-            }
+
             
             germplasmDAO.user = userSession.getUser();
             
@@ -161,7 +158,7 @@ public class GermplasmResourceService extends ResourceService {
         //1. Get count
         Integer totalCount = germplasmDAO.count(uri, germplasmName, accessionNumber, genus, species, variety, instituteCode, instituteName);
         
-        //2. Get sensors
+        //2. Get germplasms
         ArrayList<Germplasm> germplasmFounded = germplasmDAO.find(page, pageSize, uri, germplasmName, accessionNumber, genus, species, variety, instituteCode, instituteName);
         
         //3. Return result

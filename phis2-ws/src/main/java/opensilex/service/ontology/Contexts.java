@@ -115,6 +115,27 @@ public enum Contexts {
         public String toString() {
             return PLATFORM.toString() + "germplasm"; 
         }
+    },
+    //The context which contains the germplasm
+    SPECIES {
+        @Override
+        public String toString() {
+            return PLATFORM.toString() + "species"; 
+        }
+    },
+    //The context which contains the germplasm
+    VARIETY {
+        @Override
+        public String toString() {
+            return PLATFORM.toString() + "variety"; 
+        }
+    },
+    //The context which contains the germplasm
+    ACCESSION {
+        @Override
+        public String toString() {
+            return PLATFORM.toString() + "accession"; 
+        }
     }
 }
 

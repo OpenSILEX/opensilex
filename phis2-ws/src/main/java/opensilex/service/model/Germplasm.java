@@ -14,30 +14,46 @@ import java.util.ArrayList;
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class Germplasm {
+    private String germplasmURI;
     private String accessionNumber;
-    //private String acquisitionDate;
-    private String biologicalStatusOfAccessionCode;
-    //private String breedingMethodDbId;
-    private String commonCropName;
-    //private String countryOfOrigin;
-    //private String defaultDisplayName;
-    private String documentationURL;
-    //private ArrayList<String> donors;
-    private String genus;
-    private String germplasmDbId;  //uri
-    private String germplasmName;
-    //private String germplasmPUI;
-    private String instituteCode;
-    private String instituteName;
-    //private String pedigree;
-    //private String seedsource;    
-    private String species;
-    //private String speciesAuthority;
-    private String subtaxa; //variety
-    //private String subtaxaAuthority;
-    private ArrayList<String> synonyms;
-    //private ArrayList<String> taxonIds;
-    //private ArrayList<String> typeOfGermplasmStorageCode;
+    private String accessionURI;
+    private String varietyLabel;
+    private String varietyURI;
+    private String speciesURI;
+    private String speciesLabel;
+
+    
+    public String getGermplasmURI() {
+        return germplasmURI;
+    }
+
+//    //private String acquisitionDate;
+//    private String biologicalStatusOfAccessionCode;
+//    //private String breedingMethodDbId;
+//    private String commonCropName;
+//    //private String countryOfOrigin;
+//    //private String defaultDisplayName;
+//    private String documentationURL;
+//    //private ArrayList<String> donors;
+//    private String genus;
+//    private String germplasmDbId;  //uri
+//    private String germplasmName;
+//    //private String germplasmPUI;
+//    private String instituteCode;
+//    private String instituteName;
+//    //private String pedigree;
+//    //private String seedsource;    
+//    private String species;
+//    //private String speciesAuthority;
+//    
+//    //private String subtaxaAuthority;
+//    private ArrayList<String> synonyms;
+//    //private ArrayList<String> taxonIds;
+//    //private ArrayList<String> typeOfGermplasmStorageCode;
+    
+    public void setGermplasmURI(String germplasmURI) {
+        this.germplasmURI = germplasmURI;
+    }
 
     public String getAccessionNumber() {
         return accessionNumber;
@@ -47,92 +63,44 @@ public class Germplasm {
         this.accessionNumber = accessionNumber;
     }
 
-    public String getBiologicalStatusOfAccessionCode() {
-        return biologicalStatusOfAccessionCode;
+    public String getAccessionURI() {
+        return accessionURI;
     }
 
-    public void setBiologicalStatusOfAccessionCode(String biologicalStatusOfAccessionCode) {
-        this.biologicalStatusOfAccessionCode = biologicalStatusOfAccessionCode;
+    public void setAccessionURI(String accessionURI) {
+        this.accessionURI = accessionURI;
     }
 
-    public String getCommonCropName() {
-        return commonCropName;
+    public String getVarietyLabel() {
+        return varietyLabel;
     }
 
-    public void setCommonCropName(String commonCropName) {
-        this.commonCropName = commonCropName;
+    public void setVarietyLabel(String varietyLabel) {
+        this.varietyLabel = varietyLabel;
     }
 
-    public String getDocumentationURL() {
-        return documentationURL;
+    public String getVarietyURI() {
+        return varietyURI;
     }
 
-    public void setDocumentationURL(String documentationURL) {
-        this.documentationURL = documentationURL;
+    public void setVarietyURI(String varietyURI) {
+        this.varietyURI = varietyURI;
     }
 
-    public String getGenus() {
-        return genus;
+    public String getSpeciesURI() {
+        return speciesURI;
     }
 
-    public void setGenus(String genus) {
-        this.genus = genus;
+    public void setSpeciesURI(String speciesURI) {
+        this.speciesURI = speciesURI;
     }
 
-    public String getGermplasmDbId() {
-        return germplasmDbId;
+    public String getSpeciesLabel() {
+        return speciesLabel;
     }
 
-    public void setGermplasmDbId(String germplasmDbId) {
-        this.germplasmDbId = germplasmDbId;
-    }
-
-    public String getGermplasmName() {
-        return germplasmName;
-    }
-
-    public void setGermplasmName(String germplasmName) {
-        this.germplasmName = germplasmName;
-    }
-
-    public String getInstituteCode() {
-        return instituteCode;
-    }
-
-    public void setInstituteCode(String instituteCode) {
-        this.instituteCode = instituteCode;
-    }
-
-    public String getInstituteName() {
-        return instituteName;
-    }
-
-    public void setInstituteName(String instituteName) {
-        this.instituteName = instituteName;
-    }
-
-    public String getSpecies() {
-        return species;
-    }
-
-    public void setSpecies(String species) {
-        this.species = species;
-    }
-
-    public String getSubtaxa() {
-        return subtaxa;
-    }
-
-    public void setSubtaxa(String subtaxa) {
-        this.subtaxa = subtaxa;
-    }
-
-    public ArrayList<String> getSynonyms() {
-        return synonyms;
-    }
-
-    public void setSynonyms(ArrayList<String> synonyms) {
-        this.synonyms = synonyms;
-    }       
+    public void setSpeciesLabel(String speciesLabel) {
+        this.speciesLabel = speciesLabel;
+    }   
     
 }

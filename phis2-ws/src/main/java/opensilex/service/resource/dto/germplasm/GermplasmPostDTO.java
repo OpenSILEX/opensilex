@@ -9,7 +9,10 @@ package opensilex.service.resource.dto.germplasm;
 
 import java.util.ArrayList;
 import opensilex.service.model.Germplasm;
+import opensilex.service.ontology.Oeso;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
+import opensilex.service.utils.UriGenerator;
+import static org.apache.jena.util.FileUtils.isURI;
 
 /**
  * GermplasmPostDTO
@@ -18,46 +21,79 @@ import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 public class GermplasmPostDTO extends AbstractVerifiedClass {
     /*voir https://www.genesys-pgr.org/fr/doc/0/basics*/
     
+    private String accessionURI;
     private String accessionNumber;
-//    private String acquisitionDate;
-    private String biologicalStatusOfAccessionCode;
-//    private String breedingMethodDbId;
-    private String commonCropName;
-//    private String countryOfOrigin;
-//    private String defaultDisplayName;
-    private String documentationURL; //webSite page to the accession information
-//    private String donors;
-    private String genus;
-    private String germplasmName;
-//    private String germplasmPUI;
+    private String varietyURI; 
+    private String varietyLabel; 
+    private String speciesURI;
     private String instituteCode;
     private String instituteName;
-//    private String pedigree;
-//    private String seedsource;    
-    private String species;
-//    private String speciesAuthority;
-    private String subtaxa; //variety
-//    private String subtaxaAuthority;
-    private ArrayList<String> synonyms;
-//    private ArrayList<String> taxonIds;
-//    private ArrayList<String> typeOfGermplasmStorageCode; 
+    
+
 
 
     @Override
     public Germplasm createObjectFromDTO() throws Exception {
+        boolean annotationInsert = true;
         Germplasm germplasm = new Germplasm();
-        germplasm.setAccessionNumber(accessionNumber);
-        germplasm.setBiologicalStatusOfAccessionCode(biologicalStatusOfAccessionCode);
-        germplasm.setDocumentationURL(documentationURL);
-        germplasm.setGenus(genus);
-        germplasm.setGermplasmName(germplasmName);
-        germplasm.setInstituteCode(instituteCode);
-        germplasm.setInstituteName(instituteName);
-        germplasm.setSpecies(species);
-        germplasm.setSubtaxa(subtaxa);
-        germplasm.setSynonyms(synonyms);
         
+        if (accessionURI != null) {
+            germplasm.setAccessionURI(accessionURI);             
+        } else {
+            if (accessionNumber != null) {   
+                try {
+                    accessionURI = UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_ACCESSION.toString(), null, accessionNumber);
+                    germplasm.setAccessionURI(accessionURI);
+                } catch (Exception ex) { //In the sensors case, no exception should be raised
+                    annotationInsert = false;
+                }
+            }
+        }
+        
+        if (accessionNumber != null) {   
+            germplasm.setAccessionNumber(accessionNumber);
+        }              
+
+        if (varietyURI != null) {
+            germplasm.setVarietyURI(varietyURI);
+        } else {
+            if (varietyLabel != null) {
+                try {
+                    varietyURI = UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_VARIETY.toString(), null, varietyLabel);
+                    germplasm.setVarietyURI(varietyURI);
+                } catch (Exception ex) { //In the sensors case, no exception should be raised
+                    annotationInsert = false;
+                }
+            }            
+        }        
+        
+        if (varietyLabel != null) {
+            germplasm.setVarietyLabel(varietyLabel);
+        }
+        
+        if (speciesURI != null) {
+            germplasm.setSpeciesURI(speciesURI);
+        }        
+        
+        if (accessionURI != null) {
+            germplasm.setGermplasmURI(accessionURI);
+        } else {
+            if (varietyURI != null) {
+                germplasm.setGermplasmURI(varietyURI);
+            } else {
+                germplasm.setGermplasmURI(speciesURI);
+            }
+        }
+         
         return germplasm;
+    }
+
+    public String getAccessionURI() {
+        return accessionURI;
+    }
+
+    public void setAccessionURI(String accessionURI) {
+        this.accessionURI = accessionURI;
     }
 
     public String getAccessionNumber() {
@@ -68,44 +104,28 @@ public class GermplasmPostDTO extends AbstractVerifiedClass {
         this.accessionNumber = accessionNumber;
     }
 
-    public String getBiologicalStatusOfAccessionCode() {
-        return biologicalStatusOfAccessionCode;
+    public String getVarietyURI() {
+        return varietyURI;
     }
 
-    public void setBiologicalStatusOfAccessionCode(String biologicalStatusOfAccessionCode) {
-        this.biologicalStatusOfAccessionCode = biologicalStatusOfAccessionCode;
+    public void setVarietyURI(String varietyURI) {
+        this.varietyURI = varietyURI;
     }
 
-    public String getCommonCropName() {
-        return commonCropName;
+    public String getVarietyLabel() {
+        return varietyLabel;
     }
 
-    public void setCommonCropName(String commonCropName) {
-        this.commonCropName = commonCropName;
+    public void setVarietyLabel(String varietyLabel) {
+        this.varietyLabel = varietyLabel;
     }
 
-    public String getDocumentationURL() {
-        return documentationURL;
+    public String getSpeciesURI() {
+        return speciesURI;
     }
 
-    public void setDocumentationURL(String documentationURL) {
-        this.documentationURL = documentationURL;
-    }
-
-    public String getGenus() {
-        return genus;
-    }
-
-    public void setGenus(String genus) {
-        this.genus = genus;
-    }
-
-    public String getGermplasmName() {
-        return germplasmName;
-    }
-
-    public void setGermplasmName(String germplasmName) {
-        this.germplasmName = germplasmName;
+    public void setSpeciesURI(String speciesURI) {
+        this.speciesURI = speciesURI;
     }
 
     public String getInstituteCode() {
@@ -124,28 +144,5 @@ public class GermplasmPostDTO extends AbstractVerifiedClass {
         this.instituteName = instituteName;
     }
 
-    public String getSpecies() {
-        return species;
-    }
-
-    public void setSpecies(String species) {
-        this.species = species;
-    }
-
-    public String getSubtaxa() {
-        return subtaxa;
-    }
-
-    public void setSubtaxa(String subtaxa) {
-        this.subtaxa = subtaxa;
-    }
-
-    public ArrayList<String> getSynonyms() {
-        return synonyms;
-    }
-
-    public void setSynonyms(ArrayList<String> synonyms) {
-        this.synonyms = synonyms;
-    }
-
+   
 }

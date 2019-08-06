@@ -89,7 +89,8 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         Call call3 = new Call("studies/{studyDbId}/observationvariables", calldatatypes, callMethods, callVersions);
         Call call4 = new Call("studies/{studyDbId}/observationunits", calldatatypes, callMethods, callVersions);      
         Call call5 = new Call("studies", calldatatypes, callMethods, callVersions);
-        Call call6 = new Call("observationvariables?studyDbId={studyDbId}", calldatatypes, callMethods, callVersions);
+        Call call6 = new Call("studies?studyDbId={studyDbId}", calldatatypes, callMethods, callVersions);
+        
         calls.add(call1);
         calls.add(call2);
         calls.add(call3);

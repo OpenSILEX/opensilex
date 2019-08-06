@@ -913,8 +913,8 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
                 
                 //The new projects are inserted. Get the list of uri of the projects.
                 List<String> insertedProjectsURIs = new ArrayList<>();
-                for (Project actuator : insertedProject) {
-                    insertedProjectsURIs.add(actuator.getUri());
+                for (Project project : insertedProject) {
+                    insertedProjectsURIs.add(project.getUri());
                 }
                 
                 insertResult = new POSTResultsReturn(Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
@@ -948,8 +948,8 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
                 
                 //The new projects are inserted. Get the list of uri of the projects.
                 List<String> updatedProjectsURIs = new ArrayList<>();
-                for (Project actuator : updatedProjects) {
-                    updatedProjectsURIs.add(actuator.getUri());
+                for (Project project : updatedProjects) {
+                    updatedProjectsURIs.add(project.getUri());
                 }
                 
                 updateResult = new POSTResultsReturn(Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
@@ -1132,7 +1132,7 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
     }
     
     /**
-     * Generates the count the number of projects that matches the given filter parameters.
+     * Counts the number of projects that matches the given filter parameters.
      * @param uri
      * @param name
      * @param shortname

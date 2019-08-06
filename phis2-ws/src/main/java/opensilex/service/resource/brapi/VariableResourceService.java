@@ -71,7 +71,7 @@ public class VariableResourceService extends ResourceService implements BrapiCal
         ArrayList<Call> calls = new ArrayList();
         
         //SILEX:info 
-        //Call GET Variable list
+        //Calls description
         ArrayList<String> calldatatypes = new ArrayList<>();
         calldatatypes.add("json");
         ArrayList<String> callMethods = new ArrayList<>();
@@ -79,21 +79,13 @@ public class VariableResourceService extends ResourceService implements BrapiCal
         ArrayList<String> callVersions = new ArrayList<>();
         callVersions.add("1.3");
         Call call1 = new Call("variables", calldatatypes, callMethods, callVersions);
-        //\SILEX:info 
-        
-        //SILEX:info 
-        //Call GET Variable details
-        ArrayList<String> calldatatypes2 = new ArrayList<>();
-        calldatatypes2.add("json");
-        ArrayList<String> callMethods2 = new ArrayList<>();
-        callMethods2.add("GET");
-        ArrayList<String> callVersions2 = new ArrayList<>();
-        callVersions2.add("1.3");
-        Call call2 = new Call("variables/{variables}", calldatatypes2, callMethods2, callVersions2);
-        //\SILEX:info 
+        Call call2 = new Call("variables/{variables}", calldatatypes, callMethods, callVersions);
+        Call call3 = new Call("observationvariables?studyDbId={studyDbId}", calldatatypes, callMethods, callVersions);
+        //\SILEX:info       
         
         calls.add(call1);
         calls.add(call2);
+        calls.add(call3);
         
         return calls;
     }

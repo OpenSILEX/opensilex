@@ -7,7 +7,6 @@
 //******************************************************************************
 package org.opensilex.server;
 
-import org.opensilex.OpenSilex;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -15,6 +14,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.WebResourceRoot;
@@ -22,7 +22,7 @@ import org.apache.catalina.startup.Tomcat;
 import org.apache.catalina.util.IOTools;
 import org.apache.catalina.webresources.StandardRoot;
 import org.apache.jasper.servlet.JasperInitializer;
-import org.glassfish.jersey.servlet.init.JerseyServletContainerInitializer;
+import org.opensilex.OpenSilex;
 import org.opensilex.utils.ClassInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,7 +114,6 @@ public class Server extends Tomcat {
             }
 
             Context context = addWebapp(contextPath, targetWar.getAbsolutePath());
-            JerseyServletContainerInitializer j;
             context.setContainerSciFilter("JerseyServletContainerInitializer");
             context.addServletContainerInitializer(new JasperInitializer(), null);
 

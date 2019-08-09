@@ -7,6 +7,7 @@
 //******************************************************************************
 package org.opensilex.module;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -22,6 +23,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+
+import org.apache.commons.io.IOUtils;
 import org.opensilex.OpenSilex;
 import org.opensilex.server.rest.RestApplication;
 import org.slf4j.Logger;
@@ -83,7 +86,7 @@ public abstract class Module {
 
     /**
      * This method is called during application initialization to get all
-     * packages to scan for components like request filters
+     * packages to scan for components like request filters or response mapper
      *
      * @return List of packages to scan
      */
@@ -123,7 +126,7 @@ public abstract class Module {
         try {
             URL sourceLocation = getClass().getProtectionDomain().getCodeSource().getLocation();
             String sourceLocationString = sourceLocation.toString();
-            LOGGER.debug(getClass().getCanonicalName() + " - Load config file from: " + sourceLocationString);
+            LOGGER.debug(getClass().getCanonicalName() + " - Load config file from: " + sourceLocationString + " looking for: " + yamlPath);
             
             if (sourceLocationString.endsWith(".jar")) {
 
@@ -132,9 +135,13 @@ public abstract class Module {
                 ZipEntry entry = zipFile.getEntry(yamlPath);
                 FileSystem fs = FileSystems.newFileSystem(Paths.get(jarFile.getAbsolutePath()), null);
                 Path cfgFile = fs.getPath(yamlPath);
+                InputStream stream  = null;
                 if (Files.exists(cfgFile)) {
-                    return zipFile.getInputStream(entry);
+                    byte[] byteArray = IOUtils.toByteArray(zipFile.getInputStream(entry));
+                    stream = new ByteArrayInputStream(byteArray); 
                 }
+                zipFile.close();
+                return stream;
 
             } else {
                 File cfgFile = Paths.get(sourceLocation.toURI().resolve(yamlPath)).toFile();

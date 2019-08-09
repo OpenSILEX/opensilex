@@ -8,13 +8,17 @@
     <version>${revision}</version>
 
     <name>opensilex-parent</name>
-    <url>http://maven.apache.org</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jersey.version>2.28</jersey.version>
         <jackson.version>2.9.8</jackson.version>
-        <revision>1.0.0-SNAPSHOT</revision>
+        <tomcat.version>9.0.21</tomcat.version>
+        <maven.resolver.version>1.3.3</maven.resolver.version>
+        <rdf4j.version>2.5.2</rdf4j.version>
+        <data.nucleus.version>5.2.1</data.nucleus.version>
+        <logback.version>1.2.3</logback.version>
+        <revision>4.0.0-SNAPSHOT</revision>
     </properties>
 
     <!-- Configuration profiles -->
@@ -72,26 +76,192 @@
     </dependencyManagement>
 
     <dependencies>
+        <!-- CLI -->
+        <dependency>
+            <groupId>info.picocli</groupId>
+            <artifactId>picocli</artifactId>
+            <version>4.0.1</version>
+        </dependency>
+        <!-- Embedded Tomcat Server -->
+        <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-core</artifactId>
+            <version>${tomcat.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-jasper</artifactId>
+            <version>${tomcat.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-el</artifactId>
+            <version>${tomcat.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-websocket</artifactId>
+            <version>${tomcat.version}</version>
+        </dependency>
+        <!-- Web app JS library Manage js file from maven @see http://www.webjars.org/documentation#servlet3 
+        The ressource namespace META-INF.resources.webjars.jquery.2.1.4 contains 
+        jquery.js the path is the same as the url namespace Ex : http://localhost:8080/phis2ws/webjars/jquery/2.1.4/jquery.js -->
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>swagger-ui</artifactId>
+            <version>2.2.10-1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>bootstrap</artifactId>
+            <version>3.3.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>jquery</artifactId>
+            <version>2.1.4</version>
+        </dependency>
+        <!-- Maven Dependency resolver -->
+        <dependency>
+            <groupId>org.apache.maven.resolver</groupId>
+            <artifactId>maven-resolver-api</artifactId>
+            <version>${maven.resolver.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.resolver</groupId>
+            <artifactId>maven-resolver-impl</artifactId>
+            <version>${maven.resolver.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.resolver</groupId>
+            <artifactId>maven-resolver-connector-basic</artifactId>
+            <version>${maven.resolver.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.resolver</groupId>
+            <artifactId>maven-resolver-transport-file</artifactId>
+            <version>${maven.resolver.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.resolver</groupId>
+            <artifactId>maven-resolver-transport-http</artifactId>
+            <version>${maven.resolver.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-resolver-provider</artifactId>
+            <version>3.6.0</version>
+        </dependency>
+        <!-- BCrypt -->
+        <dependency>
+            <groupId>at.favre.lib</groupId>
+            <artifactId>bcrypt</artifactId>
+            <version>0.8.0</version>
+        </dependency>
+        <!-- Proxy class library -->
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+            <version>1.9.13</version>
+        </dependency>
+        <!-- RDF4J -->
+        <dependency>
+            <groupId>org.eclipse.rdf4j</groupId>
+            <artifactId>rdf4j-client</artifactId>
+            <version>${rdf4j.version}</version>
+        </dependency>  
+        <!-- RDF4J Testing -->
+        <dependency>
+            <groupId>org.eclipse.rdf4j</groupId>
+            <artifactId>rdf4j-repository-sail</artifactId>
+            <version>${rdf4j.version}</version>
+            <scope>test</scope>
+        </dependency>  
+        <dependency>
+            <groupId>org.eclipse.rdf4j</groupId>
+            <artifactId>rdf4j-repository-http</artifactId>
+            <version>${rdf4j.version}</version>
+            <scope>test</scope>
+        </dependency>  
+        <dependency>
+            <groupId>org.eclipse.rdf4j</groupId>
+            <artifactId>rdf4j-sail-nativerdf</artifactId>
+            <version>${rdf4j.version}</version>
+            <scope>test</scope>
+        </dependency>  
+        <dependency>
+            <groupId>org.eclipse.rdf4j</groupId>
+            <artifactId>rdf4j-sail-memory</artifactId>
+            <version>${rdf4j.version}</version>
+            <scope>test</scope>
+        </dependency>  
+        <!-- DataNucleus - Big data object mapping -->
+        <dependency>
+            <groupId>org.datanucleus</groupId>
+            <artifactId>datanucleus-core</artifactId>
+            <version>${data.nucleus.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.datanucleus</groupId>
+            <artifactId>javax.jdo</artifactId>
+            <version>3.2.0-m12</version>
+        </dependency>
+        <dependency>
+            <groupId>org.datanucleus</groupId>
+            <artifactId>datanucleus-api-jdo</artifactId>
+            <version>${data.nucleus.version}</version>
+        </dependency>
+        <!-- DataNucleus - MongoDB -->
+        <dependency>
+            <groupId>org.datanucleus</groupId>
+            <artifactId>datanucleus-mongodb</artifactId>
+            <version>5.2.0-release</version>
+        </dependency>
+        <!-- DataNucleus - JTA Transaction -->
+        <dependency>
+            <groupId>org.jboss.narayana.jta</groupId>
+            <artifactId>narayana-jta</artifactId>
+            <version>5.9.5.Final</version>
+        </dependency>
+        <!-- JWT -->
+        <dependency>
+            <groupId>com.auth0</groupId>
+            <artifactId>java-jwt</artifactId>
+            <version>3.8.0</version>
+        </dependency>
+        <!-- Logger -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <version>${logback.version}</version>
+        </dependency>
+        <!-- allow condition evaluation in logback configuration file -->
+        <dependency>
+            <groupId>org.codehaus.janino</groupId>
+            <artifactId>janino</artifactId>
+            <version>3.0.12</version>
+        </dependency>
         <!-- Jersey -->
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
             <artifactId>jersey-container-servlet</artifactId>
-            <version>${jersey.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-json-jackson</artifactId>
-            <version>${jersey.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.inject</groupId>
             <artifactId>jersey-hk2</artifactId>
-            <version>${jersey.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-multipart</artifactId>
-            <version>${jersey.version}</version>
         </dependency>
         <!-- Jackson JSON & YAML -->
         <dependency>
@@ -133,7 +303,7 @@
             <artifactId>javax.mail</artifactId>
             <version>1.6.2</version>
         </dependency>
-        <!-- Logger-->
+        <!-- Logger -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -162,13 +332,11 @@
         <dependency>
             <groupId>org.glassfish.jersey.test-framework</groupId>
             <artifactId>jersey-test-framework-core</artifactId>
-            <version>${jersey.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.test-framework.providers</groupId>
             <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
-            <version>${jersey.version}</version>
             <scope>test</scope>
         </dependency>
         <!-- Unit tests mocking framework -->
@@ -186,13 +354,14 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
+                <version>3.8.1</version>
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
                 </configuration>
             </plugin>
-            <!-- Flatten pom (ie: merge with opensilex-parent) to allow single module build -->
+            <!-- Flatten pom (ie: merge with opensilex-parent) to allow single module 
+            build -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>flatten-maven-plugin</artifactId>
@@ -230,15 +399,15 @@
                         </goals>
                         <configuration>
                             <outputDirectory>${basedir}/target/classes</outputDirectory>
-                            <resources>          
+                            <resources>
                                 <resource>
                                     <directory>.</directory>
                                     <includes>
                                         <include>.flattened-pom.xml</include>
                                     </includes>
                                 </resource>
-                            </resources>              
-                        </configuration>            
+                            </resources>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -269,15 +438,35 @@
                 <configuration>
                     <services>
                         <param>org.opensilex.module.Module</param>
-                        <param>org.opensilex.utils.deserializer.Deserializer</param>
                         <param>org.opensilex.server.rest.RestApplicationAPI</param>
                         <param>org.opensilex.cli.SubCommand</param>
+                        <param>org.opensilex.sparql.deserializer.SPARQLDeserializer</param>
                     </services>
                 </configuration>
                 <executions>
                     <execution>
                         <goals>
                             <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Generate tests artifact -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.1.1</version>
+                <configuration>
+                    <forceCreation>true</forceCreation>
+                    <archive>
+                        <index>true</index>
+                    </archive>
+                    <skipIfEmpty>true</skipIfEmpty>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -331,7 +520,8 @@
                         </goals>
                         <configuration>
                             <fileSets>
-                                <fileSet implementation="org.apache.maven.shared.model.fileset.FileSet">
+                                <fileSet
+                                    implementation="org.apache.maven.shared.model.fileset.FileSet">
                                     <directory>${project.basedir}</directory>
                                     <includes>
                                         <include>**/*.exec</include>
@@ -343,33 +533,75 @@
                 </executions>
             </plugin>
             <!-- Generate UML Graph: require GraphViz to be installed -->
-            <!--            <plugin>                                                                         
-                <groupId>org.apache.maven.plugins</groupId>                                  
-                <artifactId>maven-javadoc-plugin</artifactId>                                
-                <version>3.1.0</version>  
-                <configuration>      
-                    <source>8</source>                                               
+            <!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-javadoc-plugin</artifactId> 
+            <version>3.1.0</version> <configuration> <source>8</source> </configuration> 
+            <executions> <execution> <id>attach-javadocs</id> <goals> <goal>jar</goal> 
+            </goals> <configuration> <doclet>nl.talsmasoftware.umldoclet.UMLDoclet</doclet> 
+            <docletArtifact> <groupId>nl.talsmasoftware</groupId> <artifactId>umldoclet</artifactId> 
+            <version>2.0.3</version> </docletArtifact> <additionalOptions> <additionalOption>...</additionalOption> 
+            </additionalOptions> </configuration> </execution> </executions> </plugin> -->
+            <plugin>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.8.2</version>
+                <dependencies>
+                    <dependency>
+                        <!-- Docs Maven Skin -->
+                        <groupId>com.bernardomg.maven.skins</groupId>
+                        <artifactId>docs-maven-skin</artifactId>
+                        <version>1.4.2</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <locales>en,fr</locales>
+                    <generateReports>true</generateReports>
+                    <inputEncoding>UTF-8</inputEncoding>
+                    <outputEncoding>UTF-8</outputEncoding>
+                    <!-- Site deployment done using GitHub site plugin -->
+                    <skipDeploy>true</skipDeploy>
                 </configuration>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <doclet>nl.talsmasoftware.umldoclet.UMLDoclet</doclet>
-                            <docletArtifact>
-                                <groupId>nl.talsmasoftware</groupId>
-                                <artifactId>umldoclet</artifactId>
-                                <version>2.0.3</version>
-                            </docletArtifact>
-                            <additionalOptions>
-                                <additionalOption>...</additionalOption>
-                            </additionalOptions>
-                        </configuration>
-                    </execution>
-                </executions>                                                   
-            </plugin>              -->
+            </plugin>
         </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>3.1.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.eclipse.m2e</groupId>
+                    <artifactId>lifecycle-mapping</artifactId>
+                    <version>1.0.0</version>
+                    <configuration>
+                        <lifecycleMappingMetadata>
+                            <pluginExecutions>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>org.codehaus.mojo</groupId>
+                                        <artifactId>flatten-maven-plugin</artifactId>
+                                        <versionRange>[1.0,)</versionRange>
+                                        <goals>
+                                            <goal>flatten</goal>
+                                            <goal>clean</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <execute />
+                                    </action>
+                                </pluginExecution>
+                            </pluginExecutions>
+                        </lifecycleMappingMetadata>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>3.0.0</version>
+            </plugin>
+        </plugins>
+    </reporting>
 </project>

@@ -5,7 +5,9 @@
  */
 package org.opensilex.service;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Parameter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -34,13 +36,30 @@ public class ServiceManager {
     public static Service getServiceInstance(ConfigManager configManager, ServiceConfig serviceConfig) throws
             NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         Class<? extends Service> serviceClass = serviceConfig.serviceClass();
+        
         Class<? extends ServiceConnection> connectionClass = serviceConfig.connectionClass();
-        String configId = serviceConfig.configId();
-        Class<?> configClass = serviceConfig.configClass();
+        
+        if (connectionClass == null) {
+            Constructor<? extends Service> constructor = serviceClass.getConstructor();
+            return constructor.newInstance();
+        } else {
+            String configId = serviceConfig.configId();
+            Class<?> configClass = serviceConfig.configClass();
 
-        Object config = configManager.loadConfig(configId, configClass);
-        ServiceConnection serviceConnection = connectionClass.getConstructor(configClass).newInstance(config);
-        return serviceClass.getConstructor(connectionClass).newInstance(serviceConnection);
+            Object config = configManager.loadConfig(configId, configClass);
+            ServiceConnection serviceConnection = connectionClass.getConstructor(configClass).newInstance(config);
+            for (Constructor<?> constructor : serviceClass.getConstructors()) {
+                if (constructor.getParameterCount() == 1) {
+                    Parameter parameter = constructor.getParameters()[0];
+                    if (parameter.getType().isInstance(serviceConnection)) {
+                        return (Service) constructor.newInstance(serviceConnection);
+                    }
+                }
+            }
+        }
+        
+        // TODO manage exception properly
+        throw new IllegalArgumentException("No constructor available for service");
     }
 
 }

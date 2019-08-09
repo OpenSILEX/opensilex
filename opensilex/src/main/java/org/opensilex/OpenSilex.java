@@ -7,13 +7,19 @@
 //******************************************************************************
 package org.opensilex;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.core.joran.spi.JoranException;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import org.opensilex.module.Module;
 import org.opensilex.config.ConfigManager;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import org.apache.commons.io.FileUtils;
 import org.opensilex.module.ModuleManager;
 import org.opensilex.service.ServiceManager;
 import org.slf4j.Logger;
@@ -44,10 +50,6 @@ public class OpenSilex {
      */
     public final static String DEV_PROFILE_ID = "dev";
 
-    public static OpenSilex getInstance() {
-        return getInstance(null, null, null);
-    }
-
     /**
      * Return OpenSilex application instance
      *
@@ -58,7 +60,7 @@ public class OpenSilex {
      * @return An instance of OpenSilex
      */
     public static OpenSilex getInstance(Path baseDirectory, String profileId, File configFile) {
-        if (baseDirectory == null) {
+        if (baseDirectory == null || baseDirectory.toString().equals("")) {
             baseDirectory = getBaseDirectory();
         }
 
@@ -75,6 +77,11 @@ public class OpenSilex {
                 configFile = new File(cfgPath);
             }
         }
+
+        File logConfigFile = baseDirectory.resolve("logback.xml").toFile();
+        loadLoggerConfig(logConfigFile, true);
+        File logProfileConfigFile = baseDirectory.resolve("logback-" + profileId + ".xml").toFile();
+        loadLoggerConfig(logProfileConfigFile, false);
 
         LOGGER.debug("Creating OpenSilex instance");
         LOGGER.debug("Base directory:" + baseDirectory.toFile().getAbsolutePath());
@@ -96,6 +103,24 @@ public class OpenSilex {
         return app;
     }
 
+    public static void loadLoggerConfig(File logConfigFile, boolean reset) {
+        if (logConfigFile.isFile()) {
+            try {
+                LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+                if (reset) {
+                    loggerContext.reset();                    
+                }
+                JoranConfigurator configurator = new JoranConfigurator();
+                configurator.setContext(loggerContext);
+                InputStream configStream = FileUtils.openInputStream(logConfigFile);
+                configurator.doConfigure(configStream); 
+                configStream.close();
+            } catch (JoranException | IOException ex) {
+                LOGGER.warn("Error while trying to load logback configuration file: " + logConfigFile.getAbsolutePath(), ex);
+            }
+        }
+    }
+    
     /**
      * Return default base directory ie: Content of "OPENSILEX_DIR" environment
      * variable otherwise constent of system property "user.dir"
@@ -174,8 +199,14 @@ public class OpenSilex {
      */
     public void init() {
         LOGGER.debug("Load modules with dependencies");
-        List<URL> modulesUrl = ModuleManager.listModulesURLs(baseDirectory);
-        moduleManager.loadModulesWithDependencies(modulesUrl);
+        List<URL> readDependencies = ModuleManager.readDependenciesList(baseDirectory);
+        if (readDependencies == null) {
+            List<URL> modulesUrl = ModuleManager.listModulesURLs(baseDirectory);
+            List<URL> dependencies = moduleManager.loadModulesWithDependencies(modulesUrl);
+            ModuleManager.writeDependenciesList(baseDirectory, dependencies);
+        } else {
+            moduleManager.registerDependencies(readDependencies);
+        }
 
         LOGGER.debug("Define modules application");
         moduleManager.setApplication(this);

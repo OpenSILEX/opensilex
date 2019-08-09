@@ -3,18 +3,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.opensilex</groupId>
     <artifactId>opensilex-dev-tools</artifactId>
     <packaging>jar</packaging>
-    <version>${revision}</version>
     
     <name>opensilex-dev-tools</name>
     <url>http://maven.apache.org</url>
 
-    <properties>
-        <revision>1.0.0-SNAPSHOT</revision>
-    </properties>
-    
     <parent>
         <groupId>org.opensilex</groupId>
         <artifactId>opensilex-dev</artifactId>
@@ -22,21 +16,4 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     
-    <dependencies>
-        <dependency>
-            <groupId>org.opensilex</groupId>
-            <artifactId>opensilex</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.opensilex</groupId>
-            <artifactId>opensilex-core</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.opensilex</groupId>
-            <artifactId>phis2ws</artifactId>
-            <version>${revision}</version>
-        </dependency>
-    </dependencies>
 </project>

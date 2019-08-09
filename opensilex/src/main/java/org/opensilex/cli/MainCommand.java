@@ -13,10 +13,9 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.IVersionProvider;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * 
+ * @author vincent
  */
 @Command(
         name = "opensilex",
@@ -37,14 +36,14 @@ public class MainCommand extends HelpPrinterCommand implements IVersionProvider 
             args = new String[]{"--help"};
         }
         CommandLine cli = new CommandLine(new MainCommand());
-        OpenSilex.getInstance();
+        OpenSilex.getInstance(null, null, null);
         ServiceLoader.load(SubCommand.class, Thread.currentThread().getContextClassLoader())
                 .forEach((SubCommand cmd) -> {
                     Command cmdDef = cmd.getClass().getAnnotation(CommandLine.Command.class);
                     cli.addSubcommand(cmdDef.name(), cmd);
                 });
         cli.setHelpFactory(new HelpFactory());
-        cli.parseWithHandler(new CommandLine.RunLast(), args);
+        cli.execute(args);
     }
 
     /**

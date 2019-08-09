@@ -9,11 +9,14 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -76,10 +79,10 @@ public class ClassInfo {
             ParameterizedType parameterized = (ParameterizedType) field.getGenericType();
             return (Class<?>) ClassInfo.getGenericTypeParameter(parameterized);
         }
-        
+
         return null;
     }
-    
+
     public static Class<?> getGenericTypeFromClass(Class<?> clazz) {
         if (isGenericType(clazz)) {
             Type type = (Type) clazz;
@@ -150,15 +153,46 @@ public class ClassInfo {
             pomStream.close();
             out.flush();
             out.close();
-
+            zipFile.close();
             return pom;
         } else {
             return Paths.get(
                     jarFile.getAbsolutePath()
-//                    URLDecoder.decode(jarFile.getAbsolutePath(), StandardCharsets.UTF_8.name())
+            //                    URLDecoder.decode(jarFile.getAbsolutePath(), StandardCharsets.UTF_8.name())
             ).resolve("opensilex-pom.xml").toFile();
         }
 
+    }
+
+    public static <T extends Annotation> T findClassAnnotationRecursivly(Class<?> objectClass, Class<T> annotationClass) {
+        Class<?> type = objectClass;
+        T annotation = null;
+        while (type != null) {
+            annotation = type.getAnnotation(annotationClass);
+            if (annotation != null) {
+                break;
+            }
+            type = type.getSuperclass();
+        }
+
+        return annotation;
+
+    }
+
+    public static List<Field> getClassFieldsRecursivly(Class<?> type) {
+        List<Field> fieldList = new ArrayList<>();
+        
+        getAllFields(fieldList, type);
+        
+        return fieldList;
+        
+    }
+    private static void getAllFields(List<Field> fields, Class<?> type) {
+        fields.addAll(Arrays.asList(type.getDeclaredFields()));
+
+        if (type.getSuperclass() != null) {
+            getAllFields(fields, type.getSuperclass());
+        }
     }
 
 }

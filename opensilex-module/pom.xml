@@ -1,0 +1,48 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>opensilex-module</artifactId>
+    <packaging>pom</packaging>
+
+    <name>opensilex-module</name>
+
+    <parent>
+        <groupId>org.opensilex</groupId>
+        <artifactId>opensilex-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>../opensilex-parent/pom.xml</relativePath>
+    </parent>
+    
+    <dependencies>
+        <!-- OpenSilex Base -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <!-- OpenSilex Base test -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+        </dependency>
+        <!-- OpenSilex Core -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-core</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <!-- OpenSilex Core test -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-core</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+        </dependency>
+    </dependencies>
+    
+</project>

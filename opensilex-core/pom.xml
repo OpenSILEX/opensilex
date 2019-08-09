@@ -1,18 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.opensilex</groupId>
     <artifactId>opensilex-core</artifactId>
     <packaging>jar</packaging>
     <name>opensilex-core</name>
-    <version>${revision}</version>
     
     <url>https://www.opensilex.org/</url>
     
     <properties>
-        <revision>1.0.0-SNAPSHOT</revision>
-        <rdf4j.version>2.5.2</rdf4j.version>
-        <data.nucleus.version>5.2.1</data.nucleus.version>
     </properties>
     
     <parent>
@@ -37,71 +32,7 @@
             <scope>test</scope>
             <classifier>tests</classifier>
         </dependency>
-        <!-- Proxy class library -->
-        <dependency>
-            <groupId>net.bytebuddy</groupId>
-            <artifactId>byte-buddy</artifactId>
-            <version>1.9.13</version>
-        </dependency>
-        <!-- DataNucleus - Big data object mapping -->
-        <dependency>
-            <groupId>org.datanucleus</groupId>
-            <artifactId>datanucleus-core</artifactId>
-            <version>${data.nucleus.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.datanucleus</groupId>
-            <artifactId>javax.jdo</artifactId>
-            <version>3.2.0-m12</version>
-        </dependency>
-        <dependency>
-            <groupId>org.datanucleus</groupId>
-            <artifactId>datanucleus-api-jdo</artifactId>
-            <version>${data.nucleus.version}</version>
-        </dependency>
-        <!-- DataNucleus - MongoDB -->
-        <dependency>
-            <groupId>org.datanucleus</groupId>
-            <artifactId>datanucleus-mongodb</artifactId>
-            <version>5.2.0-release</version>
-        </dependency>
-        <!-- DataNucleus - JTA Transaction -->
-        <dependency>
-            <groupId>org.jboss.narayana.jta</groupId>
-            <artifactId>narayana-jta</artifactId>
-            <version>5.9.5.Final</version>
-        </dependency>
-        <!-- RDF4J -->
-        <dependency>
-            <groupId>org.eclipse.rdf4j</groupId>
-            <artifactId>rdf4j-client</artifactId>
-            <version>${rdf4j.version}</version>
-        </dependency>  
-        <!-- RDF4J Testing -->
-        <dependency>
-            <groupId>org.eclipse.rdf4j</groupId>
-            <artifactId>rdf4j-repository-sail</artifactId>
-            <version>${rdf4j.version}</version>
-            <scope>test</scope>
-        </dependency>  
-        <dependency>
-            <groupId>org.eclipse.rdf4j</groupId>
-            <artifactId>rdf4j-repository-http</artifactId>
-            <version>${rdf4j.version}</version>
-            <scope>test</scope>
-        </dependency>  
-        <dependency>
-            <groupId>org.eclipse.rdf4j</groupId>
-            <artifactId>rdf4j-sail-nativerdf</artifactId>
-            <version>${rdf4j.version}</version>
-            <scope>test</scope>
-        </dependency>  
-        <dependency>
-            <groupId>org.eclipse.rdf4j</groupId>
-            <artifactId>rdf4j-sail-memory</artifactId>
-            <version>${rdf4j.version}</version>
-            <scope>test</scope>
-        </dependency>  
     </dependencies>
+    
 </project>
 

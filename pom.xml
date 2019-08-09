@@ -1,25 +1,17 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.opensilex</groupId>
     <artifactId>opensilex-dev</artifactId>
     <packaging>pom</packaging>
-    <version>${revision}</version>
     
     <name>opensilex-dev</name>
-    <url>http://maven.apache.org</url>
 
-    <properties>
-        <revision>1.0.0-SNAPSHOT</revision>
-    </properties>
-    
     <parent>
         <groupId>org.opensilex</groupId>
-        <artifactId>opensilex-parent</artifactId>
+        <artifactId>opensilex-module</artifactId>
         <version>${revision}</version>
-        <relativePath>opensilex-parent/pom.xml</relativePath>
+        <relativePath>opensilex-module/pom.xml</relativePath>
     </parent>
     
     <modules>
@@ -27,10 +19,30 @@
         <module>opensilex-parent</module> 
         <module>opensilex</module> 
         <module>opensilex-core</module> 
-        <!-- Developer tools module -->
-        <module>opensilex-dev-tools</module> 
+        <module>opensilex-module</module> 
+        <!-- Required modules for angular support -->
+        <module>opensilex-front-ng</module>
         <!-- Optional modules --> 
-        <module>phis-ws/phis2-ws</module>
+        <!--<module>phis-ws/phis2-ws</module>-->
+        
+        <!-- Development module -->
+        <module>opensilex-doc</module> 
+        <module>opensilex-dev-tools</module> 
+        <module>opensilex-release</module>
     </modules>
+    
+    <dependencies>
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-front-ng</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <!--        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>phis2ws</artifactId>
+            <version>${revision}</version>
+        </dependency>-->
+    </dependencies>
 
+   
 </project>

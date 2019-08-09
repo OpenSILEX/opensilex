@@ -34,7 +34,7 @@ import picocli.CommandLine.Parameters;
         name = "server",
         header = "Subcommand to group OpenSILEX server operations"
 )
-public class ServerCommand extends HelpPrinterCommand implements SubCommand{
+public class ServerCommand extends HelpPrinterCommand implements SubCommand {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ServerCommand.class);
 
@@ -69,9 +69,6 @@ public class ServerCommand extends HelpPrinterCommand implements SubCommand{
             @Parameters(description = "Tomcat directory", defaultValue = "") Path tomcatDirectory,
             @Mixin HelpOption help
     ) throws Exception {
-        if (baseDirectory.toString().equals("")) {
-            baseDirectory = OpenSilex.getBaseDirectory();
-        }
 
         if (tomcatDirectory.toString().equals("")) {
             final Path tmpDirectory = Files.createTempDirectory("opensilex");
@@ -103,7 +100,7 @@ public class ServerCommand extends HelpPrinterCommand implements SubCommand{
                         "--port=" + port,
                         "--profile=" + profileId,
                         "--adminPort=" + adminPort,
-                        baseDirectory.toAbsolutePath().toString(),
+                        baseDirectory.toString(),
                         tomcatDirectory.toAbsolutePath().toString()
                 );
 

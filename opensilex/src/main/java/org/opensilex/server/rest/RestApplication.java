@@ -7,23 +7,25 @@
 //******************************************************************************
 package org.opensilex.server.rest;
 
-import org.opensilex.OpenSilex;
-import org.opensilex.module.Module;
-import io.swagger.jaxrs.config.BeanConfig;
 import java.util.ArrayList;
 import java.util.Map;
-import javax.annotation.PreDestroy;
+
 import javax.inject.Singleton;
 import javax.servlet.ServletContext;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Context;
+
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.opensilex.OpenSilex;
+import org.opensilex.module.Module;
 import org.opensilex.service.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.swagger.jaxrs.config.BeanConfig;
 
 /**
  * This class is the main entry point of OpenSILEX application It extends Jersey

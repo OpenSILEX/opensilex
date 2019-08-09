@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Proxy;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import org.opensilex.OpenSilex;
 import static org.opensilex.OpenSilex.PROD_PROFILE_ID;
@@ -118,7 +119,7 @@ public class ConfigManager {
 
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             toYaml(output);
-            String yaml = new String(output.toByteArray(), "UTF-8");
+            String yaml = new String(output.toByteArray(), StandardCharsets.UTF_8.name());
             LOGGER.debug("Loaded configuration");
             LOGGER.debug(yaml);
         } catch (IOException ex) {

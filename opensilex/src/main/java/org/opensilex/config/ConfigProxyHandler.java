@@ -56,13 +56,13 @@ public class ConfigProxyHandler implements InvocationHandler {
 
             try {
                 Class<?> returnTypeClass = (Class<?>) genericReturnType.getRawType();
-                if (ClassInfo.isClass(returnTypeClass)) {
-                    result = getClassDefinition(node, method);
-                } else if (ClassInfo.isList(returnTypeClass)) {
+                if (ClassInfo.isList(returnTypeClass)) {
                     result = getList(genericParameter, node.at(key), method);
                 } else if (ClassInfo.isMap(returnTypeClass)) {
                     Type genericValueParameter = genericReturnType.getActualTypeArguments()[1];
                     result = getMap(genericValueParameter, node.at(key), method);
+                } else if (ClassInfo.isClass(returnTypeClass)) {
+                    result = getClassDefinition(node.at(key), method);
                 } else {
                     throw new InvalidConfigException(
                             "Can't get configuration property: " + key
@@ -73,7 +73,7 @@ public class ConfigProxyHandler implements InvocationHandler {
             } catch (ClassNotFoundException ex) {
                 throw new InvalidConfigException(
                         "Can't get configuration property: " + key
-                        + " class not found: " + node.asText()
+                        + " class not found: " + node.at(key).asText()
                 );
             } catch (IOException ex) {
                 throw new InvalidConfigException(
@@ -347,7 +347,7 @@ public class ConfigProxyHandler implements InvocationHandler {
             if (annotation != null) {
                 return annotation.defaultClass();
             } else {
-                return Class.class;
+                return null;
             }
         } else {
             return Class.forName(className);

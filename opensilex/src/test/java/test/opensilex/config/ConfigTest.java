@@ -13,9 +13,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+
 import org.apache.commons.lang3.StringUtils;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.Test;
@@ -379,10 +382,10 @@ public class ConfigTest {
     private void testMap(String testMessage, Map<String, ? extends Object> expected, Map<String, ? extends Object> actual) {
         assertEquals(testMessage + " size", expected.size(), actual.size());
 
-        @SuppressWarnings("unchecked")
-        Iterator<Map.Entry<String, ? extends Object>> iterator = (Iterator<Map.Entry<String, ? extends Object>>) expected.entrySet().iterator();
+        Iterator<?> iterator = expected.entrySet().iterator();
         while (iterator.hasNext()) {
-            Map.Entry<String, ? extends Object> entry = iterator.next();
+            @SuppressWarnings("unchecked")
+			Map.Entry<String, ? extends Object> entry = (Entry<String, ? extends Object>) iterator.next();
 
             assertTrue(testMessage + " key should exists " + entry.getKey(), actual.containsKey(entry.getKey()));
             assertTrue(testMessage + " value should be equal for key " + entry.getValue(), actual.get(entry.getKey()).equals(entry.getValue()));
@@ -636,7 +639,7 @@ public class ConfigTest {
 
         Class<?> clazz = cfg.clazz();
         
-        assertTrue("Default class value must be Class", clazz.equals(Class.class));
+        assertNull("Class with no default must be null", clazz);
         
         Class<?> classDefault = cfg.clazz_default();
         

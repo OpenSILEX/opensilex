@@ -23,7 +23,7 @@
         <!-- Required modules for angular support -->
         <module>opensilex-front-ng</module>
         <!-- Optional modules --> 
-        <!--<module>phis-ws/phis2-ws</module>-->
+        <module>phis-ws/phis2-ws</module>
         
         <!-- Development module -->
         <module>opensilex-doc</module> 
@@ -37,7 +37,7 @@
             <artifactId>opensilex-front-ng</artifactId>
             <version>${revision}</version>
         </dependency>
-        <!--        <dependency>
+<!--                <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>phis2ws</artifactId>
             <version>${revision}</version>

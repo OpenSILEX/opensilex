@@ -21,7 +21,7 @@ public class Germplasm {
     private String varietyURI;
     private String speciesURI;
     private String speciesLabel;
-
+    private ArrayList<String> seedLots;
     
     public String getGermplasmURI() {
         return germplasmURI;
@@ -102,5 +102,13 @@ public class Germplasm {
     public void setSpeciesLabel(String speciesLabel) {
         this.speciesLabel = speciesLabel;
     }   
+
+    public ArrayList<String> getSeedLots() {
+        return seedLots;
+    }
+
+    public void setSeedLots(ArrayList<String> seedLots) {
+        this.seedLots = seedLots;
+    }
     
 }

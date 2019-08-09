@@ -511,10 +511,10 @@ public enum Oeso {
         }
     },
 
-    RELATION_HAS_PLANT_MATERIAL_LOT {
+    RELATION_HAS_SEED_LOT {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "hasPlantMaterialLot";
+            return NAMESPACE.toString() + "hasSeedLot";
         }
     },
 

@@ -8,11 +8,12 @@
 package opensilex.service.resource.dto.germplasm;
 
 import java.util.ArrayList;
+import opensilex.service.dao.GermplasmDAO;
 import opensilex.service.model.Germplasm;
+import opensilex.service.ontology.Contexts;
 import opensilex.service.ontology.Oeso;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 import opensilex.service.utils.UriGenerator;
-import static org.apache.jena.util.FileUtils.isURI;
 
 /**
  * GermplasmPostDTO
@@ -26,65 +27,99 @@ public class GermplasmPostDTO extends AbstractVerifiedClass {
     private String varietyURI; 
     private String varietyLabel; 
     private String speciesURI;
+    private String speciesLabel;
+    private ArrayList<String> seedLots;
     private String instituteCode;
-    private String instituteName;
+    private String instituteName;  
     
-
-
-
     @Override
     public Germplasm createObjectFromDTO() throws Exception {
         boolean annotationInsert = true;
         Germplasm germplasm = new Germplasm();
+        GermplasmDAO germplasmDAO = new GermplasmDAO();
         
-        if (accessionURI != null) {
-            germplasm.setAccessionURI(accessionURI);             
-        } else {
-            if (accessionNumber != null) {   
-                try {
-                    accessionURI = UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_ACCESSION.toString(), null, accessionNumber);
-                    germplasm.setAccessionURI(accessionURI);
-                } catch (Exception ex) { //In the sensors case, no exception should be raised
-                    annotationInsert = false;
-                }
-            }
-        }
-        
-        if (accessionNumber != null) {   
-            germplasm.setAccessionNumber(accessionNumber);
-        }              
-
-        if (varietyURI != null) {
-            germplasm.setVarietyURI(varietyURI);
-        } else {
-            if (varietyLabel != null) {
-                try {
-                    varietyURI = UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_VARIETY.toString(), null, varietyLabel);
-                    germplasm.setVarietyURI(varietyURI);
-                } catch (Exception ex) { //In the sensors case, no exception should be raised
-                    annotationInsert = false;
-                }
-            }            
-        }        
-        
-        if (varietyLabel != null) {
-            germplasm.setVarietyLabel(varietyLabel);
-        }
-        
-        if (speciesURI != null) {
-            germplasm.setSpeciesURI(speciesURI);
-        }        
-        
-        if (accessionURI != null) {
-            germplasm.setGermplasmURI(accessionURI);
-        } else {
-            if (varietyURI != null) {
-                germplasm.setGermplasmURI(varietyURI);
+        //species is mandatory
+        if (speciesURI != null | speciesLabel != null) {
+            //If accessionURI exists in DB then, even if accessionNumber is given then we don't retrieve the label
+            if (accessionURI != null) {
+                if (!germplasmDAO.existUriInGraph(accessionURI, Contexts.ACCESSION.toString())) {
+                    germplasm.setAccessionNumber(accessionNumber);
+                } 
             } else {
-                germplasm.setGermplasmURI(speciesURI);
+                if (accessionNumber != null) {  
+                    germplasm.setAccessionNumber(accessionNumber);
+                    if (germplasmDAO.askExistLabelInContext(accessionNumber, Contexts.ACCESSION.toString())) {
+                        germplasm.setAccessionURI(germplasmDAO.getURIFromLabel(accessionNumber));
+                    } else {
+                        try {
+                            accessionURI = UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_ACCESSION.toString(), null, accessionNumber);
+                            germplasm.setAccessionURI(accessionURI);
+                        } catch (Exception ex) { //In the sensors case, no exception should be raised
+                            annotationInsert = false;
+                        }
+                    }
+                }            
+            }     
+
+            //If varietyURI exists in DB then, even if varietyLabel is given then we don't retrieve the label
+            if (varietyURI != null) {
+                germplasm.setVarietyURI(varietyURI);
+                if (!germplasmDAO.existUriInGraph(varietyURI, Contexts.VARIETY.toString())) {
+                    germplasm.setVarietyLabel(varietyLabel);
+                }
+            } else {
+                if (varietyLabel != null) {                
+                    germplasm.setVarietyLabel(varietyLabel);
+                    if (germplasmDAO.askExistLabelInContext(varietyLabel, Contexts.VARIETY.toString())) {
+                        germplasm.setVarietyURI(germplasmDAO.getURIFromLabel(varietyLabel));
+                    } else {
+                        try {
+                            varietyURI = UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_VARIETY.toString(), null, varietyLabel);
+                            germplasm.setVarietyURI(varietyURI);
+                        } catch (Exception ex) { //In the sensors case, no exception should be raised
+                            annotationInsert = false;
+                        }
+                    }
+                }            
+            }        
+        
+            //If speciesURI exists in DB then, even if speciesLabel is given then we don't retrieve the label
+            if (speciesURI != null) {
+                germplasm.setSpeciesURI(speciesURI);
+                if (!germplasmDAO.existUriInGraph(speciesURI, Contexts.SPECIES.toString())) {
+                    germplasm.setSpeciesLabel(speciesLabel);
+                }
+            } else {
+                if (varietyLabel != null) {                
+                    germplasm.setSpeciesLabel(speciesLabel);
+                    if (germplasmDAO.askExistLabelInContext(speciesLabel, Contexts.SPECIES.toString())) {
+                        germplasm.setSpeciesURI(germplasmDAO.getURIFromLabel(speciesLabel));
+                    } else {
+                        try {
+                            speciesURI = UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_SPECIES.toString(), null, speciesLabel);
+                            germplasm.setSpeciesURI(speciesURI);
+                        } catch (Exception ex) { //In the sensors case, no exception should be raised
+                            annotationInsert = false;
+                        }
+                    }
+                }            
+            }       
+
+            if (accessionURI != null) {
+                germplasm.setGermplasmURI(accessionURI);
+            } else {
+                if (varietyURI != null) {
+                    germplasm.setGermplasmURI(varietyURI);
+                } else {
+                    germplasm.setGermplasmURI(speciesURI);
+                }
+            }
+        
+            if (seedLots != null && accessionURI != null) {
+                germplasm.setSeedLots(seedLots);
             }
         }
-         
+               
         return germplasm;
     }
 
@@ -126,6 +161,14 @@ public class GermplasmPostDTO extends AbstractVerifiedClass {
 
     public void setSpeciesURI(String speciesURI) {
         this.speciesURI = speciesURI;
+    }
+
+    public ArrayList<String> getSeedLots() {
+        return seedLots;
+    }
+
+    public void setSeedLots(ArrayList<String> seedLots) {
+        this.seedLots = seedLots;
     }
 
     public String getInstituteCode() {

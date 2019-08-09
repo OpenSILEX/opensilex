@@ -64,6 +64,7 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
         if (resourcePath != null 
                 && !resourcePath.contains("token") 
                 && !resourcePath.contains("calls") 
+                && !resourcePath.contains("hello") 
                 && !resourcePath.contains("swagger.json")
                 && !(resourceInfo.getResourceClass() == DataResourceService.class && resourceInfo.getResourceMethod().getName().equals("getDataFile"))) {
             // Get request headers

@@ -64,7 +64,6 @@
                             <version>1.7.6</version>
                             <configuration>
                                 <nodeVersion>v12.8.0</nodeVersion>
-                                <yarnVersion>v1.17.3</yarnVersion>
                                 <installDirectory>../.ng</installDirectory>
                             </configuration>
                         </plugin>
@@ -78,34 +77,47 @@
                             <execution>
                                 <id>install node and package manager</id>
                                 <goals>
-                                    <goal>install-node-and-yarn</goal>
+                                    <goal>install-node-and-npm</goal>
                                 </goals>
                                 <!-- optional: default phase is "generate-resources" -->
                                 <phase>generate-resources</phase>
                             </execution>
  
                             <execution>
-                                <id>install angular dependencies</id>
+                                <id>install shared dependencies</id>
                                 <goals>
-                                    <goal>yarn</goal>
+                                    <goal>npm</goal>
                                 </goals>
 
                                 <phase>generate-resources</phase>
                                 <configuration>
-                                    <arguments>install --non-interactive</arguments>
+                                    <arguments>install ../../../../</arguments>
                                 </configuration>
                             </execution>
+                            
+                            <execution>
+                                <id>install module dependencies</id>
+                                <goals>
+                                    <goal>npm</goal>
+                                </goals>
+
+                                <phase>generate-resources</phase>
+                                <configuration>
+                                    <arguments>install</arguments>
+                                </configuration>
+                            </execution>
+                            
                             <execution>
                                 <id>angular build</id>
                                 <phase>prepare-package</phase>
                                 <goals>
-                                    <goal>yarn</goal>
+                                    <goal>npm</goal>
                                 </goals>
                             </execution>
                         </executions>
                         <configuration>
                             <workingDirectory>src/main/angular</workingDirectory>
-                            <arguments>run build --prod --aot --optimization --sourceMap=false --progress=false</arguments>
+                            <arguments>run build -- --prod --aot --optimization --sourceMap=false --progress=false</arguments>
                         </configuration>
                     </plugin>
                 </plugins>

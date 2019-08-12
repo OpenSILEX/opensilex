@@ -365,9 +365,11 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>flatten-maven-plugin</artifactId>
-                <version>1.0.0</version>
+                <version>1.1.0</version>
                 <configuration>
                     <updatePomFile>true</updatePomFile>
+                    <outputDirectory>${basedir}/target/classes</outputDirectory>
+                    <flattenedPomFilename>opensilex-pom.xml</flattenedPomFilename>
                 </configuration>
                 <executions>
                     <execution>
@@ -383,50 +385,6 @@
                         <goals>
                             <goal>clean</goal>
                         </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <!-- copy flatten pom.xml -->
-            <plugin>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>3.1.0</version>
-                <executions>
-                    <execution>
-                        <id>copy-resources</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${basedir}/target/classes</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>.</directory>
-                                    <includes>
-                                        <include>.flattened-pom.xml</include>
-                                    </includes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <!-- rename flatten-pom to opensilex-pom.xml -->
-            <plugin>
-                <groupId>com.coderplus.maven.plugins</groupId>
-                <artifactId>copy-rename-maven-plugin</artifactId>
-                <version>1.0</version>
-                <executions>
-                    <execution>
-                        <id>copy-and-rename-file</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>rename</goal>
-                        </goals>
-                        <configuration>
-                            <sourceFile>${project.build.directory}/classes/.flattened-pom.xml</sourceFile>
-                            <destinationFile>${project.build.directory}/classes/opensilex-pom.xml</destinationFile>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>

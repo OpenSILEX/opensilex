@@ -1,0 +1,32 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "baseUrl": "./",
+    "outDir": "./dist/out-tsc",
+    "sourceMap": true,
+    "declaration": false,
+    "module": "es2015",
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es5",
+    "typeRoots": [
+      "node_modules/@types",
+      "../../../../node_modules/@types"
+    ],
+    "lib": [
+      "es2018",
+      "dom"
+    ],
+    "paths": {
+      "shared": [
+        "../../../../opensilex-front-ng/src/main/angular/dist/shared"
+      ],
+      "shared/*": [
+        "../../../../opensilex-front-ng/src/main/angular/dist/shared/*"
+      ],
+      "rxjs": ["../../../../node_modules/rxjs"]
+    }
+  }
+}

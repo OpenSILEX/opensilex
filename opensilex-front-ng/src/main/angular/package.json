@@ -6,7 +6,7 @@
     "start": "ng serve -o",
     "build": "ng build",
     "lint": "ng lint",
-    "postinstall": "tsc -p builders/tsconfig.builders.json",
+    "postinstall": "../../../../node_modules/.bin/tsc -p builders/tsconfig.builders.json",
     "build:shared": "ng build shared && ng build --project plugins --prod --modulePath=shared#SharedModule --pluginName=shared  --outputPath=./src/assets/plugins",
     "build:plugin1": "ng build --project plugins --prod --modulePath=./plugin1/plugin1.module#Plugin1Module --pluginName=plugin1 --sharedLibs=shared --outputPath=./src/assets/plugins",
     "build:plugin2": "ng build --project plugins --prod --modulePath=./plugin2/plugin2.module#Plugin2Module --pluginName=plugin2 --sharedLibs=shared --outputPath=./src/assets/plugins ",
@@ -18,6 +18,7 @@
   },
   "private": true,
   "dependencies": {
-    "chart.js": "2.8.0"
+    "chart.js": "2.8.0",
+    "root": "file:../../../.."
   }
 }

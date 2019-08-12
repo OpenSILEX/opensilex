@@ -1,0 +1,7 @@
+{
+  "packages": [
+    ".",
+    "*/src/main/angular/**"
+  ],
+  "version": "1.0.0"
+}

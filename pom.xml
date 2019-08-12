@@ -24,7 +24,7 @@
         <module>opensilex-front-ng</module>
         <!-- Optional modules --> 
         <module>phis-ws/phis2-ws</module>
-        
+        <module>opensilex-front-ue</module>
         <!-- Development module -->
         <module>opensilex-doc</module> 
         <module>opensilex-dev-tools</module> 

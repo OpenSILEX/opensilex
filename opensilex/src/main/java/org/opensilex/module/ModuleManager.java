@@ -43,16 +43,15 @@ public class ModuleManager {
     public static List<URL> readDependenciesList(Path baseDirectory) {
         try {
             File dependencyFile = baseDirectory.resolve(DEPENDENCIES_LIST_CACHE_FILE).toFile();
+            List<URL> dependencyURLs = new ArrayList<>();
+            
             if (dependencyFile.isFile()) {
-                List<URL> dependencyURLs = new ArrayList<>();
                 for (String dependency : FileUtils.readLines(dependencyFile, StandardCharsets.UTF_8.name())) {
                     dependencyURLs.add(new URL(dependency));
                 };
-
-                return dependencyURLs;
-            } else {
-                return null;
             }
+
+            return dependencyURLs;
         } catch (IOException ex) {
             LOGGER.error("Error while reading dependency file", ex);
             return null;
@@ -62,7 +61,9 @@ public class ModuleManager {
     public static void writeDependenciesList(Path baseDirectory, List<URL> dependencies) {
         try {
             File dependencyFile = baseDirectory.resolve(DEPENDENCIES_LIST_CACHE_FILE).toFile();
-            FileUtils.writeLines(dependencyFile, dependencies);
+            if (dependencies.size() > 0) {
+                FileUtils.writeLines(dependencyFile, dependencies);
+            }
         } catch (IOException ex) {
             LOGGER.error("Error while writing dependency file", ex);
         }

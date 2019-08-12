@@ -1,0 +1,21 @@
+{
+    "files.exclude": {
+        "**/.*": true,
+        "**/.flattened-pom.xml": true,
+        "**/src/main/docker": true,
+        "**/src/main/java": true,
+        "**/src/main/resources": true,
+        "**/src/main/webapp": true,
+        "**/src/test": true,
+        "**/target": true
+    },
+    "files.watcherExclude": {
+        "**/src/main/docker": true,
+        "**/src/main/java": true,
+        "**/src/main/resources": true,
+        "**/src/main/webapp": true,
+        "**/src/test": true,
+        "**/target": true,
+        "**/node_modules": true
+    }
+}

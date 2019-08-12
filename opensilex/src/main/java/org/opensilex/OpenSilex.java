@@ -200,7 +200,7 @@ public class OpenSilex {
     public void init() {
         LOGGER.debug("Load modules with dependencies");
         List<URL> readDependencies = ModuleManager.readDependenciesList(baseDirectory);
-        if (readDependencies == null) {
+        if (readDependencies.size() == 0) {
             List<URL> modulesUrl = ModuleManager.listModulesURLs(baseDirectory);
             List<URL> dependencies = moduleManager.loadModulesWithDependencies(modulesUrl);
             ModuleManager.writeDependenciesList(baseDirectory, dependencies);

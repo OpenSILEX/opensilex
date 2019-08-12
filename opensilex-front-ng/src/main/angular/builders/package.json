@@ -1,3 +1,6 @@
 {
-  "builders": "builders.json"
+  "name": "plugin-builder",
+  "version": "1.0.0",
+  "builders": "builders.json",
+  "private": true
 }

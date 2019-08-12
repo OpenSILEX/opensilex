@@ -45,4 +45,71 @@
         </dependency>
     </dependencies>
     
+    
+    <profiles>
+        <profile>
+            <id>angular extension module</id>
+            <activation>
+                <file>
+                    <exists>src/main/angular/angular.json</exists>
+                </file>
+            </activation>
+
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>com.github.eirslett</groupId>
+                            <artifactId>frontend-maven-plugin</artifactId>
+                            <version>1.7.6</version>
+                            <configuration>
+                                <nodeVersion>v12.8.0</nodeVersion>
+                                <yarnVersion>v1.17.3</yarnVersion>
+                                <installDirectory>../.ng</installDirectory>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+                <plugins>
+                    <plugin>
+                        <groupId>com.github.eirslett</groupId>
+                        <artifactId>frontend-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>install node and package manager</id>
+                                <goals>
+                                    <goal>install-node-and-yarn</goal>
+                                </goals>
+                                <!-- optional: default phase is "generate-resources" -->
+                                <phase>generate-resources</phase>
+                            </execution>
+ 
+                            <execution>
+                                <id>install angular dependencies</id>
+                                <goals>
+                                    <goal>yarn</goal>
+                                </goals>
+
+                                <phase>generate-resources</phase>
+                                <configuration>
+                                    <arguments>install --non-interactive</arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>angular build</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>yarn</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <workingDirectory>src/main/angular</workingDirectory>
+                            <arguments>run build --prod --aot --optimization --sourceMap=false --progress=false</arguments>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

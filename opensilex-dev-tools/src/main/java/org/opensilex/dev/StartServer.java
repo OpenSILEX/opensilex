@@ -16,17 +16,11 @@ import org.opensilex.cli.MainCommand;
  */
 public class StartServer {
 
-    /**
-     * Utility static function to start opensilex server with modules and front in debug mode
-     * mode
-     *
-     * @param args
-     */
     public static void main(String[] args) throws IOException {
 
         Path currentDirectory = Path.of(System.getProperty("user.dir"));
         ProcessBuilder pb = new ProcessBuilder(
-                currentDirectory.resolve("../opensilex-front-ng/target/node/node").toFile().getCanonicalPath(),
+                currentDirectory.resolve("../.ng/node").toFile().getCanonicalPath(),
                  currentDirectory.resolve("../opensilex-front-ng/src/main/angular/.bin/ng").toFile().getCanonicalPath(),
                 "serve"
         );

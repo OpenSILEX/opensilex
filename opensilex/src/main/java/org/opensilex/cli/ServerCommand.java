@@ -37,7 +37,7 @@ import picocli.CommandLine.Parameters;
 public class ServerCommand extends HelpPrinterCommand implements SubCommand {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ServerCommand.class);
-
+    
     /**
      * This function start the OpenSilex server with the given host, port and
      * adminPort If the daemon flag is set to true, this command will try to run

@@ -20,9 +20,9 @@
         <module>opensilex</module> 
         <module>opensilex-core</module> 
         <module>opensilex-module</module> 
-        <!-- Required modules for angular support -->
+        <!-- Required module for angular support -->
         <module>opensilex-front-ng</module>
-        <!-- Optional modules --> 
+        <!-- Extension modules --> 
         <module>phis-ws/phis2-ws</module>
         <module>opensilex-front-ue</module>
         <!-- Development module -->
@@ -32,6 +32,7 @@
     </modules>
     
     <dependencies>
+        <!-- Required dependencies -->
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex</artifactId>
@@ -42,12 +43,14 @@
             <artifactId>opensilex-core</artifactId>
             <version>${revision}</version>
         </dependency>
+        <!-- Required dependency for angular support -->
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-front-ng</artifactId>
-            <type>war</type>
+            <classifier>classes</classifier>
             <version>${revision}</version>
         </dependency>
+        <!-- Extension dependencies -->
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-front-ue</artifactId>

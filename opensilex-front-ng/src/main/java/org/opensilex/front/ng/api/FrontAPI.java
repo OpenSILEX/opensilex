@@ -17,11 +17,15 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import org.opensilex.OpenSilex;
 import org.opensilex.module.OpenSilexModule;
 import org.opensilex.server.rest.RestApplicationAPI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Service to produce angular application configuration
@@ -30,8 +34,13 @@ import org.opensilex.server.rest.RestApplicationAPI;
 @Path("/front")
 public class FrontAPI implements RestApplicationAPI {
 
+    private final static Logger LOGGER = LoggerFactory.getLogger(FrontAPI.class);
+
     @Inject
     OpenSilex app;
+
+    @Context
+    UriInfo uri;
 
     @GET
     @Path("/config")
@@ -53,7 +62,7 @@ public class FrontAPI implements RestApplicationAPI {
                     PluginConfigDTO pluginConfigDTO = new PluginConfigDTO();
                     pluginConfigDTO.setName(pluginName);
 
-                    pluginConfigDTO.setPath("http://localhost:8666/rest" + "/front/plugin/" + module.getProjectId() + "/" + pluginName + ".js");
+                    pluginConfigDTO.setPath(uri.getBaseUri().toString() + "front/plugin/" + module.getProjectId() + "/" + pluginName + ".js");
 
                     if (!pluginName.equals("shared")) {
                         pluginConfigDTO.getDeps().add("shared");
@@ -84,13 +93,13 @@ public class FrontAPI implements RestApplicationAPI {
 
         if (modules.size() > 0) {
             OpenSilexModule module = modules.get(0);
-            
+
             String fileName = pluginId + ".js";
             String filePath = "angular/plugins/" + fileName;
             if (module.fileExists(filePath)) {
                 return Response
                         .ok(module.getFileInputStream(filePath), "application/javascript")
-                        .header("content-disposition","attachment; filename = " + fileName)
+                        .header("content-disposition", "attachment; filename = " + fileName)
                         .build();
             }
         }

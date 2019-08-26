@@ -141,41 +141,44 @@ public class DependencyManager {
     private List<URL> loadDependencies(File pom, boolean downloadWithMaven) throws DependencyResolutionException, ModelBuildingException, MalformedURLException {
         List<URL> resolvedDependencies = new ArrayList<>();
         Model model = registerPom(pom);
-        
+
         LOGGER.debug(String.format("Maven model resolved: %s, parsing its dependencies...", model));
 
         for (org.apache.maven.model.Dependency d : model.getDependencies()) {
-            Artifact artifact = new DefaultArtifact(
-                    d.getGroupId(),
-                    d.getArtifactId(),
-                    d.getClassifier(),
-                    d.getType(),
-                    d.getVersion()
-            );
+            if (!d.getType().equals("war")) {
 
-            String key = getArtifactKey(artifact);
+                Artifact artifact = new DefaultArtifact(
+                        d.getGroupId(),
+                        d.getArtifactId(),
+                        d.getClassifier(),
+                        d.getType(),
+                        d.getVersion()
+                );
 
-            LOGGER.debug(String.format("Loading dependency: %s", key));
+                String key = getArtifactKey(artifact);
 
-            if (!loadedDependencies.contains(key)) {
-                loadedDependencies.add(key);
+                LOGGER.debug(String.format("Loading dependency: %s", key));
 
-                if (downloadWithMaven) {
-                    CollectRequest collectRequest = new CollectRequest(
-                            new Dependency(artifact, JavaScopes.COMPILE),
-                            getPomRemoteRepositories(model)
-                    );
+                if (!loadedDependencies.contains(key)) {
+                    loadedDependencies.add(key);
 
-                    DependencyFilter filterScope = DependencyFilterUtils.classpathFilter(JavaScopes.COMPILE);
-                    DependencyFilter filterPattern = new PatternExclusionsDependencyFilter(buildinDependencies);
-                    DependencyRequest request = new DependencyRequest(collectRequest, DependencyFilterUtils.orFilter(filterScope, filterPattern));
-                    DependencyResult results = system.resolveDependencies(session, request);
+                    if (downloadWithMaven) {
+                        CollectRequest collectRequest = new CollectRequest(
+                                new Dependency(artifact, JavaScopes.COMPILE),
+                                getPomRemoteRepositories(model)
+                        );
 
-                    for (ArtifactResult result : results.getArtifactResults()) {
-                        if (result.isResolved()) {
-                            Artifact resultArtifact = result.getArtifact();
-                            loadedDependencies.add(getArtifactKey(resultArtifact));
-                            resolvedDependencies.add(resultArtifact.getFile().toURI().toURL());
+                        DependencyFilter filterScope = DependencyFilterUtils.classpathFilter(JavaScopes.COMPILE);
+                        DependencyFilter filterPattern = new PatternExclusionsDependencyFilter(buildinDependencies);
+                        DependencyRequest request = new DependencyRequest(collectRequest, DependencyFilterUtils.orFilter(filterScope, filterPattern));
+                        DependencyResult results = system.resolveDependencies(session, request);
+
+                        for (ArtifactResult result : results.getArtifactResults()) {
+                            if (result.isResolved()) {
+                                Artifact resultArtifact = result.getArtifact();
+                                loadedDependencies.add(getArtifactKey(resultArtifact));
+                                resolvedDependencies.add(resultArtifact.getFile().toURI().toURL());
+                            }
                         }
                     }
                 }

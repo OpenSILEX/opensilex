@@ -18,7 +18,7 @@
         <rdf4j.version>2.5.2</rdf4j.version>
         <data.nucleus.version>5.2.1</data.nucleus.version>
         <logback.version>1.2.3</logback.version>
-        <revision>4.0.0-SNAPSHOT</revision>
+        <revision>4.0.0-alpha</revision>
     </properties>
 
     <!-- Configuration profiles -->

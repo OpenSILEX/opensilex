@@ -19,6 +19,7 @@
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-front-ng</artifactId>
+            <type>war</type>
             <version>${revision}</version>
         </dependency>
     </dependencies>

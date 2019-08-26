@@ -13,6 +13,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.mockito.Mockito;
 import org.opensilex.OpenSilex;
+import static org.opensilex.OpenSilex.PROFILE_ID_ARG_KEY;
 import org.opensilex.server.rest.RestApplication;
 
 
@@ -28,8 +29,11 @@ public class RestApplicationTest extends JerseyTest {
      */
     @Override
     protected ResourceConfig configure() {
-        OpenSilex app = OpenSilex.getInstance(OpenSilex.getBaseDirectory(), OpenSilex.TEST_PROFILE_ID, null);
-        ResourceConfig resourceConfig = new RestApplication(app);
+        OpenSilex.initWithArgs(new String[] {
+            "--" + OpenSilex.PROFILE_ID_ARG_KEY + "=" + OpenSilex.TEST_PROFILE_ID
+        });
+        
+        ResourceConfig resourceConfig = new RestApplication(OpenSilex.getInstance());
         
         // create a mock for HttpServletRequest which is not available with grizzly
         final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);

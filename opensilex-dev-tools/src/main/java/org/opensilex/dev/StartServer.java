@@ -1,8 +1,8 @@
 package org.opensilex.dev;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import org.opensilex.OpenSilex;
 import org.opensilex.cli.MainCommand;
 
 /*
@@ -19,19 +19,29 @@ public class StartServer {
     public static void main(String[] args) throws IOException {
 
         Path currentDirectory = Path.of(System.getProperty("user.dir"));
-        ProcessBuilder pb = new ProcessBuilder(
-                currentDirectory.resolve("../.ng/node").toFile().getCanonicalPath(),
-                 currentDirectory.resolve("../opensilex-front-ng/src/main/angular/.bin/ng").toFile().getCanonicalPath(),
+        
+        ProcessBuilder pluginBuilder = new ProcessBuilder(
+                currentDirectory.resolve("../.ng/node/node").toFile().getCanonicalPath(),
+                currentDirectory.resolve("../opensilex-front-ng/src/main/angular/dev-tools/build-plugins.js").toFile().getCanonicalPath(),
+                "--module=opensilex-front-ue"
+        );
+        pluginBuilder.directory(currentDirectory.resolve("../opensilex-front-ng/src/main/angular/dev-tools").toFile());
+        pluginBuilder.inheritIO();
+        pluginBuilder.start();
+
+        ProcessBuilder devServer = new ProcessBuilder(
+                currentDirectory.resolve("../.ng/node/node").toFile().getCanonicalPath(),
+                currentDirectory.resolve("../node_modules/.bin/ng").toFile().getCanonicalPath(),
                 "serve"
         );
-        pb.directory(currentDirectory.resolve("../opensilex-front-ng/src/main/angular").toFile());
-        pb.inheritIO();
-        pb.start();
+        devServer.directory(currentDirectory.resolve("../opensilex-front-ng/src/main/angular").toFile());
+        devServer.inheritIO();
+        devServer.start();
 
         MainCommand.main(new String[]{
             "server",
             "start",
-            "--profile=dev"
+            "--" + OpenSilex.PROFILE_ID_ARG_KEY + "=" + OpenSilex.DEV_PROFILE_ID
         });
 
     }

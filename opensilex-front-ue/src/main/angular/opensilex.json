@@ -1,0 +1,14 @@
+{
+    "plugins": [
+        {
+            "id": "plugin1",
+            "modulePath": "./plugin1/plugin1.module",
+            "moduleClass": "Plugin1Module"
+        },
+        {
+            "id": "plugin2",
+            "modulePath": "./plugin2/plugin2.module",
+            "moduleClass": "Plugin2Module"
+        }
+    ]
+}

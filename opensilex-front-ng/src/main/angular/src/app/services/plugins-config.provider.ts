@@ -29,7 +29,8 @@ export class PluginsConfigProvider {
   @preserveServerState('PLUGIN_CONFIGS')
   loadConfig() {
     return this.http.get<PluginsConfig>(
-      `${this.baseUrl}/assets/plugins-config.json`
+//      `${this.baseUrl}/assets/plugins-config.json`
+      "http://localhost:8666/rest/front/config"
     );
   }
 }

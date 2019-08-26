@@ -188,13 +188,13 @@ public class DependencyManager {
     public List<URL> loadModulesDependencies(List<URL> jarModulesURLs) throws IOException, DependencyResolutionException, ModelBuildingException {
         List<URL> dependenciesUrl = new ArrayList<>();
         for (URL jarURL : jarModulesURLs) {
-            File pom = ClassInfo.getPomFile(jarURLToFile(jarURL), null, null);
+            File pom = ClassInfo.getPomFile(jarURLToFile(jarURL));
             registerPom(pom);
         }
 
         for (URL jarURL : jarModulesURLs) {
             File jarFile = jarURLToFile(jarURL);
-            dependenciesUrl.addAll(loadDependencies(ClassInfo.getPomFile(jarFile, null, null), true));
+            dependenciesUrl.addAll(loadDependencies(ClassInfo.getPomFile(jarFile), true));
         }
 
         return dependenciesUrl;

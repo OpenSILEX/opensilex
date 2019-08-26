@@ -7,11 +7,11 @@
 //******************************************************************************
 package org.opensilex.core;
 
-import org.opensilex.module.Module;
+import org.opensilex.module.OpenSilexModule;
 
 /**
  * Core OpenSILEX module implementation
  */
-public class CoreModule extends Module {
+public class CoreModule extends OpenSilexModule {
 
 }

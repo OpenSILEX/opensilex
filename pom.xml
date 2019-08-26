@@ -34,10 +34,26 @@
     <dependencies>
         <dependency>
             <groupId>org.opensilex</groupId>
-            <artifactId>opensilex-front-ng</artifactId>
+            <artifactId>opensilex</artifactId>
             <version>${revision}</version>
         </dependency>
-<!--                <dependency>
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-core</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-front-ng</artifactId>
+            <type>war</type>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-front-ue</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <!--        <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>phis2ws</artifactId>
             <version>${revision}</version>

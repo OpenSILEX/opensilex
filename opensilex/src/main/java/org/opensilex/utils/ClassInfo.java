@@ -126,6 +126,14 @@ public class ClassInfo {
         return Paths.get(rootDirectory);
     }
 
+    public static File getPomFile(Class<?> c) throws IOException {
+        return getPomFile(getJarFile(c), null, null);
+    }
+
+    public static File getPomFile(File jarFile) throws IOException {
+        return getPomFile(jarFile, null, null);
+    }
+
     public static File getPomFile(Class<?> c, String groupId, String artifactId) throws IOException {
         return getPomFile(getJarFile(c), groupId, artifactId);
     }
@@ -156,10 +164,7 @@ public class ClassInfo {
             zipFile.close();
             return pom;
         } else {
-            return Paths.get(
-                    jarFile.getAbsolutePath()
-            //                    URLDecoder.decode(jarFile.getAbsolutePath(), StandardCharsets.UTF_8.name())
-            ).resolve("opensilex-pom.xml").toFile();
+            return Paths.get(jarFile.getAbsolutePath()).resolve("opensilex-pom.xml").toFile();
         }
 
     }
@@ -181,12 +186,13 @@ public class ClassInfo {
 
     public static List<Field> getClassFieldsRecursivly(Class<?> type) {
         List<Field> fieldList = new ArrayList<>();
-        
+
         getAllFields(fieldList, type);
-        
+
         return fieldList;
-        
+
     }
+
     private static void getAllFields(List<Field> fields, Class<?> type) {
         fields.addAll(Arrays.asList(type.getDeclaredFields()));
 

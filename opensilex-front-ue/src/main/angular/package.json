@@ -6,8 +6,8 @@
     "start": "ng serve -o",
     "build": "ng build",
     "lint": "ng lint",
-    "build:plugin1": "ng build --project plugins --prod --modulePath=./plugin1/plugin1.module#Plugin1Module --pluginName=plugin1 --sharedLibs=shared --outputPath=../../../../opensilex-front-ng/src/main/angular/src/assets/plugins",
-    "build:plugin2": "ng build --project plugins --prod --modulePath=./plugin2/plugin2.module#Plugin2Module --pluginName=plugin2 --sharedLibs=shared --outputPath=../../../../opensilex-front-ng/src/main/angular/src/assets/plugins"
+    "build:plugin1": "../../../../node_modules/.bin/ng build --project plugins --prod --modulePath=./plugin1/plugin1.module#Plugin1Module --pluginName=plugin1 --sharedLibs=shared --outputPath=../../../target/classes/angular/plugins",
+    "build:plugin2": "../../../../node_modules/.bin/ng build --project plugins --prod --modulePath=./plugin2/plugin2.module#Plugin2Module --pluginName=plugin2 --sharedLibs=shared --outputPath=../../../target/classes/angular/plugins"
   },
   "private": true,
   "dependencies": {}

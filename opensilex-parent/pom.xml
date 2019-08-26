@@ -395,7 +395,7 @@
                 <version>1.1.0</version>
                 <configuration>
                     <services>
-                        <param>org.opensilex.module.Module</param>
+                        <param>org.opensilex.module.OpenSilexModule</param>
                         <param>org.opensilex.server.rest.RestApplicationAPI</param>
                         <param>org.opensilex.cli.SubCommand</param>
                         <param>org.opensilex.sparql.deserializer.SPARQLDeserializer</param>
@@ -418,6 +418,10 @@
                     <forceCreation>true</forceCreation>
                     <archive>
                         <index>true</index>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                        </manifest>
                     </archive>
                     <skipIfEmpty>true</skipIfEmpty>
                 </configuration>

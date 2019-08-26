@@ -1,24 +1,17 @@
 {
-  "name": "opensilex-front-ng",
-  "version": "1.0.0",
-  "scripts": {
-    "ng": "ng",
-    "start": "ng serve -o",
-    "build": "ng build",
-    "lint": "ng lint",
-    "postinstall": "../../../../node_modules/.bin/tsc -p builders/tsconfig.builders.json",
-    "build:shared": "ng build shared && ng build --project plugins --prod --modulePath=shared#SharedModule --pluginName=shared  --outputPath=./src/assets/plugins",
-    "build:plugin1": "ng build --project plugins --prod --modulePath=./plugin1/plugin1.module#Plugin1Module --pluginName=plugin1 --sharedLibs=shared --outputPath=./src/assets/plugins",
-    "build:plugin2": "ng build --project plugins --prod --modulePath=./plugin2/plugin2.module#Plugin2Module --pluginName=plugin2 --sharedLibs=shared --outputPath=./src/assets/plugins ",
-    "build:plugins": "npm run build:shared && npm run build:plugin1 && npm run build:plugin2",
-    "compile:server": "webpack --config webpack.server.config.js --progress --colors",
-    "serve:ssr": "node dist/server",
-    "build:ssr": "npm run build:client-and-server-bundles && npm run compile:server",
-    "build:client-and-server-bundles": "ng build --prod && ng run opensilex-front-ng:server:production"
-  },
-  "private": true,
-  "dependencies": {
-    "chart.js": "2.8.0",
-    "root": "file:../../../.."
-  }
+    "name": "opensilex-front-ng",
+    "version": "1.0.0",
+    "scripts": {
+        "ng": "ng",
+        "start": "ng serve -o",
+        "build": "ng build",
+        "lint": "ng lint",
+        "postinstall": "../../../../node_modules/.bin/tsc -p builders/tsconfig.builders.json",
+        "build:shared": "../../../../node_modules/.bin/ng build shared && ../../../../node_modules/.bin/ng build --project plugins --prod --modulePath=shared#SharedModule --pluginName=shared  --outputPath=../../../target/classes/angular/plugins",
+        "build:app": "../../../../node_modules/.bin/ng build --prod --aot --outputPath=./dist/app"
+    },
+    "private": true,
+    "dependencies": {
+        "chart.js": "2.8.0"
+    }
 }

@@ -14,13 +14,15 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import org.opensilex.module.Module;
+import org.opensilex.module.OpenSilexModule;
 import org.opensilex.config.ConfigManager;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.opensilex.module.ModuleManager;
+import org.opensilex.service.Service;
 import org.opensilex.service.ServiceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +51,56 @@ public class OpenSilex {
      * Development profile identifier
      */
     public final static String DEV_PROFILE_ID = "dev";
+    
+    private static OpenSilex intance;
 
+    public final static String BASE_DIR_ARG_KEY = "BASE_DIRECTORY";
+    public final static String BASE_DIR_ENV_KEY = "OPENSILEX_BASE_DIRECTORY";
+    public final static String CONFIG_FILE_ARG_KEY = "CONFIG_FILE";
+    public final static String CONFIG_FILE_ENV_KEY = "OPENSILEX_CONFIG_FILE";
+    public final static String PROFILE_ID_ARG_KEY = "PROFILE_ID";
+    public final static String PROFILE_ID_ENV_KEY = "OPENSILEX_PROFILE_ID";
+    
+    public static String[] initWithArgs(String[] args) {
+        List<String> cliArgsList = new ArrayList<>();
+
+        String baseDirectory = System.getenv(BASE_DIR_ENV_KEY);
+        String configFile = System.getenv(CONFIG_FILE_ENV_KEY);
+        String profileId = System.getenv(PROFILE_ID_ENV_KEY);
+
+        for (String arg : args) {
+            if (arg.startsWith("--" + BASE_DIR_ARG_KEY+ "=")) {
+                baseDirectory = arg.split("=", 2)[1];
+            } else if (arg.startsWith("--" + CONFIG_FILE_ARG_KEY+ "=")) {
+                configFile = arg.split("=", 2)[1];
+            } else if (arg.startsWith("--" + PROFILE_ID_ARG_KEY+ "=")) {
+                profileId = arg.split("=", 2)[1];
+            } else {
+                cliArgsList.add(arg);
+            }
+        }
+
+        if (baseDirectory == null || baseDirectory.toString().equals("")) {
+            baseDirectory = System.getProperty("user.dir");
+        }
+        
+        if (profileId == null) {
+            profileId = PROD_PROFILE_ID;
+        }
+        
+        if (configFile == null || configFile.equals("")) {
+            intance = createInstance(Paths.get(baseDirectory), profileId, null);
+        } else {
+            intance = createInstance(Paths.get(baseDirectory), profileId, Paths.get(configFile).toFile());
+        }
+        
+        return (String[]) cliArgsList.toArray(new String[0]);
+    }
+    
+    public static OpenSilex getInstance() {
+        return intance;
+    }
+    
     /**
      * Return OpenSilex application instance
      *
@@ -59,24 +110,8 @@ public class OpenSilex {
      *
      * @return An instance of OpenSilex
      */
-    public static OpenSilex getInstance(Path baseDirectory, String profileId, File configFile) {
-        if (baseDirectory == null || baseDirectory.toString().equals("")) {
-            baseDirectory = getBaseDirectory();
-        }
-
-        if (profileId == null) {
-            profileId = System.getenv("OPENSILEX_PROFILE_ID");
-            if (profileId == null) {
-                profileId = PROD_PROFILE_ID;
-            }
-        }
-
-        if (configFile == null) {
-            String cfgPath = System.getenv("OPENSILEX_CONFIG_FILE");
-            if (cfgPath != null) {
-                configFile = new File(cfgPath);
-            }
-        }
+    
+    public static OpenSilex createInstance(Path baseDirectory, String profileId, File configFile) {
 
         File logConfigFile = baseDirectory.resolve("logback.xml").toFile();
         loadLoggerConfig(logConfigFile, true);
@@ -127,14 +162,7 @@ public class OpenSilex {
      *
      * @return default base directory
      */
-    public static Path getBaseDirectory() {
-        String directory = System.getenv("OPENSILEX_BASE_DIR");
-        if (directory == null) {
-            directory = System.getProperty("user.dir");
-        }
 
-        return Paths.get(directory);
-    }
 
     /**
      * Application configuration manager
@@ -234,10 +262,25 @@ public class OpenSilex {
      *
      * @return Iterator on modules
      */
-    public Iterable<Module> getModules() {
+    public Iterable<OpenSilexModule> getModules() {
         return moduleManager.getModules();
     }
 
+    public <T extends OpenSilexModule> T getModuleByClass(Class<T> moduleClass) throws Exception {
+        return moduleManager.getModuleByClass(moduleClass);
+    }
+    
+    public List<OpenSilexModule> getModulesByProjectId(String projectId) {
+        List<OpenSilexModule> modules = new ArrayList<>();
+        moduleManager.forEachModule((OpenSilexModule m) -> {
+            if (m.getProjectId().equals(projectId)) {
+                modules.add(m);
+            }
+        });
+        
+        return modules;
+    }
+    
     /**
      * Allow other module to map global loaded YAML config key with an interface
      *
@@ -298,4 +341,13 @@ public class OpenSilex {
     public boolean isDev() {
         return getProfileId().equals(DEV_PROFILE_ID);
     }
+
+    public <T extends Service> T getServiceInstance(String serviceId, Class<T> serviceInterface) {
+        return serviceManager.getServiceInstance(serviceId, serviceInterface);
+    }
+
+    public Path getBaseDirectory() {
+        return this.baseDirectory;
+    }
+
 }

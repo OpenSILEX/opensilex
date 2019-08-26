@@ -7,12 +7,13 @@ package org.opensilex.module.base;
 
 import java.util.List;
 import org.opensilex.module.ModuleConfig;
+import org.opensilex.module.OpenSilexModule;
 
 /**
  *
  * @author vincent
  */
-public class BaseModule extends org.opensilex.module.Module {
+public class BaseModule extends OpenSilexModule {
 
     @Override
     public Class<? extends ModuleConfig> getConfigClass() {

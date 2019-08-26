@@ -1,7 +1,7 @@
-*.flattened-pom.xml
 .*
 .*/
 !/.gitignore
 target/
 node_modules/
-angular/dist
+/*/src/main/angular/dist/
+**/src/main/angular/builders/plugin-builder/*.js

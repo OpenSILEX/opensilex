@@ -21,8 +21,10 @@ import org.apache.catalina.WebResourceRoot;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.catalina.util.IOTools;
 import org.apache.catalina.webresources.StandardRoot;
+import org.apache.commons.io.FileUtils;
 import org.apache.jasper.servlet.JasperInitializer;
 import org.opensilex.OpenSilex;
+import org.opensilex.fs.FileStorageService;
 import org.opensilex.utils.ClassInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,11 +40,12 @@ public class Server extends Tomcat {
     public static Server start(OpenSilex app, Path tomcatDirectory, String host, int port, int adminPort) throws LifecycleException {
         Server server = new Server(app, host, port, adminPort, tomcatDirectory);
         server.start();
-        
+
         return server;
     }
 
-      private final OpenSilex instance;
+    private final OpenSilex instance;
+
     /**
      * Construct OpenSilex server with host, port and adminPort adminPort is
      * used to communicate with the running server by the cli
@@ -64,6 +67,18 @@ public class Server extends Tomcat {
         getServer().setParentClassLoader(Thread.currentThread().getContextClassLoader());
 
         initRootApp();
+
+        FileStorageService fs = instance.getServiceInstance("fs", FileStorageService.class);
+        try {
+            fs.listFilesByExtension(instance.getBaseDirectory() + "/webapps", "war", (File warfile) -> {
+                String filename = warfile.getName();
+                String context = "/" + filename.substring(0, filename.length() - 4);
+                addWarApp(context, warfile);
+            });
+
+        } catch (IOException ex) {
+            //TODO : Log error;
+        }
 
         getConnector();
 
@@ -102,13 +117,15 @@ public class Server extends Tomcat {
      * @param contextPath
      * @param warFile
      */
-    public void addWarApp(String contextPath, String warFile) {
+    public void addWarApp(String contextPath, File warFile) {
+        LOGGER.debug("Load war file: " + warFile.getAbsolutePath() + " at context: " + contextPath);
+
         try {
             Path basePath = Paths.get(getHost().getAppBase());
 
-            File targetWar = basePath.resolve(warFile).toFile();
+            File targetWar = basePath.resolve(warFile.getName()).toFile();
 
-            try (InputStream warSource = getClass().getClassLoader().getResourceAsStream("war/" + warFile);
+            try (InputStream warSource = FileUtils.openInputStream(warFile);
                     OutputStream output = new FileOutputStream(targetWar)) {
                 IOTools.flow(warSource, output);
             }

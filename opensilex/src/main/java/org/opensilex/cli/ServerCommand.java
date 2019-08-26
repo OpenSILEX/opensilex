@@ -63,9 +63,6 @@ public class ServerCommand extends HelpPrinterCommand implements SubCommand {
             @Option(names = {"-p", "--port"}, description = "Define server port", defaultValue = "8666") int port,
             @Option(names = {"--adminPort"}, description = "Server port on which server is listening for admin commands", defaultValue = "8888") int adminPort,
             @Option(names = {"-d", "--daemon"}, description = "Run server as a daemon", defaultValue = "false") boolean daemon,
-            @Option(names = {"--profile"}, description = "Server profile identifier (prod, dev or test)", defaultValue = "prod") String profileId,
-            @Option(names = {"--config"}, description = "Custom configuration file", defaultValue = "") File baseConfigFile,
-            @Parameters(description = "Base directory", defaultValue = "") Path baseDirectory,
             @Parameters(description = "Tomcat directory", defaultValue = "") Path tomcatDirectory,
             @Mixin HelpOption help
     ) throws Exception {
@@ -83,7 +80,7 @@ public class ServerCommand extends HelpPrinterCommand implements SubCommand {
                 }
             });
         } else {
-            tomcatDirectory = OpenSilex.getBaseDirectory();
+            tomcatDirectory = OpenSilex.getInstance().getBaseDirectory();
         }
 
         if (daemon) {
@@ -98,16 +95,10 @@ public class ServerCommand extends HelpPrinterCommand implements SubCommand {
                         "start",
                         "--host=" + host,
                         "--port=" + port,
-                        "--profile=" + profileId,
                         "--adminPort=" + adminPort,
-                        baseDirectory.toString(),
                         tomcatDirectory.toAbsolutePath().toString()
                 );
 
-                if (!(baseConfigFile.exists() && baseConfigFile.isFile())) {
-                    pb.command("--config=" + baseConfigFile.getAbsolutePath());
-                }
-                
                 pb.start();
             } catch (IOException ex) {
                 LOGGER.error("Can't start OpenSilex server as a daemon process", ex);
@@ -119,7 +110,7 @@ public class ServerCommand extends HelpPrinterCommand implements SubCommand {
         } else {
             try {
                 Server.start(
-                        OpenSilex.getInstance(baseDirectory, profileId, baseConfigFile),
+                        OpenSilex.getInstance(),
                         tomcatDirectory,
                         host,
                         port,
@@ -164,7 +155,7 @@ public class ServerCommand extends HelpPrinterCommand implements SubCommand {
         MainCommand.main(new String[]{
             "server",
             "start",
-            "--profile=dev"
+             "--" + OpenSilex.PROFILE_ID_ARG_KEY + "=" + OpenSilex.DEV_PROFILE_ID
         });
     }
 }

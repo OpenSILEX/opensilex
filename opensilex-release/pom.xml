@@ -14,7 +14,7 @@
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    
+
     <build>
         <plugins>
             <plugin>

@@ -55,15 +55,14 @@ public interface BaseConfig extends ModuleConfig {
 //                    + "connectionClass: org.service.nosql.ogm.OgmConnection,"
 //                    + "configId: opensilex-service-nosql,"
 //                    + "configClass: org.opensilex.nosql.ogm"
-//                + "}",
-//                "fs: {"
-//                    + "serviceClass: org.opensilex.service.fs.FileStorageService,"
-//                    + "connectionClass: org.opensilex.service.fs.local.LocalFileSystemConnection,"
-//                    + "configId: opensilex-core-service-fs,"                     
-//                    + "configClass: org.opensilex.fs.local.LocalFileSystemConfig"
+                + "}",
+                "fs: {"
+                    + "serviceClass: org.opensilex.fs.FileStorageService"
                 + "}"              
             }
     )
     public Map<String, ServiceConfig> services();
+    
+    
     
 }

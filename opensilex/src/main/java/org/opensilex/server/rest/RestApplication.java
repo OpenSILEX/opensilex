@@ -20,7 +20,7 @@ import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.opensilex.OpenSilex;
-import org.opensilex.module.Module;
+import org.opensilex.module.OpenSilexModule;
 import org.opensilex.service.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,7 +85,7 @@ public class RestApplication extends ResourceConfig {
         ArrayList<String> packageList = new ArrayList<>();
 
         // Get packages list from every modules
-        for (Module module : app.getModules()) {
+        for (OpenSilexModule module : app.getModules()) {
             packageList.addAll(module.getPackagesToScan());
         }
 
@@ -103,7 +103,7 @@ public class RestApplication extends ResourceConfig {
         // Load all packages to scan from modules
         ArrayList<String> packageList = new ArrayList<>();
 
-        for (Module module : app.getModules()) {
+        for (OpenSilexModule module : app.getModules()) {
             packageList.addAll(module.apiPackages());
         }
 
@@ -119,7 +119,7 @@ public class RestApplication extends ResourceConfig {
      * Call start method of every OpenSILEX modules
      */
     private void startModules() {
-        for (Module module : app.getModules()) {
+        for (OpenSilexModule module : app.getModules()) {
             module.start(this);
         }
     }
@@ -131,6 +131,9 @@ public class RestApplication extends ResourceConfig {
             // This suppress warning is for module injection cast in loop
             @SuppressWarnings("unchecked")
             protected void configure() {
+                // Make opensilex instance injectable
+                bind(app).to(OpenSilex.class);
+                
                 // Make every service injectable
                 app.getServiceManager().forEachInterface((Class<? extends Service> serviceClass, Map<String, Service> implementations) -> {
                     implementations.forEach((String name, Service implementation) -> {
@@ -139,8 +142,8 @@ public class RestApplication extends ResourceConfig {
                 });
 
                 // Make every module injectable
-                for (Module module : app.getModules()) {
-                    bind(module).to((Class<? super Module>) module.getClass());
+                for (OpenSilexModule module : app.getModules()) {
+                    bind(module).to((Class<? super OpenSilexModule>) module.getClass());
                 }
             }
         });

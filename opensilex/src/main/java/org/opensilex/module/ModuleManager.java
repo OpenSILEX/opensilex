@@ -69,7 +69,7 @@ public class ModuleManager {
         }
     }
 
-    private List<Module> modules;
+    private List<OpenSilexModule> modules;
 
     private ConfigManager configManager;
     private ServiceManager services;
@@ -111,23 +111,23 @@ public class ModuleManager {
         }
     }
 
-    public void forEachModule(Consumer<Module> lambda) {
+    public void forEachModule(Consumer<OpenSilexModule> lambda) {
         getModules().forEach(lambda);
     }
 
     public void setApplication(OpenSilex app) {
         // Initialize service loader to find all modules and define this application to them
         LOGGER.debug("Loading modules classes");
-        forEachModule((Module module) -> {
+        forEachModule((OpenSilexModule module) -> {
             module.setApplication(app);
             LOGGER.debug("Module class found: " + module.getClass().getCanonicalName());
         });
     }
 
-    public Iterable<Module> getModules() {
+    public Iterable<OpenSilexModule> getModules() {
         if (modules == null) {
             modules = new ArrayList<>();
-            ServiceLoader.load(Module.class, Thread.currentThread().getContextClassLoader())
+            ServiceLoader.load(OpenSilexModule.class, Thread.currentThread().getContextClassLoader())
                     .forEach(modules::add);
         }
 
@@ -173,7 +173,7 @@ public class ModuleManager {
 
     public void loadServices(ServiceManager serviceManager) {
         this.services = serviceManager;
-        for (Module module : getModules()) {
+        for (OpenSilexModule module : getModules()) {
 
             // TODO Load services properly
             ModuleConfig moduleConfig = module.getConfig();
@@ -182,7 +182,7 @@ public class ModuleManager {
                     for (String serviceName : moduleConfig.services().keySet()) {
 
                         ServiceConfig serviceConfig = moduleConfig.services().get(serviceName);
-                        Service service = ServiceManager.getServiceInstance(configManager, serviceConfig);
+                        Service service = ServiceManager.buildServiceInstance(configManager, serviceConfig);
                         services.register(serviceConfig.serviceClass(), serviceName, service);
                     }
                 } catch (NoSuchMethodException
@@ -200,20 +200,20 @@ public class ModuleManager {
     }
 
     public void init() {
-        for (Module module : getModules()) {
+        for (OpenSilexModule module : getModules()) {
             module.init();
         }
     }
 
     public void clean() {
-        for (Module module : getModules()) {
+        for (OpenSilexModule module : getModules()) {
             module.clean();
         }
     }
 
     public void loadConfigs(ConfigManager configManager) {
         this.configManager = configManager;
-        for (org.opensilex.module.Module module : getModules()) {
+        for (OpenSilexModule module : getModules()) {
             String configId = module.getConfigId();
             Class<? extends ModuleConfig> configClass = module.getConfigClass();
 
@@ -223,5 +223,16 @@ public class ModuleManager {
             }
         }
 
+    }
+
+    public <T extends OpenSilexModule> T getModuleByClass(Class<T> moduleClass) throws Exception {
+        for (OpenSilexModule module : getModules()) {
+            if (module.getClass().equals(moduleClass)) {
+                return (T) module;
+            }
+        }
+        
+        // TODO use specific exception
+        throw new Exception("Can't find module corresponding to class: " + moduleClass.getCanonicalName());
     }
 }

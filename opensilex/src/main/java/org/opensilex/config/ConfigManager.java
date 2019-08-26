@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import org.opensilex.module.Module;
+import org.opensilex.module.OpenSilexModule;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -75,7 +75,7 @@ public class ConfigManager {
         yamlFactory.createGenerator(os).writeObject(root);
     }
 
-    public void build(Path baseDirectory, Iterable<Module> modules, String id, File baseConfigFile) {
+    public void build(Path baseDirectory, Iterable<OpenSilexModule> modules, String id, File baseConfigFile) {
         try {
             String extensionId = id;
             boolean buildExtension = false;
@@ -92,7 +92,7 @@ public class ConfigManager {
                 }
             }
 
-            for (org.opensilex.module.Module module : modules) {
+            for (OpenSilexModule module : modules) {
                 addSource(module.getYamlFile(OpenSilex.PROD_PROFILE_ID));
                 if (OpenSilex.DEV_PROFILE_ID.equals(extensionId)) {
                     addSource(module.getYamlFile(OpenSilex.DEV_PROFILE_ID));

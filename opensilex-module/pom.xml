@@ -20,6 +20,7 @@
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex</artifactId>
             <version>${revision}</version>
+            <scope>provided</scope>
         </dependency>
         <!-- OpenSilex Base test -->
         <dependency>
@@ -33,6 +34,7 @@
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-core</artifactId>
+            <scope>provided</scope>
             <version>${revision}</version>
         </dependency>
         <!-- OpenSilex Core test -->
@@ -51,7 +53,7 @@
             <id>angular extension module</id>
             <activation>
                 <file>
-                    <exists>src/main/angular/angular.json</exists>
+                    <exists>src/main/angular/package.json</exists>
                 </file>
             </activation>
 
@@ -64,7 +66,9 @@
                             <version>1.7.6</version>
                             <configuration>
                                 <nodeVersion>v12.8.0</nodeVersion>
+                                <yarnVersion>v1.17.3</yarnVersion>
                                 <installDirectory>../.ng</installDirectory>
+                                <workingDirectory>src/main/angular</workingDirectory>
                             </configuration>
                         </plugin>
                     </plugins>
@@ -77,28 +81,28 @@
                             <execution>
                                 <id>install node and package manager</id>
                                 <goals>
-                                    <goal>install-node-and-npm</goal>
+                                    <goal>install-node-and-yarn</goal>
                                 </goals>
                                 <!-- optional: default phase is "generate-resources" -->
                                 <phase>generate-resources</phase>
                             </execution>
  
                             <execution>
-                                <id>install shared dependencies</id>
+                                <id>install global dependencies</id>
                                 <goals>
-                                    <goal>npm</goal>
+                                    <goal>yarn</goal>
                                 </goals>
-
                                 <phase>generate-resources</phase>
                                 <configuration>
-                                    <arguments>install ../../../../</arguments>
+                                    <arguments>install</arguments>
+                                    <workingDirectory>../</workingDirectory>
                                 </configuration>
                             </execution>
-                            
+                    
                             <execution>
-                                <id>install module dependencies</id>
+                                <id>install local dependencies</id>
                                 <goals>
-                                    <goal>npm</goal>
+                                    <goal>yarn</goal>
                                 </goals>
 
                                 <phase>generate-resources</phase>
@@ -106,18 +110,20 @@
                                     <arguments>install</arguments>
                                 </configuration>
                             </execution>
-                            
-                            <execution>
-                                <id>angular build</id>
-                                <phase>prepare-package</phase>
-                                <goals>
-                                    <goal>npm</goal>
-                                </goals>
-                            </execution>
                         </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-clean-plugin</artifactId>
+                        <version>3.1.0</version>
                         <configuration>
-                            <workingDirectory>src/main/angular</workingDirectory>
-                            <arguments>run build -- --prod --aot --optimization --sourceMap=false --progress=false</arguments>
+                            <filesets>
+                                <fileset>
+                                    <directory>src/main/angular/dist</directory>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </fileset>
+                            </filesets>
                         </configuration>
                     </plugin>
                 </plugins>

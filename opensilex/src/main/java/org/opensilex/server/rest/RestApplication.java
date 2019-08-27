@@ -109,8 +109,7 @@ public class RestApplication extends ResourceConfig {
 
         // Init swagger UI
         BeanConfig beanConfig = new BeanConfig();
-        // TODO
-        beanConfig.setVersion("1.0");
+        beanConfig.setVersion(app.getModulesByProjectId("opensilex").get(0).getOpenSilexVersion());
         beanConfig.setResourcePackage(String.join(",", packageList));
         beanConfig.setScan(true);
     }

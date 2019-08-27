@@ -52,6 +52,5 @@ public class StartServer {
             "start",
             "--" + OpenSilex.PROFILE_ID_ARG_KEY + "=" + OpenSilex.DEV_PROFILE_ID
         });
-
     }
 }

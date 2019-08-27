@@ -53,7 +53,7 @@
                     <webResources>
                         <resource>
                             <targetPath>.</targetPath>
-                            <directory>src/main/angular/dist/app</directory>
+                            <directory>angular/dist/app</directory>
                         </resource>
                     </webResources>
                 </configuration>

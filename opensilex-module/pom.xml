@@ -53,11 +53,19 @@
             <id>angular extension module</id>
             <activation>
                 <file>
-                    <exists>src/main/angular/package.json</exists>
+                    <exists>angular/package.json</exists>
                 </file>
             </activation>
 
             <build>
+                <resources>
+                    <resource>
+                        <excludes>
+                            <exclude>**</exclude>
+                        </excludes>
+                        <directory>angular</directory>
+                    </resource>
+                </resources>
                 <pluginManagement>
                     <plugins>
                         <plugin>
@@ -68,7 +76,7 @@
                                 <nodeVersion>v12.8.0</nodeVersion>
                                 <yarnVersion>v1.17.3</yarnVersion>
                                 <installDirectory>../.ng</installDirectory>
-                                <workingDirectory>src/main/angular</workingDirectory>
+                                <workingDirectory>angular</workingDirectory>
                             </configuration>
                         </plugin>
                     </plugins>
@@ -118,7 +126,7 @@
                         <configuration>
                             <filesets>
                                 <fileset>
-                                    <directory>src/main/angular/dist</directory>
+                                    <directory>angular/dist</directory>
                                     <includes>
                                         <include>**</include>
                                     </includes>

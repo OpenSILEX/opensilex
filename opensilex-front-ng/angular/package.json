@@ -1,0 +1,17 @@
+{
+    "name": "opensilex-front-ng",
+    "version": "1.0.0",
+    "scripts": {
+        "ng": "ng",
+        "start": "ng serve -o",
+        "build": "ng build",
+        "lint": "ng lint",
+        "postinstall": "../../node_modules/.bin/tsc -p builders/tsconfig.builders.json",
+        "build:shared": "../../node_modules/.bin/ng build shared 2>nul && ../../node_modules/.bin/ng build --project plugins --prod --modulePath=shared#SharedModule --pluginName=shared  --outputPath=../target/classes/angular/plugins",
+        "build:app": "../../node_modules/.bin/ng build --prod --aot --outputPath=./dist/app"
+    },
+    "private": true,
+    "dependencies": {
+        "chart.js": "2.8.0"
+    }
+}

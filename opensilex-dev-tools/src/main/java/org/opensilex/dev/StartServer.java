@@ -22,18 +22,18 @@ public class StartServer {
 
         ProcessBuilder sharedBuilder = new ProcessBuilder(
                 currentDirectory.resolve("../.ng/node/node").toFile().getCanonicalPath(),
-                currentDirectory.resolve("../opensilex-front-ng/src/main/angular/dev-tools/build-shared.js").toFile().getCanonicalPath()
+                currentDirectory.resolve("../opensilex-front-ng/angular/dev-tools/build-shared.js").toFile().getCanonicalPath()
         );
-        sharedBuilder.directory(currentDirectory.resolve("../opensilex-front-ng/src/main/angular/dev-tools").toFile());
+        sharedBuilder.directory(currentDirectory.resolve("../opensilex-front-ng/angular/dev-tools").toFile());
         sharedBuilder.inheritIO();
         sharedBuilder.start();
 
         ProcessBuilder pluginBuilder = new ProcessBuilder(
                 currentDirectory.resolve("../.ng/node/node").toFile().getCanonicalPath(),
-                currentDirectory.resolve("../opensilex-front-ng/src/main/angular/dev-tools/build-plugins.js").toFile().getCanonicalPath(),
+                currentDirectory.resolve("../opensilex-front-ng/angular/dev-tools/build-plugins.js").toFile().getCanonicalPath(),
                 "--module=opensilex-front-ue"
         );
-        pluginBuilder.directory(currentDirectory.resolve("../opensilex-front-ng/src/main/angular/dev-tools").toFile());
+        pluginBuilder.directory(currentDirectory.resolve("../opensilex-front-ng/angular/dev-tools").toFile());
         pluginBuilder.inheritIO();
         pluginBuilder.start();
 
@@ -43,7 +43,7 @@ public class StartServer {
                 "serve",
                 "--poll=2000"
         );
-        devServer.directory(currentDirectory.resolve("../opensilex-front-ng/src/main/angular").toFile());
+        devServer.directory(currentDirectory.resolve("../opensilex-front-ng/angular").toFile());
         devServer.inheritIO();
         devServer.start();
 

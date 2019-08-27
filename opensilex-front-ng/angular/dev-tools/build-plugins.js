@@ -8,12 +8,12 @@ const {fork} = require('child_process');
 var argv = require('yargs-parser')(process.argv.slice(2));
 
 if (argv.hasOwnProperty("module")) {
-    let modulePath = path.resolve(__dirname, "../../../../../", argv.module);
-    let jsonData = require(path.resolve(modulePath, 'src/main/angular/opensilex.json'));
+    let modulePath = path.resolve(__dirname, "../../../", argv.module);
+    let jsonData = require(path.resolve(modulePath, 'angular/opensilex.json'));
 
     let outputPath = path.resolve(modulePath, "./target/classes/angular/plugins");
 
-    let sharedLibPath = path.resolve(__dirname, "../../../../target/classes/angular/plugins/shared.js");
+    let sharedLibPath = path.resolve(__dirname, "../../target/classes/angular/plugins/shared.js");
 
     function copyPlugin(origin) {
         let dest = path.resolve(__dirname, "../src/assets/.plugins", path.basename(origin));
@@ -73,7 +73,7 @@ if (argv.hasOwnProperty("module")) {
 //            console.log('Create plugin promise', pluginId, pluginBuildCountInPipe[pluginId]);
             if (pluginBuildCountInPipe[pluginId] == 1) {
                 fork(path.resolve(modulePath, '../node_modules/.bin/ng'), buildParamsByPlugin[pluginId].args, {
-                    cwd: path.resolve(modulePath, 'src/main/angular/')
+                    cwd: path.resolve(modulePath, 'angular/')
                 }).on('exit', () => {
                     // TODO: if compile with error no copy
 //                    console.log('Plugin file created !', pluginId);
@@ -120,7 +120,7 @@ if (argv.hasOwnProperty("module")) {
                 "--sharedLibs=shared",
                 "--outputPath=" + outputPath
             ],
-            srcPath: path.resolve(modulePath, 'src/main/angular/src', plugin.id),
+            srcPath: path.resolve(modulePath, 'angular/src', plugin.id),
             outputFile: path.resolve(outputPath, plugin.id + ".js")
         }
         

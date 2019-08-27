@@ -147,7 +147,7 @@ public abstract class OpenSilexModule {
     public boolean fileExists(String fileName) throws Exception {
         URL sourceLocation = getClass().getProtectionDomain().getCodeSource().getLocation();
         String sourceLocationString = sourceLocation.toString();
-        LOGGER.debug(getClass().getCanonicalName() + " - Load file from: " + sourceLocationString + " looking for: " + fileName);
+        LOGGER.debug(getClass().getCanonicalName() + " - Check file from: " + sourceLocationString + " looking for: " + fileName);
 
         if (sourceLocationString.endsWith(".jar")) {
 

@@ -5,7 +5,7 @@ const chokidar = require('chokidar');
 const path = require("path");
 const {fork} = require('child_process');
 
-let modulePath = path.resolve(__dirname, "../../../../");
+let modulePath = path.resolve(__dirname, "../../");
 
 let outputPath = path.resolve(modulePath, "./target/classes/angular/plugins");
 
@@ -32,7 +32,7 @@ function buildPlugin() {
             "build",
             "shared"
         ], {
-            cwd: path.resolve(modulePath, 'src/main/angular/')
+            cwd: path.resolve(modulePath, 'angular/')
         }).on('exit', () => {
             fork(path.resolve(modulePath, '../node_modules/.bin/ng'), [
                 "build",
@@ -43,7 +43,7 @@ function buildPlugin() {
                 "--pluginName=shared",
                 "--outputPath=" + outputPath
             ], {
-                cwd: path.resolve(modulePath, 'src/main/angular/')
+                cwd: path.resolve(modulePath, 'angular/')
             }).on('exit', () => {
                 // if compile with error no copy
                 isBuilding = false;

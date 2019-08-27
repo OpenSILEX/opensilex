@@ -3,6 +3,6 @@
 !/.gitignore
 target/
 node_modules/
-/*/src/main/angular/dist/
-**/src/main/angular/builders/plugin-builder/*.js
+/*/angular/dist/
+**/angular/builders/plugin-builder/*.js
 **/nb-configuration.xml

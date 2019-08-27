@@ -11,7 +11,7 @@
       "schematics": {},
       "architect": {
         "build": {
-          "builder": "../../../../opensilex-front-ng/src/main/angular/builders:plugin",
+          "builder": "../../opensilex-front-ng/angular/builders:plugin",
           "options": {
             "outputPath": "dist/plugins",
             "index": "",

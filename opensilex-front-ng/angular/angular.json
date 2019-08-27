@@ -26,9 +26,9 @@
               "src/styles.css"
             ],
             "scripts": [
-              "../../../../node_modules/systemjs/dist/s.js",
-              "../../../../node_modules/systemjs/dist/extras/named-register.js",
-              "../../../../node_modules/systemjs/dist/extras/amd.js"
+              "../../node_modules/systemjs/dist/s.js",
+              "../../node_modules/systemjs/dist/extras/named-register.js",
+              "../../node_modules/systemjs/dist/extras/amd.js"
             ]
           },
           "configurations": {

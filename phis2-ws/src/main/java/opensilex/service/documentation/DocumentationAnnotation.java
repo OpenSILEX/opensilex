@@ -321,6 +321,9 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_LANGUAGE = "en";
     
     public static final String EXAMPLE_SKOS_REFERECENCE_URI = "http://purl.obolibrary.org/obo/CO_125_0000002";
+    
+    public static final String FACTOR_POST_DATA_DEFINITION = "JSON format of factor";
+    public static final String FACTOR_URI_DEFINITION = "A factor URI (Unique Resource Identifier)";
 }    
     
  

@@ -30,6 +30,23 @@ public class FactorDTO extends RdfResourceDefinitionDTO{
         ontologiesReferences = factor.getOntologiesReferences();
     }
 
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public ArrayList<OntologyReference> getOntologiesReferences() {
+        return ontologiesReferences;
+    }
+
+    public void setOntologiesReferences(ArrayList<OntologyReference> ontologiesReferences) {
+        this.ontologiesReferences = ontologiesReferences;
+    }
+
+    
     
     
 }

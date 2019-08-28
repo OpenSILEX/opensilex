@@ -16,23 +16,32 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import javax.validation.constraints.Min;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.FactorDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
+import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.resource.dto.factor.FactorDTO;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Factor;
+import opensilex.service.utils.POSTResultsReturn;
+import opensilex.service.view.brapi.form.AbstractResultForm;
+import opensilex.service.view.brapi.form.ResponseFormPOST;
 
 /**
  * Factor resource service.
@@ -109,7 +118,7 @@ public class FactorResourceService extends ResourceService {
                 example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_JSON)
-    public Response get(
+    public Response getFactorsByCriteria(
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
         @ApiParam(value = "Search by factor uri", example = DocumentationAnnotation.EXAMPLE_FACTOR_URI) @QueryParam("uri") @URL String uri,
@@ -132,8 +141,6 @@ public class FactorResourceService extends ResourceService {
         int totalCount = factorDAO.countWithFilter(filter.getUri(),filter.getLabel(),language);
         //3. Get factors result
         ArrayList<Factor> searchResult = factorDAO.find(filter.getUri(),filter.getLabel(),language);
-        Gson gson = new Gson();
-        System.out.println("opensilex.service.resource.FactorResourceService.get()" + gson.toJson(searchResult));
         
         //4. Send result
         ResultForm<FactorDTO> getResponse;
@@ -151,4 +158,59 @@ public class FactorResourceService extends ResourceService {
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }
     }
+    
+    
+    
+     /**
+     * Factor POST service.
+     * @param factor
+     * @param context
+     * @return the POST result
+     */
+    @POST
+    @ApiOperation(value = "Post factor(s)",
+                  notes = "Register new factor(s) in the data base")
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "Factor(s) saved", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "Authorization", required = true,
+                          dataType = "string", paramType = "header",
+                          value = DocumentationAnnotation.ACCES_TOKEN,
+                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response postUnit(@ApiParam(value = DocumentationAnnotation.FACTOR_POST_DATA_DEFINITION, required = true) @Valid ArrayList<FactorDTO> factor,
+                              @Context HttpServletRequest context) {
+        AbstractResultForm postResponse = null;
+        if (factor != null && !factor.isEmpty()) {
+            FactorDAO factorDao = new FactorDAO();
+            if (context.getRemoteAddr() != null) {
+                factorDao.remoteUserAdress = context.getRemoteAddr();
+            }
+            
+            factorDao.user = userSession.getUser();
+            
+            POSTResultsReturn result = factorDao.checkAndInsert(factor);
+            
+            if (result.getHttpStatus().equals(Response.Status.CREATED)) {
+                //Code 201: factor inserted
+                postResponse = new ResponseFormPOST(result.statusList);
+                postResponse.getMetadata().setDatafiles(result.getCreatedResources());
+            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                    || result.getHttpStatus().equals(Response.Status.OK)
+                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                postResponse = new ResponseFormPOST(result.statusList);
+            }
+            return Response.status(result.getHttpStatus()).entity(postResponse).build();
+        } else {
+            postResponse = new ResponseFormPOST(new Status("Request error", StatusCodeMsg.ERR, "Empty factor(s) to add"));
+            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+        }
+    }
+    
 }

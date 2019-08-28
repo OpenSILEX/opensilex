@@ -8,6 +8,7 @@
 package opensilex.service.dao;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -15,9 +16,16 @@ import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.dao.exception.ResourceAccessDeniedException;
 import opensilex.service.dao.manager.Rdf4jDAO;
+import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.Factor;
+import opensilex.service.model.OntologyReference;
 import opensilex.service.ontology.Contexts;
 import opensilex.service.ontology.Oeso;
+import opensilex.service.ontology.Skos;
+import opensilex.service.resource.dto.factor.FactorDTO;
+import opensilex.service.utils.POSTResultsReturn;
+import opensilex.service.utils.UriGenerator;
+import opensilex.service.view.brapi.Status;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
@@ -29,6 +37,7 @@ import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
@@ -61,6 +70,7 @@ public class FactorDAO extends Rdf4jDAO<Factor>{
      * Search all the factors corresponding to the search params given.
      * @param uri
      * @param label
+     * @param language
      * @return the list of the factors.
      */
     public ArrayList<Factor> find( String uri, String label,String language) {
@@ -159,6 +169,7 @@ public class FactorDAO extends Rdf4jDAO<Factor>{
             query.addFilter("REGEX ( str(?" + LABEL + "),\".*" + label + ".*\",\"i\")");
         }
         query.addFilter("LANG(?" + LABEL + ") = \"\" || LANGMATCHES(LANG(?" + LABEL + "), \"" + language + "\")");
+        query.addFilter("LANG(?" + COMMENT + ") = \"\" || LANGMATCHES(LANG(?" + COMMENT + "), \"" + language + "\")");
         
         if (this.page != null && this.pageSize != null) {
             query.setLimit(this.pageSize);
@@ -238,6 +249,129 @@ public class FactorDAO extends Rdf4jDAO<Factor>{
             }
         }
         return count;
+    }
+    
+    
+     /**
+     * Checks the integrity of the objects and create them in the storage.
+     * @param factorDTO
+     * @return the result
+     */
+    public POSTResultsReturn checkAndInsert(List<FactorDTO> factorDTO) {
+        POSTResultsReturn checkResult = check(factorDTO);
+        if (checkResult.getDataState()) {
+            return insert(factorDTO);
+        } else {
+            return checkResult;
+        }
+    }
+    
+     /**
+     * Check if the objects are valid.
+     * @param factorsDTO
+     * @return 
+     */
+    public POSTResultsReturn check(List<FactorDTO> factorsDTO) {
+        //Résultats attendus
+        POSTResultsReturn traitsCheck;
+        //Liste des status retournés
+        List<Status> checkStatusList = new ArrayList<>();
+        boolean dataOk = true;
+        
+        //Vérification des unités
+        for (FactorDTO factorDTO : factorsDTO) {
+            //Vérification des relations d'ontologies de référence
+            for (OntologyReference ontologyReference : factorDTO.getOntologiesReferences()) {
+                if (!ontologyReference.getProperty().equals(Skos.RELATION_EXACT_MATCH.toString())
+                   && !ontologyReference.getProperty().equals(Skos.RELATION_CLOSE_MATCH.toString())
+                   && !ontologyReference.getProperty().equals(Skos.RELATION_NARROWER.toString())
+                   && !ontologyReference.getProperty().equals(Skos.RELATION_BROADER.toString())) {
+                    dataOk = false;
+                    checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
+                            "Bad property relation given. Must be one of the following : " 
+                            + Skos.RELATION_EXACT_MATCH.toString()
+                            + ", " + Skos.RELATION_CLOSE_MATCH.toString()
+                            + ", " + Skos.RELATION_NARROWER.toString()
+                            + ", " + Skos.RELATION_BROADER.toString()
+                            +". Given : " + ontologyReference.getProperty()));
+                }
+            }
+        }
+        
+        traitsCheck = new POSTResultsReturn(dataOk, null, dataOk);
+        traitsCheck.statusList = checkStatusList;
+        return traitsCheck;
+    }
+    
+    
+     /**
+     * Create objects. 
+     * The objects integrity must have been checked previously.
+     * @param factorsDTO
+     * @return 
+     */
+    public POSTResultsReturn insert(List<FactorDTO> factorsDTO) {
+        List<Status> insertStatusList = new ArrayList<>();
+        List<String> createdResourcesURI = new ArrayList<>();
+        
+        POSTResultsReturn results;
+        boolean resultState = false;
+        boolean annotationInsert = true;
+        
+        final Iterator<FactorDTO> iteratorFactorDTO = factorsDTO.iterator();
+        
+        while (iteratorFactorDTO.hasNext() && annotationInsert) {
+            FactorDTO unitDTO = iteratorFactorDTO.next();
+            try {
+                unitDTO.setUri(UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_FACTOR.toString(), null, null));
+            } catch (Exception ex) { //In the unit case, no exception should be raised
+                annotationInsert = false;
+            }
+            
+            // Register
+            UpdateRequest spqlInsert = prepareInsertQuery(unitDTO);
+            
+            try {
+                //SILEX:todo
+                // Connection to review. Dirty hotfix.
+                this.getConnection().begin();
+                Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spqlInsert.toString());
+                LOGGER.trace(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
+                prepareUpdate.execute();
+                //\SILEX:todo
+
+                createdResourcesURI.add(unitDTO.getUri());
+
+                if (annotationInsert) {
+                    resultState = true;
+                    getConnection().commit();
+                } else {
+                    getConnection().rollback();
+                }
+            } catch (RepositoryException ex) {
+                    LOGGER.error("Error during commit or rolleback Triplestore statements: ", ex);
+            } catch (MalformedQueryException e) {
+                    LOGGER.error(e.getMessage(), e);
+                    annotationInsert = false;
+                    insertStatusList.add(new Status(
+                            StatusCodeMsg.QUERY_ERROR, 
+                            StatusCodeMsg.ERR, 
+                            "Malformed insertion query: " + e.getMessage()));
+            } 
+        }
+        
+        results = new POSTResultsReturn(resultState, annotationInsert, true);
+        results.statusList = insertStatusList;
+        results.setCreatedResources(createdResourcesURI);
+        if (resultState && !createdResourcesURI.isEmpty()) {
+            results.createdResources = createdResourcesURI;
+            results.statusList.add(new Status(
+                    StatusCodeMsg.RESOURCES_CREATED, 
+                    StatusCodeMsg.INFO, 
+                    createdResourcesURI.size() + " new resource(s) created."));
+        }
+        
+        return results;
     }
 }
 

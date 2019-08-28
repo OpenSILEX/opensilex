@@ -610,6 +610,19 @@ public class UriGenerator {
         return uri;
     }
     
+       /**
+     * Generates a new factor URI.
+     * @example http://www.opensilex.org/id/factors/waterExposure
+     * @return the new generated uri
+     * @throws Exception 
+     */
+    private static String generateFactorUri() throws Exception {
+        // Define data URI with key hash  and random id to prevent collision
+        String uri = Contexts.PLATFORM.toString() + "id/dataFile/" + collection + "/" + getUniqueHash(key);
+        
+        return uri;
+    }
+    
     private static String getUniqueHash(String key) throws NoSuchAlgorithmException {
         // Generate SHA-256 hash
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -722,6 +735,8 @@ public class UriGenerator {
             return generateDataFileUri(year, additionalInformation);
         } else if (instanceType.equals(Oeso.CONCEPT_ACTUATOR.toString())) {
             return generateActuatorUri(year);
+        } else if (instanceType.equals(Oeso.CONCEPT_FACTOR.toString())) {
+            return generateFactorUri();
         }
         return null;
     }

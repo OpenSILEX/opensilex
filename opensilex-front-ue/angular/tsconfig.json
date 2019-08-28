@@ -21,10 +21,10 @@
     ],
     "paths": {
       "shared": [
-        "../../opensilex-front-ng/angular/dist/shared"
+        "../../opensilex-front-app/angular/dist/shared"
       ],
       "shared/*": [
-        "../../opensilex-front-ng/angular/dist/shared/*"
+        "../../opensilex-front-app/angular/dist/shared/*"
       ],
       "rxjs": ["../../node_modules/rxjs"]
     }

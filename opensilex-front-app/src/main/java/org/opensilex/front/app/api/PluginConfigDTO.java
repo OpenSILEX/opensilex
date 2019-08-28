@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.front.ng.api;
+package org.opensilex.front.app.api;
 
 import java.util.ArrayList;
 import java.util.List;

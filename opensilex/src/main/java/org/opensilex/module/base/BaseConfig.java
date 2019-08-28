@@ -15,7 +15,8 @@ import org.opensilex.service.ServiceConfig;
  * @author vincent
  */
 public interface BaseConfig extends ModuleConfig {
- /**
+
+    /**
      * Flag to determine if application is in debug mode or not
      *
      * @return true Application in debug mode false Application in production
@@ -43,26 +44,25 @@ public interface BaseConfig extends ModuleConfig {
             value = "Core data sources",
             defaultMap = {
                 "sparql: {"
-                    + "serviceClass: org.opensilex.sparql.SPARQLService,"
-                    + "connectionClass: org.opensilex.sparql.rdf4j.RDF4JConnection,"
-                    + "configId: opensilex-service-sparql,"
-                    + "configClass: org.opensilex.sparql.rdf4j.RDF4JConfig"
+                + "serviceClass: org.opensilex.sparql.SPARQLService,"
+                + "connectionClass: org.opensilex.sparql.rdf4j.RDF4JConnection,"
+                + "configId: opensilex-service-sparql,"
+                + "configClass: org.opensilex.sparql.rdf4j.RDF4JConfig"
                 + "}",
                 "authentication: {"
                 + "serviceClass: org.opensilex.server.security.AuthenticationService"
-//                "nosql: {"
-//                    + "serviceClass: org.opensilex.nosql.NoSQLService,"
-//                    + "connectionClass: org.service.nosql.ogm.OgmConnection,"
-//                    + "configId: opensilex-service-nosql,"
-//                    + "configClass: org.opensilex.nosql.ogm"
                 + "}",
                 "fs: {"
-                    + "serviceClass: org.opensilex.fs.FileStorageService"
-                + "}"              
+                + "serviceClass: org.opensilex.fs.FileStorageService"
+                + "}"
+//                "nosql: {"
+//                + "serviceClass: org.opensilex.nosql.NoSQLService,"
+//                + "connectionClass: org.service.nosql.ogm.OgmConnection,"
+//                + "configId: opensilex-service-nosql,"
+//                + "configClass: org.opensilex.nosql.ogm"
+//                + "}"
             }
     )
     public Map<String, ServiceConfig> services();
-    
-    
-    
+
 }

@@ -3,14 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.front.ng;
-
-import org.opensilex.module.OpenSilexModule;
+package org.opensilex.server;
 
 /**
  *
  * @author vincent
  */
-public class FrontNgModule extends OpenSilexModule {
+public interface ServerExtension {
     
+    public void initServer(Server server);
 }

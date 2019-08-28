@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.front.ng.api;
+package org.opensilex.front.app.api;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -41,7 +41,7 @@ public class FrontAPI implements RestApplicationAPI {
 
     @Context
     UriInfo uri;
-
+    
     @GET
     @Path("/config")
     @ApiOperation(value = "Return the current configuration")
@@ -53,7 +53,7 @@ public class FrontAPI implements RestApplicationAPI {
     public Response config() throws Exception {
 
         Map<String, PluginConfigDTO> result = new HashMap<>();
-
+        
         for (OpenSilexModule module : app.getModules()) {
             for (String pluginFileName : module.listResourceDirectory("angular/plugins")) {
                 if (pluginFileName.endsWith(".js")) {

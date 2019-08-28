@@ -9,9 +9,9 @@
 
     <parent>
         <groupId>org.opensilex</groupId>
-        <artifactId>opensilex-module</artifactId>
+        <artifactId>opensilex-parent</artifactId>
         <version>${revision}</version>
-        <relativePath>opensilex-module/pom.xml</relativePath>
+        <relativePath>opensilex-parent/pom.xml</relativePath>
     </parent>
     
     <modules>
@@ -21,7 +21,7 @@
         <module>opensilex-core</module> 
         <module>opensilex-module</module> 
         <!-- Required module for angular support -->
-        <module>opensilex-front-ng</module>
+        <module>opensilex-front-app</module>
         <!-- Extension modules --> 
         <module>phis-ws/phis2-ws</module>
         <module>opensilex-front-ue</module>
@@ -32,7 +32,7 @@
     </modules>
     
     <dependencies>
-        <!-- Required dependencies -->
+        <!--Required dependencies--> 
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex</artifactId>
@@ -43,20 +43,19 @@
             <artifactId>opensilex-core</artifactId>
             <version>${revision}</version>
         </dependency>
-        <!-- Required dependency for angular support -->
+        <!--Required dependency for angular support--> 
         <dependency>
             <groupId>org.opensilex</groupId>
-            <artifactId>opensilex-front-ng</artifactId>
-            <classifier>classes</classifier>
+            <artifactId>opensilex-front-app</artifactId>
             <version>${revision}</version>
         </dependency>
-        <!-- Extension dependencies -->
+        <!--Extension dependencies--> 
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-front-ue</artifactId>
             <version>${revision}</version>
         </dependency>
-        <!--        <dependency>
+        <!--                <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>phis2ws</artifactId>
             <version>${revision}</version>

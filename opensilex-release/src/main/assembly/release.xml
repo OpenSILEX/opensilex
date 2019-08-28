@@ -13,21 +13,11 @@
                 <include>${project.groupId}:*:jar</include>
             </includes>
             <excludes>
-                <!--<exclude>${project.groupId}:opensilex-front-ng:jar:${project.version}</exclude>-->
                 <exclude>${project.groupId}:opensilex:*:${project.version}</exclude>
             </excludes>
             <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
             <useProjectArtifact>false</useProjectArtifact>
             <outputDirectory>modules</outputDirectory>
-            <unpack>false</unpack>
-        </dependencySet>
-        <dependencySet>
-            <includes>
-                <include>${project.groupId}:*:war</include>
-            </includes>
-            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
-            <useProjectArtifact>false</useProjectArtifact>
-            <outputDirectory>webapps</outputDirectory>
             <unpack>false</unpack>
         </dependencySet>
     </dependencySets>    

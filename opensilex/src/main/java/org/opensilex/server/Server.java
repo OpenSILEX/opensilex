@@ -23,6 +23,8 @@ import org.apache.catalina.util.IOTools;
 import org.apache.catalina.webresources.StandardRoot;
 import org.apache.commons.io.FileUtils;
 import org.apache.jasper.servlet.JasperInitializer;
+import org.apache.tomcat.JarScanFilter;
+import org.apache.tomcat.JarScanType;
 import org.opensilex.OpenSilex;
 import org.opensilex.fs.FileStorageService;
 import org.opensilex.utils.ClassInfo;
@@ -66,7 +68,11 @@ public class Server extends Tomcat {
         getHost().setAppBase(baseDir);
         getServer().setParentClassLoader(Thread.currentThread().getContextClassLoader());
 
-        initRootApp();
+        initApp("", "/", "/webapp", getClass());
+
+        instance.getModulesImplementingInterface(ServerExtension.class).forEach((ServerExtension extension) -> {
+            extension.initServer(this);
+        });
 
         FileStorageService fs = instance.getServiceInstance("fs", FileStorageService.class);
         try {
@@ -89,20 +95,30 @@ public class Server extends Tomcat {
      * Initialize OpenSilex Root webapp (swagger and jersey services) located at
      * the root "/" of the server.
      */
-    private void initRootApp() {
+    public void initApp(String name, String rootPath, String baseDirectory, Class<?> moduleClass) {
         try {
-            Context context = addWebapp("", new File(".").getAbsolutePath());
+            Context context = addWebapp(name, new File(".").getAbsolutePath());
             WebResourceRoot resource = new StandardRoot(context);
-            File jarFile = ClassInfo.getJarFile(Server.class);
+            File jarFile = ClassInfo.getJarFile(moduleClass);
             if (jarFile.isFile()) {
-                resource.createWebResourceSet(WebResourceRoot.ResourceSetType.RESOURCE_JAR, "/", jarFile.getCanonicalPath(), null, "/webapp");
+                resource.createWebResourceSet(WebResourceRoot.ResourceSetType.RESOURCE_JAR, rootPath, jarFile.getCanonicalPath(), null, baseDirectory);
+                context.getJarScanner().setJarScanFilter(new JarScanFilter() {
+                    @Override
+                    public boolean check(JarScanType jarScanType, String jarName) {
+                        return jarName.equals(jarFile.getName());
+                    }
+                });
             } else {
-                resource.createWebResourceSet(WebResourceRoot.ResourceSetType.PRE, "/", jarFile.getCanonicalPath(), null, "/webapp");
+                resource.createWebResourceSet(WebResourceRoot.ResourceSetType.PRE, rootPath, jarFile.getCanonicalPath(), null, baseDirectory);
             }
             context.getServletContext().setAttribute("opensilex", instance);
             context.setResources(resource);
+
         } catch (IOException ex) {
-            LOGGER.error("Can't initialize main application", ex);
+            if (name.equals("")) {
+                name = "/";
+            }
+            LOGGER.error("Can't initialize application:" + name, ex);
         }
     }
 
@@ -131,8 +147,8 @@ public class Server extends Tomcat {
             }
 
             Context context = addWebapp(contextPath, targetWar.getAbsolutePath());
-            context.setContainerSciFilter("JerseyServletContainerInitializer");
             context.addServletContainerInitializer(new JasperInitializer(), null);
+            context.getServletContext().setAttribute("opensilex", instance);
 
         } catch (IOException ex) {
             LOGGER.error("[Context: " + contextPath + "] Can't add WAR file: " + warFile, ex);

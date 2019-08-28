@@ -2,9 +2,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.opensilex</groupId>
-    <artifactId>opensilex-front-ng</artifactId>
-    <packaging>war</packaging>
-    <name>opensilex-front-ng</name>
+    <artifactId>opensilex-front-app</artifactId>
+    <packaging>jar</packaging>
+    <name>opensilex-front-app</name>
     
     <url>https://www.opensilex.org/</url>
     
@@ -16,6 +16,12 @@
     </parent>
     
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources/WEB-INF</directory>
+                <targetPath>angular/app/WEB-INF</targetPath>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>com.github.eirslett</groupId>
@@ -38,25 +44,35 @@
                             <goal>yarn</goal>
                         </goals>
                         <configuration>
-                            <arguments>run build:app --base-href /${project.name}/</arguments>
+                            <arguments>run build:app --base-href /app/</arguments>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
             <plugin>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>3.2.3</version>
-                <configuration>
-                    <failOnMissingWebXml>false</failOnMissingWebXml>
-                    <attachClasses>true</attachClasses>
-                    <packagingExcludes>**/*.jar,**/assets/.plugins/**</packagingExcludes>
-                    <webResources>
-                        <resource>
-                            <targetPath>.</targetPath>
-                            <directory>angular/dist/app</directory>
-                        </resource>
-                    </webResources>
-                </configuration>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-frontend-resources</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.basedir}/target/classes/angular/app</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>angular/dist/app</directory>
+                                    <excludes>
+                                        <exclude>**/assets/.plugins/**</exclude>
+                                        <exclude>3rdpartylicenses.txt</exclude>
+                                    </excludes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

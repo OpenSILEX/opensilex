@@ -18,12 +18,10 @@
     <dependencies>
         <dependency>
             <groupId>org.opensilex</groupId>
-            <artifactId>opensilex-front-ng</artifactId>
-            <type>war</type>
+            <artifactId>opensilex-front-app</artifactId>
             <version>${revision}</version>
         </dependency>
     </dependencies>
-    
     <build>
         <plugins>
             <plugin>

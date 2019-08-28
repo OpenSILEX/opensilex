@@ -204,6 +204,9 @@ public class FactorDAO extends Rdf4jDAO<Factor>{
         if (bindingSet.getValue(LABEL) != null) {
             factor.setLabel(bindingSet.getValue(LABEL).stringValue());
         }
+        if(bindingSet.getValue(COMMENT) != null){
+            factor.setComment(bindingSet.getValue(COMMENT).stringValue());
+        }
 
         return factor;
     }

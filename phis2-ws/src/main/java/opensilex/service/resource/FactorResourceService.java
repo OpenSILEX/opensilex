@@ -7,6 +7,7 @@
 //******************************************************************************
 package opensilex.service.resource;
 
+import com.google.gson.Gson;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -27,7 +28,7 @@ import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.FactorDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
-import opensilex.service.resource.dto.treatment.FactorDTO;
+import opensilex.service.resource.dto.factor.FactorDTO;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.result.ResultForm;
@@ -129,20 +130,21 @@ public class FactorResourceService extends ResourceService {
         
         //2. Get number of factor result
         int totalCount = factorDAO.countWithFilter(filter.getUri(),filter.getLabel(),language);
-        
         //3. Get factors result
         ArrayList<Factor> searchResult = factorDAO.find(filter.getUri(),filter.getLabel(),language);
-        
+        Gson gson = new Gson();
+        System.out.println("opensilex.service.resource.FactorResourceService.get()" + gson.toJson(searchResult));
         
         //4. Send result
         ResultForm<FactorDTO> getResponse;
         ArrayList<Status> statusList = new ArrayList<>();
         ArrayList<FactorDTO> factorToReturn = new ArrayList<>();       
-        if (searchResult == null || factorToReturn.isEmpty()) {
+        if (searchResult == null || searchResult.isEmpty()) {
             //No result found
             getResponse = new ResultForm<>(0, 0, factorToReturn, true, 0);
             return noResultFound(getResponse, statusList);
         } else {
+            factorToReturn = factorToFactorDTO(searchResult);
             //Return the result list
             getResponse = new ResultForm<>(pageSize, page, factorToReturn, true, totalCount);
             getResponse.setStatus(statusList);

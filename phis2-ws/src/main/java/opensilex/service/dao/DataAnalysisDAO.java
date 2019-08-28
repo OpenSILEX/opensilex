@@ -21,7 +21,7 @@ import opensilex.service.PropertiesFileManager;
  */
 public class DataAnalysisDAO {
     static {
-        OPENCPU_HOST = PropertiesFileManager.getConfigFileProperty("data_analysis_config", "opencpu_host");
+        OPENCPU_HOST = PropertiesFileManager.getConfigFileProperty("data_analysis_config", "opencpu.host");
     }
     private final static String OPENCPU_HOST;
     
@@ -38,7 +38,8 @@ public class DataAnalysisDAO {
     public static Response opencpuRFunctionProxyCall(String packageName, String functionName, String parameters){
         Client client = ClientBuilder.newClient();
         WebTarget webTarget = client.target(OPENCPU_HOST);
-        WebTarget opencpuCallWebTarget = webTarget.path("/ocpu/library/" + packageName + "/R/" + functionName + "/json");
+        WebTarget opencpuCallWebTarget = webTarget.path("/ocpu/library/" + packageName + "/R/" + functionName + "/json")
+                .queryParam("auto_unbox", "TRUE");
         return  opencpuCallWebTarget.request(MediaType.APPLICATION_JSON).post(Entity.json(parameters));
     }
     

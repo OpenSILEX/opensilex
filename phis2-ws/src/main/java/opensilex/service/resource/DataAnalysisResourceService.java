@@ -25,11 +25,8 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.DataAnalysisDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
@@ -78,7 +75,7 @@ public class DataAnalysisResourceService extends ResourceService {
     public Response getRfunctionResults(
             @ApiParam(required = true) @QueryParam("packageName" ) @DefaultValue("stats") @NotEmpty String packageName,
             @ApiParam(required = true) @QueryParam("functionName") @DefaultValue("rnorm") @NotEmpty String functionName,
-            @QueryParam("jsonParameters") @DefaultValue("{\"n\":1000}") String jsonParameters) {
+            @QueryParam("jsonParameters") String jsonParameters) {
                
         Response functionCallResponse = DataAnalysisDAO.opencpuRFunctionProxyCall(packageName, functionName, jsonParameters);
         

@@ -11,17 +11,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static opensilex.service.dao.ActuatorDAO.LOGGER;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.dao.exception.ResourceAccessDeniedException;
 import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.model.Factor;
-import opensilex.service.model.Species;
 import opensilex.service.ontology.Contexts;
 import opensilex.service.ontology.Oeso;
-import opensilex.service.ontology.Rdf;
-import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
@@ -36,12 +32,15 @@ import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author charlero
  */
 public class FactorDAO extends Rdf4jDAO<Factor>{
+
+    final static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(FactorDAO.class);
 
     @Override
     public List<Factor> create(List<Factor> factors) throws DAOPersistenceException, Exception {
@@ -144,7 +143,7 @@ public class FactorDAO extends Rdf4jDAO<Factor>{
 
         query.setDistinct(true);
 
-//        //URI filter
+        //URI filter
         if (uri == null) {
             query.addWhere("?" + URI, RDF.type, NodeFactory.createURI(Oeso.CONCEPT_FACTOR.toString()));
         } else {

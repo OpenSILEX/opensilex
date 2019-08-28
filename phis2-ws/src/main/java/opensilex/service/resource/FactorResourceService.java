@@ -37,8 +37,8 @@ import opensilex.service.model.Factor;
  * Factor resource service.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-@Api("/factor")
-@Path("/factor")
+@Api("/factors")
+@Path("/factors")
 public class FactorResourceService extends ResourceService {
     
     /**
@@ -130,7 +130,7 @@ public class FactorResourceService extends ResourceService {
         //2. Get number of factor result
         int totalCount = factorDAO.countWithFilter(filter.getUri(),filter.getLabel(),language);
         
-          //3. Get species result
+        //3. Get factors result
         ArrayList<Factor> searchResult = factorDAO.find(filter.getUri(),filter.getLabel(),language);
         
         

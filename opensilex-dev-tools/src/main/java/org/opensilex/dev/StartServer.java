@@ -49,9 +49,9 @@ public class StartServer {
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
-                sharedBuilderProcess.destroyForcibly();
-                pluginBuilderProcess.destroyForcibly();
-                devServerProcess.destroyForcibly();
+                sharedBuilderProcess.destroy();
+                pluginBuilderProcess.destroy();
+                devServerProcess.destroy();
             }
         });
         

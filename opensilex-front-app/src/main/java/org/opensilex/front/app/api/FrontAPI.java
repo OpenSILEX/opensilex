@@ -103,7 +103,7 @@ public class FrontAPI implements RestApplicationAPI {
             if (module.fileExists(filePath)) {
                 return Response
                         .ok(module.getFileInputStream(filePath), "application/javascript")
-                        .header("content-disposition", "attachment; filename = " + fileName)
+                        .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"" )
                         .build();
             }
         }

@@ -7,6 +7,7 @@
 //******************************************************************************
 package org.opensilex.server;
 
+import org.opensilex.module.extensions.ServerExtension;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;

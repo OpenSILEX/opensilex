@@ -8,12 +8,13 @@ package org.opensilex.module.base;
 import java.util.List;
 import org.opensilex.module.ModuleConfig;
 import org.opensilex.module.OpenSilexModule;
+import org.opensilex.module.extensions.APIExtension;
 
 /**
  *
  * @author vincent
  */
-public class BaseModule extends OpenSilexModule {
+public class BaseModule extends OpenSilexModule implements APIExtension {
 
     @Override
     public Class<? extends ModuleConfig> getConfigClass() {
@@ -27,7 +28,7 @@ public class BaseModule extends OpenSilexModule {
 
     @Override
     public List<String> getPackagesToScan() {
-        List<String> list = super.getPackagesToScan();
+        List<String> list = APIExtension.super.getPackagesToScan();
         list.add("io.swagger.jaxrs.listing");
         list.add("org.opensilex.server.rest");
         list.add("org.opensilex.server.security");

@@ -26,6 +26,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.swagger.jaxrs.config.BeanConfig;
+import java.util.List;
+import org.opensilex.module.extensions.APIExtension;
 
 /**
  * This class is the main entry point of OpenSILEX application It extends Jersey
@@ -71,7 +73,7 @@ public class RestApplication extends ResourceConfig {
         registerServices();
 
         // Allow all modules to do custom initialization
-        startModules();
+        initModules();
     }
 
     /**
@@ -84,11 +86,11 @@ public class RestApplication extends ResourceConfig {
     private void registerAPI() {
         ArrayList<String> packageList = new ArrayList<>();
 
-        // Get packages list from every modules
-        for (OpenSilexModule module : app.getModules()) {
-            packageList.addAll(module.getPackagesToScan());
-        }
-
+        // Get packages list from every modules implementing APIExtension
+        getAPIExtensionModules().forEach((APIExtension api) -> {
+            packageList.addAll(api.getPackagesToScan());
+        });
+                
         // Add package list for components scan
         LOGGER.info("Registred packages:\n" + String.join("\n", packageList));
         packages(String.join(";", packageList));
@@ -100,12 +102,12 @@ public class RestApplication extends ResourceConfig {
      * defined in modules
      */
     private void initSwagger() {
-        // Load all packages to scan from modules
+        // Load all packages to scan from modules implementing APIExtension
         ArrayList<String> packageList = new ArrayList<>();
 
-        for (OpenSilexModule module : app.getModules()) {
-            packageList.addAll(module.apiPackages());
-        }
+        getAPIExtensionModules().forEach((APIExtension api) -> {
+            packageList.addAll(api.apiPackages());
+        });
 
         // Init swagger UI
         BeanConfig beanConfig = new BeanConfig();
@@ -114,13 +116,17 @@ public class RestApplication extends ResourceConfig {
         beanConfig.setScan(true);
     }
 
+    private List<APIExtension> getAPIExtensionModules() {
+        return app.getModulesImplementingInterface(APIExtension.class);
+    }
+    
     /**
      * Call start method of every OpenSILEX modules
      */
-    private void startModules() {
-        for (OpenSilexModule module : app.getModules()) {
-            module.start(this);
-        }
+    private void initModules() {
+        getAPIExtensionModules().forEach((APIExtension api) -> {
+            api.initAPI(this);
+        });
     }
     
     private void registerServices() {

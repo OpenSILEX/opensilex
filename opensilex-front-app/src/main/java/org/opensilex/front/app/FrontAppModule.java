@@ -6,14 +6,15 @@
 package org.opensilex.front.app;
 
 import org.opensilex.module.OpenSilexModule;
+import org.opensilex.module.extensions.APIExtension;
 import org.opensilex.server.Server;
-import org.opensilex.server.ServerExtension;
+import org.opensilex.module.extensions.ServerExtension;
 
 /**
  *
  * @author vincent
  */
-public class FrontAppModule extends OpenSilexModule implements ServerExtension {
+public class FrontAppModule extends OpenSilexModule implements ServerExtension, APIExtension, FrontAppExtension {
 
     @Override
     public void initServer(Server server) {

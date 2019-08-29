@@ -3,15 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.front.ue;
-
-import org.opensilex.front.app.FrontAppExtension;
-import org.opensilex.module.OpenSilexModule;
+package org.opensilex.front.app;
 
 /**
  *
  * @author vincent
  */
-public class FrontUeModule extends OpenSilexModule implements FrontAppExtension {
+public interface FrontAppExtension {
     
 }

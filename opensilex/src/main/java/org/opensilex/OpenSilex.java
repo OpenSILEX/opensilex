@@ -22,9 +22,10 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.opensilex.module.ModuleManager;
-import org.opensilex.server.ServerExtension;
+import org.opensilex.module.extensions.ServerExtension;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceManager;
+import org.opensilex.utils.ClassInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -271,7 +272,7 @@ public class OpenSilex {
     public List<OpenSilexModule> getModulesByProjectId(String projectId) {
         List<OpenSilexModule> modules = new ArrayList<>();
         moduleManager.forEachModule((OpenSilexModule m) -> {
-            if (m.getProjectId().equals(projectId)) {
+            if (ClassInfo.getProjectIdFromClass(m.getClass()).equals(projectId)) {
                 modules.add(m);
             }
         });
@@ -349,14 +350,7 @@ public class OpenSilex {
     }
 
     public <T> List<T> getModulesImplementingInterface(Class<T> extensionInterface) {
-        List<T> modules = new ArrayList<>();
-        moduleManager.forEachModule((OpenSilexModule m) -> {
-            if (extensionInterface.isAssignableFrom(m.getClass())) {
-                modules.add((T) m);
-            }
-        });
-
-        return modules;
+        return moduleManager.getModulesImplementingInterface(extensionInterface);
     }
 
 }

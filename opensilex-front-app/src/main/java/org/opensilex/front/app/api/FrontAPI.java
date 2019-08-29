@@ -5,6 +5,7 @@
  */
 package org.opensilex.front.app.api;
 
+import com.google.common.reflect.ClassPath;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -22,8 +23,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import org.opensilex.OpenSilex;
+import org.opensilex.front.app.FrontAppExtension;
 import org.opensilex.module.OpenSilexModule;
 import org.opensilex.server.rest.RestApplicationAPI;
+import org.opensilex.utils.ClassInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +57,8 @@ public class FrontAPI implements RestApplicationAPI {
 
         Map<String, PluginConfigDTO> result = new HashMap<>();
         
-        for (OpenSilexModule module : app.getModules()) {
+        for (FrontAppExtension frontAppExtension : app.getModulesImplementingInterface(FrontAppExtension.class)) {
+            OpenSilexModule module = (OpenSilexModule)frontAppExtension;
             for (String pluginFileName : module.listResourceDirectory("angular/plugins")) {
                 if (pluginFileName.endsWith(".js")) {
                     String pluginName = pluginFileName.substring(0, pluginFileName.length() - 3);
@@ -62,7 +66,7 @@ public class FrontAPI implements RestApplicationAPI {
                     PluginConfigDTO pluginConfigDTO = new PluginConfigDTO();
                     pluginConfigDTO.setName(pluginName);
 
-                    pluginConfigDTO.setPath(uri.getBaseUri().toString() + "front/plugin/" + module.getProjectId() + "/" + pluginName + ".js");
+                    pluginConfigDTO.setPath(uri.getBaseUri().toString() + "front/plugin/" + ClassInfo.getProjectIdFromClass(frontAppExtension.getClass()) + "/" + pluginName + ".js");
 
                     if (!pluginName.equals("shared")) {
                         pluginConfigDTO.getDeps().add("shared");

@@ -7,6 +7,7 @@ package org.opensilex.utils;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
@@ -21,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 
 /**
  *
@@ -199,6 +202,23 @@ public class ClassInfo {
         if (type.getSuperclass() != null) {
             getAllFields(fields, type.getSuperclass());
         }
+    }
+
+    public static String getProjectIdFromClass(Class<?> classFromProject) {
+        String projectId = classFromProject.getPackage().getImplementationTitle();
+        if (projectId == null) {
+            try {
+                File pom = ClassInfo.getPomFile(classFromProject);
+                MavenXpp3Reader reader = new MavenXpp3Reader();
+                Model model = reader.read(new FileReader(pom));
+                projectId = model.getArtifactId();
+            } catch (Exception ex) {
+                // TODO warn;
+                return "opensilex";
+            }
+        }
+
+        return projectId;
     }
 
 }

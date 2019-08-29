@@ -8,10 +8,11 @@
 package org.opensilex.core;
 
 import org.opensilex.module.OpenSilexModule;
+import org.opensilex.module.extensions.APIExtension;
 
 /**
  * Core OpenSILEX module implementation
  */
-public class CoreModule extends OpenSilexModule {
+public class CoreModule extends OpenSilexModule implements APIExtension {
 
 }

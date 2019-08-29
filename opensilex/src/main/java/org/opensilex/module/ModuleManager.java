@@ -44,7 +44,7 @@ public class ModuleManager {
         try {
             File dependencyFile = baseDirectory.resolve(DEPENDENCIES_LIST_CACHE_FILE).toFile();
             List<URL> dependencyURLs = new ArrayList<>();
-            
+
             if (dependencyFile.isFile()) {
                 for (String dependency : FileUtils.readLines(dependencyFile, StandardCharsets.UTF_8.name())) {
                     dependencyURLs.add(new URL(dependency));
@@ -211,6 +211,17 @@ public class ModuleManager {
         }
     }
 
+    public <T> List<T> getModulesImplementingInterface(Class<T> extensionInterface) {
+        List<T> modules = new ArrayList<>();
+        forEachModule((OpenSilexModule m) -> {
+            if (extensionInterface.isAssignableFrom(m.getClass())) {
+                modules.add((T) m);
+            }
+        });
+
+        return modules;
+    }
+
     public void loadConfigs(ConfigManager configManager) {
         this.configManager = configManager;
         for (OpenSilexModule module : getModules()) {
@@ -231,7 +242,7 @@ public class ModuleManager {
                 return (T) module;
             }
         }
-        
+
         // TODO use specific exception
         throw new Exception("Can't find module corresponding to class: " + moduleClass.getCanonicalName());
     }

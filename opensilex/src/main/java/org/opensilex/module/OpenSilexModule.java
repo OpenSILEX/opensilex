@@ -10,7 +10,6 @@ package org.opensilex.module;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -28,12 +27,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.maven.model.Model;
-import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.opensilex.OpenSilex;
-import org.opensilex.server.rest.RestApplication;
 import org.opensilex.service.Service;
-import org.opensilex.utils.ClassInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,50 +84,6 @@ public abstract class OpenSilexModule {
         }
 
         return mavenProperties;
-    }
-
-    public String getProjectId() {
-        String projectId = getClass().getPackage().getImplementationTitle();
-        if (projectId == null) {
-            try {
-                File pom = ClassInfo.getPomFile(getClass());
-                MavenXpp3Reader reader = new MavenXpp3Reader();
-                Model model = reader.read(new FileReader(pom));
-                projectId = model.getArtifactId();
-            } catch (Exception ex) {
-                // TODO warn;
-                return "opensilex";
-            }
-        }
-
-        return projectId;
-    }
-
-    /**
-     * This method is called during application initialization to get all
-     * packages to scan for components like request filters or response mapper
-     *
-     * @return List of packages to scan
-     */
-    public List<String> getPackagesToScan() {
-        List<String> list = new ArrayList<>();
-        list.addAll(apiPackages());
-
-        return list;
-    }
-
-    /**
-     * This method is called during application initialization to get all
-     * packages to scan for jersey web services wich will be displayed into
-     * swagger UI
-     *
-     * @return List of packages to scan for web services
-     */
-    public List<String> apiPackages() {
-        List<String> list = new ArrayList<>();
-        list.add(getClass().getPackage().getName());
-
-        return list;
     }
 
     /**
@@ -251,14 +202,6 @@ public abstract class OpenSilexModule {
 
     }
 
-    /**
-     * This entry point allow module to initialize anything in application after
-     * all configuration is loaded at the end of application loading
-     */
-    public void start(RestApplication resourceConfig) {
-        // Do nothing by default; 
-    }
-
     public void clean() {
 
     }
@@ -275,7 +218,7 @@ public abstract class OpenSilexModule {
 
     @SuppressWarnings("unchecked")
     public <T> T getConfig(Class<T> configClass) {
-        return (T) config;
+        return (T) getConfig();
     }
 
     public String getConfigId() {

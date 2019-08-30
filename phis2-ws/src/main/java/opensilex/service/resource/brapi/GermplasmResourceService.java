@@ -51,8 +51,8 @@ import org.slf4j.LoggerFactory;
  * Germplasm resource service
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
-@Api("/germplasm")
-@Path("/germplasm")
+@Api("/brapi/v1/germplasm")
+@Path("/brapi/v1/germplasm")
 public class GermplasmResourceService extends ResourceService {
     final static Logger LOGGER = LoggerFactory.getLogger(GermplasmResourceService.class);
     
@@ -146,20 +146,23 @@ public class GermplasmResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
             @ApiParam(value = "Search by germplasmDbId", example = DocumentationAnnotation.EXAMPLE_GERMPLASM_URI) @QueryParam("germplasmDbId") String uri,
-            @ApiParam(value = "Search by germplasmName", example = DocumentationAnnotation.EXAMPLE_GERMPLASM_NAME) @QueryParam("germplasmName") @URL String germplasmName,
-            @ApiParam(value = "Search by accessionNumber", example = DocumentationAnnotation.EXAMPLE_ACCESSION_NUMBER) @QueryParam("accessionNumber") String accessionNumber,
-            @ApiParam(value = "Search by genus", example = DocumentationAnnotation.EXAMPLE_GENUS) @QueryParam("genus") String genus,            
-            @ApiParam(value = "Search by species uri", example = DocumentationAnnotation.EXAMPLE_SPECIES_URI) @QueryParam("species") String species,
-            @ApiParam(value = "Search by subtaxa (variety)", example = DocumentationAnnotation.EXAMPLE_VARIETY) @QueryParam("subtaxa") String variety,
-            @ApiParam(value = "Search by instituteCode", example = DocumentationAnnotation.EXAMPLE_INSTITUTE_CODE) @QueryParam("instituteCode") String instituteCode,
-            @ApiParam(value = "Search by instituteName", example = DocumentationAnnotation.EXAMPLE_INSTITUTE_NAME) @QueryParam("instituteName") String instituteName ) {
+            @ApiParam(value = "Search by germplasmPUI", example = DocumentationAnnotation.EXAMPLE_GERMPLASM_URI) @QueryParam("germplasmPUI") String germplasmPUI,
+            @ApiParam(value = "Search by germplasmName / not supported", example = DocumentationAnnotation.EXAMPLE_GERMPLASM_NAME) @QueryParam("germplasmName") @URL String germplasmName,
+            @ApiParam(value = "Search by commonCropName / not supported", example = DocumentationAnnotation.EXAMPLE_ACCESSION_NUMBER) @QueryParam("commonCropName") String commonCropName,
+            //added the parameter language to choose the language of species label 
+            @ApiParam(value = "choose the language of the species", example = DocumentationAnnotation.EXAMPLE_ACCESSION_NUMBER) @QueryParam("language") String language
+      ){
+        
+        if (germplasmPUI != null){
+            uri = germplasmPUI;
+        }
         
         GermplasmDAO germplasmDAO = new GermplasmDAO();
         //1. Get count
-        Integer totalCount = germplasmDAO.count(uri, germplasmName, accessionNumber, genus, species, variety, instituteCode, instituteName);
+        Integer totalCount = germplasmDAO.count(uri, germplasmName, commonCropName, language);
         
         //2. Get germplasms
-        ArrayList<Germplasm> germplasmFounded = germplasmDAO.find(page, pageSize, uri, germplasmName, accessionNumber, genus, species, variety, instituteCode, instituteName);
+        ArrayList<Germplasm> germplasmFounded = germplasmDAO.find(page, pageSize, uri, germplasmName, commonCropName, language);
         
         //3. Return result
         ArrayList<Status> statusList = new ArrayList<>();

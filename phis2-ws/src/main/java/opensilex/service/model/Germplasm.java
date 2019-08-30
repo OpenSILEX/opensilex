@@ -15,6 +15,7 @@ import java.util.ArrayList;
  */
 public class Germplasm {
     private String germplasmURI;
+    //private String germplasmName;
     private String accessionNumber;
     private String accessionURI;
     private String varietyLabel;
@@ -22,38 +23,24 @@ public class Germplasm {
     private String speciesURI;
     private String speciesLabel;
     private ArrayList<String> seedLots;
+    private String instituteCode;
+    private String instituteName;
     
     public String getGermplasmURI() {
         return germplasmURI;
     }
-
-//    //private String acquisitionDate;
-//    private String biologicalStatusOfAccessionCode;
-//    //private String breedingMethodDbId;
-//    private String commonCropName;
-//    //private String countryOfOrigin;
-//    //private String defaultDisplayName;
-//    private String documentationURL;
-//    //private ArrayList<String> donors;
-//    private String genus;
-//    private String germplasmDbId;  //uri
-//    private String germplasmName;
-//    //private String germplasmPUI;
-//    private String instituteCode;
-//    private String instituteName;
-//    //private String pedigree;
-//    //private String seedsource;    
-//    private String species;
-//    //private String speciesAuthority;
-//    
-//    //private String subtaxaAuthority;
-//    private ArrayList<String> synonyms;
-//    //private ArrayList<String> taxonIds;
-//    //private ArrayList<String> typeOfGermplasmStorageCode;
     
     public void setGermplasmURI(String germplasmURI) {
         this.germplasmURI = germplasmURI;
     }
+
+//    public String getGermplasmName() {
+//        return germplasmName;
+//    }
+//
+//    public void setGermplasmName(String germplasmName) {
+//        this.germplasmName = germplasmName;
+//    }
 
     public String getAccessionNumber() {
         return accessionNumber;
@@ -109,6 +96,22 @@ public class Germplasm {
 
     public void setSeedLots(ArrayList<String> seedLots) {
         this.seedLots = seedLots;
+    }
+
+    public String getInstituteCode() {
+        return instituteCode;
+    }
+
+    public void setInstituteCode(String instituteCode) {
+        this.instituteCode = instituteCode;
+    }
+
+    public String getInstituteName() {
+        return instituteName;
+    }
+
+    public void setInstituteName(String instituteName) {
+        this.instituteName = instituteName;
     }
     
 }

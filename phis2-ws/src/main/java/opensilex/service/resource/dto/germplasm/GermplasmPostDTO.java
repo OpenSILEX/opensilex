@@ -22,6 +22,7 @@ import opensilex.service.utils.UriGenerator;
 public class GermplasmPostDTO extends AbstractVerifiedClass {
     /*voir https://www.genesys-pgr.org/fr/doc/0/basics*/
     
+    //private String germplasmName;
     private String accessionURI;
     private String accessionNumber;
     private String varietyURI; 
@@ -40,11 +41,14 @@ public class GermplasmPostDTO extends AbstractVerifiedClass {
         
         //species is mandatory
         if (speciesURI != null | speciesLabel != null) {
-            //If accessionURI exists in DB then, even if accessionNumber is given then we don't retrieve the label
+            
+            //If accessionURI exists in DB then, even if accessionNumber is given then we don't retrieve it
             if (accessionURI != null) {
                 if (!germplasmDAO.existUriInGraph(accessionURI, Contexts.ACCESSION.toString())) {
                     germplasm.setAccessionNumber(accessionNumber);
-                } 
+                } else {
+                    accessionNumber = germplasmDAO.findLabelsForUri(accessionURI).get(0);                    
+                }
             } else {
                 if (accessionNumber != null) {  
                     germplasm.setAccessionNumber(accessionNumber);
@@ -61,11 +65,13 @@ public class GermplasmPostDTO extends AbstractVerifiedClass {
                 }            
             }     
 
-            //If varietyURI exists in DB then, even if varietyLabel is given then we don't retrieve the label
+            //If varietyURI exists in DB then, even if varietyLabel is given then we don't retrieve it
             if (varietyURI != null) {
                 germplasm.setVarietyURI(varietyURI);
                 if (!germplasmDAO.existUriInGraph(varietyURI, Contexts.VARIETY.toString())) {
                     germplasm.setVarietyLabel(varietyLabel);
+                } else {
+                    varietyLabel = germplasmDAO.findLabelsForUri(varietyURI).get(0);                    
                 }
             } else {
                 if (varietyLabel != null) {                
@@ -83,14 +89,16 @@ public class GermplasmPostDTO extends AbstractVerifiedClass {
                 }            
             }        
         
-            //If speciesURI exists in DB then, even if speciesLabel is given then we don't retrieve the label
+            //If speciesURI exists in DB then, even if speciesLabel is given then we don't retrieve it
             if (speciesURI != null) {
                 germplasm.setSpeciesURI(speciesURI);
                 if (!germplasmDAO.existUriInGraph(speciesURI, Contexts.SPECIES.toString())) {
                     germplasm.setSpeciesLabel(speciesLabel);
+                } else {
+                    speciesLabel = germplasmDAO.findLabelsForUri(speciesURI).get(0);                    
                 }
             } else {
-                if (varietyLabel != null) {                
+                if (speciesLabel != null) {                
                     germplasm.setSpeciesLabel(speciesLabel);
                     if (germplasmDAO.askExistLabelInContext(speciesLabel, Contexts.SPECIES.toString())) {
                         germplasm.setSpeciesURI(germplasmDAO.getURIFromLabel(speciesLabel));
@@ -105,18 +113,39 @@ public class GermplasmPostDTO extends AbstractVerifiedClass {
                 }            
             }       
 
+            //Set germplasmURI : accessionURI or varietyURI or speciesURI
             if (accessionURI != null) {
                 germplasm.setGermplasmURI(accessionURI);
+            } else if (varietyURI != null) {
+                germplasm.setGermplasmURI(varietyURI);
             } else {
-                if (varietyURI != null) {
-                    germplasm.setGermplasmURI(varietyURI);
-                } else {
-                    germplasm.setGermplasmURI(speciesURI);
-                }
+                germplasm.setGermplasmURI(speciesURI);                
             }
+            
+//            //Set germplasmName by following this priority order : given germplasmName, accessionName, varietyLabel, speciesLabel
+//            if (germplasmName != null) {
+//                germplasm.setGermplasmName(germplasmName);
+//            } else {
+//                if (accessionNumber != null) {
+//                    germplasm.setGermplasmName(germplasmName);
+//                }
+//                if (varietyLabel != null) {
+//                    germplasm.setGermplasmName(varietyLabel);
+//                } else {
+//                    germplasm.setGermplasmName(speciesLabel);
+//                }
+//            }   
         
             if (seedLots != null && accessionURI != null) {
                 germplasm.setSeedLots(seedLots);
+            }
+            
+            if (instituteCode != null && accessionURI != null){
+                germplasm.setInstituteCode(instituteCode);
+            }
+            
+            if (instituteName != null && accessionURI != null){
+                germplasm.setInstituteName(instituteName);
             }
         }
                

@@ -1,9 +1,9 @@
 {
-  "builders": {
-    "plugin": {
-      "implementation": "./plugin-builder",
-      "schema": "./plugin-builder/schema.json",
-      "description": "Plugin Builder"
+    "builders": {
+        "plugin": {
+            "implementation": "./plugin-builder",
+            "schema": "./plugin-builder/schema.json",
+            "description": "Plugin Builder"
+        }
     }
-  }
 }

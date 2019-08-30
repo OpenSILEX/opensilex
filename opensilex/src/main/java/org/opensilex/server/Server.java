@@ -103,11 +103,8 @@ public class Server extends Tomcat {
             File jarFile = ClassInfo.getJarFile(moduleClass);
             if (jarFile.isFile()) {
                 resource.createWebResourceSet(WebResourceRoot.ResourceSetType.RESOURCE_JAR, rootPath, jarFile.getCanonicalPath(), null, baseDirectory);
-                context.getJarScanner().setJarScanFilter(new JarScanFilter() {
-                    @Override
-                    public boolean check(JarScanType jarScanType, String jarName) {
-                        return jarName.equals(jarFile.getName());
-                    }
+                context.getJarScanner().setJarScanFilter((JarScanType jarScanType, String jarName) -> {
+                    return jarName.equals(jarFile.getName());
                 });
             } else {
                 resource.createWebResourceSet(WebResourceRoot.ResourceSetType.PRE, rootPath, jarFile.getCanonicalPath(), null, baseDirectory);

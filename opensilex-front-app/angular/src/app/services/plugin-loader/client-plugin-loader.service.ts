@@ -17,7 +17,7 @@ export class ClientPluginLoaderService extends PluginLoaderService {
     );
   }
 
-  load<T>(pluginName): Promise<NgModuleFactory<T>> {
+  load<T>(pluginName: string): Promise<NgModuleFactory<T>> {
     const { config } = this.configProvider;
     if (!config[pluginName]) {
       throw Error(`Can't find appropriate plugin`);

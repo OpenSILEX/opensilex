@@ -5,7 +5,7 @@ import * as router from '@angular/router';
 import * as rxjs from 'rxjs';
 import * as tslib from 'tslib';
 
-export const PLUGIN_EXTERNALS_MAP = {
+export const PLUGIN_EXTERNALS_MAP:any = {
   'ng.core': core,
   'ng.common': common,
   'ng.forms': forms,

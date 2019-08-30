@@ -24,7 +24,7 @@ interface Options extends JsonObject {
   sharedLibs: string;
 }
 
-let entryPointPath;
+let entryPointPath: string;
 
 function buildPlugin(options: Options,
                      context: BuilderContext,
@@ -65,7 +65,7 @@ function validateOptions(options: Options) {
   }
 }
 
-function patchWebpackConfig(config: webpack.Configuration, options: Options) {
+function patchWebpackConfig(config: any, options: Options) {
   const { pluginName, sharedLibs } = options;
 
   // Make sure we are producing a single bundle
@@ -91,7 +91,7 @@ function patchWebpackConfig(config: webpack.Configuration, options: Options) {
     sharedLibsArr.forEach(sharedLibName => {
       const factoryRegexp = new RegExp(`${sharedLibName}.ngfactory$`);
       config.externals[0][sharedLibName] = sharedLibName; // define external for code
-      config.externals.push((context, request, callback) => {
+      config.externals.push((context:any, request:any, callback:any) => {
         if (factoryRegexp.test(request)) {
           return callback(null, sharedLibName); // define external for factory
         }
@@ -101,7 +101,7 @@ function patchWebpackConfig(config: webpack.Configuration, options: Options) {
   }
 
   const ngCompilerPluginInstance = config.plugins.find(
-    x => x.constructor && x.constructor.name === 'AngularCompilerPlugin'
+    (x:any) => x.constructor && x.constructor.name === 'AngularCompilerPlugin'
   );
   if (ngCompilerPluginInstance) {
     ngCompilerPluginInstance._entryModule = options.modulePath;

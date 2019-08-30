@@ -18,6 +18,12 @@
     <build>
         <resources>
             <resource>
+                <directory>angular</directory>
+                <excludes>
+                    <exclude>**</exclude>
+                </excludes>
+            </resource>
+            <resource>
                 <directory>src/main/resources/WEB-INF</directory>
                 <targetPath>angular/app/WEB-INF</targetPath>
             </resource>

@@ -7,5 +7,5 @@ export abstract class PluginLoaderService {
 
   abstract provideExternals(): void;
 
-  abstract load<T>(pluginName): Promise<NgModuleFactory<T>>;
+  abstract load<T>(pluginName: string): Promise<NgModuleFactory<T>>;
 }

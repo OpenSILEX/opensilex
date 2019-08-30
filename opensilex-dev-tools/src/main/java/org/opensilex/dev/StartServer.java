@@ -50,9 +50,7 @@ public class StartServer {
 
         Set<String> modulesPluginBuilderArgs = new HashSet<>();
         OpenSilex.getInstance().getModulesImplementingInterface(FrontAppExtension.class).forEach((FrontAppExtension extension) -> {
-            if (!(extension instanceof FrontAppModule)) {
-                modulesPluginBuilderArgs.add("--module=" + ClassInfo.getProjectIdFromClass(extension.getClass()));
-            }
+            modulesPluginBuilderArgs.add("--module=" + ClassInfo.getProjectIdFromClass(extension.getClass()));
         });
         appPluginBuilderArgs.addAll(modulesPluginBuilderArgs);
 

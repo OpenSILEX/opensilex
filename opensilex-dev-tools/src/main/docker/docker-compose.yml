@@ -2,8 +2,8 @@ version: "3.5"
 
 services:
    rdf4j:
-      container_name: rdf4j
-      build: './rdf4j'
+      container_name: opensilex-rdf4j
+      image: eclipse/rdf4j-workbench:amd64-3.0.0-testing
       networks:
          - backend
       ports:
@@ -14,8 +14,8 @@ services:
          - JAVA_OPTS='-Dorg.eclipse.rdf4j.appdata.basedir=/var/rdf4j/'
          
    mongodb:
-      container_name: mongodb
-      image: 'mongo:4.1.13-bionic'
+      container_name: opensilex-mongodb
+      image: 'mongo:4.2.0-bionic'
       networks:
          - backend
       ports:

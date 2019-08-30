@@ -85,6 +85,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     private final String PROPERTY_TYPE = "propertyType";
     private final String CHILD = "child";
     private final String RELATION = "relation";
+    private final String GERMPLASM = "germplasm";
     
     private static final String URI_CODE_SCIENTIFIC_OBJECT = "o";
     
@@ -600,9 +601,9 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      * @param alias
      * @return scientific objects list, result of the user query, empty if no result
      */
-    public ArrayList<ScientificObject> find(Integer page, Integer pageSize, String uri, String rdfType, String experiment, String alias) {
+    public ArrayList<ScientificObject> find(Integer page, Integer pageSize, String uri, String rdfType, String experiment, String alias, String germplasm) {
         try {
-            SPARQLQueryBuilder sparqlQuery = prepareSearchQuery(false, page, pageSize, uri, rdfType, experiment, alias);
+            SPARQLQueryBuilder sparqlQuery = prepareSearchQuery(false, page, pageSize, uri, rdfType, experiment, alias, germplasm);
             //SILEX:test
             //Pour les soucis de pool de connexion
             rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID); //Stockage triplestore Sesame
@@ -645,6 +646,10 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                         } else {
                             scientificObject.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
                         }
+                        
+                        
+                        GermplasmDAO germplasmDAO = new GermplasmDAO(bindingSet.getValue(GERMPLASM).stringValue());
+                        scientificObject.setGermplasm(germplasmDAO.findById(germplasmDAO.uri));
                     }
                     
                     //Get scientific object properties
@@ -704,7 +709,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      * }
      * @return the generated query
      */
-    protected SPARQLQueryBuilder prepareSearchQuery(boolean count, Integer page, Integer pageSize, String uri, String rdfType, String experiment, String alias) {    
+    protected SPARQLQueryBuilder prepareSearchQuery(boolean count, Integer page, Integer pageSize, String uri, String rdfType, String experiment, String alias, String germplasm) {    
         SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
         
         sparqlQuery.appendDistinct(true);
@@ -733,7 +738,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             sparqlQuery.appendSelect("?" + EXPERIMENT);
             sparqlQuery.appendOptional("?" + URI + " <" + Oeso.RELATION_PARTICIPATES_IN.toString() + "> " + "?" + EXPERIMENT + " . ");
         }
-        
+                
         //Rdf type filter
         if (rdfType != null) {
             sparqlQuery.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), rdfType, null);
@@ -746,6 +751,16 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                     Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString(), null);
         }
         
+        //germplasm filter
+        sparqlQuery.appendSelect("?" + GERMPLASM);
+        if (alias == null && !count) {
+            sparqlQuery.beginBodyOptional();
+            sparqlQuery.appendToBody("?" + URI + " <" + Oeso.RELATION_HAS_GERMPLASM.toString() + "> " + "?" + GERMPLASM + " . ");
+            sparqlQuery.endBodyOptional();
+        } else if (!count) {
+            sparqlQuery.appendTriplet("?" + URI, Oeso.RELATION_HAS_GERMPLASM.toString(), "?" + GERMPLASM, null);
+            sparqlQuery.appendAndFilter("REGEX ( str(?" + GERMPLASM + "),\".*" + germplasm + ".*\",\"i\")");
+        }
         if (page != null && pageSize != null) {
             sparqlQuery.appendLimit(pageSize);
             sparqlQuery.appendOffset(page * pageSize);
@@ -875,6 +890,12 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             
             spql.addInsert(graph, scientificObjectUri, RDF.type, scientificObjectType);
             
+            if (scientificObject.getGermplasm() != null) {
+                Resource germplasmURI = ResourceFactory.createResource(scientificObject.getGermplasm().getGermplasmURI());
+                org.apache.jena.rdf.model.Property relationHasGermplasm = ResourceFactory.createProperty(Oeso.RELATION_HAS_GERMPLASM.toString());
+                spql.addInsert(graph, scientificObjectUri, relationHasGermplasm, germplasmURI);                
+            }
+            
             // Properties associated to the scientific object
             for (Property property : scientificObject.getProperties()) {
                 if (property.getRdfType() != null && !property.getRdfType().equals("")) {//Typed properties
@@ -990,7 +1011,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      *         null if this scientific object does not exist.
      */
     public ScientificObject getScientificObjectInContext(String uri, String context) {
-        ArrayList<ScientificObject> scientificObjects = find(null, null, uri, null, context, null);
+        ArrayList<ScientificObject> scientificObjects = find(null, null, uri, null, context, null, null);
         if (!scientificObjects.isEmpty()) {
             return scientificObjects.get(0);
         } else {
@@ -1224,8 +1245,8 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      *      } 
      * }
      */
-    private SPARQLQueryBuilder prepareCount(String uri, String rdfType, String experimentURI, String alias) {
-        SPARQLQueryBuilder query = prepareSearchQuery(true, null, null, uri, rdfType, experimentURI, alias);
+    private SPARQLQueryBuilder prepareCount(String uri, String rdfType, String experimentURI, String alias, String germplasm) {
+        SPARQLQueryBuilder query = prepareSearchQuery(true, null, null, uri, rdfType, experimentURI, alias, germplasm);
         query.clearSelect();
         query.clearLimit();
         query.clearOffset();
@@ -1243,8 +1264,8 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      * @param alias
      * @return The number of scientific objects.
      */
-    public Integer count(String uri, String rdfType, String experimentURI, String alias) {
-        SPARQLQueryBuilder prepareCount = prepareCount(uri, rdfType, experimentURI, alias);
+    public Integer count(String uri, String rdfType, String experimentURI, String alias, String germplasm) {
+        SPARQLQueryBuilder prepareCount = prepareCount(uri, rdfType, experimentURI, alias, germplasm);
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
         Integer count = 0;
         try (TupleQueryResult result = tupleQuery.evaluate()) {

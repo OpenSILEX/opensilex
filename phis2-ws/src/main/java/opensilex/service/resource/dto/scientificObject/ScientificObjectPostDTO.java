@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import javax.validation.Valid;
 import javax.validation.constraints.Pattern;
 import opensilex.service.configuration.DateFormats;
+import opensilex.service.model.Germplasm;
 import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resource.dto.rdfResourceDefinition.PropertyPostDTO;
@@ -36,10 +37,20 @@ public class ScientificObjectPostDTO extends AbstractVerifiedClass {
     //the object which as part the scientific object 
     //(e.g. http://www.phenome-fppn.fr/mtp/2017/o1032491)
     private String isPartOf;
-    //the year used to generated the scientific object. If it is not given, this is the actual year
-    //(e.g. 2017)
+    /**
+     * the year used to generated the scientific object. If it is not given, this is the actual year
+     * If it is not given, this is the actual year.
+     * @example 2017
+     */
     private String year;
-    //the properties of the scientific object
+
+    //germplasm 
+    private Germplasm germplasm;   
+    
+    /**
+     * Properties
+     */
+
     private ArrayList<PropertyPostDTO> properties;
 
     @Override
@@ -50,6 +61,7 @@ public class ScientificObjectPostDTO extends AbstractVerifiedClass {
         scientificObject.setUriExperiment(experiment);
         scientificObject.setIsPartOf(isPartOf);
         scientificObject.setYear(year);
+        scientificObject.setGermplasm(germplasm);
         
         if (properties != null) {
             properties.forEach((property) -> {
@@ -122,4 +134,15 @@ public class ScientificObjectPostDTO extends AbstractVerifiedClass {
     public void setProperties(ArrayList<PropertyPostDTO> properties) {
         this.properties = properties;
     }
+
+    @URL
+    public Germplasm getGermplasm() {
+        return germplasm;
+    }
+
+    public void setGermplasm(Germplasm germplasm) {
+        this.germplasm = germplasm;
+    }
+    
+    
 }

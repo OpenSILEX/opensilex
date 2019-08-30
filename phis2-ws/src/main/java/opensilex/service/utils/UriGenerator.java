@@ -27,6 +27,7 @@ import opensilex.service.dao.GroupDAO;
 import opensilex.service.dao.ScientificObjectRdf4jDAO;
 import opensilex.service.dao.AnnotationDAO;
 import opensilex.service.dao.EventDAO;
+import opensilex.service.dao.GermplasmDAO;
 import opensilex.service.dao.MethodDAO;
 import opensilex.service.dao.ProjectDAO;
 import opensilex.service.dao.RadiometricTargetDAO;
@@ -73,6 +74,7 @@ public class UriGenerator {
     private static final String URI_CODE_UNIT = "u";
     private static final String URI_CODE_VARIABLE = "v";
     private static final String URI_CODE_VECTOR = "v";
+    private static final String URI_CODE_GERMPLASM = "g";
 
     private static final String PLATFORM_CODE = 
             PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "infrastructureCode") ;
@@ -89,6 +91,8 @@ public class UriGenerator {
     public static final String PLATFORM_URI_ID_VARIABLES = PLATFORM_URI_ID + "variables/" + URI_CODE_VARIABLE;
     private static final String PLATFORM_URI_ID_VARIETY = PLATFORM_URI + "v/";
     private static final String PLATFORM_URI_ID_PROVENANCE = PLATFORM_URI_ID + "provenance/";
+    public static final String PLATFORM_URI_ID_GERMPLASM = PLATFORM_URI_ID + "germplasm/";
+    private static final String PLATFORM_URI_ID_ACCESSION = PLATFORM_URI_ID + "accession/";
     
     private static final String EXPERIMENT_URI_SEPARATOR = "-";
 
@@ -502,6 +506,10 @@ public class UriGenerator {
     private static String generateVarietyUri(String variety) {
         return PLATFORM_URI_ID_VARIETY + variety.toLowerCase();
     }
+    
+    private static String generateAccessionUri(String accessionNumber) {
+        return PLATFORM_URI_ID_ACCESSION + accessionNumber;
+    }
 
     /**
      * Generates a new agent URI. A agent URI follows the pattern:
@@ -781,6 +789,8 @@ public class UriGenerator {
             return generateScientificObjectUri(year);
         } else if (Oeso.CONCEPT_VARIETY.toString().equals(instanceType)) {
             return generateVarietyUri(additionalInformation);
+        } else if (Oeso.CONCEPT_ACCESSION.toString().equals(instanceType)) {
+            return generateAccessionUri(additionalInformation);
         } else if (uriDao.isSubClassOf(instanceType, Oeso.CONCEPT_IMAGE.toString())) {
             return generateImageUri(year, additionalInformation);
         } else if (instanceType.equals(Foaf.CONCEPT_AGENT.toString()) 
@@ -808,7 +818,52 @@ public class UriGenerator {
             return generateDataFileUri(year, additionalInformation);
         } else if (instanceType.equals(Oeso.CONCEPT_ACTUATOR.toString())) {
             return generateActuatorUri(year);
+        } else if (instanceType.equals(Oeso.CONCEPT_GERMPLASM.toString())) {
+            return generateGermplasmURI();
         }
         return null;
+    }
+    
+    /**
+     * Generates a new agronomical object URI. A sensor URI has the following
+     * form:
+     * <prefix>:<year>/<unic_code>
+     * <unic_code> = 1 letter type + 2 numbers year + auto incremented number
+     * with 6 digits (per year) the year corresponds to the year of insertion in
+     * the triplestore.
+     * @example http://www.phenome-fppn.fr/diaphen/2017/o17000001
+     * @param year the insertion year of the agronomical object.
+     * @return the new agronomical object URI
+     */
+    private static String generateGermplasmURI() {
+        
+        // Generate germplasm URI based on next id
+        String germplasmId = Integer.toString(getNextGermplasmID());        
+
+        while (germplasmId.length() < 3) {
+            germplasmId = "0" + germplasmId;
+        }
+
+        return PLATFORM_URI_ID_GERMPLASM + URI_CODE_GERMPLASM + germplasmId;
+    }
+    
+    /**
+     * Internal germplasm to store the last germplasm ID
+     */
+    private static Integer germplasmLastID;
+    
+    /**
+     * Return the next variable ID by incrementing variableLastID variable and initializing it before if needed
+     * @return next variable ID
+     */
+    private static int getNextGermplasmID() {
+        if (germplasmLastID == null) {
+            GermplasmDAO germplasmDAO = new GermplasmDAO();
+            germplasmLastID = germplasmDAO.getLastId();
+        }
+        
+        germplasmLastID++;
+        
+        return germplasmLastID;
     }
 }

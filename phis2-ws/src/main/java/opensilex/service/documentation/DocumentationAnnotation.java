@@ -128,6 +128,8 @@ public final class DocumentationAnnotation {
     public static final String DEEP ="true or false deppending if you want instances of concept progenity";
     
     public static final String CALL_DATATYPE_DEFINITION = "The data format supported by the call";
+    
+    public static final String GERMPLASM_POST_DEFINITION = "JSON format of germplasm data";
 
     // Global examples
     public static final String EXAMPLE_DATETIME = "2017-06-15 10:51:00+0200";
@@ -305,7 +307,15 @@ public final class DocumentationAnnotation {
   
     public static final String EXAMPLE_EXPERIMENT_CROP_SPECIES = "maize";
     public static final String EXAMPLE_ANNOTATION_CREATOR = "http://www.opensilex.org/demo/id/agent/marie_dupond";
-
+    
+    public static final String EXAMPLE_GERMPLASM_URI = "http://www.phenome-fppn.fr/platform/id/germplasm/g001";
+    public static final String EXAMPLE_GERMPLASM_NAME = "B73_INRA";
+    public static final String EXAMPLE_ACCESSION_NUMBER = "B73_INRA";
+    public static final String EXAMPLE_GENUS = "Zea";
+    public static final String EXAMPLE_VARIETY = "B73";
+    public static final String EXAMPLE_INSTITUTE_CODE = "INRA_CODE";
+    public static final String EXAMPLE_INSTITUTE_NAME = "INRA";
+    
     // API global parameters
     public static final String EXAMPLE_SORTING_ALLOWABLE_VALUES = "asc,desc";
 

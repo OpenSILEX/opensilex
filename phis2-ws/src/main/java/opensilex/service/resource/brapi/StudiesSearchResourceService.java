@@ -159,8 +159,9 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
                 studySqlDAO.pageSize = 20;
             }
             
-            if (studySearch.getSeasonDbIds()!= null) {
-                studySqlDAO.seasonDbIds = studySearch.getSeasonDbIds();
+            if (studySearch.getSeasonDbId()!= null) {
+                studySqlDAO.seasonDbIds = new ArrayList();
+                studySqlDAO.seasonDbIds.add(studySearch.getSeasonDbId());
             }
             
             if (studySearch.getSortBy()!= null) {

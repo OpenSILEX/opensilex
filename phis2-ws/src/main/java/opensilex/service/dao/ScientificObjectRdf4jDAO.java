@@ -647,9 +647,11 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                             scientificObject.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
                         }
                         
-                        
-                        GermplasmDAO germplasmDAO = new GermplasmDAO(bindingSet.getValue(GERMPLASM).stringValue());
-                        scientificObject.setGermplasm(germplasmDAO.findById(germplasmDAO.uri));
+                        //Get Germplasm
+                        if (bindingSet.getValue(GERMPLASM) != null) {
+                            GermplasmDAO germplasmDAO = new GermplasmDAO(bindingSet.getValue(GERMPLASM).stringValue());
+                            scientificObject.setGermplasm(germplasmDAO.findById(germplasmDAO.uri));
+                        }
                     }
                     
                     //Get scientific object properties

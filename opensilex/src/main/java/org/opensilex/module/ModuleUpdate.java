@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.update;
+package org.opensilex.module;
 
 import java.time.LocalDate;
 
@@ -11,7 +11,7 @@ import java.time.LocalDate;
  *
  * @author vincent
  */
-public interface Update {
+public interface ModuleUpdate {
     
     public LocalDate getDate();
     

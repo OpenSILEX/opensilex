@@ -39,7 +39,6 @@ public interface BaseConfig extends ModuleConfig {
     )
     public String defaultLanguage();
 
-    // TODO inti valid default value
     @ConfigDescription(
             value = "Core data sources",
             defaultMap = {
@@ -55,12 +54,6 @@ public interface BaseConfig extends ModuleConfig {
                 "fs: {"
                 + "serviceClass: org.opensilex.fs.FileStorageService"
                 + "}"
-//                "nosql: {"
-//                + "serviceClass: org.opensilex.nosql.NoSQLService,"
-//                + "connectionClass: org.service.nosql.ogm.OgmConnection,"
-//                + "configId: opensilex-service-nosql,"
-//                + "configClass: org.opensilex.nosql.ogm"
-//                + "}"
             }
     )
     public Map<String, ServiceConfig> services();

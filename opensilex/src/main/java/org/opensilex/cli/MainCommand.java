@@ -1,3 +1,10 @@
+//******************************************************************************
+//                                  MainCommand.java
+// OpenSILEX
+// Copyright © INRA 2019
+// Creation date: 15 March 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package org.opensilex.cli;
 
 import java.util.ArrayList;
@@ -14,8 +21,9 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.IVersionProvider;
 
 /**
- *
- * @author vincent
+ * This class is the main entry point for the CLI application
+ * It uses the Picocli library to automatically generate help messages and argument parsing
+ * see: https://picocli.info/
  */
 @Command(
         name = "opensilex",
@@ -25,29 +33,35 @@ import picocli.CommandLine.IVersionProvider;
 public class MainCommand extends HelpPrinterCommand implements IVersionProvider {
 
     /**
-     * Version flag option
+     * Version flag option (automatically handled by the picocli library
+     * see: https://picocli.info/#_version_help
      */
     @Option(names = {"-V", "--version"}, versionHelp = true, description = "Print version information and exit.")
     private boolean versionRequested;
 
-    private static String[] cliArgs;
-
     public static void main(String[] args) {
-        // Initialize instance with arguments
-        cliArgs  = OpenSilex.setup(args);
+        // Initialize opensilex instance with arguments and return commands arguments
+        String[] cliArgs  = OpenSilex.setup(args);
 
-        // Initialize Picocli CommandLine
+        // If no arguments assume help is requested
         if (cliArgs.length == 0) {
             cliArgs = new String[]{"--help"};
         }
 
+        // Initialize picocli library
         CommandLine cli = new CommandLine(new MainCommand());
+        
+        // Register all commands contained in OpenSilex modules
         ServiceLoader.load(SubCommand.class, Thread.currentThread().getContextClassLoader())
                 .forEach((SubCommand cmd) -> {
                     Command cmdDef = cmd.getClass().getAnnotation(CommandLine.Command.class);
                     cli.addSubcommand(cmdDef.name(), cmd);
                 });
+        
+        // Define the help factory class
         cli.setHelpFactory(new HelpFactory());
+        
+        // Run actual commands
         cli.execute(cliArgs);
     }
 
@@ -55,7 +69,7 @@ public class MainCommand extends HelpPrinterCommand implements IVersionProvider 
      * Implementation of picocli.CommandLine.IVersionProvider to display the
      * list of known modules when using the -V command line flag
      *
-     * @return
+     * @return List of all module with their version
      * @throws Exception
      */
     @Override

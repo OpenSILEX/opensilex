@@ -1,14 +1,15 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+//                            SystemCommand.java
+// OpenSILEX
+// Copyright © INRA 2019
+// Creation date: 09 August 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package org.opensilex.cli;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -16,37 +17,54 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import org.apache.commons.io.FileUtils;
+import org.opensilex.OpenSilex;
 import org.opensilex.cli.help.HelpPrinterCommand;
-import org.opensilex.update.Update;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import picocli.CommandLine;
 import picocli.CommandLine.Command;
+import org.opensilex.module.ModuleUpdate;
 
+/**
+ * This class regroup all commands concerning OpenSilex system operation
+ * TODO - install: install one or all modules 
+ * TODO - uninstall: uninstall one or all modules 
+ * - update: Update all modules
+ * TODO - check: check system configuration
+ */
 @Command(
         name = "system",
         header = "Subcommand to group OpenSILEX system operations"
 )
 public class SystemCommand extends HelpPrinterCommand implements SubCommand {
 
-    private final static String UPDATE_FILE = ".opensilex.updates";
     private final static Logger LOGGER = LoggerFactory.getLogger(SystemCommand.class);
 
+    /**
+     * Local file to store all previous updates done
+     */
+    private final static String UPDATE_FILE = ".opensilex.updates";
+
+    /**
+     * This method updates all OpenSilex module by executing all new
+     * org.opensilex.module.ModuleUpdate "execute" methods
+     *
+     * @throws IOException
+     */
     @Command(
             name = "update",
             header = "Execute opensilex modules updates"
     )
-    public void update(
-            @CommandLine.Parameters(description = "Base directory", defaultValue = "") Path baseDirectory
-    ) throws IOException {
+    public void update() throws IOException {
 
+        // Map to store the last known update date of each package
         Map<String, LocalDate> lastUpdateByPackage = new HashMap<>();
-        File updateFile = baseDirectory.resolve(UPDATE_FILE).toFile();
+
+        // Get file where last package updates are stored
+        File updateFile = OpenSilex.getInstance().getBaseDirectory().resolve(UPDATE_FILE).toFile();
 
         if (updateFile.isFile()) {
+            // If file exists for each line <package-id>=<last-update-date> add it to the map
             for (String packageLastUpdate : FileUtils.readLines(updateFile, StandardCharsets.UTF_8.name())) {
                 String[] packageUpdateArray = packageLastUpdate.split("=", 2);
                 if (packageUpdateArray.length != 2) {
@@ -55,59 +73,59 @@ public class SystemCommand extends HelpPrinterCommand implements SubCommand {
                     lastUpdateByPackage.put(packageUpdateArray[0], LocalDate.parse(packageUpdateArray[1], DateTimeFormatter.ISO_DATE));
                 }
             }
-        }
 
-        Map<String, SortedMap<LocalDate, Update>> updatesByPackage = new HashMap<>();
+            // Map to store all available updates by packages
+            List<ModuleUpdate> validUpdates = new ArrayList<>();
 
-        ServiceLoader.load(Update.class, Thread.currentThread().getContextClassLoader())
-                .forEach((Update update) -> {
-                    String packageName = update.getClass().getPackage().getName();
+            // Load all org.opensilex.module.ModuleUpdate and filter the new ones
+            ServiceLoader.load(ModuleUpdate.class, Thread.currentThread().getContextClassLoader())
+                    .forEach((ModuleUpdate update) -> {
+                        // Get the package name where the class belong
+                        String packageName = update.getClass().getPackage().getName();
 
-                    boolean ignore = false;
-                    if (lastUpdateByPackage.containsKey(packageName)) {
-                        LocalDate lastUpdate = lastUpdateByPackage.get(packageName);
-                        ignore = update.getDate().isAfter(lastUpdate);
-                    }
+                        // Flag to determine if the update must be ignored or not
+                        boolean ignore = false;
 
-                    if (!ignore) {
-                        SortedMap<LocalDate, Update> updatesByDate = updatesByPackage.get(packageName);
-                        if (updatesByDate == null) {
-                            updatesByDate = new TreeMap<LocalDate, Update>();
-                            updatesByPackage.put(packageName, updatesByDate);
+                        // Determine if the update is a new one for the package
+                        if (lastUpdateByPackage.containsKey(packageName)) {
+                            LocalDate lastUpdate = lastUpdateByPackage.get(packageName);
+                            ignore = update.getDate().isAfter(lastUpdate);
                         }
 
-                        updatesByDate.put(update.getDate(), update);
-                    }
-                });
+                        if (!ignore) {
+                            // In that case add it to the update list by date
+                            validUpdates.add(update);
+                        }
+                    });
 
-        boolean exitLoop = false;
-        for (String packageName : updatesByPackage.keySet()) {
-            SortedMap<LocalDate, Update> orderedUpdates = updatesByPackage.get(packageName);
+            // Sort update from oldest to newest date
+            validUpdates.sort((ModuleUpdate u1, ModuleUpdate u2) -> {
+                return u1.getDate().compareTo(u2.getDate());
+            });
 
-            for (LocalDate updateDate : orderedUpdates.keySet()) {
-                Update update = orderedUpdates.get(updateDate);
+            // Execute all updates in order
+            for (ModuleUpdate update : validUpdates) {
                 try {
                     update.execute();
+                    lastUpdateByPackage.put(update.getClass().getPackage().getName(), update.getDate());
                 } catch (Exception ex) {
-                    LOGGER.error("Error while executing update for: " + packageName + " " + updateDate.format(DateTimeFormatter.ISO_DATE), ex);
-                    exitLoop = true;
+                    LOGGER.error("Error while executing update for: " + update.getClass().getCanonicalName() + " " + update.getDate().format(DateTimeFormatter.ISO_DATE), ex);
                     break;
                 }
-                
-                lastUpdateByPackage.put(packageName, updateDate);
             }
-            
-            if (exitLoop) {
-                break;
-            }
+
+            // Update file with updates last date by package name
+            FileUtils.deleteQuietly(updateFile);
+            List<String> updateFileContent = new ArrayList<>();
+            lastUpdateByPackage.forEach((String packageName, LocalDate updateDate) -> {
+                updateFileContent.add(packageName + "=" + updateDate.format(DateTimeFormatter.ISO_DATE));
+            });
+
+            FileUtils.writeLines(updateFile, updateFileContent, StandardCharsets.UTF_8.name());
+        } else {
+            // If file doesn't exists inform user that they should execute system install first
+            LOGGER.error("No OpenSilex installation found at: " + OpenSilex.getInstance().getBaseDirectory().toString());
+            LOGGER.error("Please execute `opensilex system install` first");
         }
-        
-        FileUtils.deleteQuietly(updateFile);
-        List<String> updateFileContent = new ArrayList<>();
-        lastUpdateByPackage.forEach((String packageName, LocalDate updateDate) -> {
-            updateFileContent.add(packageName + "=" + updateDate.format(DateTimeFormatter.ISO_DATE));
-        });
-        
-        FileUtils.writeLines(updateFile, updateFileContent, StandardCharsets.UTF_8.name());
     }
 }

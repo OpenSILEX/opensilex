@@ -1,14 +1,13 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+//                            SubCommand.java
+// OpenSILEX
+// Copyright © INRA 2019
+// Creation date: 20 June 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package org.opensilex.cli;
 
 /**
- *
- * @author vincent
+ *  This interface is requested for any command in OpenSilex modules to be detected on loading
  */
-public interface SubCommand {
-    
-}
+public interface SubCommand {}

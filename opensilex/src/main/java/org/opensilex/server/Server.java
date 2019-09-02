@@ -86,8 +86,8 @@ public class Server extends Tomcat {
                 addWarApp(context, warfile);
             });
 
-        } catch (IOException ex) {
-            //TODO : Log error;
+        } catch (Throwable t) {
+            LOGGER.error("Errow while loading war applications", t);
         }
 
         getConnector();

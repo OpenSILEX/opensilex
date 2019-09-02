@@ -27,8 +27,9 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 /**
- * This class regroup all commands concerning OpenSilex server operation start,
- * stop
+ * This class regroup all commands concerning OpenSilex server operation 
+ * - start: Start the server
+ * - stop: Stop the server (using the admin port defined on start call)
  */
 @Command(
         name = "server",
@@ -43,14 +44,12 @@ public class ServerCommand extends HelpPrinterCommand implements SubCommand {
      * adminPort If the daemon flag is set to true, this command will try to run
      * the server in another process
      *
-     * @param host
-     * @param port
-     * @param adminPort
-     * @param daemon
-     * @param profileId
-     * @param baseDirectory
-     * @param tomcatDirectory
-     * @param help
+     * @param host Server host name (default: localhost)
+     * @param port Server port (default: 8666)
+     * @param adminPort Server administration port (default: 8888)
+     * @param daemon Flag to determine if server must be started as a dameon process (default: false)
+     * @param tomcatDirectory Tomcat working directory (default: create a temporary directory)
+     * @param help Helper parameter to allow help usage display for this command
      * @throws Exception
      */
     @Command(
@@ -67,26 +66,32 @@ public class ServerCommand extends HelpPrinterCommand implements SubCommand {
             @Mixin HelpOption help
     ) throws Exception {
 
+        // If tomcat working directory is not defined create a temporary one
         if (tomcatDirectory.toString().equals("")) {
             final Path tmpDirectory = Files.createTempDirectory("opensilex");
             tomcatDirectory = tmpDirectory;
+            
+            // Add shutdown hook to delete temporary directory on application stop
             Runtime.getRuntime().addShutdownHook(new Thread() {
+                @Override
                 public void run() {
                     try {
                         FileUtils.deleteDirectory(tmpDirectory.toFile());
                     } catch (IOException ex) {
-                        // TODO LOG ERROR
+                        LOGGER.error("Error while deleting tomcat temporary directory", ex);
                     }
                 }
             });
-        } else {
-            tomcatDirectory = OpenSilex.getInstance().getBaseDirectory();
         }
 
+        
         if (daemon) {
+            // If daemon flag, start an external process
             try {
+                // Get location of current jar file
                 File jarFile = new File(ServerCommand.class.getProtectionDomain().getCodeSource().getLocation().toURI());
 
+                // Create external process with given arguments
                 ProcessBuilder pb = new ProcessBuilder(
                         System.getProperty("java.home") + "/bin/java",
                         "-jar",
@@ -99,6 +104,7 @@ public class ServerCommand extends HelpPrinterCommand implements SubCommand {
                         tomcatDirectory.toAbsolutePath().toString()
                 );
 
+                // Start server in a detached process
                 pb.start();
             } catch (IOException ex) {
                 LOGGER.error("Can't start OpenSilex server as a daemon process", ex);
@@ -108,6 +114,7 @@ public class ServerCommand extends HelpPrinterCommand implements SubCommand {
                 throw ex;
             }
         } else {
+            // Otherwise start OpenSilex server synchronously
             try {
                 new Server(
                         OpenSilex.getInstance(),
@@ -129,7 +136,7 @@ public class ServerCommand extends HelpPrinterCommand implements SubCommand {
      *
      * @param host
      * @param adminPort
-     * @param help
+     * @param help Helper parameter to allow help usage display for this command
      * @throws Exception
      */
     @Command(
@@ -142,14 +149,17 @@ public class ServerCommand extends HelpPrinterCommand implements SubCommand {
             @Option(names = {"-ap", "--adminPort"}, description = "Server port on which server is listening for commands", defaultValue = "8888") int adminPort,
             @Mixin HelpOption help
     ) throws Exception {
+        // Create the server admin client
         ServerAdminClient adminClient = new ServerAdminClient(host, adminPort);
+        
+        // Call the stop server method
         adminClient.stopServer();
     }
 
     /**
      * Utility static function to start server in dev mode
      *
-     * @param args
+     * @param args unused
      */
     public static void main(String[] args) {
         MainCommand.main(new String[]{

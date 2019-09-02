@@ -24,6 +24,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -31,6 +33,8 @@ import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
  */
 public class ClassInfo {
 
+    private final static Logger LOGGER = LoggerFactory.getLogger(ClassInfo.class);
+    
     public static boolean isPrimitive(Class<?> type) {
         return type.isPrimitive()
                 || type.equals(Boolean.class)
@@ -213,7 +217,7 @@ public class ClassInfo {
                 Model model = reader.read(new FileReader(pom));
                 projectId = model.getArtifactId();
             } catch (Exception ex) {
-                // TODO warn;
+                LOGGER.warn("Exception while getting project id for class: " + classFromProject.getCanonicalName(), ex);
                 return "opensilex";
             }
         }

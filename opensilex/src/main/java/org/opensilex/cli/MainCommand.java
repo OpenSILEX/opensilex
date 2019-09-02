@@ -34,7 +34,7 @@ public class MainCommand extends HelpPrinterCommand implements IVersionProvider 
 
     public static void main(String[] args) {
         // Initialize instance with arguments
-        cliArgs  = OpenSilex.initWithArgs(args);
+        cliArgs  = OpenSilex.setup(args);
 
         // Initialize Picocli CommandLine
         if (cliArgs.length == 0) {

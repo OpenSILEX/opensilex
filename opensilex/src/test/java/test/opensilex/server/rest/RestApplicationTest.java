@@ -29,7 +29,8 @@ public class RestApplicationTest extends JerseyTest {
      */
     @Override
     protected ResourceConfig configure() {
-        OpenSilex.initWithArgs(new String[] {
+        // TODO: Use environment variables instead
+        OpenSilex.setup(new String[] {
             "--" + OpenSilex.PROFILE_ID_ARG_KEY + "=" + OpenSilex.TEST_PROFILE_ID
         });
         

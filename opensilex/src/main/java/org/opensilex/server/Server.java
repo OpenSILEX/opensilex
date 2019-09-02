@@ -24,7 +24,6 @@ import org.apache.catalina.util.IOTools;
 import org.apache.catalina.webresources.StandardRoot;
 import org.apache.commons.io.FileUtils;
 import org.apache.jasper.servlet.JasperInitializer;
-import org.apache.tomcat.JarScanFilter;
 import org.apache.tomcat.JarScanType;
 import org.opensilex.OpenSilex;
 import org.opensilex.fs.FileStorageService;
@@ -40,14 +39,11 @@ public class Server extends Tomcat {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(Server.class);
 
-    public static Server start(OpenSilex app, Path tomcatDirectory, String host, int port, int adminPort) throws LifecycleException {
-        Server server = new Server(app, host, port, adminPort, tomcatDirectory);
-        server.start();
-
-        return server;
-    }
-
+    private final String baseDir;
     private final OpenSilex instance;
+    private final String host;
+    private final int port;
+    private final int adminPort;
 
     /**
      * Construct OpenSilex server with host, port and adminPort adminPort is
@@ -62,7 +58,14 @@ public class Server extends Tomcat {
         System.setProperty("org.apache.catalina.startup.EXIT_ON_INIT_FAILURE", "true");
 
         this.instance = instance;
-        String baseDir = tomcatDirectory.toFile().getAbsolutePath();
+        this.baseDir = tomcatDirectory.toFile().getAbsolutePath();
+        this.host = host;
+        this.port = port;
+        this.adminPort = adminPort;
+    }
+
+    @Override
+    public void start() throws LifecycleException {
         setBaseDir(baseDir);
         setPort(port);
         setHostname(host);
@@ -90,6 +93,8 @@ public class Server extends Tomcat {
         getConnector();
 
         initAdminThread(adminPort);
+
+        super.start();
     }
 
     /**
@@ -118,11 +123,6 @@ public class Server extends Tomcat {
             }
             LOGGER.error("Can't initialize application:" + name, ex);
         }
-    }
-
-    public void stop() throws LifecycleException {
-        instance.clean();
-        super.stop();
     }
 
     /**

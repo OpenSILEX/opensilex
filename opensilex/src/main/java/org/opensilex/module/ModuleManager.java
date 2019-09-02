@@ -39,8 +39,21 @@ public class ModuleManager {
     private final static Logger LOGGER = LoggerFactory.getLogger(ModuleManager.class);
 
     private final static String DEPENDENCIES_LIST_CACHE_FILE = ".opensilex.dependencies";
+    private final static String MODULES_JAR_FOLDER = "modules";
 
-    public static List<URL> readDependenciesList(Path baseDirectory) {
+    public void loadModulesWithDependencies(Path baseDirectory) {
+        List<URL> readDependencies = ModuleManager.readDependenciesList(baseDirectory);
+        if (readDependencies.size() == 0) {
+            List<URL> modulesUrl = ModuleManager.listModulesURLs(baseDirectory);
+            List<URL> dependencies = loadModulesWithDependencies(modulesUrl);
+            ModuleManager.writeDependenciesList(baseDirectory, dependencies);
+        } else {
+            registerDependencies(readDependencies);
+        }
+    }
+    
+
+    private static List<URL> readDependenciesList(Path baseDirectory) {
         try {
             File dependencyFile = baseDirectory.resolve(DEPENDENCIES_LIST_CACHE_FILE).toFile();
             List<URL> dependencyURLs = new ArrayList<>();
@@ -58,7 +71,7 @@ public class ModuleManager {
         }
     }
 
-    public static void writeDependenciesList(Path baseDirectory, List<URL> dependencies) {
+    private static void writeDependenciesList(Path baseDirectory, List<URL> dependencies) {
         try {
             File dependencyFile = baseDirectory.resolve(DEPENDENCIES_LIST_CACHE_FILE).toFile();
             if (dependencies.size() > 0) {
@@ -74,7 +87,7 @@ public class ModuleManager {
     private ConfigManager configManager;
     private ServiceManager services;
 
-    public List<URL> loadModulesWithDependencies(List<URL> modulesJarURLs) {
+    private List<URL> loadModulesWithDependencies(List<URL> modulesJarURLs) {
         try {
             DependencyManager dependencyManager = new DependencyManager(
                     ClassInfo.getPomFile(OpenSilex.class, "org.opensilex", "opensilex")
@@ -92,7 +105,7 @@ public class ModuleManager {
         return null;
     }
 
-    public void registerDependencies(List<URL> dependenciesURL) {
+    private void registerDependencies(List<URL> dependenciesURL) {
         if (LOGGER.isDebugEnabled()) {
             dependenciesURL.forEach((dependencyURL) -> {
                 LOGGER.debug("Loaded dependency: " + dependencyURL.toString());
@@ -135,8 +148,8 @@ public class ModuleManager {
 
     }
 
-    public static List<URL> listModulesURLs(Path baseDirectory) {
-        File modulesDirectory = baseDirectory.resolve("modules").toFile();
+    private static List<URL> listModulesURLs(Path baseDirectory) {
+        File modulesDirectory = baseDirectory.resolve(MODULES_JAR_FOLDER).toFile();
         File[] modulesList = modulesDirectory.listFiles();
 
         LOGGER.debug("Start listing jar module files in directory: " + modulesDirectory.getPath());

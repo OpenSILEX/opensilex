@@ -13,7 +13,6 @@ import ch.qos.logback.core.joran.spi.JoranException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import org.opensilex.module.OpenSilexModule;
 import org.opensilex.config.ConfigManager;
 import java.nio.file.Path;
@@ -22,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.opensilex.module.ModuleManager;
-import org.opensilex.module.extensions.ServerExtension;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceManager;
 import org.opensilex.utils.ClassInfo;
@@ -30,7 +28,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This is the main class for initializing OpenSilex Application
+ * This is the main class for OpenSilex Application It's a configurable and
+ * extensible module system. This class use the singleton pattern. After
+ * initialization with a directory, a main config file and a profile identifier,
+ * it loads all jar files in "modules" subfolder, and then it initialize all
+ * existing modules in application classpath with their own configuration and
+ * services. see: OpenSilex.setup static method for more details on
+ * initialization mechanism Nodes: Module management code is delegate to
+ * org.opensilex.module.ModuleManager class Configuration management code is
+ * delegate to org.opensilex.config.ConfigManager class Service management code
+ * is delegate to org.opensilex.service.ServiceManager
  */
 public class OpenSilex {
 
@@ -54,57 +61,139 @@ public class OpenSilex {
      */
     public final static String DEV_PROFILE_ID = "dev";
 
+    /**
+     * Singleton variable of the OpenSilex running instance
+     */
     private static OpenSilex intance;
 
-    public final static String BASE_DIR_ARG_KEY = "BASE_DIRECTORY";
+    /**
+     * Environment key for OpenSilex base directory
+     */
     public final static String BASE_DIR_ENV_KEY = "OPENSILEX_BASE_DIRECTORY";
-    public final static String CONFIG_FILE_ARG_KEY = "CONFIG_FILE";
-    public final static String CONFIG_FILE_ENV_KEY = "OPENSILEX_CONFIG_FILE";
-    public final static String PROFILE_ID_ARG_KEY = "PROFILE_ID";
+
+    /**
+     * Environment key for OpenSilex profile identifier
+     */
     public final static String PROFILE_ID_ENV_KEY = "OPENSILEX_PROFILE_ID";
 
-    public static String[] initWithArgs(String[] args) {
+    /**
+     * Environment key for OpenSilex main configuration file
+     */
+    public final static String CONFIG_FILE_ENV_KEY = "OPENSILEX_CONFIG_FILE";
+
+    /**
+     * Command line argument key for OpenSilex base directory
+     */
+    public final static String BASE_DIR_ARG_KEY = "BASE_DIRECTORY";
+
+    /**
+     * Command line argument key for OpenSilex profile identifier
+     */
+    public final static String PROFILE_ID_ARG_KEY = "PROFILE_ID";
+
+    /**
+     * Command line argument key for OpenSilex configuration file
+     */
+    public final static String CONFIG_FILE_ARG_KEY = "CONFIG_FILE";
+
+    /**
+     * Main method to setup Opensilex instance based on command line arguments,
+     * using the following algorithm:
+     *
+     * - Define Base directory: Set by default with environment variable
+     * "OPENSILEX_BASE_DIRECTORY" If "args" array contains "BASE_DIRECTORY"
+     * parameter override base directory value If none of these values are
+     * defined use java system property "user.dir" corresponding to current user
+     * working directory see:
+     * https://docs.oracle.com/javase/tutorial/essential/environment/sysprop.html
+     *
+     * - Define Profile identifier Set by default with environment variable
+     * "OPENSILEX_PROFILE_ID" If "args" array contains "PROFILE_ID" parameter
+     * override profile identifier value If none of these values are defined use
+     * "prod" as default
+     *
+     * - Define Configuration file Set by default with environment variable
+     * "OPENSILEX_CONFIG_FILE" If "args" array contains "_CONFIG_FILE" parameter
+     * override config file value Otherwise use only application default
+     * configuration including in sources depending of profile
+     *
+     * - Create OpenSilex instance (see: OpenSilex.createInstance static method
+     * for more details) Try to find logback.xml file in OpenSilex base
+     * directory to initialize logger configuration Try to find
+     * logback-<profile-id>.xml file in OpenSilex base directory to override
+     * logger configuration Create OpenSilex object with previously defined
+     * parameters
+     *
+     * - Initialize OpenSilex instance (see: OpenSilex.init method for more
+     * details) Create instance for all existing module classes Give reference
+     * to OpenSilex instance to all modules Load configuration for all modules
+     * found Load services for all modules defined in there configuration Call
+     * "init" method for all modules Setup call to "clean" method for all
+     * modules at shutdown
+     *
+     * - Returns all remaining arguments for cli execution
+     *
+     * @param args Command line arguments array
+     * @return The command line arguments array without the Opensilex parameters
+     */
+    public static String[] setup(String[] args) {
+        // Init remaining arguments list to return
         List<String> cliArgsList = new ArrayList<>();
 
+        // Initialize with existing environment variables
         String baseDirectory = System.getenv(BASE_DIR_ENV_KEY);
         String configFile = System.getenv(CONFIG_FILE_ENV_KEY);
         String profileId = System.getenv(PROFILE_ID_ENV_KEY);
 
+        // Override with command line arguments values
         for (String arg : args) {
             if (arg.startsWith("--" + BASE_DIR_ARG_KEY + "=")) {
+                // For base directory
                 baseDirectory = arg.split("=", 2)[1];
-            } else if (arg.startsWith("--" + CONFIG_FILE_ARG_KEY + "=")) {
-                configFile = arg.split("=", 2)[1];
             } else if (arg.startsWith("--" + PROFILE_ID_ARG_KEY + "=")) {
+                // For profile identifier
                 profileId = arg.split("=", 2)[1];
+            } else if (arg.startsWith("--" + CONFIG_FILE_ARG_KEY + "=")) {
+                // For configuration file
+                configFile = arg.split("=", 2)[1];
             } else {
+                // Otherwise add argument to the remaining list
                 cliArgsList.add(arg);
             }
         }
 
-        if (baseDirectory == null || baseDirectory.toString().equals("")) {
+        // Set default value for base directory if not set previously
+        if (baseDirectory == null || baseDirectory.equals("")) {
             baseDirectory = System.getProperty("user.dir");
         }
 
+        // Set default profile identifier if not set previously
         if (profileId == null) {
             profileId = PROD_PROFILE_ID;
         }
 
+        // Create OpenSilex instance with these values depending if configuration file is defined or not.
         if (configFile == null || configFile.equals("")) {
             intance = createInstance(Paths.get(baseDirectory), profileId, null);
         } else {
             intance = createInstance(Paths.get(baseDirectory), profileId, Paths.get(configFile).toFile());
         }
 
+        // Return remaining arguments list
         return (String[]) cliArgsList.toArray(new String[0]);
     }
 
+    /**
+     * Return OpenSilex singleton instance
+     *
+     * @return
+     */
     public static OpenSilex getInstance() {
         return intance;
     }
 
     /**
-     * Return OpenSilex application instance
+     * Create and initialize OpenSilex application instance and return it
      *
      * @param baseDirectory Application base directory
      * @param profileId Application profile identifier
@@ -112,10 +201,13 @@ public class OpenSilex {
      *
      * @return An instance of OpenSilex
      */
-    public static OpenSilex createInstance(Path baseDirectory, String profileId, File configFile) {
+    private static OpenSilex createInstance(Path baseDirectory, String profileId, File configFile) {
 
+        // Try to find logback.xml file in OpenSilex base directory to initialize logger configuration
         File logConfigFile = baseDirectory.resolve("logback.xml").toFile();
         loadLoggerConfig(logConfigFile, true);
+
+        // Try to find logback-<profile-id>.xml file in OpenSilex base directory to override logger configuration
         File logProfileConfigFile = baseDirectory.resolve("logback-" + profileId + ".xml").toFile();
         loadLoggerConfig(logProfileConfigFile, false);
 
@@ -139,21 +231,38 @@ public class OpenSilex {
         return app;
     }
 
+    /**
+     * Method to override application logback logger configuration, if not reset
+     * flag merge configuration file with previously existing configuration
+     * otherwise override it. See the following link for logback xml file manual
+     * and examples: https://logback.qos.ch/manual/configuration.html
+     * https://www.mkyong.com/logging/logback-xml-example/
+     *
+     * @param logConfigFile Logback configuration file to merge or override
+     * @param reset Flag to determine if configuration must be merge or erase
+     * existing
+     */
     public static void loadLoggerConfig(File logConfigFile, boolean reset) {
+        // Check if config file exists
         if (logConfigFile.isFile()) {
             try {
+                // Reset logger configuration if needed
                 LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
                 if (reset) {
                     loggerContext.reset();
                 }
+
+                // Load new logger configuration file
                 JoranConfigurator configurator = new JoranConfigurator();
                 configurator.setContext(loggerContext);
-                InputStream configStream = FileUtils.openInputStream(logConfigFile);
-                configurator.doConfigure(configStream);
-                configStream.close();
+                try (InputStream configStream = FileUtils.openInputStream(logConfigFile)) {
+                    configurator.doConfigure(configStream);
+                }
             } catch (JoranException | IOException ex) {
                 LOGGER.warn("Error while trying to load logback configuration file: " + logConfigFile.getAbsolutePath(), ex);
             }
+        } else {
+            LOGGER.warn("Provided configuration file doe not exists: " + logConfigFile.getAbsolutePath());
         }
     }
 
@@ -222,18 +331,13 @@ public class OpenSilex {
     }
 
     /**
-     * Initialize application
+     * Initialize application Load all modules and their configuration load
+     * services and initialize them Setup cleaning call for modules on
+     * application shutdown
      */
-    public void init() {
+    private void init() {
         LOGGER.debug("Load modules with dependencies");
-        List<URL> readDependencies = ModuleManager.readDependenciesList(baseDirectory);
-        if (readDependencies.size() == 0) {
-            List<URL> modulesUrl = ModuleManager.listModulesURLs(baseDirectory);
-            List<URL> dependencies = moduleManager.loadModulesWithDependencies(modulesUrl);
-            ModuleManager.writeDependenciesList(baseDirectory, dependencies);
-        } else {
-            moduleManager.registerDependencies(readDependencies);
-        }
+        moduleManager.loadModulesWithDependencies(baseDirectory);
 
         LOGGER.debug("Define modules application");
         moduleManager.setApplication(this);
@@ -249,11 +353,15 @@ public class OpenSilex {
 
         LOGGER.debug("Initialize modules");
         moduleManager.init();
-    }
 
-    public void clean() {
-        LOGGER.debug("clean modules");
-        moduleManager.clean();
+        // Add hook to clean modules on shutdown
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                LOGGER.debug("Clean modules");
+                moduleManager.clean();
+            }
+        });
     }
 
     /**
@@ -265,10 +373,26 @@ public class OpenSilex {
         return moduleManager.getModules();
     }
 
+    /**
+     * Return module instance corresponding to the given class Throw an
+     * exception if the corresponding module is not find
+     *
+     * @param <T> The module class of returned instance
+     * @param moduleClass The module class from which the instance should be
+     * returned
+     * @return The module class instance
+     * @throws Exception
+     */
     public <T extends OpenSilexModule> T getModuleByClass(Class<T> moduleClass) throws Exception {
         return moduleManager.getModuleByClass(moduleClass);
     }
 
+    /**
+     * Return all modules defined in the provided project id (Maven artifact id)
+     *
+     * @param projectId The maven artifact id from which
+     * @return List of module instances contained in given project
+     */
     public List<OpenSilexModule> getModulesByProjectId(String projectId) {
         List<OpenSilexModule> modules = new ArrayList<>();
         moduleManager.forEachModule((OpenSilexModule m) -> {
@@ -278,6 +402,18 @@ public class OpenSilex {
         });
 
         return modules;
+    }
+
+    /**
+     * Return all modules implementing the given extension interface Usefull to
+     * create new extension for modules
+     *
+     * @param <T> The module extension interface to return
+     * @param extensionInterface The module extension interface class
+     * @return List of modules implementing the given extension interface
+     */
+    public <T> List<T> getModulesImplementingInterface(Class<T> extensionInterface) {
+        return moduleManager.getModulesImplementingInterface(extensionInterface);
     }
 
     /**
@@ -345,12 +481,12 @@ public class OpenSilex {
         return serviceManager.getServiceInstance(serviceId, serviceInterface);
     }
 
+    /**
+     * Return the base application directory path
+     *
+     * @return base application directory path
+     */
     public Path getBaseDirectory() {
         return this.baseDirectory;
     }
-
-    public <T> List<T> getModulesImplementingInterface(Class<T> extensionInterface) {
-        return moduleManager.getModulesImplementingInterface(extensionInterface);
-    }
-
 }

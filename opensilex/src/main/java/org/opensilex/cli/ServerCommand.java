@@ -109,13 +109,13 @@ public class ServerCommand extends HelpPrinterCommand implements SubCommand {
             }
         } else {
             try {
-                Server.start(
+                new Server(
                         OpenSilex.getInstance(),
-                        tomcatDirectory,
                         host,
                         port,
-                        adminPort
-                );
+                        adminPort,
+                        tomcatDirectory
+                ).start();
             } catch (LifecycleException ex) {
                 LOGGER.error("Tomcat exception while starting OpenSilex server", ex);
                 throw ex;

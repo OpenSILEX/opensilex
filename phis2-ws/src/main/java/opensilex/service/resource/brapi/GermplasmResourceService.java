@@ -147,10 +147,10 @@ public class GermplasmResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
             @ApiParam(value = "Search by germplasmDbId", example = DocumentationAnnotation.EXAMPLE_GERMPLASM_URI) @QueryParam("germplasmDbId") String uri,
             @ApiParam(value = "Search by germplasmPUI", example = DocumentationAnnotation.EXAMPLE_GERMPLASM_URI) @QueryParam("germplasmPUI") String germplasmPUI,
-            @ApiParam(value = "Search by germplasmName / not supported", example = DocumentationAnnotation.EXAMPLE_GERMPLASM_NAME) @QueryParam("germplasmName") @URL String germplasmName,
-            @ApiParam(value = "Search by commonCropName / not supported", example = DocumentationAnnotation.EXAMPLE_ACCESSION_NUMBER) @QueryParam("commonCropName") String commonCropName,
+            @ApiParam(value = "Search by germplasmName / not supported") @QueryParam("germplasmName") @URL String germplasmName,
+            @ApiParam(value = "Search by commonCropName / not supported") @QueryParam("commonCropName") String commonCropName,
             //added the parameter language to choose the language of species label 
-            @ApiParam(value = "choose the language of the species", example = DocumentationAnnotation.EXAMPLE_ACCESSION_NUMBER) @QueryParam("language") String language
+            @ApiParam(value = "choose the language of the species", example = "en") @QueryParam("language") String language
       ){
         
         if (germplasmPUI != null){

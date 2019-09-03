@@ -246,7 +246,7 @@ public class VariableResourceService extends ResourceService implements BrapiCal
     }    
     
     /**
-     * Brapi Call GET studies/observationVariables?studyDbId={studyDbId} V1.3
+     * Brapi Call GET studies/observationvariables?studyDbId={studyDbId} V1.3
      * Retrieve all observation variables measured in the study
      * @param studyDbId
      * @param limit

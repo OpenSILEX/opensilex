@@ -22,7 +22,7 @@ public class StudySearchDTO {
     private ArrayList<String> observationVariableDbIds;
     private ArrayList<String> programDbIds;
     private ArrayList<String> programNames;
-    private ArrayList<String> seasonDbIds;
+    private String seasonDbId;
     private ArrayList<String> studyDbIds;
     private ArrayList<String> studyNames;
     private String studyType;
@@ -84,12 +84,12 @@ public class StudySearchDTO {
         this.programNames = programNames;
     }
 
-    public ArrayList<String> getSeasonDbIds() {
-        return seasonDbIds;
+    public String getSeasonDbId() {
+        return seasonDbId;
     }
 
-    public void setSeasonDbIds(ArrayList<String> seasonDbIds) {
-        this.seasonDbIds = seasonDbIds;
+    public void setSeasonDbId(String seasonDbIds) {
+        this.seasonDbId = seasonDbIds;
     }
 
     public ArrayList<String> getStudyDbIds() {

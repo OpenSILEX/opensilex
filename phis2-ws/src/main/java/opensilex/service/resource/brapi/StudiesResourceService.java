@@ -49,6 +49,7 @@ import opensilex.service.model.Experiment;
 import opensilex.service.model.ScientificObject;
 import opensilex.service.model.StudyDetails;
 import opensilex.service.model.Variable;
+import opensilex.service.ontology.Oeso;
 import opensilex.service.resource.ResourceService;
 import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
@@ -393,7 +394,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         return getStudyObservations(studyDAO, variableURIs, limit, page);
     }
     /**
-     * Brapi Call GET studies/{studyDbId}/observationVariables V1.3
+     * Brapi Call GET studies/{studyDbId}/observationvariables V1.3
      * Retrieve all observation variables measured in the study
      * @param studyDbId
      * @param limit
@@ -649,7 +650,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
 
     public Response getObservationUnits (
         @ApiParam(value = "studyDbId", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI ) @PathParam("studyDbId") @URL @Required String studyDbId,
-        @ApiParam(value = "observationLevel", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_TYPE ) @QueryParam("observationLevel") @URL String  observationLevel,
+        @ApiParam(value = "observationLevel", example = "Plot" ) @QueryParam("observationLevel") String  observationLevel,
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
     ) throws SQLException {           
@@ -657,7 +658,13 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         ArrayList<Status> statusList = new ArrayList<>();  
 
         ScientificObjectRdf4jDAO scientificObjectsDAO = new ScientificObjectRdf4jDAO();
-        ArrayList<ScientificObject> scientificObjects = scientificObjectsDAO.find(null, null, null, observationLevel, studyDbId, null, null);
+
+        String rdfType = null;
+        if (observationLevel != null) {
+            rdfType =  Oeso.NAMESPACE + observationLevel;
+        }
+        
+        ArrayList<ScientificObject> scientificObjects = scientificObjectsDAO.find(null, null, null, rdfType, studyDbId, null, null);
 
         ExperimentSQLDAO experimentDAO = new ExperimentSQLDAO();
         experimentDAO.uri = studyDbId;
@@ -811,7 +818,9 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
 
         for (ScientificObject object:scientificObjects) {
             BrapiObservationUnitDTO unit = new BrapiObservationUnitDTO(object.getUri());
-            unit.setObservationLevel(object.getRdfType());
+            String rdfUnitType = object.getRdfType();
+            String unitType[] = rdfUnitType.split("#");
+            unit.setObservationLevel(unitType[1]);
             unit.setObservationUnitName(object.getLabel());
             unit.setStudyDbId(experiment.getUri());
             unit.setStudyName(experiment.getAlias());

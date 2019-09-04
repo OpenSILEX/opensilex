@@ -16,7 +16,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -60,7 +60,7 @@ public class SystemCommand extends HelpPrinterCommand implements SubCommand {
     private final static String UPDATES_DATE_MAP_KEY = "updatesDone";
 
     private Set<String> installedModules;
-    private Map<String, LocalDate> lastUpdatesByModules;
+    private Map<String, LocalDateTime> lastUpdatesByModules;
 
     private File getInstallationStateFile() {
         return OpenSilex.getInstance().getBaseDirectory().resolve(INSTALL_STATE_FILE).toFile();
@@ -79,7 +79,7 @@ public class SystemCommand extends HelpPrinterCommand implements SubCommand {
 
         lastUpdatesByModules = new HashMap<>();
         node.at("/" + UPDATES_DATE_MAP_KEY).fields().forEachRemaining((Entry<String, JsonNode> keyValue) -> {
-            lastUpdatesByModules.put(keyValue.getKey(), LocalDate.parse(keyValue.getValue().asText(), DateTimeFormatter.ISO_DATE));
+            lastUpdatesByModules.put(keyValue.getKey(), LocalDateTime.parse(keyValue.getValue().asText(), DateTimeFormatter.ISO_DATE));
         });
 
     }
@@ -95,7 +95,7 @@ public class SystemCommand extends HelpPrinterCommand implements SubCommand {
         }
 
         ObjectNode updatesDateMap = root.putObject(UPDATES_DATE_MAP_KEY);
-        lastUpdatesByModules.forEach((String module, LocalDate lastUpdate) -> {
+        lastUpdatesByModules.forEach((String module, LocalDateTime lastUpdate) -> {
             updatesDateMap.put(module, lastUpdate.format(DateTimeFormatter.ISO_DATE));
         });
 
@@ -109,7 +109,7 @@ public class SystemCommand extends HelpPrinterCommand implements SubCommand {
                 LOGGER.error("  - " + module);
             });
             LOGGER.error(UPDATES_DATE_MAP_KEY + ":");
-            lastUpdatesByModules.forEach((String module, LocalDate lastUpdate) -> {
+            lastUpdatesByModules.forEach((String module, LocalDateTime lastUpdate) -> {
                 LOGGER.error("  " + module + ": " + lastUpdate.format(DateTimeFormatter.ISO_DATE));
             });
         }
@@ -149,7 +149,7 @@ public class SystemCommand extends HelpPrinterCommand implements SubCommand {
                 }
             }
 
-            Map<String, LocalDate> existingUpdatesByModules = new HashMap<>();
+            Map<String, LocalDateTime> existingUpdatesByModules = new HashMap<>();
             ServiceLoader.load(ModuleUpdate.class, Thread.currentThread().getContextClassLoader()).forEach((ModuleUpdate update) -> {
                 String updateProjectId = ClassInfo.getProjectIdFromClass(update.getClass());
                 if (existingUpdatesByModules.containsKey(updateProjectId)) {
@@ -223,7 +223,7 @@ public class SystemCommand extends HelpPrinterCommand implements SubCommand {
 
                         // Determine if the update is a new one for the package
                         if (lastUpdatesByModules.containsKey(moduleId)) {
-                            LocalDate lastUpdate = lastUpdatesByModules.get(moduleId);
+                            LocalDateTime lastUpdate = lastUpdatesByModules.get(moduleId);
                             ignore = update.getDate().isAfter(lastUpdate);
                         }
 

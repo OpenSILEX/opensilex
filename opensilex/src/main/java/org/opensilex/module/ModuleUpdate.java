@@ -6,6 +6,7 @@
 package org.opensilex.module;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  *
@@ -13,7 +14,7 @@ import java.time.LocalDate;
  */
 public interface ModuleUpdate {
     
-    public LocalDate getDate();
+    public LocalDateTime getDate();
     
     public String getDescription();
     

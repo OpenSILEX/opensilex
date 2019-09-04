@@ -55,10 +55,10 @@
             <artifactId>opensilex-front-ue</artifactId>
             <version>${revision}</version>
         </dependency>
-        <!--                <dependency>
+        <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>phis2ws</artifactId>
             <version>${revision}</version>
-        </dependency>-->
+        </dependency>
     </dependencies>
 </project>

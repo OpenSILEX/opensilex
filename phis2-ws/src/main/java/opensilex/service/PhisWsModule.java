@@ -19,15 +19,16 @@ import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.opensilex.bigdata.mongodb.MongoDBConfig;
 import org.opensilex.sparql.rdf4j.RDF4JConfig;
-import org.opensilex.module.Module;
+import org.opensilex.module.OpenSilexModule;
 import org.opensilex.module.ModuleConfig;
+import org.opensilex.module.extensions.APIExtension;
 import org.opensilex.server.rest.RestApplication;
 
 
 /**
  * Phis opensilex module implementation
  */
-public class PhisWsModule extends Module {
+public class PhisWsModule extends OpenSilexModule implements APIExtension {
 
     @Override
     public Class<? extends ModuleConfig> getConfigClass() {
@@ -40,7 +41,7 @@ public class PhisWsModule extends Module {
     }
     
     @Override
-    public void start(RestApplication resourceConfig) {
+    public void initAPI(RestApplication resourceConfig) {
         RDF4JConfig rdf4jConfig = app.loadConfig("opensilex-core-service-sparql", RDF4JConfig.class);
         MongoDBConfig mongoConfig = app.loadConfig("opensilex-core-service-bigdata", MongoDBConfig.class);
         
@@ -74,7 +75,7 @@ public class PhisWsModule extends Module {
 
     @Override
     public List<String> getPackagesToScan() {
-        List<String> list = super.getPackagesToScan();
+        List<String> list = APIExtension.super.getPackagesToScan();
         list.add("opensilex.service.json");
         list.add("opensilex.service.resource.request.filters");
 

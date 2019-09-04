@@ -120,7 +120,7 @@ public abstract class OpenSilexModule {
 
         return false;
     }
-    
+
     public InputStream getFileInputStream(String fileName) throws Exception {
         URL sourceLocation = getClass().getProtectionDomain().getCodeSource().getLocation();
         String sourceLocationString = sourceLocation.toString();
@@ -198,14 +198,6 @@ public abstract class OpenSilexModule {
         return null;
     }
 
-    public void init() {
-
-    }
-
-    public void clean() {
-
-    }
-
     private ModuleConfig config;
 
     public void setConfig(ModuleConfig config) {
@@ -228,8 +220,20 @@ public abstract class OpenSilexModule {
     public Class<? extends ModuleConfig> getConfigClass() {
         return null;
     }
-    
+
     public <T extends Service> T getService(String serviceId, Class<T> serviceInterface) {
         return app.getServiceInstance(serviceId, serviceInterface);
+    }
+
+    public void install() {
+        LOGGER.info("Nothing to install for module class: " + getClass().getCanonicalName());
+    }
+
+    public void init() {
+
+    }
+
+    public void clean() {
+
     }
 }

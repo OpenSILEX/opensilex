@@ -14,7 +14,7 @@ import org.opensilex.bigdata.datanucleus.AbstractDataNucleusConnection;
  */
 public class MongoDBConnection extends AbstractDataNucleusConnection {
 
-    public MongoDBConnection() {
+    public MongoDBConnection(MongoDBConfig config) {
         super(new HashMap<>());
     }
 

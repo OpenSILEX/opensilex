@@ -16,11 +16,4 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     
-    <build>
-        <resources>
-            <resource>
-                <directory>src/main/config</directory>
-            </resource>
-        </resources>
-    </build>
 </project>

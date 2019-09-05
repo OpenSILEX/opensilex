@@ -41,10 +41,12 @@ public class FileStorageService implements Service {
 
         LOGGER.debug("Load files by extension: " + directory + " " + extensionFilter);
 
-        Files.walk(directoryPath)
-                .filter(Files::isRegularFile)
-                .map(p -> p.toFile())
-                .filter(f -> f.getAbsolutePath().endsWith("." + extensionFilter))
-                .forEach(action);
+        if (Files.exists(directoryPath) && Files.isDirectory(directoryPath)) {
+            Files.walk(directoryPath)
+                    .filter(Files::isRegularFile)
+                    .map(p -> p.toFile())
+                    .filter(f -> f.getAbsolutePath().endsWith("." + extensionFilter))
+                    .forEach(action);
+        }
     }
 }

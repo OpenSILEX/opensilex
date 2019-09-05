@@ -40,12 +40,12 @@ public interface BaseConfig extends ModuleConfig {
     public String defaultLanguage();
 
     @ConfigDescription(
-            value = "Core data sources",
+            value = "Base data sources",
             defaultMap = {
                 "sparql: {"
                 + "serviceClass: org.opensilex.sparql.SPARQLService,"
                 + "connectionClass: org.opensilex.sparql.rdf4j.RDF4JConnection,"
-                + "configId: opensilex-service-sparql,"
+                + "configId: opensilex-service-rdf4j,"
                 + "configClass: org.opensilex.sparql.rdf4j.RDF4JConfig"
                 + "}",
                 "authentication: {"
@@ -53,6 +53,12 @@ public interface BaseConfig extends ModuleConfig {
                 + "}",
                 "fs: {"
                 + "serviceClass: org.opensilex.fs.FileStorageService"
+                + "}",
+                "bigdata: {"
+                + "serviceClass: org.opensilex.bigdata.BigDataService,"
+                + "connectionClass: org.opensilex.bigdata.mongodb.MongoDBConnection,"
+                + "configId: opensilex-service-mongodb,"
+                + "configClass: org.opensilex.bigdata.mongodb.MongoDBConfig"   
                 + "}"
             }
     )

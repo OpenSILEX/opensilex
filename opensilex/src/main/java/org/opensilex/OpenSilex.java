@@ -262,7 +262,7 @@ public class OpenSilex {
                 LOGGER.warn("Error while trying to load logback configuration file: " + logConfigFile.getAbsolutePath(), ex);
             }
         } else {
-            LOGGER.warn("Provided configuration file doe not exists: " + logConfigFile.getAbsolutePath());
+            LOGGER.debug("Logger configuration file doe not exists: " + logConfigFile.getAbsolutePath());
         }
     }
 

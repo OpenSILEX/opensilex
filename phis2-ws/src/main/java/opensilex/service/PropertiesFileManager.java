@@ -123,7 +123,7 @@ public class PropertiesFileManager {
     /**
      * Phis service configuration
      */
-    private static PhisServiceConfig phisConfig;
+    private static PhisWsConfig phisConfig;
     
     /**
      * Setter for all configuration needed by phis
@@ -139,10 +139,10 @@ public class PropertiesFileManager {
         RDF4JConfig rdf4jConfig,
         MongoDBConfig mongoConfig
     ) {
-        PropertiesFileManager.pgConfig = phisConfig.postgreSQL();
-        PropertiesFileManager.phisConfig = phisConfig.service();
+        PropertiesFileManager.phisConfig = phisConfig;
         PropertiesFileManager.rdf4jConfig = rdf4jConfig;
         PropertiesFileManager.mongoConfig = mongoConfig;
+        PropertiesFileManager.pgConfig = phisConfig.postgreSQL();
     }
     
     /**
@@ -346,22 +346,22 @@ public class PropertiesFileManager {
         
         switch (prop) {
             case "host":
-                value = mongoConfig.options().get("host");
+                value = mongoConfig.host();
                 break;
             case "port":
-                value = mongoConfig.options().get("port");
+                value = "" + mongoConfig.port();
                 break;
             case "user":
-                value = mongoConfig.options().get("user");
+                value = mongoConfig.username();
                 break;
             case "password":
-                value = mongoConfig.options().get("password");
+                value = mongoConfig.password();
                 break;
             case "authdb":
-                value = mongoConfig.options().get("authdb");
+                value = mongoConfig.authDB();
                 break;
             case "db":
-                value = mongoConfig.options().get("database");
+                value = mongoConfig.database();
                 break;                     
             case "documents":
                 value = phisConfig.documentsCollection();
@@ -391,13 +391,12 @@ public class PropertiesFileManager {
      */
     public static String getSQLConnectionUrl(String fileName) {
         try {
-            final Properties sqlProps = parseFile(fileName);
             final StringBuilder strBuilder = new StringBuilder();
-            strBuilder.append(sqlProps.getProperty("url"))
+            strBuilder.append(getPgSQLProperty("url"))
                     .append("?")
-                    .append("user=").append(sqlProps.getProperty("username"))
+                    .append("user=").append(getPgSQLProperty("username"))
                     .append("&")
-                    .append("password=").append(sqlProps.getProperty("password"));
+                    .append("password=").append(getPgSQLProperty("password"));
             return strBuilder.toString();
         } catch (Exception ex) {
             LOGGER.error(ex.getMessage(), ex);

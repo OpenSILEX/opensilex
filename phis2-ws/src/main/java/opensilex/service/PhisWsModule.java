@@ -24,7 +24,6 @@ import org.opensilex.module.ModuleConfig;
 import org.opensilex.module.extensions.APIExtension;
 import org.opensilex.server.rest.RestApplication;
 
-
 /**
  * Phis opensilex module implementation
  */
@@ -39,18 +38,21 @@ public class PhisWsModule extends OpenSilexModule implements APIExtension {
     public String getConfigId() {
         return "phisws";
     }
-    
+
     @Override
-    public void initAPI(RestApplication resourceConfig) {
-        RDF4JConfig rdf4jConfig = app.loadConfig("opensilex-core-service-sparql", RDF4JConfig.class);
-        MongoDBConfig mongoConfig = app.loadConfig("opensilex-core-service-bigdata", MongoDBConfig.class);
-        
+    public void init() {
+        RDF4JConfig rdf4jConfig = app.loadConfig("opensilex-service-rdf4j", RDF4JConfig.class);
+        MongoDBConfig mongoConfig = app.loadConfig("opensilex-service-mongodb", MongoDBConfig.class);
+
         PropertiesFileManager.setOpensilexConfigs(
                 getConfig(PhisWsConfig.class),
                 rdf4jConfig,
                 mongoConfig
-                
         );
+    }
+
+    @Override
+    public void initAPI(RestApplication resourceConfig) {
 
         resourceConfig.register(new AbstractBinder() {
             @Override

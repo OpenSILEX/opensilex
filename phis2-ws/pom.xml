@@ -10,9 +10,9 @@
 
     <parent>
         <groupId>org.opensilex</groupId>
-        <artifactId>opensilex-parent</artifactId>
+        <artifactId>opensilex-module</artifactId>
         <version>${revision}</version>
-        <relativePath>../../opensilex-parent/pom.xml</relativePath>
+        <relativePath>../../opensilex-module/pom.xml</relativePath>
     </parent>
 
     <properties>
@@ -40,16 +40,6 @@
             <artifactId>mongodb-driver</artifactId>
             <version>3.9.0</version>
             <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.rdf4j</groupId>
-            <artifactId>rdf4j-runtime</artifactId>
-            <version>2.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.rdf4j</groupId>
-            <artifactId>rdf4j-repository-api</artifactId>
-            <version>2.2</version>
         </dependency>
         <dependency>
             <groupId>com.jcraft</groupId>

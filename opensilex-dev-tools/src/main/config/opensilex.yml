@@ -1,0 +1,8 @@
+phisws:
+    postgreSQL:
+        database: diaphen
+        username: phis
+        password: azerty
+        
+opensilex-core:
+    debug: false

@@ -101,13 +101,13 @@ public class ConfigManager {
                 }
             }
 
-            File mainConfig = baseDirectory.resolve("opensilex.yaml").toFile();
+            File mainConfig = baseDirectory.resolve("opensilex.yml").toFile();
             if (mainConfig.exists() && mainConfig.isFile()) {
                 addSource(mainConfig);
             }
 
             if (!extensionId.equals(PROD_PROFILE_ID)) {
-                File idConfig = baseDirectory.resolve("opensilex-" + extensionId + ".yaml").toFile();
+                File idConfig = baseDirectory.resolve("opensilex-" + extensionId + ".yml").toFile();
                 if (idConfig.exists() && idConfig.isFile()) {
                     addSource(idConfig);
                 }

@@ -396,6 +396,7 @@
                 <configuration>
                     <services>
                         <param>org.opensilex.module.OpenSilexModule</param>
+                        <param>org.opensilex.module.ModuleUpdate</param>
                         <param>org.opensilex.server.rest.RestApplicationAPI</param>
                         <param>org.opensilex.cli.SubCommand</param>
                         <param>org.opensilex.sparql.deserializer.SPARQLDeserializer</param>

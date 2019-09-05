@@ -26,10 +26,14 @@ import org.opensilex.utils.ClassInfo;
 public class StartServer {
 
     public static void main(String[] args) throws IOException {
-
-        // Start server in development mode
-        MainCommand.main(new String[]{"server", "start",
-            "--" + OpenSilex.PROFILE_ID_ARG_KEY + "=" + OpenSilex.DEV_PROFILE_ID});
+        
+        String configFile = TestUpdate.class.getClassLoader().getResource("./opensilex.yml").getPath();
+        
+        // TODO: Use environment variables instead
+        OpenSilex.setup(new String[] {
+            "--" + OpenSilex.PROFILE_ID_ARG_KEY + "=" + OpenSilex.DEV_PROFILE_ID,
+            "--" + OpenSilex.CONFIG_FILE_ARG_KEY + "=" + configFile
+        });
 
         // Define current directory to launch node.js processes
         Path currentDirectory = Paths.get(System.getProperty("user.dir"));

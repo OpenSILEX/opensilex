@@ -124,7 +124,7 @@ public abstract class OpenSilexModule {
     public InputStream getFileInputStream(String fileName) throws Exception {
         URL sourceLocation = getClass().getProtectionDomain().getCodeSource().getLocation();
         String sourceLocationString = sourceLocation.toString();
-        LOGGER.debug(getClass().getCanonicalName() + " - Load file from: " + sourceLocationString + " looking for: " + fileName);
+        LOGGER.debug(getClass().getCanonicalName() + " - Load file: " + fileName + " from: " + sourceLocationString);
 
         if (sourceLocationString.endsWith(".jar")) {
 
@@ -187,7 +187,7 @@ public abstract class OpenSilexModule {
     }
 
     public InputStream getYamlFile(String profileId) {
-        String yamlPath = "config/" + profileId + "/opensilex.yaml";
+        String yamlPath = "config/" + profileId + "/opensilex.yml";
 
         try {
             return getFileInputStream(yamlPath);

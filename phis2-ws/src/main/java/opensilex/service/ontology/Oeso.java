@@ -317,7 +317,13 @@ public enum Oeso {
         public String toString() {
             return NAMESPACE.toString() + "hasGermplasm";
         }
-    },  
+    }, 
+    RELATION_HAS_ACCESSION_NUMBER {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasAccessionNumber";
+        }
+    },
     RELATION_HAS_INSTITUTE_CODE {
         @Override
         public String toString() {

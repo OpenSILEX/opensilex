@@ -37,6 +37,7 @@ import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.PropertiesFileManager;
+import static opensilex.service.dao.GermplasmDAO.LOGGER;
 import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.BrapiMethod;
@@ -232,7 +233,7 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
         // Order MAX_ID integer from highest to lowest and select the first value
         query.addOrderBy(new SortCondition(maxID,  Query.ORDER_DESCENDING));
         query.setLimit(1);
-        
+
         return query.build();
     }
     

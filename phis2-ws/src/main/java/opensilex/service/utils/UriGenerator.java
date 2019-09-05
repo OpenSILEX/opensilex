@@ -14,6 +14,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 import org.apache.commons.codec.binary.Base32;
 import org.apache.jena.sparql.AlreadyExists;
@@ -88,7 +89,7 @@ public class UriGenerator {
     public static final String PLATFORM_URI_ID_VARIABLES = PLATFORM_URI_ID + "variables/" + URI_CODE_VARIABLE;
     private static final String PLATFORM_URI_ID_VARIETY = PLATFORM_URI + "v/";
     private static final String PLATFORM_URI_ID_PROVENANCE = PLATFORM_URI_ID + "provenance/";
-    public static final String PLATFORM_URI_ID_GERMPLASM = PLATFORM_URI_ID + "germplasm/";
+    public static final String PLATFORM_URI_ID_GERMPLASM = PLATFORM_URI_ID + "germplasm/" + URI_CODE_GERMPLASM;
     private static final String PLATFORM_URI_ID_ACCESSION = PLATFORM_URI_ID + "accession/";
     
     private static final String EXPERIMENT_URI_SEPARATOR = "-";
@@ -758,7 +759,7 @@ public class UriGenerator {
             germplasmId = "0" + germplasmId;
         }
 
-        return PLATFORM_URI_ID_GERMPLASM + URI_CODE_GERMPLASM + germplasmId;
+        return PLATFORM_URI_ID_GERMPLASM + germplasmId;
     }
     
     /**
@@ -780,4 +781,14 @@ public class UriGenerator {
         
         return germplasmLastID;
     }
+    
+//    private static String generateRandomHexadecimal(Integer digitsNumber) {
+//	Random random = new Random();
+//	StringBuilder sb = new StringBuilder();
+//	while (sb.length() < digitsNumber) {
+//		sb.append(Integer.toHexString(random.nextInt()));
+//	}
+//	return sb.toString();
+//    }
+ 
 }

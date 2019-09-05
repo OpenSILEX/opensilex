@@ -8,7 +8,6 @@
 package opensilex.service.resource.dto.scientificObject;
 
 import java.util.ArrayList;
-import opensilex.service.model.Germplasm;
 import opensilex.service.model.Property;
 import opensilex.service.model.ScientificObject;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
@@ -39,8 +38,6 @@ public class ScientificObjectDTO extends AbstractVerifiedClass {
     //label of the scientific object
     //@example M02_W
     private String label;
-    //germplasm
-    private Germplasm germplasm;
     //properties of the scientific object
     private ArrayList<PropertyDTO> properties = new ArrayList<>();
 
@@ -55,8 +52,7 @@ public class ScientificObjectDTO extends AbstractVerifiedClass {
         setExperiment(scientificObject.getExperiment());
         setIsPartOf(scientificObject.getIsPartOf());
         setLabel(scientificObject.getLabel());
-        setGermplasm(scientificObject.getGermplasm());
-        
+       
         for (Property property : scientificObject.getProperties()) {
             addProperty(new PropertyDTO(property));
         }
@@ -142,13 +138,5 @@ public class ScientificObjectDTO extends AbstractVerifiedClass {
     public void setIsPartOf(String isPartOf) {
         this.isPartOf = isPartOf;
     }
-
-    public Germplasm getGermplasm() {
-        return germplasm;
-    }
-
-    public void setGermplasm(Germplasm germplasm) {
-        this.germplasm = germplasm;
-    }    
     
 }

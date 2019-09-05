@@ -51,20 +51,13 @@ public class GermplasmDTO extends AbstractVerifiedClass {
 
     public GermplasmDTO(Germplasm germplasm) {
         accessionNumber = germplasm.getAccessionNumber();
-
         //genus = germplasm.getGenus();
         //germplasmGenus = germplasm.getGenus();
-        germplasmDbId = germplasm.getVarietyLabel();
+        germplasmDbId = germplasm.getGermplasmURI();
         germplasmSpecies = germplasm.getSpeciesLabel();
         species = germplasm.getSpeciesLabel();
         subtaxa = germplasm.getVarietyLabel(); 
-        if (germplasm.getAccessionNumber() != null) {
-            germplasmName = germplasm.getAccessionNumber();            
-        } else if (germplasm.getVarietyLabel() != null) {
-            germplasmName = germplasm.getVarietyLabel(); 
-        } else {
-            germplasmName = germplasm.getSpeciesLabel();
-        }
+        germplasmName = germplasm.getGermplasmName();
         instituteCode = germplasm.getInstituteCode();
         instituteName = germplasm.getInstituteName();
     }

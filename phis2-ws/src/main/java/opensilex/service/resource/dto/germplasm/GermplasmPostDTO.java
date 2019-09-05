@@ -22,7 +22,7 @@ import opensilex.service.utils.UriGenerator;
 public class GermplasmPostDTO extends AbstractVerifiedClass {
     /*voir https://www.genesys-pgr.org/fr/doc/0/basics*/
     
-    //private String germplasmName;
+    private String germplasmName;
     private String accessionURI;
     private String accessionNumber;
     private String varietyURI; 
@@ -113,28 +113,24 @@ public class GermplasmPostDTO extends AbstractVerifiedClass {
                 }            
             }       
 
-            //Set germplasmURI : accessionURI or varietyURI or speciesURI
-            if (accessionURI != null) {
-                germplasm.setGermplasmURI(accessionURI);
-            } else if (varietyURI != null) {
-                germplasm.setGermplasmURI(varietyURI);
-            } else {
-                germplasm.setGermplasmURI(speciesURI);                
-            }
+            //Set germplasmURI
+            germplasm.setGermplasmURI(UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_GERMPLASM.toString(), null, null));
             
-//            //Set germplasmName by following this priority order : given germplasmName, accessionName, varietyLabel, speciesLabel
-//            if (germplasmName != null) {
-//                germplasm.setGermplasmName(germplasmName);
-//            } else {
-//                if (accessionNumber != null) {
-//                    germplasm.setGermplasmName(germplasmName);
-//                }
-//                if (varietyLabel != null) {
-//                    germplasm.setGermplasmName(varietyLabel);
-//                } else {
-//                    germplasm.setGermplasmName(speciesLabel);
-//                }
-//            }   
+            //Set germplasmName
+            if (germplasmName != null) {
+                germplasm.setGermplasmName(germplasmName);
+            } else {
+                if (accessionNumber != null) {
+                    germplasm.setGermplasmName("accession_" + accessionNumber);
+                } else if (varietyLabel != null) {
+                    germplasm.setGermplasmName("variety_" + varietyLabel);
+                } else {
+                    germplasm.setGermplasmName("species_" + speciesLabel);
+                }
+            }
+        
+            //Set germplasmName by following this priority order : given germplasmName, accessionName, varietyLabel, speciesLabel
+            
         
             if (seedLots != null && accessionURI != null) {
                 germplasm.setSeedLots(seedLots);

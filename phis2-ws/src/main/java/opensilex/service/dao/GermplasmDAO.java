@@ -276,9 +276,9 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
         
         spql.addInsert(graph, germplasmURI, RDF.type, germplasmType);
         
-//        if (germplasm.getGermplasmName() != null) {
-//            spql.addInsert(graph, germplasmURI, RDFS.label, germplasm.getGermplasmName());
-//        }
+        if (germplasm.getGermplasmName() != null) {
+            spql.addInsert(graph, germplasmURI, RDFS.label, germplasm.getGermplasmName());
+        }
         
         if (germplasm.getSpeciesURI() != null) {
             Resource speciesURI = ResourceFactory.createResource(germplasm.getSpeciesURI());
@@ -301,10 +301,11 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
             Node accessionGraph = NodeFactory.createURI(Contexts.ACCESSION.toString());
             Resource accessionURI = ResourceFactory.createResource(germplasm.getAccessionURI());
             spql.addInsert(accessionGraph, accessionURI, RDF.type, NodeFactory.createURI("http://www.opensilex.org/vocabulary/oeso#Accession"));
-            Property relationHasAccessionNumber = ResourceFactory.createProperty(Oeso.RELATION_HAS_ACCESSION.toString());
-            spql.addInsert(graph, germplasmURI, relationHasAccessionNumber, accessionURI);
+            Property relationHasAccession = ResourceFactory.createProperty(Oeso.RELATION_HAS_ACCESSION.toString());
+            spql.addInsert(graph, germplasmURI, relationHasAccession, accessionURI);
             if (germplasm.getAccessionNumber()!= null) {
-                spql.addInsert(accessionGraph, accessionURI, RDFS.label, germplasm.getAccessionNumber());
+                Property relationHasAccessionNumber = ResourceFactory.createProperty(Oeso.RELATION_HAS_INSTITUTE_CODE.toString());
+                spql.addInsert(accessionGraph, accessionURI, relationHasAccessionNumber, germplasm.getAccessionNumber());
             }
         }
         
@@ -345,7 +346,7 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
         // Select the highest identifier
         query.addVar(maxID);
         
-        // Filter by variable
+        // Filter by Germplasm
         Node methodConcept = NodeFactory.createURI(Oeso.CONCEPT_GERMPLASM.toString());
         query.addWhere(uri, RDF.type, methodConcept);
         
@@ -363,6 +364,8 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
         query.addOrderBy(new SortCondition(maxID,  Query.ORDER_DESCENDING));
         query.setLimit(1);
         
+        LOGGER.debug(SPARQL_QUERY + query.toString());
+        
         return query.build();
 
     }    
@@ -373,7 +376,7 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
      */
     public int getLastId() {
         Query query = prepareGetLastId();
-        //get last variable uri ID inserted
+        //get last germplasm uri ID inserted
         TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         TupleQueryResult result = tupleQuery.evaluate();
 
@@ -430,16 +433,16 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
         query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), Oeso.CONCEPT_GERMPLASM.toString(), null);
         query.appendAndFilter("REGEX ( str(?" + URI + "),\".*" + uri + ".*\",\"i\")");
         
-//        //germplasmName filter
-//        query.appendSelect("?" + GERMPLASM_LABEL);
-//        if (germplasmName == null) {
-//            query.beginBodyOptional();
-//            query.appendToBody("?" + URI + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + GERMPLASM_LABEL + " . ");
-//            query.endBodyOptional();
-//        } else {
-//            query.appendTriplet("?" + URI, Rdfs.RELATION_LABEL.toString(), "?" + LABEL, null);
-//            query.appendAndFilter("REGEX ( str(?" + LABEL + "),\".*" + germplasmName + ".*\",\"i\")");
-//        }
+        //germplasmName filter
+        query.appendSelect("?" + GERMPLASM_LABEL);
+        if (germplasmName == null) {
+            query.beginBodyOptional();
+            query.appendToBody("?" + URI + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + GERMPLASM_LABEL + " . ");
+            query.endBodyOptional();
+        } else {
+            query.appendTriplet("?" + URI, Rdfs.RELATION_LABEL.toString(), "?" + LABEL, null);
+            query.appendAndFilter("REGEX ( str(?" + LABEL + "),\".*" + germplasmName + ".*\",\"i\")");
+        }
         
         //genus
         query.appendSelect("?" + GENUS);
@@ -448,15 +451,24 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
         query.endBodyOptional();
                
         //species
-        query.appendSelect("?" + SPECIES_LABEL);
-        query.beginBodyOptional();
-        query.appendToBody("?" + URI + " <" + Oeso.RELATION_HAS_SPECIES.toString() + "> " + "?" + SPECIES + " . ");
-        query.appendToBody("?" + SPECIES + " <" + RDFS.label.toString() + "> " + "?" + SPECIES_LABEL + " . ");
         if (language == null) {
-            language = "en"; //By default, we display the species in English
+                language = "en"; //By default, we display the species in English        
         }
-        query.appendAndFilter("LANG(?" + SPECIES_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + SPECIES_LABEL + "), \"" + language + "\")");
-        query.endBodyOptional();
+        
+        query.appendSelect("?" + SPECIES_LABEL);
+                    
+        if (commonCropName == null) {
+            query.beginBodyOptional();
+            query.appendToBody("?" + URI + " <" + Oeso.RELATION_HAS_SPECIES.toString() + "> " + "?" + SPECIES + " . ");
+            query.appendToBody("?" + SPECIES + " <" + RDFS.label.toString() + "> " + "?" + SPECIES_LABEL + " . ");
+            query.appendAndFilter("LANG(?" + SPECIES_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + SPECIES_LABEL + "), \"" + language + "\")");
+            query.endBodyOptional();
+        } else {
+            query.appendTriplet("?" + URI, Oeso.RELATION_HAS_SPECIES.toString(), "?" + SPECIES, null);
+            query.appendToBody("?" + SPECIES + " <" + RDFS.label.toString() + "> " + "?" + SPECIES_LABEL + " . ");
+            query.appendAndFilter("REGEX ( str(?" + SPECIES_LABEL + "),\".*" + commonCropName + ".*\",\"i\")");
+            query.appendAndFilter("LANG(?" + SPECIES_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + SPECIES_LABEL + "), \"" + language + "\")");
+        }
         
         //variety
         query.appendSelect("?" + VARIETY_LABEL);
@@ -469,7 +481,7 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
         query.appendSelect("?" + ACCESSION_NUMBER);        
         query.beginBodyOptional();
         query.appendToBody("?" + URI + " <" + Oeso.RELATION_HAS_ACCESSION.toString() + "> " + "?" + ACCESSION + " . ");
-        query.appendToBody("?" + ACCESSION + " <" + RDFS.label.toString() + "> " + "?" + ACCESSION_NUMBER + " . ");
+        query.appendToBody("?" + ACCESSION + " <" + Oeso.RELATION_HAS_ACCESSION_NUMBER + "> " + "?" + ACCESSION_NUMBER + " . ");
         query.endBodyOptional();      
                       
         //query.appendSelect("?" + PLANT_MATERIAL_LOT);
@@ -728,7 +740,7 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
         //ACCESSION
         query.beginBodyOptional();
         query.appendToBody("?" + URI + " <" + Oeso.RELATION_HAS_ACCESSION.toString() + "> " + "?" + ACCESSION + " . ");
-        query.appendToBody("?" + ACCESSION + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + ACCESSION_NUMBER + " . ");
+        query.appendToBody("?" + ACCESSION + " <" + Oeso.RELATION_HAS_ACCESSION_NUMBER + "> " + "?" + ACCESSION_NUMBER + " . ");
         query.endBodyOptional();
         
         LOGGER.debug(SPARQL_QUERY + query.toString());

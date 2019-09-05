@@ -15,7 +15,7 @@ import java.util.ArrayList;
  */
 public class Germplasm {
     private String germplasmURI;
-    //private String germplasmName;
+    private String germplasmName;
     private String accessionNumber;
     private String accessionURI;
     private String varietyLabel;
@@ -34,13 +34,13 @@ public class Germplasm {
         this.germplasmURI = germplasmURI;
     }
 
-//    public String getGermplasmName() {
-//        return germplasmName;
-//    }
-//
-//    public void setGermplasmName(String germplasmName) {
-//        this.germplasmName = germplasmName;
-//    }
+    public String getGermplasmName() {
+        return germplasmName;
+    }
+
+    public void setGermplasmName(String germplasmName) {
+        this.germplasmName = germplasmName;
+    }
 
     public String getAccessionNumber() {
         return accessionNumber;

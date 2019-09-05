@@ -31,13 +31,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
-import opensilex.service.dao.GermplasmDAO;
+import opensilex.service.dao.AccessionDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
-import opensilex.service.model.Germplasm;
+import opensilex.service.model.Accession;
 import opensilex.service.resource.ResourceService;
 import opensilex.service.resource.dto.germplasm.GermplasmDTO;
-import opensilex.service.resource.dto.germplasm.GermplasmPostDTO;
+import opensilex.service.resource.dto.germplasm.AccessionPostDTO;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.result.ResultForm;
 import opensilex.service.utils.POSTResultsReturn;
@@ -48,7 +48,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Germplasm resource service
+ * Accession resource service
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 @Api("/brapi/v1/germplasm")
@@ -67,10 +67,10 @@ public class GermplasmResourceService extends ResourceService {
      * @return the post result with the errors or the uri of the inserted germplasm
      */
     @POST
-    @ApiOperation(value = "Post germplasm",
-                  notes = "Register new germplasm in the database")
+    @ApiOperation(value = "Post Accession,",
+                  notes = "Register new Accession in the database")
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Germplasm saved", response = ResponseFormPOST.class),
+        @ApiResponse(code = 201, message = "Accessions saved", response = ResponseFormPOST.class),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
@@ -84,16 +84,16 @@ public class GermplasmResourceService extends ResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response post(
-        @ApiParam (value = DocumentationAnnotation.GERMPLASM_POST_DEFINITION) @Valid ArrayList<GermplasmPostDTO> germplasm,
+        @ApiParam (value = DocumentationAnnotation.GERMPLASM_POST_DEFINITION) @Valid ArrayList<AccessionPostDTO> accession,
         @Context HttpServletRequest context) throws Exception {
         AbstractResultForm postResponse = null;
         
-        if (germplasm != null && !germplasm.isEmpty()) {
-            GermplasmDAO germplasmDAO = new GermplasmDAO();
+        if (accession != null && !accession.isEmpty()) {
+            AccessionDAO accessionDAO = new AccessionDAO();
             
-            germplasmDAO.user = userSession.getUser();
+            accessionDAO.user = userSession.getUser();
             
-            POSTResultsReturn result = germplasmDAO.checkAndInsert(germplasmPostDTOsToGermplasm(germplasm));
+            POSTResultsReturn result = accessionDAO.checkAndInsert(accessionPostDTOsToAccession(accession));
             
             if (result.getHttpStatus().equals(Response.Status.CREATED)) {
                 postResponse = new ResponseFormPOST(result.statusList);
@@ -105,24 +105,24 @@ public class GermplasmResourceService extends ResourceService {
             }
             return Response.status(result.getHttpStatus()).entity(postResponse).build();
         } else {
-            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty sensor(s) to add"));
+            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty accession(s) to add"));
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }
     
     /**
-     * Generates a germplasm list from a given list of GermplasmPostDTO
-     * @param germplasmDTOs
+     * Generates a germplasm list from a given list of AccessionPostDTO
+     * @param accessionDTOs
      * @return the list of sensors
      */
-    private List<Germplasm> germplasmPostDTOsToGermplasm(List<GermplasmPostDTO> germplasmDTOs) throws Exception {
-        ArrayList<Germplasm> germplasmList = new ArrayList<>();
+    private List<Accession> accessionPostDTOsToAccession(List<AccessionPostDTO> accessionDTOs) throws Exception {
+        ArrayList<Accession> accessions = new ArrayList<>();
         
-        for (GermplasmPostDTO germplasmPostDTO : germplasmDTOs) {
-            germplasmList.add(germplasmPostDTO.createObjectFromDTO());
+        for (AccessionPostDTO accessionDTO : accessionDTOs) {
+            accessions.add(accessionDTO.createObjectFromDTO());
         }
         
-        return germplasmList;
+        return accessions;
     }
     
     @GET
@@ -156,12 +156,12 @@ public class GermplasmResourceService extends ResourceService {
             uri = germplasmPUI;
         }
         
-        GermplasmDAO germplasmDAO = new GermplasmDAO();
+        AccessionDAO germplasmDAO = new AccessionDAO();
         //1. Get count
         Integer totalCount = germplasmDAO.count(uri, germplasmName, commonCropName, language);
         
         //2. Get germplasms
-        ArrayList<Germplasm> germplasmFounded = germplasmDAO.find(page, pageSize, uri, germplasmName, commonCropName, language);
+        ArrayList<Accession> germplasmFounded = germplasmDAO.find(page, pageSize, uri, germplasmName, commonCropName, language);
         
         //3. Return result
         ArrayList<Status> statusList = new ArrayList<>();

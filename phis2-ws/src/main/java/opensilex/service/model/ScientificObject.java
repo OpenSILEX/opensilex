@@ -56,7 +56,7 @@ public class ScientificObject {
     private String label;
     
     //label of the scientific object
-    private Germplasm germplasm;
+    private Accession germplasm;
     
     //The properties of the scientific object
     
@@ -153,11 +153,11 @@ public class ScientificObject {
         this.alias = alias;
     }
 
-    public Germplasm getGermplasm() {
+    public Accession getGermplasm() {
         return germplasm;
     }
 
-    public void setGermplasm(Germplasm germplasm) {
+    public void setGermplasm(Accession germplasm) {
         this.germplasm = germplasm;
     }    
     

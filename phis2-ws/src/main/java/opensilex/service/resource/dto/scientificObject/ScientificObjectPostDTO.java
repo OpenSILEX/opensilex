@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import javax.validation.Valid;
 import javax.validation.constraints.Pattern;
 import opensilex.service.configuration.DateFormats;
-import opensilex.service.model.Germplasm;
+import opensilex.service.model.Accession;
 import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resource.dto.rdfResourceDefinition.PropertyPostDTO;
@@ -58,11 +58,11 @@ public class ScientificObjectPostDTO extends AbstractVerifiedClass {
     private String year;
     
     /**
-     * Germplasm uri of the scientific object (contains species, variety, or accession information) 
-     * If it is not given, this is the actual year.
+     * Accession uri of the scientific object (contains species, variety, or accession information) 
+ If it is not given, this is the actual year.
      * @example 2017
      */
-    private Germplasm germplasm;   
+    private Accession germplasm;   
     
     /**
      * Properties
@@ -152,11 +152,11 @@ public class ScientificObjectPostDTO extends AbstractVerifiedClass {
     }
 
     @URL
-    public Germplasm getGermplasm() {
+    public Accession getGermplasm() {
         return germplasm;
     }
 
-    public void setGermplasm(Germplasm germplasm) {
+    public void setGermplasm(Accession germplasm) {
         this.germplasm = germplasm;
     }
     

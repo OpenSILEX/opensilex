@@ -8,7 +8,7 @@
 package opensilex.service.resource.dto.germplasm;
 
 import java.util.ArrayList;
-import opensilex.service.model.Germplasm;
+import opensilex.service.model.Accession;
 import opensilex.service.resource.dto.experiment.ExperimentDTO;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 import org.slf4j.Logger;
@@ -49,17 +49,18 @@ public class GermplasmDTO extends AbstractVerifiedClass {
     private ArrayList<String> taxonIds;
     private ArrayList<String> typeOfGermplasmStorageCode;
 
-    public GermplasmDTO(Germplasm germplasm) {
-        accessionNumber = germplasm.getAccessionNumber();
-        //genus = germplasm.getGenus();
-        //germplasmGenus = germplasm.getGenus();
-        germplasmDbId = germplasm.getGermplasmURI();
-        germplasmSpecies = germplasm.getSpeciesLabel();
-        species = germplasm.getSpeciesLabel();
-        subtaxa = germplasm.getVarietyLabel(); 
-        germplasmName = germplasm.getGermplasmName();
-        instituteCode = germplasm.getInstituteCode();
-        instituteName = germplasm.getInstituteName();
+    public GermplasmDTO(Accession accession) {
+        germplasmName = accession.getAccessionName();
+        accessionNumber = accession.getAccessionNumber();
+        germplasmDbId = accession.getAccessionURI();
+        germplasmSpecies = accession.getSpeciesLabel();
+        species = accession.getSpeciesLabel();
+        subtaxa = accession.getVarietyLabel(); 
+        genus = accession.getGenusLabel();
+        germplasmGenus = accession.getGenusLabel();
+        instituteCode = accession.getInstituteCode();
+        instituteName = accession.getInstituteName();
+        commonCropName = accession.getSpeciesLabel();
     }
 
     public String getAccessionNumber() {

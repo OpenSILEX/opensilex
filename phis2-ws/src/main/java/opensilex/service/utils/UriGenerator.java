@@ -26,7 +26,7 @@ import opensilex.service.dao.GroupDAO;
 import opensilex.service.dao.ScientificObjectRdf4jDAO;
 import opensilex.service.dao.AnnotationDAO;
 import opensilex.service.dao.EventDAO;
-import opensilex.service.dao.GermplasmDAO;
+import opensilex.service.dao.AccessionDAO;
 import opensilex.service.dao.MethodDAO;
 import opensilex.service.dao.ProjectDAO;
 import opensilex.service.dao.RadiometricTargetDAO;
@@ -773,7 +773,7 @@ public class UriGenerator {
      */
     private static int getNextGermplasmID() {
         if (germplasmLastID == null) {
-            GermplasmDAO germplasmDAO = new GermplasmDAO();
+            AccessionDAO germplasmDAO = new AccessionDAO();
             germplasmLastID = germplasmDAO.getLastId();
         }
         

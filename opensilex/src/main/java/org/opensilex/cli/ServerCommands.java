@@ -35,9 +35,9 @@ import picocli.CommandLine.Parameters;
         name = "server",
         header = "Subcommand to group OpenSILEX server operations"
 )
-public class ServerCommand extends HelpPrinterCommand implements SubCommand {
+public class ServerCommands extends HelpPrinterCommand implements OpenSilexCommand {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(ServerCommand.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(ServerCommands.class);
     
     /**
      * This function start the OpenSilex server with the given host, port and
@@ -89,7 +89,7 @@ public class ServerCommand extends HelpPrinterCommand implements SubCommand {
             // If daemon flag, start an external process
             try {
                 // Get location of current jar file
-                File jarFile = new File(ServerCommand.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+                File jarFile = new File(ServerCommands.class.getProtectionDomain().getCodeSource().getLocation().toURI());
 
                 // Create external process with given arguments
                 ProcessBuilder pb = new ProcessBuilder(

@@ -49,9 +49,9 @@ import picocli.CommandLine.Parameters;
         name = "system",
         header = "Subcommand to group OpenSILEX system operations"
 )
-public class SystemCommand extends HelpPrinterCommand implements SubCommand {
+public class SystemCommands extends HelpPrinterCommand implements OpenSilexCommand {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(SystemCommand.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(SystemCommands.class);
 
     private final static String INSTALL_STATE_FILE = "opensilex.install.state.yml";
 

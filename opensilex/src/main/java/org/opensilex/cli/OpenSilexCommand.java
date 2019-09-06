@@ -10,4 +10,4 @@ package org.opensilex.cli;
 /**
  *  This interface is requested for any command in OpenSilex modules to be detected on loading
  */
-public interface SubCommand {}
+public interface OpenSilexCommand {}

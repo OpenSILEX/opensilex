@@ -55,9 +55,6 @@ public class ScientificObject {
     //label of the scientific object
     private String label;
     
-    //label of the scientific object
-    private Accession germplasm;
-    
     //The properties of the scientific object
     
     private ArrayList<Property> properties = new ArrayList<>();
@@ -151,14 +148,6 @@ public class ScientificObject {
 
     public void setAlias(String alias) {
         this.alias = alias;
-    }
-
-    public Accession getGermplasm() {
-        return germplasm;
-    }
-
-    public void setGermplasm(Accession germplasm) {
-        this.germplasm = germplasm;
-    }    
+    }   
     
 }

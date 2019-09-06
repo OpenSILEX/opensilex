@@ -58,13 +58,6 @@ public class ScientificObjectPostDTO extends AbstractVerifiedClass {
     private String year;
     
     /**
-     * Accession uri of the scientific object (contains species, variety, or accession information) 
- If it is not given, this is the actual year.
-     * @example 2017
-     */
-    private Accession germplasm;   
-    
-    /**
      * Properties
      */
     private ArrayList<PropertyPostDTO> properties;
@@ -77,7 +70,6 @@ public class ScientificObjectPostDTO extends AbstractVerifiedClass {
         scientificObject.setUriExperiment(experiment);
         scientificObject.setIsPartOf(isPartOf);
         scientificObject.setYear(year);
-        scientificObject.setGermplasm(germplasm);
         
         if (properties != null) {
             properties.forEach((property) -> {
@@ -149,16 +141,6 @@ public class ScientificObjectPostDTO extends AbstractVerifiedClass {
 
     public void setProperties(ArrayList<PropertyPostDTO> properties) {
         this.properties = properties;
-    }
-
-    @URL
-    public Accession getGermplasm() {
-        return germplasm;
-    }
-
-    public void setGermplasm(Accession germplasm) {
-        this.germplasm = germplasm;
-    }
-    
+    }   
     
 }

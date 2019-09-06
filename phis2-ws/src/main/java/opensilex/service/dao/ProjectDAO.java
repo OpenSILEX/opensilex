@@ -8,11 +8,8 @@
 package opensilex.service.dao;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.ws.rs.NotFoundException;
-import static opensilex.service.dao.InfrastructureDAO.RDF_TYPE_LABEL;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.dao.exception.ResourceAccessDeniedException;

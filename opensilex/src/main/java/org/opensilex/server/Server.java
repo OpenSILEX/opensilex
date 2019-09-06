@@ -56,7 +56,8 @@ public class Server extends Tomcat {
     public Server(OpenSilex instance, String host, int port, int adminPort, Path tomcatDirectory) {
         super();
         System.setProperty("org.apache.catalina.startup.EXIT_ON_INIT_FAILURE", "true");
-
+        System.setProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", "true");
+        
         this.instance = instance;
         this.baseDir = tomcatDirectory.toFile().getAbsolutePath();
         this.host = host;

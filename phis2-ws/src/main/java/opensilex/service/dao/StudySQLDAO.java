@@ -48,8 +48,6 @@ public class StudySQLDAO extends PostgreSQLDAO<StudyDTO> {
     public ArrayList<String> studyNames;
     public String sortBy;
     public String sortOrder;
-    public Integer page;
-    public Integer pageSize;
     
     @Override
     public Map<String, String> pkeySQLFieldLink() {
@@ -92,7 +90,7 @@ public class StudySQLDAO extends PostgreSQLDAO<StudyDTO> {
     
     @Override
     public ArrayList<StudyDTO> allPaginate() {
-                ResultSet queryResult = null;
+        ResultSet queryResult = null;
         Connection connection = null;
         Statement statement = null;
         ArrayList<StudyDTO> studies = new ArrayList();
@@ -104,6 +102,8 @@ public class StudySQLDAO extends PostgreSQLDAO<StudyDTO> {
             connection = dataSource.getConnection();
             statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
             SQLQueryBuilder query = prepareSearchQuery();
+            query.appendLimit(String.valueOf(pageSize));
+            query.appendOffset(Integer.toString(this.getPage() * this.getPageSize()));
             
             queryResult = statement.executeQuery(query.toString());
             
@@ -283,9 +283,7 @@ public class StudySQLDAO extends PostgreSQLDAO<StudyDTO> {
             }
             query.appendOrderBy(sqlFields.get(sortBy), sortOrder);                     
         }
-        query.appendLimit(String.valueOf(pageSize));
-        query.appendOffset(Integer.toString(this.getPage() * this.getPageSize()));
-
+        
         return query;
     }
     

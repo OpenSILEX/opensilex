@@ -42,7 +42,7 @@ public class StudyRDFDAO extends Rdf4jDAO {
         query.appendSelect("?expURI");
 
         for (String gp:germplasmDbIds) {
-            query.appendTriplet("?scientificObjectURI","<http://www.opensilex.org/vocabulary/oeso#hasGermplasm>", gp, null);
+            query.appendTriplet("?scientificObjectURI","<http://www.opensilex.org/vocabulary/oeso#hasGeneticResource>", gp, null);
             query.appendTriplet("?scientificObjectURI","<http://www.opensilex.org/vocabulary/oeso#participatesIn>", "?expURI", null);
         
         }

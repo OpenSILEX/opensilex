@@ -15,6 +15,7 @@ import java.util.List;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class Project {
+
     //URI of the project
     private String uri;
     //Foaf:name of the project
@@ -22,9 +23,9 @@ public class Project {
     //Shortname of the project
     private String shortname;
     //Projects related to the current project
-    private List<RdfResourceDefinition> relatedProjects = new ArrayList<>();
+    private List<Project> relatedProjects = new ArrayList<>();
     //Financial support of the project
-    private RdfResourceDefinition financialFunding;
+    private FinancialFunding financialFunding;
     //Financial reference of the project
     private String financialReference;
     //dcterms:description of the project
@@ -70,39 +71,40 @@ public class Project {
         this.shortname = shortname;
     }
 
-    public List<RdfResourceDefinition> getRelatedProjects() {
+    public List<Project> getRelatedProjects() {
         return relatedProjects;
     }
 
-    public void setRelatedProjects(List<RdfResourceDefinition> relatedProjects) {
+    public void setRelatedProjects(List<Project> relatedProjects) {
         this.relatedProjects = relatedProjects;
     }
-    
-    public void addRelatedProject(RdfResourceDefinition relatedProject) {
+
+    public void addRelatedProject(Project relatedProject) {
         relatedProjects.add(relatedProject);
     }
-    
+
     /**
-     * Check if the given uri is a project related to the current project. 
+     * Check if the given uri is a project related to the current project.
+     *
      * @param projectUri
-     * @return true if related projects contains the given uri, 
-     *         false if the given project uri is not in relatedProject list.
+     * @return true if related projects contains the given uri, false if the
+     * given project uri is not in relatedProject list.
      */
     public boolean containsRelatedProject(String projectUri) {
-        for (RdfResourceDefinition project : relatedProjects) {
+        for (Project project : relatedProjects) {
             if (project.getUri().equals(projectUri)) {
                 return true;
             }
         }
-            
+
         return false;
     }
 
-    public RdfResourceDefinition getFinancialFunding() {
+    public FinancialFunding getFinancialFunding() {
         return financialFunding;
     }
 
-    public void setFinancialFunding(RdfResourceDefinition financialFunding) {
+    public void setFinancialFunding(FinancialFunding financialFunding) {
         this.financialFunding = financialFunding;
     }
 
@@ -141,7 +143,7 @@ public class Project {
     public List<String> getKeywords() {
         return keywords;
     }
-    
+
     public void addKeyword(String keyword) {
         keywords.add(keyword);
     }
@@ -161,12 +163,13 @@ public class Project {
     public List<Contact> getAdministrativeContacts() {
         return administrativeContacts;
     }
-    
+
     /**
-     * Check if the given uri is in the administrative contact list. 
+     * Check if the given uri is in the administrative contact list.
+     *
      * @param contactUri
-     * @return true if administrative contact contains the given uri, 
-     *         false if the given uri is not in administrative contact.
+     * @return true if administrative contact contains the given uri, false if
+     * the given uri is not in administrative contact.
      */
     public boolean containsAdministrativeContact(String contactUri) {
         for (Contact contact : administrativeContacts) {
@@ -174,14 +177,14 @@ public class Project {
                 return true;
             }
         }
-            
+
         return false;
     }
 
     public void setAdministrativeContacts(List<Contact> administrativeContacts) {
         this.administrativeContacts = administrativeContacts;
     }
-    
+
     public void addAdministrativeContact(Contact admisitrativeContact) {
         administrativeContacts.add(admisitrativeContact);
     }
@@ -193,16 +196,17 @@ public class Project {
     public void setCoordinators(List<Contact> coordinators) {
         this.coordinators = coordinators;
     }
-    
+
     public void addCoordinator(Contact coordinator) {
         coordinators.add(coordinator);
     }
-    
+
     /**
-     * Check if the given uri is in the coordinators list. 
+     * Check if the given uri is in the coordinators list.
+     *
      * @param contactUri
-     * @return true if coordinators contains the given uri, 
-     *         false if the given uri is not in coordinators list.
+     * @return true if coordinators contains the given uri, false if the given
+     * uri is not in coordinators list.
      */
     public boolean containsCoordinator(String contactUri) {
         for (Contact contact : coordinators) {
@@ -210,7 +214,7 @@ public class Project {
                 return true;
             }
         }
-            
+
         return false;
     }
 
@@ -221,16 +225,17 @@ public class Project {
     public void setScientificContacts(List<Contact> scientificContacts) {
         this.scientificContacts = scientificContacts;
     }
-    
+
     public void addScientificContact(Contact scientificContact) {
         scientificContacts.add(scientificContact);
     }
 
     /**
-     * Check if the given uri is in the scientific contact list. 
+     * Check if the given uri is in the scientific contact list.
+     *
      * @param contactUri
-     * @return true if scientific contacts contains the given uri, 
-     *         false if the given uri is not in scientific contacts list.
+     * @return true if scientific contacts contains the given uri, false if the
+     * given uri is not in scientific contacts list.
      */
     public boolean containsScientificContact(String contactUri) {
         for (Contact contact : scientificContacts) {
@@ -238,10 +243,10 @@ public class Project {
                 return true;
             }
         }
-            
+
         return false;
     }
-    
+
     public String getObjective() {
         return objective;
     }

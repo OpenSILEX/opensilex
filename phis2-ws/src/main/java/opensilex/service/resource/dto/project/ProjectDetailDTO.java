@@ -12,8 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.model.Contact;
+import opensilex.service.model.FinancialFunding;
 import opensilex.service.model.Project;
-import opensilex.service.model.RdfResourceDefinition;
 import opensilex.service.resource.ProjectResourceService;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resource.dto.provenance.ContactDTO;
@@ -72,11 +72,12 @@ public class ProjectDetailDTO extends AbstractVerifiedClass {
         objective = project.getObjective();
         
         if (project.getFinancialFunding() != null) {
-            financialFunding = new RdfResourceDTO(project.getFinancialFunding());
+            FinancialFunding financialFundingObject = project.getFinancialFunding();
+            financialFunding = new RdfResourceDTO(financialFundingObject.getUri(), financialFundingObject.getLabel());
         }
         
-        for (RdfResourceDefinition relatedProject : project.getRelatedProjects()) {
-            relatedProjects.add(new RdfResourceDTO(relatedProject));
+        for (Project relatedProject : project.getRelatedProjects()) {
+            relatedProjects.add(new RdfResourceDTO(relatedProject.getUri(), relatedProject.getName()));
         }
         
         for (Contact contact : project.getAdministrativeContacts()) {

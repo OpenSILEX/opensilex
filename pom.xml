@@ -27,8 +27,9 @@
         <module>opensilex-front-ue</module>
         <!-- Development module -->
         <module>opensilex-doc</module> 
-        <module>opensilex-dev-tools</module> 
         <module>opensilex-release</module>
+        <module>opensilex-dev-tools</module> 
+        <module>opensilex-dev-module-generator</module> 
     </modules>
     
     <dependencies>

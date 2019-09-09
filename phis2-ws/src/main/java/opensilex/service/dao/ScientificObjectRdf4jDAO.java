@@ -58,6 +58,7 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.model.ScientificObject;
 import opensilex.service.model.Property;
 import opensilex.service.model.Uri;
+import opensilex.service.model.GeneticInformation;
 
 /**
  * Allows CRUD methods of scientific objects in the triplestore.
@@ -76,6 +77,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     private final String PROPERTY_TYPE = "propertyType";
     private final String CHILD = "child";
     private final String RELATION = "relation";
+    private final String GENETIC_RESOURCE = "geneticResource";  
     
     private static final String URI_CODE_SCIENTIFIC_OBJECT = "o";
 
@@ -576,9 +578,9 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      * @param alias
      * @return scientific objects list, result of the user query, empty if no result
      */
-    public ArrayList<ScientificObject> find(Integer page, Integer pageSize, String uri, String rdfType, String experiment, String alias) {
+    public ArrayList<ScientificObject> find(Integer page, Integer pageSize, String uri, String rdfType, String experiment, String alias, String geneticResource) {
         try {
-            SPARQLQueryBuilder sparqlQuery = prepareSearchQuery(false, page, pageSize, uri, rdfType, experiment, alias);
+            SPARQLQueryBuilder sparqlQuery = prepareSearchQuery(false, page, pageSize, uri, rdfType, experiment, alias, geneticResource);
             //SILEX:test
             //For pool connection issues
             rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID);
@@ -627,6 +629,13 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                     scientificObject.setProperties(findScientificObjectProperties(actualUri));
                     
                     foundedScientificObjects.put(actualUri, scientificObject);
+                    
+                    //Get genetic Information
+                    if (bindingSet.getValue(GENETIC_RESOURCE) != null) {
+                        String geneticResourceURI = bindingSet.getValue(GENETIC_RESOURCE).stringValue();
+                        scientificObject.setGeneticResource(geneticResourceURI);
+                    }
+                    
                 }
             }
             
@@ -680,7 +689,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      * }
      * @return the generated query
      */
-    protected SPARQLQueryBuilder prepareSearchQuery(boolean count, Integer page, Integer pageSize, String uri, String rdfType, String experiment, String alias) {    
+    protected SPARQLQueryBuilder prepareSearchQuery(boolean count, Integer page, Integer pageSize, String uri, String rdfType, String experiment, String alias, String geneticResource) {    
         SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
         
         sparqlQuery.appendDistinct(true);
@@ -725,6 +734,17 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         if (page != null && pageSize != null) {
             sparqlQuery.appendLimit(pageSize);
             sparqlQuery.appendOffset(page * pageSize);
+        }
+        
+        //GeneticResource filter
+        sparqlQuery.appendSelect("?" + GENETIC_RESOURCE);
+        if (geneticResource != null) {
+            sparqlQuery.appendToBody("?" + URI + " <" + Oeso.RELATION_HAS_GENETIC_RESOURCE.toString() + "> " + "?" + GENETIC_RESOURCE + " . ");
+            sparqlQuery.appendAndFilter("REGEX ( str(?" + GENETIC_RESOURCE + "),\".*" + geneticResource + ".*\",\"i\")");
+        } else {
+            sparqlQuery.beginBodyOptional();
+            sparqlQuery.appendToBody("?" + URI + " <" + Oeso.RELATION_HAS_GENETIC_RESOURCE.toString() + "> " + "?" + GENETIC_RESOURCE + " . ");
+            sparqlQuery.endBodyOptional();
         }
         
         LOGGER.debug(SPARQL_QUERY + sparqlQuery.toString());
@@ -966,7 +986,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      *         null if this scientific object does not exist.
      */
     public ScientificObject getScientificObjectInContext(String uri, String context) {
-        ArrayList<ScientificObject> scientificObjects = find(null, null, uri, null, context, null);
+        ArrayList<ScientificObject> scientificObjects = find(null, null, uri, null, context, null, null);
         if (!scientificObjects.isEmpty()) {
             return scientificObjects.get(0);
         } else {
@@ -1200,8 +1220,8 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      *      } 
      * }
      */
-    private SPARQLQueryBuilder prepareCount(String uri, String rdfType, String experimentURI, String alias) {
-        SPARQLQueryBuilder query = prepareSearchQuery(true, null, null, uri, rdfType, experimentURI, alias);
+    private SPARQLQueryBuilder prepareCount(String uri, String rdfType, String experimentURI, String alias, String geneticResource) {
+        SPARQLQueryBuilder query = prepareSearchQuery(true, null, null, uri, rdfType, experimentURI, alias, geneticResource);
         query.clearSelect();
         query.clearLimit();
         query.clearOffset();
@@ -1219,8 +1239,8 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      * @param alias
      * @return The number of scientific objects.
      */
-    public Integer count(String uri, String rdfType, String experimentURI, String alias) {
-        SPARQLQueryBuilder prepareCount = prepareCount(uri, rdfType, experimentURI, alias);
+    public Integer count(String uri, String rdfType, String experimentURI, String alias, String geneticResource) {
+        SPARQLQueryBuilder prepareCount = prepareCount(uri, rdfType, experimentURI, alias, geneticResource);
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
         Integer count = 0;
         try (TupleQueryResult result = tupleQuery.evaluate()) {
@@ -1231,4 +1251,17 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         }
         return count;
     }
+
+    /**
+     * 
+     * @param geneticResourceURI
+     * @return genetic info of the object (genus, species, variety, accession...)
+     * @throws Exception 
+     */
+    private GeneticInformation getGeneticResource(String geneticResourceURI) throws Exception {
+        GeneticInformationDAO geneticInfoDAO = new GeneticInformationDAO(geneticResourceURI);        
+        GeneticInformation geneticInfo = geneticInfoDAO.findById(geneticResourceURI); 
+        return geneticInfo;
+    }
+    
 }

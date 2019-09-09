@@ -205,7 +205,7 @@ public class DatasetDAO extends MongoDAO<Dataset> {
     private void updateScientificObjectsWithExperimentsScientificObjects() {
         ScientificObjectRdf4jDAO agronomicalObjectDao = new ScientificObjectRdf4jDAO();
         
-        ArrayList<ScientificObject> scientificObjectsSearched = agronomicalObjectDao.find(null, null, null, null, experiment, null);
+        ArrayList<ScientificObject> scientificObjectsSearched = agronomicalObjectDao.find(null, null, null, null, experiment, null, null);
         
         scientificObjectsSearched.forEach((scientificObject) -> {
             this.scientificObjects.add(scientificObject.getUri());

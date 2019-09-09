@@ -279,22 +279,22 @@ public class AccessionDAO extends Rdf4jDAO<Accession> {
         Node varietyGraph = NodeFactory.createURI(Contexts.VARIETY.toString());
         Resource varietyURI = ResourceFactory.createResource(accession.getVarietyURI());
         spql.addInsert(varietyGraph, varietyURI, RDF.type, NodeFactory.createURI("http://www.opensilex.org/vocabulary/oeso#Variety"));
-        Property relationHasVariety= ResourceFactory.createProperty(Oeso.RELATION_HAS_VARIETY.toString());
-        spql.addInsert(graph, accessionURI, relationHasVariety, varietyURI);
+        Property relationHasAccession = ResourceFactory.createProperty(Oeso.RELATION_HAS_ACCESSION.toString());
+        spql.addInsert(graph, varietyURI, relationHasAccession, accessionURI);
         if (accession.getVarietyLabel()!= null) {                
             spql.addInsert(varietyGraph, varietyURI, RDFS.label, accession.getVarietyLabel());
         }
         
         //add Link to species
         Resource speciesURI = ResourceFactory.createResource(accession.getSpeciesURI());
-        Property relationHasSpecies = ResourceFactory.createProperty(Oeso.RELATION_HAS_SPECIES.toString());
-        spql.addInsert(graph, varietyURI, relationHasSpecies, speciesURI);
+        Property relationHasVariety = ResourceFactory.createProperty(Oeso.RELATION_HAS_VARIETY.toString());
+        spql.addInsert(graph, speciesURI, relationHasVariety, varietyURI);
         
         //add Link to genus (déjà en base ?)
         if (accession.getGenusURI()!= null) {
             Resource genusURI = ResourceFactory.createResource(accession.getSpeciesURI());
-            Property relationHasGenus = ResourceFactory.createProperty(Oeso.RELATION_HAS_GENUS.toString());
-            spql.addInsert(graph, speciesURI, relationHasGenus, genusURI);                
+            Property relationHasSpecies = ResourceFactory.createProperty(Oeso.RELATION_HAS_SPECIES.toString());
+            spql.addInsert(graph, genusURI, relationHasSpecies, speciesURI);                
         }
         
         //add accession properties
@@ -309,7 +309,7 @@ public class AccessionDAO extends Rdf4jDAO<Accession> {
         }
         
         if (accession.getSeedLots() != null) {
-            Property relationHasSeedLot = ResourceFactory.createProperty(Oeso.RELATION_HAS_SEED_LOT.toString());
+            Property relationHasSeedLot = ResourceFactory.createProperty(Oeso.RELATION_HAS_PLANT_MATERIAL_LOT.toString());
             ArrayList<String> lots = accession.getSeedLots();
             for (String lot:lots) {
                 spql.addInsert(accessionGraph, accessionURI, relationHasSeedLot, lot);
@@ -332,60 +332,60 @@ public class AccessionDAO extends Rdf4jDAO<Accession> {
         return query;
     }
     
-    /**
-     * Prepares a query to get the higher id of the accession.
-     * @return 
-     */
-    private Query prepareGetLastId() {
-        SelectBuilder query = new SelectBuilder();
-        
-        Var uri = makeVar(URI);
-        Var maxID = makeVar(MAX_ID);
-        
-        // Select the highest identifier
-        query.addVar(maxID);
-        
-        // Filter by Accession
-        Node methodConcept = NodeFactory.createURI(Oeso.CONCEPT_GERMPLASM.toString());
-        query.addWhere(uri, RDF.type, methodConcept);
-        
-        // Binding to extract the last part of the URI as a MAX_ID integer
-        ExprFactory expr = new ExprFactory();
-        Expr indexBinding =  expr.function(
-            XSD.integer.getURI(), 
-            ExprList.create(Arrays.asList(
-                expr.strafter(expr.str(uri), UriGenerator.PLATFORM_URI_ID_GERMPLASM))
-            )
-        );
-        query.addBind(indexBinding, maxID);
-        
-        // Order MAX_ID integer from highest to lowest and select the first value
-        query.addOrderBy(new SortCondition(maxID,  Query.ORDER_DESCENDING));
-        query.setLimit(1);
-        
-        LOGGER.debug(SPARQL_QUERY + query.toString());
-        
-        return query.build();
-
-    }    
-    
-     /**
-     * Gets the higher id of the variables.
-     * @return the id
-     */
-    public int getLastId() {
-        Query query = prepareGetLastId();
-        //get last accession uri ID inserted
-        TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-        TupleQueryResult result = tupleQuery.evaluate();
-
-        if (result.hasNext()) {
-            BindingSet bindingSet = result.next();
-            return Integer.valueOf(bindingSet.getValue(MAX_ID).stringValue());
-        } else {
-            return 0;
-        }
-    }
+//    /**
+//     * Prepares a query to get the higher id of the accession.
+//     * @return 
+//     */
+//    private Query prepareGetLastId() {
+//        SelectBuilder query = new SelectBuilder();
+//        
+//        Var uri = makeVar(URI);
+//        Var maxID = makeVar(MAX_ID);
+//        
+//        // Select the highest identifier
+//        query.addVar(maxID);
+//        
+//        // Filter by Accession
+//        Node methodConcept = NodeFactory.createURI(Oeso.CONCEPT_ACCESSION.toString());
+//        query.addWhere(uri, RDF.type, methodConcept);
+//        
+//        // Binding to extract the last part of the URI as a MAX_ID integer
+//        ExprFactory expr = new ExprFactory();
+//        Expr indexBinding =  expr.function(
+//            XSD.integer.getURI(), 
+//            ExprList.create(Arrays.asList(
+//                expr.strafter(expr.str(uri), UriGenerator.PLATFORM_URI_ID_GERMPLASM))
+//            )
+//        );
+//        query.addBind(indexBinding, maxID);
+//        
+//        // Order MAX_ID integer from highest to lowest and select the first value
+//        query.addOrderBy(new SortCondition(maxID,  Query.ORDER_DESCENDING));
+//        query.setLimit(1);
+//        
+//        LOGGER.debug(SPARQL_QUERY + query.toString());
+//        
+//        return query.build();
+//
+//    }    
+//    
+//     /**
+//     * Gets the higher id of the variables.
+//     * @return the id
+//     */
+//    public int getLastId() {
+//        Query query = prepareGetLastId();
+//        //get last accession uri ID inserted
+//        TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+//        TupleQueryResult result = tupleQuery.evaluate();
+//
+//        if (result.hasNext()) {
+//            BindingSet bindingSet = result.next();
+//            return Integer.valueOf(bindingSet.getValue(MAX_ID).stringValue());
+//        } else {
+//            return 0;
+//        }
+//    }
     
     /**
      * Count query generated by the searched parameters given.
@@ -433,7 +433,7 @@ public class AccessionDAO extends Rdf4jDAO<Accession> {
                        
         //variety
         query.appendSelect("?" + VARIETY_LABEL);
-        query.appendToBody("?" + URI + " <" + Oeso.RELATION_HAS_VARIETY.toString() + "> " + "?" + VARIETY + " . ");
+        query.appendToBody("?" + VARIETY + " <" + Oeso.RELATION_HAS_ACCESSION.toString() + "> " + "?" + URI + " . ");
         query.appendToBody("?" + VARIETY + " <" + RDFS.label.toString() + "> " + "?" + VARIETY_LABEL + " . ");
         
         //species
@@ -443,11 +443,11 @@ public class AccessionDAO extends Rdf4jDAO<Accession> {
         
         query.appendSelect("?" + SPECIES_LABEL);                    
         if (species == null) {
-            query.appendToBody("?" + VARIETY + " <" + Oeso.RELATION_HAS_SPECIES.toString() + "> " + "?" + SPECIES + " . ");
+            query.appendToBody("?" + SPECIES + " <" + Oeso.RELATION_HAS_VARIETY.toString() + "> " + "?" + VARIETY + " . ");
             query.appendToBody("?" + SPECIES + " <" + RDFS.label.toString() + "> " + "?" + SPECIES_LABEL + " . ");
             query.appendAndFilter("LANG(?" + SPECIES_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + SPECIES_LABEL + "), \"" + language + "\")");
         } else {
-            query.appendTriplet("?" + VARIETY, Oeso.RELATION_HAS_SPECIES.toString(), "?" + SPECIES, null);
+            query.appendTriplet("?" + SPECIES, Oeso.RELATION_HAS_VARIETY.toString(), "?" + VARIETY, null);
             query.appendToBody("?" + SPECIES + " <" + RDFS.label.toString() + "> " + "?" + SPECIES_LABEL + " . ");
             query.appendAndFilter("REGEX ( str(?" + SPECIES_LABEL + "),\".*" + species + ".*\",\"i\")");
             query.appendAndFilter("LANG(?" + SPECIES_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + SPECIES_LABEL + "), \"" + language + "\")");
@@ -456,7 +456,7 @@ public class AccessionDAO extends Rdf4jDAO<Accession> {
         //genus
         query.appendSelect("?" + GENUS_LABEL);
         query.beginBodyOptional();
-        query.appendToBody("?" + SPECIES + " <" + Oeso.RELATION_HAS_GENUS.toString() + "> " + "?" + GENUS + " . ");
+        query.appendToBody("?" + GENUS + " <" + Oeso.RELATION_HAS_SPECIES.toString() + "> " + "?" + SPECIES + " . ");
         query.appendToBody("?" + GENUS + " <" + RDFS.label.toString() + "> " + "?" + GENUS_LABEL + " . ");
         query.endBodyOptional();
         
@@ -581,7 +581,7 @@ public class AccessionDAO extends Rdf4jDAO<Accession> {
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
-                Accession germplasm = getGermplasmFromBindingSet(bindingSet);
+                Accession germplasm = getAccessionFromBindingSet(bindingSet);
                 germplasmList.add(germplasm);
             }
         }
@@ -600,7 +600,7 @@ public class AccessionDAO extends Rdf4jDAO<Accession> {
      * @param variety
      * @return a accession with data extracted from the given bindingSet
      */
-    private Accession getGermplasmFromBindingSet(BindingSet bindingSet) {
+    private Accession getAccessionFromBindingSet(BindingSet bindingSet) {
         Accession accession = new Accession();
         
         if (bindingSet.getValue(URI) != null) {

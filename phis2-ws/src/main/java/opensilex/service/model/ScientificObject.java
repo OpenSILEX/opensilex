@@ -55,6 +55,12 @@ public class ScientificObject {
     //label of the scientific object
     private String label;
     
+    //geneticResource of the scientific object
+    private String geneticResource;
+    
+    //geneticResource of the scientific object
+    private GeneticInformation geneticInformation;
+    
     //The properties of the scientific object
     
     private ArrayList<Property> properties = new ArrayList<>();
@@ -149,5 +155,13 @@ public class ScientificObject {
     public void setAlias(String alias) {
         this.alias = alias;
     }   
+
+    public String getGeneticResource() {
+        return geneticResource;
+    }
+
+    public void setGeneticResource(String geneticResource) {
+        this.geneticResource = geneticResource;
+    }
     
 }

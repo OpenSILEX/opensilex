@@ -58,6 +58,12 @@ public class ScientificObjectPostDTO extends AbstractVerifiedClass {
     private String year;
     
     /**
+     * geneticResource (accessionURI, varietyURI, speciesURI, SeedLot...)
+     * @example "http://www.phenome-fppn.fr/diaphen/id/accession/B73"
+     */
+    private String geneticResource;
+    
+    /**
      * Properties
      */
     private ArrayList<PropertyPostDTO> properties;
@@ -142,5 +148,15 @@ public class ScientificObjectPostDTO extends AbstractVerifiedClass {
     public void setProperties(ArrayList<PropertyPostDTO> properties) {
         this.properties = properties;
     }   
+
+    @URL
+    public String getGeneticResource() {
+        return geneticResource;
+    }
+
+    public void setGeneticResource(String geneticResource) {
+        this.geneticResource = geneticResource;
+    }
+    
     
 }

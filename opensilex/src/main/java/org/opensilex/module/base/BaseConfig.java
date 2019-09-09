@@ -5,10 +5,19 @@
  */
 package org.opensilex.module.base;
 
-import java.util.Map;
+import org.opensilex.bigdata.BigDataConnection;
+import org.opensilex.bigdata.BigDataService;
+import org.opensilex.bigdata.mongodb.MongoDBConfig;
+import org.opensilex.bigdata.mongodb.MongoDBConnection;
 import org.opensilex.config.ConfigDescription;
+import org.opensilex.config.ServiceDescription;
+import org.opensilex.fs.FileStorageService;
 import org.opensilex.module.ModuleConfig;
-import org.opensilex.service.ServiceConfig;
+import org.opensilex.server.security.AuthenticationService;
+import org.opensilex.sparql.SPARQLConnection;
+import org.opensilex.sparql.SPARQLService;
+import org.opensilex.sparql.rdf4j.RDF4JConfig;
+import org.opensilex.sparql.rdf4j.RDF4JConnection;
 
 /**
  *
@@ -39,29 +48,32 @@ public interface BaseConfig extends ModuleConfig {
     )
     public String defaultLanguage();
 
-    @ConfigDescription(
-            value = "Base data sources",
-            defaultMap = {
-                "sparql: {"
-                + "serviceClass: org.opensilex.sparql.SPARQLService,"
-                + "connectionClass: org.opensilex.sparql.rdf4j.RDF4JConnection,"
-                + "configId: opensilex-service-rdf4j,"
-                + "configClass: org.opensilex.sparql.rdf4j.RDF4JConfig"
-                + "}",
-                "authentication: {"
-                + "serviceClass: org.opensilex.server.security.AuthenticationService"
-                + "}",
-                "fs: {"
-                + "serviceClass: org.opensilex.fs.FileStorageService"
-                + "}",
-                "bigdata: {"
-                + "serviceClass: org.opensilex.bigdata.BigDataService,"
-                + "connectionClass: org.opensilex.bigdata.mongodb.MongoDBConnection,"
-                + "configId: opensilex-service-mongodb,"
-                + "configClass: org.opensilex.bigdata.mongodb.MongoDBConfig"   
-                + "}"
-            }
+    @ServiceDescription(
+            value = "Big data source",
+            connection = BigDataConnection.class,
+            defaultConnection = MongoDBConnection.class,
+            defaultConnectionConfig = MongoDBConfig.class,
+            defaultConnectionConfigID = "mongodb"
     )
-    public Map<String, ServiceConfig> services();
+    public BigDataService bigData();
+
+    @ServiceDescription(
+            value = "SPARQL data sources",
+            connection = SPARQLConnection.class,
+            defaultConnection = RDF4JConnection.class,
+            defaultConnectionConfig = RDF4JConfig.class,
+            defaultConnectionConfigID = "rdf4j"
+    )
+    public SPARQLService sparql();
+
+    @ServiceDescription(
+            value = "Authentication service"
+    )
+    public AuthenticationService authentication();
+
+    @ServiceDescription(
+            value = "File storage service"
+    )
+    public FileStorageService fs();
 
 }

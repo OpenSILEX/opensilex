@@ -349,7 +349,7 @@ public class OpenSilex {
         moduleManager.loadConfigs(configManager);
 
         LOGGER.debug("Load modules services");
-        moduleManager.loadServices(serviceManager);
+        moduleManager.registerServices(serviceManager);
 
         LOGGER.debug("Initialize modules");
         moduleManager.init();
@@ -428,6 +428,12 @@ public class OpenSilex {
      */
     public <T> T loadConfig(String key, Class<T> configClass) {
         T config = configManager.loadConfig(key, configClass);
+
+        return config;
+    }
+
+    public <T> T loadConfigPath(String path, Class<T> configClass) {
+        T config = configManager.loadConfigPath(path, configClass);
 
         return config;
     }

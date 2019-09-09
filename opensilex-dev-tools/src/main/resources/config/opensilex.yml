@@ -1,3 +1,17 @@
+opensilex:
+    sparql:
+        $service: org.opensilex.sparql.SPARQLService
+        $connection: org.opensilex.sparql.rdf4j.RDF4JConnection
+        $connectionConfig: org.opensilex.sparql.rdf4j.RDF4JConfig
+        $connectionConfigID: rdf4j
+        rdf4j:
+            serverURI: http://localhost:8080/rdf4j-server/
+            repository: diaphen
+    
+    bigData:
+        mongodb:
+            database: diaphen
+            
 phisws:
     ontologyBaseURI: http://www.phenome-fppn.fr
     vocabulary: http://www.phenome-fppn.fr/vocabulary/2017#
@@ -18,10 +32,3 @@ phisws:
         database: diaphen
         username: phis
         password: azerty
-        
-opensilex-service-rdf4j:
-    serverURI: http://localhost:8080/rdf4j-server/
-    repository: diaphen
-    
-opensilex-service-mongodb:
-    database: diaphen

@@ -8,7 +8,9 @@ package org.opensilex.config;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
@@ -18,13 +20,20 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.opensilex.service.Service;
+import org.opensilex.service.ServiceConnection;
 import org.opensilex.utils.ClassInfo;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author vincent
  */
 public class ConfigProxyHandler implements InvocationHandler {
+
+    private final static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ConfigManager.class);
 
     private final String baseDirectory;
     private final JsonNode rootNode;
@@ -86,6 +95,8 @@ public class ConfigProxyHandler implements InvocationHandler {
             Class<?> returnTypeClass = (Class<?>) type;
             if (ClassInfo.isPrimitive(returnTypeClass)) {
                 result = getPrimitive(returnTypeClass.getCanonicalName(), node.at(key), method);
+            } else if (Service.class.isAssignableFrom(returnTypeClass)) {
+                result = getService(returnTypeClass, node.at(key), method);
             } else if (ClassInfo.isInterface(returnTypeClass)) {
                 result = getInterface(returnTypeClass, key, node);
             } else {
@@ -342,7 +353,7 @@ public class ConfigProxyHandler implements InvocationHandler {
 
     private Class<?> getClassDefinition(JsonNode value, Method method) throws ClassNotFoundException {
         String className = value.asText();
-        if (value.isMissingNode() || className.equals("")) {
+        if (value.isMissingNode() || className.isEmpty()) {
             ConfigDescription annotation = method.getAnnotation(ConfigDescription.class);
             if (annotation != null) {
                 return annotation.defaultClass();
@@ -352,5 +363,122 @@ public class ConfigProxyHandler implements InvocationHandler {
         } else {
             return Class.forName(className);
         }
+    }
+
+    private Object getService(Class<?> serviceInterface, JsonNode value, Method method) {
+        Class<?> serviceClass = serviceInterface;
+        String serviceClassName = value.at("/$service").asText();
+        if (!serviceClassName.isEmpty()) {
+            try {
+                serviceClass = Class.forName(serviceClassName);
+            } catch (ClassNotFoundException ex) {
+                LOGGER.warn("Invalid service class: " + serviceClassName);
+            }
+        }
+        if (!serviceInterface.isAssignableFrom(serviceClass)) {
+            LOGGER.warn("Invalid service class: " + serviceClassName + " it must implements: " + serviceInterface.getCanonicalName());
+        }
+
+        Object instance = null;
+        Constructor<?> parametrizedConstructor = ClassInfo.getConstructorWithParameterImplementing(serviceClass, ServiceConnection.class);
+
+        if (parametrizedConstructor == null) {
+            try {
+                Constructor<?> emptyConstructor = serviceClass.getConstructor();
+                instance = emptyConstructor.newInstance();
+            } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                LOGGER.error("Error while loading empty constructor serviceclass: " + serviceClass.getCanonicalName(), ex);
+            }
+        } else {
+            ServiceDescription serviceDescription = method.getAnnotation(ServiceDescription.class);
+            if (serviceDescription == null) {
+                LOGGER.warn("Missing @ServiceDescription annotation for service: " + serviceClass.getCanonicalName());
+            }
+
+            Class<? extends ServiceConnection> connectionClass = null;
+            String connectionClassName = value.at("/$connection").asText();
+            if (connectionClassName.isEmpty()) {
+                if (!serviceDescription.defaultConnection().equals(Class.class)) {
+                    connectionClass = (Class<? extends ServiceConnection>) serviceDescription.defaultConnection();
+                }
+            } else {
+                try {
+                    connectionClass = (Class<? extends ServiceConnection>) Class.forName(connectionClassName);
+                } catch (ClassNotFoundException ex) {
+                    LOGGER.error("Can not found service connection class: " + connectionClassName, ex);
+                }
+            }
+
+            if (connectionClass == null) {
+                try {
+                    Constructor<?> emptyConstructor = serviceClass.getConstructor();
+                    instance = emptyConstructor.newInstance();
+                } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                    LOGGER.error("Error while loading empty constructor serviceclass: " + serviceClass.getCanonicalName(), ex);
+                }
+            } else {
+                Class<?> connectionConfigClass = null;
+                String connectionConfigClassName = value.at("/$connectionConfig").asText();
+
+                if (connectionConfigClassName.isEmpty()) {
+                    if (!serviceDescription.defaultConnectionConfig().equals(Class.class)) {
+                        connectionConfigClass = serviceDescription.defaultConnectionConfig();
+                    }
+                } else {
+                    try {
+                        connectionConfigClass = Class.forName(connectionConfigClassName);
+                    } catch (ClassNotFoundException ex) {
+                        LOGGER.warn("Invalid service connection config class: " + serviceClassName);
+                    }
+                }
+
+                ServiceConnection connectionInstance = null;
+                if (connectionConfigClass != null) {
+                    Constructor<? extends ServiceConnection> configurableConnectionConstructor = ClassInfo.getConstructorWithParameterImplementing(connectionClass, connectionConfigClass);
+
+                    String configID = value.at("/$connectionConfigID").asText();
+                    if (configID.isEmpty()) {
+                        configID = serviceDescription.defaultConnectionConfigID();
+                    }
+
+                    try {
+                        Object config = getInterface(connectionConfigClass, configID, value.at("/" + configID));
+
+                        try {
+                            connectionInstance = configurableConnectionConstructor.newInstance(config);
+                        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                            LOGGER.error("Can load service connection with configuration: " + connectionClassName, ex);
+                        }
+                    } catch (Exception ex) {
+                        LOGGER.error("Impossible to load service '" + configID + "' connection configuration: " + connectionConfigClass.getName(), ex);
+                    }
+
+                } else {
+                    try {
+                        Constructor<? extends ServiceConnection> simpleConnectionConstructor = connectionClass.getConstructor();
+                        connectionInstance = simpleConnectionConstructor.newInstance();
+                    } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                        LOGGER.error("Can load service connection without configuration: " + connectionClassName, ex);
+                    }
+                }
+
+                if (connectionInstance != null) {
+                    try {
+                        instance = parametrizedConstructor.newInstance(connectionInstance);
+                    } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                        LOGGER.error("Error while loading constructor with connection for serviceclass: " + serviceClass.getCanonicalName(), ex);
+                    }
+                } else {
+                    try {
+                        Constructor<?> emptyConstructor = serviceClass.getConstructor();
+                        instance = emptyConstructor.newInstance();
+                    } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                        LOGGER.error("Error while loading empty constructor serviceclass: " + serviceClass.getCanonicalName(), ex);
+                    }
+                }
+            }
+        }
+
+        return instance;
     }
 }

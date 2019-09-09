@@ -8,6 +8,7 @@ package org.opensilex.module;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -24,7 +25,6 @@ import org.opensilex.OpenSilex;
 import org.opensilex.config.ConfigManager;
 import org.opensilex.module.dependency.DependencyManager;
 import org.opensilex.service.Service;
-import org.opensilex.service.ServiceConfig;
 import org.opensilex.service.ServiceManager;
 import org.opensilex.utils.ClassInfo;
 import org.slf4j.Logger;
@@ -51,7 +51,6 @@ public class ModuleManager {
             registerDependencies(readDependencies);
         }
     }
-    
 
     private static List<URL> readDependenciesList(Path baseDirectory) {
         try {
@@ -184,31 +183,39 @@ public class ModuleManager {
         return result;
     }
 
-    public void loadServices(ServiceManager serviceManager) {
+    public void registerServices(ServiceManager serviceManager) {
         this.services = serviceManager;
         for (OpenSilexModule module : getModules()) {
 
             // TODO Load services properly
             ModuleConfig moduleConfig = module.getConfig();
-            if (moduleConfig != null && moduleConfig.services() != null) {
-                try {
-                    for (String serviceName : moduleConfig.services().keySet()) {
+            if (moduleConfig != null) {
+                for (Method m : moduleConfig.getClass().getMethods()) {
+                    try {
 
-                        ServiceConfig serviceConfig = moduleConfig.services().get(serviceName);
-                        Service service = ServiceManager.buildServiceInstance(configManager, serviceConfig);
-                        services.register(serviceConfig.serviceClass(), serviceName, service);
+                        if (Service.class.isAssignableFrom(m.getReturnType())) {
+                            Service service = (Service) m.invoke(moduleConfig);
+                            services.register(service.getClass(), m.getName(), service);
+                        }
+                    } catch (SecurityException
+                            | IllegalAccessException
+                            | IllegalArgumentException
+                            | InvocationTargetException ex) {
+
+                        // TODO manage error
+                        LOGGER.error("WTF ? -->", ex);
                     }
-                } catch (NoSuchMethodException
-                        | SecurityException
-                        | InstantiationException
-                        | IllegalAccessException
-                        | IllegalArgumentException
-                        | InvocationTargetException ex) {
 
-                    // TODO manage error
-                    LOGGER.error("WTF ? -->", ex);
                 }
             }
+//            if (moduleConfig != null && moduleConfig.services() != null) {
+//                for (String serviceName : moduleConfig.services().keySet()) {
+//
+//                    ServiceConfig serviceConfig = moduleConfig.services().get(serviceName);
+//                    Service service = ServiceManager.buildServiceInstance(configManager, serviceConfig);
+//                    services.register(serviceConfig.serviceClass(), serviceName, service);
+//                }
+//            }
         }
     }
 

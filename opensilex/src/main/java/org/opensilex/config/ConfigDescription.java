@@ -45,4 +45,5 @@ public @interface ConfigDescription {
     String[] defaultMap() default {};
 
     Class<?> defaultClass() default Class.class;    
+
 }

@@ -11,6 +11,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -223,6 +224,18 @@ public class ClassInfo {
         }
 
         return projectId;
+    }
+    
+    public static <T> Constructor<T> getConstructorWithParameterImplementing(Class<T> classToInspect, Class<?> constructorParameterSuperClass) {
+        for (Constructor<?> constructor : classToInspect.getConstructors()) {
+            if (constructor.getParameterCount() == 1) {
+                if (constructorParameterSuperClass.isAssignableFrom(constructor.getParameters()[0].getType())) {
+                    return (Constructor<T>) constructor;
+                }
+            }
+        }
+        
+        return null;
     }
 
 }

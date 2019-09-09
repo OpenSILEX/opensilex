@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class ConfigManager {
+
     private final static Logger LOGGER = LoggerFactory.getLogger(ConfigManager.class);
 
     private final ObjectMapper mapper = new ObjectMapper();
@@ -66,6 +67,36 @@ public class ConfigManager {
                     Thread.currentThread().getContextClassLoader(),
                     new Class<?>[]{configClass},
                     new ConfigProxyHandler(key, root.deepCopy(), yamlMapper)
+            );
+        }
+        return config;
+    }
+
+    public <T> T loadConfigPath(String path, Class<T> configClass) {
+
+        JsonNode baseNode = root;
+        String finalKey = path;
+
+        String[] pathParts = path.split("\\.");
+        if (pathParts.length > 0) {
+            String jsonPointer = "";
+
+            for (int i = 0; i < pathParts.length - 1; i++) {
+                jsonPointer += "/" + pathParts[i];
+            }
+            baseNode = root.at(jsonPointer);
+            finalKey = pathParts[pathParts.length - 1];
+        }
+
+        T config;
+
+        if (ClassInfo.isPrimitive(configClass)) {
+            config = (T) ConfigProxyHandler.getPrimitive(finalKey, baseNode, null);
+        } else {
+            config = (T) Proxy.newProxyInstance(
+                    Thread.currentThread().getContextClassLoader(),
+                    new Class<?>[]{configClass},
+                    new ConfigProxyHandler(finalKey, baseNode.deepCopy(), yamlMapper)
             );
         }
         return config;

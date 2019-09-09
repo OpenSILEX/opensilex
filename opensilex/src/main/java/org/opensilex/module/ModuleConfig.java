@@ -14,5 +14,4 @@ import org.opensilex.service.ServiceConfig;
  */
 public interface ModuleConfig {
     
-    Map<String, ServiceConfig> services();
 }

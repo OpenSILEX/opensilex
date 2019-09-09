@@ -17,16 +17,16 @@ import javax.validation.constraints.NotNull;
  */
 public class StudySearchDTO {
     private String commonCropName;
-    private ArrayList<String> germplasmDbIds;
-    private ArrayList<String> locationDbIds;
-    private ArrayList<String> observationVariableDbIds;
-    private ArrayList<String> programDbIds;
-    private ArrayList<String> programNames;
+    //private ArrayList<String> germplasmDbIds;
+    //private ArrayList<String> locationDbIds;
+    //private ArrayList<String> observationVariableDbIds;
+    //private ArrayList<String> programDbIds;
+    //private ArrayList<String> programNames;
     private String seasonDbId;
     private ArrayList<String> studyDbIds;
     private ArrayList<String> studyNames;
-    private String studyType;
-    private ArrayList<String> trialDbIds;
+    //private String studyType;
+    //private ArrayList<String> trialDbIds;
     private String sortBy;
     private String sortOrder;
     private Integer page;
@@ -44,45 +44,13 @@ public class StudySearchDTO {
         this.commonCropName = commonCropName;
     }
 
-    public ArrayList<String> getGermplasmDbIds() {
-        return germplasmDbIds;
-    }
-
-    public void setGermplasmDbIds(ArrayList<String> germplasmDbIds) {
-        this.germplasmDbIds = germplasmDbIds;
-    }
-
-    public ArrayList<String> getLocationDbIds() {
-        return locationDbIds;
-    }
-
-    public void setLocationDbIds(ArrayList<String> locationDbIds) {
-        this.locationDbIds = locationDbIds;
-    }
-
-    public ArrayList<String> getObservationVariableDbIds() {
-        return observationVariableDbIds;
-    }
-
-    public void setObservationVariableDbIds(ArrayList<String> observationVariableDbIds) {
-        this.observationVariableDbIds = observationVariableDbIds;
-    }
-
-    public ArrayList<String> getProgramDbIds() {
-        return programDbIds;
-    }
-
-    public void setProgramDbIds(ArrayList<String> programDbIds) {
-        this.programDbIds = programDbIds;
-    }
-
-    public ArrayList<String> getProgramNames() {
-        return programNames;
-    }
-
-    public void setProgramNames(ArrayList<String> programNames) {
-        this.programNames = programNames;
-    }
+//    public ArrayList<String> getGermplasmDbIds() {
+//        return germplasmDbIds;
+//    }
+//
+//    public void setGermplasmDbIds(ArrayList<String> germplasmDbIds) {
+//        this.germplasmDbIds = germplasmDbIds;
+//    }
 
     public String getSeasonDbId() {
         return seasonDbId;
@@ -106,22 +74,6 @@ public class StudySearchDTO {
 
     public void setStudyNames(ArrayList<String> studyNames) {
         this.studyNames = studyNames;
-    }
-
-    public String getStudyType() {
-        return studyType;
-    }
-
-    public void setStudyType(String studyType) {
-        this.studyType = studyType;
-    }
-
-    public ArrayList<String> getTrialDbIds() {
-        return trialDbIds;
-    }
-
-    public void setTrialDbIds(ArrayList<String> trialDbIds) {
-        this.trialDbIds = trialDbIds;
     }
 
     public String getSortBy() {

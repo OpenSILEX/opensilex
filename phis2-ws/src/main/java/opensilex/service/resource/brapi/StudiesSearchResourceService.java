@@ -112,35 +112,37 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
         if (studySearch != null) {                    
             // get studies from postgresql DB
             StudySQLDAO studySqlDAO = new StudySQLDAO();
-            //get studies from rdf4j based on germplasms;
-            if (studySearch.getGermplasmDbIds() != null) {
-                StudyRDFDAO studyRdfDAO = new StudyRDFDAO();            
-                studyRdfDAO.germplasmDbIds = studySearch.getGermplasmDbIds();            
-                ArrayList<String> studyURIs = studyRdfDAO.getStudiesFromGermplasms();
-                if (!studyURIs.isEmpty()) {
-                    studySqlDAO.studyDbIds = studyURIs;
-                } else {
-                    studyURIs.add("noStudyCorresponding"); //to have no study found in studySQLDAO if no study used those germplasms 
-                    studySqlDAO.studyDbIds = studyURIs;
-                }
-            }
+            
+//          //get studies from rdf4j based on germplasms --> to implement when germplasm services implemented;
+//            if (studySearch.getGermplasmDbIds() != null) {
+//                StudyRDFDAO studyRdfDAO = new StudyRDFDAO();            
+//                studyRdfDAO.germplasmDbIds = studySearch.getGermplasmDbIds();            
+//                ArrayList<String> studyURIs = studyRdfDAO.getStudiesFromGermplasms();
+//                if (!studyURIs.isEmpty()) {
+//                    studySqlDAO.studyDbIds = studyURIs;
+//                } else {
+//                    studyURIs.add("noStudyCorresponding"); //to have no study found in studySQLDAO if no study used those germplasms 
+//                    studySqlDAO.studyDbIds = studyURIs;
+//                }
+//            }
             
             if (studySearch.getStudyDbIds() != null) {
-                if (studySqlDAO.studyDbIds != null) {   //if there are studyDbIds and germplasmDbIds, we check if studies and germplasms correspond
-                    ArrayList<String> studiesList = new ArrayList();
-                    for (String study:studySearch.getStudyDbIds()) {                    
-                        if (studySqlDAO.studyDbIds.contains(study))  {
-                            studiesList.add(study);
-                        }
-                    }
-                    if (studiesList.isEmpty()) {
-                        studiesList.add("noStudyCorresponding");
-                        studySqlDAO.studyDbIds = studiesList;
-                    }
-                    studySqlDAO.studyDbIds = studiesList;                
-                } else {
-                    studySqlDAO.studyDbIds = studySearch.getStudyDbIds();
-                }
+//                if (studySqlDAO.germplasmDbIds != null) {   //if there are studyDbIds and germplasmDbIds, we check if studies and germplasms correspond
+//                    ArrayList<String> studiesList = new ArrayList();
+//                    for (String study:studySearch.getStudyDbIds()) {                    
+//                        if (studySqlDAO.studyDbIds.contains(study))  {
+//                            studiesList.add(study);
+//                        }
+//                    }
+//                    if (studiesList.isEmpty()) {
+//                        studiesList.add("noStudyCorresponding");
+//                        studySqlDAO.studyDbIds = studiesList;
+//                    }
+//                    studySqlDAO.studyDbIds = studiesList;                
+//                } else {
+//                    studySqlDAO.studyDbIds = studySearch.getStudyDbIds();
+//                }
+                studySqlDAO.studyDbIds = studySearch.getStudyDbIds();
             } 
             
             if (studySearch.getCommonCropName() != null) {
@@ -148,15 +150,15 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
             }
             
             if (studySearch.getPage() != null) {
-                studySqlDAO.page = studySearch.getPage();
+                studySqlDAO.setPage(studySearch.getPage()) ;
             } else {
-                studySqlDAO.page = 0;
+                studySqlDAO.setPage(0);
             }
             
             if (studySearch.getPageSize()!= null) {
-                studySqlDAO.pageSize = studySearch.getPageSize();
+                studySqlDAO.setPageSize(studySearch.getPageSize()) ;
             } else {
-                studySqlDAO.pageSize = 20;
+                studySqlDAO.setPageSize(20);
             }
             
             if (studySearch.getSeasonDbId()!= null) {
@@ -187,7 +189,7 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
                 BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, studies, true);
                 return noResultFound(getResponse, statusList);
             } else {
-                BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(studySqlDAO.getPageSize(), studySqlDAO.getPage(), studies, false, studiesCount);
+                BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(studySqlDAO.getPageSize(), studySqlDAO.getPage(), studies, true, studiesCount);
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             } 
 
@@ -201,11 +203,11 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
      * Retrieve studies information
      * @param studyDbId
      * @param commonCropName
-     * @param studyTypeDbId
-     * @param programDbId - not managed
-     * @param locationDbId - not managed
+     * @param studyTypeDbId - not covered
+     * @param programDbId - not covered
+     * @param locationDbId - not covered
      * @param seasonDbId
-     * @param trialDbId - not managed
+     * @param trialDbId - not covered
      * @param active
      * @param sortBy
      * @param sortOrder
@@ -271,11 +273,11 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
     public Response getStudiesSearch (
         @ApiParam(value = "Search by studyDbId", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI ) @QueryParam("studyDbId") @URL String studyDbId,
         @ApiParam(value = "Search by commonCropName", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_CROP_SPECIES ) @QueryParam("commonCropName") String commonCropName,
-        @ApiParam(value = "Search by studyTypeDbId - NOT COVERED YET") @QueryParam("studyTypeDbId") String studyTypeDbId,
-        @ApiParam(value = "Search by programDbId - NOT COVERED YET ") @QueryParam("programDbId ") String programDbId,
-        @ApiParam(value = "Search by locationDbId - NOT COVERED YET") @QueryParam("locationDbId") String locationDbId,
+        //@ApiParam(value = "Search by studyTypeDbId - NOT COVERED YET") @QueryParam("studyTypeDbId") String studyTypeDbId,
+        //@ApiParam(value = "Search by programDbId - NOT COVERED YET ") @QueryParam("programDbId ") String programDbId,
+        //@ApiParam(value = "Search by locationDbId - NOT COVERED YET") @QueryParam("locationDbId") String locationDbId,
         @ApiParam(value = "Search by seasonDbId", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_CAMPAIGN ) @QueryParam("seasonDbId") String seasonDbId,
-        @ApiParam(value = "Search by trialDbId - NOT COVERED YET") @QueryParam("trialDbId") String trialDbId,
+        //@ApiParam(value = "Search by trialDbId - NOT COVERED YET") @QueryParam("trialDbId") String trialDbId,
         @ApiParam(value = "Filter active status true/false") @QueryParam("active") String active,
         @ApiParam(value = "Name of the field to sort by: studyDbId, commonCropName or seasonDbId") @QueryParam("sortBy") String sortBy,
         @ApiParam(value = "Sort order direction - ASC or DESC") @QueryParam("sortOrder") String sortOrder,
@@ -283,41 +285,42 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
         ) throws SQLException {               
 
-         StudySQLDAO studysqlDAO = new StudySQLDAO();
+         StudySQLDAO studySqlDAO = new StudySQLDAO();
 
         if (studyDbId != null) {
-            studysqlDAO.studyDbIds = new ArrayList();
-            studysqlDAO.studyDbIds.add(studyDbId);
+            studySqlDAO.studyDbIds = new ArrayList();
+            studySqlDAO.studyDbIds.add(studyDbId);
         }     
         if (commonCropName != null) {
-            studysqlDAO.commonCropName = commonCropName;
+            studySqlDAO.commonCropName = commonCropName;
         }    
         if (seasonDbId != null) {
-            studysqlDAO.seasonDbIds = new ArrayList();
-            studysqlDAO.seasonDbIds.add(seasonDbId);
+            studySqlDAO.seasonDbIds = new ArrayList();
+            studySqlDAO.seasonDbIds.add(seasonDbId);
         }         
         if (sortBy != null) {
-            studysqlDAO.sortBy = sortBy;
+            studySqlDAO.sortBy = sortBy;
         }
         if (sortOrder != null) {
-            studysqlDAO.sortOrder = sortOrder;
+            studySqlDAO.sortOrder = sortOrder;
         } 
         if (active != null) {
-            studysqlDAO.active = active;
+            studySqlDAO.active = active;
         }
         
-        studysqlDAO.setPageSize(pageSize);
-        studysqlDAO.setPage(page);
-        studysqlDAO.user=userSession.getUser();
+        studySqlDAO.setPageSize(pageSize);
+        studySqlDAO.setPage(page);
+        studySqlDAO.user=userSession.getUser();
         
         ArrayList<Status> statusList = new ArrayList<>(); 
-        ArrayList<StudyDTO> studies = studysqlDAO.allPaginate();
+        Integer studiesCount = studySqlDAO.count();
+        ArrayList<StudyDTO> studies = studySqlDAO.allPaginate();
         
         if (studies.isEmpty()) {
             BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, studies, true);
             return noResultFound(getResponse, statusList);
         } else {
-            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(pageSize, page, studies, false);
+            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(pageSize, page, studies, true, studiesCount);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }  
         

@@ -41,8 +41,8 @@ public class PhisWsModule extends OpenSilexModule implements APIExtension {
 
     @Override
     public void init() {
-        RDF4JConfig rdf4jConfig = app.loadConfig("opensilex-service-rdf4j", RDF4JConfig.class);
-        MongoDBConfig mongoConfig = app.loadConfig("opensilex-service-mongodb", MongoDBConfig.class);
+        RDF4JConfig rdf4jConfig = app.loadConfigPath("opensilex.sparql.rdf4j", RDF4JConfig.class);
+        MongoDBConfig mongoConfig = app.loadConfigPath("opensilex.bigData.mongodb", MongoDBConfig.class);
 
         PropertiesFileManager.setOpensilexConfigs(
                 getConfig(PhisWsConfig.class),

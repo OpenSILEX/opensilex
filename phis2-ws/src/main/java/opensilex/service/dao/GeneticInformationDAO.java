@@ -161,7 +161,7 @@ public class GeneticInformationDAO extends Rdf4jDAO<GeneticInformation> {
             query.appendAndFilter("REGEX ( str(?" + ACCESSION + "),\".*" + uri + ".*\",\"i\")");
             
         } else if (type.equals(Oeso.CONCEPT_PLANT_MATERIAL_LOT.toString())) {
-            query.appendSelect("?" + LOT);
+            query.appendSelect("?" + LOT_LABEL);
             query.appendSelect("?" + ACCESSION_NUMBER);
             query.appendSelect("?" + SPECIES_LABEL);   
             query.appendSelect("?" + GENUS_LABEL);

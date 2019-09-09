@@ -111,7 +111,7 @@ public class AccessionDAO extends Rdf4jDAO<Accession> {
      * @return the insertion result. Message error if errors founded in data
      *         the list of the generated URI of the sensors if the insertion has been done
      */
-    public POSTResultsReturn checkAndInsert(List<Accession> accessions) {
+    public POSTResultsReturn checkAndInsert(List<Accession> accessions) throws Exception {
         POSTResultsReturn checkResult = check(accessions);
         if (checkResult.getDataState()) {
             return insert(accessions);
@@ -201,7 +201,7 @@ public class AccessionDAO extends Rdf4jDAO<Accession> {
      * @return the insertion result, with the errors list or the uri of the inserted
          accession
      */
-    public POSTResultsReturn insert(List<Accession> accessions) {
+    public POSTResultsReturn insert(List<Accession> accessions) throws Exception {
         List<Status> insertStatus = new ArrayList<>();
         List<String> createdResourcesUri = new ArrayList<>();
         
@@ -261,16 +261,14 @@ public class AccessionDAO extends Rdf4jDAO<Accession> {
      * @param accession
      * @return the query
      */
-    private UpdateRequest prepareInsertQuery(Accession accession) {
-        String a = new String();
-        
+    private UpdateRequest prepareInsertQuery(Accession accession) throws Exception {
         UpdateBuilder spql = new UpdateBuilder();
         
         Node graph = NodeFactory.createURI(Contexts.GENETIC_RESOURCE.toString());
         
         Resource accessionURI = ResourceFactory.createResource(accession.getAccessionURI());
         
-        Node accessionType = NodeFactory.createURI("http://www.opensilex.org/vocabulary/oeso#Accession");
+        Node accessionType = NodeFactory.createURI(Oeso.CONCEPT_ACCESSION.toString());
         
         //insert accession
         spql.addInsert(graph, accessionURI, RDF.type, accessionType);
@@ -278,7 +276,7 @@ public class AccessionDAO extends Rdf4jDAO<Accession> {
         //insert variety        
         Node varietyGraph = NodeFactory.createURI(Contexts.VARIETY.toString());
         Resource varietyURI = ResourceFactory.createResource(accession.getVarietyURI());
-        spql.addInsert(varietyGraph, varietyURI, RDF.type, NodeFactory.createURI("http://www.opensilex.org/vocabulary/oeso#Variety"));
+        spql.addInsert(varietyGraph, varietyURI, RDF.type, NodeFactory.createURI(Oeso.CONCEPT_VARIETY.toString()));
         Property relationHasAccession = ResourceFactory.createProperty(Oeso.RELATION_HAS_ACCESSION.toString());
         spql.addInsert(graph, varietyURI, relationHasAccession, accessionURI);
         if (accession.getVarietyLabel()!= null) {                
@@ -308,11 +306,17 @@ public class AccessionDAO extends Rdf4jDAO<Accession> {
             spql.addInsert(accessionGraph, accessionURI, RDFS.label, accession.getAccessionName());
         }
         
+        //add seedLots
         if (accession.getSeedLots() != null) {
             Property relationHasSeedLot = ResourceFactory.createProperty(Oeso.RELATION_HAS_PLANT_MATERIAL_LOT.toString());
             ArrayList<String> lots = accession.getSeedLots();
+            Resource lotsGraph = ResourceFactory.createResource(Contexts.PLANT_MATERIAL_LOT.toString());
             for (String lot:lots) {
-                spql.addInsert(accessionGraph, accessionURI, relationHasSeedLot, lot);
+                String lotURI = UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_PLANT_MATERIAL_LOT.toString(), null, lot);
+                Resource lotUri = ResourceFactory.createResource(lotURI);
+                spql.addInsert(accessionGraph, accessionURI, relationHasSeedLot, lotUri);
+                spql.addInsert(lotsGraph, lotUri, RDFS.label, lot);
+                spql.addInsert(accessionGraph, lotUri, RDF.type, NodeFactory.createURI(Oeso.CONCEPT_PLANT_MATERIAL_LOT.toString()));
             }
         }
         

@@ -87,10 +87,11 @@ public class UriGenerator {
     public static final String PLATFORM_URI_ID_TRAITS = PLATFORM_URI_ID + "traits/" + URI_CODE_TRAIT;
     public static final String PLATFORM_URI_ID_UNITS = PLATFORM_URI_ID + "units/" + URI_CODE_UNIT;
     public static final String PLATFORM_URI_ID_VARIABLES = PLATFORM_URI_ID + "variables/" + URI_CODE_VARIABLE;
-    private static final String PLATFORM_URI_ID_VARIETY = PLATFORM_URI + "v/";
+    private static final String PLATFORM_URI_ID_VARIETY = PLATFORM_URI_ID + "variety/";
     private static final String PLATFORM_URI_ID_PROVENANCE = PLATFORM_URI_ID + "provenance/";
     public static final String PLATFORM_URI_ID_GERMPLASM = PLATFORM_URI_ID + "germplasm/" + URI_CODE_GERMPLASM;
     private static final String PLATFORM_URI_ID_ACCESSION = PLATFORM_URI_ID + "accession/";
+    private static final String PLATFORM_URI_ID_PLANT_MATERIAL_LOT = PLATFORM_URI_ID + "plantMaterialLot/";
     
     private static final String EXPERIMENT_URI_SEPARATOR = "-";
 
@@ -405,12 +406,28 @@ public class UriGenerator {
      * @return the new variety uri
      */
     private static String generateVarietyUri(String variety) {
-        return PLATFORM_URI_ID_VARIETY + variety.toLowerCase();
+        return PLATFORM_URI_ID_VARIETY + variety;
     }
     
+    /**
+     * 
+     * @param accessionNumber
+     * @return 
+     */
     private static String generateAccessionUri(String accessionNumber) {
         return PLATFORM_URI_ID_ACCESSION + accessionNumber;
     }
+    
+    /**
+     * Generates a new plantmaterialLot URI following this patterns:
+     * <prefix>:
+     * @param lot
+     * @return the new lot URI
+     */
+    private static String generatePlantMaterialLotUri(String lot) {
+        return PLATFORM_URI_ID_PLANT_MATERIAL_LOT + lot;
+    }
+
 
     /**
      * Generates a new agent URI. A agent URI follows the pattern:
@@ -706,6 +723,8 @@ public class UriGenerator {
             return generateVarietyUri(additionalInformation);
         } else if (Oeso.CONCEPT_ACCESSION.toString().equals(instanceType)) {
             return generateAccessionUri(additionalInformation);
+        } else if (Oeso.CONCEPT_PLANT_MATERIAL_LOT.toString().equals(instanceType)) {
+            return generatePlantMaterialLotUri(additionalInformation);
         } else if (uriDao.isSubClassOf(instanceType, Oeso.CONCEPT_IMAGE.toString())) {
             return generateImageUri(year, additionalInformation);
         } else if (instanceType.equals(Foaf.CONCEPT_AGENT.toString()) 

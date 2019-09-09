@@ -143,6 +143,13 @@ public enum Contexts {
         public String toString() {
             return PLATFORM.toString() + "genus"; 
         }
+    },
+    //The context which contains the germplasm
+    PLANT_MATERIAL_LOT {
+        @Override
+        public String toString() {
+            return PLATFORM.toString() + "plantMaterialLot"; 
+        }
     }
 }
 

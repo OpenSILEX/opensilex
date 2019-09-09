@@ -5,7 +5,7 @@
 // Creation date: 24 juin 2019
 // Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package opensilex.service.resource.dto.germplasm;
+package opensilex.service.resource.dto.accession;
 
 import java.util.ArrayList;
 import opensilex.service.dao.AccessionDAO;

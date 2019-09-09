@@ -175,11 +175,11 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
     public Response getStudies (
         @ApiParam(value = "Search by studyDbId", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI ) @QueryParam("studyDbId") @URL String studyDbId,
         @ApiParam(value = "Search by commonCropName", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_CROP_SPECIES ) @QueryParam("commonCropName") String commonCropName,
-        @ApiParam(value = "Search by studyTypeDbId - NOT COVERED YET") @QueryParam("studyTypeDbId") String studyTypeDbId,
-        @ApiParam(value = "Search by programDbId - NOT COVERED YET ") @QueryParam("programDbId ") String programDbId,
-        @ApiParam(value = "Search by locationDbId - NOT COVERED YET") @QueryParam("locationDbId") String locationDbId,
+        //@ApiParam(value = "Search by studyTypeDbId - NOT COVERED YET") @QueryParam("studyTypeDbId") String studyTypeDbId,
+        //@ApiParam(value = "Search by programDbId - NOT COVERED YET ") @QueryParam("programDbId ") String programDbId,
+        //@ApiParam(value = "Search by locationDbId - NOT COVERED YET") @QueryParam("locationDbId") String locationDbId,
         @ApiParam(value = "Search by seasonDbId", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_CAMPAIGN ) @QueryParam("seasonDbId") String seasonDbId,
-        @ApiParam(value = "Search by trialDbId - NOT COVERED YET") @QueryParam("trialDbId") String trialDbId,
+        //@ApiParam(value = "Search by trialDbId - NOT COVERED YET") @QueryParam("trialDbId") String trialDbId,
         @ApiParam(value = "Filter active status true/false") @QueryParam("active") String active,
         @ApiParam(value = "Name of the field to sort by: studyDbId, commonCropName or seasonDbId") @QueryParam("sortBy") String sortBy,
         @ApiParam(value = "Sort order direction - ASC or DESC") @QueryParam("sortOrder") String sortOrder,
@@ -211,17 +211,18 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         }
         
         studysqlDAO.setPageSize(pageSize);
-         studysqlDAO.setPage(page);
+        studysqlDAO.setPage(page);
         studysqlDAO.user=userSession.getUser();
         
         ArrayList<Status> statusList = new ArrayList<>(); 
+        Integer studiesCount = studysqlDAO.count();
         ArrayList<StudyDTO> studies = studysqlDAO.allPaginate();
         
         if (studies.isEmpty()) {
             BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, studies, true);
             return noResultFound(getResponse, statusList);
         } else {
-            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(pageSize, page, studies, false);
+            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(pageSize, page, studies, true, studiesCount);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }  
         

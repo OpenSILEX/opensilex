@@ -27,12 +27,13 @@ import org.eclipse.rdf4j.repository.RepositoryException;
  */
 public class StudyRDFDAO extends Rdf4jDAO {
     public ArrayList<String> germplasmDbIds;
+    private final String EXP_URI = "experimentURI";
     
     /**
      * Builds the SparQL query to get studies filtered on germplasms
      * @example 
      * SELECT DISTINCT ?expURI 
-     * WHERE { ?scientificObjectURI <http://www.opensilex.org/vocabulary/oeso#hasGermplasm> ?g19001 .
+     * WHERE { ?scientificObjectURI <http://www.opensilex.org/vocabulary/oeso#hasGeneticResource> <http://www.phenome-fppn.fr/platform/id/accession/B73_INRA> .
      *          ?scientificObjectURI oeso:participatesIn ?expURI}
      *
      * @return the SparQL query
@@ -62,7 +63,7 @@ public class StudyRDFDAO extends Rdf4jDAO {
         try {
             TupleQueryResult studiesURIResult = tupleQuery.evaluate();
             while (studiesURIResult.hasNext()) {
-                String studyURI = getStringValueOfSelectNameFromBindingSet("expURI", studiesURIResult.next());
+                String studyURI = getStringValueOfSelectNameFromBindingSet(EXP_URI, studiesURIResult.next());
                 if (studyURI != null) {
                     studiesURI.add(studyURI);
                 }

@@ -7,13 +7,13 @@
 //******************************************************************************
 package test.opensilex.server.rest;
 
+import java.util.HashMap;
 import javax.servlet.http.HttpServletRequest;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.mockito.Mockito;
 import org.opensilex.OpenSilex;
-import static org.opensilex.OpenSilex.PROFILE_ID_ARG_KEY;
 import org.opensilex.server.rest.RestApplication;
 
 
@@ -29,9 +29,10 @@ public class RestApplicationTest extends JerseyTest {
      */
     @Override
     protected ResourceConfig configure() {
-        // TODO: Use environment variables instead
-        OpenSilex.setup(new String[] {
-            "--" + OpenSilex.PROFILE_ID_ARG_KEY + "=" + OpenSilex.TEST_PROFILE_ID
+        OpenSilex.setup(new HashMap<String, String>() {
+            {
+                put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.TEST_PROFILE_ID);
+            }
         });
         
         ResourceConfig resourceConfig = new RestApplication(OpenSilex.getInstance());

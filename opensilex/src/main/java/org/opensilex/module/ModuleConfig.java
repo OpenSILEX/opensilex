@@ -5,13 +5,8 @@
  */
 package org.opensilex.module;
 
-import java.util.Map;
-import org.opensilex.service.ServiceConfig;
-
 /**
  *
  * @author vincent
  */
-public interface ModuleConfig {
-    
-}
+public interface ModuleConfig {}

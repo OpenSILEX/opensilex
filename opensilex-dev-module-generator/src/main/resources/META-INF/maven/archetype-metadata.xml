@@ -45,5 +45,8 @@ under the License.
         <requiredProperty key="moduleName">
             <defaultValue>Custom</defaultValue>
         </requiredProperty>
+        <requiredProperty  key="javaExtension">
+            <defaultValue>java</defaultValue>
+        </requiredProperty>
     </requiredProperties>
 </archetype-descriptor>

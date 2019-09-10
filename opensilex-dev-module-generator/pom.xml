@@ -5,10 +5,16 @@
     <groupId>org.opensilex</groupId>
     <artifactId>opensilex-dev-module-generator</artifactId>
     <packaging>maven-archetype</packaging>
-    <version>1.0.0</version>
     
     <name>opensilex-dev-module-generator</name>
 
+    <parent>
+        <groupId>org.opensilex</groupId>
+        <artifactId>opensilex-dev</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    
     <build>
         <extensions>
             <extension>

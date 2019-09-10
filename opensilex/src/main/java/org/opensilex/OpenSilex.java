@@ -19,6 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.opensilex.module.ModuleManager;
 import org.opensilex.service.Service;
@@ -183,6 +184,21 @@ public class OpenSilex {
         return (String[]) cliArgsList.toArray(new String[0]);
     }
 
+    /**
+     * Helper method to call easily setup method
+     * 
+     * @param args
+     * @return 
+     */
+    public static String[] setup(Map<String, String> args) {
+        List<String> argsList = new ArrayList<>();
+        args.forEach((String key, String value) -> {
+            argsList.add("--" + key + "=" + value);
+        });
+        
+        return setup(argsList.toArray(new String[0]));
+    }
+    
     /**
      * Return OpenSilex singleton instance
      *

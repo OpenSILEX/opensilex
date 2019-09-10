@@ -187,7 +187,6 @@ public class ModuleManager {
         this.services = serviceManager;
         for (OpenSilexModule module : getModules()) {
 
-            // TODO Load services properly
             ModuleConfig moduleConfig = module.getConfig();
             if (moduleConfig != null) {
                 for (Method m : moduleConfig.getClass().getMethods()) {
@@ -208,14 +207,6 @@ public class ModuleManager {
 
                 }
             }
-//            if (moduleConfig != null && moduleConfig.services() != null) {
-//                for (String serviceName : moduleConfig.services().keySet()) {
-//
-//                    ServiceConfig serviceConfig = moduleConfig.services().get(serviceName);
-//                    Service service = ServiceManager.buildServiceInstance(configManager, serviceConfig);
-//                    services.register(serviceConfig.serviceClass(), serviceName, service);
-//                }
-//            }
         }
     }
 

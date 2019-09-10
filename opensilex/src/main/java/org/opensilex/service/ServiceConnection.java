@@ -9,7 +9,4 @@ package org.opensilex.service;
  *
  * @author vincent
  */
-public interface ServiceConnection {
-    
-    
-}
+public interface ServiceConnection {}

@@ -7,9 +7,6 @@
     
     <url>https://www.opensilex.org/</url>
     
-    <properties>
-    </properties>
-    
     <parent>
         <groupId>org.opensilex</groupId>
         <artifactId>opensilex-parent</artifactId>

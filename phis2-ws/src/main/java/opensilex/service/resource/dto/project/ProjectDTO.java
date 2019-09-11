@@ -9,6 +9,7 @@ package opensilex.service.resource.dto.project;
 
 import io.swagger.annotations.ApiModelProperty;
 import opensilex.service.documentation.DocumentationAnnotation;
+import opensilex.service.model.FinancialFunding;
 import opensilex.service.model.Project;
 import opensilex.service.resource.ProjectResourceService;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
@@ -54,7 +55,8 @@ public class ProjectDTO extends AbstractVerifiedClass {
         objective = project.getObjective();
         
         if (project.getFinancialFunding() != null) {
-            financialFunding = new RdfResourceDTO(project.getFinancialFunding());
+            FinancialFunding financialFundingObject = project.getFinancialFunding();
+            financialFunding = new RdfResourceDTO(financialFundingObject.getUri(), financialFundingObject.getLabel());
         }
     }
 

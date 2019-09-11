@@ -8,9 +8,7 @@
 package opensilex.service.dao;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.ws.rs.NotFoundException;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
@@ -18,8 +16,8 @@ import opensilex.service.dao.exception.ResourceAccessDeniedException;
 import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.Contact;
+import opensilex.service.model.FinancialFunding;
 import opensilex.service.model.Project;
-import opensilex.service.model.RdfResourceDefinition;
 import opensilex.service.model.User;
 import opensilex.service.ontology.Contexts;
 import opensilex.service.ontology.Foaf;
@@ -39,6 +37,7 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.QueryLanguage;
@@ -109,7 +108,7 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         //oeso:hasRelatedProject
         if (!project.getRelatedProjects().isEmpty()) {
             Property relationHasRelatedProject = ResourceFactory.createProperty(Oeso.RELATION_HAS_RELATED_PROJECT.toString());
-            for (RdfResourceDefinition relatedProject : project.getRelatedProjects()) {
+            for (Project relatedProject : project.getRelatedProjects()) {
                 Resource relatedProjectURI = ResourceFactory.createResource(relatedProject.getUri());
                 spql.addInsert(graph, projectURI, relationHasRelatedProject, relatedProjectURI);
             }
@@ -252,7 +251,7 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         
         //related projects
         Property relationHasRelatedProject = ResourceFactory.createProperty(Oeso.RELATION_HAS_RELATED_PROJECT.toString());
-        for (RdfResourceDefinition relatedProject : project.getRelatedProjects()) {
+        for (Project relatedProject : project.getRelatedProjects()) {
             Resource relatedProjectResource = ResourceFactory.createResource(relatedProject.getUri());
             updateBuilder.addDelete(graph, projectURI, relationHasRelatedProject, relatedProjectResource);
         }
@@ -397,8 +396,9 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         }
         
         if (bindingSet.getValue(FINANCIAL_FUNDING_URI) != null) {
-            RdfResourceDefinition financialFunding = new RdfResourceDefinition();
+            FinancialFunding financialFunding = new FinancialFunding();
             financialFunding.setUri(bindingSet.getValue(FINANCIAL_FUNDING_URI).stringValue());
+            financialFunding.setLabel(bindingSet.getValue(FINANCIAL_FUNDING_LABEL).stringValue());
             project.setFinancialFunding(financialFunding);
         }
         
@@ -427,27 +427,6 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         }
         
         return project;
-    }
-    
-    /**
-     * Get the label of a financial funding
-     * /!\ in this case, the financial funding is supposed to exist.
-     * @param uri
-     * @return the financial funding with the label
-     */
-    public RdfResourceDefinition getFinancialFunding(String uri) {
-        RdfResourceDefinition financialFunding = new RdfResourceDefinition(uri);
-        SPARQLQueryBuilder queryFinancialFunding = prepareGetFinancialFundingLabel(uri);  
-        TupleQuery tupleQueryFinancialFunding = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryFinancialFunding.toString());
-        try (TupleQueryResult result = tupleQueryFinancialFunding.evaluate()) {
-            if (result.hasNext()) {
-                BindingSet bindingSetFinancialFunding = result.next();
-                
-                financialFunding.setLabel(bindingSetFinancialFunding.getValue(FINANCIAL_FUNDING_LABEL).stringValue());
-            }
-        }
-        
-        return financialFunding;
     }
     
     /**
@@ -492,23 +471,11 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         SPARQLQueryBuilder query = prepareSearchQuery(page, pageSize, uri, name, shortname, financialfunding, financialReference, description, startDate, endDate, homePage, objective);
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         ArrayList<Project> projects = new ArrayList<>();
-        Map<String, RdfResourceDefinition>  foundedFinancialFunding = new HashMap<>();
 
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 Project project = getProjectFromBindingSet(bindingSet);
-                
-                //Get financial funding
-                if (project.getFinancialFunding() != null ) {
-                    if (foundedFinancialFunding.containsKey(project.getFinancialFunding().getUri())) {
-                        project.setFinancialFunding(foundedFinancialFunding.get(project.getFinancialFunding().getUri()));
-                    } else { //The financial funding have not been met before so we get it.
-                        RdfResourceDefinition financialFunding = getFinancialFunding(project.getFinancialFunding().getUri());
-                        project.setFinancialFunding(financialFunding);
-                        foundedFinancialFunding.put(financialFunding.getUri(), financialFunding);
-                    }
-                }
                 
                 projects.add(project);
             }
@@ -678,8 +645,9 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
                     //related projects
                     if (bindingSet.getValue(RELATED_PROJECT_URI) != null) {
                         if (!project.containsRelatedProject(bindingSet.getValue(RELATED_PROJECT_URI).stringValue())) {
-                            RdfResourceDefinition relatedProject = new RdfResourceDefinition(bindingSet.getValue(RELATED_PROJECT_URI).stringValue());
-                            relatedProject.setLabel(bindingSet.getValue(RELATED_PROJECT_NAME).stringValue());
+                            Project relatedProject = new Project();
+                            relatedProject.setUri(bindingSet.getValue(RELATED_PROJECT_URI).stringValue());
+                            relatedProject.setName(bindingSet.getValue(RELATED_PROJECT_NAME).stringValue());
                             
                             project.addRelatedProject(relatedProject);
                         }                        
@@ -687,7 +655,8 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
                     
                     //financial funding
                     if (project.getFinancialFunding() == null && bindingSet.getValue(FINANCIAL_FUNDING_URI) != null) {
-                        RdfResourceDefinition financialFunding = new RdfResourceDefinition(bindingSet.getValue(FINANCIAL_FUNDING_URI).stringValue());
+                        FinancialFunding financialFunding = new FinancialFunding();
+                        financialFunding.setUri(bindingSet.getValue(FINANCIAL_FUNDING_URI).stringValue());
                         financialFunding.setLabel(bindingSet.getValue(FINANCIAL_FUNDING_LABEL).stringValue());
                         
                         project.setFinancialFunding(financialFunding);
@@ -817,7 +786,7 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
             }
 
             //2. Check if the related projects exist.
-            for (RdfResourceDefinition relatedProject : project.getRelatedProjects()) {
+            for (Project relatedProject : project.getRelatedProjects()) {
                 if (!relatedProjectsCache.contains(relatedProject.getUri())) {
                     if (!existUri(relatedProject.getUri())) {
                         dataOk = false;
@@ -1056,10 +1025,13 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         if (financialFunding == null) {
             query.beginBodyOptional();
             query.appendToBody("?" + URI + " <" + Oeso.RELATION_HAS_FINANCIAL_FUNDING.toString() + "> " + "?" + FINANCIAL_FUNDING_URI + " . ");
+            query.appendToBody("?" + FINANCIAL_FUNDING_URI + " <" + RDFS.label.toString() + "> " + "?" + FINANCIAL_FUNDING_LABEL + " . ");
             query.endBodyOptional();
         } else {
             query.appendTriplet("?" + URI, Oeso.RELATION_HAS_FINANCIAL_FUNDING.toString(), "?" + FINANCIAL_FUNDING_URI, null);
+            query.appendTriplet("?" + FINANCIAL_FUNDING_URI, RDFS.label.toString(), "?" + FINANCIAL_FUNDING_LABEL, null);
         }
+        query.appendFilter("LANG(?" + FINANCIAL_FUNDING_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + FINANCIAL_FUNDING_LABEL + "), \"en\")");
         
         //financialReference filter
         query.appendSelect("?" + FINANCIAL_REFERENCE);

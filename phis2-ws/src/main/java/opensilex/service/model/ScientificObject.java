@@ -28,9 +28,11 @@ public class ScientificObject {
     //year of the scientific object
     private String year;    
     //label of the scientific object
-    private String label;    
-    //label of the scientific object
-    private Germplasm germplasm;
+    private String label;        
+    //geneticResource of the scientific object
+    private String geneticResource;    
+    //geneticResource of the scientific object
+    private GeneticInformation geneticInformation;
     
     //The properties of the scientific object
     private ArrayList<Property> properties = new ArrayList<>();
@@ -127,12 +129,12 @@ public class ScientificObject {
         this.label = alias;
     }
 
-    public Germplasm getGermplasm() {
-        return germplasm;
+    public String getGeneticResource() {
+        return geneticResource;
     }
 
-    public void setGermplasm(Germplasm germplasm) {
-        this.germplasm = germplasm;
-    }    
+    public void setGeneticResource(String geneticResource) {
+        this.geneticResource = geneticResource;
+    }
     
 }

@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import javax.validation.Valid;
 import javax.validation.constraints.Pattern;
 import opensilex.service.configuration.DateFormats;
-import opensilex.service.model.Germplasm;
 import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resource.dto.rdfResourceDefinition.PropertyPostDTO;
@@ -43,14 +42,15 @@ public class ScientificObjectPostDTO extends AbstractVerifiedClass {
      * @example 2017
      */
     private String year;
-
-    //germplasm 
-    private Germplasm germplasm;   
+    /**
+     * geneticResource (accessionURI, varietyURI, speciesURI, SeedLot...)
+     * @example "http://www.phenome-fppn.fr/diaphen/id/accession/B73"
+     */
+    private String geneticResource;
     
     /**
      * Properties
      */
-
     private ArrayList<PropertyPostDTO> properties;
 
     @Override
@@ -61,7 +61,6 @@ public class ScientificObjectPostDTO extends AbstractVerifiedClass {
         scientificObject.setUriExperiment(experiment);
         scientificObject.setIsPartOf(isPartOf);
         scientificObject.setYear(year);
-        scientificObject.setGermplasm(germplasm);
         
         if (properties != null) {
             properties.forEach((property) -> {
@@ -133,15 +132,15 @@ public class ScientificObjectPostDTO extends AbstractVerifiedClass {
 
     public void setProperties(ArrayList<PropertyPostDTO> properties) {
         this.properties = properties;
-    }
+    }   
 
     @URL
-    public Germplasm getGermplasm() {
-        return germplasm;
+    public String getGeneticResource() {
+        return geneticResource;
     }
 
-    public void setGermplasm(Germplasm germplasm) {
-        this.germplasm = germplasm;
+    public void setGeneticResource(String geneticResource) {
+        this.geneticResource = geneticResource;
     }
     
     

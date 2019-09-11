@@ -81,10 +81,16 @@ public enum Oeso {
             return NAMESPACE.toString() + "Genotype";
         }
     },  
-    CONCEPT_GERMPLASM {
+    CONCEPT_GENETIC_RESOURCE {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "Germplasm";
+            return NAMESPACE.toString() + "GeneticResource";
+        }
+    },  
+    CONCEPT_GENUS {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "Genus";
         }
     },  
     CONCEPT_INFRASTRUCTURE {
@@ -105,6 +111,12 @@ public enum Oeso {
             return NAMESPACE.toString() + "Method";
         }
     },
+    CONCEPT_PLANT_MATERIAL_LOT {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "PlantMaterialLot";
+        }
+    },  
     CONCEPT_PROJECT {
         @Override
         public String toString() {
@@ -312,12 +324,18 @@ public enum Oeso {
             return NAMESPACE.toString() + "hasGenus";
         }
     },  
-    RELATION_HAS_GERMPLASM{
+    RELATION_HAS_GENETIC_RESOURCE {
         @Override
         public String toString() {
-            return NAMESPACE.toString() + "hasGermplasm";
+            return NAMESPACE.toString() + "hasGeneticResource";
         }
-    },  
+    }, 
+    RELATION_HAS_ACCESSION_NUMBER {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasAccessionNumber";
+        }
+    },
     RELATION_HAS_INSTITUTE_CODE {
         @Override
         public String toString() {
@@ -364,6 +382,12 @@ public enum Oeso {
         @Override
         public String toString() {
             return NAMESPACE.toString() + "hasObjective";
+        }
+    },
+    RELATION_HAS_PLANT_MATERIAL_LOT {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasSeedLot";
         }
     },
     RELATION_HAS_PLOT {
@@ -509,13 +533,6 @@ public enum Oeso {
         public String toString() {
             return NAMESPACE.toString() + "DataFile";
         }
-    },
-
-    RELATION_HAS_SEED_LOT {
-        @Override
-        public String toString() {
-            return NAMESPACE.toString() + "hasSeedLot";
-        }
-    },
+    }
 
 }

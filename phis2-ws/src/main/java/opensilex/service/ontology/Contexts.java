@@ -110,10 +110,10 @@ public enum Contexts {
         }
     },
     //The context which contains the germplasm
-    GERMPLASM {
+    GENETIC_RESOURCE {
         @Override
         public String toString() {
-            return PLATFORM.toString() + "germplasm"; 
+            return PLATFORM.toString() + "geneticResources"; 
         }
     },
     //The context which contains the germplasm
@@ -134,7 +134,21 @@ public enum Contexts {
     ACCESSION {
         @Override
         public String toString() {
-            return PLATFORM.toString() + "accession"; 
+            return PLATFORM.toString() + "accessions"; 
+        }
+    },
+    //The context which contains the germplasm
+    GENUS {
+        @Override
+        public String toString() {
+            return PLATFORM.toString() + "genus"; 
+        }
+    },
+    //The context which contains the germplasm
+    PLANT_MATERIAL_LOT {
+        @Override
+        public String toString() {
+            return PLATFORM.toString() + "plantMaterialLot"; 
         }
     }
 }

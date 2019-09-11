@@ -27,7 +27,6 @@ import opensilex.service.dao.GroupDAO;
 import opensilex.service.dao.ScientificObjectRdf4jDAO;
 import opensilex.service.dao.AnnotationDAO;
 import opensilex.service.dao.EventDAO;
-import opensilex.service.dao.GermplasmDAO;
 import opensilex.service.dao.MethodDAO;
 import opensilex.service.dao.ProjectDAO;
 import opensilex.service.dao.RadiometricTargetDAO;
@@ -89,10 +88,11 @@ public class UriGenerator {
     public static final String PLATFORM_URI_ID_TRAITS = PLATFORM_URI_ID + "traits/" + URI_CODE_TRAIT;
     public static final String PLATFORM_URI_ID_UNITS = PLATFORM_URI_ID + "units/" + URI_CODE_UNIT;
     public static final String PLATFORM_URI_ID_VARIABLES = PLATFORM_URI_ID + "variables/" + URI_CODE_VARIABLE;
-    private static final String PLATFORM_URI_ID_VARIETY = PLATFORM_URI + "v/";
+    private static final String PLATFORM_URI_ID_VARIETY = PLATFORM_URI_ID + "variety/";
     private static final String PLATFORM_URI_ID_PROVENANCE = PLATFORM_URI_ID + "provenance/";
-    public static final String PLATFORM_URI_ID_GERMPLASM = PLATFORM_URI_ID + "germplasm/";
+    public static final String PLATFORM_URI_ID_GERMPLASM = PLATFORM_URI_ID + "germplasm/" + URI_CODE_GERMPLASM;
     private static final String PLATFORM_URI_ID_ACCESSION = PLATFORM_URI_ID + "accession/";
+    private static final String PLATFORM_URI_ID_PLANT_MATERIAL_LOT = PLATFORM_URI_ID + "plantMaterialLot/";
     
     private static final String EXPERIMENT_URI_SEPARATOR = "-";
 
@@ -504,12 +504,28 @@ public class UriGenerator {
      * @return the new variety uri
      */
     private static String generateVarietyUri(String variety) {
-        return PLATFORM_URI_ID_VARIETY + variety.toLowerCase();
+        return PLATFORM_URI_ID_VARIETY + variety;
     }
     
+    /**
+     * 
+     * @param accessionNumber
+     * @return 
+     */
     private static String generateAccessionUri(String accessionNumber) {
         return PLATFORM_URI_ID_ACCESSION + accessionNumber;
     }
+    
+    /**
+     * Generates a new plantmaterialLot URI following this patterns:
+     * <prefix>:
+     * @param lot
+     * @return the new lot URI
+     */
+    private static String generatePlantMaterialLotUri(String lot) {
+        return PLATFORM_URI_ID_PLANT_MATERIAL_LOT + lot;
+    }
+
 
     /**
      * Generates a new agent URI. A agent URI follows the pattern:
@@ -791,6 +807,8 @@ public class UriGenerator {
             return generateVarietyUri(additionalInformation);
         } else if (Oeso.CONCEPT_ACCESSION.toString().equals(instanceType)) {
             return generateAccessionUri(additionalInformation);
+        } else if (Oeso.CONCEPT_PLANT_MATERIAL_LOT.toString().equals(instanceType)) {
+            return generatePlantMaterialLotUri(additionalInformation);
         } else if (uriDao.isSubClassOf(instanceType, Oeso.CONCEPT_IMAGE.toString())) {
             return generateImageUri(year, additionalInformation);
         } else if (instanceType.equals(Foaf.CONCEPT_AGENT.toString()) 
@@ -818,52 +836,37 @@ public class UriGenerator {
             return generateDataFileUri(year, additionalInformation);
         } else if (instanceType.equals(Oeso.CONCEPT_ACTUATOR.toString())) {
             return generateActuatorUri(year);
-        } else if (instanceType.equals(Oeso.CONCEPT_GERMPLASM.toString())) {
-            return generateGermplasmURI();
         }
         return null;
     }
-    
-    /**
-     * Generates a new agronomical object URI. A sensor URI has the following
-     * form:
-     * <prefix>:<year>/<unic_code>
-     * <unic_code> = 1 letter type + 2 numbers year + auto incremented number
-     * with 6 digits (per year) the year corresponds to the year of insertion in
-     * the triplestore.
-     * @example http://www.phenome-fppn.fr/diaphen/2017/o17000001
-     * @param year the insertion year of the agronomical object.
-     * @return the new agronomical object URI
-     */
-    private static String generateGermplasmURI() {
-        
-        // Generate germplasm URI based on next id
-        String germplasmId = Integer.toString(getNextGermplasmID());        
 
-        while (germplasmId.length() < 3) {
-            germplasmId = "0" + germplasmId;
-        }
-
-        return PLATFORM_URI_ID_GERMPLASM + URI_CODE_GERMPLASM + germplasmId;
-    }
+//    /**
+//     * Internal accession to store the last accession ID
+//     */
+//    private static Integer accessionLastID;
+//    
+//    /**
+//     * Return the next variable ID by incrementing variableLastID variable and initializing it before if needed
+//     * @return next variable ID
+//     */
+//    private static int getNextAccessionID() {
+//        if (accessionLastID == null) {
+//            AccessionDAO germplasmDAO = new AccessionDAO();
+//            accessionLastID = germplasmDAO.getLastId();
+//        }
+//        
+//        accessionLastID++;
+//        
+//        return accessionLastID;
+//    }
     
-    /**
-     * Internal germplasm to store the last germplasm ID
-     */
-    private static Integer germplasmLastID;
-    
-    /**
-     * Return the next variable ID by incrementing variableLastID variable and initializing it before if needed
-     * @return next variable ID
-     */
-    private static int getNextGermplasmID() {
-        if (germplasmLastID == null) {
-            GermplasmDAO germplasmDAO = new GermplasmDAO();
-            germplasmLastID = germplasmDAO.getLastId();
-        }
-        
-        germplasmLastID++;
-        
-        return germplasmLastID;
-    }
+//    private static String generateRandomHexadecimal(Integer digitsNumber) {
+//	Random random = new Random();
+//	StringBuilder sb = new StringBuilder();
+//	while (sb.length() < digitsNumber) {
+//		sb.append(Integer.toHexString(random.nextInt()));
+//	}
+//	return sb.toString();
+//    }
+ 
 }

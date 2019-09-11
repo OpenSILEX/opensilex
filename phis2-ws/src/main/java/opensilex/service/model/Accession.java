@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                Germplasm.java
+//                                Accession.java
 // SILEX-PHIS
 // Copyright © INRA 2019
 // Creation date: 1 juil. 2019
@@ -13,34 +13,27 @@ import java.util.ArrayList;
  * Model of the germplasms
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
-public class Germplasm {
-    private String germplasmURI;
-    //private String germplasmName;
+public class Accession {
+    private String accessionName;
+    private String accessionURI;    
     private String accessionNumber;
-    private String accessionURI;
     private String varietyLabel;
     private String varietyURI;
     private String speciesURI;
     private String speciesLabel;
+    private String genusURI;
+    private String genusLabel;
     private ArrayList<String> seedLots;
     private String instituteCode;
     private String instituteName;
-    
-    public String getGermplasmURI() {
-        return germplasmURI;
-    }
-    
-    public void setGermplasmURI(String germplasmURI) {
-        this.germplasmURI = germplasmURI;
+
+    public String getAccessionName() {
+        return accessionName;
     }
 
-//    public String getGermplasmName() {
-//        return germplasmName;
-//    }
-//
-//    public void setGermplasmName(String germplasmName) {
-//        this.germplasmName = germplasmName;
-//    }
+    public void setAccessionName(String accessionName) {
+        this.accessionName = accessionName;
+    }
 
     public String getAccessionNumber() {
         return accessionNumber;
@@ -89,6 +82,22 @@ public class Germplasm {
     public void setSpeciesLabel(String speciesLabel) {
         this.speciesLabel = speciesLabel;
     }   
+
+    public String getGenusURI() {
+        return genusURI;
+    }
+
+    public void setGenusURI(String genusURI) {
+        this.genusURI = genusURI;
+    }
+
+    public String getGenusLabel() {
+        return genusLabel;
+    }
+
+    public void setGenusLabel(String genusLabel) {
+        this.genusLabel = genusLabel;
+    }
 
     public ArrayList<String> getSeedLots() {
         return seedLots;

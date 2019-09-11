@@ -8,9 +8,10 @@
 package opensilex.service.resource.dto.scientificObject;
 
 import java.util.ArrayList;
-import opensilex.service.model.Germplasm;
+import opensilex.service.dao.GeneticInformationDAO;
 import opensilex.service.model.Property;
 import opensilex.service.model.ScientificObject;
+import opensilex.service.model.GeneticInformation;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resource.dto.rdfResourceDefinition.PropertyDTO;
 
@@ -39,10 +40,10 @@ public class ScientificObjectDTO extends AbstractVerifiedClass {
     //label of the scientific object
     //@example M02_W
     private String label;
-    //germplasm
-    private Germplasm germplasm;
     //properties of the scientific object
     private ArrayList<PropertyDTO> properties = new ArrayList<>();
+    //genetic Information
+    private GeneticInformation geneticInformation;
 
     public ScientificObjectDTO() {
        
@@ -55,11 +56,18 @@ public class ScientificObjectDTO extends AbstractVerifiedClass {
         setExperiment(scientificObject.getExperiment());
         setIsPartOf(scientificObject.getIsPartOf());
         setLabel(scientificObject.getLabel());
-        setGermplasm(scientificObject.getGermplasm());
-        
+       
         for (Property property : scientificObject.getProperties()) {
             addProperty(new PropertyDTO(property));
         }
+        
+        //set Genetic Information
+        if (scientificObject.getGeneticResource() != null) {
+            GeneticInformationDAO geneticInfoDAO = new GeneticInformationDAO(scientificObject.getGeneticResource());        
+            GeneticInformation geneticInfo = geneticInfoDAO.findByURI(scientificObject.getGeneticResource()); 
+            setGeneticInformation(geneticInfo);            
+        }
+
     }
     
     @Override
@@ -143,12 +151,12 @@ public class ScientificObjectDTO extends AbstractVerifiedClass {
         this.isPartOf = isPartOf;
     }
 
-    public Germplasm getGermplasm() {
-        return germplasm;
+    public GeneticInformation getGeneticInformation() {
+        return geneticInformation;
     }
 
-    public void setGermplasm(Germplasm germplasm) {
-        this.germplasm = germplasm;
-    }    
+    public void setGeneticInformation(GeneticInformation geneticInformation) {
+        this.geneticInformation = geneticInformation;
+    }
     
 }

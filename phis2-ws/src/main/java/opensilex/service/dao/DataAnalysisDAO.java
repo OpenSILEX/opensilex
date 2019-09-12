@@ -35,7 +35,7 @@ public class DataAnalysisDAO {
      * @param parameters
      * @return 
      */
-    public static Response opencpuRFunctionProxyCall(String packageName, String functionName, String parameters){
+    public Response opencpuRFunctionProxyCall(String packageName, String functionName, String parameters){
         Client client = ClientBuilder.newClient();
         WebTarget webTarget = client.target(OPENCPU_HOST);
         WebTarget opencpuCallWebTarget = webTarget.path("/ocpu/library/" + packageName + "/R/" + functionName + "/json")

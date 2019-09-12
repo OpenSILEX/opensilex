@@ -274,13 +274,12 @@ public class AccessionDAO extends Rdf4jDAO<Accession> {
         spql.addInsert(graph, accessionURI, RDF.type, accessionType);
         
         //insert variety        
-        Node varietyGraph = NodeFactory.createURI(Contexts.VARIETY.toString());
         Resource varietyURI = ResourceFactory.createResource(accession.getVarietyURI());
-        spql.addInsert(varietyGraph, varietyURI, RDF.type, NodeFactory.createURI(Oeso.CONCEPT_VARIETY.toString()));
+        spql.addInsert(graph, varietyURI, RDF.type, NodeFactory.createURI(Oeso.CONCEPT_VARIETY.toString()));
         Property relationHasAccession = ResourceFactory.createProperty(Oeso.RELATION_HAS_ACCESSION.toString());
         spql.addInsert(graph, varietyURI, relationHasAccession, accessionURI);
         if (accession.getVarietyLabel()!= null) {                
-            spql.addInsert(varietyGraph, varietyURI, RDFS.label, accession.getVarietyLabel());
+            spql.addInsert(graph, varietyURI, RDFS.label, accession.getVarietyLabel());
         }
         
         //add Link to species
@@ -296,38 +295,36 @@ public class AccessionDAO extends Rdf4jDAO<Accession> {
         }
         
         //add accession properties
-        Node accessionGraph = NodeFactory.createURI(Contexts.ACCESSION.toString());
         if (accession.getAccessionNumber()!= null) {
             Property relationHasAccessionNumber = ResourceFactory.createProperty(Oeso.RELATION_HAS_ACCESSION_NUMBER.toString());
-            spql.addInsert(accessionGraph, accessionURI, relationHasAccessionNumber, accession.getAccessionNumber());
+            spql.addInsert(graph, accessionURI, relationHasAccessionNumber, accession.getAccessionNumber());
         }
        
         if (accession.getAccessionName()!= null) {
-            spql.addInsert(accessionGraph, accessionURI, RDFS.label, accession.getAccessionName());
+            spql.addInsert(graph, accessionURI, RDFS.label, accession.getAccessionName());
         }
         
         //add seedLots
         if (accession.getSeedLots() != null) {
             Property relationHasSeedLot = ResourceFactory.createProperty(Oeso.RELATION_HAS_PLANT_MATERIAL_LOT.toString());
             ArrayList<String> lots = accession.getSeedLots();
-            Resource lotsGraph = ResourceFactory.createResource(Contexts.PLANT_MATERIAL_LOT.toString());
             for (String lot:lots) {
                 String lotURI = UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_PLANT_MATERIAL_LOT.toString(), null, lot);
                 Resource lotUri = ResourceFactory.createResource(lotURI);
-                spql.addInsert(accessionGraph, accessionURI, relationHasSeedLot, lotUri);
-                spql.addInsert(lotsGraph, lotUri, RDFS.label, lot);
-                spql.addInsert(accessionGraph, lotUri, RDF.type, NodeFactory.createURI(Oeso.CONCEPT_PLANT_MATERIAL_LOT.toString()));
+                spql.addInsert(graph, accessionURI, relationHasSeedLot, lotUri);
+                spql.addInsert(graph, lotUri, RDFS.label, lot);
+                spql.addInsert(graph, lotUri, RDF.type, NodeFactory.createURI(Oeso.CONCEPT_PLANT_MATERIAL_LOT.toString()));
             }
         }
         
         if (accession.getInstituteCode()!= null) {
             Property relationHasInstituteCode = ResourceFactory.createProperty(Oeso.RELATION_HAS_INSTITUTE_CODE.toString());
-            spql.addInsert(accessionGraph, accessionURI, relationHasInstituteCode, accession.getInstituteCode());
+            spql.addInsert(graph, accessionURI, relationHasInstituteCode, accession.getInstituteCode());
         }
         
         if (accession.getInstituteName() != null) {
             Property relationHasInstituteName = ResourceFactory.createProperty(Oeso.RELATION_HAS_INSTITUTE_NAME.toString());
-            spql.addInsert(accessionGraph, accessionURI, relationHasInstituteName, accession.getInstituteName());
+            spql.addInsert(graph, accessionURI, relationHasInstituteName, accession.getInstituteName());
         }
              
         UpdateRequest query = spql.buildRequest();

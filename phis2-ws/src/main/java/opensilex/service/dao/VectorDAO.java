@@ -55,6 +55,7 @@ import org.apache.jena.sparql.expr.ExprList;
 import org.apache.jena.sparql.path.PathFactory;
 import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.vocabulary.XSD;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.Update;
 
 /**
@@ -432,10 +433,13 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
         
         if (result.hasNext()) {
             BindingSet bindingSet = result.next();
-            return Integer.valueOf(bindingSet.getValue(MAX_ID).stringValue());
-        } else {
-            return 0;
-        }
+            Value maxId = bindingSet.getValue(MAX_ID);
+            if (maxId != null) {
+                return Integer.valueOf(maxId.stringValue());
+            }
+        } 
+        
+        return 0;
     }
     
     /**

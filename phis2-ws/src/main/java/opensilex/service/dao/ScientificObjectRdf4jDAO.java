@@ -69,6 +69,7 @@ import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprList;
 import org.apache.jena.sparql.path.PathFactory;
 import org.apache.jena.vocabulary.XSD;
+import org.eclipse.rdf4j.model.Value;
 
 /**
  * Allows CRUD methods of scientific objects in the triplestore.
@@ -168,10 +169,13 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         
         if (result.hasNext()) {
             BindingSet bindingSet = result.next();
-            return Integer.valueOf(bindingSet.getValue(MAX_ID).stringValue());
-        } else {
-            return 0;
-        }
+            Value maxId = bindingSet.getValue(MAX_ID);
+            if (maxId != null) {
+                return Integer.valueOf(maxId.stringValue());
+            }
+        } 
+        
+        return 0;
     }
     
     /**

@@ -10,7 +10,6 @@ import org.opensilex.bigdata.BigDataService;
 import org.opensilex.bigdata.mongodb.MongoDBConfig;
 import org.opensilex.bigdata.mongodb.MongoDBConnection;
 import org.opensilex.config.ConfigDescription;
-import org.opensilex.config.ServiceDescription;
 import org.opensilex.fs.FileStorageService;
 import org.opensilex.module.ModuleConfig;
 import org.opensilex.server.security.AuthenticationService;
@@ -48,30 +47,22 @@ public interface BaseConfig extends ModuleConfig {
     )
     public String defaultLanguage();
 
-    @ServiceDescription(
-            value = "Big data source",
-            connection = BigDataConnection.class,
-            defaultConnection = MongoDBConnection.class,
-            defaultConnectionConfig = MongoDBConfig.class,
-            defaultConnectionConfigID = "mongodb"
+    @ConfigDescription(
+            value = "Big data source"
     )
     public BigDataService bigData();
 
-    @ServiceDescription(
-            value = "SPARQL data sources",
-            connection = SPARQLConnection.class,
-            defaultConnection = RDF4JConnection.class,
-            defaultConnectionConfig = RDF4JConfig.class,
-            defaultConnectionConfigID = "rdf4j"
+    @ConfigDescription(
+            value = "SPARQL data sources"
     )
     public SPARQLService sparql();
 
-    @ServiceDescription(
+    @ConfigDescription(
             value = "Authentication service"
     )
     public AuthenticationService authentication();
 
-    @ServiceDescription(
+    @ConfigDescription(
             value = "File storage service"
     )
     public FileStorageService fs();

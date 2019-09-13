@@ -57,7 +57,7 @@ public class Deserializers {
                 Class<?> key = parameterizedClass(deserializer, SPARQLDeserializer.class, 0);
                 deserializersMap.put(key, deserializer);
             } catch (ClassNotFoundException ex) {
-                // TODO
+                // TODO warn on missing deserializer. Error ?
             }
         }
 

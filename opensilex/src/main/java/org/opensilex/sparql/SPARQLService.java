@@ -39,13 +39,21 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLEntityNotFoundException;
 import org.opensilex.sparql.exceptions.SPARQLQueryException;
 import org.opensilex.sparql.exceptions.SPARQLTransactionException;
+import org.opensilex.sparql.rdf4j.RDF4JConfig;
+import org.opensilex.sparql.rdf4j.RDF4JConnection;
 import org.opensilex.sparql.utils.Ontology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.opensilex.service.ServiceConfigDefault;
 
 /**
  * Implementation of SPARQLService
  */
+@ServiceConfigDefault(
+        connection = RDF4JConnection.class,
+        connectionConfig = RDF4JConfig.class,
+        connectionConfigID = "rdf4j"
+)
 public class SPARQLService implements SPARQLConnection, Service {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLService.class);
@@ -54,6 +62,16 @@ public class SPARQLService implements SPARQLConnection, Service {
 
     public SPARQLService(SPARQLConnection connection) {
         this.connection = connection;
+    }
+
+    @Override
+    public void startup() {
+        connection.startup();
+    }
+
+    @Override
+    public void shutdown() {
+        connection.shutdown();
     }
 
     @Override

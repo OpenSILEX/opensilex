@@ -172,12 +172,15 @@ public class OpenSilex {
         if (profileId == null) {
             profileId = PROD_PROFILE_ID;
         }
-
-        // Create OpenSilex instance with these values depending if configuration file is defined or not.
-        if (configFile == null || configFile.equals("")) {
-            intance = createInstance(Paths.get(baseDirectory), profileId, null);
-        } else {
-            intance = createInstance(Paths.get(baseDirectory), profileId, Paths.get(configFile).toFile());
+        try {
+            // Create OpenSilex instance with these values depending if configuration file is defined or not.
+            if (configFile == null || configFile.equals("")) {
+                intance = createInstance(Paths.get(baseDirectory), profileId, null);
+            } else {
+                intance = createInstance(Paths.get(baseDirectory), profileId, Paths.get(configFile).toFile());
+            }
+        } catch (Exception ex) {
+            LOGGER.error("Fail to create OpenSILEX instance");
         }
 
         // Return remaining arguments list
@@ -186,19 +189,19 @@ public class OpenSilex {
 
     /**
      * Helper method to call easily setup method
-     * 
+     *
      * @param args
-     * @return 
+     * @return
      */
     public static String[] setup(Map<String, String> args) {
         List<String> argsList = new ArrayList<>();
         args.forEach((String key, String value) -> {
             argsList.add("--" + key + "=" + value);
         });
-        
+
         return setup(argsList.toArray(new String[0]));
     }
-    
+
     /**
      * Return OpenSilex singleton instance
      *
@@ -217,7 +220,7 @@ public class OpenSilex {
      *
      * @return An instance of OpenSilex
      */
-    private static OpenSilex createInstance(Path baseDirectory, String profileId, File configFile) {
+    private static OpenSilex createInstance(Path baseDirectory, String profileId, File configFile) throws Exception {
 
         // Try to find logback.xml file in OpenSilex base directory to initialize logger configuration
         File logConfigFile = baseDirectory.resolve("logback.xml").toFile();
@@ -351,7 +354,7 @@ public class OpenSilex {
      * services and initialize them Setup cleaning call for modules on
      * application shutdown
      */
-    private void init() {
+    private void init() throws Exception {
         LOGGER.debug("Load modules with dependencies");
         moduleManager.loadModulesWithDependencies(baseDirectory);
 
@@ -367,9 +370,6 @@ public class OpenSilex {
         LOGGER.debug("Load modules services");
         moduleManager.registerServices(serviceManager);
 
-        LOGGER.debug("Initialize modules");
-        moduleManager.init();
-
         // Add hook to clean modules on shutdown
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
@@ -378,6 +378,9 @@ public class OpenSilex {
                 moduleManager.clean();
             }
         });
+
+        LOGGER.debug("Initialize modules");
+        moduleManager.init();
     }
 
     /**
@@ -412,7 +415,8 @@ public class OpenSilex {
     public List<OpenSilexModule> getModulesByProjectId(String projectId) {
         List<OpenSilexModule> modules = new ArrayList<>();
         moduleManager.forEachModule((OpenSilexModule m) -> {
-            if (ClassInfo.getProjectIdFromClass(m.getClass()).equals(projectId)) {
+            String moduleClass = ClassInfo.getProjectIdFromClass(m.getClass());
+            if (moduleClass.equals(projectId)) {
                 modules.add(m);
             }
         });

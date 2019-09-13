@@ -15,6 +15,27 @@
         <relativePath>../opensilex-parent/pom.xml</relativePath>
     </parent>
 
+    <dependencies>
+        <!-- Web app JS library Manage js file from maven @see http://www.webjars.org/documentation#servlet3 
+        The ressource namespace META-INF.resources.webjars.jquery.2.1.4 contains 
+        jquery.js the path is the same as the url namespace Ex : http://localhost:8080/phis2ws/webjars/jquery/2.1.4/jquery.js -->
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>swagger-ui</artifactId>
+            <version>2.2.10-1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>bootstrap</artifactId>
+            <version>3.3.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>jquery</artifactId>
+            <version>2.1.4</version>
+        </dependency>
+    </dependencies>
+    
     <build>
         <!-- include swagger webapp -->
         <resources>
@@ -89,6 +110,10 @@
                                     <exclude>commons-logging:commons-logging</exclude>
                                     <exclude>javax.activation:javax.activation-api</exclude>
                                     <exclude>javax.mail:javax.mail-api</exclude>
+                                    <exclude>jakarta.validation:jakarta.validation-api</exclude>
+                                    <exclude>jakarta.xml.bind:jakarta.xml.bind-api</exclude>
+                                    <exclude>jakarta.activation:jakarta.activation-api</exclude>
+                                    <exclude>com.sun.activation:jakarta.activation</exclude>
                                 </excludes>
                             </artifactSet>
                         </configuration>

@@ -44,7 +44,7 @@ public class FrontAPI implements RestApplicationAPI {
 
     @Context
     UriInfo uri;
-    
+
     @GET
     @Path("/config")
     @ApiOperation(value = "Return the current configuration")
@@ -56,9 +56,9 @@ public class FrontAPI implements RestApplicationAPI {
     public Response config() throws Exception {
 
         Map<String, PluginConfigDTO> result = new HashMap<>();
-        
+
         for (FrontAppExtension frontAppExtension : app.getModulesImplementingInterface(FrontAppExtension.class)) {
-            OpenSilexModule module = (OpenSilexModule)frontAppExtension;
+            OpenSilexModule module = (OpenSilexModule) frontAppExtension;
             for (String pluginFileName : module.listResourceDirectory("angular/plugins")) {
                 if (pluginFileName.endsWith(".js")) {
                     String pluginName = pluginFileName.substring(0, pluginFileName.length() - 3);
@@ -66,13 +66,16 @@ public class FrontAPI implements RestApplicationAPI {
                     PluginConfigDTO pluginConfigDTO = new PluginConfigDTO();
                     pluginConfigDTO.setName(pluginName);
 
-                    pluginConfigDTO.setPath(uri.getBaseUri().toString() + "front/plugin/" + ClassInfo.getProjectIdFromClass(frontAppExtension.getClass()) + "/" + pluginName + ".js");
+                    String path = ClassInfo.getProjectIdFromClass(frontAppExtension.getClass());
+                    if (!path.isEmpty()) {
+                        pluginConfigDTO.setPath(uri.getBaseUri().toString() + "front/plugin/" + ClassInfo.getProjectIdFromClass(frontAppExtension.getClass()) + "/" + pluginName + ".js");
 
-                    if (!pluginName.equals("shared")) {
-                        pluginConfigDTO.getDeps().add("shared");
+                        if (!pluginName.equals("shared")) {
+                            pluginConfigDTO.getDeps().add("shared");
+                        }
+
+                        result.put(pluginName, pluginConfigDTO);
                     }
-
-                    result.put(pluginName, pluginConfigDTO);
                 }
             }
         }
@@ -103,7 +106,7 @@ public class FrontAPI implements RestApplicationAPI {
             if (module.fileExists(filePath)) {
                 return Response
                         .ok(module.getFileInputStream(filePath), "application/javascript")
-                        .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"" )
+                        .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
                         .build();
             }
         }

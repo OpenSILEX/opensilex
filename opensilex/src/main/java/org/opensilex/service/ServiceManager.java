@@ -5,13 +5,10 @@
  */
 package org.opensilex.service;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Parameter;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
-import org.opensilex.config.ConfigManager;
 
 /**
  *
@@ -30,6 +27,10 @@ public class ServiceManager {
 
         serviceInstanceRegistry.get(serviceClass).put(name, service);
         serviceByNameRegistry.put(name, service);
+    }
+    
+    public Map<String, Service> getServices() {
+        return Collections.unmodifiableMap(serviceByNameRegistry);
     }
 
     public void forEachInterface(BiConsumer<Class<? extends Service>, Map<String, Service>> lambda) {

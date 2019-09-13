@@ -183,7 +183,7 @@ public class ModuleManager {
         return result;
     }
 
-    public void registerServices(ServiceManager serviceManager) {
+    public void registerServices(ServiceManager serviceManager) throws Exception {
         this.services = serviceManager;
         for (OpenSilexModule module : getModules()) {
 
@@ -196,13 +196,9 @@ public class ModuleManager {
                             Service service = (Service) m.invoke(moduleConfig);
                             services.register(service.getClass(), m.getName(), service);
                         }
-                    } catch (SecurityException
-                            | IllegalAccessException
-                            | IllegalArgumentException
-                            | InvocationTargetException ex) {
-
-                        // TODO manage error
-                        LOGGER.error("WTF ? -->", ex);
+                    } catch (Exception ex) {
+                        LOGGER.error("Fail to load service: " + m.getName() + " in module config: " + module.getConfigId(), ex);
+                        throw ex;
                     }
 
                 }
@@ -211,6 +207,9 @@ public class ModuleManager {
     }
 
     public void init() {
+        services.getServices().forEach((String name, Service service) -> {
+            service.startup();
+        });
         for (OpenSilexModule module : getModules()) {
             module.init();
         }
@@ -220,6 +219,9 @@ public class ModuleManager {
         for (OpenSilexModule module : getModules()) {
             module.clean();
         }
+        services.getServices().forEach((String name, Service service) -> {
+            service.shutdown();
+        });
     }
 
     public <T> List<T> getModulesImplementingInterface(Class<T> extensionInterface) {
@@ -254,7 +256,6 @@ public class ModuleManager {
             }
         }
 
-        // TODO use specific exception
-        throw new Exception("Can't find module corresponding to class: " + moduleClass.getCanonicalName());
+        throw new ModuleNotFoundException(moduleClass);
     }
 }

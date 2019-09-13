@@ -13,6 +13,10 @@ public class InvalidConfigException extends Exception {
 
     private static final long serialVersionUID = 1L;
 
+    public InvalidConfigException(Exception ex) {
+        super(ex);
+    }
+    
     public InvalidConfigException(String message) {
         super(message);
     }

@@ -42,12 +42,15 @@ public class MainCommand extends HelpPrinterCommand implements IVersionProvider 
     public static void main(String[] args) {
         // Initialize opensilex instance with arguments and return commands arguments
         String[] cliArgs  = OpenSilex.setup(args);
-
+        run(cliArgs);
+    }
+    
+    public static void run(String[] args) {
         // If no arguments assume help is requested
-        if (cliArgs.length == 0) {
-            cliArgs = new String[]{"--help"};
+        if (args.length == 0) {
+            args = new String[]{"--help"};
         }
-
+        
         // Initialize picocli library
         CommandLine cli = new CommandLine(new MainCommand());
         
@@ -62,7 +65,7 @@ public class MainCommand extends HelpPrinterCommand implements IVersionProvider 
         cli.setHelpFactory(new HelpFactory());
         
         // Run actual commands
-        cli.execute(cliArgs);
+        cli.execute(args);
     }
 
     /**

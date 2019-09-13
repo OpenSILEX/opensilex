@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -25,17 +26,18 @@ import org.opensilex.utils.ClassInfo;
 public class StartServer {
 
     public static void main(String[] args) throws IOException {
-        boolean withFront = false;
+        boolean withFront = true;
+        withFront = false;        
         
         String configFile = StartServer.class.getClassLoader().getResource("./config/opensilex.yml").getPath();
         // TODO: Use environment variables instead
-        MainCommand.main(new String[] {
-            "server", 
-            "start",
-            "--" + OpenSilex.PROFILE_ID_ARG_KEY + "=" + OpenSilex.DEV_PROFILE_ID,
-            "--" + OpenSilex.CONFIG_FILE_ARG_KEY + "=" + configFile
+        OpenSilex.setup(new HashMap<String, String>() {
+            {
+                put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.DEV_PROFILE_ID);
+                put(OpenSilex.CONFIG_FILE_ARG_KEY, configFile);
+            }
         });
-        
+
         if (withFront) {
             // Define current directory to launch node.js processes
             Path currentDirectory = Paths.get(System.getProperty("user.dir"));
@@ -56,7 +58,10 @@ public class StartServer {
 
             Set<String> modulesPluginBuilderArgs = new HashSet<>();
             OpenSilex.getInstance().getModulesImplementingInterface(FrontAppExtension.class).forEach((FrontAppExtension extension) -> {
-                modulesPluginBuilderArgs.add("--module=" + ClassInfo.getProjectIdFromClass(extension.getClass()));
+                String moduleProjectId = ClassInfo.getProjectIdFromClass(extension.getClass());
+                if (!moduleProjectId.isEmpty()) {
+                    modulesPluginBuilderArgs.add("--module=" + moduleProjectId);
+                }
             });
             appPluginBuilderArgs.addAll(modulesPluginBuilderArgs);
 
@@ -84,5 +89,11 @@ public class StartServer {
                 }
             });
         }
+
+        MainCommand.run(new String[]{
+            "server",
+            "start"
+        });
+
     }
 }

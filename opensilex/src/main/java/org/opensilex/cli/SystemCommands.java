@@ -152,33 +152,36 @@ public class SystemCommands extends HelpPrinterCommand implements OpenSilexComma
             Map<String, LocalDateTime> existingUpdatesByModules = new HashMap<>();
             ServiceLoader.load(ModuleUpdate.class, Thread.currentThread().getContextClassLoader()).forEach((ModuleUpdate update) -> {
                 String updateProjectId = ClassInfo.getProjectIdFromClass(update.getClass());
-                if (existingUpdatesByModules.containsKey(updateProjectId)) {
-                    if (existingUpdatesByModules.get(updateProjectId).isBefore(update.getDate())) {
+                if (!updateProjectId.isEmpty()) {
+                    if (existingUpdatesByModules.containsKey(updateProjectId)) {
+                        if (existingUpdatesByModules.get(updateProjectId).isBefore(update.getDate())) {
+                            existingUpdatesByModules.put(updateProjectId, update.getDate());
+                        }
+                    } else {
                         existingUpdatesByModules.put(updateProjectId, update.getDate());
                     }
-                } else {
-                    existingUpdatesByModules.put(updateProjectId, update.getDate());
                 }
             });
 
             for (OpenSilexModule module : OpenSilex.getInstance().getModules()) {
                 Class<?> moduleClass = module.getClass();
                 String moduleProjectId = ClassInfo.getProjectIdFromClass(moduleClass);
+                if (!moduleProjectId.isEmpty()) {
+                    try {
+                        if (moduleNames.size() == 0 || moduleNames.contains(moduleProjectId)) {
+                            LOGGER.info("Installing module: " + moduleProjectId + " - " + moduleClass.getCanonicalName());
+                            module.install();
+                            installedModules.add(moduleProjectId);
 
-                try {
-                    if (moduleNames.size() == 0 || moduleNames.contains(moduleProjectId)) {
-                        LOGGER.info("Installing module: " + moduleProjectId + " - " + moduleClass.getCanonicalName());
-                        module.install();
-                        installedModules.add(moduleProjectId);
-
-                        LOGGER.info("Register all existing updates for installed module:" + moduleProjectId);
-                        if (existingUpdatesByModules.containsKey(moduleProjectId)) {
-                            lastUpdatesByModules.put(moduleProjectId, existingUpdatesByModules.get(moduleProjectId));
+                            LOGGER.info("Register all existing updates for installed module:" + moduleProjectId);
+                            if (existingUpdatesByModules.containsKey(moduleProjectId)) {
+                                lastUpdatesByModules.put(moduleProjectId, existingUpdatesByModules.get(moduleProjectId));
+                            }
                         }
+                    } catch (Exception ex) {
+                        LOGGER.error("Error while installing OpenSilex module: " + moduleProjectId);
+                        LOGGER.error("Module class: " + moduleClass.getCanonicalName(), ex);
                     }
-                } catch (Exception ex) {
-                    LOGGER.error("Error while installing OpenSilex module: " + moduleProjectId);
-                    LOGGER.error("Module class: " + moduleClass.getCanonicalName(), ex);
                 }
             }
 
@@ -188,8 +191,7 @@ public class SystemCommands extends HelpPrinterCommand implements OpenSilexComma
 
     /**
      * This method updates specific OpenSilex module or all new by default by
-     * executing ModuleUpdate "execute" methods found in
-     * them
+     * executing ModuleUpdate "execute" methods found in them
      */
     @Command(
             name = "update",
@@ -218,18 +220,20 @@ public class SystemCommands extends HelpPrinterCommand implements OpenSilexComma
                         // Get the related module id of the update
                         String moduleId = ClassInfo.getProjectIdFromClass(update.getClass());
 
-                        // Flag to determine if the update must be ignored or not
-                        boolean ignore = false;
+                        if (!moduleId.isEmpty()) {
+                            // Flag to determine if the update must be ignored or not
+                            boolean ignore = false;
 
-                        // Determine if the update is a new one for the package
-                        if (lastUpdatesByModules.containsKey(moduleId)) {
-                            LocalDateTime lastUpdate = lastUpdatesByModules.get(moduleId);
-                            ignore = update.getDate().isAfter(lastUpdate);
-                        }
+                            // Determine if the update is a new one for the package
+                            if (lastUpdatesByModules.containsKey(moduleId)) {
+                                LocalDateTime lastUpdate = lastUpdatesByModules.get(moduleId);
+                                ignore = update.getDate().isAfter(lastUpdate);
+                            }
 
-                        if (!ignore) {
-                            // In that case add it to the update list by date
-                            newUpdates.add(update);
+                            if (!ignore) {
+                                // In that case add it to the update list by date
+                                newUpdates.add(update);
+                            }
                         }
                     });
 

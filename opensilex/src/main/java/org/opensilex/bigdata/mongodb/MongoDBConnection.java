@@ -7,15 +7,26 @@ package org.opensilex.bigdata.mongodb;
 
 import java.util.HashMap;
 import org.opensilex.bigdata.datanucleus.AbstractDataNucleusConnection;
+import org.opensilex.service.ServiceConnection;
 
 /**
  *
  * @author vincent
  */
-public class MongoDBConnection extends AbstractDataNucleusConnection {
+public class MongoDBConnection extends AbstractDataNucleusConnection implements ServiceConnection{
 
     public MongoDBConnection(MongoDBConfig config) {
         super(new HashMap<>());
+    }
+
+    @Override
+    public void startup() {
+// TODO        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void shutdown() {
+// TODO       throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 }

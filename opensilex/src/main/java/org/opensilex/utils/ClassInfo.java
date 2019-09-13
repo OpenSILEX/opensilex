@@ -156,6 +156,11 @@ public class ClassInfo {
             } else {
                 entry = zipFile.getEntry("opensilex-pom.xml");
             }
+            
+            if (entry == null) {
+                throw new IOException(groupId + ":" + artifactId + " - POM file not found in:" + jarFile.getAbsolutePath());
+            } 
+            
             InputStream pomStream = zipFile.getInputStream(entry);
             File pom = File.createTempFile("opensilex-pom.", ".xml");
             pom.deleteOnExit();
@@ -218,8 +223,7 @@ public class ClassInfo {
                 Model model = reader.read(new FileReader(pom));
                 projectId = model.getArtifactId();
             } catch (Exception ex) {
-                LOGGER.warn("Exception while getting project id for class: " + classFromProject.getCanonicalName(), ex);
-                return "opensilex";
+                return "";
             }
         }
 

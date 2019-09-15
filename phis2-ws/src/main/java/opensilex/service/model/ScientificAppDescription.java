@@ -1,13 +1,15 @@
 //******************************************************************************
-//                                ShinyAppDescription.java
+//                                ScientificAppDescription.java
 // SILEX-PHIS
 // Copyright © INRA 2019
 // Creation date: 9 sept. 2019
 // Contact: Expression userEmail is undefined on line 6, column 15 in file:///home/charlero/GIT/GITHUB/phis-ws/phis2-ws/licenseheader.txt., anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package opensilex.service.shinyProxy;
+package opensilex.service.model;
 
 import com.google.gson.Gson;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -22,7 +24,7 @@ import opensilex.service.PropertiesFileManager;
  *
  * @author charlero
  */
-public class ShinyAppDescription {
+public class ScientificAppDescription {
 
     private String id;
     private String documentUri;
@@ -34,7 +36,7 @@ public class ShinyAppDescription {
     public HashMap<String, Object> env_variables;
     public String application_url;
 
-    public ShinyAppDescription(String uri, String display_name, String description) {
+    public ScientificAppDescription(String uri, String display_name, String description, String sessionId) {
         this.documentUri = uri;
         setId(uri);
         this.display_name = display_name;
@@ -45,7 +47,20 @@ public class ShinyAppDescription {
                 getConfigFileProperty("data_analysis_config", "shinyproxy.host");
         final String shinyPort = PropertiesFileManager.
                 getConfigFileProperty("data_analysis_config", "shinyproxy.port");
-        this.application_url = "http://" + shinyHost + ":" + shinyPort + "/app/" + getId();
+        final String webServiceHost = PropertiesFileManager.
+                getConfigFileProperty("service", "host");
+        final String webServiceBasePath = PropertiesFileManager.
+                getConfigFileProperty("service", "basePath");
+        
+        String token = "";
+        if(sessionId != null){
+            token = "&token=" + sessionId;
+        }
+        this.application_url = "http://" + shinyHost + ":" + shinyPort + "/app/" + this.id
+                + "?wsUrl=http://" + webServiceHost + webServiceBasePath + "/" + token;
+        
+
+        
     }
 
     public Map<String, Object> convertToYamlFormatMap() {
@@ -93,12 +108,11 @@ public class ShinyAppDescription {
                     .printHexBinary(digest).toLowerCase();
             this.id = idHash;
         } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(ShinyAppDescription.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ScientificAppDescription.class.getName()).log(Level.SEVERE, null, ex);
 
         }
     }
 
-    
     @Override
     public String toString() {
         Gson gson = new Gson();

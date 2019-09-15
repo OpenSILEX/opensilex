@@ -7,6 +7,7 @@
 //******************************************************************************
 package opensilex.service.shinyProxy;
 
+import opensilex.service.model.ScientificAppDescription;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -35,6 +36,7 @@ import org.slf4j.Logger;
 import opensilex.service.PropertiesFileManager;
 import opensilex.service.dao.DocumentMongoDAO;
 import opensilex.service.dao.DocumentRdf4jDAO;
+import opensilex.service.dao.ScientificAppDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.model.Document;
 import opensilex.service.model.User;
@@ -51,14 +53,14 @@ public class ShinyProxyProcess {
     static Process SHINYPROXY_PROCESS;
     public static Boolean SHINYPROX_UPDATE_APP_STATE = false;
     public static Boolean SHINYPROX_RUN_STATE = false;
-    static Path SHINYPROXY_JAR_DIRECTORY;
-    static Path SHINYPROXY_JAR_FILE;
-    static Path SHINYPROXY_JAR_CONFIG;
-    static Path SHINYPROXY_DOCKER_FILES;
-    static String SHINYPROXY_WEB_JAR_FILE;
+    public static Path SHINYPROXY_JAR_DIRECTORY;
+    public static Path SHINYPROXY_JAR_FILE;
+    public static Path SHINYPROXY_JAR_CONFIG;
+    public static Path SHINYPROXY_DOCKER_FILES;
+    public static String SHINYPROXY_WEB_JAR_FILE;
     static String INTERNAL_SHINYPROXY_CONFIG_FILENAME = "shinyproxy_config";
     public final static String SHINYPROXY_APP_DOCTYPE = "http://www.opensilex.org/vocabulary/oeso#ShinyAppPackage";
-    public static ArrayList<ShinyAppDescription> SHINYPROXY_APPS_LIST;
+    public static ArrayList<ScientificAppDescription> SHINYPROXY_APPS_LIST;
 
     /**
      *
@@ -71,9 +73,8 @@ public class ShinyProxyProcess {
     public void updateApplicationsListAndImages() {
         SHINYPROX_UPDATE_APP_STATE = true;
         LOGGER.info("Listing shiny apps ... ");
-        ArrayList<Document> documentsMetadata = listShinyProxyAppDocumentsFromTripleStore();
-        SHINYPROXY_APPS_LIST = getShinyProxyAppListFromDocumentMetadata(documentsMetadata);
-
+        ScientificAppDAO scientificAppDAO = new ScientificAppDAO();
+        SHINYPROXY_APPS_LIST = scientificAppDAO.find(null,null);
         LOGGER.info("Build images ...");
         createDockerDirAndFiles(SHINYPROXY_APPS_LIST);
         createBuildImageProcess(SHINYPROXY_APPS_LIST);
@@ -84,36 +85,12 @@ public class ShinyProxyProcess {
      *
      */
     public void run() {
-        boolean validShinyProxyInstallation = true;
-        boolean isConfigFileWritten = true;
-
-        File shinyJarFileFile = SHINYPROXY_JAR_FILE.toFile();
-
-        if (!shinyJarFileFile.exists()) {
-            LOGGER.error("shinyproxy.jarFile doesn't exists");
-            validShinyProxyInstallation = false;
-            LOGGER.info("Try to  download shinyproxy.jarFile ....");
-            try {
-                ReadableByteChannel readableByteChannel = Channels.newChannel(new URL(SHINYPROXY_WEB_JAR_FILE).openStream());
-                FileOutputStream fileOutputStream = new FileOutputStream(SHINYPROXY_JAR_FILE.toString());
-                fileOutputStream.getChannel()
-                        .transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
-                if (!shinyJarFileFile.exists()) {
-                    LOGGER.info("shinyproxy.jarFile can't be downloaded");
-                    System.exit(1);
-                } else {
-                    LOGGER.info("shinyproxy.jarFile downloaded");
-                }
-            } catch (IOException ex) {
-                LOGGER.error(ex.getMessage(), ex);
-            }
-        } else {
-            LOGGER.info("shinyproxy.jarFile found");
-        }
-
+        LOGGER.info("Validating jar executable...");
+        boolean validShinyProxyInstallation = downloadShinyProxyExecutable();
+        
         LOGGER.info("Creating config file ...");
         Map<String, Object> parsedYAMLFile = createConfigMapFromConfigFile();
-        isConfigFileWritten = PropertiesFileManager.writeYAMLFile(parsedYAMLFile, SHINYPROXY_JAR_CONFIG.toString());
+        boolean  isConfigFileWritten = PropertiesFileManager.writeYAMLFile(parsedYAMLFile, SHINYPROXY_JAR_CONFIG.toString());
 
         LOGGER.info("Valid config" + validShinyProxyInstallation + " " + isConfigFileWritten);
         if (validShinyProxyInstallation && isConfigFileWritten) {
@@ -169,7 +146,13 @@ public class ShinyProxyProcess {
         File shinyJarConfigPathFile = SHINYPROXY_JAR_CONFIG.toFile();
         if (shinyJarConfigPathFile.exists()) {
             shinyJarConfigPathFile.delete();
+            try {
+                shinyJarConfigPathFile.createNewFile();
+            } catch (IOException ex) {
+                LOGGER.error(ex.getMessage(), ex);
+            }
         }
+        
         Map<String, Object> parsedYAMLFile = PropertiesFileManager.
                 parseYAMLConfigFile(INTERNAL_SHINYPROXY_CONFIG_FILENAME);
         LOGGER.info("Using default " + INTERNAL_SHINYPROXY_CONFIG_FILENAME + " config file");
@@ -182,7 +165,7 @@ public class ShinyProxyProcess {
         proxy.put("bind-address", shinyHost);
         proxy.put("port", Integer.parseInt(shinyPort));
         ArrayList<Map> specs = new ArrayList<>();
-        for (ShinyAppDescription shinyAppDescription : SHINYPROXY_APPS_LIST) {
+        for (ScientificAppDescription shinyAppDescription : SHINYPROXY_APPS_LIST) {
             if (shinyAppDescription.getExtractDockerFilesState()) {
                 specs.add(shinyAppDescription.convertToYamlFormatMap());
             }
@@ -192,18 +175,44 @@ public class ShinyProxyProcess {
         return parsedYAMLFile;
     }
 
-    private ArrayList<Document> listShinyProxyAppDocumentsFromTripleStore() {
-        ArrayList<Document> documentsMetadata = new ArrayList<>();
-        DocumentRdf4jDAO documentRdf4jDao = new DocumentRdf4jDAO();
-        User userAdmin = new User(DocumentationAnnotation.EXAMPLE_USER_EMAIL);
-        documentRdf4jDao.user = userAdmin;
-        documentRdf4jDao.documentType = SHINYPROXY_APP_DOCTYPE;
-        documentRdf4jDao.sortByDate = "desc";
-        // Retreive all documents for this specific type
-        documentsMetadata = documentRdf4jDao.allPaginate();
-        return documentsMetadata;
+    /**
+     * 
+     * @return 
+     */
+    private boolean downloadShinyProxyExecutable(){
+        boolean validShinyProxyExecutable = true;
+        File shinyJarFileFile = SHINYPROXY_JAR_FILE.toFile();
+        // retreive executable
+        if (!shinyJarFileFile.exists()) {
+            LOGGER.error("shinyproxy.jarFile doesn't exists");
+            validShinyProxyExecutable = false;
+            LOGGER.info("Try to  download shinyproxy.jarFile ....");
+            try {
+                ReadableByteChannel readableByteChannel = Channels.newChannel(new URL(SHINYPROXY_WEB_JAR_FILE).openStream());
+                FileOutputStream fileOutputStream = new FileOutputStream(SHINYPROXY_JAR_FILE.toString());
+                fileOutputStream.getChannel()
+                        .transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+                if (!shinyJarFileFile.exists()) {
+                    LOGGER.info("shinyproxy.jarFile can't be downloaded");
+                    System.exit(1);
+                } else {
+                    LOGGER.info("shinyproxy.jarFile downloaded");
+                }
+            } catch (IOException ex) {
+                LOGGER.error(ex.getMessage(), ex);
+            }
+        } else {
+            LOGGER.info("shinyproxy.jarFile found");
+        }
+        return validShinyProxyExecutable;
     }
 
+    /**
+     * 
+     * @param proccessArgs
+     * @param directoryPath
+     * @return 
+     */
     private Process executeProcess(String[] proccessArgs, File directoryPath) {
         ProcessBuilder processBuilder;
         Process process;
@@ -237,6 +246,12 @@ public class ShinyProxyProcess {
         return null;
     }
 
+    /**
+     * 
+     * @param proccessArgs
+     * @param directoryPath
+     * @return 
+     */
     private Process executeShinyProcess(String[] proccessArgs, File directoryPath) {
         ProcessBuilder processBuilder;
         Process process = null;
@@ -267,25 +282,15 @@ public class ShinyProxyProcess {
         return process;
     }
 
-    private ArrayList<ShinyAppDescription> getShinyProxyAppListFromDocumentMetadata(ArrayList<Document> documentsMetadata) {
-        File shinyDockersFileDir = SHINYPROXY_DOCKER_FILES.toFile();
-        shinyDockersFileDir.mkdirs();
-        ArrayList<ShinyAppDescription> shinyProxyAppList = new ArrayList<>();
-        for (Document documentMetadata : documentsMetadata) {
-            ShinyAppDescription shinyAppDescription = new ShinyAppDescription(
-                    documentMetadata.getUri(),
-                    documentMetadata.getTitle(),
-                    documentMetadata.getComment());
-            shinyProxyAppList.add(shinyAppDescription);
-        }
-        return shinyProxyAppList;
-    }
 
-    private void createDockerDirAndFiles(ArrayList<ShinyAppDescription> shinyProxyAppList) {
-        for (ShinyAppDescription shinyAppDescription : shinyProxyAppList) {
+    /**
+     * 
+     * @param shinyProxyAppList 
+     */
+    private void createDockerDirAndFiles(ArrayList<ScientificAppDescription> shinyProxyAppList) {
+        for (ScientificAppDescription shinyAppDescription : shinyProxyAppList) {
             DocumentMongoDAO documentMongoDAO = new DocumentMongoDAO();
             File document = documentMongoDAO.getDocument(shinyAppDescription.getDocumentUri());
-            LOGGER.info("documentMongoDAO" + document.toString());
             // Create appDirectory
             File shinyDockerPath = Paths.get(SHINYPROXY_DOCKER_FILES.toString(), File.separator, shinyAppDescription.getId()).toFile();
             shinyDockerPath.mkdirs();
@@ -295,6 +300,12 @@ public class ShinyProxyProcess {
         }
     }
 
+    /**
+     * 
+     * @param zipFile
+     * @param extractFolder
+     * @return 
+     */
     private static boolean unzipFile(String zipFile, String extractFolder) {
         try {
             int BUFFER = 2048;
@@ -349,10 +360,14 @@ public class ShinyProxyProcess {
         return true;
     }
 
-    private void createBuildImageProcess(ArrayList<ShinyAppDescription> shinyProxyAppList) {
+    /**
+     * 
+     * @param shinyProxyAppList 
+     */
+    private void createBuildImageProcess(ArrayList<ScientificAppDescription> shinyProxyAppList) {
         ExecutorService executor = Executors.newWorkStealingPool();
         List<Callable<Process>> callables = new ArrayList();
-        for (ShinyAppDescription shinyAppDescription : shinyProxyAppList) {
+        for (ScientificAppDescription shinyAppDescription : shinyProxyAppList) {
             if (shinyAppDescription.getExtractDockerFilesState()) {
                 Callable<Process> callableObj = () -> {
                     File shinyDockerPath = Paths.get(SHINYPROXY_DOCKER_FILES.toString(), File.separator, shinyAppDescription.getId()).toFile();

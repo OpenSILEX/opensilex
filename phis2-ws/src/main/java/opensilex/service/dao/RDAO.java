@@ -1,5 +1,5 @@
 //******************************************************************************
-//                                DataAnalysisDAO.java
+//                                RDAO.java
 // SILEX-PHIS
 // Copyright © INRA 2019
 // Creation date: 27 août 2019
@@ -19,13 +19,13 @@ import opensilex.service.PropertiesFileManager;
  *
  * @author charlero
  */
-public class DataAnalysisDAO {
+public class RDAO {
     static {
         OPENCPU_HOST = PropertiesFileManager.getConfigFileProperty("data_analysis_config", "opencpu.host");
     }
     private final static String OPENCPU_HOST;
     
-    public DataAnalysisDAO() {
+    public RDAO() {
     }
     
     /**

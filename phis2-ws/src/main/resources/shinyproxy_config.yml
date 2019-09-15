@@ -5,8 +5,9 @@ proxy:
   heartbeat-rate: 10000
   heartbeat-timeout: 60000
   bind-address: 127.0.0.1
-  port: 8085
+  port: 8004
   authentication: none
+  hide-navbar: true
 # Docker configuration
   docker:
     url: http://localhost:2375

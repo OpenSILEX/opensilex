@@ -29,14 +29,16 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import opensilex.service.authentication.Session;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
-import opensilex.service.dao.DataAnalysisDAO;
+import opensilex.service.dao.RDAO;
+import opensilex.service.dao.ScientificAppDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.result.ResultForm;
-import opensilex.service.shinyProxy.ShinyAppDescription;
+import opensilex.service.model.ScientificAppDescription;
 import opensilex.service.shinyProxy.ShinyProxyProcess;
 import opensilex.service.view.brapi.form.ResponseFormGET;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
@@ -81,8 +83,8 @@ public class DataAnalysisResourceService extends ResourceService {
             @ApiParam(required = true) @QueryParam("functionName") @DefaultValue("rnorm") @NotEmpty String functionName,
             @QueryParam("jsonParameters") String jsonParameters) {
 
-        DataAnalysisDAO dataAnalysisDAO = new DataAnalysisDAO();
-        Response functionCallResponse = dataAnalysisDAO.opencpuRFunctionProxyCall(packageName, functionName, jsonParameters);
+        RDAO rDao = new RDAO();
+        Response functionCallResponse = rDao.opencpuRFunctionProxyCall(packageName, functionName, jsonParameters);
 
         ResultForm<JsonElement> getResponse;
         ArrayList<JsonElement> resultValues = null;
@@ -134,7 +136,7 @@ public class DataAnalysisResourceService extends ResourceService {
             responseCode = Response.Status.OK;
             if (ShinyProxyProcess.SHINYPROX_UPDATE_APP_STATE) {
                 response = new ResponseFormGET(new Status(StatusCodeMsg.INFO, "Updating app", null));
-                 responseCode = Response.Status.CREATED;
+                responseCode = Response.Status.CREATED;
             }
         } else {
             response = new ResponseFormGET(new Status(StatusCodeMsg.INFO, "Not Running", null));
@@ -143,7 +145,7 @@ public class DataAnalysisResourceService extends ResourceService {
 
         return Response.status(responseCode).entity(response).build();
     }
-    
+
     /**
      * Shiny Proxy Server Status
      *
@@ -171,13 +173,15 @@ public class DataAnalysisResourceService extends ResourceService {
     public Response shinyProxyServerAppList(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
-            ArrayList<ShinyAppDescription> shinyProxyAppList = ShinyProxyProcess.SHINYPROXY_APPS_LIST;
-            if (shinyProxyAppList.isEmpty()) {
-                return Response.status(Response.Status.NOT_FOUND).entity(new ResponseFormGET()).build();
-            }
-            return Response
-                    .status(Response.Status.OK)
-                    .entity(new ResultForm<>(limit, page, shinyProxyAppList, false))
-                    .build();
+        ScientificAppDAO scientificAppDAO = new ScientificAppDAO();
+        scientificAppDAO.session = userSession;
+        ArrayList<ScientificAppDescription> shinyProxyAppList = scientificAppDAO.find(null, null);
+        if (shinyProxyAppList.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).entity(new ResponseFormGET()).build();
+        }
+        return Response
+                .status(Response.Status.OK)
+                .entity(new ResultForm<>(limit, page, shinyProxyAppList, false))
+                .build();
     }
 }

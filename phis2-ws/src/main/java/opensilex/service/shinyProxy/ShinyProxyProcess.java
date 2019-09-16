@@ -197,6 +197,7 @@ public class ShinyProxyProcess {
                     System.exit(1);
                 } else {
                     LOGGER.info("shinyproxy.jarFile downloaded");
+                    validShinyProxyExecutable = true;
                 }
             } catch (IOException ex) {
                 LOGGER.error(ex.getMessage(), ex);

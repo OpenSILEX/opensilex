@@ -1,0 +1,23 @@
+proxy:
+  title: OpenSILEX Shiny Proxy
+  logo-url: http://opensilex.org/img/opensilex_logo.png
+  landing-page: /
+  heartbeat-rate: 10000
+  heartbeat-timeout: 60000
+  bind-address: 127.0.0.1
+  port: 8004
+  authentication: none
+  hide-navbar: true
+# Docker configuration
+  docker:
+    url: http://localhost:2375
+    port-range-start: 20000
+  specs:
+  - id: 01_hello
+    display-name: Hello Application
+    description: Application which demonstrates the basics of a Shiny app
+    container-cmd: ["R", "-e", "shinyproxy::run_01_hello()"]
+    container-image: openanalytics/shinyproxy-demo
+logging:
+  file:
+    shinyproxy.log

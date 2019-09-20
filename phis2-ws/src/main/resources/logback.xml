@@ -116,6 +116,25 @@
         </encoder>
     </appender> 
     
+         <!-- debug log output-->
+    <appender name="SHINYPROXYLOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+         <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <evaluator> <!-- defaults to type ch.qos.logback.classic.boolex.JaninoEventEvaluator -->
+                <expression>return logger.contains("ShinyProxyProcess");</expression>
+            </evaluator>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <file>${logDirectory}/ShinyProxyProcessDebug.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <maxHistory>30</maxHistory>
+            <fileNamePattern>${logDirectory}/ShinyProxyProcessDebug-%d{yyyy-MM-dd}.log.zip</fileNamePattern>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${logPattern}</pattern>
+        </encoder>
+    </appender> 
+    
     <!-- define log level output for specific packages -->
     <logger name="org.mongodb.driver" level="INFO"/>
     <logger name="org.apache" level="INFO"/>
@@ -130,6 +149,7 @@
     
     <!-- appender by log type -->
     <root level="ALL">
+        <appender-ref ref="SHINYPROXYLOG" />
         <appender-ref ref="DBLOG" />
         <appender-ref ref="SPARQLLOG" />
         <appender-ref ref="ERRORLOG" />

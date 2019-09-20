@@ -271,6 +271,12 @@
             <artifactId>jena-querybuilder</artifactId>
             <version>3.9.0</version>
         </dependency>
+        <!--Yaml reader/writer-->
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>1.23</version>
+        </dependency>
     </dependencies>
 
     <build>

@@ -610,7 +610,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      */
     public ArrayList<ScientificObject> find(Integer page, Integer pageSize, String uri, String rdfType, String experiment, String alias) {
         try {
-            SPARQLQueryBuilder sparqlQuery = prepareSearchQuery(uri, rdfType, experiment, alias);
+            SPARQLQueryBuilder sparqlQuery = prepareSearchQuery(false, page, pageSize, uri, rdfType, experiment, alias);
             //SILEX:test
             //For pool connection issues
             rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID);
@@ -691,10 +691,13 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
 
     /**
      * Generates a query to search scientific objects by the given search params.
+     * @param page
+     * @param pageSize
      * @param uri
      * @param rdfType
      * @param experiment
      * @param alias
+     * @param count true if the query will be used to count number of scientific objects corresponding to the search result. False if not.
      * @example 
      * SELECT DISTINCT  ?uri ?alias ?experiment  ?rdfType 
      * WHERE {
@@ -709,7 +712,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      * }
      * @return the generated query
      */
-    protected SPARQLQueryBuilder prepareSearchQuery(String uri, String rdfType, String experiment, String alias) {    
+    protected SPARQLQueryBuilder prepareSearchQuery(boolean count, Integer page, Integer pageSize, String uri, String rdfType, String experiment, String alias) {    
         SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
         
         sparqlQuery.appendDistinct(true);
@@ -722,11 +725,11 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
 
         //Label filter
         sparqlQuery.appendSelect("?" + ALIAS);
-        if (alias == null) {
+        if (alias == null && !count) {
             sparqlQuery.beginBodyOptional();
             sparqlQuery.appendToBody("?" + URI + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + ALIAS + " . ");
             sparqlQuery.endBodyOptional();
-        } else {
+        } else if(alias != null){
             sparqlQuery.appendTriplet("?" + URI, Rdfs.RELATION_LABEL.toString(), "?" + ALIAS, null);
             sparqlQuery.appendAndFilter("REGEX ( str(?" + ALIAS + "),\".*" + alias + ".*\",\"i\")");
         }
@@ -751,8 +754,10 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                     Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString(), null);
         }
         
-        sparqlQuery.appendLimit(this.getPageSize());
-        sparqlQuery.appendOffset(this.getPage() * this.getPageSize());
+        if (page != null && pageSize != null) {
+            sparqlQuery.appendLimit(pageSize);
+            sparqlQuery.appendOffset(page * pageSize);
+        }
         
         LOGGER.debug(SPARQL_QUERY + sparqlQuery.toString());
         
@@ -1230,7 +1235,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      * }
      */
     private SPARQLQueryBuilder prepareCount(String uri, String rdfType, String experimentURI, String alias) {
-        SPARQLQueryBuilder query = prepareSearchQuery(uri, rdfType, experimentURI, alias);
+        SPARQLQueryBuilder query = prepareSearchQuery(true, null, null, uri, rdfType, experimentURI, alias);
         query.clearSelect();
         query.clearLimit();
         query.clearOffset();

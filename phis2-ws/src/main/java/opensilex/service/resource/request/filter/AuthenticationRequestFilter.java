@@ -8,6 +8,8 @@
 package opensilex.service.resource.request.filter;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.ws.rs.WebApplicationException;
@@ -60,11 +62,16 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
         
         final UriInfo uriInfo = requestContext.getUriInfo();
         final String resourcePath = uriInfo.getPath();
+        
+        List<String> nonAuthenticatedPath = Arrays.asList(
+                "token",
+                "calls",
+                "api",
+                "swagger.json"
+        );
         // Swagger.json and token authorized
         if (resourcePath != null 
-                && !resourcePath.contains("token") 
-                && !resourcePath.contains("calls") 
-                && !resourcePath.contains("swagger.json")
+                && !nonAuthenticatedPath.contains(resourcePath)
                 && !(resourceInfo.getResourceClass() == DataResourceService.class && resourceInfo.getResourceMethod().getName().equals("getDataFile"))) {
             // Get request headers
             final MultivaluedMap<String, String> headers = requestContext.getHeaders();

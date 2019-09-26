@@ -54,9 +54,12 @@ public class ApplicationInitConfig extends ResourceConfig {
         
         //Swagger
         BeanConfig beanConfig = new BeanConfig();
-        beanConfig.setVersion("1.0.2");
+        beanConfig.setVersion(PropertiesFileManager.getConfigFileProperty("pom", "version"));
+        beanConfig.setTitle(PropertiesFileManager.getConfigFileProperty("pom", "apiName"));
         beanConfig.setSchemes(new String[]{"http"});
-        
+        beanConfig.setLicense("GNU Affero General Public License 3");
+        beanConfig.setLicenseUrl("https://www.gnu.org/licenses/agpl-3.0.fr.html");
+        beanConfig.setDescription("An instance of OpenSILEX WebService");
         beanConfig.setHost(PropertiesFileManager.getConfigFileProperty("service", "host"));
         beanConfig.setBasePath(PropertiesFileManager.getConfigFileProperty("service", "basePath"));
        

@@ -4,11 +4,14 @@
 
     <groupId>com.mycompany</groupId>
     <artifactId>opensilex</artifactId>
-    <version>v0.1</version>
+    <version>v3.3.0</version>
     <packaging>war</packaging>
     <name>opensilex</name>
-
+    
     <properties>
+        <apiName>OpenSILEX API</apiName>
+        <name>${project.name}</name>
+        <version>${project.version}</version>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <logback-version>1.2.3</logback-version>
@@ -397,6 +400,23 @@
                         <goals>
                             <goal>generate</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--generate pom properties file at build-->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>properties-maven-plugin</artifactId>
+                <version>1.0.0</version>
+                <executions>
+                    <execution>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>write-project-properties</goal>
+                        </goals>
+                        <configuration>
+                            <outputFile>${project.build.outputDirectory}/pom.properties</outputFile>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

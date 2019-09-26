@@ -7,7 +7,6 @@
 //******************************************************************************
 package opensilex.service.resource;
 
-import com.google.gson.Gson;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;

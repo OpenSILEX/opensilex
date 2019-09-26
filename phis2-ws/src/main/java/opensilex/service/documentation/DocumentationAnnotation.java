@@ -307,7 +307,7 @@ public final class DocumentationAnnotation {
 
     
     public static final String EXAMPLE_FACTOR_RDF_TYPE = "http://www.opensilex.org/vocabulary/oeso#Factor";
-    public static final String EXAMPLE_FACTOR_URI = "http://www.opensilex.org/id/factor/waterExposure";
+    public static final String EXAMPLE_FACTOR_URI = "http://www.opensilex.org/id/factor/f001";
     public static final String EXAMPLE_FACTOR_LABEL = "Water Exposure";
     public static final String EXAMPLE_FACTOR_COMMENT = "Change the frequency on water addition";
     

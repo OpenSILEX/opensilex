@@ -305,6 +305,12 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_ANNOTATION_BODY_VALUE = "Ustilago maydis infection";
     public static final String EXAMPLE_ANNOTATION_CREATOR = "http://www.opensilex.org/demo/id/agent/marie_dupond";
 
+    
+    public static final String EXAMPLE_FACTOR_RDF_TYPE = "http://www.opensilex.org/vocabulary/oeso#Factor";
+    public static final String EXAMPLE_FACTOR_URI = "http://www.opensilex.org/id/factor/f001";
+    public static final String EXAMPLE_FACTOR_LABEL = "Water Exposure";
+    public static final String EXAMPLE_FACTOR_COMMENT = "Change the frequency on water addition";
+    
     // API global parameters
     public static final String EXAMPLE_SORTING_ALLOWABLE_VALUES = "asc,desc";
 
@@ -315,4 +321,12 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_LANGUAGE = "en";
     
     public static final String EXAMPLE_SKOS_REFERECENCE_URI = "http://purl.obolibrary.org/obo/CO_125_0000002";
-}
+    
+    public static final String FACTOR_POST_DATA_DEFINITION = "JSON format of factor";
+    public static final String FACTOR_URI_DEFINITION = "A factor URI (Unique Resource Identifier)";
+}    
+    
+ 
+
+    
+    

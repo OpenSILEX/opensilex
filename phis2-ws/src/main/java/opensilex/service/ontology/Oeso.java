@@ -21,6 +21,12 @@ public enum Oeso {
         }
     },
     
+    CONCEPT_FACTOR {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "Factor";
+        }
+    },
     CONCEPT_SCIENTIFIC_OBJECT {
         @Override
         public String toString() {

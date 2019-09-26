@@ -68,30 +68,30 @@ import org.eclipse.rdf4j.RDF4JException;
 public abstract class Rdf4jDAO<T> extends DAO<T> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(Rdf4jDAO.class);
-    
-    final private String REPOSITORY_EXCEPTION_GENERIC_MESSAGE_FORMAT 
+
+    final private String REPOSITORY_EXCEPTION_GENERIC_MESSAGE_FORMAT
             = "Error while committing or rolling back triplestore statements: %s";
     final private String MALFORMED_QUERY_EXCEPTION_MESSAGE_FORMAT = "Malformed query: %s";
     final private String QUERY_EVALUATION_EXCEPTION_MESSAGE_FORMAT = "Error evaluating the query: %s";
     final private String UPDATE_EXECUTION_EXCEPTION_MESSAGE_FORMAT = "Error executing the update query: %s";
-    final private String COUNT_VALUE_PARSING_EXCEPTION_MESSAGE_FORMAT 
+    final private String COUNT_VALUE_PARSING_EXCEPTION_MESSAGE_FORMAT
             = "Error parsing value of " + COUNT_ELEMENT_QUERY + "from binding set";
-    
+
     protected static final String PROPERTY_FILENAME = "sesame_rdf_config";
-    
+
     /**
-     * Page size max value used to get the highest number of results of an 
-     * object when getting a list within a list (e.g to get all the concerned
-     * items of all the events)
-     * //SILEX:todo 
-     * Pagination should be handled in this case too (i.e when getting a list
-     * within a list)
-     * For the moment we use only one page by taking the max value
-     * //\SILEX:todo
-     */    
+    * Page size max value used to get the highest number of results of an 
+    * object when getting a list within a list (e.g to get all the concerned
+    * items of all the events)
+    * //SILEX:todo 
+    * Pagination should be handled in this case too (i.e when getting a list
+    * within a list)
+    * For the moment we use only one page by taking the max value
+    * //\SILEX:todo
+    */ 
     protected int pageSizeMaxValue = Integer.parseInt(PropertiesFileManager
             .getConfigFileProperty("service", "pageSizeMax"));
-    
+
     //SILEX:test
     // For the full connection pool issue
     protected static final String SESAME_SERVER = PropertiesFileManager
@@ -102,11 +102,11 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
 
     // used for logger
     protected static final String SPARQL_QUERY = "SPARQL query: ";
-    
+
     protected static final String COUNT_ELEMENT_QUERY = "count";
-    
+
     /**
-     * The following constants are SPARQL variables name used for each subclass 
+     * The following constants are SPARQL variables name used for each subclass
      * to query the triplestore.
      */
     protected static final String URI = "uri";
@@ -115,7 +115,15 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
     protected static final String RDF_TYPE_SELECT_NAME_SPARQL = "?" + RDF_TYPE;
     protected static final String LABEL = "label";
     protected static final String COMMENT = "comment";
-    
+    protected static final String OBJECT = "object";
+    protected static final String OBJECT_SELECT_NAME_SPARQL = "?" + OBJECT;
+    protected static final String PROPERTY = "property";
+    protected static final String PROPERTY_SELECT_NAME_SPARQL = "?" + PROPERTY;
+    protected static final String SUBJECT = "subject";
+    protected static final String SUBJECT_SELECT_NAME_SPARQL =  "?" + SUBJECT;
+    protected static final String SEE_ALSO = "subject";
+    protected static final String SEE_ALSO_SELECT_NAME_SPARQL =  "?" + SEE_ALSO;
+
     protected static final String DATETIMESTAMP_FORMAT_SPARQL = DateFormat.YMDTHMSZZ.toString();
     
     // Triplestore relations

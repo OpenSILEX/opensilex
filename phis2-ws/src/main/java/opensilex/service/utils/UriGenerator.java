@@ -27,6 +27,7 @@ import opensilex.service.dao.GroupDAO;
 import opensilex.service.dao.ScientificObjectRdf4jDAO;
 import opensilex.service.dao.AnnotationDAO;
 import opensilex.service.dao.EventDAO;
+import opensilex.service.dao.FactorDAO;
 import opensilex.service.dao.MethodDAO;
 import opensilex.service.dao.ProjectDAO;
 import opensilex.service.dao.RadiometricTargetDAO;
@@ -73,6 +74,7 @@ public class UriGenerator {
     private static final String URI_CODE_UNIT = "u";
     private static final String URI_CODE_VARIABLE = "v";
     private static final String URI_CODE_VECTOR = "v";
+    private static final String URI_CODE_FACTOR = "f";
 
     private static final String PLATFORM_CODE =  PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "infrastructureCode") ;
     private static final String PLATFORM_URI = Contexts.PLATFORM.toString();
@@ -88,7 +90,8 @@ public class UriGenerator {
     public static final String PLATFORM_URI_ID_VARIABLES = PLATFORM_URI_ID + "variables/" + URI_CODE_VARIABLE;
     private static final String PLATFORM_URI_ID_VARIETY = PLATFORM_URI + "v/";
     private static final String PLATFORM_URI_ID_PROVENANCE = PLATFORM_URI_ID + "provenance/";
-    
+     public static final String PLATFORM_URI_ID_FACTORS = PLATFORM_URI_ID + "factors/" + URI_CODE_FACTOR;
+     
     private static final String EXPERIMENT_URI_SEPARATOR = "-";
 
     /**
@@ -709,6 +712,47 @@ public class UriGenerator {
         return uri;
     }
     
+     /**
+     * Generates a new factor URI. a factor URI follows the pattern:
+     * <prefix>:id/factors/<unic_code>
+     * <unic_code> = 1 letter type + auto incremented number with 3 digits.
+     * @example  http://www.opensilex.org/sunagri/id/factors/f001
+     * @return the new generated uri
+     * @throws Exception 
+     */
+    private static String generateFactorUri() throws Exception {
+        // Generate factor URI based on next id
+        String factorId = Integer.toString(getNextFactorID());        
+
+        while (factorId.length() < 3) {
+            factorId = "0" + factorId;
+        }
+
+        return PLATFORM_URI_ID_FACTORS + factorId;
+    
+    }
+    
+    /**
+     * Internal variable to store the last factor ID
+     */
+    private static Integer factorLastID;
+    
+    /**
+     * Return the next factor ID by incrementing variableLastID variable and initializing it before if needed
+     * @return next factor ID
+     */
+    private static int getNextFactorID() {
+        if (factorLastID == null) {
+            FactorDAO factorDAO = new FactorDAO();
+            factorLastID = factorDAO.getLastId();
+        }
+        
+        factorLastID++;
+        
+        return factorLastID;
+    }
+    
+    
     private static String getUniqueHash(String key) throws NoSuchAlgorithmException {
         // Generate SHA-256 hash
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -807,6 +851,8 @@ public class UriGenerator {
             return generateDataFileUri(year, additionalInformation);
         } else if (instanceType.equals(Oeso.CONCEPT_ACTUATOR.toString())) {
             return generateActuatorUri(year);
+        } else if (instanceType.equals(Oeso.CONCEPT_FACTOR.toString())) {
+            return generateFactorUri();
         }
         return null;
     }

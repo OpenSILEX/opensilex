@@ -10,13 +10,13 @@ package opensilex.service.resource.dto.factor;
 import java.util.ArrayList;
 import opensilex.service.model.Factor;
 import opensilex.service.model.OntologyReference;
-import opensilex.service.resource.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
+import opensilex.service.resource.dto.rdfResourceDefinition.RdfResourceDTO;
 
 /**
  * Factor DTO.
  * @author arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
-public class FactorDTO extends RdfResourceDefinitionDTO{
+public class FactorDTO extends RdfResourceDTO{
     
     //comment of the rdf resource
     protected String comment;

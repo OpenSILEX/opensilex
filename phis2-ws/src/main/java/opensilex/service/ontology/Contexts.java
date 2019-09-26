@@ -77,7 +77,7 @@ public enum Contexts {
     FACTORS {
         @Override
         public String toString() {
-            return PLATFORM.toString() + "factors";
+            return PLATFORM.toString() + "set/factors";
         }
     },
     //The context which contains all the declared scientific objects
@@ -116,4 +116,3 @@ public enum Contexts {
         }
     }
 }
-

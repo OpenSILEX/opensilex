@@ -140,7 +140,7 @@ public class FactorResourceService extends ResourceService {
         //2. Get number of factor result
         int totalCount = factorDAO.countWithFilter(filter.getUri(),filter.getLabel(),language);
         //3. Get factors result
-        ArrayList<Factor> searchResult = factorDAO.find(filter.getUri(),filter.getLabel(),language);
+        ArrayList<Factor> searchResult = factorDAO.findAll(filter.getUri(),filter.getLabel(),language);
         
         //4. Send result
         ResultForm<FactorDTO> getResponse;

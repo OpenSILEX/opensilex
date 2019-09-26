@@ -63,15 +63,13 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
         final UriInfo uriInfo = requestContext.getUriInfo();
         final String resourcePath = uriInfo.getPath();
         
-        List<String> nonAuthenticatedPath = Arrays.asList(
-                "token",
-                "calls",
-                "api",
-                "swagger.json"
-        );
+      
         // Swagger.json and token authorized
-        if (resourcePath != null 
-                && !nonAuthenticatedPath.contains(resourcePath)
+        if (resourcePath != null
+                && !resourcePath.contains("token")
+                && !resourcePath.contains("api")
+                && !resourcePath.contains("calls")
+                && !resourcePath.contains("swagger.json")
                 && !(resourceInfo.getResourceClass() == DataResourceService.class && resourceInfo.getResourceMethod().getName().equals("getDataFile"))) {
             // Get request headers
             final MultivaluedMap<String, String> headers = requestContext.getHeaders();

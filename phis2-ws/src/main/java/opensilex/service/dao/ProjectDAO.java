@@ -1031,8 +1031,7 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         } else {
             query.appendTriplet("?" + URI, Oeso.RELATION_HAS_FINANCIAL_FUNDING.toString(), "?" + FINANCIAL_FUNDING_URI, null);
             query.appendTriplet("?" + FINANCIAL_FUNDING_URI, RDFS.label.toString(), "?" + FINANCIAL_FUNDING_LABEL, null);
-        }
-        query.appendFilter("LANG(?" + FINANCIAL_FUNDING_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + FINANCIAL_FUNDING_LABEL + "), \"en\")");
+        }        
         
         //financialReference filter
         query.appendSelect("?" + FINANCIAL_REFERENCE);

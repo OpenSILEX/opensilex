@@ -53,17 +53,17 @@ public class ProjectDetailDTO {
         objective = project.getObjective();
         website = project.getHomePage();
         
-        for (User user : project.getScientificContacts()) {
-            scientificContacts.add(new ContactDTO(user));
-        }
-        
-        for (User user : project.getAdministrativeContacts()) {
-            administrativeContacts.add(new ContactDTO(user));
-        }
-        
-        for (User user : project.getCoordinators()) {
-            coordinatorContacts.add(new ContactDTO(user));
-        }
+//        for (User user : project.getScientificContacts()) {
+//            scientificContacts.add(new ContactDTO(user));
+//        }
+//        
+//        for (User user : project.getAdministrativeContacts()) {
+//            administrativeContacts.add(new ContactDTO(user));
+//        }
+//        
+//        for (User user : project.getCoordinators()) {
+//            coordinatorContacts.add(new ContactDTO(user));
+//        }
     }    
     
     public URI getUri() {

@@ -15,7 +15,7 @@ import org.opensilex.service.ServiceConnection;
 
 /**
  *
- * @author vincent
+ * @author Vincent Migot
  */
 @Retention(value = RetentionPolicy.RUNTIME)
 @Target(value = ElementType.TYPE)

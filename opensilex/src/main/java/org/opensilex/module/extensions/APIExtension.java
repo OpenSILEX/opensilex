@@ -11,7 +11,7 @@ import org.opensilex.server.rest.RestApplication;
 
 /**
  *
- * @author vincent
+ * @author Vincent Migot
  */
 public interface APIExtension {
 
@@ -45,6 +45,8 @@ public interface APIExtension {
     /**
      * This entry point allow module to initialize anything in application after
      * all configuration is loaded at the end of application loading
+     * 
+     * @param resourceConfig API main entry point instance extending Jersey {@code org.glassfish.jersey.server.ResourceConfig}
      */
     public default void initAPI(RestApplication resourceConfig) {
         // Do nothing by default; 

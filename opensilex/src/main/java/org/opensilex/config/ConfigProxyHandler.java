@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  *
- * @author vincent
+ * @author Vincent Migot
  */
 public class ConfigProxyHandler implements InvocationHandler {
 

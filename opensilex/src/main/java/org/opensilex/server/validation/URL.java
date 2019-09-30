@@ -24,7 +24,7 @@ import javax.validation.Payload;
 
 /**
  * Annotation used to check if a string is a valid URL
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * @author Arnaud Charleroy
  */
 @Target({METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER})
 @Retention(RUNTIME)

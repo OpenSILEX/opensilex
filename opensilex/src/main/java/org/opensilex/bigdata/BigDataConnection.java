@@ -10,7 +10,7 @@ import org.opensilex.bigdata.exceptions.BigDataTransactionException;
 
 /**
  *
- * @author vincent
+ * @author Vincent Migot
  */
 public interface BigDataConnection extends ServiceConnection {
 

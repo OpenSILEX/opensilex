@@ -14,31 +14,33 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 /**
- * Server administration tool used to execute recieved commands from the command line
- * while tomcat server is running
+ * Server administration tool used to execute recieved commands from the command
+ * line while tomcat server is running
  */
 public class ServerAdmin implements Runnable {
-    
+
     /**
      * Command to shutdown tomcat server
      */
     public static final String SHUTDOWN_COMMAND = "SHUTDOWN_OPENSILEX";
-    
+
     /**
      * Instance of the managed server
      */
     private final Server instance;
-    
+
     /**
      * Socket on which this thread is listening
      */
     private final ServerSocket adminSocket;
 
     /**
-     * Create the admin socket for the given server instance on the corresponding adminPort
-     * @param instance
-     * @param adminPort
-     * @throws IOException 
+     * Create the admin socket for the given server instance on the
+     * corresponding adminPort
+     *
+     * @param instance Server instance controlled by this administration thread
+     * @param adminPort Administration port to listen on
+     * @throws IOException In case of failure while initializing server socket
      */
     public ServerAdmin(Server instance, int adminPort) throws IOException {
         this.instance = instance;

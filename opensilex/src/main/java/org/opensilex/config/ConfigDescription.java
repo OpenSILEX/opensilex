@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 
 /**
  *
- * @author vincent
+ * @author Vincent Migot
  */
 @Retention(value = RetentionPolicy.RUNTIME)
 @Target(value = ElementType.METHOD)

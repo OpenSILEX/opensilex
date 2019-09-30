@@ -12,7 +12,7 @@ import org.opensilex.module.extensions.APIExtension;
 
 /**
  *
- * @author vincent
+ * @author Vincent Migot
  */
 public class BaseModule extends OpenSilexModule implements APIExtension {
 

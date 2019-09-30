@@ -9,7 +9,7 @@ import org.opensilex.server.Server;
 
 /**
  *
- * @author vincent
+ * @author Vincent Migot
  */
 public interface ServerExtension {
     

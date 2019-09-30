@@ -47,6 +47,34 @@
         </dependency>
     </dependencies>
     
+    <build>
+        <plugins>
+            <!-- Check plugin and dependencies available updates -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <configuration>
+                    <rulesUri>classpath:///version-rules.xml</rulesUri>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.opensilex</groupId>
+                        <artifactId>opensilex</artifactId>
+                        <version>${revision}</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>display-dependency-updates</goal>
+                            <goal>display-plugin-updates</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
     
     <profiles>
         <profile>
@@ -61,8 +89,11 @@
                 <resources>
                     <resource>
                         <excludes>
-                            <exclude>**</exclude>
+                            <exclude>**/!(opensilex.ng.yml)</exclude>
                         </excludes>
+                        <includes>
+                            <include>**/opensilex.ng.yml</include>
+                        </includes>
                         <directory>angular</directory>
                     </resource>
                 </resources>
@@ -71,10 +102,10 @@
                         <plugin>
                             <groupId>com.github.eirslett</groupId>
                             <artifactId>frontend-maven-plugin</artifactId>
-                            <version>1.7.6</version>
+                            <version>${frontend.maven.plugin.version}</version>
                             <configuration>
                                 <nodeVersion>v12.8.0</nodeVersion>
-                                <yarnVersion>v1.17.3</yarnVersion>
+                                <yarnVersion>v1.18.0</yarnVersion>
                                 <installDirectory>../.ng</installDirectory>
                                 <workingDirectory>angular</workingDirectory>
                             </configuration>
@@ -116,6 +147,30 @@
                                 <phase>generate-resources</phase>
                                 <configuration>
                                     <arguments>install</arguments>
+                                </configuration>
+                            </execution>
+                            
+                            <execution>
+                                <id>check global dependencies security issue</id>
+                                <goals>
+                                    <goal>yarn</goal>
+                                </goals>
+                                <phase>generate-resources</phase>
+                                <configuration>
+                                    <arguments>audit</arguments>
+                                    <workingDirectory>../</workingDirectory>
+                                </configuration>
+                            </execution>
+                    
+                            <execution>
+                                <id>check local dependencies security issue</id>
+                                <goals>
+                                    <goal>yarn</goal>
+                                </goals>
+
+                                <phase>generate-resources</phase>
+                                <configuration>
+                                    <arguments>audit</arguments>
                                 </configuration>
                             </execution>
                         </executions>

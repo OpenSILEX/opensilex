@@ -11,7 +11,7 @@ import org.opensilex.bigdata.BigDataConnection;
 
 /**
  *
- * @author vincent
+ * @author Vincent Migot
  */
 public abstract class AbstractDataNucleusConnection implements BigDataConnection {
 

@@ -73,7 +73,7 @@ public class MainCommand extends HelpPrinterCommand implements IVersionProvider 
      * list of known modules when using the -V command line flag
      *
      * @return List of all module with their version
-     * @throws Exception
+     * @throws Exception Propagate any exception that could occurs
      */
     @Override
     public String[] getVersion() throws Exception {

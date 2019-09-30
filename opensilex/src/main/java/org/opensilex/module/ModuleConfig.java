@@ -7,6 +7,6 @@ package org.opensilex.module;
 
 /**
  *
- * @author vincent
+ * @author Vincent Migot
  */
 public interface ModuleConfig {}

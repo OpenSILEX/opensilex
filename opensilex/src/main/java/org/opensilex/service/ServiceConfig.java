@@ -9,7 +9,7 @@ import org.opensilex.config.ConfigDescription;
 
 /**
  *
- * @author vincent
+ * @author Vincent Migot
  */
 public interface ServiceConfig {
 

@@ -9,7 +9,7 @@ import javax.ws.rs.core.Response.Status;
 
 /**
  *
- * @author vincent
+ * @author Vincent Migot
  */
 public class SingleValueResponse extends JsonResponse {
 

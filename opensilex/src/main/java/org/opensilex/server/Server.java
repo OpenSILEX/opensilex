@@ -48,16 +48,18 @@ public class Server extends Tomcat {
     /**
      * Construct OpenSilex server with host, port and adminPort adminPort is
      * used to communicate with the running server by the cli
-     *
-     * @param host
-     * @param port
-     * @param adminPort
+     * 
+     * @param instance OpenSilex application instance
+     * @param host Server hostname or IP
+     * @param port Server port
+     * @param adminPort Server administration port
+     * @param tomcatDirectory Tomcat server base directory
      */
     public Server(OpenSilex instance, String host, int port, int adminPort, Path tomcatDirectory) {
         super();
         System.setProperty("org.apache.catalina.startup.EXIT_ON_INIT_FAILURE", "true");
         System.setProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", "true");
-        
+
         this.instance = instance;
         this.baseDir = tomcatDirectory.toFile().getAbsolutePath();
         this.host = host;
@@ -99,21 +101,25 @@ public class Server extends Tomcat {
     }
 
     /**
-     * Initialize OpenSilex Root webapp (swagger and jersey services) located at
-     * the root "/" of the server.
+     * Initialize a new application from an opensilex module accessible througth the server
+     * 
+     * @param name Name of this application use an empty string to fine the ROOT application
+     * @param contextPath Public URL path where the application will be served
+     * @param baseDirectory Resource path of the web application whithin the module
+     * @param moduleClass Class of the module where the application belong
      */
-    public void initApp(String name, String rootPath, String baseDirectory, Class<?> moduleClass) {
+    public void initApp(String name, String contextPath, String baseDirectory, Class<?> moduleClass) {
         try {
             Context context = addWebapp(name, new File(".").getAbsolutePath());
             WebResourceRoot resource = new StandardRoot(context);
             File jarFile = ClassInfo.getJarFile(moduleClass);
             if (jarFile.isFile()) {
-                resource.createWebResourceSet(WebResourceRoot.ResourceSetType.RESOURCE_JAR, rootPath, jarFile.getCanonicalPath(), null, baseDirectory);
+                resource.createWebResourceSet(WebResourceRoot.ResourceSetType.RESOURCE_JAR, contextPath, jarFile.getCanonicalPath(), null, baseDirectory);
                 context.getJarScanner().setJarScanFilter((JarScanType jarScanType, String jarName) -> {
                     return jarName.equals(jarFile.getName());
                 });
             } else {
-                resource.createWebResourceSet(WebResourceRoot.ResourceSetType.PRE, rootPath, jarFile.getCanonicalPath(), null, baseDirectory);
+                resource.createWebResourceSet(WebResourceRoot.ResourceSetType.PRE, contextPath, jarFile.getCanonicalPath(), null, baseDirectory);
             }
             context.getServletContext().setAttribute("opensilex", instance);
             context.setResources(resource);
@@ -129,8 +135,8 @@ public class Server extends Tomcat {
     /**
      * Load war application at the given contextPath (root url of the war)
      *
-     * @param contextPath
-     * @param warFile
+     * @param contextPath Public URL path where the application will be served 
+     * @param warFile War file to be served
      */
     public void addWarApp(String contextPath, File warFile) {
         LOGGER.debug("Load war file: " + warFile.getAbsolutePath() + " at context: " + contextPath);
@@ -158,7 +164,7 @@ public class Server extends Tomcat {
      * Init administration thread on the given port to listen for commands
      * execution from cli
      *
-     * @param adminPort
+     * @param adminPort The administration port where server listen to
      */
     private void initAdminThread(int adminPort) {
         try {

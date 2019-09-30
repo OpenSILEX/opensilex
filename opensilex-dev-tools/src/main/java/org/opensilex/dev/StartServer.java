@@ -30,7 +30,6 @@ public class StartServer {
         withFront = false;        
         
         String configFile = StartServer.class.getClassLoader().getResource("./config/opensilex.yml").getPath();
-        // TODO: Use environment variables instead
         OpenSilex.setup(new HashMap<String, String>() {
             {
                 put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.DEV_PROFILE_ID);

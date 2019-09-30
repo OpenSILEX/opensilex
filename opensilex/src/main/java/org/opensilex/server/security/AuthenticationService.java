@@ -26,7 +26,7 @@ import org.opensilex.service.Service;
 
 /**
  *
- * @author vincent
+ * @author Vincent Migot
  */
 public class AuthenticationService implements Service {
 

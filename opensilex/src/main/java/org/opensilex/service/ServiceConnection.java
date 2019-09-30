@@ -7,6 +7,6 @@ package org.opensilex.service;
 
 /**
  *
- * @author vincent
+ * @author Vincent Migot
  */
 public interface ServiceConnection extends Service {}

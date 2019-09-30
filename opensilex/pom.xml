@@ -51,6 +51,23 @@
             </resource>
         </resources>
         <plugins>
+            <!-- Check plugin and dependencies available updates -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <configuration>
+                    <rulesUri>file////${project.basedir}/src/main/resources/version-rules.xml</rulesUri>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>display-dependency-updates</goal>
+                            <goal>display-plugin-updates</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- Clear java cache when annotations change -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

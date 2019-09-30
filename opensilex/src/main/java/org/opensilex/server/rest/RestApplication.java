@@ -51,9 +51,16 @@ public class RestApplication extends ResourceConfig {
     }
 
     /**
-     * Constructor for opensilex Application: - Load core configuration -
-     * register packages - initialize swagger - call module initialization -
-     * make database services and module injectable
+     * Constructor for opensilex Application: 
+     * <pre>
+     * - Load core configuration 
+     * - register packages 
+     * - initialize swagger 
+     * - call module initialization 
+     * - make database services and module injectable
+     * </pre>
+     * 
+     * @param app OpenSilex instance
      */
     public RestApplication(OpenSilex app) {
         this.app = app;
@@ -90,11 +97,11 @@ public class RestApplication extends ResourceConfig {
         getAPIExtensionModules().forEach((APIExtension api) -> {
             packageList.addAll(api.getPackagesToScan());
         });
-                
+
         // Add package list for components scan
         LOGGER.info("Registred packages:\n" + String.join("\n", packageList));
         packages(String.join(";", packageList));
-        
+
     }
 
     /**
@@ -119,7 +126,7 @@ public class RestApplication extends ResourceConfig {
     private List<APIExtension> getAPIExtensionModules() {
         return app.getModulesImplementingInterface(APIExtension.class);
     }
-    
+
     /**
      * Call start method of every OpenSILEX modules
      */
@@ -128,7 +135,7 @@ public class RestApplication extends ResourceConfig {
             api.initAPI(this);
         });
     }
-    
+
     private void registerServices() {
         // Create and register binding for service injection
         register(new AbstractBinder() {
@@ -138,7 +145,7 @@ public class RestApplication extends ResourceConfig {
             protected void configure() {
                 // Make opensilex instance injectable
                 bind(app).to(OpenSilex.class);
-                
+
                 // Make every service injectable
                 app.getServiceManager().forEachInterface((Class<? extends Service> serviceClass, Map<String, Service> implementations) -> {
                     implementations.forEach((String name, Service implementation) -> {

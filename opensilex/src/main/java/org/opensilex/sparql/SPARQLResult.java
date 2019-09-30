@@ -9,7 +9,7 @@ import java.util.function.BiConsumer;
 
 /**
  *
- * @author vincent
+ * @author Vincent Migot
  */
 public interface SPARQLResult {
 

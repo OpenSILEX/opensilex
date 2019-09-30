@@ -7,7 +7,6 @@ package org.opensilex.module;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -21,7 +20,7 @@ import java.util.ServiceLoader;
 import java.util.function.Consumer;
 
 import org.apache.commons.io.FileUtils;
-import org.opensilex.OpenSilex;
+//import org.opensilex.OpenSilex;
 import org.opensilex.config.ConfigManager;
 import org.opensilex.module.dependency.DependencyManager;
 import org.opensilex.service.Service;
@@ -32,7 +31,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  *
- * @author vincent
+ * @author Vincent Migot
  */
 public class ModuleManager {
 
@@ -41,16 +40,16 @@ public class ModuleManager {
     private final static String DEPENDENCIES_LIST_CACHE_FILE = ".opensilex.dependencies";
     private final static String MODULES_JAR_FOLDER = "modules";
 
-    public void loadModulesWithDependencies(Path baseDirectory) {
+    public void loadModulesWithDependencies(DependencyManager dependencyManager, Path baseDirectory) {
         List<URL> readDependencies = ModuleManager.readDependenciesList(baseDirectory);
         if (readDependencies.size() == 0) {
             List<URL> modulesUrl = ModuleManager.listModulesURLs(baseDirectory);
-            List<URL> dependencies = loadModulesWithDependencies(modulesUrl);
+            List<URL> dependencies = loadModulesWithDependencies(dependencyManager,modulesUrl);
             ModuleManager.writeDependenciesList(baseDirectory, dependencies);
         } else {
             registerDependencies(readDependencies);
         }
-    }
+    }            
 
     private static List<URL> readDependenciesList(Path baseDirectory) {
         try {
@@ -86,12 +85,8 @@ public class ModuleManager {
     private ConfigManager configManager;
     private ServiceManager services;
 
-    private List<URL> loadModulesWithDependencies(List<URL> modulesJarURLs) {
+    private List<URL> loadModulesWithDependencies(DependencyManager dependencyManager, List<URL> modulesJarURLs) {
         try {
-            DependencyManager dependencyManager = new DependencyManager(
-                    ClassInfo.getPomFile(OpenSilex.class, "org.opensilex", "opensilex")
-            );
-
             List<URL> dependenciesURL = dependencyManager.loadModulesDependencies(modulesJarURLs);
             dependenciesURL.addAll(modulesJarURLs);
 
@@ -125,15 +120,6 @@ public class ModuleManager {
 
     public void forEachModule(Consumer<OpenSilexModule> lambda) {
         getModules().forEach(lambda);
-    }
-
-    public void setApplication(OpenSilex app) {
-        // Initialize service loader to find all modules and define this application to them
-        LOGGER.debug("Loading modules classes");
-        forEachModule((OpenSilexModule module) -> {
-            module.setApplication(app);
-            LOGGER.debug("Module class found: " + module.getClass().getCanonicalName());
-        });
     }
 
     public Iterable<OpenSilexModule> getModules() {
@@ -249,7 +235,7 @@ public class ModuleManager {
 
     }
 
-    public <T extends OpenSilexModule> T getModuleByClass(Class<T> moduleClass) throws Exception {
+    public <T extends OpenSilexModule> T getModuleByClass(Class<T> moduleClass) throws ModuleNotFoundException {
         for (OpenSilexModule module : getModules()) {
             if (module.getClass().equals(moduleClass)) {
                 return (T) module;

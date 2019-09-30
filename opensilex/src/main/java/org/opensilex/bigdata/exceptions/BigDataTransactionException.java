@@ -7,17 +7,14 @@ package org.opensilex.bigdata.exceptions;
 
 /**
  *
- * @author vincent
+ * @author Vincent Migot
  */
 public class BigDataTransactionException extends Exception {
 
-    /**
-	 * 
-	 */
-	private static final long serialVersionUID = -6461996605159308270L;
+    private static final long serialVersionUID = -6461996605159308270L;
 
-	public BigDataTransactionException(Exception ex) {
+    public BigDataTransactionException(Exception ex) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
+
 }

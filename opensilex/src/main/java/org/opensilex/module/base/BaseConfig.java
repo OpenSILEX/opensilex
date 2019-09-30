@@ -5,22 +5,16 @@
  */
 package org.opensilex.module.base;
 
-import org.opensilex.bigdata.BigDataConnection;
 import org.opensilex.bigdata.BigDataService;
-import org.opensilex.bigdata.mongodb.MongoDBConfig;
-import org.opensilex.bigdata.mongodb.MongoDBConnection;
 import org.opensilex.config.ConfigDescription;
 import org.opensilex.fs.FileStorageService;
 import org.opensilex.module.ModuleConfig;
 import org.opensilex.server.security.AuthenticationService;
-import org.opensilex.sparql.SPARQLConnection;
 import org.opensilex.sparql.SPARQLService;
-import org.opensilex.sparql.rdf4j.RDF4JConfig;
-import org.opensilex.sparql.rdf4j.RDF4JConnection;
 
 /**
  *
- * @author vincent
+ * @author Vincent Migot
  */
 public interface BaseConfig extends ModuleConfig {
 

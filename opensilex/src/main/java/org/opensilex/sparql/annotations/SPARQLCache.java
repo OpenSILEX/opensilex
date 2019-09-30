@@ -15,7 +15,7 @@ import org.opensilex.sparql.cache.SPARQLNoCacheManager;
 
 /**
  *
- * @author vincent
+ * @author Vincent Migot
  */
 @Target(TYPE)
 @Retention(RUNTIME)

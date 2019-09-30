@@ -16,7 +16,7 @@ import javax.mail.internet.InternetAddress;
 
 /**
  *
- * @author vincent
+ * @author Vincent Migot
  */
 @SPARQLResource(
         ontology = UserOntology.class,

@@ -17,8 +17,9 @@ import javax.validation.ConstraintValidatorContext;
 /**
  * Class used by URL annotation to validate that a string value is an URL.
  * {@code null} elements are considered valid.
- * @see  phis2ws.service.resources.validation.interfaces.URL
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
+ * @see  org.opensilex.server.validation.URL
+ * @author Arnaud Charleroy
+ * @author Morgane Vidal
  */
 public class URLValidator implements ConstraintValidator<URL, String> {
 

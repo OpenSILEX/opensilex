@@ -11,7 +11,7 @@ import org.opensilex.service.ServiceConnection;
 
 /**
  *
- * @author vincent
+ * @author Vincent Migot
  */
 public class MongoDBConnection extends AbstractDataNucleusConnection implements ServiceConnection{
 

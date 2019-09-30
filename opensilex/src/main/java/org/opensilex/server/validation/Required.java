@@ -10,7 +10,7 @@ package org.opensilex.server.validation;
 
 /**
  * Multiple annotations which provides required annotation
- * @author Arnaud Charleroy (arnaud.charleroy@inra.fr)
+ * @author Arnaud Charleroy
  */
 import java.lang.annotation.Documented;
 import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
@@ -31,8 +31,8 @@ import javax.validation.constraints.NotNull;
 
 /**
  * Annotation that verify if a field is required.
- * @author Arnaud Charleroy (arnaud.charleroy@inra.fr)
- * @author Morgane Vidal (morgane.vidal@inra.fr)
+ * @author Arnaud Charleroy
+ * @author Morgane Vidal
  */
 @NotNull
 @NotBlank

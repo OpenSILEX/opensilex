@@ -50,7 +50,7 @@ public class ServerCommands extends HelpPrinterCommand implements OpenSilexComma
      * @param daemon Flag to determine if server must be started as a dameon process (default: false)
      * @param tomcatDirectory Tomcat working directory (default: create a temporary directory)
      * @param help Helper parameter to allow help usage display for this command
-     * @throws Exception
+     * @throws Exception Propagate any exception that could occurs
      */
     @Command(
             name = "start",
@@ -134,10 +134,10 @@ public class ServerCommands extends HelpPrinterCommand implements OpenSilexComma
      * This command stop the OpenSilex server using the ServerAdminClient
      * listening on the given host and adminPort
      *
-     * @param host
-     * @param adminPort
+     * @param host Server host name (default: localhost)
+     * @param adminPort Server administration port (default: 8888)
      * @param help Helper parameter to allow help usage display for this command
-     * @throws Exception
+     * @throws Exception Propagate any exception that could occurs
      */
     @Command(
             name = "stop",

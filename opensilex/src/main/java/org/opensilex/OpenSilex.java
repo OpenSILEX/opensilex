@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.opensilex.module.ModuleManager;
+import org.opensilex.module.ModuleNotFoundException;
+import org.opensilex.module.dependency.DependencyManager;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceManager;
 import org.opensilex.utils.ClassInfo;
@@ -65,7 +67,7 @@ public class OpenSilex {
     /**
      * Singleton variable of the OpenSilex running instance
      */
-    private static OpenSilex intance;
+    private static OpenSilex instance;
 
     /**
      * Environment key for OpenSilex base directory
@@ -121,7 +123,7 @@ public class OpenSilex {
      * - Create OpenSilex instance (see: OpenSilex.createInstance static method
      * for more details) Try to find logback.xml file in OpenSilex base
      * directory to initialize logger configuration Try to find
-     * logback-<profile-id>.xml file in OpenSilex base directory to override
+     * logback-{profile-id}.xml file in OpenSilex base directory to override
      * logger configuration Create OpenSilex object with previously defined
      * parameters
      *
@@ -175,12 +177,16 @@ public class OpenSilex {
         try {
             // Create OpenSilex instance with these values depending if configuration file is defined or not.
             if (configFile == null || configFile.equals("")) {
-                intance = createInstance(Paths.get(baseDirectory), profileId, null);
+                instance = createInstance(Paths.get(baseDirectory), profileId, null);
             } else {
-                intance = createInstance(Paths.get(baseDirectory), profileId, Paths.get(configFile).toFile());
+                instance = createInstance(Paths.get(baseDirectory), profileId, Paths.get(configFile).toFile());
             }
+
+            LOGGER.debug("Initialize instance");
+            instance.init();
+            LOGGER.debug("Instance initialized");
         } catch (Exception ex) {
-            LOGGER.error("Fail to create OpenSILEX instance");
+            LOGGER.error("Fail to create and initialize OpenSILEX instance", ex);
         }
 
         // Return remaining arguments list
@@ -190,8 +196,8 @@ public class OpenSilex {
     /**
      * Helper method to call easily setup method
      *
-     * @param args
-     * @return
+     * @param args Map of arguments
+     * @return The command line arguments array without the Opensilex parameters
      */
     public static String[] setup(Map<String, String> args) {
         List<String> argsList = new ArrayList<>();
@@ -205,10 +211,10 @@ public class OpenSilex {
     /**
      * Return OpenSilex singleton instance
      *
-     * @return
+     * @return Return OpenSilex singleton instance
      */
     public static OpenSilex getInstance() {
-        return intance;
+        return instance;
     }
 
     /**
@@ -226,7 +232,7 @@ public class OpenSilex {
         File logConfigFile = baseDirectory.resolve("logback.xml").toFile();
         loadLoggerConfig(logConfigFile, true);
 
-        // Try to find logback-<profile-id>.xml file in OpenSilex base directory to override logger configuration
+        // Try to find logback-{profile-id}.xml file in OpenSilex base directory to override logger configuration
         File logProfileConfigFile = baseDirectory.resolve("logback-" + profileId + ".xml").toFile();
         loadLoggerConfig(logProfileConfigFile, false);
 
@@ -242,10 +248,6 @@ public class OpenSilex {
 
         LOGGER.debug("Create instance");
         OpenSilex app = new OpenSilex(baseDirectory, profileId, configFile, new ModuleManager(), new ConfigManager(), new ServiceManager());
-
-        LOGGER.debug("Initialize instance");
-        app.init();
-        LOGGER.debug("Instance initialized");
 
         return app;
     }
@@ -356,10 +358,10 @@ public class OpenSilex {
      */
     private void init() throws Exception {
         LOGGER.debug("Load modules with dependencies");
-        moduleManager.loadModulesWithDependencies(baseDirectory);
-
-        LOGGER.debug("Define modules application");
-        moduleManager.setApplication(this);
+        DependencyManager dependencyManager = new DependencyManager(
+                ClassInfo.getPomFile(OpenSilex.class, "org.opensilex", "opensilex")
+        );
+        moduleManager.loadModulesWithDependencies(dependencyManager, baseDirectory);
 
         LOGGER.debug("Build global configuration");
         configManager.build(baseDirectory, moduleManager.getModules(), profileId, configFile);
@@ -400,9 +402,9 @@ public class OpenSilex {
      * @param moduleClass The module class from which the instance should be
      * returned
      * @return The module class instance
-     * @throws Exception
+     * @throws ModuleNotFoundException If the corresponding module is not found
      */
-    public <T extends OpenSilexModule> T getModuleByClass(Class<T> moduleClass) throws Exception {
+    public <T extends OpenSilexModule> T getModuleByClass(Class<T> moduleClass) throws ModuleNotFoundException {
         return moduleManager.getModuleByClass(moduleClass);
     }
 

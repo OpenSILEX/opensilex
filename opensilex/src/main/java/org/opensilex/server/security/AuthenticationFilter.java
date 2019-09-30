@@ -30,7 +30,7 @@ import org.opensilex.server.security.user.User;
 
 /**
  *
- * @author vincent
+ * @author Vincent Migot
  */
 @Provider
 @Priority(Priorities.AUTHENTICATION)

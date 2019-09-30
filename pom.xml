@@ -24,14 +24,14 @@
         <module>opensilex-front-app</module>
         <!-- Extension modules --> 
         <module>phis-ws/phis2-ws</module>
-        <module>opensilex-front-ue</module>
+        <module>inrae-ues-sixtine</module>
         <!-- Development module -->
         <module>opensilex-doc</module> 
         <module>opensilex-release</module>
         <module>opensilex-dev-tools</module> 
         <module>opensilex-dev-module-generator</module> 
     </modules>
-    
+
     <dependencies>
         <!--Required dependencies--> 
         <dependency>
@@ -53,7 +53,7 @@
         <!--Extension dependencies--> 
         <dependency>
             <groupId>org.opensilex</groupId>
-            <artifactId>opensilex-front-ue</artifactId>
+            <artifactId>inrae-ues-sixtine</artifactId>
             <version>${revision}</version>
         </dependency>
         <dependency>

@@ -5,12 +5,11 @@
  */
 package org.opensilex.module;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
  *
- * @author vincent
+ * @author Vincent Migot
  */
 public interface ModuleUpdate {
     

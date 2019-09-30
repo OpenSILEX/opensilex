@@ -14,7 +14,7 @@ import org.opensilex.sparql.types.Label;
 
 /**
  *
- * @author vincent
+ * @author Vincent Migot
  */
 @SPARQLResource(
         ontology = UserOntology.class,

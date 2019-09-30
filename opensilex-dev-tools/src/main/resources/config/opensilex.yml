@@ -1,23 +1,18 @@
 opensilex:
     sparql:
-        $service: org.opensilex.sparql.SPARQLService
-        $connection: org.opensilex.sparql.rdf4j.RDF4JConnection
-        $connectionConfig: org.opensilex.sparql.rdf4j.RDF4JConfig
-        $connectionConfigID: rdf4j
         rdf4j:
             serverURI: http://localhost:8080/rdf4j-server/
-            #repository: migrated
             repository: diaphen
     
     bigData:
         mongodb:
-            #database: migrated
             database: diaphen
-            
+       
+opensilex-front-app:
+    
 phisws:
     ontologyBaseURI: http://www.phenome-fppn.fr/
     vocabulary: http://www.phenome-fppn.fr/vocabulary/2017#
-    #infrastructure: migrated
     infrastructure: diaphen
     
     uploadFileServerIP: localhost
@@ -32,7 +27,6 @@ phisws:
     imageFileServerDirectory: http://localhost/images
         
     postgreSQL:
-        #database: migrated
         database: diaphen
         username: phis
         password: azerty

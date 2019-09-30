@@ -7,7 +7,7 @@ package org.opensilex.fs.local;
 
 /**
  *
- * @author vincent
+ * @author Vincent Migot
  */
 public class LocalFileSystemConnection {
     

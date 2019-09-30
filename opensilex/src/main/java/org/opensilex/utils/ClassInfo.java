@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 public class ClassInfo {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ClassInfo.class);
-    
+
     public static boolean isPrimitive(Class<?> type) {
         return type.isPrimitive()
                 || type.equals(Boolean.class)
@@ -102,13 +102,14 @@ public class ClassInfo {
     }
 
     /**
-     * Return main jar file or a directory if application is run from sources
+     * Return jar file where the given class belong to
      *
-     * @return Root directory
+     * @param clazz Class from which this method find JAR file
+     * @return The corresponding JAR file
      */
-    public static File getJarFile(Class<?> c) {
+    public static File getJarFile(Class<?> clazz) {
         return new File(
-                c.getProtectionDomain()
+                clazz.getProtectionDomain()
                         .getCodeSource()
                         .getLocation()
                         .getPath()
@@ -117,12 +118,14 @@ public class ClassInfo {
     }
 
     /**
-     * Return main jar root directory
+     * Return the root directory of the JAR file (or the classpath folder)
+     * corresponding to the given Class
      *
-     * @return Root directory
+     * @param clazz The class to look at
+     * @return Class base directory
      */
-    public static Path getBaseDirectory(Class<?> c) {
-        File rootFile = getJarFile(c);
+    public static Path getBaseDirectory(Class<?> clazz) {
+        File rootFile = getJarFile(clazz);
 
         String rootDirectory;
         if (rootFile.isFile()) {
@@ -134,16 +137,16 @@ public class ClassInfo {
         return Paths.get(rootDirectory);
     }
 
-    public static File getPomFile(Class<?> c) throws IOException {
-        return getPomFile(getJarFile(c), null, null);
+    public static File getPomFile(Class<?> clazz) throws IOException {
+        return getPomFile(getJarFile(clazz), null, null);
     }
 
     public static File getPomFile(File jarFile) throws IOException {
         return getPomFile(jarFile, null, null);
     }
 
-    public static File getPomFile(Class<?> c, String groupId, String artifactId) throws IOException {
-        return getPomFile(getJarFile(c), groupId, artifactId);
+    public static File getPomFile(Class<?> clazz, String groupId, String artifactId) throws IOException {
+        return getPomFile(getJarFile(clazz), groupId, artifactId);
     }
 
     public static File getPomFile(File jarFile, String groupId, String artifactId) throws IOException {
@@ -156,11 +159,11 @@ public class ClassInfo {
             } else {
                 entry = zipFile.getEntry("opensilex-pom.xml");
             }
-            
+
             if (entry == null) {
                 throw new IOException(groupId + ":" + artifactId + " - POM file not found in:" + jarFile.getAbsolutePath());
-            } 
-            
+            }
+
             InputStream pomStream = zipFile.getInputStream(entry);
             File pom = File.createTempFile("opensilex-pom.", ".xml");
             pom.deleteOnExit();
@@ -229,7 +232,7 @@ public class ClassInfo {
 
         return projectId;
     }
-    
+
     public static <T> Constructor<T> getConstructorWithParameterImplementing(Class<T> classToInspect, Class<?> constructorParameterSuperClass) {
         for (Constructor<?> constructor : classToInspect.getConstructors()) {
             if (constructor.getParameterCount() == 1) {
@@ -238,7 +241,7 @@ public class ClassInfo {
                 }
             }
         }
-        
+
         return null;
     }
 

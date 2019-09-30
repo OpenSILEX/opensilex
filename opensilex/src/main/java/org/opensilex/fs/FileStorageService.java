@@ -22,20 +22,6 @@ public class FileStorageService implements Service {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(FileStorageService.class);
 
-    /**
-     * FileSystem connection configuration
-     */
-    private LocalFileSystemConfig config;
-
-    /**
-     * Constructor for FileSystem service with configuration
-     *
-     * @param config FileSystem connection configuration
-     */
-    public FileStorageService() {
-//        this.config = config;
-    }
-
     public void listFilesByExtension(String directory, String extensionFilter, Consumer<File> action) throws IOException {
         Path directoryPath = Paths.get(directory);
 

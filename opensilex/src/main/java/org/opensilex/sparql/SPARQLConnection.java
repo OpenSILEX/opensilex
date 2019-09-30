@@ -19,7 +19,7 @@ import org.opensilex.service.ServiceConnection;
 
 /**
  *
- * @author vincent
+ * @author Vincent Migot
  */
 public interface SPARQLConnection extends ServiceConnection {
 

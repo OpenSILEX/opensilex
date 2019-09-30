@@ -9,7 +9,7 @@ import org.opensilex.OpenSilex;
 
 /**
  *
- * @author vincent
+ * @author Vincent Migot
  */
 public interface RestApplicationAPI {
     

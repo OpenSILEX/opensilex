@@ -14,16 +14,16 @@ import picocli.CommandLine.IHelpFactory;
 import picocli.CommandLine.Model.CommandSpec;
 
 /**
- * This class implements picocli.CommandLine.IHelpFactory to generate good looking 
- * help messages for OpenSilex commands with custom styles and colors
+ * This class implements picocli.CommandLine.IHelpFactory to generate good
+ * looking help messages for OpenSilex commands with custom styles and colors
  * see: https://picocli.info/#_usage_help_with_styles_and_colors
  */
 public class HelpFactory implements IHelpFactory {
-    
-/**
- * Ascii Art header when displaying help command
- */    
-public static final String CLI_HEADER_HEADING = "\n"
+
+    /**
+     * Ascii Art header when displaying help command
+     */
+    public static final String CLI_HEADER_HEADING = "\n"
             + "         .+.\n"
             + "        +++++`.\n"
             + "      ;+;  ++.++`.\n"
@@ -67,15 +67,15 @@ public static final String CLI_HEADER_HEADING = "\n"
      */
     public static final String CLI_FOOTER = "\nCopyright(c) INRA - UMR MISTEA - 2019";
 
-    
     /**
-     * Initialize help layout values
-     * @param commandSpec
-     * @param colorScheme
-     * @return 
+     * Initialize help layout values and return the {@code picocli.CommandLine.Help} command
+     *
+     * @param commandSpec the command to create usage help for
+     * @param colorScheme the color scheme to use when rendering usage help
+     * @return a {@code picocli.CommandLine.Help} instance
      */
     @Override
-    public CommandLine.Help create(CommandSpec commandSpec, ColorScheme colorScheme) {
+    public Help create(CommandSpec commandSpec, ColorScheme colorScheme) {
         commandSpec.usageMessage().headerHeading(CLI_HEADER_HEADING);
         commandSpec.usageMessage().synopsisHeading(CLI_SYNOPSYS_HEADING);
         commandSpec.usageMessage().descriptionHeading(CLI_DESCRIPTION_HEADING);
@@ -85,5 +85,5 @@ public static final String CLI_HEADER_HEADING = "\n"
         commandSpec.usageMessage().footer(CLI_FOOTER);
         return new Help(commandSpec, colorScheme);
     }
-    
+
 }

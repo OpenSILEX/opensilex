@@ -11,7 +11,7 @@ import org.opensilex.sparql.utils.Ontology;
 
 /**
  *
- * @author vincent
+ * @author Vincent Migot
  */
 public class UserOntology {
     

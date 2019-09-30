@@ -9,7 +9,7 @@ import org.opensilex.utils.ClassInfo;
 
 /**
  *
- * @author vincent
+ * @author Vincent Migot
  */
 public interface Service {
 

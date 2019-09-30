@@ -44,7 +44,7 @@ public class ErrorResponse extends JsonResponse {
     /**
      * Constructor
      *
-     * @param exception
+     * @param exception Exception to wrap into a structured error response
      */
     public ErrorResponse(Throwable exception) {
         this(

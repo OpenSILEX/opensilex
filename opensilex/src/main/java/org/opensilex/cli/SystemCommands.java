@@ -121,6 +121,7 @@ public class SystemCommands extends HelpPrinterCommand implements OpenSilexComma
 
     /**
      * This method install OpenSilex specific module or all new if no parameters
+     * @param moduleNames List of module names to install
      */
     @Command(
             name = "install",
@@ -192,6 +193,7 @@ public class SystemCommands extends HelpPrinterCommand implements OpenSilexComma
     /**
      * This method updates specific OpenSilex module or all new by default by
      * executing ModuleUpdate "execute" methods found in them
+     * @param moduleNames List of module names to update
      */
     @Command(
             name = "update",
@@ -256,5 +258,17 @@ public class SystemCommands extends HelpPrinterCommand implements OpenSilexComma
             writeInstallationState();
 
         }
+    }
+    
+    @Command(
+            name = "run-update",
+            header = "Execute opensilex module specific update"
+    )
+    public void runUpdate(
+            @Parameters(description = "Update class to execute") String updateClassName
+    ) throws Exception {
+        Class updateClass = Class.forName(updateClassName, true, Thread.currentThread().getContextClassLoader());
+        ModuleUpdate updateInstance = (ModuleUpdate) updateClass.getConstructor().newInstance();
+        updateInstance.execute();
     }
 }

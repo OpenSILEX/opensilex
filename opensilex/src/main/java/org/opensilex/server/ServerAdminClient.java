@@ -22,12 +22,12 @@ public class ServerAdminClient {
      * Socket to connect to the admin server socket
      */
     private Socket connection;
-    
+
     /**
      * Reader for data send by the admin server
      */
     private BufferedReader reader;
-    
+
     /**
      * Output stream to send commands to the admin server
      */
@@ -35,9 +35,11 @@ public class ServerAdminClient {
 
     /**
      * Initialize connection to the admin server socket
-     * @param host
-     * @param adminPort
-     * @throws IOException 
+     *
+     * @param host Server host to connect with
+     * @param adminPort Server administration port to connect with
+     * 
+     * @throws IOException In case of connection problem to administration server
      */
     public ServerAdminClient(String host, int adminPort) throws IOException {
         connection = new Socket(host, adminPort);
@@ -47,7 +49,8 @@ public class ServerAdminClient {
 
     /**
      * Stop the tomcat server and close the connection after it
-     * @throws IOException 
+     *
+     * @throws IOException In case of communication problem with administration server
      */
     public void stopServer() throws IOException {
         sendCommand(ServerAdmin.SHUTDOWN_COMMAND);
@@ -56,8 +59,9 @@ public class ServerAdminClient {
 
     /**
      * Send a command and read all response from admin server
+     *
      * @param command
-     * @throws IOException 
+     * @throws IOException
      */
     private void sendCommand(String command) throws IOException {
         output.writeUTF(command);
@@ -72,10 +76,11 @@ public class ServerAdminClient {
             }
         }
     }
-    
+
     /**
      * Close the connection to the admin server
-     * @throws IOException 
+     *
+     * @throws IOException
      */
     private void closeConnection() throws IOException {
         reader.close();

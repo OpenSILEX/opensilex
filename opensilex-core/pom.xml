@@ -31,5 +31,33 @@
         </dependency>
     </dependencies>
     
+    <build>
+        <plugins>
+            <!-- Check plugin and dependencies available updates -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <configuration>
+                    <rulesUri>classpath:///version-rules.xml</rulesUri>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.opensilex</groupId>
+                        <artifactId>opensilex</artifactId>
+                        <version>${revision}</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>display-dependency-updates</goal>
+                            <goal>display-plugin-updates</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
 

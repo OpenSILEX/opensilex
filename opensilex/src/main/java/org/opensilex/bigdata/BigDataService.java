@@ -13,7 +13,7 @@ import org.opensilex.service.ServiceConfigDefault;
  */
 /**
  *
- * @author vincent
+ * @author Vincent Migot
  */
 @ServiceConfigDefault(
         connection = MongoDBConnection.class,

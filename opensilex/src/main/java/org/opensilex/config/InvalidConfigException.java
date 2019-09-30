@@ -7,7 +7,7 @@ package org.opensilex.config;
 
 /**
  *
- * @author vincent
+ * @author Vincent Migot
  */
 public class InvalidConfigException extends Exception {
 

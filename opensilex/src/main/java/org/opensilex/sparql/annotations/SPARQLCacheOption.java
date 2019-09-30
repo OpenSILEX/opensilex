@@ -12,7 +12,7 @@ import java.lang.annotation.RetentionPolicy;
 
 /**
  *
- * @author vincent
+ * @author Vincent Migot
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Repeatable(value = SPARQLCache.class)

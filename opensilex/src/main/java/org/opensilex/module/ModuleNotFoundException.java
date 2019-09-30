@@ -7,7 +7,7 @@ package org.opensilex.module;
 
 /**
  *
- * @author vincent
+ * @author Vincent Migot
  */
 public class ModuleNotFoundException extends Exception {
 

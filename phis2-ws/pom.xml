@@ -163,16 +163,17 @@
             <plugin>
                 <groupId>eu.somatik.serviceloader-maven-plugin</groupId>
                 <artifactId>serviceloader-maven-plugin</artifactId>
-                <configuration>
-                    <services>
-                        <param>opensilex.service.resource.brapi.BrapiCall</param>
-                    </services>
-                </configuration>
                 <executions>
                     <execution>
+                        <id>phis-brapi-services</id>
                         <goals>
                             <goal>generate</goal>
                         </goals>
+                        <configuration>
+                            <services>
+                                <param>opensilex.service.resource.brapi.BrapiCall</param>
+                            </services>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

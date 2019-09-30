@@ -539,20 +539,21 @@
             <plugin>
                 <groupId>eu.somatik.serviceloader-maven-plugin</groupId>
                 <artifactId>serviceloader-maven-plugin</artifactId>
-                <configuration>
-                    <services>
-                        <param>org.opensilex.module.OpenSilexModule</param>
-                        <param>org.opensilex.module.ModuleUpdate</param>
-                        <param>org.opensilex.server.rest.RestApplicationAPI</param>
-                        <param>org.opensilex.cli.OpenSilexCommand</param>
-                        <param>org.opensilex.sparql.deserializer.SPARQLDeserializer</param>
-                    </services>
-                </configuration>
                 <executions>
                     <execution>
+                        <id>opensilex-standard-services</id>
                         <goals>
                             <goal>generate</goal>
                         </goals>
+                        <configuration>
+                            <services>
+                                <param>org.opensilex.module.OpenSilexModule</param>
+                                <param>org.opensilex.module.ModuleUpdate</param>
+                                <param>org.opensilex.server.rest.RestApplicationAPI</param>
+                                <param>org.opensilex.cli.OpenSilexCommand</param>
+                                <param>org.opensilex.sparql.deserializer.SPARQLDeserializer</param>
+                            </services>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

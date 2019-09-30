@@ -47,32 +47,4 @@
             <version>${revision}</version>
         </dependency>
     </dependencies>
-    
-    <profiles>
-        <profile>
-            <id>sixtine</id>
-            <modules>
-                <!-- Required module for angular support -->
-                <module>opensilex-front-app</module>
-                <!-- Sixtine extension -->
-                <module>inrae-ues-sixtine</module>
-                <!-- Front devlopment tools -->
-                <module>opensilex-dev-tools-front</module> 
-            </modules>
-            <dependencies>
-                <!--Required dependency for angular support--> 
-                <dependency>
-                    <groupId>org.opensilex</groupId>
-                    <artifactId>opensilex-front-app</artifactId>
-                    <version>${revision}</version>
-                </dependency>
-                <!--Sixtine extension--> 
-                <dependency>
-                    <groupId>org.opensilex</groupId>
-                    <artifactId>inrae-ues-sixtine</artifactId>
-                    <version>${revision}</version>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
 </project>

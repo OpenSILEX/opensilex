@@ -20,11 +20,8 @@
         <module>opensilex</module> 
         <module>opensilex-core</module> 
         <module>opensilex-module</module> 
-        <!-- Required module for angular support -->
-        <module>opensilex-front-app</module>
         <!-- Extension modules --> 
         <module>phis-ws/phis2-ws</module>
-        <module>inrae-ues-sixtine</module>
         <!-- Development module -->
         <module>opensilex-doc</module> 
         <module>opensilex-release</module>
@@ -44,22 +41,38 @@
             <artifactId>opensilex-core</artifactId>
             <version>${revision}</version>
         </dependency>
-        <!--Required dependency for angular support--> 
-        <dependency>
-            <groupId>org.opensilex</groupId>
-            <artifactId>opensilex-front-app</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <!--Extension dependencies--> 
-        <dependency>
-            <groupId>org.opensilex</groupId>
-            <artifactId>inrae-ues-sixtine</artifactId>
-            <version>${revision}</version>
-        </dependency>
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>phis2ws</artifactId>
             <version>${revision}</version>
         </dependency>
     </dependencies>
+    
+    <profiles>
+        <profile>
+            <id>sixtine</id>
+            <modules>
+                <!-- Required module for angular support -->
+                <module>opensilex-front-app</module>
+                <!-- Sixtine extension -->
+                <module>inrae-ues-sixtine</module>
+                <!-- Front devlopment tools -->
+                <module>opensilex-dev-tools-front</module> 
+            </modules>
+            <dependencies>
+                <!--Required dependency for angular support--> 
+                <dependency>
+                    <groupId>org.opensilex</groupId>
+                    <artifactId>opensilex-front-app</artifactId>
+                    <version>${revision}</version>
+                </dependency>
+                <!--Sixtine extension--> 
+                <dependency>
+                    <groupId>org.opensilex</groupId>
+                    <artifactId>inrae-ues-sixtine</artifactId>
+                    <version>${revision}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>

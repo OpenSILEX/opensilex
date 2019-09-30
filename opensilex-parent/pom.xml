@@ -27,7 +27,7 @@
         <maven.resolver.version>1.4.1</maven.resolver.version>
         <maven.resolver.provider.version>3.6.2</maven.resolver.provider.version>
         <rdf4j.version>3.0.0</rdf4j.version>
-        <jena.query.builder.version>3.12.0</jena.query.builder.version>
+        <jena.query.builder.version>3.13.0</jena.query.builder.version>
         <data.nucleus.version>5.2.1</data.nucleus.version>
         <data.nucleus.jdo.version>3.2.0-m12</data.nucleus.jdo.version>
         <data.nucleus.jta.version>5.9.8.Final</data.nucleus.jta.version>

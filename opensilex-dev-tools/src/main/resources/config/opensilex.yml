@@ -7,8 +7,6 @@ opensilex:
     bigData:
         mongodb:
             database: diaphen
-       
-opensilex-front-app:
     
 phisws:
     ontologyBaseURI: http://www.phenome-fppn.fr/

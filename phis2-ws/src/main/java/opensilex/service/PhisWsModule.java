@@ -17,6 +17,7 @@ import opensilex.service.injection.SessionInjectResolver;
 import org.glassfish.hk2.api.InjectionResolver;
 import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.opensilex.OpenSilex;
 import org.opensilex.bigdata.mongodb.MongoDBConfig;
 import org.opensilex.sparql.rdf4j.RDF4JConfig;
 import org.opensilex.module.OpenSilexModule;
@@ -41,6 +42,7 @@ public class PhisWsModule extends OpenSilexModule implements APIExtension {
 
     @Override
     public void init() {
+        OpenSilex app = OpenSilex.getInstance();
         RDF4JConfig rdf4jConfig = app.loadConfigPath("opensilex.sparql.rdf4j", RDF4JConfig.class);
         MongoDBConfig mongoConfig = app.loadConfigPath("opensilex.bigData.mongodb", MongoDBConfig.class);
 

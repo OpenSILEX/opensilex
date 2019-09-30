@@ -28,6 +28,7 @@ import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.resource.DataResourceService;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.ResponseFormGET;
+import org.opensilex.utils.ClassInfo;
 
 /**
  * Authentication request filter.
@@ -61,7 +62,11 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
         final UriInfo uriInfo = requestContext.getUriInfo();
         final String resourcePath = uriInfo.getPath();
         // Swagger.json and token authorized
+        
+        String resourceClassProject = ClassInfo.getProjectIdFromClass(resourceInfo.getResourceClass());
+        
         if (resourcePath != null 
+                && (resourceClassProject.isEmpty() || resourceClassProject.equals("phis2ws"))
                 && !resourcePath.contains("token") 
                 && !resourcePath.contains("calls") 
                 && !resourcePath.contains("hello") 

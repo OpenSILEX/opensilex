@@ -187,14 +187,13 @@ public class TripletDAO extends Rdf4jDAO<Triplet> {
         }
 
         //2. generate uri if needed
-        UriGenerator uriGenerator = new UriGenerator();
         String uri = null;
 
         for (TripletDTO triplet : tripletsGroup) {
             //if there is a type, generate the uri
             if (triplet.getS().equals(REQUEST_GENERATION_URI_STRING) && uri == null) {
                 try {
-                    uri = uriGenerator.generateNewInstanceUri(rdfType, null, null);
+                    uri = UriGenerator.generateNewInstanceUri(rdfType, null, null);
                 } catch (Exception ex) {
                     java.util.logging.Logger.getLogger(TripletDAO.class.getName()).log(Level.SEVERE, null, ex);
                 }

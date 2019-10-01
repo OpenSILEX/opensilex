@@ -11,6 +11,7 @@ package opensilex.service.dao;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
@@ -44,6 +45,7 @@ public class UriDAO extends Rdf4jDAO<Uri> {
 
     public String uri;
     public String label;
+    public String language;
     
     //used to query the triplestore
     final static String TRIPLESTORE_FIELDS_TYPE = "type";
@@ -194,10 +196,11 @@ public class UriDAO extends Rdf4jDAO<Uri> {
      * Searches instances by URI, concept
      * @return SPARQLQueryBuilder the query
      * query example :
-     * SELECT DISTINCT ?instance ?subclass 
+     * SELECT DISTINCT ?instance ?subclass ?label
      * WHERE { 
      *    ?subclass rdfs:subClassOf* <http://www.w3.org/ns/oa#Motivation> . 
      *    ?instance rdf:type ?subclass . 
+     *    ?instance rdfs:label ?label
      * }
      */
     protected SPARQLQueryBuilder prepareInstanceSearchQuery() {
@@ -209,19 +212,27 @@ public class UriDAO extends Rdf4jDAO<Uri> {
         if (uri != null) {
             contextURI = "<" + uri + ">";
         } else {
-            contextURI = "?uri";
-            query.appendSelect("?uri");
+            contextURI = "?" + URI;
+            query.appendSelect("?" + URI);
         }
 
-        query.appendSelect(" ?instance");
-        query.appendSelect(" ?subclass");
+        query.appendSelect(" ?" + TRIPLESTORE_FIELDS_INSTANCE);
+        query.appendSelect(" ?" + TRIPLESTORE_FIELDS_SUBCLASS);
         // if deep get descendents
         if (deep) {
-            query.appendTriplet("?subclass", "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", contextURI, null);
+            query.appendTriplet("?" + TRIPLESTORE_FIELDS_SUBCLASS, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", contextURI, null);
         } else {
-            query.appendTriplet("?subclass", Rdfs.RELATION_SUBCLASS_OF.toString(), contextURI, null);
+            query.appendTriplet("?" + TRIPLESTORE_FIELDS_SUBCLASS, Rdfs.RELATION_SUBCLASS_OF.toString(), contextURI, null);
         }
-        query.appendTriplet("?instance", Rdf.RELATION_TYPE.toString(), "?subclass", null);
+        query.appendTriplet("?" + TRIPLESTORE_FIELDS_INSTANCE, Rdf.RELATION_TYPE.toString(), "?" + TRIPLESTORE_FIELDS_SUBCLASS, null);
+        
+        query.appendSelect(" ?" + LABEL);
+        query.beginBodyOptional();
+        query.appendToBody("?" + TRIPLESTORE_FIELDS_INSTANCE + " <" + Rdfs.RELATION_LABEL.toString() + "> ?" + LABEL);
+        if (language != null) {
+            query.appendFilter("LANG(?" + LABEL + ") = \"\" || LANGMATCHES(LANG(?" + LABEL + "), \"" + language + "\")");
+        }
+        query.endBodyOptional();
         LOGGER.debug(SPARQL_QUERY + " " + query.toString());
         return query;
     }
@@ -372,7 +383,7 @@ public class UriDAO extends Rdf4jDAO<Uri> {
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 
         ArrayList<Uri> instances = new ArrayList<>();
-
+        
         try (TupleQueryResult result = tupleQuery.evaluate()) {
 
             while (result.hasNext()) {
@@ -382,6 +393,7 @@ public class UriDAO extends Rdf4jDAO<Uri> {
 
                 instance.setUri(bindingSet.getValue(TRIPLESTORE_FIELDS_INSTANCE).stringValue());
                 instance.setRdfType(bindingSet.getValue(TRIPLESTORE_FIELDS_SUBCLASS).stringValue());
+                instance.setLabel(bindingSet.getValue(LABEL).stringValue());
                 instances.add(instance);
             }
         }

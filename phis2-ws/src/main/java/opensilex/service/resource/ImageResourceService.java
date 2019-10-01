@@ -155,8 +155,7 @@ public class ImageResourceService extends ResourceService {
                         final UriBuilder uploadPath = uri.getBaseUriBuilder();
                         
                         // generates the imageUri
-                        UriGenerator uriGenerator = new UriGenerator();
-                        final String imageUri = uriGenerator.generateNewInstanceUri(
+                        final String imageUri = UriGenerator.generateNewInstanceUri(
                                 Oeso.CONCEPT_IMAGE.toString(), 
                                 Year.now().toString(), 
                                 lastGeneratedUri);

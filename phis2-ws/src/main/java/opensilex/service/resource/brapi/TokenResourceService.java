@@ -250,7 +250,7 @@ public class TokenResourceService implements BrapiCall{
         @ApiResponse(code = 201, message = "Access token created by user"),
         @ApiResponse(code = 400, message = "Bad informations send by user"),
         @ApiResponse(code = 200, message = "Access token already exist and send again to user")})
-    public Response logOut(@ApiParam(value = "JSON object needed to login" ,required = true) @Valid @Required LogoutDTO logout, @Context UriInfo ui) {
+    public Response logOut(@ApiParam(value = "JSON object needed to login") @Valid LogoutDTO logout, @Context UriInfo ui) {
         ArrayList<Status> statusList = new ArrayList<>();
         if (logout == null) {
             statusList.add(new Status("Empty json", StatusCodeMsg.ERR, null));

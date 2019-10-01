@@ -29,7 +29,7 @@ public class Experiment {
     
     private ArrayList<Project> projects = new ArrayList<>();
     private ArrayList<Group> groups = new ArrayList<>();
-    private ArrayList<Contact> contacts = new ArrayList<>();
+    private ArrayList<ContactPostgreSQL> contacts = new ArrayList<>();
     private HashMap<String, String> variables = new HashMap<>();
     private HashMap<String, String> sensors = new HashMap<>();
     
@@ -129,11 +129,11 @@ public class Experiment {
         this.cropSpecies = cropSpecies;
     }
     
-    public ArrayList<Contact> getContacts() {
+    public ArrayList<ContactPostgreSQL> getContacts() {
         return contacts;
     }
       
-    public void addContact(Contact contact) {
+    public void addContact(ContactPostgreSQL contact) {
         this.contacts.add(contact);
     }
     

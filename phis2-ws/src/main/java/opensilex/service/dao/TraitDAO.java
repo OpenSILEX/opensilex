@@ -8,6 +8,7 @@
 package opensilex.service.dao;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import static opensilex.service.dao.VariableDAO.OBJECT;
@@ -15,16 +16,40 @@ import static opensilex.service.dao.VariableDAO.PROPERTY;
 import static opensilex.service.dao.VariableDAO.SEE_ALSO;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
+import opensilex.service.dao.manager.Rdf4jDAO;
+import opensilex.service.documentation.StatusCodeMsg;
+import opensilex.service.model.OntologyReference;
+import opensilex.service.model.Trait;
+import opensilex.service.ontology.Contexts;
+import opensilex.service.ontology.Oeso;
+import opensilex.service.ontology.Rdf;
+import opensilex.service.ontology.Rdfs;
+import opensilex.service.ontology.Skos;
+import opensilex.service.resource.dto.TraitDTO;
+import opensilex.service.utils.POSTResultsReturn;
+import opensilex.service.utils.UriGenerator;
+import opensilex.service.utils.sparql.SPARQLQueryBuilder;
+import opensilex.service.view.brapi.Status;
+import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
+import org.apache.jena.arq.querybuilder.ExprFactory;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.SortCondition;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.ExprList;
 import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.apache.jena.vocabulary.XSD;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryLanguage;
@@ -34,24 +59,11 @@ import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.dao.manager.Rdf4jDAO;
-import opensilex.service.documentation.StatusCodeMsg;
-import opensilex.service.ontology.Contexts;
-import opensilex.service.ontology.Rdf;
-import opensilex.service.ontology.Rdfs;
-import opensilex.service.ontology.Skos;
-import opensilex.service.ontology.Oeso;
-import opensilex.service.resource.dto.TraitDTO;
-import opensilex.service.utils.POSTResultsReturn;
-import opensilex.service.utils.UriGenerator;
-import opensilex.service.utils.sparql.SPARQLQueryBuilder;
-import opensilex.service.view.brapi.Status;
-import opensilex.service.model.OntologyReference;
-import opensilex.service.model.Trait;
 
 /**
- * @author Morgane Vidal <morgane.vidal@inra.fr>
  * Trait DAO.
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @update [Vincent Migot] 17 July 2019: Update getLastId method to fix bug and limitation in URI generation
  */
 public class TraitDAO extends Rdf4jDAO<Trait> {
     final static Logger LOGGER = LoggerFactory.getLogger(TraitDAO.class);
@@ -62,7 +74,8 @@ public class TraitDAO extends Rdf4jDAO<Trait> {
     public ArrayList<OntologyReference> ontologiesReferences = new ArrayList<>();
     
     private static final String VAR_URI = "varUri";
-
+    private static final String MAX_ID = "maxID";
+    
     public TraitDAO() {
     }
 
@@ -108,17 +121,45 @@ public class TraitDAO extends Rdf4jDAO<Trait> {
     
     /**
      * Prepares a query to get the higher id of the traits.
+     * @example
+     * <pre>
+     * SELECT ?maxID WHERE {
+     *   ?uri a <http://www.opensilex.org/vocabulary/oeso#Trait>
+     *   BIND(xsd:integer>(strafter(str(?uri), "http://www.opensilex.org/diaphen/id/traits/t")) AS ?maxID)
+     * }
+     * ORDER BY DESC(?maxID)
+     * LIMIT 1
+     * </pre>
      * @return 
      */
-    private SPARQLQueryBuilder prepareGetLastId() {
-        SPARQLQueryBuilder query = new SPARQLQueryBuilder();
+    private Query prepareGetLastId() {
+        SelectBuilder query = new SelectBuilder();
         
-        query.appendSelect("?uri");
-        query.appendTriplet("?uri", Rdf.RELATION_TYPE.toString(), Oeso.CONCEPT_TRAIT.toString(), null);
-        query.appendOrderBy("DESC(?uri)");
-        query.appendLimit(1);
+        Var uri = makeVar(URI);
+        Var maxID = makeVar(MAX_ID);
         
-        return query;
+        // Select the highest identifier
+        query.addVar(maxID);
+        
+        // Filter by trait
+        Node traitConcept = NodeFactory.createURI(Oeso.CONCEPT_TRAIT.toString());
+        query.addWhere(uri, RDF.type, traitConcept);
+        
+        // Binding to extract the last part of the URI as a MAX_ID integer
+        ExprFactory expr = new ExprFactory();
+        Expr indexBinding =  expr.function(
+            XSD.integer.getURI(), 
+            ExprList.create(Arrays.asList(
+                expr.strafter(expr.str(uri), UriGenerator.PLATFORM_URI_ID_TRAITS))
+            )
+        );
+        query.addBind(indexBinding, maxID);
+        
+        // Order MAX_ID integer from highest to lowest and select the first value
+        query.addOrderBy(new SortCondition(maxID,  Query.ORDER_DESCENDING));
+        query.setLimit(1);
+        
+        return query.build();
     }
     
     /**
@@ -126,30 +167,21 @@ public class TraitDAO extends Rdf4jDAO<Trait> {
      * @return the id
      */
     public int getLastId() {
-       SPARQLQueryBuilder query = prepareGetLastId(); 
+       Query query = prepareGetLastId(); 
 
-        //get last trait uri inserted
+        //get last trait uri ID inserted
         TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         TupleQueryResult result = tupleQuery.evaluate();
         
-        String uriTrait = null;
-        
         if (result.hasNext()) {
             BindingSet bindingSet = result.next();
-            uriTrait = bindingSet.getValue(URI).stringValue();
-        }
-        
-        if (uriTrait == null) {
-            return 0;
-        } else {
-            String split = "traits/t";
-            String[] parts = uriTrait.split(split);
-            if (parts.length > 1) {
-                return Integer.parseInt(parts[1]);
-            } else {
-                return 0;
+            Value maxId = bindingSet.getValue(MAX_ID);
+            if (maxId != null) {
+                return Integer.valueOf(maxId.stringValue());
             }
-        }
+        } 
+        
+        return 0;
     }
     
     /**
@@ -232,13 +264,12 @@ public class TraitDAO extends Rdf4jDAO<Trait> {
         boolean resultState = false;
         boolean annotationInsert = true;
         
-        UriGenerator uriGenerator = new UriGenerator();
         final Iterator<TraitDTO> iteratorTraitDTO = traitsDTO.iterator();
         
         while (iteratorTraitDTO.hasNext() && annotationInsert) {
             TraitDTO traitDTO = iteratorTraitDTO.next();
             try {
-                traitDTO.setUri(uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_TRAIT.toString(), null, null));
+                traitDTO.setUri(UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_TRAIT.toString(), null, null));
             } catch (Exception ex) {
                 annotationInsert = false;
             }

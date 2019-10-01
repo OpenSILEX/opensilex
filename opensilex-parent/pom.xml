@@ -488,6 +488,7 @@
                     <target>${java.compiler.version}</target>
                 </configuration>
             </plugin>
+            
             <!--check minimal maven version--> 
             <plugin>
                 <artifactId>maven-enforcer-plugin</artifactId>
@@ -580,6 +581,7 @@
                     </execution>
                 </executions>
             </plugin>
+            
             <!--inject pom properties into app.properties files--> 
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -598,6 +600,7 @@
                     </execution>
                 </executions>
             </plugin>
+            
             <!--Code coverage @see https://www.eclemma.org/jacoco/trunk/index.html --> 
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -638,6 +641,8 @@
                     </execution>
                 </executions>
             </plugin>
+            
+            <!-- Documentation site generation plugin -->
             <plugin>
                 <artifactId>maven-site-plugin</artifactId>
                 <configuration>

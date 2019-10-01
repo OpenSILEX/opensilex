@@ -8,6 +8,7 @@
 package opensilex.service.dao;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
@@ -174,7 +175,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
      * @param dateRangeEndString
      * @return query
      */
-    private SPARQLQueryBuilder prepareSearchQueryEvents(String uri, String type, String searchConcernedItemLabel, String searchConcernedItemUri, String dateRangeStartString, String dateRangeEndString) {
+    private SPARQLQueryBuilder prepareSearchQueryEvents(String uri, String type, String searchConcernedItemLabel, String searchConcernedItemUri, Date dateRangeStart, Date dateRangeEnd) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
         
@@ -190,9 +191,8 @@ public class EventDAO extends Rdf4jDAO<Event> {
                     query, 
                     uriSelectNameSparql,
                     INSTANT_SELECT_NAME_SPARQL,
-                    DateFormat.YMDTHMSZZ.toString(), 
-                    dateRangeStartString, 
-                    dateRangeEndString, 
+                    dateRangeStart, 
+                    dateRangeEnd, 
                     DATETIMESTAMP_SELECT_NAME_SPARQL,
                     true);
         
@@ -232,7 +232,6 @@ public class EventDAO extends Rdf4jDAO<Event> {
                     query, 
                     uriSelectNameSparql,
                     INSTANT_SELECT_NAME_SPARQL,
-                    DateFormat.YMDTHMSZZ.toString(), 
                     null, 
                     null, 
                     DATETIMESTAMP_SELECT_NAME_SPARQL,
@@ -261,14 +260,14 @@ public class EventDAO extends Rdf4jDAO<Event> {
      * @param searchType
      * @param searchConcernedItemLabel
      * @param searchConcernedItemUri
-     * @param dateRangeStartString
-     * @param dateRangeEndString
+     * @param dateRangeStart
+     * @param dateRangeEnd
      * @param searchPage
      * @param searchPageSize
      * @return events
      * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
-    public ArrayList<Event> find(String searchUri, String searchType, String searchConcernedItemLabel, String searchConcernedItemUri, String dateRangeStartString, String dateRangeEndString, int searchPage, int searchPageSize) 
+    public ArrayList<Event> find(String searchUri, String searchType, String searchConcernedItemLabel, String searchConcernedItemUri, Date dateRangeStart, Date dateRangeEnd, int searchPage, int searchPageSize) 
             throws DAOPersistenceException {
         
         setPage(searchPage);
@@ -279,8 +278,8 @@ public class EventDAO extends Rdf4jDAO<Event> {
                 searchType, 
                 searchConcernedItemLabel, 
                 searchConcernedItemUri, 
-                dateRangeStartString, 
-                dateRangeEndString);
+                dateRangeStart, 
+                dateRangeEnd);
         
         // get events from storage
         TupleQuery eventsTupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, eventsQuery.toString());
@@ -556,14 +555,14 @@ public class EventDAO extends Rdf4jDAO<Event> {
      *     && (?dateRangeStartDateTime <= ?dateTime) && (?dateRangeEndDateTime >= ?dateTime) ) 
      * }
      */
-    private SPARQLQueryBuilder prepareCountQuery(String searchUri, String searchType, String searchConcernedItemLabel, String searchConcernedItemUri, String dateRangeStartString, String dateRangeEndString) {
+    private SPARQLQueryBuilder prepareCountQuery(String searchUri, String searchType, String searchConcernedItemLabel, String searchConcernedItemUri, Date dateRangeStart, Date dateRangeEnd) {
         SPARQLQueryBuilder query = this.prepareSearchQueryEvents(
                 searchUri, 
                 searchType, 
                 searchConcernedItemLabel, 
                 searchConcernedItemUri, 
-                dateRangeStartString, 
-                dateRangeEndString);
+                dateRangeStart, 
+                dateRangeEnd);
         query.clearSelect();
         query.clearLimit();
         query.clearOffset();
@@ -579,12 +578,12 @@ public class EventDAO extends Rdf4jDAO<Event> {
      * @param searchType
      * @param searchConcernedItemLabel
      * @param searchConcernedItemUri
-     * @param dateRangeStartString
-     * @param dateRangeEndString
+     * @param dateRangeStart
+     * @param dateRangeEnd
      * @return results number
      * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
-    public Integer count(String searchUri, String searchType, String searchConcernedItemLabel, String searchConcernedItemUri, String dateRangeStartString, String dateRangeEndString) 
+    public Integer count(String searchUri, String searchType, String searchConcernedItemLabel, String searchConcernedItemUri, Date dateRangeStart, Date dateRangeEnd) 
             throws DAOPersistenceException, Exception {
         
         SPARQLQueryBuilder countQuery = prepareCountQuery(
@@ -592,8 +591,8 @@ public class EventDAO extends Rdf4jDAO<Event> {
                 searchType, 
                 searchConcernedItemLabel, 
                 searchConcernedItemUri, 
-                dateRangeStartString, 
-                dateRangeEndString);
+                dateRangeStart, 
+                dateRangeEnd);
         
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, countQuery.toString());
         Integer count = 0;
@@ -671,8 +670,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
      * SparQL Operator Mapping
      * </a>
      * @param query
-     * @param filterDateString
-     * @param filterDateFormat
+     * @param filterDate
      * @param filterDateSparqlVariable SPARQL variable (?abc format)
      * @param comparisonSign e.g >, >=, <, <= 
      * @param dateTimeStampToCompareSparqlVariable the SPARQL variable 
@@ -681,12 +679,10 @@ public class EventDAO extends Rdf4jDAO<Event> {
      *   BIND(xsd:dateTime(str("2017-09-10T12:00:00+01:00")) as ?dateRangeStartDateTime) .
      *   FILTER ( (?dateRangeStartDateTime <= ?dateTime) ) 
      */
-    public static void filterSearchQueryWithDateTimeStampComparison(SPARQLStringBuilder query, String filterDateString, String filterDateFormat, String filterDateSparqlVariable, String comparisonSign, String dateTimeStampToCompareSparqlVariable){
-        
-        DateTime filterDate = Dates.stringToDateTimeWithGivenPattern(filterDateString, filterDateFormat);
+    public static void filterSearchQueryWithDateTimeStampComparison(SPARQLStringBuilder query, Date filterDate, String filterDateSparqlVariable, String comparisonSign, String dateTimeStampToCompareSparqlVariable){
         
         String filterDateStringInSparqlDateTimeStampFormat = 
-                DateTimeFormat.forPattern(DATETIMESTAMP_FORMAT_SPARQL).print(filterDate);
+                DateTimeFormat.forPattern(DATETIMESTAMP_FORMAT_SPARQL).print(new DateTime(filterDate));
 
         query.appendToBody(
                 "\nBIND(<" + Xsd.FUNCTION_DATETIME.toString() + ">(str(\"" 
@@ -699,9 +695,8 @@ public class EventDAO extends Rdf4jDAO<Event> {
      * Appends a filter to select only the results whose datetime is included in 
      * the date range in parameter.
      * @param query
-     * @param filterRangeDatesStringFormat
-     * @param filterRangeStartDateString
-     * @param filterRangeEndDateString
+     * @param filterRangeStartDate
+     * @param filterRangeEndDate
      * @param dateTimeStampToCompareSparqlName the SPARQL variable (?abc 
      * format) of the dateTimeStamp to compare to the range
      * @example SparQL code added to the query :
@@ -710,7 +705,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
      *   BIND(xsd:dateTime(str("2017-09-12T12:00:00+01:00")) as ?dateRangeEndDateTime) .
      *   FILTER ( (?dateRangeStartDateTime <= ?dateTime) && (?dateRangeEndDateTime >= ?dateTime) ) 
      */
-    public static void filterSearchQueryWithDateRangeComparisonWithDateTimeStamp(SPARQLQueryBuilder query, String objectUriLinkedToInstant, String instantSparqlName, String filterRangeDatesStringFormat, String filterRangeStartDateString, String filterRangeEndDateString, String dateTimeStampToCompareSparqlName, boolean inGroupBy){
+    public static void filterSearchQueryWithDateRangeComparisonWithDateTimeStamp(SPARQLQueryBuilder query, String objectUriLinkedToInstant, String instantSparqlName, Date filterRangeStartDate, Date filterRangeEndDate, String dateTimeStampToCompareSparqlName, boolean inGroupBy) {
         
         query.appendSelect(instantSparqlName);
         query.appendSelect(dateTimeStampToCompareSparqlName);
@@ -723,20 +718,21 @@ public class EventDAO extends Rdf4jDAO<Event> {
         
         query.appendToBody("\nBIND(<" + Xsd.FUNCTION_DATETIME.toString() + ">(str(" + dateTimeStampToCompareSparqlName + ")) as " + DATETIME_SELECT_NAME_SPARQL + ") .");
         
-        if (filterRangeStartDateString != null){
+        if (filterRangeStartDate != null) {
+
             filterSearchQueryWithDateTimeStampComparison(
-                    query, 
-                    filterRangeStartDateString, 
-                    filterRangeDatesStringFormat, 
-                    DATE_RANGE_START_DATETIME_SELECT_NAME_SPARQL, 
-                    " <= ", 
-                    DATETIME_SELECT_NAME_SPARQL);
+                query, 
+                filterRangeStartDate, 
+                DATE_RANGE_START_DATETIME_SELECT_NAME_SPARQL, 
+                " <= ", 
+                DATETIME_SELECT_NAME_SPARQL);
         }
-        if (filterRangeEndDateString != null){
+        
+        if (filterRangeEndDate != null){
+            
             filterSearchQueryWithDateTimeStampComparison(
                     query, 
-                    filterRangeEndDateString, 
-                    filterRangeDatesStringFormat, 
+                    filterRangeEndDate, 
                     DATE_RANGE_END_DATETIME_SELECT_NAME_SPARQL, 
                     " >= ", 
                     DATETIME_SELECT_NAME_SPARQL);

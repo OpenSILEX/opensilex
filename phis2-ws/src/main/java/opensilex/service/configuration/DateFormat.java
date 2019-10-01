@@ -62,6 +62,10 @@ public enum DateFormat {
      * @throws ParseException 
      */
     public static Date parseDateOrDateTime(String dateStringToParse, boolean isEndDate) throws ParseException {
+        if (dateStringToParse == null) {
+            return null;
+        }
+        
         SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
                 
         if (dateStringToParse.matches("\\d{4}-\\d{2}-\\d{2}")) {

@@ -14,6 +14,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
@@ -159,31 +160,36 @@ public class EventResourceService  extends ResourceService {
                 value = "Search by date - start of the range", 
                 example = DocumentationAnnotation.EXAMPLE_EVENT_SEARCH_START_DATE) 
             @QueryParam("startDate") 
-            @Date(DateFormat.YMDTHMSZZ) String startDate, 
+            @Date({DateFormat.YMDTHMSZ, DateFormat.YMD}) String startDate, 
         @ApiParam(
                 value = "Search by date - end of the range", 
                 example = DocumentationAnnotation.EXAMPLE_EVENT_SEARCH_END_DATE) 
             @QueryParam("endDate") 
-            @Date(DateFormat.YMDTHMSZZ) String endDate
+            @Date({DateFormat.YMDTHMSZ, DateFormat.YMD}) String endDate
     ) {
         EventDAO eventDAO = new EventDAO(userSession.getUser());
         
         // Search events with parameters
         ArrayList<Event> events;
         try {
+            java.util.Date start = DateFormat.parseDateOrDateTime(startDate, false);
+            java.util.Date end = DateFormat.parseDateOrDateTime(endDate, true);
+                 
             events = eventDAO.find(
                     uri,
                     type,
                     concernedItemLabel,
                     concernedItemUri,
-                    startDate,
-                    endDate,
+                    start,
+                    end,
                     page,
                     pageSize);
         // handle exceptions
         } catch (DAOPersistenceException ex) {
             LOGGER.error(ex.getMessage(), ex);
             return getResponseWhenPersistenceError(ex);
+        } catch (ParseException ex) {
+            return getResponseWhenInternalError(ex);
         }
 
         if (events == null) {
@@ -193,7 +199,9 @@ public class EventResourceService  extends ResourceService {
         } else {
             // count results
             try {
-                int totalCount = eventDAO.count(uri, type, concernedItemLabel, concernedItemUri, startDate, endDate);
+                java.util.Date start = DateFormat.parseDateOrDateTime(startDate, false);
+                 java.util.Date end = DateFormat.parseDateOrDateTime(endDate, true);
+                int totalCount = eventDAO.count(uri, type, concernedItemLabel, concernedItemUri, start, end);
                 return getGETResponseWhenSuccess(events, pageSize, page, totalCount);
                 
             // handle count exceptions

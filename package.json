@@ -12,6 +12,8 @@
         "@angular/platform-browser-dynamic": "~8.2.8",
         "@angular/platform-server": "~8.2.8",
         "@angular/router": "~8.2.8",
+        "@ng-bootstrap/ng-bootstrap": "^5.1.1",
+        "bootstrap": "4.3.1",
         "rxjs": "~6.4.0",
         "tslib": "^1.10.0",
         "zone.js": "~0.10.2"
@@ -22,19 +24,20 @@
         "@angular/cli": "~8.3.6",
         "@angular/compiler-cli": "~8.2.8",
         "@angular/language-service": "~8.2.8",
+        "@fortawesome/fontawesome-free": "^5.11.2",
         "@nguniversal/module-map-ngfactory-loader": "8.1.1",
         "@types/node": "~12.7.8",
         "@types/webpack": "~4.39.1",
         "chokidar": "^3.1.1",
-        "yaml-js": "0.2.3",
         "codelyzer": "^5.1.2",
         "karma": "~4.3.0",
+        "ng-packagr": "5.5.1",
         "systemjs": "6.1.2",
         "ts-node": "~8.4.1",
-        "ng-packagr": "5.5.1",
         "tsickle": "^0.37.0",
         "tslint": "~5.20.0",
         "typescript": "~3.5.3",
+        "yaml-js": "0.2.3",
         "yargs-parser": "^14.0.0"
     }
 }

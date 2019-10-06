@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="${artifactId}"
+         xmlns="http://maven.apache.org/DECORATION/1.8.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/DECORATION/1.8.0 http://maven.apache.org/xsd/decoration-1.8.0.xsd">
+        
+    <bannerLeft>
+        <name>${artifactId}</name>
+        <src>https://maven.apache.org/images/apache-maven-project.png</src>
+        <href>https://www.apache.org/</href>
+    </bannerLeft>
+
+    <bannerRight>
+        <src>https://maven.apache.org/images/maven-logo-black-on-white.png</src>
+        <href>https://maven.apache.org/</href>
+    </bannerRight>
+
+<!--    <skin>
+        <groupId>org.apache.maven.skins</groupId>
+        <artifactId>maven-fluido-skin</artifactId>
+        <version>1.8</version>
+    </skin>-->
+
+    <body>
+        <menu ref="reports" />
+
+        <menu name="Documentation">
+            <item name="1. How to install" href="general/install.html"/>
+            <item name="2. How to contribute" href="general/how-to-contribute.html"/>
+            <item name="3. Best development practices" href="general/best-practices.html"/>
+            <item name="4. Coding style" href="general/coding-style.html"/>
+        </menu>
+        
+        <menu name="FAQ">
+            <item name="Modules" href="faq/modules.html"/>
+            <item name="REST API" href="faq/rest.html"/>
+            <item name="Services" href="faq/services.html"/>
+            <item name="Configuration" href="faq/config.html"/>
+            <item name="Command Line Interface" href="faq/cli.html"/>
+            <item name="Unit and Integration Tests" href="faq/tests.html"/>
+            <item name="Update mechanism" href="faq/updates.html"/>
+            <item name="Git" href="faq/git.html"/>
+            <item name="Maven" href="faq/maven.html"/>
+        </menu>
+        
+        <menu name="Services">
+            <item name="SPARQL Service" href="services/sparql.html"/>
+            <item name="Big Data Service" href="services/big-data.html"/>
+            <item name="File Storage Service" href="services/file-storage.html"/>
+            <item name="Authentication Service" href="services/authentication.html"/>
+            <item name="Logging Service" href="services/logging.html"/>
+        </menu>
+        
+        <menu name="PHIS">
+            <item name="PHIS" href="phis/phis.html"/>
+        </menu>
+
+    </body>
+</project>

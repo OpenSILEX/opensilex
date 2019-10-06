@@ -10,7 +10,7 @@ import org.opensilex.server.security.user.User;
 
 /**
  * DTO of the contacts for the projects
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Morgane Vidal
  */
 public class ContactDTO {
     private URI uri;

@@ -7,7 +7,8 @@
     <packaging>jar</packaging>
     
     <name>opensilex-dev-tools</name>
-    <url>http://maven.apache.org</url>
+
+    <url>https://www.opensilex.org/</url>
 
     <parent>
         <groupId>org.opensilex</groupId>
@@ -16,4 +17,22 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     
+<!--    <profiles>
+        <profile>
+            <id>with-javadoc</id>-->
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-site-plugin</artifactId>
+                        <version>${maven.site.plugin.version}</version>
+                        <configuration>
+                            <templateFile combine.self="override"></templateFile>
+                            <outputDirectory>${maven.multiModuleProjectDirectory}/site/${project.name}/</outputDirectory>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+<!--        </profile>
+    </profiles>-->
 </project>

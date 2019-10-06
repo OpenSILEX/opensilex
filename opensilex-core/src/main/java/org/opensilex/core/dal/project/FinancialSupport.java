@@ -14,7 +14,7 @@ import org.opensilex.sparql.annotations.SPARQLResourceURI;
 
 /**
  * Financial support of a project.
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Morgane Vidal
  */
 @SPARQLResource(
         ontology = Oeso.class,

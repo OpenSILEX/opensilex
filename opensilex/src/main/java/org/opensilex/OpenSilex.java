@@ -296,12 +296,6 @@ public class OpenSilex {
     }
 
     /**
-     * Return default base directory ie: Content of "OPENSILEX_DIR" environment
-     * variable otherwise constent of system property "user.dir"
-     *
-     * @return default base directory
-     */
-    /**
      * Application configuration manager
      */
     private final ConfigManager configManager;

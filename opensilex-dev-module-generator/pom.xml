@@ -8,6 +8,8 @@
     
     <name>opensilex-dev-module-generator</name>
 
+    <url>https://www.opensilex.org/</url>
+
     <parent>
         <groupId>org.opensilex</groupId>
         <artifactId>opensilex-dev</artifactId>
@@ -28,6 +30,14 @@
             <plugin>
                 <artifactId>maven-archetype-plugin</artifactId>
                 <version>${maven.archetype.plugin.version}</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>${maven.site.plugin.version}</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>

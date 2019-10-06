@@ -89,7 +89,7 @@ public abstract class OpenSilexModule {
 
             File jarFile = Paths.get(sourceLocation.toURI()).toFile();
             ZipFile zipFile = new ZipFile(jarFile);
-            FileSystem fs = FileSystems.newFileSystem(Paths.get(jarFile.getAbsolutePath()), null);
+            FileSystem fs = FileSystems.newFileSystem(Paths.get(jarFile.getAbsolutePath()), getClass().getClassLoader());
             Path file = fs.getPath(fileName);
             if (Files.isRegularFile(file)) {
                 return true;
@@ -115,7 +115,7 @@ public abstract class OpenSilexModule {
 
             File jarFile = Paths.get(sourceLocation.toURI()).toFile();
             ZipFile zipFile = new ZipFile(jarFile);
-            FileSystem fs = FileSystems.newFileSystem(Paths.get(jarFile.getAbsolutePath()), null);
+            FileSystem fs = FileSystems.newFileSystem(Paths.get(jarFile.getAbsolutePath()), getClass().getClassLoader());
             Path file = fs.getPath(fileName);
             InputStream stream = null;
             if (Files.isRegularFile(file)) {
@@ -147,7 +147,7 @@ public abstract class OpenSilexModule {
 
             File jarFile = Paths.get(sourceLocation.toURI()).toFile();
             ZipFile zipFile = new ZipFile(jarFile);
-            FileSystem fs = FileSystems.newFileSystem(Paths.get(jarFile.getAbsolutePath()), null);
+            FileSystem fs = FileSystems.newFileSystem(Paths.get(jarFile.getAbsolutePath()), getClass().getClassLoader());
             Path directoryPath = fs.getPath(directoryName);
 
             if (Files.exists(directoryPath) && Files.isDirectory(directoryPath)) {

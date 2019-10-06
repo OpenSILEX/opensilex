@@ -7,6 +7,8 @@
 
     <name>opensilex-module</name>
 
+    <url>https://www.opensilex.org/</url>
+
     <parent>
         <groupId>org.opensilex</groupId>
         <artifactId>opensilex-parent</artifactId>
@@ -116,22 +118,9 @@
                                 <goals>
                                     <goal>install-node-and-yarn</goal>
                                 </goals>
-                                <!-- optional: default phase is "generate-resources" -->
                                 <phase>generate-resources</phase>
                             </execution>
  
-                            <execution>
-                                <id>install global dependencies</id>
-                                <goals>
-                                    <goal>yarn</goal>
-                                </goals>
-                                <phase>generate-resources</phase>
-                                <configuration>
-                                    <arguments>install</arguments>
-                                    <workingDirectory>../</workingDirectory>
-                                </configuration>
-                            </execution>
-                    
                             <execution>
                                 <id>install local dependencies</id>
                                 <goals>
@@ -144,18 +133,6 @@
                                 </configuration>
                             </execution>
                             
-                            <execution>
-                                <id>check global dependencies security issue</id>
-                                <goals>
-                                    <goal>yarn</goal>
-                                </goals>
-                                <phase>generate-resources</phase>
-                                <configuration>
-                                    <arguments>audit</arguments>
-                                    <workingDirectory>../</workingDirectory>
-                                </configuration>
-                            </execution>
-                    
                             <execution>
                                 <id>check local dependencies security issue</id>
                                 <goals>

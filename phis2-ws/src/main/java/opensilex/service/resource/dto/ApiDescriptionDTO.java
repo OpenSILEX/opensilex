@@ -1,5 +1,5 @@
 //******************************************************************************
-//                       APIDescriptionDTO.java
+//                       ApiDescriptionDTO.java
 // SILEX-PHIS
 // Copyright © INRA
 // Creation date: 25 Septembre 2019
@@ -7,21 +7,19 @@
 //******************************************************************************
 package opensilex.service.resource.dto;
 
-import io.swagger.annotations.ApiModelProperty;
 import opensilex.service.PropertiesFileManager;
-import opensilex.service.documentation.DocumentationAnnotation;
 
 /**
  * API description model
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
-public class APIDescriptionDTO {
+public class ApiDescriptionDTO {
     
     /**
      * Version of the API
      * @example "v.3.3.0" using semantic versionning
      */
-    public String version;
+    public String buildVersion;
     /**
      * Major version of the API
      * @example 3, the first version number 
@@ -32,16 +30,15 @@ public class APIDescriptionDTO {
      * @example OpenSILEX API
      */
     public String name;
-    /**
-     * The build identifier
-     * @example 
-     */
-    public String build;
 
-    public APIDescriptionDTO() {
+    /**
+    * APIDescriptionDTO api description DTO
+    * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+    */
+    public ApiDescriptionDTO() {
         String propertyVersion = PropertiesFileManager.getConfigFileProperty("pom", "version");
         String apiName = PropertiesFileManager.getConfigFileProperty("pom", "apiName");
-        this.version = propertyVersion;
+        this.buildVersion = propertyVersion;
         String firstVersionNumber = Character.toString(propertyVersion.replace("v", "").charAt(0));
         this.majorVersion = Integer.parseInt(firstVersionNumber);
         this.name = apiName;

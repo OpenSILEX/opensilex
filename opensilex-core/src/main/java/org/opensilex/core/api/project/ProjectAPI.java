@@ -34,7 +34,7 @@ import org.opensilex.server.validation.URL;
 
 /**
  * Services of the projects
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Morgane Vidal
  */
 @Api("core/projects")
 @Path("core/projects")
@@ -42,13 +42,6 @@ public class ProjectAPI implements RestApplicationAPI {
     @Inject
     SPARQLService sparql;
     
-    /**
-     * GET the informations of a project by its URI.
-     * @param uri
-     * @param limit
-     * @param page
-     * @return the project corresponding to its URI if it exist.
-     */
     @GET
     @Path("{uri}")
     @ApiOperation(value = "Get a project by its URI",

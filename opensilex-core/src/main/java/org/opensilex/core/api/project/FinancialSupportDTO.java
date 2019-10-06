@@ -10,7 +10,7 @@ import org.opensilex.core.dal.project.FinancialSupport;
 
 /**
  * DTO of the financial support for the projects
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Morgane Vidal
  */
 public class FinancialSupportDTO {
     private URI uri;

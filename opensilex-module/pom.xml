@@ -7,6 +7,8 @@
 
     <name>opensilex-module</name>
 
+    <url>https://www.opensilex.org/</url>
+
     <parent>
         <groupId>org.opensilex</groupId>
         <artifactId>opensilex-parent</artifactId>
@@ -67,4 +69,99 @@
             </plugin>
         </plugins>
     </build>
+    
+    <!-- cutom section for specific angular module build -->
+    <profiles>
+        <profile>
+            <id>angular extension module</id>
+            <activation>
+                <file>
+                    <exists>angular/package.json</exists>
+                </file>
+            </activation>
+
+            <build>
+                <resources>
+                    <resource>
+                        <excludes>
+                            <exclude>**/!(opensilex.ng.yml)</exclude>
+                        </excludes>
+                        <includes>
+                            <include>**/opensilex.ng.yml</include>
+                        </includes>
+                        <directory>angular</directory>
+                    </resource>
+                </resources>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>com.github.eirslett</groupId>
+                            <artifactId>frontend-maven-plugin</artifactId>
+                            <version>${frontend.maven.plugin.version}</version>
+                            <configuration>
+                                <nodeVersion>v12.8.0</nodeVersion>
+                                <yarnVersion>v1.18.0</yarnVersion>
+                                <installDirectory>../.ng</installDirectory>
+                                <workingDirectory>angular</workingDirectory>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+                <plugins>
+                    <plugin>
+                        <groupId>com.github.eirslett</groupId>
+                        <artifactId>frontend-maven-plugin</artifactId>
+                        <version>${frontend.maven.plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>install node and package manager</id>
+                                <goals>
+                                    <goal>install-node-and-yarn</goal>
+                                </goals>
+                                <phase>generate-resources</phase>
+                            </execution>
+ 
+                            <execution>
+                                <id>install local dependencies</id>
+                                <goals>
+                                    <goal>yarn</goal>
+                                </goals>
+
+                                <phase>generate-resources</phase>
+                                <configuration>
+                                    <arguments>install</arguments>
+                                </configuration>
+                            </execution>
+                            
+                            <execution>
+                                <id>check local dependencies security issue</id>
+                                <goals>
+                                    <goal>yarn</goal>
+                                </goals>
+
+                                <phase>generate-resources</phase>
+                                <configuration>
+                                    <arguments>audit</arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-clean-plugin</artifactId>
+                        <version>${maven.clean.plugin.version}</version>
+                        <configuration>
+                            <filesets>
+                                <fileset>
+                                    <directory>angular/dist</directory>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </fileset>
+                            </filesets>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

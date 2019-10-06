@@ -51,6 +51,7 @@ public class HelloAPI implements RestApplicationAPI {
 
     /**
      * Hello to a user defined with his token
+     * @param securityContext Jersey Security Context // TODO add link
      *
      * @return "Hello World !"
      */

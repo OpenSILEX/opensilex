@@ -10,7 +10,7 @@ import org.opensilex.sparql.SPARQLService;
 
 /**
  *
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Morgane Vidal
  */
 public class ProjectDAO {
     
@@ -20,12 +20,6 @@ public class ProjectDAO {
         this.sparql = sparql;
     }
     
-    /**
-     * Get the informations of a project by its URI.
-     * @param uri
-     * @return the project
-     * @throws Exception 
-     */
     public Project getProjectByUri(URI uri) throws Exception {
         return sparql.getByURI(Project.class, uri);
     }

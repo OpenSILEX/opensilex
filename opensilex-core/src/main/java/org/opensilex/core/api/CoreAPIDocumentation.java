@@ -7,7 +7,7 @@ package org.opensilex.core.api;
 
 /**
  *
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Morgane Vidal
  */
 public class CoreAPIDocumentation {
     

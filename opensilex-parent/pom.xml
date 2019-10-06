@@ -9,6 +9,8 @@
 
     <name>opensilex-parent</name>
 
+    <url>https://www.opensilex.org/</url>
+
     <properties>
         <!-- common projects version -->
         <revision>4.0.0-SNAPSHOT</revision>
@@ -68,7 +70,6 @@
         <frontend.maven.plugin.version>1.8.0</frontend.maven.plugin.version>
         <maven.project.info.reports.plugin.version>3.0.0</maven.project.info.reports.plugin.version>
         <maven.javadoc.plugin.version>3.1.1</maven.javadoc.plugin.version>
-        <docs.maven.skin.plugin.version>1.4.3</docs.maven.skin.plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -402,14 +403,14 @@
                 <plugin>
                     <artifactId>maven-site-plugin</artifactId>
                     <version>${maven.site.plugin.version}</version>
-                    <dependencies>
-                        <dependency>
-                            <!--Docs Maven Skin--> 
-                            <groupId>com.bernardomg.maven.skins</groupId>
-                            <artifactId>docs-maven-skin</artifactId>
-                            <version>${docs.maven.skin.plugin.version}</version>
-                        </dependency>
-                    </dependencies>
+                    <configuration>
+                        <source>8</source>
+                        <locales>en</locales>
+                        <!-- see below to enable multilang doc -->
+                        <!--<locales>en,fr</locales>-->
+                        <generateReports>true</generateReports>
+                        <outputDirectory>${maven.multiModuleProjectDirectory}/site/${project.name}/</outputDirectory>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <artifactId>maven-assembly-plugin</artifactId>
@@ -465,6 +466,9 @@
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
                     <version>${jacoco.maven.plugin.version}</version>
+                    <configuration>
+                        <outputDirectory>${maven.multiModuleProjectDirectory}/site/${project.name}/jacoco/</outputDirectory>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.owasp</groupId>
@@ -641,31 +645,8 @@
                     </execution>
                 </executions>
             </plugin>
-            
-            <!-- Documentation site generation plugin -->
-            <plugin>
-                <artifactId>maven-site-plugin</artifactId>
-                <configuration>
-                    <locales>en,fr</locales>
-                    <generateReports>true</generateReports>
-                    <inputEncoding>UTF-8</inputEncoding>
-                    <outputEncoding>UTF-8</outputEncoding>
-                    <!--Site deployment done using GitHub site plugin--> 
-                    <skipDeploy>true</skipDeploy>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
-
-    <!-- Report project information for global documentation generation -->
-    <reporting>
-        <plugins>
-            <plugin>
-                <artifactId>maven-project-info-reports-plugin</artifactId>
-                <version>${maven.project.info.reports.plugin.version}</version>
-            </plugin>
-        </plugins>
-    </reporting>
 
     <!--  Configuration profiles  -->
     <profiles>
@@ -689,59 +670,12 @@
             </build>
         </profile>
         
-        <!-- Plugin which produce javadoc with UML graph in it (require GraphViz) -->
-        <profile>
-            <id>with-javadoc</id>
-            <build>
-                <plugins>
-                    <!--Generate UML Graph: require GraphViz to be installed--> 
-                    <plugin> 
-                        <groupId>org.apache.maven.plugins</groupId> 
-                        <artifactId>maven-javadoc-plugin</artifactId> 
-                        <version>${maven.javadoc.plugin.version}</version> 
-                        <configuration> 
-                            <source>8</source> 
-                            <!--                            <footer>
-                                <![CDATA[
-                                    <script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
-                                    
-                                    <script>
-                                        var svgElements = document.querySelectorAll('[type="image/svg+xml"]');
-                                        for (var i = 0; i < svgElements.length; i++) {
-                                            svgPanZoom(svgElements[i], {controlIconsEnabled: true});
-                                        }
-                                    </script>
-                                ]]>
-                            </footer>-->
-                        </configuration> 
-                        <!--                        <executions> 
-                            <execution> 
-                                <id>attach-javadocs</id> 
-                                <goals> 
-                                    <goal>jar</goal> 
-                                </goals> 
-                                <configuration> 
-                                    <doclet>nl.talsmasoftware.umldoclet.UMLDoclet</doclet> 
-                                    <renderPumlFile>true</renderPumlFile>
-                                    <docletArtifact> 
-                                        <groupId>nl.talsmasoftware</groupId> 
-                                        <artifactId>umldoclet</artifactId> 
-                                        <version>2.0.5</version> 
-                                    </docletArtifact> 
-                                    <additionalOptions> 
-                                         See https://docs.oracle.com/javase/9/javadoc/javadoc-command.htm#JSJAV-GUID-F9E5D57D-5A94-4043-A010-B24511A7BAB2 
-                                         https://docs.oracle.com/javase/7/docs/technotes/tools/windows/javadoc.html#options 
-                                        <additionalOption>-quiet</additionalOption>
-                                        <additionalOption>-use</additionalOption>
-                                        <additionalOption>- -allow-script-in-comments</additionalOption>
-                                    </additionalOptions> 
-                                </configuration> 
-                            </execution> 
-                        </executions> -->
-                    </plugin> 
-                </plugins>
-            </build>
-        </profile>  
+        <!-- Plugin which produce javadoc and doc site-->
+        <!--<profile>-->
+        <!--<id>with-javadoc</id>-->
+        <!-- Report project information for global documentation generation -->
+            
+        <!--</profile>-->  
         
         <!-- Profile to enable in eclipse to avoid build errors -->
         <profile>
@@ -783,4 +717,44 @@
             </build>
         </profile>
     </profiles>
+    
+    <reporting>
+        <plugins>
+            <plugin>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>${maven.project.info.reports.plugin.version}</version>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>index</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+            <plugin> 
+                <groupId>org.apache.maven.plugins</groupId> 
+                <artifactId>maven-javadoc-plugin</artifactId> 
+                <version>${maven.javadoc.plugin.version}</version> 
+                <configuration>
+                    <source>8</source>
+                    <quiet>true</quiet>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-report-plugin</artifactId>   
+                <version>3.0.0-M3</version>   
+            </plugin>  
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.maven.plugin.version}</version>
+            </plugin> 
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jxr-plugin</artifactId>
+                <version>3.0.0</version>
+            </plugin>
+        </plugins>
+    </reporting>
 </project>

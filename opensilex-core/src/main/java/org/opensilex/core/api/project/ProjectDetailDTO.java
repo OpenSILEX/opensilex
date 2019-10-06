@@ -15,7 +15,7 @@ import org.opensilex.server.security.user.User;
 
 /**
  * DTO corresponding to the GET detail of a project
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Morgane Vidal
  */
 public class ProjectDetailDTO {
     private URI uri;

@@ -75,16 +75,4 @@
             </plugin>
         </plugins>
     </build>
-    
-    
-    <!--    <profiles>
-<profile>
-    <id>with-javadoc</id>-->
-    <!--            <build>
-        <plugins>
-            
-        </plugins>
-    </build>-->
-    <!--        </profile>
-    </profiles>-->
 </project>

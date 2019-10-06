@@ -670,13 +670,6 @@
             </build>
         </profile>
         
-        <!-- Plugin which produce javadoc and doc site-->
-        <!--<profile>-->
-        <!--<id>with-javadoc</id>-->
-        <!-- Report project information for global documentation generation -->
-            
-        <!--</profile>-->  
-        
         <!-- Profile to enable in eclipse to avoid build errors -->
         <profile>
             <id>for-eclipse</id>

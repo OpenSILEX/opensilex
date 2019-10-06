@@ -1,5 +1,4 @@
-
-$( document ).ready(function() {
+$(document).ready(function () {
     $("#ws-build-version").text("${project.version}");
     $("#ws-name").text("Swagger UI - " + "${apiName}");
 });

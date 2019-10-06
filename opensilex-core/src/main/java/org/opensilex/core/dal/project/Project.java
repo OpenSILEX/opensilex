@@ -20,7 +20,7 @@ import org.opensilex.sparql.annotations.SPARQLResourceURI;
 /**
  * The model of a project.
  *
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Morgane Vidal
  */
 @SPARQLResource(
         ontology = FOAF.class,

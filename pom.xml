@@ -76,8 +76,7 @@
             </dependencies>
         </profile>
     </profiles>
-    <!--        <profile>
-    <id>with-javadoc</id>-->
+
     <build>
         <plugins>
             <!-- Documentation site generation plugin -->
@@ -142,6 +141,4 @@
             </plugin>
         </plugins>
     </reporting>
-    <!--        </profile>
-    </profiles>-->
 </project>

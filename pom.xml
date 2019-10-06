@@ -6,6 +6,8 @@
     <packaging>pom</packaging>
     
     <name>opensilex-dev</name>
+    
+    <url>https://www.opensilex.org/</url>
 
     <parent>
         <groupId>org.opensilex</groupId>
@@ -23,7 +25,6 @@
         <!-- Extension modules --> 
         <module>phis-ws/phis2-ws</module>
         <!-- Development module -->
-        <module>opensilex-doc</module> 
         <module>opensilex-release</module>
         <module>opensilex-dev-tools</module> 
         <module>opensilex-dev-module-generator</module> 
@@ -47,4 +48,100 @@
             <version>${revision}</version>
         </dependency>
     </dependencies>
+    
+    <profiles>
+        <profile>
+            <id>sixtine</id>
+            <modules>
+                <!-- Required module for angular support -->
+                <module>opensilex-front-app</module>
+                <!-- Sixtine extension -->
+                <module>inrae-ues-sixtine</module>
+                <!-- Front devlopment tools -->
+                <module>opensilex-dev-tools-front</module> 
+            </modules>
+            <dependencies>
+                <!--Required dependency for angular support--> 
+                <dependency>
+                    <groupId>org.opensilex</groupId>
+                    <artifactId>opensilex-front-app</artifactId>
+                    <version>${revision}</version>
+                </dependency>
+                <!--Sixtine extension--> 
+                <dependency>
+                    <groupId>org.opensilex</groupId>
+                    <artifactId>inrae-ues-sixtine</artifactId>
+                    <version>${revision}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+    <!--        <profile>
+    <id>with-javadoc</id>-->
+    <build>
+        <plugins>
+            <!-- Documentation site generation plugin -->
+            <plugin>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>${maven.site.plugin.version}</version>
+                <inherited>false</inherited>     
+                <configuration>
+                    <outputDirectory>${project.basedir}/site/</outputDirectory>
+                </configuration>
+            </plugin>
+            <!--Code coverage @see https://www.eclemma.org/jacoco/trunk/index.html --> 
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <inherited>false</inherited>     
+                <configuration>
+                    <excludes>
+                        <exclude>**/*.war</exclude>
+                    </excludes>
+                    <outputDirectory>${project.basedir}/site/jacoco/</outputDirectory>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>report-aggregate</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>report-aggregate</goal>
+                        </goals>
+                        <configuration>
+                            <title>JaCoCo</title>
+                            <footer>Code Coverage Report for JaCoCo ${project.version}</footer>
+                            <includes>
+                                <!-- Analyze class files only to exclude shaded agent JAR from report -->
+                                <include>**/*.class</include>
+                            </includes>
+                            <outputDirectory>${project.basedir}/site/jacoco/</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    <reporting>
+        <plugins>
+            <plugin> 
+                <groupId>org.apache.maven.plugins</groupId> 
+                <artifactId>maven-javadoc-plugin</artifactId> 
+                <version>${maven.javadoc.plugin.version}</version> 
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jxr-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                    <javadocDir>${basedir}/site/apidocs</javadocDir>
+                </configuration>
+                    
+            </plugin>
+        </plugins>
+    </reporting>
+    <!--        </profile>
+    </profiles>-->
 </project>

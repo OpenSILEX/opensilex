@@ -10,7 +10,7 @@ package opensilex.service.eventListener;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import opensilex.service.PropertiesFileManager;
-import opensilex.service.shinyProxy.ShinyProxyProcess;
+import opensilex.service.shinyProxy.ShinyProxyService;
 import org.glassfish.jersey.server.monitoring.ApplicationEvent;
 import org.glassfish.jersey.server.monitoring.ApplicationEventListener;
 import org.glassfish.jersey.server.monitoring.RequestEvent;
@@ -28,7 +28,7 @@ public class EventListener implements ApplicationEventListener {
 
     @Override
     public void onEvent(ApplicationEvent applicationEvent) {
-        ShinyProxyProcess shinyProxyProcess = new ShinyProxyProcess();
+        ShinyProxyService shinyProxyProcess = new ShinyProxyService();
         switch (applicationEvent.getType()) {
             case INITIALIZATION_START:
                 LOGGER.info("Initialization OpenSILEX WS started");
@@ -47,8 +47,7 @@ public class EventListener implements ApplicationEventListener {
                     CompletableFuture<String> completableFuture
                             = new CompletableFuture<>();
                     Executors.newCachedThreadPool().submit(() -> {
-                        shinyProxyProcess.updateApplicationsListAndImages();
-                        shinyProxyProcess.run();
+                        shinyProxyProcess.reload();
                         completableFuture.complete("Shiny Proxy Complete");
                         return null;
                     });

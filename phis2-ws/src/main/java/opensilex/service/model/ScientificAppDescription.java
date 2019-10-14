@@ -19,6 +19,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.bind.DatatypeConverter;
 import opensilex.service.PropertiesFileManager;
+import opensilex.service.shinyProxy.ShinyProxyService;
 
 /**
  *
@@ -35,6 +36,7 @@ public class ScientificAppDescription {
     public String container_image;
     public HashMap<String, Object> env_variables;
     public String application_url;
+    public static String container_network = ShinyProxyService.SHINYPROXY_NETWORK_ID; 
 
     public ScientificAppDescription(String uri, String display_name, String description, String sessionId) {
         this.documentUri = uri;
@@ -75,6 +77,8 @@ public class ScientificAppDescription {
         if (!this.env_variables.isEmpty()) {
             shinyAppDescriptionMap.put("container-env", this.env_variables);
         }
+        shinyAppDescriptionMap.put("container-network", this.container_network);
+
         return shinyAppDescriptionMap;
     }
 

@@ -19,8 +19,8 @@ import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.model.Document;
 import opensilex.service.model.ScientificAppDescription;
 import opensilex.service.model.User;
-import opensilex.service.shinyProxy.ShinyProxyProcess;
-import static opensilex.service.shinyProxy.ShinyProxyProcess.SHINYPROXY_APP_DOCTYPE;
+import opensilex.service.shinyProxy.ShinyProxyService;
+import static opensilex.service.shinyProxy.ShinyProxyService.SHINYPROXY_APP_DOCTYPE;
 
 /**
  *
@@ -97,7 +97,7 @@ public class ScientificAppDAO extends DAO<ScientificAppDescription> {
     }
 
     private ArrayList<ScientificAppDescription> getShinyProxyAppListFromDocumentMetadata(ArrayList<Document> documentsMetadata) {
-        File shinyDockersFileDir = ShinyProxyProcess.SHINYPROXY_DOCKER_FILES.toFile();
+        File shinyDockersFileDir = ShinyProxyService.SHINYPROXY_DOCKER_FILES.toFile();
         shinyDockersFileDir.mkdirs();
         ArrayList<ScientificAppDescription> shinyProxyAppList = new ArrayList<>();
         String sessionId = null;

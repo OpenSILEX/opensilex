@@ -65,6 +65,15 @@ public enum DateFormat {
         if (dateStringToParse == null) {
             return null;
         }
+
+        // Check if the date match format with ":" in timezone offset
+        if (dateStringToParse.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}[+-]\\d{2}:\\d{2}")) {
+            int start = dateStringToParse.lastIndexOf(":");
+            StringBuilder builder = new StringBuilder();
+            builder.append(dateStringToParse.substring(0, start));
+            builder.append(dateStringToParse.substring(start + 1));
+            dateStringToParse = builder.toString();
+        }
         
         SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
                 

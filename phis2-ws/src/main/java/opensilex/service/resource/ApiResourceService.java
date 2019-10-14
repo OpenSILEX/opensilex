@@ -33,7 +33,7 @@ public class ApiResourceService extends ResourceService {
      * @example
      * {
      *   "majorVersion": 3,
-     *   "buildVersion": "v3.3.0",
+     *   "buildVersion": "3.3.0",
      *   "name": "OpenSILEX API"
      * }
      */

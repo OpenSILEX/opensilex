@@ -1,6 +1,6 @@
 $(document).ready(function () {
-    $("#ws-build-version").text("${project.version}");
-    $("#ws-name").text("Swagger UI - " + "${apiName}");
+    $("#ws-build-version").text("${ws.version}");
+    $("#ws-name").text("Swagger UI - " + "${ws.target}");
 });
 /**
  * Récupère l'adresse et le port utilises pour voir la documentation du webservice

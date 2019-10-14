@@ -727,7 +727,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             sparqlQuery.beginBodyOptional();
             sparqlQuery.appendToBody("?" + URI + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + ALIAS + " . ");
             sparqlQuery.endBodyOptional();
-        } else if (!count) {
+        } else if(alias != null){
             sparqlQuery.appendTriplet("?" + URI, Rdfs.RELATION_LABEL.toString(), "?" + ALIAS, null);
             sparqlQuery.appendAndFilter("REGEX ( str(?" + ALIAS + "),\".*" + alias + ".*\",\"i\")");
         }
@@ -735,7 +735,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         //Experiment filter
         if (experiment != null) {
               sparqlQuery.appendFrom("<" + Contexts.VOCABULARY.toString() + "> \n FROM <" + experiment + ">");
-        } else if (!count) {
+        } else {
             sparqlQuery.appendSelect("?" + EXPERIMENT);
             sparqlQuery.appendOptional("?" + URI + " <" + Oeso.RELATION_PARTICIPATES_IN.toString() + "> " + "?" + EXPERIMENT + " . ");
         }

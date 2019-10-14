@@ -1,70 +1,121 @@
 //******************************************************************************
-//                               ProjectDTO.java
+//                                ProjectPostDTO.java
 // SILEX-PHIS
 // Copyright © INRA 2019
-// Creation date: 14 Feb. 2019
+// Creation date: 11 juil. 2019
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.resource.dto.project;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
-import javax.validation.Valid;
+import java.util.List;
 import opensilex.service.configuration.DateFormat;
+import opensilex.service.documentation.DocumentationAnnotation;
+import opensilex.service.model.Contact;
+import opensilex.service.model.FinancialFunding;
+import opensilex.service.model.Project;
+import opensilex.service.model.RdfResourceDefinition;
+import opensilex.service.resource.ProjectResourceService;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
-import opensilex.service.model.Contact;
-import opensilex.service.model.Project;
 
 /**
- * Project POST DTO.
+ * The DTO for the POST of projects.
+ * @see ProjectResourceService#post(java.util.ArrayList, javax.servlet.http.HttpServletRequest) 
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ProjectPostDTO extends AbstractVerifiedClass {
 
+    //The name of the project.
     private String name;
-    private String acronyme;
-    private String subprojectType;
-    private String financialSupport;
-    private String financialName;
-    private String dateStart;
-    private String dateEnd;
-    private String keywords;
+    //A shortname for the project
+    private String shortname;
+    //The list of projects URI related to the project.
+    private List<String> relatedProjects = new ArrayList<>();
+    //The URI of the financial funding type.
+    private String financialFunding;
+    private String financialReference;
+    //The description of the project.
     private String description;
+    //The start date of the project. The format should be YYYY-MM-JJ
+    private String startDate;
+    //The end date of the project. The format should be YYYY-MM-JJ
+    private String endDate;
+    //A list of keyword corresponding to the project.
+    private List<String> keywords = new ArrayList<>();
+    //The home page of the project.
+    private String homePage;
+    //The list of administrative contacts of the project.
+    private List<String> administrativeContacts = new ArrayList<>();
+    //The list of coordinators of the projects.
+    private List<String> coordinators = new ArrayList<>();
+    //The list of scientific contacts of the project.
+    private List<String> scientificContacts = new ArrayList<>();
+    //The objective of the project.
     private String objective;
-    private String parentProject;
-    private String website;
-    private ArrayList<Contact> contacts;
-
+    
     @Override
     public Project createObjectFromDTO() {
         Project project = new Project();
         project.setName(name);
-        project.setAcronyme(acronyme);
-        project.setSubprojectType(subprojectType);
-        project.setFinancialSupport(financialSupport);
-        project.setFinancialName(financialName);
-        project.setDateStart(dateStart);
-        project.setDateEnd(dateEnd);
-        project.setKeywords(keywords);
-        project.setDescription(description);
-        project.setObjective(objective);
-        project.setParentProject(parentProject);
-        project.setWebsite(website);
-
-        if (contacts != null && !contacts.isEmpty()) {
-            contacts.forEach((contact) -> {
-                project.addContact(contact);
-            });
+        project.setShortname(shortname);
+        
+        for (String relatedProjectUri : relatedProjects) {
+            Project relatedProject = new Project();
+            relatedProject.setUri(relatedProjectUri);
+            project.addRelatedProject(relatedProject);
         }
-
+        
+        if (financialFunding != null) {
+            FinancialFunding financialFundingObject = new FinancialFunding();
+            financialFundingObject.setUri(financialFunding);
+            project.setFinancialFunding(financialFundingObject);
+        }
+        project.setFinancialReference(financialReference);
+        
+        project.setDescription(description);
+        project.setStartDate(startDate);
+        project.setEndDate(endDate);
+        project.setKeywords(keywords);
+        project.setHomePage(homePage);
+        
+        for (String administrativeContactUri : administrativeContacts) {
+            Contact contact = new Contact();
+            contact.setUri(administrativeContactUri);
+            project.addAdministrativeContact(contact);
+        }
+        
+        for (String coordinatorUri : coordinators) {
+            Contact contact = new Contact();
+            contact.setUri(coordinatorUri);
+            project.addCoordinator(contact);
+        }
+        
+        for (String scientificContactUri : scientificContacts) {
+            Contact contact = new Contact();
+            contact.setUri(scientificContactUri);
+            project.addScientificContact(contact);
+        }
+        
+        project.setObjective(objective);
+        
         return project;
     }
 
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROJECT_FINANCIAL_REFERENCE)
+    public String getFinancialReference() {
+        return financialReference;
+    }
+
+    public void setFinancialReference(String financialReference) {
+        this.financialReference = financialReference;
+    }
+
     @Required
-    @ApiModelProperty(example = "projectTest")
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROJECT_NAME)
     public String getName() {
         return name;
     }
@@ -72,74 +123,35 @@ public class ProjectPostDTO extends AbstractVerifiedClass {
     public void setName(String name) {
         this.name = name;
     }
-
-    @ApiModelProperty(example = "PT")
-    public String getAcronyme() {
-        return acronyme;
-    }
-
-    public void setAcronyme(String acronyme) {
-        this.acronyme = acronyme;
-    }
-
-    @ApiModelProperty(example = "subproject type")
-    public String getSubprojectType() {
-        return subprojectType;
-    }
-
-    public void setSubprojectType(String subprojectType) {
-        this.subprojectType = subprojectType;
-    }
-
-    @ApiModelProperty(example = "financial support")
-    public String getFinancialSupport() {
-        return financialSupport;
-    }
-
-    public void setFinancialSupport(String financialSupport) {
-        this.financialSupport = financialSupport;
-    }
-
-    @ApiModelProperty(example = "financial name")
-    public String getFinancialName() {
-        return financialName;
-    }
-
-    public void setFinancialName(String financialName) {
-        this.financialName = financialName;
-    }
-
-    @Date(DateFormat.YMD)
+    
     @Required
-    @ApiModelProperty(example = "2015-07-07")
-    public String getDateStart() {
-        return dateStart;
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROJECT_SHORTNAME)
+    public String getShortname() {
+        return shortname;
     }
 
-    public void setDateStart(String dateStart) {
-        this.dateStart = dateStart;
+    public void setShortname(String shortname) {
+        this.shortname = shortname;
     }
 
-    @Date(DateFormat.YMD)
-    @ApiModelProperty(example = "2016-07-07")
-    public String getDateEnd() {
-        return dateEnd;
+    public List<String> getRelatedProjects() {
+        return relatedProjects;
     }
 
-    public void setDateEnd(String dateEnd) {
-        this.dateEnd = dateEnd;
+    public void setRelatedProjects(List<String> relatedProjects) {
+        this.relatedProjects = relatedProjects;
+    }
+    
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROJECT_FINANCIAL_URI)
+    public String getFinancialFunding() {
+        return financialFunding;
     }
 
-    @ApiModelProperty(example = "keywords")
-    public String getKeywords() {
-        return keywords;
+    public void setFinancialFunding(String financialFunding) {
+        this.financialFunding = financialFunding;
     }
-
-    public void setKeywords(String keywords) {
-        this.keywords = keywords;
-    }
-
-    @ApiModelProperty(example = "description")
+    
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROJECT_DESCRIPTION)
     public String getDescription() {
         return description;
     }
@@ -147,41 +159,77 @@ public class ProjectPostDTO extends AbstractVerifiedClass {
     public void setDescription(String description) {
         this.description = description;
     }
+    
+    @Date(DateFormat.YMD)
+    @Required
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROJECT_DATE_START)
+    public String getStartDate() {
+        return startDate;
+    }
 
-    @ApiModelProperty(example = "objective")
+    public void setStartDate(String startDate) {
+        this.startDate = startDate;
+    }
+
+    @Date(DateFormat.YMD)
+    @Required
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROJECT_DATE_END)
+    public String getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(String endDate) {
+        this.endDate = endDate;
+    }
+
+    public List<String> getKeywords() {
+        return keywords;
+    }
+
+    public void setKeywords(List<String> keywords) {
+        this.keywords = keywords;
+    }
+    
+    @URL
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROJECT_HOME_PAGE)
+    public String getHomePage() {
+        return homePage;
+    }
+
+    public void setHomePage(String homePage) {
+        this.homePage = homePage;
+    }
+
+    public List<String> getAdministrativeContacts() {
+        return administrativeContacts;
+    }
+
+    public void setAdministrativeContacts(List<String> administrativeContacts) {
+        this.administrativeContacts = administrativeContacts;
+    }
+
+    public List<String> getCoordinators() {
+        return coordinators;
+    }
+
+    public void setCoordinators(List<String> coordinators) {
+        this.coordinators = coordinators;
+    }
+
+    public List<String> getScientificContacts() {
+        return scientificContacts;
+    }
+
+    public void setScientificContacts(List<String> scientificContacts) {
+        this.scientificContacts = scientificContacts;
+    }
+
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROJECT_OBJECTIVE)
     public String getObjective() {
         return objective;
     }
 
     public void setObjective(String objective) {
         this.objective = objective;
-    }
-
-    @ApiModelProperty(example = "parent project")
-    public String getParentProject() {
-        return parentProject;
-    }
-
-    public void setParentProject(String parentProject) {
-        this.parentProject = parentProject;
-    }
-
-    @URL
-    @ApiModelProperty(example = "http://example.com")
-    public String getWebsite() {
-        return website;
-    }
-
-    public void setWebsite(String website) {
-        this.website = website;
-    }
-
-    @Valid
-    public ArrayList<Contact> getContacts() {
-        return contacts;
-    }
-    
-    public void setContacts(ArrayList<Contact> contacts) {
-        this.contacts = contacts;
     }
 }

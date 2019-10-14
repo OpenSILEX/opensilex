@@ -7,8 +7,8 @@
 //******************************************************************************
 package opensilex.service.resource.brapi;
 
+
 import java.util.ArrayList;
-import org.glassfish.jersey.spi.Contract;
 import opensilex.service.model.Call;
 
 /**
@@ -18,7 +18,6 @@ import opensilex.service.model.Call;
  * TraitsResourceService as an example)
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
-@Contract
 public interface BrapiCall {
 
     ArrayList<Call> callInfo();

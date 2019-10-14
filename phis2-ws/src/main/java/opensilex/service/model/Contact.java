@@ -1,26 +1,30 @@
 //******************************************************************************
-//                                  Contact.java 
+//                                Contact.java
 // SILEX-PHIS
-// Copyright © INRA 2017
-// Creation date: March 2017
+// Copyright © INRA 2019
+// Creation date: 9 juil. 2019
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-
 package opensilex.service.model;
 
 /**
- * Contact model.
+ *
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class Contact {
+    private String uri;
     private String email;
-    private String firstName;
-    private String familyName;
-    private String type;
+    private String firstname;
+    private String lastname;
     
-    public Contact() {
+    public String getUri() {
+        return uri;
     }
 
+    public void setUri(String uri) {
+        this.uri = uri;
+    }
+    
     public String getEmail() {
         return email;
     }
@@ -29,27 +33,19 @@ public class Contact {
         this.email = email;
     }
 
-    public String getFirstName() {
-        return firstName;
+    public String getFirstname() {
+        return firstname;
     }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
     }
 
-    public String getFamilyName() {
-        return familyName;
+    public String getLastname() {
+        return lastname;
     }
 
-    public void setFamilyName(String familyName) {
-        this.familyName = familyName;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
+    public void setLastname(String lastname) {
+        this.lastname = lastname;
     }
 }

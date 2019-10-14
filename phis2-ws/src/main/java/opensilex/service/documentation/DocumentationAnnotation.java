@@ -139,6 +139,7 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_ACTUATOR_RDF_TYPE = "http://www.opensilex.org/vocabulary/oeso#Actuator";
     public static final String EXAMPLE_ACTUATOR_URI = "http://www.opensilex.org/opensilex/2019/a19001";
     public static final String EXAMPLE_DATA_FILE_WEB_PATH = "http://www.opensilex.org/images/example.jpg";
+    public static final String EXAMPLE_DATA_RELATIVE_FILEPATH="dir1/data.csv";
     public static final String EXAMPLE_EXPERIMENT_URI = "http://www.opensilex.org/demo/DMO2012-1";
     public static final String EXAMPLE_EXPERIMENT_START_DATE = EXAMPLE_DATETIME;
     public static final String EXAMPLE_EXPERIMENT_END_DATE = EXAMPLE_DATETIME;
@@ -166,15 +167,18 @@ public final class DocumentationAnnotation {
 
     public static final String EXAMPLE_PROJECT_URI = "http://www.opensilex.org/demo/projectTest";
     public static final String EXAMPLE_PROJECT_NAME = "projectTest";
-    public static final String EXAMPLE_PROJECT_ACRONYME = "P T";
+    public static final String EXAMPLE_PROJECT_SHORTNAME = "P T";
     public static final String EXAMPLE_PROJECT_SUBPROJECT_TYPE = "subproject type";
-    public static final String EXAMPLE_PROJECT_FINANCIAL_SUPPORT = "financial support";
-    public static final String EXAMPLE_PROJECT_FINANCIAL_NAME = "financial name";
+    public static final String EXAMPLE_PROJECT_FINANCIAL_REFERENCE = "financial reference";
+    public static final String EXAMPLE_PROJECT_FINANCIAL_FUNDING = "financial name";
+    public static final String EXAMPLE_PROJECT_FINANCIAL_URI = "http://www.opensilex.org/demo/REF001";
     public static final String EXAMPLE_PROJECT_DATE_START = "2015-07-07";
     public static final String EXAMPLE_PROJECT_DATE_END = "2016-07-07";
+    public static final String EXAMPLE_PROJECT_DESCRIPTION = "This project is about maize.";
     public static final String EXAMPLE_PROJECT_KEYWORDS = "keywords";
+    public static final String EXAMPLE_PROJECT_OBJECTIVE = "This is the objective of the project.";
     public static final String EXAMPLE_PROJECT_PARENT_PROJECT = "parent project";
-    public static final String EXAMPLE_PROJECT_WEBSITE = "http://example.com";
+    public static final String EXAMPLE_PROJECT_HOME_PAGE = "http://example.com";
     public static final String EXAMPLE_PROJECT_TYPE = "project type";
     
     public static final String EXAMPLE_PROPERTY_RDF_TYPE = "http://xmlns.com/foaf/0.1/Agent";
@@ -198,7 +202,7 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_USER_EMAIL = "admin@opensilex.org";
     public static final String EXAMPLE_USER_PASSWORD = "21232f297a57a5a743894a0e4a801fc3";
     public static final String EXAMPLE_USER_FIRST_NAME = "Marie";
-    public static final String EXAMPLE_USER_FAMILY_NAME = "Dupont";
+    public static final String EXAMPLE_USER_LASTNAME = "Dupont";
     public static final String EXAMPLE_USER_ADDRESS = "2 place Pierre Viala, Montpellier";
     public static final String EXAMPLE_USER_PHONE = "0400000000";
     public static final String EXAMPLE_USER_AFFILIATION = "affiliation";
@@ -302,6 +306,12 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_ANNOTATION_BODY_VALUE = "Ustilago maydis infection";
     public static final String EXAMPLE_ANNOTATION_CREATOR = "http://www.opensilex.org/demo/id/agent/marie_dupond";
 
+    
+    public static final String EXAMPLE_FACTOR_RDF_TYPE = "http://www.opensilex.org/vocabulary/oeso#Factor";
+    public static final String EXAMPLE_FACTOR_URI = "http://www.opensilex.org/id/factor/f001";
+    public static final String EXAMPLE_FACTOR_LABEL = "Water Exposure";
+    public static final String EXAMPLE_FACTOR_COMMENT = "Change the frequency on water addition";
+    
     // API global parameters
     public static final String EXAMPLE_SORTING_ALLOWABLE_VALUES = "asc,desc";
 
@@ -312,4 +322,12 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_LANGUAGE = "en";
     
     public static final String EXAMPLE_SKOS_REFERECENCE_URI = "http://purl.obolibrary.org/obo/CO_125_0000002";
-}
+    
+    public static final String FACTOR_POST_DATA_DEFINITION = "JSON format of factor";
+    public static final String FACTOR_URI_DEFINITION = "A factor URI (Unique Resource Identifier)";
+}    
+    
+ 
+
+    
+    

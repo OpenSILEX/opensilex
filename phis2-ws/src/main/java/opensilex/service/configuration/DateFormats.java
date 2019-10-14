@@ -51,6 +51,7 @@ public final class DateFormats {
             "yyyy-MM-dd HH:mm:ss.SSS", 
             "yyyy-MM-dd HH:mm:ssZZ", 
             "yyyy-MM-dd HH:mm:ss.SSSZZ");
+    public final static String DATETIME_POSTGRES_FORMAT = "yyyy/MM/dd HH:mm:ss";
 
     // Dates formats
     public final static String YMD_FORMAT = DateFormat.YMD.toString();

@@ -31,12 +31,7 @@ public class ResultForm<T> {
      * @param paginate 
      */
     public ResultForm(int pageSize, int currentPage, ArrayList<T> list, boolean paginate) {
-        metadata = new Metadata(pageSize, currentPage, list.size());
-        if (list.size() > 1) {
-            result = new Result<>(list, metadata.getPagination(), paginate);
-        } else {
-            result = new Result<>(list);
-        }
+    	this(pageSize, currentPage, list, paginate, list.size());
     }
     
     /**

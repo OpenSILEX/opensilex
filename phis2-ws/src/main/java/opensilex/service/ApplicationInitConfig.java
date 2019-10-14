@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import opensilex.service.authentication.Session;
 import opensilex.service.authentication.TokenManager;
 import opensilex.service.documentation.StatusCodeMsg;
+import opensilex.service.eventListener.EventListener;
 import opensilex.service.injection.SessionFactory;
 import opensilex.service.injection.SessionInject;
 import opensilex.service.injection.SessionInjectResolver;
@@ -41,7 +42,7 @@ public class ApplicationInitConfig extends ResourceConfig {
 
     final static String PROPERTY_FILE_NAME = "service";
     final static Logger LOGGER = LoggerFactory.getLogger(ApplicationInitConfig.class);
-
+    
     /**
      * Initializes application configuration
      */
@@ -53,9 +54,12 @@ public class ApplicationInitConfig extends ResourceConfig {
         
         //Swagger
         BeanConfig beanConfig = new BeanConfig();
-        beanConfig.setVersion("1.0.2");
+        beanConfig.setVersion(PropertiesFileManager.getConfigFileProperty("pom", "version"));
+        beanConfig.setTitle(PropertiesFileManager.getConfigFileProperty("pom", "apiName"));
         beanConfig.setSchemes(new String[]{"http"});
-        
+        beanConfig.setLicense("GNU Affero General Public License 3");
+        beanConfig.setLicenseUrl("https://www.gnu.org/licenses/agpl-3.0.fr.html");
+        beanConfig.setDescription("An instance of OpenSILEX WebService");
         beanConfig.setHost(PropertiesFileManager.getConfigFileProperty("service", "host"));
         beanConfig.setBasePath(PropertiesFileManager.getConfigFileProperty("service", "basePath"));
        
@@ -82,6 +86,7 @@ public class ApplicationInitConfig extends ResourceConfig {
                         .in(Singleton.class);
             }
         });
+        register(EventListener.class);
     }
     
     /**

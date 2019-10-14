@@ -21,6 +21,12 @@ public enum Oeso {
         }
     },
     
+    CONCEPT_FACTOR {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "Factor";
+        }
+    },
     CONCEPT_SCIENTIFIC_OBJECT {
         @Override
         public String toString() {
@@ -216,10 +222,22 @@ public enum Oeso {
             return NAMESPACE.toString() + "deviceProperty";
         }
     },
+    RELATION_END_DATE {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "endDate";
+        }
+    },
     RELATION_FROM_GENOTYPE {
         @Override
         public String toString() {
             return NAMESPACE.toString() + "fromGenotype";
+        }
+    },
+    RELATION_HAS_RELATED_PROJECT {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasRelatedProject";
         }
     },
     RELATION_HAS_SPECIES {
@@ -258,6 +276,24 @@ public enum Oeso {
             return NAMESPACE.toString() + "hasExperimentModalities";
         }
     },
+    RELATION_HAS_FINANCIAL_REFERENCE {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasFinancialReference";
+        }
+    },
+    RELATION_HAS_FINANCIAL_FUNDING {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasFinancialFunding";
+        }
+    },
+    RELATION_HAS_KEYWORD {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasKeyword";
+        } 
+    },
     RELATION_HAS_METHOD {
         @Override
         public String toString() {
@@ -268,6 +304,12 @@ public enum Oeso {
         @Override
         public String toString() {
             return NAMESPACE.toString() + "hasModel";
+        }
+    },
+    RELATION_HAS_OBJECTIVE {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasObjective";
         }
     },
     RELATION_HAS_PLOT {
@@ -318,6 +360,12 @@ public enum Oeso {
             return NAMESPACE.toString() + "hasShapeWidth";
         }
     },
+    RELATION_HAS_SHORTNAME {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasShortname";
+        }
+    },
     RELATION_HAS_TECHNICAL_CONTACT {
         @Override
         public String toString() {
@@ -342,10 +390,28 @@ public enum Oeso {
             return NAMESPACE.toString() + "inServiceDate";
         }
     },
+    RELATION_HAS_ADMINISTRATIVE_CONTACT {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasAdministrativeContact";
+        }
+    },
+    RELATION_HAS_COORDINATOR {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasCoordinator";
+        }
+    },
     RELATION_IS_PART_OF {
         @Override
         public String toString() {
             return NAMESPACE.toString() + "isPartOf";
+        }
+    },
+    RELATION_HAS_SCIENTIFIC_CONTACT {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "hasScientificContact";
         }
     },
     RELATION_MEASURES {
@@ -364,6 +430,12 @@ public enum Oeso {
         @Override
         public String toString() {
             return NAMESPACE.toString() + "personInCharge";
+        }
+    },
+    RELATION_START_DATE {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "startDate";
         }
     },
     RELATION_STATUS {

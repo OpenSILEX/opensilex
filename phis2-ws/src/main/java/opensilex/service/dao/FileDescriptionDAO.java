@@ -299,13 +299,11 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
                 fileDescriptionCollection.createIndex(new BasicDBObject(DB_FIELD_URI, 1), indexOptions);
                 
                 try {
-                    UriGenerator uriGenerator = new UriGenerator();
-                    
                     Timestamp timestamp = new Timestamp(System.currentTimeMillis());
                     String key = Long.toString(timestamp.getTime());
-                    String uri = uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);
+                    String uri = UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);
                     while (uriExists(fileDescription.getRdfType(), uri)) {
-                        uri = uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);
+                        uri = UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);
                     }
                     
                     fileDescription.setUri(uri);
@@ -313,6 +311,7 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
                     //3. Insert metadata first
                     fileDescriptionCollection.insertOne(session, fileDescription);
                     createdResources.add(fileDescription.getUri());
+                    status.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, ""));
                 } catch (MongoException ex) {
                     // Define that an error occurs
                     hasError = true;
@@ -457,12 +456,10 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
                       + "/dataFiles/"
                       + fileCollectionName + "/";
             
-            UriGenerator uriGenerator = new UriGenerator();
-            
             String key = fileDescription.getFilename() + fileDescription.getDate();
-            String uri = uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);
+            String uri = UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);
             while (uriExists(fileDescription.getRdfType(), uri)) {
-                uri = uriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);
+                uri = UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);
             }
             
             fileDescription.setUri(uri);

@@ -8,8 +8,6 @@
 package opensilex.service.resource.request.filter;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.ws.rs.WebApplicationException;
@@ -59,11 +57,8 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
                                 "Invalid token")))
                 .type(MediaType.APPLICATION_JSON).build();
         
-        
         final UriInfo uriInfo = requestContext.getUriInfo();
         final String resourcePath = uriInfo.getPath();
-        
-      
         // Swagger.json and token authorized
         if (resourcePath != null
                 && !resourcePath.contains("token")

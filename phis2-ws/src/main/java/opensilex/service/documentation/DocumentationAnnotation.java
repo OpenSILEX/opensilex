@@ -325,9 +325,8 @@ public final class DocumentationAnnotation {
     
     public static final String FACTOR_POST_DATA_DEFINITION = "JSON format of factor";
     public static final String FACTOR_URI_DEFINITION = "A factor URI (Unique Resource Identifier)";
-}    
-    
- 
 
-    
-    
+    public static final String EXAMPLE_API_MAJOR_VERSION = "3";
+    public static final String EXAMPLE_API_BUILD_VERSION = "3.0.0";
+    public static final String EXAMPLE_API_NAME = "opensilex";
+}

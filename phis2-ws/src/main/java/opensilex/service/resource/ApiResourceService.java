@@ -1,5 +1,5 @@
 //******************************************************************************
-//                       APIResourceService.java
+//                       ApiResourceService.java
 // SILEX-PHIS
 // Copyright © INRA
 // Creation date: 25 Septembre 2019
@@ -17,7 +17,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import opensilex.service.documentation.DocumentationAnnotation;
-import opensilex.service.resource.dto.APIDescriptionDTO;
+import opensilex.service.resource.dto.ApiDescriptionDTO;
 
 /**
  * Api ressource service
@@ -25,7 +25,7 @@ import opensilex.service.resource.dto.APIDescriptionDTO;
  */
 @Api("/api")
 @Path("/api")
-public class APIResourceService extends ResourceService {
+public class ApiResourceService extends ResourceService {
 
     /**
      * Describe API state
@@ -33,21 +33,20 @@ public class APIResourceService extends ResourceService {
      * @example
      * {
      *   "majorVersion": 3,
-     *   "version": "v3.3.0",
-     *   "name": "OpenSILEX API",
-     *   "build": null
+     *   "buildVersion": "3.3.0",
+     *   "name": "OpenSILEX API"
      * }
      */
     @GET
     @ApiOperation(value = "Retrieve informations about OpenSILEX API",
                   notes = "Retreive version, name and major version number.")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve API description", response = APIDescriptionDTO.class),
+        @ApiResponse(code = 200, message = "Retrieve API description", response = ApiDescriptionDTO.class),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @Produces(MediaType.APPLICATION_JSON)  
     public Response getApiDescription() {
-        APIDescriptionDTO apiDescription = new APIDescriptionDTO();
+        ApiDescriptionDTO apiDescription = new ApiDescriptionDTO();
         return Response.status(Response.Status.OK).entity(apiDescription).build();
     }
 }

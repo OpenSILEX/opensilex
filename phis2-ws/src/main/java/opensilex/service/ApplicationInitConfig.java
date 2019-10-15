@@ -51,17 +51,31 @@ public class ApplicationInitConfig extends ResourceConfig {
                 + "opensilex.service.resource;"
                 + "opensilex.service.json;"
                 + "opensilex.service.resource.request.filter");
-        
+
         //Swagger
         BeanConfig beanConfig = new BeanConfig();
-        beanConfig.setVersion(PropertiesFileManager.getConfigFileProperty("pom", "version"));
-        beanConfig.setTitle(PropertiesFileManager.getConfigFileProperty("pom", "apiName"));
+        beanConfig.setVersion(
+            PropertiesFileManager.getConfigFileProperty(PROPERTY_FILE_NAME, "wsVersion")
+        );
+        beanConfig.setTitle(
+            PropertiesFileManager.getConfigFileProperty(PROPERTY_FILE_NAME, "wsApiName")
+        );
         beanConfig.setSchemes(new String[]{"http"});
-        beanConfig.setLicense("GNU Affero General Public License 3");
-        beanConfig.setLicenseUrl("https://www.gnu.org/licenses/agpl-3.0.fr.html");
-        beanConfig.setDescription("An instance of OpenSILEX WebService");
-        beanConfig.setHost(PropertiesFileManager.getConfigFileProperty("service", "host"));
-        beanConfig.setBasePath(PropertiesFileManager.getConfigFileProperty("service", "basePath"));
+        beanConfig.setLicense(
+            PropertiesFileManager.getConfigFileProperty(PROPERTY_FILE_NAME, "wsLicence")
+        );
+        beanConfig.setLicenseUrl(           
+            PropertiesFileManager.getConfigFileProperty(PROPERTY_FILE_NAME, "wsLicenceUrl")
+        );
+        beanConfig.setDescription(     
+            PropertiesFileManager.getConfigFileProperty(PROPERTY_FILE_NAME, "wsDescription")
+        );
+        beanConfig.setHost(
+            PropertiesFileManager.getConfigFileProperty(PROPERTY_FILE_NAME, "host")
+        );
+        beanConfig.setBasePath(
+            PropertiesFileManager.getConfigFileProperty(PROPERTY_FILE_NAME, "basePath")
+        );
        
         beanConfig.setResourcePackage("opensilex.service.resource");
         beanConfig.setScan(true);

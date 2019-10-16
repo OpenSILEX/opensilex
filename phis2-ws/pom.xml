@@ -51,12 +51,6 @@
             <version>2.7.1</version>
             <type>jar</type>
         </dependency>
-        <!--https://mvnrepository.com/artifact/org.codehaus.janino/janino -->
-        <dependency>
-            <groupId>org.codehaus.janino</groupId>
-            <artifactId>janino</artifactId>
-            <version>2.5.16</version>
-        </dependency>
         <dependency>
             <groupId>net.postgis</groupId>
             <artifactId>postgis-jdbc</artifactId>

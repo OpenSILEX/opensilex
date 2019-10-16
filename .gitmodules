@@ -2,9 +2,9 @@
 	path = phis-ws
 	url = https://github.com/OpenSILEX/phis-ws.git
 	branch = opensilex-module
-[submodule "opensilex-front-app"]
-	path = opensilex-front-app
+[submodule "opensilex-angular"]
+	path = opensilex-angular
 	url = git@forgemia.inra.fr:OpenSILEX/sixtine/opensilex-front-app.git
-[submodule "opensilex-dev-tools-front"]
-	path = opensilex-dev-tools-front
+[submodule "opensilex-angular-dev"]
+	path = opensilex-angular-dev
 	url = git@forgemia.inra.fr:OpenSILEX/sixtine/opensilex-dev-tools-front.git

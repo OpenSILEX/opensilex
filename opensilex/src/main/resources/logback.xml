@@ -4,8 +4,8 @@
     <property name="log.pattern" value="%d{dd MMM yyyy;HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n" />
     
     <property name="default.log.level" value="WARN"/>
-    <property name="opensilex.log.level" value="${opensilex.log.level:-INFO}"/>
-    <!--<property name="opensilex.log.level" value="${opensilex.log.level:-DEBUG}"/>-->
+    <!--<property name="opensilex.log.level" value="${opensilex.log.level:-INFO}"/>-->
+    <property name="opensilex.log.level" value="${opensilex.log.level:-DEBUG}"/>
     
     <!-- output -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">

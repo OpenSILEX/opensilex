@@ -26,7 +26,7 @@
         <module>phis-ws/phis2-ws</module>
         <!-- Development module -->
         <module>opensilex-release</module>
-        <module>opensilex-dev-tools</module> 
+        <module>opensilex-dev-tools</module>
         <module>opensilex-dev-module-generator</module> 
     </modules>
 
@@ -54,17 +54,17 @@
             <id>sixtine</id>
             <modules>
                 <!-- Required module for angular support -->
-                <module>opensilex-front-app</module>
+                <module>opensilex-angular</module>
                 <!-- Sixtine extension -->
                 <module>inrae-ues-sixtine</module>
-                <!-- Front devlopment tools -->
-                <module>opensilex-dev-tools-front</module> 
+                <!-- Angular development tools -->
+                <module>opensilex-angular-dev</module> 
             </modules>
             <dependencies>
                 <!--Required dependency for angular support--> 
                 <dependency>
                     <groupId>org.opensilex</groupId>
-                    <artifactId>opensilex-front-app</artifactId>
+                    <artifactId>opensilex-angular</artifactId>
                     <version>${revision}</version>
                 </dependency>
                 <!--Sixtine extension--> 
@@ -137,7 +137,6 @@
                 <configuration>
                     <javadocDir>${basedir}/site/apidocs</javadocDir>
                 </configuration>
-                    
             </plugin>
         </plugins>
     </reporting>

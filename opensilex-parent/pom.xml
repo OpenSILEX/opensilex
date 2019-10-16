@@ -23,14 +23,14 @@
         <!-- dependencies version -->
         <jersey.version>2.29.1</jersey.version>
         <jackson.version>2.10.0</jackson.version>
-        <tomcat.version>9.0.26</tomcat.version>
+        <tomcat.version>9.0.27</tomcat.version>
         <javax.servlet.api.version>4.0.1</javax.servlet.api.version>
-        <swagger.jersey2.jaxrs.version>1.5.23</swagger.jersey2.jaxrs.version>
+        <swagger.jersey2.jaxrs.version>1.5.24</swagger.jersey2.jaxrs.version>
         <maven.resolver.version>1.4.1</maven.resolver.version>
         <maven.resolver.provider.version>3.6.2</maven.resolver.provider.version>
-        <rdf4j.version>3.0.0</rdf4j.version>
-        <jena.query.builder.version>3.13.0</jena.query.builder.version>
-        <data.nucleus.version>5.2.1</data.nucleus.version>
+        <rdf4j.version>3.0.1</rdf4j.version>
+        <jena.query.builder.version>3.13.1</jena.query.builder.version>
+        <data.nucleus.version>5.2.2</data.nucleus.version>
         <data.nucleus.jdo.version>3.2.0-m12</data.nucleus.jdo.version>
         <data.nucleus.jta.version>5.9.8.Final</data.nucleus.jta.version>
         <data.nucleus.mongodb.version>5.2.0-release</data.nucleus.mongodb.version>
@@ -45,9 +45,12 @@
         <javax.xml.bind.version>2.3.1</javax.xml.bind.version>
         <javax.mail.api.version>1.6.2</javax.mail.api.version>
         <javax.mail.version>1.6.2</javax.mail.version>
+        <jaxb.version>2.3.0.1</jaxb.version>
+        <jaxb.impl.version>2.3.2</jaxb.impl.version>
+        <javax.activation.api.version>1.2.0</javax.activation.api.version>
         <!-- test only dependencies version -->
         <junit.version>4.12</junit.version>
-        <mokito.version>3.0.0</mokito.version>
+        <mockito.version>3.1.0</mockito.version>
         <!-- maven plugins versions -->
         <maven.clean.plugin.version>3.1.0</maven.clean.plugin.version>
         <maven.deploy.plugin.version>3.0.0-M1</maven.deploy.plugin.version>
@@ -161,17 +164,17 @@
             <groupId>org.eclipse.rdf4j</groupId>
             <artifactId>rdf4j-client</artifactId>
             <version>${rdf4j.version}</version>
+            <type>pom</type>
+        </dependency>  
+        <dependency>
+            <groupId>org.eclipse.rdf4j</groupId>
+            <artifactId>rdf4j-repository-http</artifactId>
+            <version>${rdf4j.version}</version>
         </dependency>  
         <!--RDF4J Testing--> 
         <dependency>
             <groupId>org.eclipse.rdf4j</groupId>
             <artifactId>rdf4j-repository-sail</artifactId>
-            <version>${rdf4j.version}</version>
-            <scope>test</scope>
-        </dependency>  
-        <dependency>
-            <groupId>org.eclipse.rdf4j</groupId>
-            <artifactId>rdf4j-repository-http</artifactId>
             <version>${rdf4j.version}</version>
             <scope>test</scope>
         </dependency>  
@@ -261,6 +264,18 @@
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-multipart</artifactId>
         </dependency>
+        <!--Jersey Validation extension --> 
+        <dependency>
+            <groupId>org.glassfish.jersey.ext</groupId>
+            <artifactId>jersey-bean-validation</artifactId>
+            <version>${jersey.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-web-api</artifactId>
+            <version>8.0.1</version>
+            <scope>provided</scope>
+        </dependency>
         <!--Jackson JSON & YAML--> 
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -289,21 +304,8 @@
             <groupId>io.swagger</groupId>
             <artifactId>swagger-jersey2-jaxrs</artifactId>
             <version>${swagger.jersey2.jaxrs.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.reflections</groupId>
-                    <artifactId>reflections</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
-        <!-- This version is set specifically to avoid a bug in swagger-jersey2-jaxrs -->
-        <!-- https://github.com/swagger-api/swagger-core/issues/3295 -->
-        <dependency>
-            <groupId>org.reflections</groupId>
-            <artifactId>reflections</artifactId>
-            <version>0.9.10</version>
-        </dependency>
-        <!--Java extension compatibility--> 
+        <!--Java extension compatibility for JDK 9+--> 
         <dependency>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
@@ -319,6 +321,21 @@
             <artifactId>javax.mail</artifactId>
             <version>${javax.mail.version}</version>
         </dependency>
+        <!--        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-core</artifactId>
+            <version>${jaxb.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>${jaxb.impl.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.activation</groupId>
+            <artifactId>javax.activation-api</artifactId>
+            <version>${javax.activation.api.version}</version>
+        </dependency>-->
         <!--Logger--> 
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -359,8 +376,18 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>${mokito.version}</version>
+            <version>${mockito.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>4.4.12</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.10</version>
         </dependency>
     </dependencies>
 
@@ -716,13 +743,13 @@
             <plugin>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
                 <version>${maven.project.info.reports.plugin.version}</version>
-                <reportSets>
+                <!--                <reportSets>
                     <reportSet>
                         <reports>
                             <report>index</report>
                         </reports>
                     </reportSet>
-                </reportSets>
+                </reportSets>-->
             </plugin>
             <plugin> 
                 <groupId>org.apache.maven.plugins</groupId> 

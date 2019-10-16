@@ -11,6 +11,8 @@
         <ignoreVersion type="regex">(?i).*M(?:-?\d+)?</ignoreVersion>
         <ignoreVersion type="regex">(?i).*pr(?:-?\d+)?</ignoreVersion>
         <ignoreVersion type="regex">(?i).*b(?:-?(\d|.)+)?</ignoreVersion>
+        <ignoreVersion type="regex">(?i).*jre7(?:-?(\d|.)+)?</ignoreVersion>
+        <ignoreVersion type="regex">(?i).*jre6(?:-?(\d|.)+)?</ignoreVersion>
     </ignoreVersions>
     <rules>
     </rules>

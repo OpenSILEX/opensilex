@@ -15,6 +15,7 @@ import java.net.URISyntaxException;
 import javax.inject.Inject;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
+import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -83,12 +84,12 @@ public class UserAPI implements RestApplicationAPI {
     @ApiOperation("Authenticate a user and return an access token")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "User sucessfully authenticated"),
-        @ApiResponse(code = 403, message = "User already exists (duplicate email)")
+        @ApiResponse(code = 403, message = "Invalid credentials (user does not exists or invalid password)")
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response authenticate(
-            @ApiParam("User authentication informations") UserAuthenticationDTO authenticationDTO
+            @ApiParam("User authentication informations") @Valid UserAuthenticationDTO authenticationDTO
     ) throws Exception {
 
         UserDAO userDAO = new UserDAO(sparql, authentication);
@@ -109,7 +110,7 @@ public class UserAPI implements RestApplicationAPI {
         if (userDAO.authenticate(user, authenticationDTO.getPassword())) {
             return new SingleValueResponse(authentication.generateToken(user.getUri())).getResponse();
         } else {
-            return new ErrorResponse("Invalid credentials", "User does not exists or password is invalid").getResponse();
+            return new ErrorResponse(Status.FORBIDDEN, "Invalid credentials", "User does not exists or password is invalid").getResponse();
         }
     }
 }

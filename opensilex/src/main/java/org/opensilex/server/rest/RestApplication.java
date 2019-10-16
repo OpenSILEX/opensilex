@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import io.swagger.jaxrs.config.BeanConfig;
 import java.util.List;
+import org.glassfish.jersey.server.ServerProperties;
 import org.opensilex.module.extensions.APIExtension;
 
 /**
@@ -64,7 +65,9 @@ public class RestApplication extends ResourceConfig {
      */
     public RestApplication(OpenSilex app) {
         this.app = app;
-
+        
+        property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
+        
         // Register JSON Multipart Feature for Jersey to allow MediaType.MULTIPART_FORM_DATA for file upload
         register(MultiPartFeature.class);
 
@@ -120,6 +123,7 @@ public class RestApplication extends ResourceConfig {
         BeanConfig beanConfig = new BeanConfig();
         beanConfig.setVersion(app.getModulesByProjectId("opensilex").get(0).getOpenSilexVersion());
         beanConfig.setResourcePackage(String.join(",", packageList));
+        beanConfig.setExpandSuperTypes(false);
         beanConfig.setScan(true);
     }
 

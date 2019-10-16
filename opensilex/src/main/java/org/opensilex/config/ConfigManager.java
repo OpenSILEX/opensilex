@@ -124,11 +124,21 @@ public class ConfigManager {
             }
 
             for (OpenSilexModule module : modules) {
-                addSource(module.getYamlFile(OpenSilex.PROD_PROFILE_ID));
+                InputStream prodFile = module.getYamlFile(OpenSilex.PROD_PROFILE_ID);
+                if (prodFile != null) {
+                    addSource(prodFile);
+                }
+
                 if (OpenSilex.DEV_PROFILE_ID.equals(extensionId)) {
-                    addSource(module.getYamlFile(OpenSilex.DEV_PROFILE_ID));
+                    InputStream devFile = module.getYamlFile(OpenSilex.DEV_PROFILE_ID);
+                    if (devFile != null) {
+                        addSource(devFile);
+                    }
                 } else if (OpenSilex.TEST_PROFILE_ID.equals(extensionId)) {
-                    addSource(module.getYamlFile(OpenSilex.TEST_PROFILE_ID));
+                    InputStream testFile = module.getYamlFile(OpenSilex.TEST_PROFILE_ID);
+                    if (testFile != null) {
+                        addSource(testFile);
+                    }
                 }
             }
 
@@ -148,11 +158,13 @@ public class ConfigManager {
                 addSource(baseConfigFile);
             }
 
-            ByteArrayOutputStream output = new ByteArrayOutputStream();
-            toYaml(output);
-            String yaml = new String(output.toByteArray(), StandardCharsets.UTF_8.name());
-            LOGGER.debug("Loaded configuration");
-            LOGGER.debug(yaml);
+            if (LOGGER.isDebugEnabled()) {
+                ByteArrayOutputStream output = new ByteArrayOutputStream();
+                toYaml(output);
+                String yaml = new String(output.toByteArray(), StandardCharsets.UTF_8.name());
+                LOGGER.debug("Loaded configuration");
+                LOGGER.debug(yaml);
+            }
         } catch (IOException ex) {
             LOGGER.warn("Error while loading configuration", ex);
         }

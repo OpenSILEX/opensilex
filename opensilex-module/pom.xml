@@ -144,7 +144,7 @@
                                 </configuration>
                             </execution>
                             
-                            <execution>
+<!--                            <execution>
                                 <id>check global dependencies security issue</id>
                                 <goals>
                                     <goal>yarn</goal>
@@ -166,7 +166,7 @@
                                 <configuration>
                                     <arguments>audit</arguments>
                                 </configuration>
-                            </execution>
+                            </execution>-->
                         </executions>
                     </plugin>
                     <plugin>

@@ -67,6 +67,7 @@ public class RestApplication extends ResourceConfig {
         this.app = app;
         
         property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
+        property(ServerProperties.WADL_FEATURE_DISABLE, true);
         
         // Register JSON Multipart Feature for Jersey to allow MediaType.MULTIPART_FORM_DATA for file upload
         register(MultiPartFeature.class);

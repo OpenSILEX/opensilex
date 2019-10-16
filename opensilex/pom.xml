@@ -119,10 +119,12 @@
                                     <exclude>commons-logging:commons-logging</exclude>
                                     <exclude>javax.activation:javax.activation-api</exclude>
                                     <exclude>javax.mail:javax.mail-api</exclude>
-<!--                                    <exclude>jakarta.validation:jakarta.validation-api</exclude>
+                                    <exclude>jakarta.validation:jakarta.validation-api</exclude>
                                     <exclude>jakarta.xml.bind:jakarta.xml.bind-api</exclude>
                                     <exclude>jakarta.activation:jakarta.activation-api</exclude>
-                                    <exclude>com.sun.activation:jakarta.activation</exclude>-->
+                                    <exclude>com.sun.activation:jakarta.activation</exclude>
+                                    <exclude>jakarta.el:jakarta.el-api</exclude>
+                                    <exclude>org.glassfish:jakarta.el</exclude>
                                 </excludes>
                             </artifactSet>
                         </configuration>

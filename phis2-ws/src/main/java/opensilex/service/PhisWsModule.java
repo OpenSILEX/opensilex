@@ -81,6 +81,7 @@ public class PhisWsModule extends OpenSilexModule implements APIExtension {
     public List<String> getPackagesToScan() {
         List<String> list = APIExtension.super.getPackagesToScan();
         list.add("opensilex.service.json");
+        list.add("opensilex.service.resource.validation");
         list.add("opensilex.service.resource.request.filters");
 
         return list;

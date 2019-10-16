@@ -10,6 +10,7 @@ package opensilex.service.resource.request.filter;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -62,10 +63,10 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
         final UriInfo uriInfo = requestContext.getUriInfo();
         final String resourcePath = uriInfo.getPath();
         // Swagger.json and token authorized
-        
         String resourceClassProject = ClassInfo.getProjectIdFromClass(resourceInfo.getResourceClass());
         
         if (resourcePath != null 
+                && !requestContext.getMethod().equals(HttpMethod.OPTIONS)
                 && (resourceClassProject.isEmpty() || resourceClassProject.equals("phis2ws"))
                 && !resourcePath.contains("token") 
                 && !resourcePath.contains("calls") 

@@ -26,7 +26,7 @@ import opensilex.service.dao.GroupDAO;
 import opensilex.service.dao.ScientificObjectRdf4jDAO;
 import opensilex.service.dao.AnnotationDAO;
 import opensilex.service.dao.EventDAO;
-import opensilex.service.dao.AccessionDAO;
+import opensilex.service.dao.GermplasmDAO;
 import opensilex.service.dao.MethodDAO;
 import opensilex.service.dao.ProjectDAO;
 import opensilex.service.dao.RadiometricTargetDAO;
@@ -91,6 +91,9 @@ public class UriGenerator {
     private static final String PLATFORM_URI_ID_PROVENANCE = PLATFORM_URI_ID + "provenance/";
     public static final String PLATFORM_URI_ID_GERMPLASM = PLATFORM_URI_ID + "germplasm/" + URI_CODE_GERMPLASM;
     private static final String PLATFORM_URI_ID_ACCESSION = PLATFORM_URI_ID + "accession/";
+    private static final String PLATFORM_URI_ID_PLANT_MATERIAL_LOT = PLATFORM_URI_ID + "lot/";
+    private static final String PLATFORM_URI_ID_SPECIES = PLATFORM_URI_ID + "species/";
+    private static final String PLATFORM_URI_ID_GENUS = PLATFORM_URI_ID + "genus/";
     
     private static final String EXPERIMENT_URI_SEPARATOR = "-";
 
@@ -405,11 +408,23 @@ public class UriGenerator {
      * @return the new variety uri
      */
     private static String generateVarietyUri(String variety) {
-        return PLATFORM_URI_ID_VARIETY + variety.toLowerCase();
+        return PLATFORM_URI_ID_VARIETY + variety;
     }
     
     private static String generateAccessionUri(String accessionNumber) {
         return PLATFORM_URI_ID_ACCESSION + accessionNumber;
+    }
+    
+    private static String generateLotUri(String seedlot) {
+        return PLATFORM_URI_ID_PLANT_MATERIAL_LOT + seedlot;
+    }
+    
+    private static String generateSpeciesUri(String species) {
+        return PLATFORM_URI_ID_SPECIES + species;
+    }
+    
+    private static String generateGenusUri(String genus) {
+        return PLATFORM_URI_ID_GENUS + genus;
     }
 
     /**
@@ -702,10 +717,16 @@ public class UriGenerator {
             return generateUnitUri();
         } else if (uriDao.isSubClassOf(instanceType, Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString())) {
             return generateAgronomicalObjectUri(year);
+        } else if (Oeso.CONCEPT_GENUS.toString().equals(instanceType)) {
+            return generateGenusUri(additionalInformation);
+        } else if (Oeso.CONCEPT_SPECIES.toString().equals(instanceType)) {
+            return generateSpeciesUri(additionalInformation);
         } else if (Oeso.CONCEPT_VARIETY.toString().equals(instanceType)) {
             return generateVarietyUri(additionalInformation);
         } else if (Oeso.CONCEPT_ACCESSION.toString().equals(instanceType)) {
             return generateAccessionUri(additionalInformation);
+        } else if (Oeso.CONCEPT_PLANT_MATERIAL_LOT.toString().equals(instanceType)) {
+            return generateLotUri(additionalInformation);            
         } else if (uriDao.isSubClassOf(instanceType, Oeso.CONCEPT_IMAGE.toString())) {
             return generateImageUri(year, additionalInformation);
         } else if (instanceType.equals(Foaf.CONCEPT_AGENT.toString()) 
@@ -773,7 +794,7 @@ public class UriGenerator {
      */
     private static int getNextGermplasmID() {
         if (germplasmLastID == null) {
-            AccessionDAO germplasmDAO = new AccessionDAO();
+            GermplasmDAO germplasmDAO = new GermplasmDAO();
             germplasmLastID = germplasmDAO.getLastId();
         }
         

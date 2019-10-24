@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import javax.validation.Valid;
 import javax.validation.constraints.Pattern;
 import opensilex.service.configuration.DateFormats;
-import opensilex.service.model.Accession;
 import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resource.dto.rdfResourceDefinition.PropertyPostDTO;

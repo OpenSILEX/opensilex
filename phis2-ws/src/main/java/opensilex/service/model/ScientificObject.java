@@ -55,6 +55,9 @@ public class ScientificObject {
     //label of the scientific object
     private String label;
     
+    //germplasm
+    private String germplasmURI;
+    
     //The properties of the scientific object
     
     private ArrayList<Property> properties = new ArrayList<>();
@@ -149,5 +152,14 @@ public class ScientificObject {
     public void setAlias(String alias) {
         this.alias = alias;
     }   
+
+    public String getGermplasmURI() {
+        return germplasmURI;
+    }
+
+    public void setGermplasmURI(String germplasmURI) {
+        this.germplasmURI = germplasmURI;
+    }
+    
     
 }

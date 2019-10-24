@@ -80,6 +80,12 @@ public enum Oeso {
         public String toString() {
             return NAMESPACE.toString() + "Genotype";
         }
+    }, 
+    CONCEPT_GENUS {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "Genus";
+        }
     },  
     CONCEPT_GERMPLASM {
         @Override
@@ -103,6 +109,12 @@ public enum Oeso {
         @Override
         public String toString() {
             return NAMESPACE.toString() + "Method";
+        }
+    },
+    CONCEPT_PLANT_MATERIAL_LOT {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "PlantMaterialLot";
         }
     },
     CONCEPT_PROJECT {
@@ -523,5 +535,33 @@ public enum Oeso {
             return NAMESPACE.toString() + "hasSeedLot";
         }
     },
+    
+    RELATION_FROM_GENUS {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "fromGenus";
+        }
+    },
+    
+    RELATION_FROM_SPECIES {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "fromSpecies";
+        }
+    },
+    
+    RELATION_FROM_VARIETY {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "fromVariety";
+        }
+    },
+    
+    RELATION_FROM_ACCESSION {
+        @Override
+        public String toString() {
+            return NAMESPACE.toString() + "fromAccession";
+        }
+    }
 
 }

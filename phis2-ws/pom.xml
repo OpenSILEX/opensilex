@@ -4,7 +4,7 @@
 
     <groupId>com.mycompany</groupId>
     <artifactId>opensilex</artifactId>
-    <version>v0.1</version>
+    <version>3.3.0</version>
     <packaging>war</packaging>
     <name>opensilex</name>
 
@@ -339,8 +339,7 @@
                             <includes>
                                 <include>**/*.js</include>
                             </includes>
-                        </resource> 
-                        
+                        </resource>
                     </webResources>  
                 </configuration> 
             </plugin>
@@ -374,6 +373,23 @@
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>eu.somatik.serviceloader-maven-plugin</groupId>
+                <artifactId>serviceloader-maven-plugin</artifactId>
+                <version>1.1.0</version>
+                <configuration>
+                    <services>
+                        <param>opensilex.service.resource.brapi.BrapiCall</param>
+                    </services>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>

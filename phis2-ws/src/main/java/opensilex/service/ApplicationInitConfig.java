@@ -50,14 +50,31 @@ public class ApplicationInitConfig extends ResourceConfig {
                 + "opensilex.service.resource;"
                 + "opensilex.service.json;"
                 + "opensilex.service.resource.request.filter");
-        
+
         //Swagger
         BeanConfig beanConfig = new BeanConfig();
-        beanConfig.setVersion("1.0.2");
+        beanConfig.setVersion(
+            PropertiesFileManager.getConfigFileProperty(PROPERTY_FILE_NAME, "wsVersion")
+        );
+        beanConfig.setTitle(
+            PropertiesFileManager.getConfigFileProperty(PROPERTY_FILE_NAME, "wsApiName")
+        );
         beanConfig.setSchemes(new String[]{"http"});
-        
-        beanConfig.setHost(PropertiesFileManager.getConfigFileProperty("service", "host"));
-        beanConfig.setBasePath(PropertiesFileManager.getConfigFileProperty("service", "basePath"));
+        beanConfig.setLicense(
+            PropertiesFileManager.getConfigFileProperty(PROPERTY_FILE_NAME, "wsLicence")
+        );
+        beanConfig.setLicenseUrl(           
+            PropertiesFileManager.getConfigFileProperty(PROPERTY_FILE_NAME, "wsLicenceUrl")
+        );
+        beanConfig.setDescription(     
+            PropertiesFileManager.getConfigFileProperty(PROPERTY_FILE_NAME, "wsDescription")
+        );
+        beanConfig.setHost(
+            PropertiesFileManager.getConfigFileProperty(PROPERTY_FILE_NAME, "host")
+        );
+        beanConfig.setBasePath(
+            PropertiesFileManager.getConfigFileProperty(PROPERTY_FILE_NAME, "basePath")
+        );
        
         beanConfig.setResourcePackage("opensilex.service.resource");
         beanConfig.setScan(true);

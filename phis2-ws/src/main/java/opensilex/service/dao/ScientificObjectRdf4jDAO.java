@@ -13,6 +13,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -58,6 +59,17 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.model.ScientificObject;
 import opensilex.service.model.Property;
 import opensilex.service.model.Uri;
+import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
+import org.apache.jena.arq.querybuilder.ExprFactory;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.SortCondition;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.ExprList;
+import org.apache.jena.sparql.path.PathFactory;
+import org.apache.jena.vocabulary.XSD;
+import org.eclipse.rdf4j.model.Value;
 
 /**
  * Allows CRUD methods of scientific objects in the triplestore.
@@ -78,8 +90,8 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     private final String RELATION = "relation";
     private final String GERMPLASM = "germplasm";
     
-    private static final String URI_CODE_SCIENTIFIC_OBJECT = "o";
-
+    private static final String MAX_ID = "maxID";
+    
     public ScientificObjectRdf4jDAO() {
         super();
     }
@@ -90,25 +102,53 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      * @return The query to get the uri of the last inserted scientific object 
      *         for the given year.
      * @example
-     * SELECT ?uri WHERE {
-     *      ?uri  rdf:type  ?type  . 
-     *      ?type  rdfs:subClassOf*  <http://www.opensilex.org/vocabulary/oeso#ScientificObject> . 
-     *      FILTER ( regex(str(?uri), ".*\/2018/.*") ) 
+     * <pre>
+     * SELECT  ?maxID WHERE {
+     *      ?uri a ?type .
+     *      ?type (rdfs:subClassOf)* <http://www.opensilex.org/vocabulary/oeso#ScientificObject>
+     *      FILTER regex(str(?uri), ".* /2019/.*", "")
+     *      BIND(xsd:integer(strafter(str(?uri), "http://www.opensilex.org/diaphen/2019/s19")) AS ?maxID)
      * }
-     * ORDER BY desc(?uri) 
+     * ORDER BY DESC(?maxID)
      * LIMIT 1
+     * </pre>
      */
-    private SPARQLQueryBuilder prepareGetLastScientificObjectUriFromYear(String year) {
-        SPARQLQueryBuilder queryLastScientificObjectURi = new SPARQLQueryBuilder();
-        queryLastScientificObjectURi.appendSelect("?" + URI);
-        queryLastScientificObjectURi.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
-        queryLastScientificObjectURi.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString(), null);
-        queryLastScientificObjectURi.appendFilter("regex(str(?" + URI + "), \".*/" + year + "/.*\")");
-        queryLastScientificObjectURi.appendOrderBy("desc(?" + URI + ")");
-        queryLastScientificObjectURi.appendLimit(1);
+    private Query prepareGetLastScientificObjectUriFromYear(String year) {
+        SelectBuilder query = new SelectBuilder();
         
-        LOGGER.debug(SPARQL_QUERY + queryLastScientificObjectURi.toString());
-        return queryLastScientificObjectURi;
+        Var uri = makeVar(URI);
+        Var type = makeVar(RDF_TYPE);
+        Var maxID = makeVar(MAX_ID);
+        
+        // Select the highest identifier
+        query.addVar(maxID);
+        
+        // Get sensor type
+        query.addWhere(uri, RDF.type, type);
+        // Filter by type subclass of scientific object
+        Node scientificObjectConcept = NodeFactory.createURI(Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString());
+        query.addWhere(type, PathFactory.pathZeroOrMore1(PathFactory.pathLink(RDFS.subClassOf.asNode())), scientificObjectConcept);
+        
+        ExprFactory expr = new ExprFactory();
+        
+        // Filter by year prefix
+        Expr yearFilter =  expr.regex(expr.str(uri), ".*/" + year + "/.*", "");
+        query.addFilter(yearFilter);
+        
+        // Binding to extract the last part of the URI as a MAX_ID integer
+        Expr indexBinding =  expr.function(
+            XSD.integer.getURI(), 
+            ExprList.create(Arrays.asList(
+                expr.strafter(expr.str(uri), UriGenerator.getScientificObjectUriPatternByYear(year)))
+            )
+        );
+        query.addBind(indexBinding, maxID);
+        
+        // Order MAX_ID integer from highest to lowest and select the first value
+        query.addOrderBy(new SortCondition(maxID,  Query.ORDER_DESCENDING));
+        query.setLimit(1);
+        
+        return query.build();
     }
     
     /**
@@ -117,7 +157,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      * @return The ID of the last scientific object inserted in the triplestore for the given year.
      */
     public int getLastScientificObjectIdFromYear(String year) {
-        SPARQLQueryBuilder lastScientificObjectUriFromYearQuery = prepareGetLastScientificObjectUriFromYear(year);
+        Query lastScientificObjectUriFromYearQuery = prepareGetLastScientificObjectUriFromYear(year);
         
         this.getConnection().begin();
 
@@ -128,25 +168,15 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         getConnection().commit();
         getConnection().close();
         
-        String uriScientificObject = null;
-        
         if (result.hasNext()) {
             BindingSet bindingSet = result.next();
-            uriScientificObject = bindingSet.getValue(URI).stringValue();
-        }
-        
-        if (uriScientificObject == null) {
-            return 0;
-        } else {
-            //2018 -> 18. to get /o18
-            String split = "/" + URI_CODE_SCIENTIFIC_OBJECT + year.substring(2, 4);
-            String[] parts = uriScientificObject.split(split);
-            if (parts.length > 1) {
-                return Integer.parseInt(parts[1]);
-            } else {
-                return 0;
+            Value maxId = bindingSet.getValue(MAX_ID);
+            if (maxId != null) {
+                return Integer.valueOf(maxId.stringValue());
             }
-        }
+        } 
+        
+        return 0;
     }
     
     /**
@@ -703,7 +733,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             sparqlQuery.beginBodyOptional();
             sparqlQuery.appendToBody("?" + URI + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + ALIAS + " . ");
             sparqlQuery.endBodyOptional();
-        } else if (!count) {
+        } else if(alias != null){
             sparqlQuery.appendTriplet("?" + URI, Rdfs.RELATION_LABEL.toString(), "?" + ALIAS, null);
             sparqlQuery.appendAndFilter("REGEX ( str(?" + ALIAS + "),\".*" + alias + ".*\",\"i\")");
         }
@@ -711,7 +741,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         //Experiment filter
         if (experiment != null) {
               sparqlQuery.appendFrom("<" + Contexts.VOCABULARY.toString() + "> \n FROM <" + experiment + ">");
-        } else if (!count) {
+        } else {
             sparqlQuery.appendSelect("?" + EXPERIMENT);
             sparqlQuery.appendOptional("?" + URI + " <" + Oeso.RELATION_PARTICIPATES_IN.toString() + "> " + "?" + EXPERIMENT + " . ");
         }

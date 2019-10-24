@@ -259,6 +259,8 @@ public class ScientificObjectResourceService extends ResourceService {
         @ApiParam(value = "Search by germplasm", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_TYPE) @QueryParam("germplasm") @URL String germplasm
     ) {
         ArrayList<ScientificObjectDTO> scientificObjectsToReturn = new ArrayList<>();
+        ArrayList<ScientificObject> scientificObjects = new ArrayList<>();
+        
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<ScientificObjectDTO> getResponse;
         
@@ -270,9 +272,12 @@ public class ScientificObjectResourceService extends ResourceService {
         //1. Get count
         Integer totalCount = scientificObjectDaoSesame.count(uri, rdfType, experimentURI, alias, germplasm);
         
-        //2. Get list of scientific objects
-        ArrayList<ScientificObject> scientificObjects = scientificObjectDaoSesame.find(page, pageSize, uri, rdfType, experimentURI, alias, germplasm);
-        
+        // If scientific objects found
+        if(totalCount > 0){
+            //2. Get list of scientific objects
+            scientificObjects = scientificObjectDaoSesame.find(page, pageSize, uri, rdfType, experimentURI, alias, germplasm);
+        }
+
         if (scientificObjects == null) { //Request failure
             getResponse = new ResultForm<>(0, 0, scientificObjectsToReturn, true);
             return noResultFound(getResponse, statusList);

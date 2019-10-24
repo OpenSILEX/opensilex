@@ -13,8 +13,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Random;
+import java.util.Map;
 import java.util.UUID;
 import org.apache.commons.codec.binary.Base32;
 import org.apache.jena.sparql.AlreadyExists;
@@ -26,7 +27,6 @@ import opensilex.service.dao.GroupDAO;
 import opensilex.service.dao.ScientificObjectRdf4jDAO;
 import opensilex.service.dao.AnnotationDAO;
 import opensilex.service.dao.EventDAO;
-import opensilex.service.dao.GermplasmDAO;
 import opensilex.service.dao.MethodDAO;
 import opensilex.service.dao.ProjectDAO;
 import opensilex.service.dao.RadiometricTargetDAO;
@@ -64,7 +64,7 @@ import opensilex.service.model.Group;
  */
 public class UriGenerator {    
     private static final String URI_CODE_ACTUATOR = "a";
-    private static final String URI_CODE_AGRONOMICAL_OBJECT = "o";
+    private static final String URI_CODE_SCIENTIFIC_OBJECT = "o";
     private static final String URI_CODE_IMAGE = "i";
     private static final String URI_CODE_METHOD = "m";
     private static final String URI_CODE_SENSOR = "s";
@@ -112,13 +112,9 @@ public class UriGenerator {
      * @return the new vector URI
      */
     private static String generateVectorUri(String year) {
-        //1. get the actual number of vectors in the triplestor for the year
-        VectorDAO vectorDAO = new VectorDAO();
-        int lastVectorIdFromYear = vectorDAO.getLastIdFromYear(year);
-
-        //2. generate vectors URI
-        String numberOfVectors = Integer.toString(lastVectorIdFromYear + 1);
-
+        // get last vectors ID
+        int vectorNumber = getNextVectorID(year);
+        String numberOfVectors = Integer.toString(vectorNumber);
         String newVectorNumber;
 
         if (numberOfVectors.length() == 1) {
@@ -126,10 +122,39 @@ public class UriGenerator {
         } else {
             newVectorNumber = numberOfVectors;
         }
-
-        return PLATFORM_URI + year + "/" + URI_CODE_VECTOR + year.substring(2, 4) + newVectorNumber;
+        return getVectorUriPatternByYear(year) + newVectorNumber;
+    }
+    
+    /**
+     * Internal variable to store the last vector ID by year
+     */
+    private static Map<String, Integer> vectorLastIDByYear = new HashMap<>();
+    
+    /**
+     * Return the next vector ID by incrementing vectorLastIDByYear variable and initializing it before if needed
+     * @return next vector ID
+     */
+    private static int getNextVectorID(String year) {
+        if (!vectorLastIDByYear.containsKey(year)) {
+            VectorDAO vectorDAO = new VectorDAO();
+            vectorLastIDByYear.put(year, vectorDAO.getLastIdFromYear(year));
+        }
+        
+        int vectorLastID = vectorLastIDByYear.get(year);
+        vectorLastID++;
+        vectorLastIDByYear.put(year, vectorLastID);
+        return vectorLastID;
     }
 
+    /**
+     * Return vector uri pattern <prefix>:<year>/<unic_code>
+     * @param year
+     * @return prefix
+     */
+    public static String getVectorUriPatternByYear(String year) {
+        return PLATFORM_URI + year + "/" + URI_CODE_VECTOR + year.substring(2, 4);
+    }
+    
     /**
      * Generates a new sensor URI. A sensor URI has the following pattern:
      * <prefix>:<year>/<unic_code>
@@ -141,12 +166,7 @@ public class UriGenerator {
      * @return the new sensor URI
      */
     private static String generateSensorUri(String year) {
-        //1. get the current number of sensors in the triplestor for the year
-        SensorDAO sensorDAO = new SensorDAO();
-        int lastSensorIdFromYear = sensorDAO.getLastIdFromYear(year);
-
-        //2. generate sensor URI
-        int sensorNumber = lastSensorIdFromYear + 1;
+        int sensorNumber = getNextSensorID(year);
         String numberOfSensors = Integer.toString(sensorNumber);
         String newSensorNumber;
         switch (numberOfSensors.length()) {
@@ -160,7 +180,37 @@ public class UriGenerator {
                 newSensorNumber = numberOfSensors;
                 break;
         }
-        return PLATFORM_URI + year + "/" + URI_CODE_SENSOR + year.substring(2, 4) + newSensorNumber;
+        return getSensorUriPatternByYear(year) + newSensorNumber;
+    }
+    
+    /**
+     * Internal variable to store the last sensor ID by year
+     */
+    private static Map<String, Integer> sensorLastIDByYear = new HashMap<>();
+    
+    /**
+     * Return the next sensor ID by incrementing sensorLastIDByYear variable and initializing it before if needed
+     * @return next sensor ID
+     */
+    private static int getNextSensorID(String year) {
+        if (!sensorLastIDByYear.containsKey(year)) {
+            SensorDAO sensorDAO = new SensorDAO();
+            sensorLastIDByYear.put(year, sensorDAO.getLastIdFromYear(year));
+        }
+        
+        int sensorLastID = sensorLastIDByYear.get(year);
+        sensorLastID++;
+        sensorLastIDByYear.put(year, sensorLastID);
+        return sensorLastID;
+    }
+    
+    /**
+     * Return sensor uri pattern <prefix>:<year>/<unic_code>
+     * @param year
+     * @return prefix
+     */
+    public static String getSensorUriPatternByYear(String year) {
+        return PLATFORM_URI + year + "/" + URI_CODE_SENSOR + year.substring(2, 4);
     }
     
     /**
@@ -174,12 +224,7 @@ public class UriGenerator {
      * @return the new actuator URI
      */
     private static String generateActuatorUri(String year) {
-        //1. get the current number of actuator in the triplestor for the year
-        ActuatorDAO actuatorDAO = new ActuatorDAO();
-        int lastActuatorIdFromYear = actuatorDAO.getLastIdFromYear(year);
-
-        //2. generate actuator URI
-        int actuatorNumber = lastActuatorIdFromYear + 1;
+        int actuatorNumber = getNextActuatorID(year);
         String numberOfActuators = Integer.toString(actuatorNumber);
         String newActuatorNumber;
         switch (numberOfActuators.length()) {
@@ -193,12 +238,41 @@ public class UriGenerator {
                 newActuatorNumber = numberOfActuators;
                 break;
         }
-        return PLATFORM_URI + year + "/" + URI_CODE_ACTUATOR + year.substring(2, 4) + newActuatorNumber;
+        return getActuatorUriPatternByYear(year) + newActuatorNumber;        
     }
 
     /**
-     * Generates a new agronomical object URI. A sensor URI has the following
-     * form:
+     * Internal variable to store the last actuator ID by year
+     */
+    private static Map<String, Integer> actuatorLastIDByYear = new HashMap<>();
+    
+    /**
+     * Return the next actuator ID by incrementing actuatorLastIDByYear variable and initializing it before if needed
+     * @return next actuator ID
+     */
+    private static int getNextActuatorID(String year) {
+        if (!actuatorLastIDByYear.containsKey(year)) {
+            ActuatorDAO actuatorDAO = new ActuatorDAO();
+            actuatorLastIDByYear.put(year, actuatorDAO.getLastIdFromYear(year));
+        }
+        
+        int actuatorLastID = actuatorLastIDByYear.get(year);
+        actuatorLastID++;
+        actuatorLastIDByYear.put(year, actuatorLastID);
+        return actuatorLastID;
+    }
+    
+    /**
+     * Return actuator uri pattern <prefix>:<year>/<unic_code>
+     * @param year
+     * @return prefix
+     */
+    public static String getActuatorUriPatternByYear(String year) {
+        return PLATFORM_URI + year + "/" + URI_CODE_ACTUATOR + year.substring(2, 4);
+    }
+
+    /**
+     * Generates a new scientific object URI. URI has the following form:
      * <prefix>:<year>/<unic_code>
      * <unic_code> = 1 letter type + 2 numbers year + auto incremented number
      * with 6 digits (per year) the year corresponds to the year of insertion in
@@ -207,21 +281,44 @@ public class UriGenerator {
      * @param year the insertion year of the agronomical object.
      * @return the new agronomical object URI
      */
-    private static String generateAgronomicalObjectUri(String year) {
-        //1. get the highest number for the year 
-        //(i.e. the last inserted agronomical object for the year)
-        ScientificObjectRdf4jDAO agronomicalObjectDAO = new ScientificObjectRdf4jDAO();
-        int lastAgronomicalObjectIdFromYear = agronomicalObjectDAO.getLastScientificObjectIdFromYear(year);
-
-        //2. generates agronomical object URI
-        int agronomicalObjectNumber = lastAgronomicalObjectIdFromYear + 1;
-        String agronomicalObjectId = Integer.toString(agronomicalObjectNumber);
+    private static String generateScientificObjectUri(String year) {
+        String agronomicalObjectId = Integer.toString(getNextScientificObjectID(year));
 
         while (agronomicalObjectId.length() < 6) {
             agronomicalObjectId = "0" + agronomicalObjectId;
         }
+        
+        return getScientificObjectUriPatternByYear(year) + agronomicalObjectId;        
+    }
 
-        return PLATFORM_URI + year + "/" + URI_CODE_AGRONOMICAL_OBJECT + year.substring(2, 4) + agronomicalObjectId;
+    /**
+     * Internal variable to store the last scientifc object ID by year
+     */
+    private static Map<String, Integer> scientificObjectLastIDByYear = new HashMap<>();
+    
+    /**
+     * Return the next scientifc object ID by incrementing scientificObjectLastIDByYear variable and initializing it before if needed
+     * @return next scientific object ID
+     */
+    private static int getNextScientificObjectID(String year) {
+        if (!scientificObjectLastIDByYear.containsKey(year)) {
+            ScientificObjectRdf4jDAO scientificObjectDAO = new ScientificObjectRdf4jDAO();
+            scientificObjectLastIDByYear.put(year, scientificObjectDAO.getLastScientificObjectIdFromYear(year));
+        }
+        
+        int scientificObjectLastID = scientificObjectLastIDByYear.get(year);
+        scientificObjectLastID++;
+        scientificObjectLastIDByYear.put(year, scientificObjectLastID);
+        return scientificObjectLastID;
+    }
+    
+    /**
+     * Return scientific object uri pattern <prefix>:<year>/<unic_code>
+     * @param year
+     * @return prefix
+     */
+    public static String getScientificObjectUriPatternByYear(String year) {
+        return PLATFORM_URI + year + "/" + URI_CODE_SCIENTIFIC_OBJECT + year.substring(2, 4);
     }
 
     /**
@@ -659,25 +756,11 @@ public class UriGenerator {
         if (year == null) {
             year = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
         }
-        
-        //1. get the highest number for the year 
-        //(i.e. the last inserted agronomical object for the year)
-        ScientificObjectRdf4jDAO scientificObjectDAO = new ScientificObjectRdf4jDAO();
-        int lastAgronomicalObjectIdFromYear = scientificObjectDAO.getLastScientificObjectIdFromYear(year);
 
-        //2. generates URIs
         List<String> scientificObjectUris = new ArrayList<>();
-        int agronomicalObjectNumber = lastAgronomicalObjectIdFromYear + 1;
         
         for (int i = 0; i < numberOfUrisToGenerate; i++) {
-            String agronomicalObjectId = Integer.toString(agronomicalObjectNumber);
-
-            while (agronomicalObjectId.length() < 6) {
-                agronomicalObjectId = "0" + agronomicalObjectId;
-            }
-
-            scientificObjectUris.add(PLATFORM_URI + year + "/" + URI_CODE_AGRONOMICAL_OBJECT + year.substring(2, 4) + agronomicalObjectId);
-            agronomicalObjectNumber++;
+            scientificObjectUris.add(generateScientificObjectUri(year));
         }
         
         return scientificObjectUris;
@@ -716,7 +799,7 @@ public class UriGenerator {
         } else if (Oeso.CONCEPT_UNIT.toString().equals(instanceType)) {
             return generateUnitUri();
         } else if (uriDao.isSubClassOf(instanceType, Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString())) {
-            return generateAgronomicalObjectUri(year);
+            return generateScientificObjectUri(year);
         } else if (Oeso.CONCEPT_GENUS.toString().equals(instanceType)) {
             return generateGenusUri(additionalInformation);
         } else if (Oeso.CONCEPT_SPECIES.toString().equals(instanceType)) {
@@ -754,62 +837,8 @@ public class UriGenerator {
             return generateDataFileUri(year, additionalInformation);
         } else if (instanceType.equals(Oeso.CONCEPT_ACTUATOR.toString())) {
             return generateActuatorUri(year);
-        } else if (instanceType.equals(Oeso.CONCEPT_GERMPLASM.toString())) {
-            return generateGermplasmURI();
         }
         return null;
     }
     
-    /**
-     * Generates a new agronomical object URI. A sensor URI has the following
-     * form:
-     * <prefix>:<year>/<unic_code>
-     * <unic_code> = 1 letter type + 2 numbers year + auto incremented number
-     * with 6 digits (per year) the year corresponds to the year of insertion in
-     * the triplestore.
-     * @example http://www.phenome-fppn.fr/diaphen/2017/o17000001
-     * @param year the insertion year of the agronomical object.
-     * @return the new agronomical object URI
-     */
-    private static String generateGermplasmURI() {
-        
-        // Generate germplasm URI based on next id
-        String germplasmId = Integer.toString(getNextGermplasmID());        
-
-        while (germplasmId.length() < 3) {
-            germplasmId = "0" + germplasmId;
-        }
-
-        return PLATFORM_URI_ID_GERMPLASM + germplasmId;
-    }
-    
-    /**
-     * Internal germplasm to store the last germplasm ID
-     */
-    private static Integer germplasmLastID;
-    
-    /**
-     * Return the next variable ID by incrementing variableLastID variable and initializing it before if needed
-     * @return next variable ID
-     */
-    private static int getNextGermplasmID() {
-        if (germplasmLastID == null) {
-            GermplasmDAO germplasmDAO = new GermplasmDAO();
-            germplasmLastID = germplasmDAO.getLastId();
-        }
-        
-        germplasmLastID++;
-        
-        return germplasmLastID;
-    }
-    
-//    private static String generateRandomHexadecimal(Integer digitsNumber) {
-//	Random random = new Random();
-//	StringBuilder sb = new StringBuilder();
-//	while (sb.length() < digitsNumber) {
-//		sb.append(Integer.toHexString(random.nextInt()));
-//	}
-//	return sb.toString();
-//    }
- 
 }

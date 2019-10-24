@@ -13,6 +13,7 @@ import java.util.List;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.model.Contact;
+import opensilex.service.model.FinancialFunding;
 import opensilex.service.model.Project;
 import opensilex.service.model.RdfResourceDefinition;
 import opensilex.service.resource.ProjectResourceService;
@@ -63,13 +64,15 @@ public class ProjectPostDTO extends AbstractVerifiedClass {
         project.setShortname(shortname);
         
         for (String relatedProjectUri : relatedProjects) {
-            RdfResourceDefinition relatedProject = new RdfResourceDefinition(relatedProjectUri);
+            Project relatedProject = new Project();
+            relatedProject.setUri(relatedProjectUri);
             project.addRelatedProject(relatedProject);
         }
         
         if (financialFunding != null) {
-            RdfResourceDefinition financialFundingDef = new RdfResourceDefinition(financialFunding);
-            project.setFinancialFunding(financialFundingDef);
+            FinancialFunding financialFundingObject = new FinancialFunding();
+            financialFundingObject.setUri(financialFunding);
+            project.setFinancialFunding(financialFundingObject);
         }
         project.setFinancialReference(financialReference);
         

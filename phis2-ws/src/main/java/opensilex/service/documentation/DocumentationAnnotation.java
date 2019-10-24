@@ -325,4 +325,8 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_LANGUAGE = "en";
     
     public static final String EXAMPLE_SKOS_REFERECENCE_URI = "http://purl.obolibrary.org/obo/CO_125_0000002";
+
+    public static final String EXAMPLE_API_MAJOR_VERSION = "3";
+    public static final String EXAMPLE_API_BUILD_VERSION = "3.0.0";
+    public static final String EXAMPLE_API_NAME = "opensilex";
 }

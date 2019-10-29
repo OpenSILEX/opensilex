@@ -89,7 +89,17 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     private final String CHILD = "child";
     private final String RELATION = "relation";
     private final String GERMPLASM = "germplasm";
-    
+    private final String GERMPLASM_LABEL = "germplasmLabel";
+    private final String GERMPLASM_TYPE = "germplasmType";
+    private final String GENUS = "genus";
+    private final String GENUS_LABEL = "genusLabel";
+    private final String SPECIES = "species";
+    private final String SPECIES_LABEL = "speciesLabel";
+    private final String VARIETY = "variety";
+    private final String VARIETY_LABEL = "varietyLabel";
+    private final String ACCESSION = "accession";
+    private final String ACCESSION_LABEL = "accessionLabel";
+
     private static final String MAX_ID = "maxID";
     
     public ScientificObjectRdf4jDAO() {
@@ -760,15 +770,169 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         
         //germplasm filter
         sparqlQuery.appendSelect("?" + GERMPLASM);
-        if (alias == null && !count) {
+        if (germplasm == null && !count) {
             sparqlQuery.beginBodyOptional();
             sparqlQuery.appendToBody("?" + URI + " <" + Oeso.RELATION_HAS_GERMPLASM.toString() + "> " + "?" + GERMPLASM + " . ");
             sparqlQuery.endBodyOptional();
-        } else if (!count) {
+        } else if (germplasm != null) {
             sparqlQuery.appendTriplet("?" + URI, Oeso.RELATION_HAS_GERMPLASM.toString(), "?" + GERMPLASM, null);
             sparqlQuery.appendAndFilter("REGEX ( str(?" + GERMPLASM + "),\".*" + germplasm + ".*\",\"i\")");
         }
         
+        if (page != null && pageSize != null) {
+            sparqlQuery.appendLimit(pageSize);
+            sparqlQuery.appendOffset(page * pageSize);
+        }
+        
+        LOGGER.debug(SPARQL_QUERY + sparqlQuery.toString());
+        
+        return sparqlQuery;
+    }
+    
+    /**
+     * Generates a query to search scientific objects by the given search params.
+     * @param page
+     * @param pageSize
+     * @param uri
+     * @param rdfType
+     * @param experiment
+     * @param alias
+     * @param count true if the query will be used to count number of scientific objects corresponding to the search result. False if not.
+     * @example 
+     * SELECT DISTINCT  ?uri ?alias ?experiment  ?rdfType 
+     * WHERE {
+     *      OPTIONAL {
+     *          ?uri <http://www.w3.org/2000/01/rdf-schema#label> ?alias . 
+     *      }
+     *      ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
+     *      ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.opensilex.org/vocabulary/oeso#ScientificObject> . 
+     *      OPTIONAL {
+     *          ?uri <http://www.opensilex.org/vocabulary/oeso#participatesIn> ?experiment .  
+     *      } 
+     * }
+     * @return the generated query
+     */
+    protected SPARQLQueryBuilder prepareSearchWithGermplasmQuery(boolean count, Integer page, Integer pageSize, String uri, String rdfType, String experiment, String alias, String germplasm) {    
+        SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
+        
+        sparqlQuery.appendDistinct(true);
+                
+        //URI filter
+        sparqlQuery.appendSelect("?" + URI);
+        if (uri != null) {
+            sparqlQuery.appendAndFilter("REGEX ( str(?" + URI + "),\".*" + uri + ".*\",\"i\")");
+        }
+
+        //Label filter
+        sparqlQuery.appendSelect("?" + ALIAS);
+        if (alias == null && !count) {
+            sparqlQuery.beginBodyOptional();
+            sparqlQuery.appendToBody("?" + URI + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + ALIAS + " . ");
+            sparqlQuery.endBodyOptional();
+        } else if(alias != null){
+            sparqlQuery.appendTriplet("?" + URI, Rdfs.RELATION_LABEL.toString(), "?" + ALIAS, null);
+            sparqlQuery.appendAndFilter("REGEX ( str(?" + ALIAS + "),\".*" + alias + ".*\",\"i\")");
+        }
+        
+        //Experiment filter
+        if (experiment != null) {
+            sparqlQuery.appendToBody("?" + URI + " <" + Oeso.RELATION_PARTICIPATES_IN.toString() + "> " + "<" + experiment + "> . ");
+        } else {
+            sparqlQuery.appendSelect("?" + EXPERIMENT);
+            sparqlQuery.appendOptional("?" + URI + " <" + Oeso.RELATION_PARTICIPATES_IN.toString() + "> " + "?" + EXPERIMENT + " . ");
+        }
+                
+        //Rdf type filter
+        if (rdfType != null) {
+            sparqlQuery.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), rdfType, null);
+        } else {
+            sparqlQuery.appendSelect(" ?" + RDF_TYPE);
+            sparqlQuery.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
+            sparqlQuery.appendTriplet(
+                    "?" + RDF_TYPE, 
+                    "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", 
+                    Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString(), null);
+        }
+        
+        //germplasm filter
+        sparqlQuery.appendSelect("?" + GERMPLASM + "?" + GERMPLASM_TYPE + 
+                GERMPLASM_LABEL + GENUS + GENUS_LABEL + SPECIES + SPECIES_LABEL
+                + VARIETY + VARIETY_LABEL + ACCESSION + ACCESSION_LABEL);
+        
+        if (count && germplasm != null) {
+            sparqlQuery.appendTriplet("?" + URI, Oeso.RELATION_HAS_GERMPLASM.toString(), "?" + GERMPLASM, null);
+            sparqlQuery.appendAndFilter("REGEX ( str(?" + GERMPLASM + "),\".*" + germplasm + ".*\",\"i\")");
+        } else if (!count) {
+            if (germplasm == null) {
+            sparqlQuery.beginBodyOptional();
+            } else {
+                sparqlQuery.appendAndFilter("REGEX ( str(?" + GERMPLASM + "),\".*" + germplasm + ".*\",\"i\")");
+            }   
+
+            sparqlQuery.appendToBody("?" + URI + " <" + Oeso.RELATION_HAS_GERMPLASM.toString() + "> " + "?" + GERMPLASM + " . ");
+            sparqlQuery.appendToBody("?" + GERMPLASM + " <" + Rdf.RELATION_TYPE.toString() + "> " + "?" + GERMPLASM_TYPE + " . ");
+            sparqlQuery.appendToBody("?" + GERMPLASM + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + GERMPLASM_LABEL + " . ");
+
+            //1. case when when the germplasm is a species 
+            sparqlQuery.beginBodyOptional();
+            sparqlQuery.appendToBody("?" + GERMPLASM + " <" + Oeso.RELATION_FROM_GENUS.toString() + "> " + "?" + GENUS + " . ");
+            sparqlQuery.appendToBody("?" + GENUS + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + GENUS_LABEL + " . ");
+            sparqlQuery.endBodyOptional();            
+
+            //2. case when when the germplasm is a variety or an accession or a lot linked to the species and so you get the species and possibly the genus
+            sparqlQuery.beginBodyOptional();
+            sparqlQuery.appendToBody("?" + GERMPLASM + " <" + Oeso.RELATION_FROM_SPECIES.toString() + "> " + "?" + SPECIES + " . ");
+            sparqlQuery.appendToBody("?" + SPECIES + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + SPECIES_LABEL + " . ");            
+            sparqlQuery.beginBodyOptional();
+            sparqlQuery.appendToBody("?" + SPECIES + " <" + Oeso.RELATION_FROM_GENUS.toString() + "> " + "?" + GENUS + " . ");
+            sparqlQuery.appendToBody("?" + GENUS + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + GENUS_LABEL + " . ");
+            sparqlQuery.endBodyOptional();
+            sparqlQuery.endBodyOptional();
+
+            //3. case when when the germplasm is an accession or a lot linked to the variety (so you get the variety, the species and possibly the genus)
+            sparqlQuery.beginBodyOptional();
+            sparqlQuery.appendToBody("?" + GERMPLASM + " <" + Oeso.RELATION_FROM_VARIETY.toString() + "> " + "?" + VARIETY + " . ");
+            sparqlQuery.appendToBody("?" + VARIETY + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + VARIETY_LABEL + " . "); 
+            sparqlQuery.appendToBody("?" + VARIETY + " <" + Oeso.RELATION_FROM_SPECIES.toString() + "> " + "?" + SPECIES + " . ");
+            sparqlQuery.appendToBody("?" + SPECIES + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + SPECIES_LABEL + " . ");            
+            sparqlQuery.beginBodyOptional();
+            sparqlQuery.appendToBody("?" + SPECIES + " <" + Oeso.RELATION_FROM_GENUS.toString() + "> " + "?" + GENUS + " . ");
+            sparqlQuery.appendToBody("?" + GENUS + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + GENUS_LABEL + " . ");
+            sparqlQuery.endBodyOptional();
+            sparqlQuery.endBodyOptional();
+
+            //4. case when when the germplasm is a lot linked to the accession            
+            sparqlQuery.appendToBody("?" + GERMPLASM + " <" + Oeso.RELATION_FROM_ACCESSION.toString() + "> " + "?" + ACCESSION + " . ");
+            sparqlQuery.appendToBody("?" + ACCESSION + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + ACCESSION_LABEL + " . "); 
+
+            //4.a. the accession is linked to a variety (so you get the variety and the species. and the genus eventually)
+            sparqlQuery.beginBodyOptional();
+            sparqlQuery.appendToBody("?" + ACCESSION + " <" + Oeso.RELATION_FROM_VARIETY.toString() + "> " + "?" + VARIETY + " . ");
+            sparqlQuery.appendToBody("?" + VARIETY + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + VARIETY_LABEL + " . "); 
+            sparqlQuery.appendToBody("?" + VARIETY + " <" + Oeso.RELATION_FROM_SPECIES.toString() + "> " + "?" + SPECIES + " . ");
+            sparqlQuery.appendToBody("?" + SPECIES + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + SPECIES_LABEL + " . "); 
+            sparqlQuery.beginBodyOptional();
+            sparqlQuery.appendToBody("?" + SPECIES + " <" + Oeso.RELATION_FROM_GENUS.toString() + "> " + "?" + GENUS + " . ");
+            sparqlQuery.appendToBody("?" + GENUS + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + GENUS_LABEL + " . ");
+            sparqlQuery.endBodyOptional();
+            sparqlQuery.endBodyOptional();
+
+            //4.b. the accession is linked to a species (you only get the species and the genus eventually)
+            sparqlQuery.beginBodyOptional();
+            sparqlQuery.appendToBody("?" + ACCESSION + " <" + Oeso.RELATION_FROM_SPECIES.toString() + "> " + "?" + SPECIES + " . ");
+            sparqlQuery.appendToBody("?" + SPECIES + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + SPECIES_LABEL + " . "); 
+            sparqlQuery.beginBodyOptional();
+            sparqlQuery.appendToBody("?" + SPECIES + " <" + Oeso.RELATION_FROM_GENUS.toString() + "> " + "?" + GENUS + " . ");
+            sparqlQuery.appendToBody("?" + GENUS + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + GENUS_LABEL + " . ");
+            sparqlQuery.endBodyOptional();
+            sparqlQuery.endBodyOptional();
+
+            if (germplasm == null) {
+                sparqlQuery.endBodyOptional();
+            }
+        } 
+        
+
         if (page != null && pageSize != null) {
             sparqlQuery.appendLimit(pageSize);
             sparqlQuery.appendOffset(page * pageSize);

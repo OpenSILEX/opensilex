@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -42,8 +44,10 @@ import opensilex.service.authentication.TokenManager;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.URINamespaces;
+import opensilex.service.dao.UserDAO;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.documentation.StatusCodeMsg;
+import opensilex.service.model.Annotation;
 import opensilex.service.model.User;
 import opensilex.service.ontology.Rdf;
 import opensilex.service.ontology.Rdfs;
@@ -130,7 +134,7 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
     protected static final URINamespaces ONTOLOGIES = new URINamespaces();
 
     protected static Repository rep;
-    private RepositoryConnection connection;
+    protected RepositoryConnection connection;
 
     protected static String resourceType;
 
@@ -138,18 +142,7 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
     protected Integer pageSize;
 
     public Rdf4jDAO() {
-        try {
-            String triplestoreServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
-            String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "repositoryID");
-            rep = new HTTPRepository(triplestoreServer, repositoryID); //Stockage triplestore
-            rep.initialize();
-            setConnection(rep.getConnection());
-        } catch (RepositoryException e) {
-            ResponseFormPOST postForm = new ResponseFormPOST(
-                    new Status("Can't connect to triplestore", StatusCodeMsg.ERR, e.getMessage()));
-            throw new WebApplicationException(
-                    Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postForm).build());
-        }
+    	this(PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "repositoryID"));  
     }
 
     public Rdf4jDAO(User user) {
@@ -172,6 +165,8 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
     }
 
     public RepositoryConnection getConnection() {
+    	if(connection == null || ! connection.isOpen())
+    		initConnection();
         return connection;
     }
 
@@ -594,29 +589,35 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
         
         return labels;
     }
-
+    
     @Override
-    protected void initConnection() {
-        getConnection().begin();    
+    protected void initConnection() {  
+    	if(connection == null || ! connection.isOpen()) 
+    		connection = rep.getConnection();
     }
 
     @Override
     protected void closeConnection() {
-        getConnection().close();
+        if(connection != null && connection.isOpen())
+            connection.close();
     }
 
     @Override
     protected void startTransaction() {
-        // transactions starts automatically in SPARQL.
+    	initConnection(); // init the connection if not done
+    	if(! connection.isActive())
+    		connection.begin();
     }
 
     @Override
     protected void commitTransaction() {
-        getConnection().commit();
+        if(connection != null && connection.isActive())
+            connection.commit();
     }
 
     @Override
     protected void rollbackTransaction() {
-        getConnection().rollback();
+        if(connection != null && connection.isActive())
+            connection.rollback();
     }
 }

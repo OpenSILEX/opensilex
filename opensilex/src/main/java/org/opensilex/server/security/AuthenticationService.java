@@ -22,6 +22,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
 import java.util.Date;
+import org.opensilex.server.security.user.User;
 import org.opensilex.service.Service;
 
 /**
@@ -54,14 +55,18 @@ public class AuthenticationService implements Service {
         return BCrypt.verifyer().verify(password.getBytes(), passwordHash.getBytes()).verified;
     }
 
-    public String generateToken(URI userURI) {
+    public String generateToken(User user) {
         Date issuedDate = new Date();
         Date expirationDate = Date.from(issuedDate.toInstant().plus(TOKEN_VALIDITY_DURATION, TOKEN_VALIDITY_DURATION_UNIT));
         JWTCreator.Builder tokenBuilder = JWT.create()
                 .withIssuer(TOKEN_ISSUER)
-                .withSubject(userURI.toString())
+                .withSubject(user.getUri().toString())
                 .withIssuedAt(issuedDate)
-                .withExpiresAt(expirationDate);
+                .withExpiresAt(expirationDate)
+                .withClaim("firstname", user.getFirstName())
+                .withClaim("lastname", user.getLastName())
+                .withClaim("email", user.getEmail().toString())
+                .withClaim("name", user.getName());
 
         return tokenBuilder.sign(algoRSA);
     }

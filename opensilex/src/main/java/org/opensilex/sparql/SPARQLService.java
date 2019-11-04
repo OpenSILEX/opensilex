@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -202,10 +203,8 @@ public class SPARQLService implements SPARQLConnection, Service {
         SelectBuilder select = sparqlObjectMapper.getSelectBuilder();
         Field field = sparqlObjectMapper.getFieldFromUniqueProperty(property);
 
-//        propertyValue
         SPARQLDeserializer<?> deserializer = Deserializers.getForClass(propertyValue.getClass());
-//        select.addBind(, );
-        select.setVar(field.getName(), deserializer.getNode(propertyValue));
+        select.addWhereValueVar(field.getName(), deserializer.getNode(propertyValue));
 
         List<SPARQLResult> results = executeSelectQuery(select);
 

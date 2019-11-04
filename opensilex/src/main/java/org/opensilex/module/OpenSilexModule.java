@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
@@ -19,8 +20,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -51,8 +54,9 @@ public abstract class OpenSilexModule {
 
     /**
      * Read Maven build properties
-     * 
-     * @return Return maven properties as an instance of {@code java.util.Properties}
+     *
+     * @return Return maven properties as an instance of
+     * {@code java.util.Properties}
      */
     public Properties getMavenProperties() {
         if (mavenProperties.isEmpty()) {
@@ -104,6 +108,27 @@ public abstract class OpenSilexModule {
         }
 
         return false;
+    }
+
+    public Date getLastModified(String fileName) {
+        URL sourceLocation = getClass().getProtectionDomain().getCodeSource().getLocation();
+        String sourceLocationString = sourceLocation.toString();
+        long lastModified = 0;
+        if (sourceLocationString.endsWith(".jar")) {
+            try {
+                lastModified = Paths.get(sourceLocation.toURI()).toFile().lastModified();
+            } catch (URISyntaxException ex) {
+                LOGGER.warn("Unexpected exception while getting module last modified date", ex);
+            }
+        } else {
+            try {
+                lastModified = Paths.get(sourceLocation.toURI().resolve(fileName)).toFile().lastModified();
+            } catch (URISyntaxException ex) {
+                LOGGER.warn("Unexpected exception while getting module file last modified date", ex);
+            }
+        }
+
+        return new Date(lastModified);
     }
 
     public InputStream getFileInputStream(String fileName) throws Exception {

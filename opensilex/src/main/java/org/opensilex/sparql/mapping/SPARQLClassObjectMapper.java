@@ -17,6 +17,7 @@ import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.rdf.model.Property;
+import org.apache.jena.sparql.core.Var;
 import org.opensilex.sparql.SPARQLResult;
 import org.opensilex.sparql.SPARQLService;
 import org.opensilex.sparql.annotations.SPARQLCache;
@@ -110,7 +111,9 @@ public class SPARQLClassObjectMapper<T> {
 
         for (Field field : classAnalizer.getDataPropertyFields()) {
             Method setter = classAnalizer.getSetterFromField(field);
+
             String strValue = result.getStringValue(field.getName());
+
             if (strValue != null) {
                 if (Deserializers.existsForClass(field.getType())) {
                     Object objValue = Deserializers.getForClass(field.getType()).fromString(strValue);

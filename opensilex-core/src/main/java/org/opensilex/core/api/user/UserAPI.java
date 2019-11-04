@@ -108,7 +108,7 @@ public class UserAPI implements RestApplicationAPI {
         }
 
         if (userDAO.authenticate(user, authenticationDTO.getPassword())) {
-            return new SingleValueResponse(authentication.generateToken(user.getUri())).getResponse();
+            return new SingleValueResponse(authentication.generateToken(user)).getResponse();
         } else {
             return new ErrorResponse(Status.FORBIDDEN, "Invalid credentials", "User does not exists or password is invalid").getResponse();
         }

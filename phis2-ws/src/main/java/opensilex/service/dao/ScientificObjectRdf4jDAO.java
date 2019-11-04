@@ -848,7 +848,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     }
     
     @Override
-    public List create(List<ScientificObject> scientificObjects) throws Exception {
+    public List<ScientificObject> create(List<ScientificObject> scientificObjects) throws Exception {
         
         boolean resultState = false; // To know if the data are ok and have been inserted.
         boolean annotationInsert = true; // True if the insertion have been done.

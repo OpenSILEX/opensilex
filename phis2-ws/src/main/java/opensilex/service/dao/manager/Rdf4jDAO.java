@@ -590,6 +590,58 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
         return labels;
     }
     
+    /**
+     * Delete a list of objects into the triplestore. 
+     * @param uris : a {@link Iterable} over objects Uris 
+     * @throws Exception
+     * @throws RepositoryException
+     * @throws UpdateExecutionException
+     */
+    protected void deleteAll(List<String> uris) throws Exception, RepositoryException, UpdateExecutionException {
+    	
+    }
+    
+    /**
+     * Delete a list of objects into the triplestore. 
+     * @param uris : a {@link Iterable} over objects Uris 
+     * @throws IllegalArgumentException if the {@link #user} is not an admin user or if a given uri is not present 
+     * into the TripleStore. 
+     * @throws DAOPersistenceException : if an {@link Exception} related to the {@link Repository} is encountered. 
+     * @throws Exception : for any other encountered {@link Exception}
+     * @see #deleteAll(Iterable)
+     */
+    public void checkAndDeleteAll(List<String> uris) throws DAOPersistenceException, Exception { 	
+    	if(user == null || StringUtils.isEmpty(user.getAdmin())) {
+    		throw new IllegalArgumentException("No user/bad user provided");
+    	}
+    	if(! new UserDAO().isAdmin(user)) { // the user is not an admin
+    		throw new IllegalArgumentException("Error : only an admin user can delete an object");
+    	}
+    	Exception returnedException = null;
+		try {
+			// #FIXME : make the check of n uris existence more efficient
+			for(String uri : uris) {
+				if(! existUri(uri)) {
+					throw new IllegalArgumentException(uris+" don't belongs to the TripleStore");
+				}
+	    	}
+			startTransaction();    			
+			deleteAll(uris);
+	    	commitTransaction();	
+	    	
+		} catch (RepositoryException | UpdateExecutionException e) {
+			rollbackTransaction();
+			returnedException =  new DAOPersistenceException(e);
+		} catch(Exception e) {
+			rollbackTransaction();
+			returnedException = e;
+		}
+		finally {
+		 	if(returnedException != null)
+		 		throw returnedException;
+		 }
+    }
+
     @Override
     protected void initConnection() {  
     	if(connection == null || ! connection.isOpen()) 

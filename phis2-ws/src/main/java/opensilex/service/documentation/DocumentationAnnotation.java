@@ -30,6 +30,7 @@ public final class DocumentationAnnotation {
     public static final String PAGE_SIZE_MONGO = "Number of elements per page (limited to 1000000)";
 
     // User messages
+    public static final String INTERNAL_SERVER_ERROR = "Internal server error.";
     public static final String ERROR_SEND_DATA = "Server error. Cannot send data.";
     public static final String ERROR_FETCH_DATA = "Server error. Cannot fetch data.";
     public static final String BAD_USER_INFORMATION = "Bad informations send by user";
@@ -300,6 +301,7 @@ public final class DocumentationAnnotation {
     
     public static final String EXAMPLE_CALL_DATATYPE = "json";
   
+    public static final String ANNOTATION_URI_DEFINITION = "An annotation URI (Unique Resource Identifier)";
     public static final String EXAMPLE_ANNOTATION_URI = "http://www.opensilex.org/platform/id/annotation/8247af37-769c-495b-8e7e-78b1141176c2";
     public static final String EXAMPLE_ANNOTATION_TARGET = "http://www.opensilex.org/demo/id/variable/v0000001";
     public static final String EXAMPLE_ANNOTATION_MOTIVATED_BY = "http://www.w3.org/ns/oa#commenting";

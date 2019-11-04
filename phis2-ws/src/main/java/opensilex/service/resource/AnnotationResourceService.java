@@ -19,6 +19,9 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -36,6 +39,7 @@ import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
+import opensilex.service.resource.dto.DeleteDTO;
 import opensilex.service.resource.dto.annotation.AnnotationDTO;
 import opensilex.service.resource.dto.annotation.AnnotationPostDTO;
 import opensilex.service.resource.validation.interfaces.URL;
@@ -240,17 +244,67 @@ public class AnnotationResourceService extends ResourceService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAnnotationByUri(
             @ApiParam(
-                    value = DocumentationAnnotation.SENSOR_URI_DEFINITION, 
+                    value = DocumentationAnnotation.ANNOTATION_URI_DEFINITION, 
                     required = true, 
-                    example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) 
+                    example = DocumentationAnnotation.EXAMPLE_ANNOTATION_URI) 
                 @URL @PathParam("uri") String uri) {
         
         return getGETByUriResponseFromDAOResults(new AnnotationDAO(userSession.getUser()), uri);
     }
+    
+    
+    /**
+     * @example
+     *[
+     *	http://www.phenome-fppn.fr/platform/id/annotation/8247af37-769c-495b-8e7e-78b1141176c2,
+     *  http://www.phenome-fppn.fr/platform/id/annotation/8247gt37-769c-495b-8e7e-91jh633151k4
+     *]
+     * 
+     */
+    @DELETE
+    @Path("{uri}")
+    @ApiOperation(
+    	value = "Delete a list of annotation",
+    	notes = "Delete a list of annotation. Need URL encoded annotation URI"
+    	
+    		)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Annotation(s) deleted", response = ResponseFormPOST.class), 
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.INTERNAL_SERVER_ERROR),
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+    		name = GlobalWebserviceValues.AUTHORIZATION, 
+    		required = true,
+            dataType = GlobalWebserviceValues.DATA_TYPE_STRING, 
+            paramType = GlobalWebserviceValues.HEADER,
+            value = DocumentationAnnotation.ACCES_TOKEN,
+            example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deleteAnnotationByUri( 
+    		@ApiParam(
+		        value = DocumentationAnnotation.ANNOTATION_URI_DEFINITION,
+		        required = true, 
+		        example = DocumentationAnnotation.EXAMPLE_ANNOTATION_URI
+		    ) 
+        	@Valid @NotNull DeleteDTO deleteDTO, @Context HttpServletRequest context) {
+    	
+    	AnnotationDAO annotationDAO = new AnnotationDAO(userSession.getUser());
+		if (context.getRemoteAddr() != null) {
+			 annotationDAO.setRemoteUserAdress(context.getRemoteAddr());
+	    }
+		Response response = buildDeleteObjectsByUriResponse(annotationDAO, deleteDTO);
+    	annotationDAO.getConnection().close();
+    	return response;
+    }
 
     @Override
     protected ArrayList<AbstractVerifiedClass> getDTOsFromObjects(List<? extends Object> objects) {
-        ArrayList<AbstractVerifiedClass> dtos = new ArrayList();
+        ArrayList<AbstractVerifiedClass> dtos = new ArrayList<>(objects.size());
         // Generate DTOs
         objects.forEach((object) -> {
             dtos.add(new AnnotationDTO((Annotation)object));
@@ -261,7 +315,7 @@ public class AnnotationResourceService extends ResourceService {
     @Override
     protected List<? extends Object> getObjectsFromDTOs (List<? extends AbstractVerifiedClass> dtos)
             throws Exception {
-        List<Object> objects = new ArrayList<>();
+        List<Object> objects = new ArrayList<>(dtos.size());
         for (AbstractVerifiedClass objectDto : dtos) {
             objects.add((Annotation)objectDto.createObjectFromDTO());
         }
@@ -270,7 +324,7 @@ public class AnnotationResourceService extends ResourceService {
     
     @Override
     protected List<String> getUrisFromObjects (List<? extends Object> createdObjects) {
-        List<String> createdUris = new ArrayList<>();
+        List<String> createdUris = new ArrayList<>(createdObjects.size());
         createdObjects.forEach(object -> {
             createdUris.add(((Annotation)object).getUri());
         });

@@ -31,7 +31,6 @@ import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.query.UpdateExecutionException;
-import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +50,7 @@ import opensilex.service.ontology.Rdfs;
 import opensilex.service.ontology.Time;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
+import opensilex.service.model.Annotation;
 import opensilex.service.model.Event;
 import opensilex.service.model.Instant;
 import opensilex.service.ontology.Xsd;
@@ -656,6 +656,10 @@ public class EventDAO extends Rdf4jDAO<Event> {
     	checkAndDeleteAll(uris);
     }
     
+    /**
+     * @apiNote
+     * WARNING : delete an event trigger the deletion of all annotation which only have the event as target . 
+     */
     @Override
     protected void deleteAll(List<String> uris) throws Exception, RepositoryException, UpdateExecutionException {
     	
@@ -675,6 +679,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
     }
     
     /**
+     * @return the {@link List} of {@link Annotation} which only have the given event uri as target.
      * @example
      * select distinct ?a <br>
  	 * where {  <br>
@@ -684,8 +689,6 @@ public class EventDAO extends Rdf4jDAO<Event> {
 	 * 		"http://www.phenome-fppn.fr/id/event/5a1b3c0d-58af-4cfb-811e-e141b11453b1" = ?t2) <br>
 	 * } <br> 
      * @param eventUri
-     * @param conn
-     * @return
      */
     protected List<String> getAllAnnotationUrisWithEventAsTarget(String eventUri) {
     	
@@ -718,22 +721,24 @@ public class EventDAO extends Rdf4jDAO<Event> {
     }
     
     /**
+     * @return an {@link UpdateBuilder} producing a SPARQL query which remove all event triples
      * @example
      * PREFIX oeso: <http://www.opensilex.org/vocabulary/oeso#>
      * PREFIX time: <http://www.w3.org/2006/time#>
      * 
      * DELETE {
      * 		http://www.phenome-fppn.fr/id/event/5a1b3c0d-58af-4cfb-811e-e141b11453b1> ?p ?o .
+     * 	    ?s ?p1 <http://www.phenome-fppn.fr/id/event/5a1b3c0d-58af-4cfb-811e-e141b11453b1> .
      *  	?time ?time_pred ?time_object 
      *  
-     * }  WHERE  { GRAPH <<http://www.opensilex.org/MTP/set/events> > { 
+     * }  WHERE { 
+     * 			?s ?p1 <http://www.phenome-fppn.fr/id/event/5a1b3c0d-58af-4cfb-811e-e141b11453b1>
      *         <http://www.phenome-fppn.fr/id/event/5a1b3c0d-58af-4cfb-811e-e141b11453b1> ?p ?o ;
      *          																time:hasTime ?time. 
      *         ?time ?time_pred ?time_object .
      *     }   
      * }
-     * @param eventUri
-     * @param conn 
+     * @param eventUri : the URI of the {@link Event} to delete
      */
     protected UpdateBuilder deleteEventTriples(String eventUri) {
     	
@@ -746,8 +751,8 @@ public class EventDAO extends Rdf4jDAO<Event> {
          	  timeObj = NodeFactory.createVariable("time_object");
                  	  
 		 Node hasTimePred = NodeFactory.createURI(Time.hasTime.getURI()), // Query uris 
-     		  eventNode = NodeFactory.createURI(eventUri),
-     		  eventGraph = NodeFactory.createURI(Contexts.EVENTS.toString());
+     		  eventNode = NodeFactory.createURI(eventUri);
+     		 // eventGraph = NodeFactory.createURI(Contexts.EVENTS.toString());
       	
       	return new UpdateBuilder()   		
       		.addDelete(eventNode,p,o)

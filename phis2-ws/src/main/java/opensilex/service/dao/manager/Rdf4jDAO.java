@@ -47,7 +47,6 @@ import opensilex.service.configuration.URINamespaces;
 import opensilex.service.dao.UserDAO;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.documentation.StatusCodeMsg;
-import opensilex.service.model.Annotation;
 import opensilex.service.model.User;
 import opensilex.service.ontology.Rdf;
 import opensilex.service.ontology.Rdfs;
@@ -592,7 +591,7 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
     
     /**
      * Delete a list of objects into the triplestore. 
-     * @param uris : a {@link Iterable} over objects Uris 
+     * @param uris : a {@link List} of objects Uris 
      * @throws Exception
      * @throws RepositoryException
      * @throws UpdateExecutionException
@@ -608,9 +607,9 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
      * into the TripleStore. 
      * @throws DAOPersistenceException : if an {@link Exception} related to the {@link Repository} is encountered. 
      * @throws Exception : for any other encountered {@link Exception}
-     * @see #deleteAll(Iterable)
+     * @see #deleteAll(List)
      */
-    public void checkAndDeleteAll(List<String> uris) throws DAOPersistenceException, Exception { 	
+    public void checkAndDeleteAll(List<String> uris) throws IllegalArgumentException, DAOPersistenceException, Exception { 	
     	if(user == null || StringUtils.isEmpty(user.getAdmin())) {
     		throw new IllegalArgumentException("No user/bad user provided");
     	}

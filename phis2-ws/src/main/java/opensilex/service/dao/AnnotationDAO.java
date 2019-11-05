@@ -9,38 +9,25 @@ package opensilex.service.dao;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import opensilex.service.dao.exception.DAOPersistenceException;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
-import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.sparql.core.TriplePath;
-import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.path.Path;
 import org.apache.jena.sparql.path.PathFactory;
-import org.apache.jena.sparql.path.PathParser;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -49,7 +36,6 @@ import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.query.UpdateExecutionException;
-import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -525,16 +511,18 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
     }
     
    /**
+    * @return an {@link UpdateBuilder} producing a SPARQL query which remove all annotation having only 
+    * the given annotation as target. 
     * @example 
-    * DELETE { ?s ?p ?o . } WHERE { <br>
+    * DELETE { ?s ?p ?o . } WHERE { 
     *     ?s oa:hasTarget+ "http://www.phenome-fppn.fr/test/id/annotation/1e331ca4-2e63-4728-8373-050a2b51c3dc". <br>
-    *     ?s ?p ?o  <br>
-    *     MINUS { <br> 
-    *     	  ?s oa:hasTarget ?s2, ?s3 .  <br>
-    *     	  FILTER( ?s2 != ?s3) <br>
-    * 	  } <br> 
-    * } <br>
-    * @param annotationUri
+    *     ?s ?p ?o  
+    *     MINUS { 
+    *     	  ?s oa:hasTarget ?s2, ?s3 . 
+    *     	  FILTER( ?s2 != ?s3) 
+    * 	  } 
+    * } 
+    * @param annotationUri 
     * @throws RepositoryException
     * @throws UpdateExecutionException
     */
@@ -560,8 +548,18 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
     }
     
     /**
+     * @return an {@link UpdateBuilder} producing a SPARQL query which remove all annotation triples
+     * @example 
+     * DELETE { 
+     * 		http://www.phenome-fppn.fr/test/id/annotation/1e331ca4-2e63-4728-8373-050a2b51c3dc ?p ?o .  
+     * 		?s ?p1 http://www.phenome-fppn.fr/test/id/annotation/1e331ca4-2e63-4728-8373-050a2b51c3dc   
+     * } WHERE {  
+     * 		{ http://www.phenome-fppn.fr/test/id/annotation/1e331ca4-2e63-4728-8373-050a2b51c3dc ?p ?o }  
+     * 		UNION  
+     * 		{?s ?p1 http://www.phenome-fppn.fr/test/id/annotation/1e331ca4-2e63-4728-8373-050a2b51c3dc }  
+     * }  
      * 
-     * @param annotationUri
+     * @param annotationUri : the URI of the {@link Annotation} to delete
      */
     protected UpdateBuilder getRemoveAllAnnotationTripleQuery(String annotationUri) throws RepositoryException {
     	
@@ -581,11 +579,11 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
     }
     
     /**
-     * WARNING : delete the annotation trigger the deletion of all annotation which only have the initial annotation has target . 
-     * @throws IllegalAccessException  if the annotationUri is empty or null, or if the URI doesn't belong to the TripleStore
+     * @apiNote
+     * WARNING : delete an annotation trigger the deletion of all annotation which only have the annotation as target . 
      */
     @Override
-    protected void deleteAll(List<String> annotationUris) throws IllegalAccessException, RepositoryException, UpdateExecutionException {
+    protected void deleteAll(List<String> annotationUris) throws RepositoryException, UpdateExecutionException {
     	    	
     	for(String uri : annotationUris) {   		
     		String removeIncomingsAnnotationQuery = getRemoveAllSuperAnnotationQuery(uri).buildRequest().toString(); 

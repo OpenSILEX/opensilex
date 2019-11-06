@@ -26,10 +26,18 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
+import com.google.gson.stream.JsonReader;
+import com.worldturner.medeia.api.SchemaSource;
+import com.worldturner.medeia.api.UrlSchemaSource;
+import com.worldturner.medeia.api.ValidationFailedException;
+import com.worldturner.medeia.api.gson.MedeiaGsonApi;
+import com.worldturner.medeia.schema.validation.SchemaValidator;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.net.URL;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import java.util.Arrays;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
@@ -43,6 +51,8 @@ import opensilex.service.model.Dataset;
  * Custom JSON handler.
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  * @param <T>
+ * For json validation schema
+ * @see https://github.com/worldturner/medeia-validator
  */
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
@@ -54,7 +64,15 @@ public final class CustomJsonWriterReader<T> implements MessageBodyWriter<T>,
      * Logs
      */
     final static Logger LOGGER = LoggerFactory.getLogger(CustomJsonWriterReader.class);
-
+    /**
+     * JsonSchema validator
+     */
+    private static MedeiaGsonApi api = new MedeiaGsonApi();
+    /**
+     * Serializer/deserializer object
+     */
+    private static Gson gson = new Gson();
+    
     /**
      * Permits to filter visible classes.
      * @param type
@@ -85,11 +103,17 @@ public final class CustomJsonWriterReader<T> implements MessageBodyWriter<T>,
     public T readFrom(Class<T> type, Type genericType, Annotation[] annotations, MediaType mediaType,
             MultivaluedMap<String, String> httpHeaders, InputStream entityStream)
             throws IOException, WebApplicationException {
-        final Gson g = new Gson();
         try {
             final BufferedReader reader = new BufferedReader(new InputStreamReader(entityStream));
-            return g.fromJson(reader, genericType);
-        } catch (JsonIOException | JsonSyntaxException e) {
+            SchemaValidator entitySchemaValidator = this.loadSchema(genericType.getTypeName());
+            LOGGER.debug(gson.toJson(entitySchemaValidator));
+            if(entitySchemaValidator != null){
+                JsonReader validatedReader = api.createJsonReader(entitySchemaValidator, reader);
+                return gson.fromJson(validatedReader, genericType);
+            }else{
+                return gson.fromJson(reader, genericType);
+            }
+        } catch (JsonIOException | JsonSyntaxException | ValidationFailedException e) {
             LOGGER.warn(e.getMessage(), e);
             final ResponseFormPOST postResponse = new ResponseFormPOST(new Status(
                     "Unexpected JSON format", 
@@ -154,6 +178,37 @@ public final class CustomJsonWriterReader<T> implements MessageBodyWriter<T>,
             LOGGER.error(gsonEx.getMessage(), gsonEx);
             throw new ProcessingException(
                     "Error serializing a " + type + " to the output stream", gsonEx);
+        }
+    }
+    
+    /**
+     * 
+     * @param entityType
+     * @return 
+     */
+    private SchemaValidator loadSchema(String genericEntityType) {
+        if(genericEntityType.contains("java.util.ArrayList")){
+            genericEntityType = genericEntityType.replaceFirst("java.util.ArrayList<", "");
+            genericEntityType = genericEntityType.substring(0, genericEntityType.length() - 1);
+        }
+        
+        String[] enstityDTOPath = genericEntityType.split("[.]");
+        String entityType = Arrays.stream(enstityDTOPath).reduce((a, b) -> b)
+            .orElse(null);
+        LOGGER.debug(entityType);
+
+        if(entityType == null){
+            return null;
+        }
+        
+        URL schemaResource = getClass().getResource("/validationSchemas/" + entityType + ".json");
+
+        if (schemaResource == null) {
+            return null;
+        } else {
+            LOGGER.debug(schemaResource.getPath().toString());
+            SchemaSource source = new UrlSchemaSource(schemaResource);
+            return api.loadSchema(source);
         }
     }
 }

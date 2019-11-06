@@ -104,9 +104,11 @@ public final class CustomJsonWriterReader<T> implements MessageBodyWriter<T>,
             MultivaluedMap<String, String> httpHeaders, InputStream entityStream)
             throws IOException, WebApplicationException {
         try {
+            // 1. read input
             final BufferedReader reader = new BufferedReader(new InputStreamReader(entityStream));
+            // 2. load validation schema if it exists
             SchemaValidator entitySchemaValidator = this.loadSchema(genericType.getTypeName());
-            LOGGER.debug(gson.toJson(entitySchemaValidator));
+            // 3. read input with or without schema
             if(entitySchemaValidator != null){
                 JsonReader validatedReader = api.createJsonReader(entitySchemaValidator, reader);
                 return gson.fromJson(validatedReader, genericType);
@@ -182,31 +184,33 @@ public final class CustomJsonWriterReader<T> implements MessageBodyWriter<T>,
     }
     
     /**
-     * 
-     * @param entityType
-     * @return 
+     * Load validation schema corresponding to Input entity type
+     * @param genericEntityTypetype of the entity can be a class type or an array of this class type
+     * @return A java schema validator
      */
     private SchemaValidator loadSchema(String genericEntityType) {
+        // 1. get class name from class type
+        // E.g. java.util.ArrayList<opensilex.service.ressource.dto.ProvenancePostDTO>
         if(genericEntityType.contains("java.util.ArrayList")){
             genericEntityType = genericEntityType.replaceFirst("java.util.ArrayList<", "");
             genericEntityType = genericEntityType.substring(0, genericEntityType.length() - 1);
         }
-        
+        // E.g. opensilex.service.ressource.dto.ProvenancePostDTO
         String[] enstityDTOPath = genericEntityType.split("[.]");
         String entityType = Arrays.stream(enstityDTOPath).reduce((a, b) -> b)
             .orElse(null);
-        LOGGER.debug(entityType);
 
+        // E.g. ProvenancePostDTO
         if(entityType == null){
             return null;
         }
         
+        // 2. load corresponding schema
         URL schemaResource = getClass().getResource("/validationSchemas/" + entityType + ".json");
 
         if (schemaResource == null) {
             return null;
         } else {
-            LOGGER.debug(schemaResource.getPath().toString());
             SchemaSource source = new UrlSchemaSource(schemaResource);
             return api.loadSchema(source);
         }

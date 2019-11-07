@@ -9,6 +9,8 @@ package opensilex.service.resource;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
 import javax.ws.rs.core.Response;
 import opensilex.service.PropertiesFileManager;
 import opensilex.service.authentication.Session;
@@ -16,9 +18,13 @@ import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.dao.exception.ResourceAccessDeniedException;
 import opensilex.service.dao.manager.DAO;
+import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.injection.SessionInject;
+
 import static opensilex.service.resource.DocumentResourceService.LOGGER;
+
+import opensilex.service.resource.dto.DeleteDTO;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.result.ResultForm;
@@ -343,7 +349,50 @@ public abstract class ResourceService {
      * @param resultForm
      * @return the response. 
      */
-    private Response buildResponse(Response.Status status, AbstractResultForm resultForm) {
+    protected Response buildResponse(Response.Status status, AbstractResultForm resultForm) {
         return Response.status(status).entity(resultForm).build();
     }
+    
+    
+    /**
+     * 
+     * @param e
+     * @return
+     */
+    protected Response buildResponseFromException(Exception e) {
+    	
+    	Response.Status status = null;
+    	if(e instanceof IllegalArgumentException) {
+    		status = Response.Status.BAD_REQUEST;
+    	}
+    	else if(e instanceof IllegalAccessException) {
+    		status = Response.Status.FORBIDDEN;
+    	}
+    	else {
+    		status = Response.Status.INTERNAL_SERVER_ERROR;
+    	}
+    	AbstractResultForm putResponse = new ResponseFormPOST(new Status(e.getMessage()));
+        return Response.status(status).entity(putResponse).build();  	
+    }
+    
+    /**
+     * @param dao : a {@link Rdf4jDAO} used to delete a {@link List} of String uri.
+     * @param deleteDTO : a {@link DeleteDTO} which contains a {@link List} of uris.  
+     * @return 
+     */
+    protected Response buildDeleteObjectsByUriResponse(Rdf4jDAO<?> dao, DeleteDTO deleteDTO) {
+    	
+    	Objects.requireNonNull(dao);
+    	Objects.requireNonNull(deleteDTO);
+    	
+    	try {
+    		dao.checkAndDeleteAll(deleteDTO.getUris());
+        	ResponseFormPOST resp = new ResponseFormPOST(new Status("Annotation(s) deleted",null));
+            return buildResponse(Response.Status.OK,resp);
+    	} catch(Exception e) {
+    		return buildResponseFromException(e);
+    	}	
+    	
+    }
+
 }

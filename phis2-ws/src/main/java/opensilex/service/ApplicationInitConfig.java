@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import opensilex.service.authentication.Session;
 import opensilex.service.authentication.TokenManager;
 import opensilex.service.documentation.StatusCodeMsg;
+import opensilex.service.eventListener.EventListener;
 import opensilex.service.injection.SessionFactory;
 import opensilex.service.injection.SessionInject;
 import opensilex.service.injection.SessionInjectResolver;
@@ -41,7 +42,7 @@ public class ApplicationInitConfig extends ResourceConfig {
 
     final static String PROPERTY_FILE_NAME = "service";
     final static Logger LOGGER = LoggerFactory.getLogger(ApplicationInitConfig.class);
-
+    
     /**
      * Initializes application configuration
      */
@@ -99,6 +100,7 @@ public class ApplicationInitConfig extends ResourceConfig {
                         .in(Singleton.class);
             }
         });
+        register(EventListener.class);
     }
     
     /**

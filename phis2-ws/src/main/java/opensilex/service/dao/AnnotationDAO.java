@@ -10,8 +10,12 @@ package opensilex.service.dao;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import opensilex.service.dao.exception.DAOPersistenceException;
+
+import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -19,6 +23,9 @@ import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.sparql.core.TriplePath;
+import org.apache.jena.sparql.path.Path;
+import org.apache.jena.sparql.path.PathFactory;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.query.BindingSet;
@@ -27,6 +34,8 @@ import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.Update;
+import org.eclipse.rdf4j.query.UpdateExecutionException;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -500,12 +509,101 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
         }
         return annotations;
     }
-
-    @Override
-    public void delete(List<Annotation> objects) throws DAOPersistenceException, Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    
+   /**
+    * @return an {@link UpdateBuilder} producing a SPARQL query which remove all annotation having only 
+    * the given annotation as target. 
+    * @example 
+    * DELETE { ?s ?p ?o . } WHERE { 
+    *     ?s oa:hasTarget+ "http://www.phenome-fppn.fr/test/id/annotation/1e331ca4-2e63-4728-8373-050a2b51c3dc". <br>
+    *     ?s ?p ?o  
+    *     MINUS { 
+    *     	  ?s oa:hasTarget ?s2, ?s3 . 
+    *     	  FILTER( ?s2 != ?s3) 
+    * 	  } 
+    * } 
+    * @param annotationUri 
+    * @throws RepositoryException
+    * @throws UpdateExecutionException
+    */
+    protected UpdateBuilder getRemoveAllSuperAnnotationQuery(String annotationUri) throws RepositoryException, UpdateExecutionException {
+    	  	
+    	// create variables and annotation ressource
+    	Node s = NodeFactory.createVariable("s"), s2 = NodeFactory.createVariable("s2"), s3 = NodeFactory.createVariable("s3"),
+    		 p = NodeFactory.createVariable("p"),  o = NodeFactory.createVariable("o"),
+    		 oaTargetPred = NodeFactory.createURI(Oa.RELATION_HAS_TARGET.toString()),
+    		 annotationNode = NodeFactory.createURI(annotationUri);
+    	
+    	Path oaTargetPath = PathFactory.pathOneOrMore1(PathFactory.pathLink(oaTargetPred)); // create the property path (oa:target)+ 	
+    	
+    	return new UpdateBuilder() // build the query
+    	   .addDelete(s, p, o) 
+		   .addWhere(new TriplePath(s, oaTargetPath, annotationNode) )// add the two WHERE basic graph pattern ( b.g.p.) 
+		   .addWhere(s, p, o)
+		   .addMinus(new WhereBuilder() // add the minus clause in order to check if the annotation has more than one target 
+		   .addWhere(s, oaTargetPred, s2)
+		   .addWhere(s, oaTargetPred, s3)
+		   .addFilter(new ExprFactory().ne(s2, s3)) // create ?s2 != ?s3, 
+		);    
     }
-
+    
+    /**
+     * @return an {@link UpdateBuilder} producing a SPARQL query which remove all annotation triples
+     * @example 
+     * DELETE { 
+     * 		http://www.phenome-fppn.fr/test/id/annotation/1e331ca4-2e63-4728-8373-050a2b51c3dc ?p ?o .  
+     * 		?s ?p1 http://www.phenome-fppn.fr/test/id/annotation/1e331ca4-2e63-4728-8373-050a2b51c3dc   
+     * } WHERE {  
+     * 		{ http://www.phenome-fppn.fr/test/id/annotation/1e331ca4-2e63-4728-8373-050a2b51c3dc ?p ?o }  
+     * 		UNION  
+     * 		{?s ?p1 http://www.phenome-fppn.fr/test/id/annotation/1e331ca4-2e63-4728-8373-050a2b51c3dc }  
+     * }  
+     * 
+     * @param annotationUri : the URI of the {@link Annotation} to delete
+     */
+    protected UpdateBuilder getRemoveAllAnnotationTripleQuery(String annotationUri) throws RepositoryException {
+    	
+    	// create variables and annotation ressource
+    	Node  s = NodeFactory.createVariable("s"),
+    		  p = NodeFactory.createVariable("p"),
+    		  p2 = NodeFactory.createVariable("p2"),
+       		  o = NodeFactory.createVariable("o"), 
+       		  annotationNode = NodeFactory.createURI(annotationUri);
+    	
+    	return new UpdateBuilder()
+    		.addDelete(annotationNode,p,o)
+    		.addDelete(s,p2,annotationNode)
+    		.addWhere(annotationNode, p, o) // add the <s,p,annotation_uri> UNION <annotation_uri,p,o>
+			.addUnion(new WhereBuilder().addWhere(s,p2,annotationNode)
+		);   		
+    }
+    
+    /**
+     * @apiNote
+     * WARNING : delete an annotation trigger the deletion of all annotation which only have the annotation as target . 
+     */
+    @Override
+    protected void deleteAll(List<String> annotationUris) throws RepositoryException, UpdateExecutionException {
+    	    	
+    	for(String uri : annotationUris) {   		
+    		String removeIncomingsAnnotationQuery = getRemoveAllSuperAnnotationQuery(uri).buildRequest().toString(); 
+    		String removeAnnotationQuery = getRemoveAllAnnotationTripleQuery(uri).buildRequest().toString(); 
+    		
+    		Update update = connection.prepareUpdate(QueryLanguage.SPARQL,removeIncomingsAnnotationQuery); 
+    		update.execute(); // first delete all annotation which has the annotationUri as target  
+    		update = connection.prepareUpdate(QueryLanguage.SPARQL,removeAnnotationQuery); 
+    		update.execute(); // then delete the annotation itself
+    	}	
+    }
+   
+    @Override
+    public void delete(List<Annotation> annotations) throws DAOPersistenceException, Exception, IllegalAccessException, IllegalAccessException { 
+    	
+    	ArrayList<String> uris = annotations.stream().map(event -> event.getUri()) 
+				.collect(Collectors.toCollection(ArrayList::new));
+    	checkAndDeleteAll(uris);
+    }
+    
     @Override
     public List<Annotation> update(List<Annotation> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.

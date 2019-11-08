@@ -92,7 +92,7 @@
             "title": "The Creationdate Schema",
             "default": "",
             "examples": [
-              "2019-10-30T11:16:23+0100"
+              "2019-11-08T14:36:34+0100"
             ],
             "pattern": "^(.*)$"
           },
@@ -115,8 +115,7 @@
                   "title": "The Items Schema",
                   "default": "",
                   "examples": [
-                    "http://www.opensilex.org/sunagri/2018/s18002",
-                    "http://www.opensilex.org/sunagri/2018/s18003"
+                    "http://www.opensilex.org/sunagri/2018/s18002"
                   ],
                   "pattern": "^(.*)$"
                 }
@@ -131,8 +130,7 @@
                   "title": "The Items Schema",
                   "default": "",
                   "examples": [
-                    "perrine.fortin@sunr.fr",
-                    "perrine.juillion@itk.fr"
+                    "http://www.sunagri.fr/sunagri/id/agent/admin_sunagri"
                   ],
                   "pattern": "^(.*)$"
                 }

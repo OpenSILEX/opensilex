@@ -9,6 +9,8 @@ package opensilex.service.resource;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import opensilex.service.PropertiesFileManager;
 import opensilex.service.authentication.Session;
@@ -17,7 +19,6 @@ import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.dao.exception.ResourceAccessDeniedException;
 import opensilex.service.dao.manager.DAO;
 import opensilex.service.documentation.StatusCodeMsg;
-import opensilex.service.injection.SessionInject;
 import static opensilex.service.resource.DocumentResourceService.LOGGER;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 import opensilex.service.view.brapi.Status;
@@ -25,6 +26,7 @@ import opensilex.service.result.ResultForm;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
+import org.opensilex.server.security.user.User;
 
 /**
  * Resource service mother class.
@@ -36,8 +38,17 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 public abstract class ResourceService {
     
     // User session.
-    @SessionInject
-    protected Session userSession;
+    @Context ContainerRequestContext context;
+    
+    
+    protected Session userSession = new Session() {
+        @Override
+        public opensilex.service.model.User getUser() {
+            User user = (User) context.getSecurityContext().getUserPrincipal();
+            opensilex.service.model.User userPhis = new opensilex.service.model.User(user.getEmail().toString());
+            return userPhis;
+        }
+    };
     
     // The default language of the application.
     protected static final String DEFAULT_LANGUAGE = PropertiesFileManager.getConfigFileProperty("service", "defaultLanguage");

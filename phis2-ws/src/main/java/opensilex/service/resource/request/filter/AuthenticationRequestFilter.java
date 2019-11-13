@@ -7,10 +7,17 @@
 //******************************************************************************
 package opensilex.service.resource.request.filter;
 
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.Priority;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.ws.rs.HttpMethod;
+import javax.ws.rs.Priorities;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -19,16 +26,21 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.authentication.TokenManager;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.resource.DataResourceService;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.ResponseFormGET;
+import org.opensilex.server.response.ErrorResponse;
+import org.opensilex.server.security.AuthenticationService;
+import org.opensilex.server.security.SecurityContextProxy;
+import org.opensilex.server.security.user.User;
+import org.opensilex.sparql.SPARQLService;
 import org.opensilex.utils.ClassInfo;
 
 /**
@@ -38,6 +50,7 @@ import org.opensilex.utils.ClassInfo;
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 @Provider
+@Priority(Priorities.AUTHENTICATION)
 public class AuthenticationRequestFilter implements ContainerRequestFilter {
 
     final static Logger LOGGER = LoggerFactory.getLogger(AuthenticationRequestFilter.class);
@@ -45,6 +58,14 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
     @Context
     private ResourceInfo resourceInfo;
         
+    @Inject
+    @Named("authentication")
+    AuthenticationService authentication;
+
+    @Inject
+    @Named("sparql")
+    SPARQLService sparql;
+    
     /**
      * Filters the session token.
      * @param requestContext
@@ -96,8 +117,25 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
 
             //Get session id
             String userToken = authorization.replace("Bearer ", "");
-            if (!TokenManager.Instance().checkAuthentication(userToken)) {
+            
+            try {
+                URI userURI = authentication.decodeTokenUserURI(userToken);
+                User user = sparql.getByURI(User.class, userURI);
+
+                SecurityContext originalContext = requestContext.getSecurityContext();
+
+                SecurityContext newContext = new SecurityContextProxy(originalContext, user);
+
+                requestContext.setSecurityContext(newContext);
+
+            } catch (JWTVerificationException | URISyntaxException ex) {
                 throw new WebApplicationException(accessDenied);
+            } catch (Throwable ex) {
+                throw new WebApplicationException(
+                    Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                            .entity(new ErrorResponse(ex))
+                            .type(MediaType.APPLICATION_JSON)
+                            .build());
             }
         }
     }

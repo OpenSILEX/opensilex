@@ -19,11 +19,8 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Date;
-import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,7 +28,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.mail.internet.InternetAddress;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -42,27 +41,19 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import org.apache.commons.codec.binary.Hex;
-import org.joda.time.DateTime;
-import org.joda.time.Seconds;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.PropertiesFileManager;
-import opensilex.service.authentication.Session;
-import opensilex.service.dao.UserDAO;
-import opensilex.service.authentication.TokenManager;
 import opensilex.service.authentication.TokenResponseStructure;
 import opensilex.service.documentation.StatusCodeMsg;
-import opensilex.service.model.User;
 import opensilex.service.resource.dto.LogoutDTO;
 import opensilex.service.resource.dto.TokenDTO;
-import opensilex.service.utils.date.Dates;
-import opensilex.service.configuration.DateFormats;
-import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.view.brapi.form.ResponseUnique;
 import opensilex.service.model.Call;
+import org.opensilex.server.security.AuthenticationService;
+import org.opensilex.sparql.SPARQLService;
 
 /**
  * Token resource service.
@@ -82,18 +73,19 @@ public class TokenResourceService implements BrapiCall{
     static final Map<String, String> ISSUERS_PUBLICKEY;
     static final List<String> GRANTTYPE_AUTHORIZED = Collections.unmodifiableList(Arrays.asList("jwt", "password"));
 
+    @Inject
+    private SPARQLService sparql;
+
+    @Inject
+    private AuthenticationService authentication;
+    
     static {
         Map<String, String> temporaryMap = new HashMap<>();
         // can put multiple issuers of jwt
         temporaryMap.put("GnpIS", "gnpisPublicKeyFileName");
         temporaryMap.put("Phis", "phisPublicKeyFileName");
         ISSUERS_PUBLICKEY = Collections.unmodifiableMap(temporaryMap);
-    }
-    
-    //SILEX:conception
-    // To keep jwt claimset information during the loggin
-    private JWTClaimsSet jwtClaimsSet = null;
-    
+    }  
 
     /**
      * Overriding BrapiCall method
@@ -129,10 +121,8 @@ public class TokenResourceService implements BrapiCall{
             notes = "Returns an access token when the user is known and it issuer too",
             response = TokenResponseStructure.class)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Access token created by user")
-        ,
-        @ApiResponse(code = 400, message = "Bad informations send by user")
-        ,
+        @ApiResponse(code = 201, message = "Access token created by user"),
+        @ApiResponse(code = 400, message = "Bad informations send by user"),
         @ApiResponse(code = 200, message = "Access token already exist and send again to user")})
     public Response getToken(@ApiParam(value = "JSON object needed to login") @Valid TokenDTO jsonToken, @Context UriInfo ui) {
         ArrayList<Status> statusList = new ArrayList<>();
@@ -160,63 +150,41 @@ public class TokenResourceService implements BrapiCall{
         }
         if ((password != null && username != null) || (isJWT && validJWTToken && username != null)) {
             // Is user authorized ?
-            User user = new User(username, password);
+//            User user = new User(username, password);
             try {
                 //SILEX:info
                 // if we have a jwt the password is not verified because it means that the
                 // user is already logged
                 // we trust the client
                 //\SILEX:info
-                if (isJWT && validJWTToken) {
-                    user = checkAuthentication(user, false);
-                } else {
-                    user = checkAuthentication(user, true);
+                org.opensilex.core.dal.user.UserDAO userDAO = new org.opensilex.core.dal.user.UserDAO(sparql, authentication);
+                org.opensilex.server.security.user.User user;
+                try {
+                    user = userDAO.getByEmail(new InternetAddress(username));
+
+                    if (!isJWT) {
+                        if (!userDAO.authenticate(user, password)) {
+                            user = null;
+                        }
+                    }
+                } catch (Exception ex) {
+                    LOGGER.warn("Exception while authenticating user: " + username, ex);
+                    user = null;
                 }
 
                 // No user found
                 if (user == null) {
                     statusList.add(new Status("User/password doesn't exist", StatusCodeMsg.ERR, null));
                 } else {
-                    // User found, create a session
-                    // token exist ?
-                    String userSessionId = TokenManager.Instance().searchSession(username);
+                    String token = authentication.generateToken(user);
                     Response.Status reponseStatus = Response.Status.OK;
-                    String expires_in = null;
-                    if (userSessionId == null) {
-                        //create a session and add information to this one 
-                        userSessionId = this.createId(username);
-                        Session newSession = new Session(userSessionId, username, user);
-                        newSession.setJwtClaimsSet(this.jwtClaimsSet);
-                        TokenManager.Instance().createToken(newSession);
-                        reponseStatus = Response.Status.CREATED;
-                    } else {
-                        // retreive existing session
-                        Session session = TokenManager.Instance().getSession(userSessionId);
-                        DateTime sessionStartDateTime = Dates.convertStringToDateTime(session.getDateStart(), DateFormats.YMDHMS_FORMAT);
-                        if (sessionStartDateTime != null) {
-                            Seconds secondsBetween = Seconds.secondsBetween(sessionStartDateTime, new DateTime());
-                            int expiration = Integer.valueOf(PropertiesFileManager.getConfigFileProperty("service", "sessionTime")) - secondsBetween.getSeconds();
-                            //SILEX:info
-                            //sometimes token expiration time become negative and crash the webapp
-                            //this code forces regeneration of a new token in this case
-                            if (expiration <= 0) {
-                                TokenManager.Instance().removeSession(userSessionId);
-                                TokenManager.Instance().createToken(session);
-                                sessionStartDateTime = Dates.convertStringToDateTime(session.getDateStart(), DateFormats.YMDHMS_FORMAT);
-                                secondsBetween = Seconds.secondsBetween(sessionStartDateTime, new DateTime());
-                                expiration = Integer.valueOf(PropertiesFileManager.getConfigFileProperty("service", "sessionTime")) - secondsBetween.getSeconds();
-                            }
-                            //\SILEX:info
-                            expires_in = Integer.toString(expiration);
-                        }
-                    }
-                    // return result
-                    TokenResponseStructure res = new TokenResponseStructure(userSessionId, user.getFirstName() + " " + user.getFamilyName(), expires_in);
+                    String expires_in = "" + AuthenticationService.getExpiresInSec();
+                    TokenResponseStructure res = new TokenResponseStructure(token, user.getFirstName() + " " + user.getLastName(), expires_in);
                     final URI uri = new URI(ui.getPath());
                     return Response.status(reponseStatus).location(uri).entity(res).build();
                 }
 
-            } catch (NoSuchAlgorithmException | SQLException | URISyntaxException ex) {
+            } catch (URISyntaxException ex) {
                 LOGGER.error(ex.getMessage(), ex);
                 statusList.add(new Status("SQL " + StatusCodeMsg.ERR, StatusCodeMsg.ERR, ex.getMessage()));
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(new ResponseFormPOST(statusList)).build();
@@ -252,72 +220,8 @@ public class TokenResourceService implements BrapiCall{
         @ApiResponse(code = 200, message = "Access token already exist and send again to user")})
     public Response logOut(@ApiParam(value = "JSON object needed to login") @Valid LogoutDTO logout, @Context UriInfo ui) {
         ArrayList<Status> statusList = new ArrayList<>();
-        if (logout == null) {
-            statusList.add(new Status("Empty json", StatusCodeMsg.ERR, null));
-            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormPOST(statusList)).build();
-        }
-        String sessionId = logout.access_token;
-        if (sessionId == null) {
-            statusList.add(new Status("Empty access_token", StatusCodeMsg.ERR, null));
-            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormPOST(statusList)).build();
-        }
-        Session session = TokenManager.Instance().getSession(sessionId);
-        if (session == null) {
-            statusList.add(new Status("No session linked to this access_token", StatusCodeMsg.ERR, null));
-            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormPOST(statusList)).build();
-        }
-
-        TokenManager.Instance().removeSession(sessionId);
-        statusList.clear();
         statusList.add(new Status("User has been logged out successfully", null));
         return Response.status(Response.Status.CREATED).entity(new ResponseFormPOST(statusList)).build();
-    }
-
-    /**
-     * Create a session id.
-     * @param username
-     * @return the session id
-     * @throws NoSuchAlgorithmException
-     * @throws SQLException
-     */
-    private String createId(String username) throws NoSuchAlgorithmException, SQLException {
-        return new String(Hex.encodeHex((MessageDigest.getInstance("MD5").digest((username + new Date().toString()).getBytes()))));
-    }
-
-    /**
-     * Checks authentication.
-     * @param user user instance to check
-     * @param verifPassword if we need to verify the password
-     * @return User|null an instance of user or null
-     */
-    private User checkAuthentication(User user, boolean verifPassword) {
-        UserDAO uspb = new UserDAO();
-        // choose the database with payload information
-        if (this.jwtClaimsSet != null) {
-            uspb.setDataSourceFromJwtClaimsSet(this.jwtClaimsSet);
-        }
-
-        final String password = user.getPassword();
-
-        try {
-            if (uspb.existInDB(user)) {
-                uspb.find(user);
-            } else {
-                user = null;
-            }
-            if (verifPassword && user != null) {
-                if (password.equals(user.getPassword())) {
-                    uspb.admin = uspb.isAdmin(user);
-                } else {
-                    user = null;
-                }
-            }
-            return user;
-        } catch (Exception ex) {
-            LOGGER.error(ex.getMessage(), ex);
-        }
-
-        return null;
     }
 
     /**
@@ -362,12 +266,6 @@ public class TokenResourceService implements BrapiCall{
                 }
                 if (expireJWT && validPublicKey && strangeJWT && subjectMatch) {
                     validJWTToken = true;
-                }
-                if (subjectMatch && strangeJWT && validPublicKey && expireJWT) {
-                    //SILEX:info
-                    //We check all important claims in the payload
-                    //\SILEX:info
-                    this.jwtClaimsSet = jwtClaimsSetParsed;
                 }
             } else {
                 statusList.add(new Status("Bad Issuer", StatusCodeMsg.ERR, null));

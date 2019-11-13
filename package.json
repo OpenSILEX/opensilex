@@ -1,9 +1,9 @@
 {
-    "name": "opensilex-common-ng",
+    "name": "opensilex-angular-core",
     "version": "1.0.0",
     "private": true,
     "scripts": {
-        "check:outdated": "./.ng/node/node ./.ng/node/yarn/dist/bin/yarn.js outdated || true"
+        "check:outdated": "./.ng/node/node ./.ng/node/yarn/dist/bin/yarn.js outdated || cd ."
     },
     "dependencies": {
         "@angular/animations": "~8.2.13",

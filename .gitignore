@@ -6,4 +6,4 @@ node_modules/
 /*/angular/dist/
 **/angular/builders/plugin-builder/*.js
 **/nb-configuration.xml
-    /site/
+**/site/

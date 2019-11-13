@@ -80,5 +80,8 @@ public class AuthenticationService implements Service {
 
         return new URI(jwt.getSubject());
     }
-
+    
+    public static long getExpiresInSec() {
+        return TOKEN_VALIDITY_DURATION * TOKEN_VALIDITY_DURATION_UNIT.getDuration().getSeconds();
+    }
 }

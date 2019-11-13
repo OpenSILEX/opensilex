@@ -7,7 +7,8 @@ services:
       networks:
          - backend
       ports:
-         - "9000:8080"
+         - "8080:8080"
+      restart: always         
       volumes:
          - rdf4j_data:/var/rdf4j
       environment:
@@ -19,9 +20,24 @@ services:
       networks:
          - backend
       ports:
-         - "9001:27017"
+         - "27017:27017"
+      restart: always         
       volumes:
          - mongodb_data:/data/db
+         
+   psql:
+      container_name: opensilex-psql
+      image: 'mdillon/postgis:9.5-alpine'
+      networks:
+         - backend
+      ports:
+         - "5432:5432"
+      restart: always
+      environment:
+        POSTGRES_USER: opensilex
+        POSTGRES_PASSWORD: opensilex
+      volumes:
+         - psql_data:/var/lib/postgresql/data
       
 networks:
    backend:
@@ -29,3 +45,4 @@ networks:
 volumes:
    mongodb_data:
    rdf4j_data:
+   psql_data:

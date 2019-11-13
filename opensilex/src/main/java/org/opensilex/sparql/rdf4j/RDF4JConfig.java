@@ -20,7 +20,7 @@ public interface RDF4JConfig {
      */
     @ConfigDescription(
             value = "RDF4J Server URI",
-            defaultString = "http://localhost:9000/rdf4j-server/"
+            defaultString = "http://localhost:8080/rdf4j-server/"
     )
     String serverURI();
     

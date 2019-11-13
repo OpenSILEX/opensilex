@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.Principal;
 import javax.annotation.Priority;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -18,6 +17,7 @@ import javax.ws.rs.Priorities;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -81,41 +81,13 @@ public class AuthenticationFilter implements ContainerRequestFilter {
         }
     }
 
-    private class SecurityContextProxy implements SecurityContext {
-
-        SecurityContext parentContext;
-        User user;
-
-        private SecurityContextProxy(SecurityContext parentContext, User user) {
-            this.parentContext = parentContext;
-            this.user = user;
-        }
-
-        @Override
-        public Principal getUserPrincipal() {
-            return user;
-        }
-
-        @Override
-        public boolean isUserInRole(String role) {
-            return parentContext.isUserInRole(role);
-        }
-
-        @Override
-        public boolean isSecure() {
-            return parentContext.isSecure();
-        }
-
-        @Override
-        public String getAuthenticationScheme() {
-            return parentContext.getAuthenticationScheme();
-        }
-    }
-
     private static WebApplicationException getAccessDeniedException() {
         return new WebApplicationException(
                 Response.status(Response.Status.UNAUTHORIZED)
-                        .entity(new ErrorResponse("Access denied", "You must be authenticate and having the right authorizations to access this URL"))
+                        .entity(new ErrorResponse(
+                                Response.Status.UNAUTHORIZED,
+                                "Access denied",
+                                "You must be authenticate and having the right authorizations to access this URL"))
                         .type(MediaType.APPLICATION_JSON)
                         .build());
     }

@@ -14,10 +14,14 @@ import javax.ws.rs.core.Response.Status;
  *
  * @author Vincent Migot
  */
-public abstract class JsonResponse {
+public abstract class JsonResponse<T> {
 
     protected final Status status;
 
+    protected Metadata metadata;
+    
+    protected T result;
+    
     public JsonResponse(Status status) {
         this.status = status;
     }

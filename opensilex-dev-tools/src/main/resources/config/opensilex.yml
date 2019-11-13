@@ -2,16 +2,16 @@ opensilex:
     sparql:
         rdf4j:
             serverURI: http://localhost:8080/rdf4j-server/
-            repository: diaphen
+            repository: opensilex
     
     bigData:
         mongodb:
-            database: diaphen
+            database: opensilex
     
 phisws:
     ontologyBaseURI: http://www.phenome-fppn.fr/
     vocabulary: http://www.phenome-fppn.fr/vocabulary/2017#
-    infrastructure: diaphen
+    infrastructure: opensilex
     
     uploadFileServerIP: localhost
     uploadFileServerUsername: vincent
@@ -25,6 +25,6 @@ phisws:
     imageFileServerDirectory: http://localhost/images
         
     postgreSQL:
-        database: diaphen
-        username: phis
-        password: azerty
+        database: opensilex
+        username: opensilex
+        password: opensilex

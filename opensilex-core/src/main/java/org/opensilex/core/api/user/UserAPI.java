@@ -17,19 +17,21 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import org.opensilex.server.response.ObjectCreationResponse;
-import org.opensilex.server.response.SingleValueResponse;
 import org.opensilex.server.rest.RestApplicationAPI;
 import org.opensilex.sparql.SPARQLService;
 import org.opensilex.server.security.AuthenticationService;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.core.dal.user.UserDAO;
+import org.opensilex.server.response.ObjectCreationResponse;
+import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.security.ApiProtected;
 import org.opensilex.server.security.user.User;
 
@@ -61,7 +63,7 @@ public class UserAPI implements RestApplicationAPI {
 
         InternetAddress userEmail = new InternetAddress(userDTO.getEmail());
 
-//        if (!userDAO.userEmailexists(userEmail)) {
+        if (!userDAO.userEmailexists(userEmail)) {
             User user = userDAO.create(
                     userEmail,
                     userDTO.getFirstName(),
@@ -70,13 +72,13 @@ public class UserAPI implements RestApplicationAPI {
             );
 
             return new ObjectCreationResponse(user.getUri()).getResponse();
-//        } else {
-//            return new ErrorResponse(
-//                    Status.CONFLICT,
-//                    "User already exists",
-//                    "Duplicated email: " + userEmail.toString()
-//            ).getResponse();
-//        }
+        } else {
+            return new ErrorResponse(
+                    Status.CONFLICT,
+                    "User already exists",
+                    "Duplicated email: " + userEmail.toString()
+            ).getResponse();
+        }
     }
 
     @POST
@@ -108,9 +110,22 @@ public class UserAPI implements RestApplicationAPI {
         }
 
         if (userDAO.authenticate(user, authenticationDTO.getPassword())) {
-            return new SingleValueResponse(authentication.generateToken(user)).getResponse();
+            return new SingleObjectResponse<String>(authentication.generateToken(user)).getResponse();
         } else {
             return new ErrorResponse(Status.FORBIDDEN, "Invalid credentials", "User does not exists or password is invalid").getResponse();
         }
+    }
+    
+    
+    @GET
+    @Path("logout")
+    @ApiOperation("Logout by discarding a user token")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "User sucessfully logout"),
+    })
+    @ApiProtected
+    public Response logout(@HeaderParam(ApiProtected.HEADER_NAME) String userToken) {
+        // TODO should implement a proper blacklist mechanism in AuthenticationService
+        return Response.ok().build();
     }
 }

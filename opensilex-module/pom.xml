@@ -127,7 +127,7 @@
                                 </goals>
                                 <phase>generate-resources</phase>
                                 <configuration>
-                                    <arguments>install</arguments>
+                                    <arguments>--network-timeout 1000000 install</arguments>
                                     <workingDirectory>../</workingDirectory>
                                 </configuration>
                             </execution>
@@ -140,7 +140,7 @@
 
                                 <phase>generate-resources</phase>
                                 <configuration>
-                                    <arguments>install</arguments>
+                                    <arguments>--network-timeout 1000000 install</arguments>
                                 </configuration>
                             </execution>
                             

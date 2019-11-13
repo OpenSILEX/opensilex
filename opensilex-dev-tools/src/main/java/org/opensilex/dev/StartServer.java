@@ -1,5 +1,6 @@
 package org.opensilex.dev;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -19,11 +20,11 @@ public class StartServer {
 
     public static void main(String[] args) throws IOException {
         
-        String configFile = StartServer.class.getClassLoader().getResource("./config/opensilex.yml").getPath();
+        File configFile = new File(StartServer.class.getClassLoader().getResource("./config/opensilex.yml").getPath());
         OpenSilex.setup(new HashMap<String, String>() {
             {
                 put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.DEV_PROFILE_ID);
-                put(OpenSilex.CONFIG_FILE_ARG_KEY, configFile);
+                put(OpenSilex.CONFIG_FILE_ARG_KEY, configFile.getAbsolutePath());
             }
         });
 

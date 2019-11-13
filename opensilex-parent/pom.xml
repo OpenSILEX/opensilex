@@ -22,7 +22,8 @@
         <maven.minimal.version>3.5</maven.minimal.version>
         <!-- dependencies version -->
         <jersey.version>2.29.1</jersey.version>
-        <jackson.version>2.10.0</jackson.version>
+        <hibernate.validator.version>6.1.0.Final</hibernate.validator.version>
+        <jackson.version>2.10.1</jackson.version>
         <tomcat.version>9.0.27</tomcat.version>
         <javax.servlet.api.version>4.0.1</javax.servlet.api.version>
         <swagger.jersey2.jaxrs.version>1.5.24</swagger.jersey2.jaxrs.version>
@@ -34,7 +35,7 @@
         <data.nucleus.jdo.version>3.2.0-m12</data.nucleus.jdo.version>
         <data.nucleus.jta.version>5.10.0.Final</data.nucleus.jta.version>
         <data.nucleus.mongodb.version>5.2.0-release</data.nucleus.mongodb.version>
-        <bytebuddy.version>1.10.2</bytebuddy.version>
+        <bytebuddy.version>1.10.3</bytebuddy.version>
         <java.jwt.version>3.8.3</java.jwt.version>
         <picocli.version>4.0.4</picocli.version>
         <bcript.version>0.9.0</bcript.version>
@@ -271,6 +272,11 @@
             <version>${jersey.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>${hibernate.validator.version}</version>
+        </dependency>
+        <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-web-api</artifactId>
             <version>8.0.1</version>
@@ -304,6 +310,12 @@
             <groupId>io.swagger</groupId>
             <artifactId>swagger-jersey2-jaxrs</artifactId>
             <version>${swagger.jersey2.jaxrs.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.validation</groupId>
+                    <artifactId>validation-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!--Java extension compatibility for JDK 9+--> 
         <dependency>
@@ -407,6 +419,9 @@
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven.surefire.plugin.version}</version>
+                    <configuration>
+                        <argLine>-Dfile.encoding=${project.build.sourceEncoding}</argLine>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <artifactId>maven-resources-plugin</artifactId>

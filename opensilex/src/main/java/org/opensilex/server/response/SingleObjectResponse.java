@@ -5,19 +5,15 @@
  */
 package org.opensilex.server.response;
 
-import java.net.URI;
-import javax.ws.rs.core.Response;
-
 /**
  *
  * @author vincent
  */
-public class ObjectCreationResponse extends JsonResponse<String> {
-    
-    public ObjectCreationResponse(URI uri) {
-        super(Response.Status.OK);
+public class SingleObjectResponse<T> extends JsonResponse<T> {
+
+    public SingleObjectResponse(T result) {
+        super(javax.ws.rs.core.Response.Status.OK);
         this.metadata = new Metadata(new Pagination());
-        this.metadata.addDataFile(uri);
+        this.result = result;
     }
-    
 }

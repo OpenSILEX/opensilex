@@ -57,7 +57,7 @@
                 <artifactId>versions-maven-plugin</artifactId>
                 <version>${versions.maven.plugin.version}</version>
                 <configuration>
-                    <rulesUri>file////${project.basedir}/src/main/resources/version-rules.xml</rulesUri>
+                    <rulesUri>file:////${project.basedir}/src/main/resources/version-rules.xml</rulesUri>
                 </configuration>
             </plugin>
             <!-- Clear java cache when annotations change -->
@@ -119,7 +119,7 @@
                                     <exclude>commons-logging:commons-logging</exclude>
                                     <exclude>javax.activation:javax.activation-api</exclude>
                                     <exclude>javax.mail:javax.mail-api</exclude>
-                                    <exclude>jakarta.validation:jakarta.validation-api</exclude>
+                                    <exclude>javax.validation:validation-api</exclude>
                                     <exclude>jakarta.xml.bind:jakarta.xml.bind-api</exclude>
                                     <exclude>jakarta.activation:jakarta.activation-api</exclude>
                                     <exclude>com.sun.activation:jakarta.activation</exclude>

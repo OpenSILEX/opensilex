@@ -120,8 +120,8 @@ public class GermplasmResourceService extends ResourceService {
     private List<Germplasm> germplasmPostDTOsToGermplasm(List<GermplasmPostDTO> germplasmDTOs) throws Exception {
         ArrayList<Germplasm> germplasms = new ArrayList<>();
         
-        for (GermplasmPostDTO accessionDTO : germplasmDTOs) {
-            germplasms.add(accessionDTO.createObjectFromDTO());
+        for (GermplasmPostDTO germplasmDTO : germplasmDTOs) {
+            germplasms.add(germplasmDTO.createObjectFromDTO());
         }
         
         return germplasms;
@@ -148,18 +148,23 @@ public class GermplasmResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
             @ApiParam(value = "Search by germplasmURI", example = DocumentationAnnotation.EXAMPLE_GERMPLASM_URI) @QueryParam("germplasmURI") String uri,
             @ApiParam(value = "Search by germplasm label", example = DocumentationAnnotation.EXAMPLE_GERMPLASM_URI) @QueryParam("germplasmLabel") String label,
-            @ApiParam(value = "Search by germplasm Type / not supported") @QueryParam("germplasmType") @URL String germplasmType,
+            @ApiParam(value = "Search by germplasm Type") @QueryParam("germplasmType") @URL String germplasmType,
+            @ApiParam(value = "Search by genus") @QueryParam("fromGenus") @URL String fromGenus,
+            @ApiParam(value = "Search varieties, accessions or lots by Species") @QueryParam("fromSpecies") @URL String fromSpecies,
+            @ApiParam(value = "Search by variety") @QueryParam("fromVariety") @URL String fromVariety,
+            @ApiParam(value = "Search by accession") @QueryParam("fromAccession") @URL String fromAccession,
             //added the parameter language to choose the language label 
             @ApiParam(value = "choose the language of the species", example = "en") @QueryParam("language") String language
       ){
         
         GermplasmDAO germplasmDAO = new GermplasmDAO();
         //1. Get count
-        Integer totalCount = germplasmDAO.count(uri, label, germplasmType, language);
+        Integer totalCount = germplasmDAO.count(uri, label, germplasmType, language, fromGenus, fromSpecies, fromVariety, fromAccession);
         
         //2. Get germplasms
-        ArrayList<Germplasm> germplasmFounded = germplasmDAO.find(page, pageSize, uri, label, germplasmType, language);
+        ArrayList<Germplasm> germplasmFounded = germplasmDAO.find(page, pageSize, uri, label, germplasmType, language, fromGenus, fromSpecies, fromVariety, fromAccession);
         
+               
         //3. Return result
         ArrayList<Status> statusList = new ArrayList<>();
         ArrayList<GermplasmDTO> germplasmToReturn = new ArrayList<>();
@@ -173,7 +178,7 @@ public class GermplasmResourceService extends ResourceService {
         } else { //Results
             //Convert all objects to DTOs
             germplasmFounded.forEach((germplasm) -> {
-                germplasmToReturn.add(germplasmDAO.getGermplasmDTO(germplasm));
+                germplasmToReturn.add(germplasmDAO.getGermplasmDTO(germplasm, language));
             });
             
             getResponse = new ResultForm<>(pageSize, page, germplasmToReturn, true, totalCount);

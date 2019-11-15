@@ -17,6 +17,7 @@ import opensilex.service.ontology.Oeso;
 public class GermplasmDTO {
     private String rdfType;
     private String uri;
+    private String label;
     private String genus;
     private String species;
     private String variety;
@@ -38,6 +39,14 @@ public class GermplasmDTO {
 
     public void setUri(String uri) {
         this.uri = uri;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     public String getGenus() {

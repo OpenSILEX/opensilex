@@ -59,7 +59,7 @@ public class ScientificObjectDTO extends AbstractVerifiedClass {
         
         if (scientificObject.getGermplasmURI() != null) {
             GermplasmDAO germplasmDAO = new GermplasmDAO();
-            setGermplasm(germplasmDAO.getGermplasmDTO(germplasmDAO.findById(scientificObject.getGermplasmURI())));
+            setGermplasm(germplasmDAO.getGermplasmDTO(germplasmDAO.findById(scientificObject.getGermplasmURI()), "en"));
         }        
        
         for (Property property : scientificObject.getProperties()) {

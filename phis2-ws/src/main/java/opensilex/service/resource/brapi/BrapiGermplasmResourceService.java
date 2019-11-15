@@ -79,10 +79,10 @@ public class BrapiGermplasmResourceService extends ResourceService {
         
         GermplasmDAO germplasmDAO = new GermplasmDAO();
         //1. Get count
-        Integer totalCount = germplasmDAO.count(uri, germplasmName, Oeso.CONCEPT_ACCESSION.toString(), language);
+        Integer totalCount = germplasmDAO.count(uri, germplasmName, Oeso.CONCEPT_ACCESSION.toString(), language, null, null, null, null);
         
         //2. Get germplasms
-        ArrayList<Germplasm> germplasmFounded = germplasmDAO.find(page, pageSize, uri, germplasmName, Oeso.CONCEPT_ACCESSION.toString(), language);
+        ArrayList<Germplasm> germplasmFounded = germplasmDAO.find(page, pageSize, uri, germplasmName, Oeso.CONCEPT_ACCESSION.toString(), language, null, null, null, null);
         
         //3. Return result
         ArrayList<Status> statusList = new ArrayList<>();

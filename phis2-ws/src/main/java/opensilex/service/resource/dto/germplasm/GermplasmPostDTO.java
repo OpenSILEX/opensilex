@@ -8,13 +8,9 @@
 package opensilex.service.resource.dto.germplasm;
 
 import java.util.ArrayList;
-import opensilex.service.dao.GermplasmDAO;
 import opensilex.service.model.Germplasm;
-import opensilex.service.ontology.Contexts;
-import opensilex.service.ontology.Oeso;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resource.dto.rdfResourceDefinition.PropertyPostDTO;
-import opensilex.service.utils.UriGenerator;
 
 /**
  * GermplasmPostDTO
@@ -25,6 +21,7 @@ public class GermplasmPostDTO extends AbstractVerifiedClass {
     /*voir https://www.genesys-pgr.org/fr/doc/0/basics*/
     
     private String rdfType;
+    private String URI;
     private String label;
     private ArrayList<PropertyPostDTO> properties;
     
@@ -33,6 +30,7 @@ public class GermplasmPostDTO extends AbstractVerifiedClass {
         boolean annotationInsert = true;
         Germplasm germplasm = new Germplasm();
         germplasm.setRdfType(rdfType);
+        germplasm.setUri(URI);
         germplasm.setLabel(label);
         
         if (properties != null) {
@@ -52,6 +50,14 @@ public class GermplasmPostDTO extends AbstractVerifiedClass {
         this.rdfType = rdfType;
     }
 
+    public String getURI() {
+        return URI;
+    }
+
+    public void setURI(String URI) {
+        this.URI = URI;
+    }
+
     public String getLabel() {
         return label;
     }
@@ -67,8 +73,5 @@ public class GermplasmPostDTO extends AbstractVerifiedClass {
     public void setProperties(ArrayList<PropertyPostDTO> properties) {
         this.properties = properties;
     }
-
     
-
-   
 }

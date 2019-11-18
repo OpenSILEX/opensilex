@@ -571,7 +571,7 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
         }
         
         //fromVariety filter
-        if (fromSpecies != null) {
+        if (fromVariety != null) {
             query.appendToBody("{ ?" + URI + " <" + Oeso.RELATION_FROM_VARIETY.toString() + "> " + "?" + VARIETY + " }");
             query.appendToBody(" UNION ");
             query.appendToBody("{ ?" + ACCESSION + " <" + Oeso.RELATION_FROM_VARIETY.toString() + "> " + "?" + VARIETY + " .");
@@ -580,7 +580,7 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
         }
         
         //fromAccession filter
-        if (fromSpecies != null) {
+        if (fromAccession != null) {
             query.appendToBody("?" + URI + " <" + Oeso.RELATION_FROM_ACCESSION.toString() + "> " + "?" + ACCESSION + " }");
             query.appendAndFilter("REGEX ( str(?" + VARIETY + "),\".*" + fromAccession + ".*\",\"i\")");
         }

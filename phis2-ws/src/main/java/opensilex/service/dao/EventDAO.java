@@ -372,7 +372,8 @@ public class EventDAO extends Rdf4jDAO<Event> {
                         null, 
                         event.getUri(), 
                         null, 
-                        null, 
+                        null,
+                        true,
                         0, 
                         pageSizeMaxValue));
             }

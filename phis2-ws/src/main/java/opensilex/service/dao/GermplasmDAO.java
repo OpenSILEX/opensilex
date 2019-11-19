@@ -10,6 +10,7 @@ package opensilex.service.dao;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
@@ -146,8 +147,6 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
         boolean dataOk = true;
         
         //Caches
-        List<String> scientificObjectTypesCache = new ArrayList<>();
-        List<String> isPartOfCache = new ArrayList<>();
         List<String> propertyUriCache = new ArrayList<>();        
         
         //1. check if user is an admin
@@ -169,15 +168,24 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
                                 "Bad germplasm type given. Must be sublass of Germplasm concept (variety, accession, seedLot)"));
                     }                
                 
-                
-                    //2.2 Check properties
+                    //2.2 Check the label
+                    Map<String, List<String>> germplasmUrisAndLabels = this.findUriAndLabelsByLabelAndRdfType(germplasm.getLabel(), germplasm.getRdfType());
+                    if (!germplasmUrisAndLabels.isEmpty()) {
+                        dataOk = false;
+                        checkStatusList.add(new Status(
+                                StatusCodeMsg.DATA_ERROR, 
+                                StatusCodeMsg.ERR, 
+                                "The label already exists"));
+                    }
+                    
+                    //2.3 Check properties
 
                     boolean missingLink = true;
                     
                     for (Property property : germplasm.getProperties()) {
                         //Check link to others germplasm instances                           
                         if (property.getRelation().equals(Oeso.RELATION_FROM_ACCESSION.toString())) {
-                            if (germplasm.getRdfType().equals(Oeso.CONCEPT_PLANT_MATERIAL_LOT.toString())) {
+                            if (uriDao.isSubClassOf(germplasm.getRdfType(), Oeso.CONCEPT_PLANT_MATERIAL_LOT.toString())) {
                                 if (!existUriInGraph(property.getValue(), Contexts.GERMPLASM.toString())) {
                                     dataOk = false;
                                     checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "the accession URI doesn't exist"));
@@ -190,7 +198,7 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
                             }
 
                         } else if (property.getRelation().equals(Oeso.RELATION_FROM_VARIETY.toString())) {
-                            if (germplasm.getRdfType().equals(Oeso.CONCEPT_PLANT_MATERIAL_LOT.toString()) | germplasm.getRdfType().equals(Oeso.CONCEPT_ACCESSION.toString())) {
+                            if (uriDao.isSubClassOf(germplasm.getRdfType(), Oeso.CONCEPT_PLANT_MATERIAL_LOT.toString()) | germplasm.getRdfType().equals(Oeso.CONCEPT_ACCESSION.toString())) {
                                 if (!existUriInGraph(property.getValue(), Contexts.GERMPLASM.toString())) {
                                     dataOk = false;
                                     checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "the variety URI doesn't exist"));
@@ -203,7 +211,7 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
                             }
 
                         } else if (property.getRelation().equals(Oeso.RELATION_FROM_SPECIES.toString())) {
-                            if (germplasm.getRdfType().equals(Oeso.CONCEPT_PLANT_MATERIAL_LOT.toString()) | germplasm.getRdfType().equals(Oeso.CONCEPT_ACCESSION.toString()) | germplasm.getRdfType().equals(Oeso.CONCEPT_VARIETY.toString())) {
+                            if (uriDao.isSubClassOf(germplasm.getRdfType(), Oeso.CONCEPT_PLANT_MATERIAL_LOT.toString()) | germplasm.getRdfType().equals(Oeso.CONCEPT_ACCESSION.toString()) | germplasm.getRdfType().equals(Oeso.CONCEPT_VARIETY.toString())) {
                                 if (!existUriInGraph(property.getValue(), Contexts.GERMPLASM.toString())) {
                                     dataOk = false;
                                     checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "the species URI doesn't exist"));

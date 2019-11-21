@@ -88,13 +88,7 @@ public class DataDAO extends MongoDAO<Data> {
                 checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR,
                         "Unknown variable : " + data.getVariableUri()));
             } 
-            // 2. Check if the object uri exist
-            if (!variableDAO.existUri(data.getObjectUri())) {
-                dataOk = false;
-                checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR,
-                        "Unknown object : " + data.getObjectUri()));
-            }
-            // 3. Check if the provenance uri exist and is a provenance
+            // 2. Check if the provenance uri exist and is a provenance
             if (!provenanceDAO.existProvenanceUri(data.getProvenanceUri())) {
                 dataOk = false;
                 checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
@@ -223,7 +217,7 @@ public class DataDAO extends MongoDAO<Data> {
             } catch (MongoException ex) {
                 // Define that an error occurs
                 hasError.set(true);
-
+                LOGGER.error("Exception during data insertion", ex);
                 // Error check if it's because of a duplicated data error
                 // Add status according to the error type (duplication or unexpected)
                 if (ex.getCode() == MongoDAO.DUPLICATE_KEY_ERROR_CODE) {

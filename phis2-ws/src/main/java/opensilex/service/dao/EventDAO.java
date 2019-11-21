@@ -270,9 +270,9 @@ public class EventDAO extends Rdf4jDAO<Event> {
      * @param searchUri
      * @param searchType
      * @param searchConcernedItemLabel
-     * @param searchConcernedItemUri
-     * @param dateRangeStart
-     * @param dateRangeEnd
+     * @param searchConcernedItemUri 
+     * @param dateRangeStartString
+     * @param dateRangeEndString
      * @param searchPage
      * @param searchPageSize
      * @return events
@@ -382,7 +382,8 @@ public class EventDAO extends Rdf4jDAO<Event> {
                         null, 
                         event.getUri(), 
                         null, 
-                        null, 
+                        null,
+                        true,
                         0, 
                         pageSizeMaxValue));
             }

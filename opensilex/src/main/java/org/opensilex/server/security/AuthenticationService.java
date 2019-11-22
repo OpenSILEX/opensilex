@@ -1,29 +1,23 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package org.opensilex.server.security;
 
-import at.favre.lib.crypto.bcrypt.BCrypt;
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTCreator;
+import at.favre.lib.crypto.bcrypt.*;
+import com.auth0.jwt.*;
 import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.auth0.jwt.interfaces.DecodedJWT;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
-import java.util.Date;
-import org.opensilex.server.security.user.User;
-import org.opensilex.service.Service;
+import com.auth0.jwt.algorithms.*;
+import com.auth0.jwt.exceptions.*;
+import com.auth0.jwt.interfaces.*;
+import java.net.*;
+import java.security.*;
+import java.security.interfaces.*;
+import java.time.temporal.*;
+import java.util.*;
+import org.opensilex.server.security.model.*;
+import org.opensilex.service.*;
 
 /**
  *
@@ -80,7 +74,7 @@ public class AuthenticationService implements Service {
 
         return new URI(jwt.getSubject());
     }
-    
+
     public static long getExpiresInSec() {
         return TOKEN_VALIDITY_DURATION * TOKEN_VALIDITY_DURATION_UNIT.getDuration().getSeconds();
     }

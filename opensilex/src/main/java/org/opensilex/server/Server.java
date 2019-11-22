@@ -1,37 +1,26 @@
 //******************************************************************************
-//                            Server.java
-// OpenSILEX
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
-// Creation date: 15 March 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package org.opensilex.server;
 
-import com.sun.tools.javac.util.List;
-import org.opensilex.module.extensions.ServerExtension;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.io.*;
+import java.nio.file.*;
+import org.apache.catalina.*;
+import org.apache.catalina.startup.*;
+import org.apache.catalina.util.*;
+import org.apache.catalina.webresources.*;
+import org.apache.commons.io.*;
+import org.apache.jasper.servlet.*;
+import org.apache.tomcat.*;
+import org.opensilex.*;
+import org.opensilex.fs.*;
+import org.opensilex.module.extensions.*;
+import org.opensilex.utils.*;
+import org.slf4j.*;
 
-import org.apache.catalina.Context;
-import org.apache.catalina.LifecycleException;
-import org.apache.catalina.WebResourceRoot;
-import org.apache.catalina.startup.Tomcat;
-import org.apache.catalina.util.IOTools;
-import org.apache.catalina.webresources.StandardRoot;
-import org.apache.commons.io.FileUtils;
-import org.apache.jasper.servlet.JasperInitializer;
-import org.apache.tomcat.JarScanType;
-import org.opensilex.OpenSilex;
-import org.opensilex.fs.FileStorageService;
-import org.opensilex.utils.ClassInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 
 /**
  * This class extends Tomcat server to embbeded it and load OpenSilex services,

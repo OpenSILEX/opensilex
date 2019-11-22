@@ -1,37 +1,19 @@
 //******************************************************************************
-//                           Module.java
-// OpenSILEX
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
-// Creation date: 01 jan. 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package org.opensilex.module;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.io.*;
+import java.net.*;
 import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.nio.file.*;
+import java.util.*;
+import java.util.stream.*;
+import java.util.zip.*;
+import org.apache.commons.io.*;
+import org.slf4j.*;
 
 /**
  * This abstract class provide entry point for OpenSILEX modules inside
@@ -235,7 +217,7 @@ public abstract class OpenSilexModule {
         LOGGER.info("Nothing to install for module class: " + getClass().getCanonicalName());
     }
 
-    public void init() {
+    public void init() throws Exception {
 
     }
 

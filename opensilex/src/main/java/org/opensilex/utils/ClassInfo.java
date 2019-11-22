@@ -1,32 +1,22 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package org.opensilex.utils;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-import org.apache.maven.model.Model;
-import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.*;
+import java.lang.annotation.*;
+import java.lang.reflect.*;
+import java.nio.file.*;
+import java.util.*;
+import java.util.zip.*;
+import org.apache.maven.model.*;
+import org.apache.maven.model.io.xpp3.*;
+import org.reflections.*;
+import org.reflections.util.*;
+import org.slf4j.*;
+
 
 /**
  *
@@ -244,5 +234,18 @@ public class ClassInfo {
 
         return null;
     }
-    
+
+    private static Reflections reflections;
+
+    public static Reflections getReflectionInstance() {
+        if (reflections == null) {
+            reflections = new Reflections(ConfigurationBuilder.build("", Thread.currentThread().getContextClassLoader()).setExpandSuperTypes(false));
+        }
+
+        return reflections;
+    }
+
+    public static Set<Class<?>> getAnnotatedClasses(Class<? extends Annotation> annotation) {
+        return getReflectionInstance().getTypesAnnotatedWith(annotation);
+    }
 }

@@ -38,7 +38,19 @@ services:
         POSTGRES_PASSWORD: opensilex
       volumes:
          - psql_data:/var/lib/postgresql/data
-      
+
+   pgadmin4:
+      container_name: pgadmin4
+      image: 'dpage/pgadmin4'
+      networks:
+         - backend
+      ports:
+         - "5433:80"
+      restart: always
+      environment:
+        PGADMIN_DEFAULT_EMAIL: admin@opensilex.org
+        PGADMIN_DEFAULT_PASSWORD: opensilex      
+    
 networks:
    backend:
 

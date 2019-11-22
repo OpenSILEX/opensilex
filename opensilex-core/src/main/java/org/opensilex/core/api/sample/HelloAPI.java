@@ -1,25 +1,17 @@
 //******************************************************************************
-//                           HelloWorldAPI.java
-// OpenSILEX
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
-// Creation date: 01 jan. 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package org.opensilex.core.api.sample;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.SecurityContext;
-import org.opensilex.server.security.user.User;
-import org.opensilex.server.security.ApiProtected;
-import org.opensilex.server.rest.RestApplicationAPI;
+import io.swagger.annotations.*;
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
+import org.opensilex.server.rest.*;
+import org.opensilex.server.security.*;
+import org.opensilex.server.security.model.*;
+
 
 /**
  * Sample webservice which just return "Hello World !" on any request

@@ -1,39 +1,26 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package test.opensilex.sparql;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
-import java.io.InputStream;
-import java.net.URI;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.jena.arq.querybuilder.AskBuilder;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.rdf.model.Resource;
+import java.io.*;
+import java.net.*;
+import java.time.*;
+import java.util.*;
+import org.apache.jena.arq.querybuilder.*;
+import org.apache.jena.graph.*;
+import org.apache.jena.rdf.model.*;
 import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
-import org.junit.AfterClass;
-import org.junit.Test;
-import org.opensilex.sparql.SPARQLService;
-import org.opensilex.sparql.exceptions.SPARQLQueryException;
-
-import test.opensilex.sparql.model.A;
-import test.opensilex.sparql.model.B;
-import test.opensilex.sparql.model.TEST_ONTOLOGY;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
+import org.junit.*;
+import org.opensilex.*;
+import org.opensilex.sparql.*;
+import org.opensilex.sparql.exceptions.*;
+import test.opensilex.sparql.model.*;
 
 /**
  *
@@ -43,20 +30,20 @@ public abstract class SPARQLServiceTest {
 
     protected static SPARQLService service;
 
-    public static void initialize() throws SPARQLQueryException {
+    public static void initialize() throws Exception {
         service.clear();
 
         InputStream ontology = SPARQLService.class.getClassLoader().getResourceAsStream(TEST_ONTOLOGY.FILE_PATH.toString());
-        service.loadOntologyStream(TEST_ONTOLOGY.GRAPH, ontology, TEST_ONTOLOGY.FILE_FORMAT);
+        service.loadOntologyStream(OpenSilex.getPlatformURI(), ontology, TEST_ONTOLOGY.FILE_FORMAT);
 
         InputStream ontologyData = SPARQLService.class.getClassLoader().getResourceAsStream(TEST_ONTOLOGY.DATA_FILE_PATH.toString());
-        service.loadOntologyStream(TEST_ONTOLOGY.DATA_GRAPH, ontologyData, TEST_ONTOLOGY.DATA_FILE_FORMAT);
+        service.loadOntologyStream(OpenSilex.getPlatformURI("data"), ontologyData, TEST_ONTOLOGY.DATA_FILE_FORMAT);
     }
 
     @AfterClass
     public static void destroy() throws SPARQLQueryException {
-        service.clearGraph(TEST_ONTOLOGY.GRAPH);
-        service.clearGraph(TEST_ONTOLOGY.DATA_GRAPH);
+        service.clearGraph(OpenSilex.getPlatformURI());
+        service.clearGraph(OpenSilex.getPlatformURI("data"));
     }
 
     @Test
@@ -196,5 +183,12 @@ public abstract class SPARQLServiceTest {
         assertEquals("A.isBool Method should return the updated boolean", Boolean.FALSE, updatedA.isBool());
         assertEquals("A.getCharVar Method should return the updated char", Character.valueOf('N'), updatedA.getCharVar());
         assertNull("A.getInteger Method should have been deleted", updatedA.getInteger());
+    }
+
+    @Test
+    public void testSubClassOf() throws Exception {
+        URI bURI = new URI("http://test.opensilex.org/b/001");
+
+        assertTrue("URI must exists and be of type B", service.uriExists(B.class, bURI));
     }
 }

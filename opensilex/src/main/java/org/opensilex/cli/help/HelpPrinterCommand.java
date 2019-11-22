@@ -1,16 +1,12 @@
 //******************************************************************************
-//                            HelpPrinterCommand.java
-// OpenSILEX
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
-// Creation date: 02 April 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package org.opensilex.cli.help;
 
 import picocli.CommandLine;
-import picocli.CommandLine.Command;
-import picocli.CommandLine.HelpCommand;
-import picocli.CommandLine.Mixin;
+import picocli.CommandLine.*;
 
 /**
  * Utility class used as super class for commands which are only a regroup of 

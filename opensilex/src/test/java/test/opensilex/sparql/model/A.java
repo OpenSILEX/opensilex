@@ -1,17 +1,13 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package test.opensilex.sparql.model;
 
-import java.net.URI;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-
-import org.opensilex.sparql.annotations.SPARQLProperty;
-import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.annotations.SPARQLResourceURI;
+import java.net.*;
+import java.time.*;
+import org.opensilex.sparql.annotations.*;
 
 /**
  *
@@ -202,5 +198,4 @@ public class A {
         this.datetime = datetime;
     }
 
-    
 }

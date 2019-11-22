@@ -90,6 +90,11 @@
     </dependencyManagement>
 
     <dependencies>
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>0.9.11</version>
+        </dependency>
         <!--CLI--> 
         <dependency>
             <groupId>info.picocli</groupId>
@@ -107,7 +112,7 @@
             <artifactId>tomcat-embed-jasper</artifactId>
             <version>${tomcat.version}</version>
         </dependency>
-<!--        <dependency>
+        <!--        <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-el</artifactId>
             <version>${tomcat.version}</version>
@@ -512,11 +517,21 @@
         
         <plugins>
             <!--Default maven plugin for java compatibility version --> 
+            <!-- Clear java cache when annotations change -->
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <source>${java.compiler.version}</source>
                     <target>${java.compiler.version}</target>
+                    <!-- Add hibernate validation -->
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.hibernate.validator</groupId>
+                            <artifactId>hibernate-validator-annotation-processor</artifactId>
+                            <version>6.1.0.Final</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
             

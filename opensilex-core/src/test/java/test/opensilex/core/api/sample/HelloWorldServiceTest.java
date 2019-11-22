@@ -1,20 +1,16 @@
 //******************************************************************************
-//                             RestApplicationTest.java
-// OpenSILEX
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
-// Creation date: 01 jan. 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-
 package test.opensilex.core.api.sample;
 
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.Status;
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
-import test.opensilex.server.rest.RestApplicationTest;
+import static org.junit.Assert.*;
+import org.junit.*;
+import test.opensilex.server.rest.*;
+
 
 /**
  * Test class for HelloWorldServiceTest

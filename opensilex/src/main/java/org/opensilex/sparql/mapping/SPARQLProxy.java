@@ -30,6 +30,7 @@ abstract class SPARQLProxy<T> implements InvocationHandler {
     public T getInstance() {
         Class<? extends T> proxy = new ByteBuddy()
                 .subclass(type)
+                .implement(SPARQLProxyMarker.class)
                 .method(ElementMatchers.any())
                 .intercept(InvocationHandlerAdapter.of(this))
                 .make()

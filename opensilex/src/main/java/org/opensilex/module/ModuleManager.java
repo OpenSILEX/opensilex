@@ -1,33 +1,22 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package org.opensilex.module;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.ServiceLoader;
-import java.util.function.Consumer;
-
-import org.apache.commons.io.FileUtils;
-//import org.opensilex.OpenSilex;
-import org.opensilex.config.ConfigManager;
-import org.opensilex.module.dependency.DependencyManager;
-import org.opensilex.service.Service;
-import org.opensilex.service.ServiceManager;
-import org.opensilex.utils.ClassInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.*;
+import java.lang.reflect.*;
+import java.net.*;
+import java.nio.charset.*;
+import java.nio.file.*;
+import java.util.*;
+import java.util.function.*;
+import org.apache.commons.io.*;
+import org.opensilex.config.*;
+import org.opensilex.module.dependency.*;
+import org.opensilex.service.*;
+import org.slf4j.*;
 
 /**
  *
@@ -82,7 +71,7 @@ public class ModuleManager {
 
     private List<OpenSilexModule> modules;
 
-    private ConfigManager configManager;
+//    private ConfigManager configManager;
     private ServiceManager services;
 
     private List<URL> loadModulesWithDependencies(DependencyManager dependencyManager, List<URL> modulesJarURLs) {
@@ -192,12 +181,17 @@ public class ModuleManager {
         }
     }
 
-    public void init() {
+    public void init() throws Exception {
         services.getServices().forEach((String name, Service service) -> {
             service.startup();
         });
         for (OpenSilexModule module : getModules()) {
-            module.init();
+            try {
+                module.init();
+            } catch (Exception ex) {
+                LOGGER.error("Fail to initialize module: " + module.getClass().getCanonicalName(), ex);
+                throw ex;
+            }
         }
     }
 
@@ -222,7 +216,7 @@ public class ModuleManager {
     }
 
     public void loadConfigs(ConfigManager configManager) {
-        this.configManager = configManager;
+//        this.configManager = configManager;
         for (OpenSilexModule module : getModules()) {
             String configId = module.getConfigId();
             Class<? extends ModuleConfig> configClass = module.getConfigClass();

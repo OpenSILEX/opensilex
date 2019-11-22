@@ -1,18 +1,14 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package test.opensilex.sparql.model;
 
-import java.net.URI;
-import java.util.List;
-import org.opensilex.sparql.annotations.SPARQLCache;
-import org.opensilex.sparql.annotations.SPARQLCacheOption;
-import org.opensilex.sparql.annotations.SPARQLProperty;
-import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.annotations.SPARQLResourceURI;
-import org.opensilex.sparql.cache.SPARQLTimeCacheManager;
+import java.net.*;
+import java.util.*;
+import org.opensilex.sparql.annotations.*;
+
 
 /**
  *
@@ -21,14 +17,7 @@ import org.opensilex.sparql.cache.SPARQLTimeCacheManager;
 @SPARQLResource(
         ontology = TEST_ONTOLOGY.class,
         resource = "B",
-        graph = TEST_ONTOLOGY.DATA_NAMESPACE
-)
-@SPARQLCache(
-    implementation = SPARQLTimeCacheManager.class,
-    value = {
-        @SPARQLCacheOption(key = SPARQLTimeCacheManager.CACHE_DURATION_VALUE_KEY, value = "1"),
-        @SPARQLCacheOption(key = SPARQLTimeCacheManager.CACHE_DURATION_UNIT_KEY, value = "SECONDS")
-    }
+        graph = "data"
 )
 public class B {
     

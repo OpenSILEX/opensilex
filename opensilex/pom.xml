@@ -60,21 +60,6 @@
                     <rulesUri>file:////${project.basedir}/src/main/resources/version-rules.xml</rulesUri>
                 </configuration>
             </plugin>
-            <!-- Clear java cache when annotations change -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <compilerArgument>
-                        -proc:none
-                    </compilerArgument>
-                    <annotationProcessors>
-                        <annotationProcessor>
-                            org.opensilex.utils.DynamicAnnotationProcessor
-                        </annotationProcessor>
-                    </annotationProcessors>
-                </configuration>
-            </plugin>
             <!-- Generate Full jar with dependencies -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

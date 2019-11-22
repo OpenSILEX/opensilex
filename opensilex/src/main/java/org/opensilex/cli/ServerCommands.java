@@ -1,30 +1,21 @@
 //******************************************************************************
-//                            ServerCommand.java
-// OpenSILEX
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
-// Creation date: 02 April 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package org.opensilex.cli;
 
-import org.opensilex.cli.help.HelpPrinterCommand;
-import org.opensilex.cli.help.HelpOption;
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import org.apache.catalina.LifecycleException;
-import org.codehaus.plexus.util.FileUtils;
-import org.opensilex.OpenSilex;
+import java.io.*;
+import java.net.*;
+import java.nio.file.*;
+import org.apache.catalina.*;
+import org.apache.commons.io.*;
+import org.opensilex.*;
+import org.opensilex.cli.help.*;
 import org.opensilex.server.Server;
-import org.opensilex.server.ServerAdminClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Mixin;
-import picocli.CommandLine.Option;
-import picocli.CommandLine.Parameters;
+import org.opensilex.server.*;
+import org.slf4j.*;
+import picocli.CommandLine.*;
 
 /**
  * This class regroup all commands concerning OpenSilex server operation 

@@ -1,16 +1,13 @@
 //******************************************************************************
-//                               Metadata.java 
-// SILEX-PHIS
-// Copyright © INRA 2016
-// Creation date: 3 Dec. 2015
-// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package org.opensilex.server.response;
 
-import io.swagger.annotations.ApiModel;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
+import io.swagger.annotations.*;
+import java.net.*;
+import java.util.*;
 
 /**
  * Request metadata model.
@@ -24,18 +21,18 @@ import java.util.List;
 public class Metadata {
 
     private final Pagination pagination;
-    private final List<Status> status = new ArrayList<>();
+    private final List<StatusMessage> status = new ArrayList<>();
     private final List<URI> datafiles = new ArrayList<>();
 
     public Metadata(Pagination pagination) {
         this.pagination = pagination;
     }
     
-    public void addStatus(Status status) {
+    public void addStatus(StatusMessage status) {
         this.status.add(status);
     }
     
-    public void addStatusList(List<Status> statusList) {
+    public void addStatusList(List<StatusMessage> statusList) {
         this.status.addAll(statusList);
     }
     
@@ -52,7 +49,7 @@ public class Metadata {
         return pagination;
     }
 
-    public List<Status> getStatus() {
+    public List<StatusMessage> getStatus() {
         return status;
     }
 

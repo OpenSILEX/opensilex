@@ -1,34 +1,27 @@
 //******************************************************************************
-//                                  OpenSilex.java
-// OpenSILEX
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
-// Creation date: 15 March 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package org.opensilex;
 
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.joran.JoranConfigurator;
-import ch.qos.logback.core.joran.spi.JoranException;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import org.opensilex.module.OpenSilexModule;
-import org.opensilex.config.ConfigManager;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import org.apache.commons.io.FileUtils;
-import org.opensilex.module.ModuleManager;
-import org.opensilex.module.ModuleNotFoundException;
-import org.opensilex.module.dependency.DependencyManager;
-import org.opensilex.service.Service;
-import org.opensilex.service.ServiceManager;
-import org.opensilex.utils.ClassInfo;
+import ch.qos.logback.classic.*;
+import ch.qos.logback.classic.joran.*;
+import ch.qos.logback.core.joran.spi.*;
+import java.io.*;
+import java.net.*;
+import java.nio.file.*;
+import java.util.*;
+import javax.ws.rs.core.*;
+import org.apache.commons.io.*;
+import org.opensilex.config.*;
+import org.opensilex.module.*;
+import org.opensilex.module.base.*;
+import org.opensilex.module.dependency.*;
+import org.opensilex.service.*;
+import org.opensilex.utils.*;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.slf4j.*;
 
 /**
  * This is the main class for OpenSilex Application It's a configurable and
@@ -518,5 +511,25 @@ public class OpenSilex {
      */
     public Path getBaseDirectory() {
         return this.baseDirectory;
+    }
+
+    public static URI getPlatformURI() {
+        try {
+            if (OpenSilex.getInstance() == null) {
+                return new URI("http://test.opensilex.org/");
+            } else {
+                return new URI(OpenSilex.getInstance().getModuleByClass(BaseModule.class).getConfig(BaseConfig.class).baseURI());
+            }
+        } catch (ModuleNotFoundException ex) {
+            LOGGER.error("Base module not found, can't really happend because it's in the same package", ex);
+            return null;
+        } catch (URISyntaxException ex) {
+            LOGGER.error("Invalid Base URI", ex);
+            return null;
+        }
+    }
+
+    public static URI getPlatformURI(String... suffixes) {
+        return UriBuilder.fromUri(getPlatformURI()).segment(suffixes).build();
     }
 }

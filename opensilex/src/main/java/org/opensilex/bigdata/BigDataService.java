@@ -1,10 +1,13 @@
+//******************************************************************************
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package org.opensilex.bigdata;
 
-import org.opensilex.service.Service;
-import org.opensilex.bigdata.exceptions.BigDataTransactionException;
-import org.opensilex.bigdata.mongodb.MongoDBConfig;
-import org.opensilex.bigdata.mongodb.MongoDBConnection;
-import org.opensilex.service.ServiceConfigDefault;
+import org.opensilex.bigdata.exceptions.*;
+import org.opensilex.bigdata.mongodb.*;
+import org.opensilex.service.*;
 
 /*
  * To change this license header, choose License Headers in Project Properties.

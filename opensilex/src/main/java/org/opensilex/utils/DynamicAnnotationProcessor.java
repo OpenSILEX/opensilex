@@ -1,15 +1,15 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package org.opensilex.utils;
 
-import java.util.Set;
-import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.lang.model.element.TypeElement;
+import java.util.*;
+import javax.annotation.processing.*;
+import javax.lang.model.element.*;
+
+// TODO Vérifier si ça sert à quelque chose
 
 /**
  *
@@ -17,11 +17,7 @@ import javax.lang.model.element.TypeElement;
  * https://www.baeldung.com/java-annotation-processing-builder
  */
 
-@SupportedAnnotationTypes({
-    "org.opensilex.config.ConfigDescription",
-    "org.opensilex.sparql.annotations.*",
-    "org.opensilex.server.validation.*"
-})
+@SupportedAnnotationTypes("*")
 public class DynamicAnnotationProcessor extends AbstractProcessor {
  
     @Override

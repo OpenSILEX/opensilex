@@ -1,32 +1,23 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************n the template in the editor.
 package org.opensilex.server.security;
 
-import com.auth0.jwt.exceptions.JWTVerificationException;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.net.URI;
-import java.net.URISyntaxException;
-import javax.annotation.Priority;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.ws.rs.Priorities;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.container.PreMatching;
-import javax.ws.rs.container.ResourceInfo;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
+import com.auth0.jwt.exceptions.*;
+import java.io.*;
+import java.lang.reflect.*;
+import java.net.*;
+import javax.annotation.*;
+import javax.inject.*;
+import javax.ws.rs.*;
+import javax.ws.rs.container.*;
+import javax.ws.rs.core.*;
 import javax.ws.rs.ext.Provider;
-import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.sparql.SPARQLService;
-import org.opensilex.server.security.user.User;
+import org.opensilex.server.response.*;
+import org.opensilex.server.security.model.*;
+import org.opensilex.sparql.*;
 
 /**
  *
@@ -62,7 +53,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
                 }
 
                 try {
-                    URI userURI = authentication.decodeTokenUserURI(tokenValue);
+                    URI userURI = authentication.decodeTokenUserURI(tokenValue.replace("Bearer ", ""));
                     User user = sparql.getByURI(User.class, userURI);
 
                     SecurityContext originalContext = requestContext.getSecurityContext();

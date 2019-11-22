@@ -1,31 +1,19 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package test.opensilex.config;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.UndeclaredThrowableException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.lang.reflect.*;
+import java.util.*;
 import java.util.Map.Entry;
-
-import org.apache.commons.lang3.StringUtils;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import org.junit.Test;
-import org.opensilex.OpenSilex;
-import org.opensilex.config.ConfigDescription;
-import org.opensilex.config.ConfigManager;
-import org.opensilex.config.InvalidConfigException;
+import org.apache.commons.lang3.*;
+import static org.junit.Assert.*;
+import org.junit.*;
+import org.opensilex.*;
+import org.opensilex.config.*;
 
 /**
  *
@@ -208,7 +196,7 @@ public class ConfigTest {
         @ConfigDescription(
                 value = "default String Map",
                 defaultMap = {"az: er", "ty: ui", "qs: df"}
-        )                
+        )
         Map<String, String> mapStr_default();
 
         Map<String, Integer> mapInt();
@@ -216,7 +204,7 @@ public class ConfigTest {
         @ConfigDescription(
                 value = "default Integer Map",
                 defaultMap = {"az: 2", "ty: 3", "qs: 4"}
-        )                      
+        )
         Map<String, Integer> mapInt_default();
 
         TestConfig inception();
@@ -226,17 +214,17 @@ public class ConfigTest {
         @ConfigDescription(
                 value = "Invalid default List",
                 defaultList = {"\""}
-        )                      
+        )
         List<Integer> invalidListDefault();
-        
+
         Class<?> clazz();
-        
+
         @ConfigDescription(
-            value = "default Class<?>",
-            defaultClass = Object.class
-        )     
+                value = "default Class<?>",
+                defaultClass = Object.class
+        )
         Class<?> clazz_default();
-        
+
     }
 
     private enum Primitives {
@@ -385,7 +373,7 @@ public class ConfigTest {
         Iterator<?> iterator = expected.entrySet().iterator();
         while (iterator.hasNext()) {
             @SuppressWarnings("unchecked")
-			Map.Entry<String, ? extends Object> entry = (Entry<String, ? extends Object>) iterator.next();
+            Map.Entry<String, ? extends Object> entry = (Entry<String, ? extends Object>) iterator.next();
 
             assertTrue(testMessage + " key should exists " + entry.getKey(), actual.containsKey(entry.getKey()));
             assertTrue(testMessage + " value should be equal for key " + entry.getValue(), actual.get(entry.getKey()).equals(entry.getValue()));
@@ -630,7 +618,7 @@ public class ConfigTest {
             throw ex.getCause();
         }
     }
-    
+
     @Test
     public void testClass() throws Throwable {
         ConfigManager provider = new ConfigManager();
@@ -638,11 +626,11 @@ public class ConfigTest {
         TestConfig cfg = provider.loadConfig("test", TestConfig.class);
 
         Class<?> clazz = cfg.clazz();
-        
+
         assertNull("Class with no default must be null", clazz);
-        
+
         Class<?> classDefault = cfg.clazz_default();
-        
+
         assertTrue("Default class value must be Object", classDefault.equals(Object.class));
     }
 }

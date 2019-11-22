@@ -1,13 +1,13 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package org.opensilex.bigdata.mongodb;
 
-import java.util.HashMap;
-import org.opensilex.bigdata.datanucleus.AbstractDataNucleusConnection;
-import org.opensilex.service.ServiceConnection;
+import java.util.*;
+import org.opensilex.bigdata.datanucleus.*;
+import org.opensilex.service.*;
 
 /**
  *

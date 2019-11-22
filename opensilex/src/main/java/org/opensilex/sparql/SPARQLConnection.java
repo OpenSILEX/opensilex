@@ -1,21 +1,18 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package org.opensilex.sparql;
 
-import java.util.List;
-import java.util.function.Consumer;
-import org.opensilex.sparql.exceptions.SPARQLTransactionException;
-import org.opensilex.sparql.exceptions.SPARQLQueryException;
-import org.apache.jena.arq.querybuilder.AskBuilder;
-import org.apache.jena.arq.querybuilder.ConstructBuilder;
-import org.apache.jena.arq.querybuilder.DescribeBuilder;
-import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.arq.querybuilder.UpdateBuilder;
-import org.apache.jena.graph.Node;
-import org.opensilex.service.ServiceConnection;
+import java.net.*;
+import java.util.*;
+import java.util.function.*;
+import org.apache.jena.arq.querybuilder.*;
+import org.opensilex.service.*;
+import org.opensilex.sparql.exceptions.*;
+
+
 
 /**
  *
@@ -39,7 +36,7 @@ public interface SPARQLConnection extends ServiceConnection {
 
     public void executeDeleteQuery(UpdateBuilder update) throws SPARQLQueryException;
 
-    public void clearGraph(Node graph) throws SPARQLQueryException;
+    public void clearGraph(URI graph) throws SPARQLQueryException;
 
     public void clear() throws SPARQLQueryException;
 

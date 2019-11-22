@@ -1,24 +1,23 @@
+//******************************************************************************
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package org.opensilex.config;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import org.opensilex.module.OpenSilexModule;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.reflect.Proxy;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import org.opensilex.OpenSilex;
+import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.node.*;
+import com.fasterxml.jackson.dataformat.yaml.*;
+import java.io.*;
+import java.lang.reflect.*;
+import java.nio.charset.*;
+import java.nio.file.*;
+import org.opensilex.*;
 import static org.opensilex.OpenSilex.PROD_PROFILE_ID;
-import org.opensilex.utils.ClassInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.opensilex.module.*;
+import org.opensilex.utils.*;
+import org.slf4j.*;
+
 
 /**
  *

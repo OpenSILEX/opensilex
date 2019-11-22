@@ -1,18 +1,19 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package org.opensilex.sparql.mapping;
 
-import java.net.URI;
-import java.util.List;
+import java.net.*;
+import java.util.*;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
-import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.graph.Node;
-import org.apache.jena.rdf.model.Property;
-import org.opensilex.sparql.SPARQLService;
-import org.opensilex.sparql.utils.Ontology;
+import org.apache.jena.arq.querybuilder.*;
+import org.apache.jena.graph.*;
+import org.apache.jena.rdf.model.*;
+import org.opensilex.sparql.*;
+import org.opensilex.sparql.utils.*;
+
 
 /**
  *

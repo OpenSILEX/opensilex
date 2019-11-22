@@ -1,20 +1,20 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package test.opensilex.sparql.rdf4j;
 
-import org.eclipse.rdf4j.repository.Repository;
-import org.eclipse.rdf4j.repository.sail.SailRepository;
-import org.eclipse.rdf4j.sail.inferencer.fc.SchemaCachingRDFSInferencer;
-import org.eclipse.rdf4j.sail.memory.MemoryStore;
-import org.junit.BeforeClass;
-import org.opensilex.sparql.SPARQLService;
-import org.opensilex.sparql.exceptions.SPARQLQueryException;
-import org.opensilex.sparql.rdf4j.RDF4JConnection;
-
-import test.opensilex.sparql.SPARQLServiceTest;
+import java.util.*;
+import org.eclipse.rdf4j.repository.*;
+import org.eclipse.rdf4j.repository.sail.*;
+import org.eclipse.rdf4j.sail.inferencer.fc.*;
+import org.eclipse.rdf4j.sail.memory.*;
+import org.junit.*;
+import org.opensilex.*;
+import org.opensilex.sparql.*;
+import org.opensilex.sparql.rdf4j.*;
+import test.opensilex.sparql.*;
 
 /**
  *
@@ -23,7 +23,7 @@ import test.opensilex.sparql.SPARQLServiceTest;
 public class RDF4JConnectionTest extends SPARQLServiceTest {
 
     @BeforeClass
-    public static void initialize() throws SPARQLQueryException {
+    public static void initialize() throws Exception {
         Repository repository = new SailRepository(
                 new SchemaCachingRDFSInferencer(
                         new MemoryStore()));
@@ -39,12 +39,18 @@ public class RDF4JConnectionTest extends SPARQLServiceTest {
 //
 //            @Override
 //            public String repository() {
-//                return "tu3";
+//                return "tu";
 //            }
 //
 //        };
 //        
 //        service = new SPARQLService(new RDF4JConnection(cfg));
+//        service.startup();
+        OpenSilex.setup(new HashMap<String, String>() {
+            {
+                put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.TEST_PROFILE_ID);
+            }
+        });
 
         SPARQLServiceTest.initialize();
     }

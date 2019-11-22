@@ -1,24 +1,18 @@
 //******************************************************************************
-//                                   Status.java 
-// SILEX-PHIS
-// Copyright © INRA 2016
-// Creation date: Aug. 2016
-// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package org.opensilex.server.response;
 
 import ch.qos.logback.classic.Level;
 
-/**
- * BrAPI status model.
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
- */
-public class Status {
+public class StatusMessage {
 
     public final String message;
     public final Level messageType;
 
-    public Status(String message, Level messageType) {
+    public StatusMessage(String message, Level messageType) {
         this.message = message;
         this.messageType = messageType;
     }

@@ -1,20 +1,17 @@
 //******************************************************************************
-//                          GenericExceptionMapper.java
-// SILEX-PHIS
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
-// Creation date: 1 Apr. 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package org.opensilex.server.rest;
 
-import javax.ws.rs.WebApplicationException;
-import org.opensilex.server.response.ErrorResponse;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javax.ws.rs.*;
+import org.opensilex.server.response.*;
+import javax.ws.rs.core.*;
+import javax.ws.rs.core.Response.*;
+import javax.ws.rs.ext.*;
+import org.slf4j.*;
+
 
 /**
  * Handles generic exceptions in web services and displays them as JSON.

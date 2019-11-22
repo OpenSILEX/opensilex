@@ -1,27 +1,24 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package org.opensilex.sparql.mapping;
 
-import java.lang.reflect.Field;
-import java.net.URI;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiConsumer;
+import java.lang.reflect.*;
+import java.net.*;
+import java.util.*;
+import java.util.concurrent.atomic.*;
+import java.util.function.*;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
-import org.apache.jena.arq.querybuilder.AskBuilder;
-import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.arq.querybuilder.UpdateBuilder;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.Triple;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.sparql.core.Var;
-import org.apache.jena.vocabulary.RDF;
-import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
-import org.opensilex.sparql.deserializer.Deserializers;
-import org.opensilex.sparql.utils.Ontology;
+import org.apache.jena.arq.querybuilder.*;
+import org.apache.jena.graph.*;
+import org.apache.jena.rdf.model.*;
+import org.apache.jena.sparql.core.*;
+import org.apache.jena.sparql.lang.sparql_11.*;
+import org.apache.jena.vocabulary.*;
+import org.opensilex.sparql.deserializer.*;
+import org.opensilex.sparql.utils.*;
 
 /**
  *
@@ -39,17 +36,21 @@ public class SPARQLClassQueryBuilder {
         this.analyzer = analyzer;
     }
 
-    public SelectBuilder getSelectBuilder() throws SPARQLInvalidClassDefinitionException {
+    public static final Var typeDef = makeVar("__type");
+
+    public SelectBuilder getSelectBuilder(Node graph) {
         if (selectBuilder == null) {
             selectBuilder = new SelectBuilder();
 
-            if (analyzer.getGraph() != null) {
-                selectBuilder.from(analyzer.getGraph().toString());
+            if (graph != null) {
+                selectBuilder.from(graph.toString());
             }
 
             String uriFieldName = analyzer.getURIFieldName();
             selectBuilder.addVar(uriFieldName);
-            selectBuilder.addWhere(makeVar(uriFieldName), RDF.type, analyzer.getRDFType());
+            selectBuilder.addVar(typeDef);
+            selectBuilder.addWhere(makeVar(uriFieldName), RDF.type, typeDef);
+            selectBuilder.addWhere(typeDef, Ontology.subClassAny, analyzer.getRDFType());
 
             analyzer.forEachDataProperty((Field field, Property property) -> {
                 selectBuilder.addVar(field.getName());
@@ -65,17 +66,17 @@ public class SPARQLClassQueryBuilder {
         return selectBuilder.clone();
     }
 
-    public AskBuilder getAskBuilder() {
+    public AskBuilder getAskBuilder(Node graph) {
         if (askBuilder == null) {
             askBuilder = new AskBuilder();
 
-            if (analyzer.getGraph() != null) {
-                askBuilder.from(analyzer.getGraph().toString());
+            if (graph != null) {
+                askBuilder.from(graph.toString());
             }
 
             String uriFieldName = analyzer.getURIFieldName();
-            askBuilder.addWhere(makeVar(uriFieldName), RDF.type, analyzer.getRDFType());
-
+            askBuilder.addWhere(makeVar(uriFieldName), RDF.type, typeDef);
+            askBuilder.addWhere(typeDef, Ontology.subClassAny, analyzer.getRDFType());
             analyzer.forEachDataProperty((Field field, Property property) -> {
                 addAskProperty(askBuilder, uriFieldName, property, field);
             });
@@ -88,17 +89,23 @@ public class SPARQLClassQueryBuilder {
         return askBuilder.clone();
     }
 
-    public SelectBuilder getCountBuilder(String countFieldName) {
+    public SelectBuilder getCountBuilder(Node graph, String countFieldName) {
         if (countBuilder == null) {
             countBuilder = new SelectBuilder();
 
-            if (analyzer.getGraph() != null) {
-                countBuilder.from(analyzer.getGraph().toString());
+            if (graph != null) {
+                countBuilder.from(graph.toString());
             }
 
             String uriFieldName = analyzer.getURIFieldName();
-            countBuilder.addVar("count(distinct ?" + uriFieldName + ") as " + countFieldName);
-            countBuilder.addWhere(uriFieldName, RDF.type, analyzer.getRDFType());
+            try {
+                countBuilder.addVar("(COUNT(DISTINCT ?" + uriFieldName + "))", makeVar(countFieldName));
+            } catch (ParseException ex) {
+                // Should not append
+                // TODO generate properly count/distinct trought Jena API (see 
+            }
+            countBuilder.addWhere(makeVar(uriFieldName), RDF.type, typeDef);
+            countBuilder.addWhere(typeDef, Ontology.subClassAny, analyzer.getRDFType());
 
             analyzer.forEachDataProperty((Field field, Property property) -> {
                 addSelectProperty(countBuilder, uriFieldName, property, field);
@@ -107,28 +114,25 @@ public class SPARQLClassQueryBuilder {
             analyzer.forEachObjectProperty((Field field, Property property) -> {
                 addSelectProperty(countBuilder, uriFieldName, property, field);
             });
-
-            countBuilder.addGroupBy(uriFieldName);
         }
 
         return countBuilder.clone();
     }
 
-    public UpdateBuilder getCreateBuilder(Object instance) throws Exception {
+    public UpdateBuilder getCreateBuilder(Node graph, Object instance) throws Exception {
         UpdateBuilder create = new UpdateBuilder();
-        addCreateBuilder(instance, create);
+        addCreateBuilder(graph, instance, create);
 
         return create;
     }
 
-    public void addCreateBuilder(Object instance, UpdateBuilder create) throws Exception {
-        // TODO generate URI if it's null
+    public void addCreateBuilder(Node graph, Object instance, UpdateBuilder create) throws Exception {
         executeOnInstanceTriples(instance, (Triple triple, Boolean isReverse) -> {
-            if (analyzer.getGraph() != null) {
+            if (graph != null) {
                 if (isReverse) {
-                    create.addInsert(analyzer.getGraph(), triple.getObject(), triple.getPredicate(), triple.getSubject());
+                    create.addInsert(graph, triple.getObject(), triple.getPredicate(), triple.getSubject());
                 } else {
-                    create.addInsert(analyzer.getGraph(), triple);
+                    create.addInsert(graph, triple);
                 }
             } else {
                 if (isReverse) {
@@ -140,24 +144,24 @@ public class SPARQLClassQueryBuilder {
         });
     }
 
-    public UpdateBuilder getDeleteBuilder(Object instance) throws Exception {
+    public UpdateBuilder getDeleteBuilder(Node graph, Object instance) throws Exception {
         UpdateBuilder delete = new UpdateBuilder();
-        addDeleteBuilder(instance, delete);
+        addDeleteBuilder(graph, instance, delete);
 
         return delete;
     }
 
-    public void addUpdateBuilder(Object oldInstance, Object newInstance, UpdateBuilder update) throws Exception {
+    public void addUpdateBuilder(Node graph, Object oldInstance, Object newInstance, UpdateBuilder update) throws Exception {
         final AtomicInteger i = new AtomicInteger(0);
         executeOnInstanceTriples(oldInstance, (Triple triple, Boolean isReverse) -> {
             String var = "?x" + i.addAndGet(1);
 
-            if (analyzer.getGraph() != null) {
+            if (graph != null) {
                 if (isReverse) {
-                    update.addDelete(analyzer.getGraph(), var, triple.getPredicate(), triple.getSubject());
+                    update.addDelete(graph, var, triple.getPredicate(), triple.getSubject());
                     update.addWhere(var, triple.getPredicate(), triple.getSubject());
                 } else {
-                    update.addDelete(analyzer.getGraph(), triple.getSubject(), triple.getPredicate(), var);
+                    update.addDelete(graph, triple.getSubject(), triple.getPredicate(), var);
                     update.addWhere(triple.getSubject(), triple.getPredicate(), var);
                 }
             } else {
@@ -169,18 +173,17 @@ public class SPARQLClassQueryBuilder {
                     update.addWhere(triple.getSubject(), triple.getPredicate(), var);
                 }
             }
-
         });
-        addCreateBuilder(newInstance, update);
+        addCreateBuilder(graph, newInstance, update);
     }
 
-    public void addDeleteBuilder(Object instance, UpdateBuilder delete) throws Exception {
+    public void addDeleteBuilder(Node graph, Object instance, UpdateBuilder delete) throws Exception {
         executeOnInstanceTriples(instance, (Triple triple, Boolean isReverse) -> {
-            if (analyzer.getGraph() != null) {
+            if (graph != null) {
                 if (isReverse) {
-                    delete.addDelete(analyzer.getGraph(), triple.getObject(), triple.getPredicate(), triple.getSubject());
+                    delete.addDelete(graph, triple.getObject(), triple.getPredicate(), triple.getSubject());
                 } else {
-                    delete.addDelete(analyzer.getGraph(), triple);
+                    delete.addDelete(graph, triple);
                 }
             } else {
                 if (isReverse) {
@@ -210,7 +213,7 @@ public class SPARQLClassQueryBuilder {
             }
         }
     }
-    
+
     private void addAskProperty(AskBuilder ask, String uriFieldName, Property property, Field field) {
         Var uriFieldVar = makeVar(uriFieldName);
         Var propertyFieldVar = makeVar(field.getName());
@@ -232,7 +235,7 @@ public class SPARQLClassQueryBuilder {
         tripleHandler.accept(new Triple(Ontology.nodeURI(uri), RDF.type.asNode(), analyzer.getRDFType().asNode()), false);
 
         for (Field field : analyzer.getDataPropertyFields()) {
-            Object fieldValue = field.get(instance);
+            Object fieldValue = analyzer.getGetterFromField(field).invoke(instance);
 
             if (fieldValue == null) {
                 if (!analyzer.isOptional(field)) {
@@ -247,7 +250,7 @@ public class SPARQLClassQueryBuilder {
         }
 
         for (Field field : analyzer.getObjectPropertyFields()) {
-            Object fieldValue = field.get(instance);
+            Object fieldValue = analyzer.getGetterFromField(field).invoke(instance);
 
             if (fieldValue == null) {
                 if (!analyzer.isOptional(field)) {
@@ -268,7 +271,7 @@ public class SPARQLClassQueryBuilder {
         }
 
         for (Field field : analyzer.getDataListPropertyFields()) {
-            List<?> fieldValues = (List<?>) field.get(instance);
+            List<?> fieldValues = (List<?>) analyzer.getGetterFromField(field).invoke(instance);
 
             if (fieldValues != null) {
                 Property property = analyzer.getDataListPropertyByField(field);
@@ -281,7 +284,7 @@ public class SPARQLClassQueryBuilder {
         }
 
         for (Field field : analyzer.getObjectListPropertyFields()) {
-            List<?> fieldValues = (List<?>) field.get(instance);
+            List<?> fieldValues = (List<?>) analyzer.getGetterFromField(field).invoke(instance);
 
             if (fieldValues != null) {
                 for (Object listValue : fieldValues) {

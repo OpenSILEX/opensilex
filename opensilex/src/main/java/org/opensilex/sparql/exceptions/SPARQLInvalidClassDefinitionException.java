@@ -1,8 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package org.opensilex.sparql.exceptions;
 
 /**
@@ -11,22 +11,18 @@ package org.opensilex.sparql.exceptions;
  */
 public class SPARQLInvalidClassDefinitionException extends SPARQLException {
 
-    /**
-	 * 
-	 */
-	private static final long serialVersionUID = -1864592258666868690L;
-	private final Class<?> objectClass;
-    
+    private final Class<?> objectClass;
+
     public SPARQLInvalidClassDefinitionException(Class<?> objectClass, String message) {
         super(message);
         this.objectClass = objectClass;
     }
-        
+
     public SPARQLInvalidClassDefinitionException(Class<?> objectClass, String message, Throwable cause) {
         super(message, cause);
         this.objectClass = objectClass;
     }
-    
+
     public String getMessage() {
         return "Invalid SPARQL object class: " + objectClass.getCanonicalName() + " - " + super.getMessage();
     }

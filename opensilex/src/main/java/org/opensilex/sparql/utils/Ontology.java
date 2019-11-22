@@ -1,16 +1,15 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package org.opensilex.sparql.utils;
 
-import java.net.URI;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.ResourceFactory;
+import java.net.*;
+import org.apache.jena.graph.*;
+import org.apache.jena.rdf.model.*;
+import org.apache.jena.sparql.path.*;
+import org.apache.jena.vocabulary.*;
 
 /**
  *
@@ -18,6 +17,11 @@ import org.apache.jena.rdf.model.ResourceFactory;
  */
 public abstract class Ontology {
 
+    public static final Path subClassAny;
+    static {
+        subClassAny = new P_ZeroOrMore1(new P_Link(RDFS.subClassOf.asNode()));
+    }
+    
     public static final Resource resource(String uri) {
         return ResourceFactory.createResource(uri);
     }

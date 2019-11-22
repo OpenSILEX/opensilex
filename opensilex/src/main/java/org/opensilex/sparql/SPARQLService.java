@@ -1,51 +1,34 @@
 //******************************************************************************
-//                          SPARQLService.java
-// OpenSILEX
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
-// Creation date: 01 jan. 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package org.opensilex.sparql;
 
-import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
-import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
+import java.io.*;
+import java.lang.reflect.*;
+import java.net.*;
+import java.util.*;
+import java.util.function.*;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
-import org.apache.jena.arq.querybuilder.AskBuilder;
-import org.apache.jena.arq.querybuilder.ConstructBuilder;
-import org.apache.jena.arq.querybuilder.DescribeBuilder;
-import org.apache.jena.arq.querybuilder.Order;
-import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.arq.querybuilder.UpdateBuilder;
-import org.apache.jena.arq.querybuilder.WhereBuilder;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.Statement;
-import org.apache.jena.rdf.model.StmtIterator;
-import org.apache.jena.riot.Lang;
-import org.apache.jena.sparql.core.Var;
-import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.service.Service;
-import org.opensilex.sparql.deserializer.Deserializers;
-import org.opensilex.sparql.deserializer.SPARQLDeserializer;
-import org.opensilex.sparql.exceptions.SPARQLEntityNotFoundException;
-import org.opensilex.sparql.exceptions.SPARQLQueryException;
-import org.opensilex.sparql.exceptions.SPARQLTransactionException;
-import org.opensilex.sparql.rdf4j.RDF4JConfig;
-import org.opensilex.sparql.rdf4j.RDF4JConnection;
-import org.opensilex.sparql.utils.Ontology;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.opensilex.service.ServiceConfigDefault;
+import org.apache.jena.arq.querybuilder.*;
+import org.apache.jena.graph.*;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.*;
+import org.apache.jena.riot.*;
+import org.apache.jena.sparql.core.*;
+import org.apache.jena.sparql.expr.*;
+import org.apache.jena.vocabulary.*;
+import org.opensilex.*;
+import org.opensilex.service.*;
+import org.opensilex.sparql.deserializer.*;
+import org.opensilex.sparql.exceptions.*;
+import org.opensilex.sparql.mapping.*;
+import org.opensilex.sparql.rdf4j.*;
+import org.opensilex.sparql.utils.*;
+import org.opensilex.utils.*;
+import org.slf4j.*;
+
 
 /**
  * Implementation of SPARQLService
@@ -61,8 +44,11 @@ public class SPARQLService implements SPARQLConnection, Service {
 
     private final SPARQLConnection connection;
 
-    public SPARQLService(SPARQLConnection connection) {
+    private final URI baseURI;
+
+    public SPARQLService(SPARQLConnection connection) throws URISyntaxException {
         this.connection = connection;
+        baseURI = OpenSilex.getPlatformURI();
     }
 
     @Override
@@ -116,11 +102,11 @@ public class SPARQLService implements SPARQLConnection, Service {
     }
 
     @Override
-    public void executeDeleteQuery(UpdateBuilder update) throws SPARQLQueryException {
+    public void executeDeleteQuery(UpdateBuilder delete) throws SPARQLQueryException {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("SPARQL UPDATE\n" + update.buildRequest().toString());
+            LOGGER.debug("SPARQL DELETE\n" + delete.buildRequest().toString());
         }
-        connection.executeDeleteQuery(update);
+        connection.executeDeleteQuery(delete);
     }
 
     @Override
@@ -142,8 +128,8 @@ public class SPARQLService implements SPARQLConnection, Service {
     }
 
     @Override
-    public void clearGraph(Node graph) throws SPARQLQueryException {
-        LOGGER.debug("SPARQL CLEAR GRAPH: " + graph.getURI());
+    public void clearGraph(URI graph) throws SPARQLQueryException {
+        LOGGER.debug("SPARQL CLEAR GRAPH: " + graph);
         connection.clearGraph(graph);
     }
 
@@ -153,8 +139,9 @@ public class SPARQLService implements SPARQLConnection, Service {
         connection.clear();
     }
 
-    public void loadOntologyStream(Node graph, InputStream ontology, Lang format) throws SPARQLQueryException {
-        LOGGER.debug("SPARQL LOAD " + format.getName() + " FILE INTO GRAPH: " + graph.getURI());
+    public void loadOntologyStream(URI graph, InputStream ontology, Lang format) throws SPARQLQueryException {
+        Node graphNode = NodeFactory.createURI(graph.toString());
+        LOGGER.debug("SPARQL LOAD " + format.getName() + " FILE INTO GRAPH: " + graphNode);
         Model model = ModelFactory.createDefaultModel();
         model.read(ontology, null, format.getName());
 
@@ -163,7 +150,7 @@ public class SPARQLService implements SPARQLConnection, Service {
 
         while (iterator.hasNext()) {
             Statement statement = iterator.nextStatement();
-            insertQuery.addInsert(graph, statement.asTriple());
+            insertQuery.addInsert(graphNode, statement.asTriple());
         }
         insertQuery.buildRequest().toString();
         executeUpdateQuery(insertQuery);
@@ -171,12 +158,7 @@ public class SPARQLService implements SPARQLConnection, Service {
 
     public <T> T getByURI(Class<T> objectClass, URI uri) throws Exception {
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
-        T instance;
-        if (sparqlObjectMapper.hasCacheInstance(uri)) {
-            instance = sparqlObjectMapper.getCacheInstance(uri);
-        } else {
-            instance = sparqlObjectMapper.createInstance(uri, this);
-        }
+        T instance = sparqlObjectMapper.createInstance(uri, this);
         return instance;
     }
 
@@ -209,7 +191,7 @@ public class SPARQLService implements SPARQLConnection, Service {
         List<SPARQLResult> results = executeSelectQuery(select);
 
         if (results.size() == 0) {
-            throw new SPARQLEntityNotFoundException(objectClass, property, propertyValue);
+            return null;
         } else if (results.size() == 1) {
             return sparqlObjectMapper.createInstance(results.get(0), this);
         } else {
@@ -231,7 +213,7 @@ public class SPARQLService implements SPARQLConnection, Service {
         return search(objectClass, filterHandler, null, null, null);
     }
 
-    public <T> List<T> search(Class<T> objectClass, Consumer<SelectBuilder> filterHandler, Map<String, Order> orderBy, Integer offset, Integer limit) throws Exception {
+    public <T> List<T> search(Class<T> objectClass, Consumer<SelectBuilder> filterHandler, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
         SelectBuilder select = sparqlObjectMapper.getSelectBuilder();
 
@@ -239,29 +221,26 @@ public class SPARQLService implements SPARQLConnection, Service {
             filterHandler.accept(select);
         }
 
-        if (orderBy != null) {
-            orderBy.forEach((String fieldName, Order order) -> {
-                select.addOrderBy(fieldName, order);
-            });
+        if (orderByList != null) {
+            orderByList.forEach(ThrowingConsumer.wrap((OrderBy orderBy) -> {
+                Expr fieldOrderExpr = sparqlObjectMapper.getFieldOrderExpr(orderBy.getFieldName());
+                select.addOrderBy(fieldOrderExpr, orderBy.getOrder());
+            }, SPARQLUnknownFieldException.class));
         }
 
-        if (offset != null) {
-            select.setOffset(offset);
+        if (page == null || page < 0) {
+            page = 0;
         }
 
-        if (limit != null) {
-            select.setLimit(limit);
+        if (pageSize != null && pageSize > 0) {
+            select.setOffset(page * pageSize);
+            select.setLimit(pageSize);
         }
 
         List<T> resultList = new ArrayList<>();
-        executeSelectQuery(select, (SPARQLResult result) -> {
-            try {
-                resultList.add(sparqlObjectMapper.createInstance(result, this));
-            } catch (Exception ex) {
-                // TODO warn
-                resultList.add(null);
-            }
-        });
+        executeSelectQuery(select, ThrowingConsumer.wrap((SPARQLResult result) -> {
+            resultList.add(sparqlObjectMapper.createInstance(result, this));
+        }, Exception.class));
 
         return resultList;
     }
@@ -283,9 +262,24 @@ public class SPARQLService implements SPARQLConnection, Service {
         }
     }
 
+    public <T> ListWithPagination<T> searchWithPagination(Class<T> objectClass, Consumer<SelectBuilder> filterHandler, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+        int total = count(objectClass, filterHandler);
+
+        List<T> list;
+        if (total > 0 && (page * pageSize) < total) {
+            list = search(objectClass, filterHandler, orderByList, page, pageSize);
+        } else {
+            list = new ArrayList<T>();
+        }
+
+        return new ListWithPagination<T>(list, page, pageSize, total);
+    }
+
     public <T> void create(T instance) throws Exception {
         @SuppressWarnings("unchecked")
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass((Class<T>) instance.getClass());
+
+        generateUniqueUriIfNullOrValidateCurrent(sparqlObjectMapper, instance);
 
         UpdateBuilder create = sparqlObjectMapper.getCreateBuilder(instance);
 
@@ -297,10 +291,29 @@ public class SPARQLService implements SPARQLConnection, Service {
         for (T instance : instances) {
             @SuppressWarnings("unchecked")
             SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass((Class<T>) instance.getClass());
+            generateUniqueUriIfNullOrValidateCurrent(sparqlObjectMapper, instance);
             sparqlObjectMapper.addCreateBuilder(instance, create);
         }
 
         executeUpdateQuery(create);
+    }
+
+    private <T> void generateUniqueUriIfNullOrValidateCurrent(SPARQLClassObjectMapper<T> sparqlObjectMapper, T instance) throws Exception {
+        URIGenerator<T> uriGenerator = sparqlObjectMapper.getUriGenerator(instance);
+        URI uri = sparqlObjectMapper.getURI(instance);
+        if (uri == null) {
+            uri = uriGenerator.generateURI(baseURI, instance);
+            int retry = 0;
+            while (uriExists(uri)) {
+                uri = uriGenerator.generateURI(baseURI, instance, ++retry);
+            }
+
+            sparqlObjectMapper.setUri(instance, uri);
+        } else {
+            if (uriExists(uri)) {
+                throw new SPARQLAlreadyExistingUriException(uri);
+            }
+        }
     }
 
     public <T> void update(T instance) throws Exception {
@@ -332,8 +345,6 @@ public class SPARQLService implements SPARQLConnection, Service {
         UpdateBuilder delete = sparqlObjectMapper.getDeleteBuilder(loadByURI(objectClass, uri));
 
         executeDeleteQuery(delete);
-
-        sparqlObjectMapper.removeCacheInstance(uri);
     }
 
     public <T> void delete(Class<T> objectClass, List<URI> uris) throws Exception {
@@ -345,10 +356,6 @@ public class SPARQLService implements SPARQLConnection, Service {
         }
 
         executeDeleteQuery(delete);
-
-        uris.forEach((uri) -> {
-            sparqlObjectMapper.removeCacheInstance(uri);
-        });
     }
 
     public boolean uriExists(URI uri) throws SPARQLQueryException {
@@ -363,5 +370,29 @@ public class SPARQLService implements SPARQLConnection, Service {
         askQuery.addUnion(reverseWhere);
 
         return executeAskQuery(askQuery);
+    }
+
+    public <T> boolean uriExists(Class<T> objectClass, URI uri) throws Exception {
+        SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
+        
+        AskBuilder askQuery = new AskBuilder();
+        Var p = makeVar("p");
+        Var o = makeVar("o");
+        Var type = makeVar("type");
+        Node nodeUri = Ontology.nodeURI(uri);
+        askQuery.addWhere(nodeUri, RDF.type, type);
+        
+        Resource typeDef = sparqlObjectMapper.getRDFType();
+        
+        askQuery.addWhere(type, Ontology.subClassAny, typeDef);
+        
+        return executeAskQuery(askQuery);
+    }
+
+    public void deleteObjectRelation(Node g, URI s, Property p, URI o) throws SPARQLQueryException {
+        UpdateBuilder delete = new UpdateBuilder();
+        delete.addDelete(g, Ontology.nodeURI(s), p.asNode(), Ontology.nodeURI(o));
+
+        executeDeleteQuery(delete);
     }
 }

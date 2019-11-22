@@ -1,22 +1,18 @@
 //******************************************************************************
-//                            HelpFactory.java
-// OpenSILEX
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
-// Creation date: 02 April 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package org.opensilex.cli.help;
 
-import picocli.CommandLine;
-import picocli.CommandLine.Help;
-import picocli.CommandLine.Help.ColorScheme;
-import picocli.CommandLine.IHelpFactory;
-import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.*;
+import picocli.CommandLine.Help.*;
+import picocli.CommandLine.Model.*;
 
 /**
  * This class implements picocli.CommandLine.IHelpFactory to generate good
  * looking help messages for OpenSilex commands with custom styles and colors
- * see: https://picocli.info/#_usage_help_with_styles_and_colors
+ * see: <a href="https://picocli.info/#_usage_help_with_styles_and_colors">Picocli Documentation</a>
  */
 public class HelpFactory implements IHelpFactory {
 

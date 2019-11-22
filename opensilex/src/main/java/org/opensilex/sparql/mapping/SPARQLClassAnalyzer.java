@@ -1,37 +1,22 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package org.opensilex.sparql.mapping;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.BiConsumer;
-
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.Resource;
-import org.opensilex.sparql.annotations.SPARQLProperty;
-import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.annotations.SPARQLResourceURI;
-import org.opensilex.sparql.deserializer.Deserializers;
-import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
-import org.opensilex.utils.ClassInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import org.apache.jena.graph.Node;
-import org.opensilex.sparql.utils.Ontology;
+import com.google.common.collect.*;
+import java.lang.reflect.*;
+import java.net.*;
+import java.util.*;
+import java.util.function.*;
+import org.apache.jena.rdf.model.*;
+import org.opensilex.sparql.annotations.*;
+import org.opensilex.sparql.deserializer.*;
+import org.opensilex.sparql.exceptions.*;
+import org.opensilex.sparql.utils.*;
+import org.opensilex.utils.*;
+import org.slf4j.*;
 
 /**
  *
@@ -44,7 +29,7 @@ public class SPARQLClassAnalyzer {
     private final Class<?> objectClass;
 
     private final Resource resource;
-    private final Node graph;
+    private final String graphSuffix;
 
     private Field fieldURI;
     private final Map<Field, Property> dataProperties = new HashMap<>();
@@ -67,29 +52,44 @@ public class SPARQLClassAnalyzer {
 
     private final List<Field> reverseRelationFields = new ArrayList<>();
 
+    private final URIGenerator<Object> uriGenerator;
+
     public SPARQLClassAnalyzer(Class<?> objectClass) throws SPARQLInvalidClassDefinitionException {
-        LOGGER.debug("Start SPARQL annotation analyze for class: " + objectClass.getName());
+        LOGGER.debug("Start SPARQL model class analyze for: " + objectClass.getName());
         this.objectClass = objectClass;
 
         LOGGER.debug("Determine RDF Type for class: " + objectClass.getName());
         SPARQLResource resourceAnnotation = ClassInfo.findClassAnnotationRecursivly(objectClass, SPARQLResource.class);
         if (resourceAnnotation == null) {
-            throw new SPARQLInvalidClassDefinitionException(objectClass, "SPARQLResource annotation not found");
+            throw new SPARQLInvalidClassDefinitionException(objectClass, "annotation not found: " + SPARQLResource.class.getCanonicalName());
         }
+
+        try {
+            if (URIGenerator.class.isAssignableFrom(objectClass)) {
+                uriGenerator = null;
+            } else {
+                uriGenerator = resourceAnnotation.uriGenerator().getConstructor().newInstance();
+            }
+        } catch (NoSuchMethodException ex) {
+            throw new SPARQLInvalidClassDefinitionException(objectClass, "Resource type " + resourceAnnotation.resource() + " uri generator must have an empty constructor", ex);
+        } catch (SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            throw new SPARQLInvalidClassDefinitionException(objectClass, "Technical error while creating uri generator", ex);
+        }
+
         try {
             Class<?> resourceOntology = resourceAnnotation.ontology();
             Field resourceField = resourceOntology.getField(resourceAnnotation.resource());
             resource = (Resource) resourceField.get(null);
             LOGGER.debug("RDF Type for class: " + objectClass.getName() + " is: " + resource.toString());
             if (!resourceAnnotation.graph().isEmpty()) {
-                graph = Ontology.nodeURI(resourceAnnotation.graph());
+                graphSuffix = resourceAnnotation.graph();
             } else {
-                graph = null;
+                graphSuffix = null;
             }
         } catch (NoSuchFieldException ex) {
             throw new SPARQLInvalidClassDefinitionException(objectClass, "Resource type " + resourceAnnotation.resource() + " does not exists in ontology: " + resourceAnnotation.ontology().getName(), ex);
         } catch (IllegalArgumentException | IllegalAccessException ex) {
-            throw new SPARQLInvalidClassDefinitionException(objectClass, "Technical error while reading SPARQLResource annotation", ex);
+            throw new SPARQLInvalidClassDefinitionException(objectClass, "Technical error while reading annotation: " + SPARQLResource.class.getCanonicalName(), ex);
         }
 
         LOGGER.debug("Process fields annotations");
@@ -98,12 +98,12 @@ public class SPARQLClassAnalyzer {
             SPARQLProperty sProperty = field.getAnnotation(SPARQLProperty.class);
 
             if (sProperty != null) {
-                LOGGER.debug("Analyse SPARQLProperty annotation for field: " + field.getName());
+                LOGGER.debug("Analyse " + SPARQLProperty.class.getCanonicalName() + " annotation for field: " + field.getName());
                 analyzeSPARQLPropertyField(sProperty, field);
             } else {
                 SPARQLResourceURI sURI = field.getAnnotation(SPARQLResourceURI.class);
                 if (sURI != null) {
-                    LOGGER.debug("Analyse SPARQLResourceURI annotation for field: " + field.getName());
+                    LOGGER.debug("Analyse " + SPARQLResourceURI.class.getCanonicalName() + " annotation for field: " + field.getName());
                     analyzeSPARQLResourceURIField(field);
                 }
             }
@@ -111,7 +111,7 @@ public class SPARQLClassAnalyzer {
 
         LOGGER.debug("Check URI field is defined");
         if (fieldURI == null) {
-            throw new SPARQLInvalidClassDefinitionException(objectClass, "SPARQLResourceURI annotation not found");
+            throw new SPARQLInvalidClassDefinitionException(objectClass, SPARQLResourceURI.class.getCanonicalName() + " annotation not found");
         }
 
         LOGGER.debug("Init fields accessor registry for: " + objectClass.getName());
@@ -131,6 +131,8 @@ public class SPARQLClassAnalyzer {
                 }
             }
         }
+
+        // TODO check that all SPARQL annotated fields has getter and setter
     }
 
     private void analyzeSPARQLPropertyField(SPARQLProperty sProperty, Field field) throws SPARQLInvalidClassDefinitionException {
@@ -163,11 +165,11 @@ public class SPARQLClassAnalyzer {
         } else if (Deserializers.existsForClass((Class<?>) fieldType)) {
             LOGGER.debug("Field " + field.getName() + " is a data property of: " + objectClass.getName());
             dataProperties.put(field, property);
-        } else {
-            LOGGER.debug("Test if field type has a valid SPARQL class description for: " + field.getName());
-            SPARQLClassObjectMapper.getForClass((Class<?>) fieldType);
+        } else if (SPARQLClassObjectMapper.existsForClass((Class<?>) fieldType)) {
             LOGGER.debug("Field " + field.getName() + " is an object property of: " + objectClass.getName());
             objectProperties.put(field, property);
+        } else {
+            throw new SPARQLInvalidClassDefinitionException(objectClass, "Field " + field.getName() + " refer to an invalid SPARQL class model: " + fieldType.getTypeName());
         }
 
         LOGGER.debug("Determine if field " + field.getName() + " is a unique property (used only once for SPARQL property " + property.getLocalName() + ")");
@@ -200,7 +202,7 @@ public class SPARQLClassAnalyzer {
         } else {
             throw new SPARQLInvalidClassDefinitionException(
                     objectClass,
-                    "SPARQLResourceURI annotation must be unique "
+                    SPARQLResourceURI.class.getCanonicalName() + " annotation must be unique "
                     + "and is defined multiple times for field " + fieldURI.getName()
                     + " and for field " + field.getName()
             );
@@ -343,8 +345,8 @@ public class SPARQLClassAnalyzer {
         return resource;
     }
 
-    public Node getGraph() {
-        return graph;
+    public String getGraphSuffix() {
+        return graphSuffix;
     }
 
     public Field getFieldFromName(String fieldName) {
@@ -389,11 +391,23 @@ public class SPARQLClassAnalyzer {
 
     public URI getURI(Object instance) {
         try {
-            return (URI) getURIField().get(instance);
-        } catch (IllegalArgumentException | IllegalAccessException ex) {
+            return (URI) getGetterFromField(getURIField()).invoke(instance);
+        } catch (IllegalArgumentException | IllegalAccessException | InvocationTargetException ex) {
             // TODO warn or error, should not happend
             return null;
         }
     }
 
+    public void setURI(Object instance, URI uri) throws Exception {
+        try {
+            getSetterFromField(getURIField()).invoke(instance, uri);
+        } catch (IllegalArgumentException | IllegalAccessException ex) {
+            LOGGER.error("Error while setting object uri", ex);
+            throw ex;
+        }
+    }
+
+    public URIGenerator<Object> getUriGenerator() {
+        return uriGenerator;
+    }
 }

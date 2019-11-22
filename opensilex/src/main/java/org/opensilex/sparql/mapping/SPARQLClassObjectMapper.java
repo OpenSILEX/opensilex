@@ -1,34 +1,25 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package org.opensilex.sparql.mapping;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.apache.jena.arq.querybuilder.AskBuilder;
-import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.arq.querybuilder.UpdateBuilder;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.sparql.core.Var;
-import org.opensilex.sparql.SPARQLResult;
-import org.opensilex.sparql.SPARQLService;
-import org.opensilex.sparql.annotations.SPARQLCache;
-import org.opensilex.sparql.annotations.SPARQLCacheOption;
-import org.opensilex.sparql.cache.SPARQLCacheManager;
-import org.opensilex.sparql.cache.SPARQLNoCacheManager;
-import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
-import org.opensilex.utils.ClassInfo;
-import org.opensilex.sparql.deserializer.Deserializers;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.lang.reflect.*;
+import java.net.*;
+import java.util.*;
+import org.apache.jena.arq.querybuilder.*;
+import org.apache.jena.graph.*;
+import org.apache.jena.rdf.model.*;
+import org.apache.jena.sparql.expr.*;
+import org.opensilex.*;
+import org.opensilex.sparql.*;
+import org.opensilex.sparql.annotations.*;
+import org.opensilex.sparql.deserializer.*;
+import org.opensilex.sparql.exceptions.*;
+import org.opensilex.sparql.utils.*;
+import org.opensilex.utils.*;
+import org.slf4j.*;
 
 /**
  *
@@ -37,29 +28,60 @@ import org.slf4j.LoggerFactory;
 public class SPARQLClassObjectMapper<T> {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLClassObjectMapper.class);
-    private static final Map<Class<?>, SPARQLClassObjectMapper<?>> SPARQL_CLASSES_DESCRIPTIONS = new HashMap<>();
-    private static final List<Class<?>> SPARQL_CLASSES_BUILDING = new ArrayList<>();
+    private static Set<Class<?>> SPARQL_CLASSES_LIST;
+    private static final Map<Class<?>, SPARQLClassObjectMapper<?>> SPARQL_CLASSES_MAPPER = new HashMap<>();
+    private static final Map<Resource, SPARQLClassObjectMapper<?>> SPARQL_RESOURCES_MAPPER = new HashMap<>();
+
+    private static <T> Class<? super T> getConcreteClass(Class<T> objectClass) {
+        if (SPARQLProxyMarker.class.isAssignableFrom(objectClass)) {
+            return getConcreteClass(objectClass.getSuperclass());
+        } else {
+            return objectClass;
+        }
+    }
+
+    public static void initialize() throws SPARQLInvalidClassDefinitionException {
+        SPARQL_CLASSES_LIST = ClassInfo.getAnnotatedClasses(SPARQLResource.class);
+        
+        for (Class<?> sparqlModelClass : SPARQL_CLASSES_LIST) {
+            SPARQLClassObjectMapper<?> sparqlObjectMapper = new SPARQLClassObjectMapper<>(sparqlModelClass);
+            SPARQL_CLASSES_MAPPER.put(sparqlModelClass, sparqlObjectMapper);
+            SPARQL_RESOURCES_MAPPER.put(sparqlObjectMapper.getRDFType(), sparqlObjectMapper);
+        }
+    }
 
     @SuppressWarnings("unchecked")
-    public static synchronized <T> SPARQLClassObjectMapper<T> getForClass(Class<T> objectClass) throws SPARQLInvalidClassDefinitionException {
-        SPARQLClassObjectMapper<T> sparqlObjectMapper;
-        if (SPARQL_CLASSES_DESCRIPTIONS.containsKey(objectClass)) {
-            sparqlObjectMapper = (SPARQLClassObjectMapper<T>) SPARQL_CLASSES_DESCRIPTIONS.get(objectClass);
-        } else if (!SPARQL_CLASSES_BUILDING.contains(objectClass)) {
-            SPARQL_CLASSES_BUILDING.add(objectClass);
-            sparqlObjectMapper = new SPARQLClassObjectMapper<>(objectClass);
-            SPARQL_CLASSES_DESCRIPTIONS.put(objectClass, sparqlObjectMapper);
-            SPARQL_CLASSES_BUILDING.remove(objectClass);
+    public static synchronized <T> SPARQLClassObjectMapper<T> getForClass(Class<T> objectClass) throws SPARQLMapperNotFoundException {
+        Class<T> concreteObjectClass = (Class<T>) getConcreteClass(objectClass);
+
+        if (SPARQL_CLASSES_MAPPER.containsKey(concreteObjectClass)) {
+            return (SPARQLClassObjectMapper<T>) SPARQL_CLASSES_MAPPER.get(concreteObjectClass);
         } else {
-            sparqlObjectMapper = null;
+            throw new SPARQLMapperNotFoundException(concreteObjectClass);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static synchronized <T> SPARQLClassObjectMapper<T> getForResource(Resource resource) throws SPARQLMapperNotFoundException {
+
+        if (SPARQL_RESOURCES_MAPPER.containsKey(resource)) {
+            return (SPARQLClassObjectMapper<T>) SPARQL_RESOURCES_MAPPER.get(resource);
+        } else {
+            throw new SPARQLMapperNotFoundException(resource);
         }
 
-        return sparqlObjectMapper;
+    }
+
+    public static Node getGraph(Class<?> c) throws SPARQLMapperNotFoundException {
+        return getForClass(c).getDefaultGraph();
+    }
+
+    public static boolean existsForClass(Class<?> c) {
+        return SPARQL_CLASSES_LIST.contains(c);
     }
 
     private final Class<T> objectClass;
     private final Constructor<T> constructor;
-    private final SPARQLCacheManager cacheManager;
     private final SPARQLClassQueryBuilder classQueryBuilder;
     private final SPARQLClassAnalyzer classAnalizer;
 
@@ -76,9 +98,6 @@ public class SPARQLClassObjectMapper<T> {
 
         LOGGER.debug("Analyze class by reflection: " + objectClass.getName());
         classAnalizer = new SPARQLClassAnalyzer(objectClass);
-
-        LOGGER.debug("Init SPARQL instance cache manager: " + objectClass.getName());
-        cacheManager = createCacheManager();
 
         LOGGER.debug("Init SPARQL class query builder: " + objectClass.getName());
         classQueryBuilder = new SPARQLClassQueryBuilder(classAnalizer);
@@ -105,6 +124,11 @@ public class SPARQLClassObjectMapper<T> {
     }
 
     public T createInstance(SPARQLResult result, SPARQLService service) throws Exception {
+        String realType = result.getStringValue(SPARQLClassQueryBuilder.typeDef.getName());
+        if (!realType.equals(getRDFType().toString())) {
+
+        }
+
         URI uri = new URI(result.getStringValue(classAnalizer.getURIFieldName()));
 
         T instance = createInstance(uri);
@@ -163,90 +187,131 @@ public class SPARQLClassObjectMapper<T> {
         return instance;
     }
 
-    public void removeCacheInstance(URI uri) {
-        cacheManager.removeCacheInstance(uri);
-    }
-
-    @SuppressWarnings("unchecked")
-    public T getCacheInstance(URI uri) {
-        return (T) cacheManager.getCacheInstance(uri);
-    }
-
-    public boolean hasCacheInstance(URI uri) {
-        return cacheManager.hasCacheInstance(uri);
-    }
-
-    public void putCacheInstance(URI uri, T obj) {
-        cacheManager.putCacheInstance(uri, obj);
-    }
-
-    private SPARQLCacheManager createCacheManager() {
-        SPARQLCacheManager localCacheManager = null;
-        SPARQLCache sCache = objectClass.getAnnotation(SPARQLCache.class);
-        if (sCache != null) {
+    public Node getDefaultGraph() {
+        if (classAnalizer.getGraphSuffix() != null) {
             try {
-                SPARQLCacheOption[] cacheOptions = sCache.value();
-                Map<String, String> options = new HashMap<>();
-                for (SPARQLCacheOption option : cacheOptions) {
-                    options.put(option.key(), option.value());
-                }
-
-                localCacheManager = sCache.implementation().getConstructor(Map.class).newInstance(options);
+                String classGraphURI = OpenSilex.getPlatformURI(classAnalizer.getGraphSuffix()).toString();
+                return NodeFactory.createURI(classGraphURI);
             } catch (Exception ex) {
-                LOGGER.warn("Impossible to load cache manager for class: " + objectClass.getCanonicalName());
-                LOGGER.warn(ex.getMessage());
+                LOGGER.error("Invalid class suffix for: " + objectClass.getCanonicalName() + " - " + classAnalizer.getGraphSuffix(), ex);
             }
         }
 
-        if (localCacheManager == null) {
-            LOGGER.debug("Use no cache manager for class: " + objectClass.getCanonicalName());
-            localCacheManager = new SPARQLNoCacheManager();
-        }
-
-        return localCacheManager;
+        return null;
     }
 
     public AskBuilder getAskBuilder() {
-        return classQueryBuilder.getAskBuilder();
+        return getAskBuilder(getDefaultGraph());
     }
 
-    public SelectBuilder getSelectBuilder() throws SPARQLInvalidClassDefinitionException {
-        return classQueryBuilder.getSelectBuilder();
+    public AskBuilder getAskBuilder(Node graph) {
+        return classQueryBuilder.getAskBuilder(graph);
+    }
+
+    public SelectBuilder getSelectBuilder() {
+        return getSelectBuilder(getDefaultGraph());
+    }
+
+    public SelectBuilder getSelectBuilder(Node graph) {
+        return classQueryBuilder.getSelectBuilder(graph);
     }
 
     public SelectBuilder getCountBuilder(String countFieldName) {
-        return classQueryBuilder.getCountBuilder(countFieldName);
+        return getCountBuilder(getDefaultGraph(), countFieldName);
+    }
+
+    public SelectBuilder getCountBuilder(Node graph, String countFieldName) {
+        return classQueryBuilder.getCountBuilder(graph, countFieldName);
     }
 
     public UpdateBuilder getCreateBuilder(T instance) throws Exception {
-        return classQueryBuilder.getCreateBuilder(instance);
+        return getCreateBuilder(getDefaultGraph(), instance);
+    }
+
+    public UpdateBuilder getCreateBuilder(Node graph, T instance) throws Exception {
+        return classQueryBuilder.getCreateBuilder(graph, instance);
     }
 
     public void addUpdateBuilder(T oldInstance, T newInstance, UpdateBuilder update) throws Exception {
-        classQueryBuilder.addUpdateBuilder(oldInstance, newInstance, update);
+        addUpdateBuilder(getDefaultGraph(), oldInstance, newInstance, update);
+    }
+
+    public void addUpdateBuilder(Node graph, T oldInstance, T newInstance, UpdateBuilder update) throws Exception {
+        classQueryBuilder.addUpdateBuilder(graph, oldInstance, newInstance, update);
     }
 
     public void addCreateBuilder(T instance, UpdateBuilder create) throws Exception {
-        classQueryBuilder.addCreateBuilder(instance, create);
+        addCreateBuilder(getDefaultGraph(), instance, create);
+    }
+
+    public void addCreateBuilder(Node graph, T instance, UpdateBuilder create) throws Exception {
+        classQueryBuilder.addCreateBuilder(graph, instance, create);
     }
 
     public UpdateBuilder getDeleteBuilder(T instance) throws Exception {
-        return classQueryBuilder.getDeleteBuilder(instance);
+        return getDeleteBuilder(getDefaultGraph(), instance);
+    }
+
+    public UpdateBuilder getDeleteBuilder(Node graph, T instance) throws Exception {
+        return classQueryBuilder.getDeleteBuilder(graph, instance);
     }
 
     public void addDeleteBuilder(T instance, UpdateBuilder delete) throws Exception {
-        classQueryBuilder.addDeleteBuilder(instance, delete);
+        addDeleteBuilder(getDefaultGraph(), instance, delete);
+    }
+
+    public void addDeleteBuilder(Node graph, T instance, UpdateBuilder delete) throws Exception {
+        classQueryBuilder.addDeleteBuilder(graph, instance, delete);
     }
 
     public URI getURI(Object instance) {
         return classAnalizer.getURI(instance);
     }
 
+    public void setUri(T instance, URI uri) throws Exception {
+        classAnalizer.setURI(instance, uri);
+    }
+
     public String getURIFieldName() {
         return classAnalizer.getURIFieldName();
     }
 
+    public ExprVar getFieldExprVar(String fieldName) throws SPARQLUnknownFieldException {
+        Field f = classAnalizer.getFieldFromName(fieldName);
+        if (f != null) {
+            return new ExprVar(f.getName());
+        } else {
+            throw new SPARQLUnknownFieldException(f);
+        }
+    }
+
+    public Expr getFieldOrderExpr(String fieldName) throws SPARQLUnknownFieldException {
+        Field f = classAnalizer.getFieldFromName(fieldName);
+        if (f != null) {
+            if (f.getType().equals(String.class)) {
+                return new E_StrLowerCase(new ExprVar(f.getName()));
+            } else {
+                return new ExprVar(f.getName());
+            }
+        } else {
+            throw new SPARQLUnknownFieldException(f);
+        }
+    }
+
     public Field getFieldFromUniqueProperty(Property property) {
         return classAnalizer.getFieldFromUniqueProperty(property);
+    }
+
+    @SuppressWarnings("unchecked")
+    public URIGenerator<T> getUriGenerator(T instance) {
+        URIGenerator<Object> generator = classAnalizer.getUriGenerator();
+        if (generator == null) {
+            generator = (URIGenerator<Object>) instance;
+        }
+        return (URIGenerator<T>) generator;
+    }
+
+    public Resource getRDFType() {
+        return classAnalizer.getRDFType();
     }
 }

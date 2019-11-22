@@ -1,15 +1,13 @@
 //******************************************************************************
-//                            Pagination.java 
-// SILEX-PHIS
-// Copyright © INRA 2016
-// Creation date: 3 Dec. 2015
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package org.opensilex.server.response;
 
 /**
- * Pagination model.
- * See Brapi for details https://brapi.docs.apiary.io/#introduction/structure-of-the-response-object:/the-metadata-key
+ * Pagination model. See Brapi for details
+ * https://brapi.docs.apiary.io/#introduction/structure-of-the-response-object:/the-metadata-key
  *
  * @author Samuël Cherimont
  */
@@ -49,11 +47,15 @@ public class Pagination {
         this.currentPage = currentPage;
         this.totalCount = totalCount;
 
-         // Add a page if the the total number of elements divided by the page
-        if (totalCount % this.pageSize == 0) {
-            totalPages = totalCount / this.pageSize;
+        // Add a page if the the total number of elements divided by the page
+        if (pageSize == 0) {
+            totalPages = 0;
         } else {
-            totalPages = (totalCount / this.pageSize) + 1;
+            if (totalCount % this.pageSize == 0) {
+                totalPages = totalCount / this.pageSize;
+            } else {
+                totalPages = (totalCount / this.pageSize) + 1;
+            }
         }
     }
 

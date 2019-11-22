@@ -1,18 +1,15 @@
 //******************************************************************************
-//                        URLListValidator.java
-// SILEX-PHIS
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2018
-// Creation date: 21, Jun 2018
-// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, 
-// pascal.neveu@inra.fr
+// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, 
+// anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package org.opensilex.server.validation;
 
-import java.net.MalformedURLException;
-import java.util.List;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
-import org.opensilex.server.validation.URL;
+import java.net.*;
+import java.util.*;
+import javax.validation.*;
+
 
 /**
  * Class used by URL annotation to validate that a string value list contains an URL.

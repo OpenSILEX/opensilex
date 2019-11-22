@@ -1,16 +1,15 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package org.opensilex.sparql.rdf4j;
 
-import java.util.function.BiConsumer;
-import org.eclipse.rdf4j.model.Statement;
-import org.eclipse.rdf4j.model.Value;
-import org.eclipse.rdf4j.query.Binding;
-import org.eclipse.rdf4j.query.BindingSet;
-import org.opensilex.sparql.SPARQLResult;
+import java.util.function.*;
+import org.eclipse.rdf4j.model.*;
+import org.eclipse.rdf4j.query.*;
+import org.opensilex.sparql.*;
+
 
 /**
  *

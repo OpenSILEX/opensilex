@@ -1,36 +1,21 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package org.opensilex.sparql.rdf4j;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
-import org.apache.jena.arq.querybuilder.AskBuilder;
-import org.apache.jena.arq.querybuilder.ConstructBuilder;
-import org.apache.jena.arq.querybuilder.DescribeBuilder;
-import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.arq.querybuilder.UpdateBuilder;
-import org.apache.jena.graph.Node;
-import org.eclipse.rdf4j.model.Statement;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.eclipse.rdf4j.query.BindingSet;
-import org.eclipse.rdf4j.query.BooleanQuery;
-import org.eclipse.rdf4j.query.GraphQuery;
-import org.eclipse.rdf4j.query.GraphQueryResult;
-import org.eclipse.rdf4j.query.QueryLanguage;
-import org.eclipse.rdf4j.query.QueryResult;
-import org.eclipse.rdf4j.query.TupleQuery;
-import org.eclipse.rdf4j.query.TupleQueryResult;
-import org.eclipse.rdf4j.query.Update;
-import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.eclipse.rdf4j.repository.http.HTTPRepository;
-import org.opensilex.sparql.exceptions.SPARQLQueryException;
-import org.opensilex.sparql.exceptions.SPARQLTransactionException;
-import org.opensilex.sparql.SPARQLConnection;
-import org.opensilex.sparql.SPARQLResult;
+import java.net.URI;
+import java.util.*;
+import java.util.function.*;
+import org.apache.jena.arq.querybuilder.*;
+import org.eclipse.rdf4j.model.*;
+import org.eclipse.rdf4j.model.impl.*;
+import org.eclipse.rdf4j.query.*;
+import org.eclipse.rdf4j.repository.*;
+import org.eclipse.rdf4j.repository.http.*;
+import org.opensilex.sparql.*;
+import org.opensilex.sparql.exceptions.*;
 
 /**
  *
@@ -40,7 +25,7 @@ public class RDF4JConnection implements SPARQLConnection {
 
     private RepositoryConnection rdf4JConnection;
     private RDF4JConfig config;
-    
+
     public RDF4JConnection(RDF4JConfig config) {
         this.config = config;
     }
@@ -123,7 +108,7 @@ public class RDF4JConnection implements SPARQLConnection {
     }
 
     @Override
-    public void clearGraph(Node graph) throws SPARQLQueryException {
+    public void clearGraph(URI graph) throws SPARQLQueryException {
         rdf4JConnection.clear(SimpleValueFactory.getInstance().createIRI(graph.toString()));
     }
 

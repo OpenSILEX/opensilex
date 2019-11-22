@@ -1,51 +1,33 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package org.opensilex.module.dependency;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.maven.model.Model;
-import org.apache.maven.model.building.DefaultModelBuilderFactory;
-import org.apache.maven.model.building.DefaultModelBuildingRequest;
-import org.apache.maven.model.building.ModelBuilder;
-import org.apache.maven.model.building.ModelBuildingException;
-import org.apache.maven.model.building.ModelBuildingResult;
-import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
-import org.eclipse.aether.DefaultRepositorySystemSession;
-import org.eclipse.aether.RepositorySystem;
-import org.eclipse.aether.RepositorySystemSession;
-import org.eclipse.aether.artifact.Artifact;
-import org.eclipse.aether.artifact.DefaultArtifact;
-import org.eclipse.aether.collection.CollectRequest;
-import org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory;
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import org.apache.maven.model.*;
+import org.apache.maven.model.building.*;
+import org.apache.maven.repository.internal.*;
+import org.eclipse.aether.*;
+import org.eclipse.aether.artifact.*;
+import org.eclipse.aether.collection.*;
+import org.eclipse.aether.connector.basic.*;
+import org.eclipse.aether.graph.*;
 import org.eclipse.aether.graph.Dependency;
-import org.eclipse.aether.graph.DependencyFilter;
-import org.eclipse.aether.impl.DefaultServiceLocator;
-import org.eclipse.aether.repository.LocalRepository;
-import org.eclipse.aether.repository.RemoteRepository;
-import org.eclipse.aether.resolution.ArtifactResult;
-import org.eclipse.aether.resolution.DependencyRequest;
-import org.eclipse.aether.resolution.DependencyResolutionException;
-import org.eclipse.aether.resolution.DependencyResult;
-import org.eclipse.aether.spi.connector.RepositoryConnectorFactory;
-import org.eclipse.aether.spi.connector.transport.TransporterFactory;
-import org.eclipse.aether.transport.file.FileTransporterFactory;
-import org.eclipse.aether.transport.http.HttpTransporterFactory;
-import org.eclipse.aether.util.artifact.JavaScopes;
-import org.eclipse.aether.util.filter.DependencyFilterUtils;
-import org.eclipse.aether.util.filter.PatternExclusionsDependencyFilter;
-import org.opensilex.utils.ClassInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.eclipse.aether.impl.*;
+import org.eclipse.aether.repository.*;
+import org.eclipse.aether.resolution.*;
+import org.eclipse.aether.spi.connector.*;
+import org.eclipse.aether.spi.connector.transport.*;
+import org.eclipse.aether.transport.file.*;
+import org.eclipse.aether.transport.http.*;
+import org.eclipse.aether.util.artifact.*;
+import org.eclipse.aether.util.filter.*;
+import org.opensilex.utils.*;
+import org.slf4j.*;
 
 /**
  *

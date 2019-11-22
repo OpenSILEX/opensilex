@@ -1,18 +1,17 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package org.opensilex.server.security.user;
+//******************************************************************************
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
+package org.opensilex.server.security.model;
 
-import java.net.URI;
-import java.security.Principal;
-import java.util.List;
-import org.apache.jena.sparql.vocabulary.FOAF;
-import org.opensilex.sparql.annotations.SPARQLProperty;
-import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.annotations.SPARQLResourceURI;
-import javax.mail.internet.InternetAddress;
+import java.net.*;
+import java.security.*;
+import java.util.*;
+import javax.mail.internet.*;
+import org.apache.jena.sparql.vocabulary.*;
+import org.opensilex.sparql.annotations.*;
+import org.opensilex.sparql.utils.*;
 
 /**
  *
@@ -21,9 +20,9 @@ import javax.mail.internet.InternetAddress;
 @SPARQLResource(
         ontology = UserOntology.class,
         resource = "User",
-        graph = UserOntology.GRAPH_USER
+        graph = "users"
 )
-public class User implements Principal {
+public class User implements Principal, ClassURIGenerator<User> {
 
     @SPARQLResourceURI()
     private URI uri;
@@ -112,5 +111,13 @@ public class User implements Principal {
     @Override
     public String getName() {
         return getFirstName() + " " + getLastName() + " <" + getEmail().toString() + ">";
+    }
+
+    @Override
+    public String[] getUriSegments(User instance) {
+        return new String[] {
+            "agent",
+            instance.getFirstName() + "_" + instance.getLastName()
+        };
     }
 }

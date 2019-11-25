@@ -255,8 +255,7 @@ public class ScientificObjectResourceService extends ResourceService {
         @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_URI) @QueryParam("uri") String uri,
         @ApiParam(value = "Search by experiment URI", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI) @QueryParam("experiment") @URL String experimentURI,
         @ApiParam(value = "Search by alias", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_ALIAS) @QueryParam("alias") String alias,
-        @ApiParam(value = "Search by rdfType", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_TYPE) @QueryParam("rdfType") @URL String rdfType,
-        @ApiParam(value = "Search by germplasm", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_TYPE) @QueryParam("germplasm") @URL String germplasm
+        @ApiParam(value = "Search by rdfType", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_TYPE) @QueryParam("rdfType") @URL String rdfType
     ) {
         ArrayList<ScientificObjectDTO> scientificObjectsToReturn = new ArrayList<>();
         ArrayList<ScientificObject> scientificObjects = new ArrayList<>();
@@ -270,12 +269,12 @@ public class ScientificObjectResourceService extends ResourceService {
         scientificObjectDaoSesame.setPageSize(pageSize);
         
         //1. Get count
-        Integer totalCount = scientificObjectDaoSesame.count(uri, rdfType, experimentURI, alias, germplasm);
+        Integer totalCount = scientificObjectDaoSesame.count(uri, rdfType, experimentURI, alias);
         
         // If scientific objects found
         if(totalCount > 0){
             //2. Get list of scientific objects
-            scientificObjects = scientificObjectDaoSesame.find(page, pageSize, uri, rdfType, experimentURI, alias, germplasm);
+            scientificObjects = scientificObjectDaoSesame.find(page, pageSize, uri, rdfType, experimentURI, alias);
         }
 
         if (scientificObjects == null) { //Request failure

@@ -808,7 +808,8 @@ public class UriGenerator {
             return generateVarietyUri(additionalInformation);
         } else if (Oeso.CONCEPT_ACCESSION.toString().equals(instanceType)) {
             return generateAccessionUri(additionalInformation);
-        } else if (Oeso.CONCEPT_PLANT_MATERIAL_LOT.toString().equals(instanceType)) {
+        } else if (Oeso.CONCEPT_PLANT_MATERIAL_LOT.toString().equals(instanceType)
+                || uriDao.isSubClassOf(instanceType, Oeso.CONCEPT_PLANT_MATERIAL_LOT.toString())) {
             return generateLotUri(additionalInformation);            
         } else if (uriDao.isSubClassOf(instanceType, Oeso.CONCEPT_IMAGE.toString())) {
             return generateImageUri(year, additionalInformation);

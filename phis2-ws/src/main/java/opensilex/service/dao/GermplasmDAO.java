@@ -147,7 +147,12 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
         boolean dataOk = true;
         
         //Caches
-        List<String> propertyUriCache = new ArrayList<>();        
+        List<String> propertyUriCache = new ArrayList<>();   
+        List<String> germplasmTypesCache = new ArrayList<>();
+        List<String> fromGenusCache = new ArrayList<>(); 
+        List<String> fromSpeciesCache = new ArrayList<>(); 
+        List<String> fromVarietyCache = new ArrayList<>(); 
+        List<String> fromAccessionCache = new ArrayList<>();
         
         //1. check if user is an admin
         UserDAO userDao = new UserDAO();
@@ -160,14 +165,18 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
                 try {
                     //2.1 Check type (subclass of Germplasm)
                     UriDAO uriDao = new UriDAO();
-                    if (!uriDao.isSubClassOf(germplasm.getRdfType(), Oeso.CONCEPT_GERMPLASM.toString())) {
-                        dataOk = false;
-                        checkStatusList.add(new Status(
-                                StatusCodeMsg.DATA_ERROR, 
-                                StatusCodeMsg.ERR, 
-                                "Bad germplasm type given. Must be sublass of Germplasm concept (variety, accession, seedLot)"));
-                    }                
-                
+                    if (!germplasmTypesCache.contains(germplasm.getRdfType())) {
+                        if (!uriDao.isSubClassOf(germplasm.getRdfType(), Oeso.CONCEPT_GERMPLASM.toString())) {
+                            dataOk = false;
+                            checkStatusList.add(new Status(
+                                    StatusCodeMsg.DATA_ERROR, 
+                                    StatusCodeMsg.ERR, 
+                                    "Bad germplasm type given. Must be sublass of Germplasm concept (variety, accession, seedLot)"));
+                        } else {
+                            germplasmTypesCache.add(germplasm.getRdfType());
+                        }     
+                    }
+                    
                     //2.2 Check the label
                     Map<String, List<String>> germplasmUrisAndLabels = this.findUriAndLabelsByLabelAndRdfType(germplasm.getLabel(), germplasm.getRdfType());
                     if (!germplasmUrisAndLabels.isEmpty()) {
@@ -185,54 +194,75 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
                     for (Property property : germplasm.getProperties()) {
                         //Check link to others germplasm instances                           
                         if (property.getRelation().equals(Oeso.RELATION_FROM_ACCESSION.toString())) {
-                            if (uriDao.isSubClassOf(germplasm.getRdfType(), Oeso.CONCEPT_PLANT_MATERIAL_LOT.toString())) {
-                                if (!existUriInGraph(property.getValue(), Contexts.GERMPLASM.toString())) {
-                                    dataOk = false;
-                                    checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "the accession URI doesn't exist"));
+                            if (!fromAccessionCache.contains(property.getValue())) {
+                                if (uriDao.isSubClassOf(germplasm.getRdfType(), Oeso.CONCEPT_PLANT_MATERIAL_LOT.toString())) {
+                                    if (!existUriInGraph(property.getValue(), Contexts.GERMPLASM.toString())) {
+                                        dataOk = false;
+                                        checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "the accession URI doesn't exist"));
+                                    } else {
+                                        missingLink = false;
+                                        fromAccessionCache.add(property.getValue());
+                                    }
                                 } else {
-                                    missingLink = false;
+                                    dataOk = false;
+                                    checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "the relation fromAccession can't have this type of germplasm"));
                                 }
                             } else {
-                                dataOk = false;
-                                checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "the relation fromAccession can't have this type of germplasm"));
-                            }
+                                missingLink = false;
+                            }                      
+                            
 
                         } else if (property.getRelation().equals(Oeso.RELATION_FROM_VARIETY.toString())) {
-                            if (uriDao.isSubClassOf(germplasm.getRdfType(), Oeso.CONCEPT_PLANT_MATERIAL_LOT.toString()) | germplasm.getRdfType().equals(Oeso.CONCEPT_ACCESSION.toString())) {
-                                if (!existUriInGraph(property.getValue(), Contexts.GERMPLASM.toString())) {
-                                    dataOk = false;
-                                    checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "the variety URI doesn't exist"));
+                            if (!fromVarietyCache.contains(property.getValue())) {
+                                if (uriDao.isSubClassOf(germplasm.getRdfType(), Oeso.CONCEPT_PLANT_MATERIAL_LOT.toString()) | germplasm.getRdfType().equals(Oeso.CONCEPT_ACCESSION.toString())) {
+                                    if (!existUriInGraph(property.getValue(), Contexts.GERMPLASM.toString())) {
+                                        dataOk = false;
+                                        checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "the variety URI doesn't exist"));
+                                    } else {
+                                        missingLink = false;
+                                        fromVarietyCache.add(property.getValue());
+                                    }
                                 } else {
-                                    missingLink = false;
+                                    dataOk = false;
+                                    checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "the relation fromVariety can't have this type of germplasm"));
                                 }
                             } else {
-                                dataOk = false;
-                                checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "the relation fromVariety can't have this type of germplasm"));
-                            }
+                                missingLink = false;
+                            }  
 
                         } else if (property.getRelation().equals(Oeso.RELATION_FROM_SPECIES.toString())) {
-                            if (uriDao.isSubClassOf(germplasm.getRdfType(), Oeso.CONCEPT_PLANT_MATERIAL_LOT.toString()) | germplasm.getRdfType().equals(Oeso.CONCEPT_ACCESSION.toString()) | germplasm.getRdfType().equals(Oeso.CONCEPT_VARIETY.toString())) {
-                                if (!existUriInGraph(property.getValue(), Contexts.GERMPLASM.toString())) {
+                            if (!fromSpeciesCache.contains(property.getValue())) {
+                                if (uriDao.isSubClassOf(germplasm.getRdfType(), Oeso.CONCEPT_PLANT_MATERIAL_LOT.toString()) | germplasm.getRdfType().equals(Oeso.CONCEPT_ACCESSION.toString()) | germplasm.getRdfType().equals(Oeso.CONCEPT_VARIETY.toString())) {
+                                    if (!existUriInGraph(property.getValue(), Contexts.GERMPLASM.toString())) {
+                                        dataOk = false;
+                                        checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "the species URI doesn't exist"));
+                                    } else {
+                                        missingLink = false;
+                                        fromSpeciesCache.add(property.getValue());
+                                    }
+                                }else {
                                     dataOk = false;
-                                    checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "the species URI doesn't exist"));
-                                } else {
-                                    missingLink = false;
+                                    checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "the relation fromSpecies can't have this type of germplasm"));
                                 }
-                            }else {
-                                dataOk = false;
-                                checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "the relation fromSpecies can't have this type of germplasm"));
-                            }
+                            } else {
+                                missingLink = false;
+                            }  
+                            
                         } else if (property.getRelation().equals(Oeso.RELATION_FROM_GENUS.toString())) {
-                            if (germplasm.getRdfType().equals(Oeso.CONCEPT_SPECIES.toString())) {
-                                if (!existUriInGraph(property.getValue(), Contexts.GERMPLASM.toString())) {
-                                    dataOk = false;
-                                    checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "the genus URI doesn't exist"));
-                                } 
-                            }else {
-                                dataOk = false;
-                                checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "the relation fromGenus must link a species and a genus"));
+                            if (!fromGenusCache.contains(property.getValue())) {
+                                if (germplasm.getRdfType().equals(Oeso.CONCEPT_SPECIES.toString())) {
+                                    if (!existUriInGraph(property.getValue(), Contexts.GERMPLASM.toString())) {
+                                        dataOk = false;
+                                        checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "the genus URI doesn't exist"));
+                                    } else {
+                                        fromGenusCache.add(property.getValue());
+                                    }
+                                }else {
+                                    dataOk = false;                                    
+                                    checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "the relation fromGenus must link a species and a genus"));
+                                }
                             }
-
+                            
                         } else {
                             //Check if property exists in the ontology Vocabulary --> see how to check rdfs
                             if (!propertyUriCache.contains(property.getRelation())) {

@@ -116,10 +116,10 @@ public enum Contexts {
         }
     },
     //The context which contains the germplasm
-    GENETIC_RESOURCE {
+    GERMPLASM {
         @Override
         public String toString() {
-            return PLATFORM.toString() + "geneticResources"; 
+            return PLATFORM.toString() + "germplasm"; 
         }
     },
     //The context which contains the germplasm

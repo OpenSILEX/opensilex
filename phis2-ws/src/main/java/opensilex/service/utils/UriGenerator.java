@@ -94,6 +94,8 @@ public class UriGenerator {
     public static final String PLATFORM_URI_ID_GERMPLASM = PLATFORM_URI_ID + "germplasm/" + URI_CODE_GERMPLASM;
     private static final String PLATFORM_URI_ID_ACCESSION = PLATFORM_URI_ID + "accession/";
     private static final String PLATFORM_URI_ID_PLANT_MATERIAL_LOT = PLATFORM_URI_ID + "plantMaterialLot/";
+    private static final String PLATFORM_URI_ID_SPECIES = PLATFORM_URI_ID + "species/";
+    private static final String PLATFORM_URI_ID_GENUS = PLATFORM_URI_ID + "genus/";
     public static final String PLATFORM_URI_ID_FACTORS = PLATFORM_URI_ID + "factors/" + URI_CODE_FACTOR;
     private static final String EXPERIMENT_URI_SEPARATOR = "-";
 
@@ -517,16 +519,17 @@ public class UriGenerator {
         return PLATFORM_URI_ID_ACCESSION + accessionNumber;
     }
     
-    /**
-     * Generates a new plantmaterialLot URI following this patterns:
-     * <prefix>:
-     * @param lot
-     * @return the new lot URI
-     */
-    private static String generatePlantMaterialLotUri(String lot) {
-        return PLATFORM_URI_ID_PLANT_MATERIAL_LOT + lot;
+    private static String generateLotUri(String seedlot) {
+        return PLATFORM_URI_ID_PLANT_MATERIAL_LOT + seedlot;
     }
-
+    
+    private static String generateSpeciesUri(String species) {
+        return PLATFORM_URI_ID_SPECIES + species;
+    }
+    
+    private static String generateGenusUri(String genus) {
+        return PLATFORM_URI_ID_GENUS + genus;
+    }
 
     /**
      * Generates a new agent URI. A agent URI follows the pattern:
@@ -845,12 +848,17 @@ public class UriGenerator {
             return generateUnitUri();
         } else if (uriDao.isSubClassOf(instanceType, Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString())) {
             return generateScientificObjectUri(year);
+        } else if (Oeso.CONCEPT_GENUS.toString().equals(instanceType)) {
+            return generateGenusUri(additionalInformation);
+        } else if (Oeso.CONCEPT_SPECIES.toString().equals(instanceType)) {
+            return generateSpeciesUri(additionalInformation);
         } else if (Oeso.CONCEPT_VARIETY.toString().equals(instanceType)) {
             return generateVarietyUri(additionalInformation);
         } else if (Oeso.CONCEPT_ACCESSION.toString().equals(instanceType)) {
             return generateAccessionUri(additionalInformation);
-        } else if (Oeso.CONCEPT_PLANT_MATERIAL_LOT.toString().equals(instanceType)) {
-            return generatePlantMaterialLotUri(additionalInformation);
+        } else if (Oeso.CONCEPT_PLANT_MATERIAL_LOT.toString().equals(instanceType)
+                || uriDao.isSubClassOf(instanceType, Oeso.CONCEPT_PLANT_MATERIAL_LOT.toString())) {
+            return generateLotUri(additionalInformation);            
         } else if (uriDao.isSubClassOf(instanceType, Oeso.CONCEPT_IMAGE.toString())) {
             return generateImageUri(year, additionalInformation);
         } else if (instanceType.equals(Foaf.CONCEPT_AGENT.toString()) 
@@ -884,33 +892,4 @@ public class UriGenerator {
         return null;
     }
 
-//    /**
-//     * Internal accession to store the last accession ID
-//     */
-//    private static Integer accessionLastID;
-//    
-//    /**
-//     * Return the next variable ID by incrementing variableLastID variable and initializing it before if needed
-//     * @return next variable ID
-//     */
-//    private static int getNextAccessionID() {
-//        if (accessionLastID == null) {
-//            AccessionDAO germplasmDAO = new AccessionDAO();
-//            accessionLastID = germplasmDAO.getLastId();
-//        }
-//        
-//        accessionLastID++;
-//        
-//        return accessionLastID;
-//    }
-    
-//    private static String generateRandomHexadecimal(Integer digitsNumber) {
-//	Random random = new Random();
-//	StringBuilder sb = new StringBuilder();
-//	while (sb.length() < digitsNumber) {
-//		sb.append(Integer.toHexString(random.nextInt()));
-//	}
-//	return sb.toString();
-//    }
- 
 }

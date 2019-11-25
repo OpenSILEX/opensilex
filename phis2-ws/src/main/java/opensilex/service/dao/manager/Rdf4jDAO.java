@@ -522,7 +522,7 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
      *      FILTER ( (REGEX ( str(?label),".*2.*","i")) ) 
      * }
      * @param label
-     * @return the list of URIs
+     * @return the list of URIs and labels
      */
     public Map<String, List<String>> findUriAndLabelsByLabelAndRdfType(String label, String rdfType) {
         //1. Generate the query

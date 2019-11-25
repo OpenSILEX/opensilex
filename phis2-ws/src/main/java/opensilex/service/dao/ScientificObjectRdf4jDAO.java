@@ -762,7 +762,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         
         return sparqlQuery;
     }
-    
+     
     /**
      * Checks if the scientific object exists.
      * @param uri

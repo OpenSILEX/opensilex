@@ -29,11 +29,7 @@ public class ScientificObject {
     private String year;    
     //label of the scientific object
     private String label;        
-    //geneticResource of the scientific object
-    private String geneticResource;    
-    //geneticResource of the scientific object
-    private GeneticInformation geneticInformation;
-    
+
     //The properties of the scientific object
     private ArrayList<Property> properties = new ArrayList<>();
 
@@ -121,20 +117,4 @@ public class ScientificObject {
         this.year = year;
     }
 
-    public String getAlias() {
-        return label;
-    }
-
-    public void setAlias(String alias) {
-        this.label = alias;
-    }
-
-    public String getGeneticResource() {
-        return geneticResource;
-    }
-
-    public void setGeneticResource(String geneticResource) {
-        this.geneticResource = geneticResource;
-    }
-    
 }

@@ -56,16 +56,9 @@ public class ScientificObjectDTO extends AbstractVerifiedClass {
         setExperiment(scientificObject.getExperiment());
         setIsPartOf(scientificObject.getIsPartOf());
         setLabel(scientificObject.getLabel());
-       
+   
         for (Property property : scientificObject.getProperties()) {
             addProperty(new PropertyDTO(property));
-        }
-        
-        //set Genetic Information
-        if (scientificObject.getGeneticResource() != null) {
-            GeneticInformationDAO geneticInfoDAO = new GeneticInformationDAO(scientificObject.getGeneticResource());        
-            GeneticInformation geneticInfo = geneticInfoDAO.findByURI(scientificObject.getGeneticResource()); 
-            setGeneticInformation(geneticInfo);            
         }
 
     }
@@ -151,12 +144,4 @@ public class ScientificObjectDTO extends AbstractVerifiedClass {
         this.isPartOf = isPartOf;
     }
 
-    public GeneticInformation getGeneticInformation() {
-        return geneticInformation;
-    }
-
-    public void setGeneticInformation(GeneticInformation geneticInformation) {
-        this.geneticInformation = geneticInformation;
-    }
-    
 }

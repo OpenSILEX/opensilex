@@ -5,20 +5,20 @@
 // Creation date: 24 juin 2019
 // Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package opensilex.service.resource.dto.accession;
+package opensilex.service.resource.dto.germplasm;
 
 import java.util.ArrayList;
-import opensilex.service.model.Accession;
+import opensilex.service.model.Germplasm;
 import opensilex.service.resource.dto.experiment.ExperimentDTO;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * GermplasmPostDTO
+ * BrapiGermplasmDTO corrsponds to the Accession
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
-public class GermplasmDTO extends AbstractVerifiedClass {
+public class BrapiGermplasmDTO extends AbstractVerifiedClass {
     
     final static Logger LOGGER = LoggerFactory.getLogger(ExperimentDTO.class);
     
@@ -49,18 +49,18 @@ public class GermplasmDTO extends AbstractVerifiedClass {
     private ArrayList<String> taxonIds;
     private ArrayList<String> typeOfGermplasmStorageCode;
 
-    public GermplasmDTO(Accession accession) {
-        germplasmName = accession.getAccessionName();
-        accessionNumber = accession.getAccessionNumber();
-        germplasmDbId = accession.getAccessionURI();
-        germplasmSpecies = accession.getSpeciesLabel();
-        species = accession.getSpeciesLabel();
-        subtaxa = accession.getVarietyLabel(); 
-        genus = accession.getGenusLabel();
-        germplasmGenus = accession.getGenusLabel();
-        instituteCode = accession.getInstituteCode();
-        instituteName = accession.getInstituteName();
-        commonCropName = accession.getSpeciesLabel();
+    public BrapiGermplasmDTO(Germplasm germplasm) {
+        germplasmName = germplasm.getLabel();
+        //accessionNumber = germplasm.getAccessionNumber();
+        germplasmDbId = germplasm.getUri();
+        //germplasmSpecies = germplasm.getSpeciesLabel();
+        //species = germplasm.getSpeciesLabel();
+        //subtaxa = germplasm.getVarietyLabel(); 
+        //genus = germplasm.getGenusLabel();
+        //germplasmGenus = germplasm.getGenusLabel();
+        //instituteCode = germplasm.getInstituteCode();
+        //instituteName = germplasm.getInstituteName();
+        //commonCropName = germplasm.getSpeciesLabel();
     }
 
     public String getAccessionNumber() {

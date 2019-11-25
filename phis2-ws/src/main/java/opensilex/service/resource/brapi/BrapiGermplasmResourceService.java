@@ -1,8 +1,8 @@
 //******************************************************************************
-//                                GermplasmResourceService.java
+//                                BrapiGermplasmResourceService.java
 // SILEX-PHIS
 // Copyright © INRA 2019
-// Creation date: 1 juil. 2019
+// Creation date: 25 oct. 2019
 // Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.resource.brapi;
@@ -25,11 +25,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
-import opensilex.service.dao.AccessionDAO;
+import opensilex.service.dao.GermplasmDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
-import opensilex.service.model.Accession;
+import opensilex.service.model.Germplasm;
+import opensilex.service.ontology.Oeso;
 import opensilex.service.resource.ResourceService;
-import opensilex.service.resource.dto.accession.GermplasmDTO;
+import opensilex.service.resource.dto.germplasm.BrapiGermplasmDTO;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.result.ResultForm;
 import opensilex.service.view.brapi.Status;
@@ -37,19 +38,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Germplasm resource service
+ * BRAPI Germplasm resource service
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 @Api("/brapi/v1/germplasm")
 @Path("/brapi/v1/germplasm")
-public class GermplasmResourceService extends ResourceService {
-    final static Logger LOGGER = LoggerFactory.getLogger(GermplasmResourceService.class);
+public class BrapiGermplasmResourceService extends ResourceService {
+    final static Logger LOGGER = LoggerFactory.getLogger(BrapiGermplasmResourceService.class);
     
     @GET
     @ApiOperation(value = "Get all germplasm corresponding to the search params given",
                   notes = "Retrieve all germplasm authorized for the user corresponding to the searched params given")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve all germplasm", response = GermplasmDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Retrieve all germplasm", response = BrapiGermplasmDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
@@ -76,17 +77,17 @@ public class GermplasmResourceService extends ResourceService {
             uri = germplasmPUI;
         }
         
-        AccessionDAO germplasmDAO = new AccessionDAO();
+        GermplasmDAO germplasmDAO = new GermplasmDAO();
         //1. Get count
-        Integer totalCount = germplasmDAO.count(uri, germplasmName, commonCropName, language);
+        Integer totalCount = germplasmDAO.count(uri, germplasmName, Oeso.CONCEPT_ACCESSION.toString(), language, null, null, null, null);
         
         //2. Get germplasms
-        ArrayList<Accession> germplasmFounded = germplasmDAO.find(page, pageSize, uri, germplasmName, commonCropName, language);
+        ArrayList<Germplasm> germplasmFounded = germplasmDAO.find(page, pageSize, uri, germplasmName, Oeso.CONCEPT_ACCESSION.toString(), language, null, null, null, null);
         
         //3. Return result
         ArrayList<Status> statusList = new ArrayList<>();
-        ArrayList<GermplasmDTO> germplasmToReturn = new ArrayList<>();
-        ResultForm<GermplasmDTO> getResponse;
+        ArrayList<BrapiGermplasmDTO> germplasmToReturn = new ArrayList<>();
+        ResultForm<BrapiGermplasmDTO> getResponse;
         if (germplasmFounded == null) { //Request failure
             getResponse = new ResultForm<>(0, 0, germplasmToReturn, true);
             return noResultFound(getResponse, statusList);
@@ -96,7 +97,7 @@ public class GermplasmResourceService extends ResourceService {
         } else { //Results
             //Convert all objects to DTOs
             germplasmFounded.forEach((germplasm) -> {
-                germplasmToReturn.add(new GermplasmDTO(germplasm));
+                germplasmToReturn.add(new BrapiGermplasmDTO(germplasm));
             });
             
             getResponse = new ResultForm<>(pageSize, page, germplasmToReturn, true, totalCount);
@@ -104,5 +105,4 @@ public class GermplasmResourceService extends ResourceService {
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }
     }
-    
 }

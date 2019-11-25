@@ -15,7 +15,6 @@ import opensilex.service.PropertiesFileManager;
  */
 public enum Contexts {
     
-    
     //The actuators context contains all the declared actuators.
     ACTUATORS {
         @Override
@@ -72,6 +71,13 @@ public enum Contexts {
         @Override
         public String toString() {
             return PLATFORM.toString() + "set/radiometricTargets";
+        }
+    },
+    //The factors context contains all the declared actuators.
+    FACTORS {
+        @Override
+        public String toString() {
+            return PLATFORM.toString() + "set/factors";
         }
     },
     //The context which contains all the declared scientific objects
@@ -152,4 +158,3 @@ public enum Contexts {
         }
     }
 }
-

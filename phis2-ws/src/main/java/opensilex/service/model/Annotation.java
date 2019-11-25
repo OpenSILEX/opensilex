@@ -8,6 +8,8 @@
 package opensilex.service.model;
 
 import java.util.ArrayList;
+import java.util.List;
+
 import org.joda.time.DateTime;
 
 /**
@@ -38,7 +40,7 @@ public class Annotation {
      * Text that describes the annotation.
      * @example Ustilago maydis infection
      */
-    private ArrayList<String> bodyValues;
+    private List<String> bodyValues;
 
     /**
      * Motivation instance URI that describes the purpose of the annotation.
@@ -50,9 +52,9 @@ public class Annotation {
      * URIs that are the objects of the annotation.
      * @example http://www.phenome-fppn.fr/diaphen/2017/o1032481
      */
-    private ArrayList<String> targets;
+    private List<String> targets;
     
-    public Annotation(String uri, DateTime created, String creator, ArrayList<String> bodyValues, String motivatedBy, ArrayList<String> targets) {
+    public Annotation(String uri, DateTime created, String creator, List<String> bodyValues, String motivatedBy, List<String> targets) {
         this.uri = uri;
         this.created = created;
         this.creator = creator;
@@ -85,11 +87,11 @@ public class Annotation {
         this.creator = creator;
     }
 
-    public ArrayList<String> getBodyValues() {
+    public List<String> getBodyValues() {
         return bodyValues;
     }
 
-    public void setBodyValues(ArrayList<String> bodyValues) {
+    public void setBodyValues(List<String> bodyValues) {
         this.bodyValues = bodyValues;
     }
 
@@ -101,11 +103,11 @@ public class Annotation {
         this.bodyValues.add(bodyValue);
     }
 
-    public ArrayList<String> getTargets() {
+    public List<String> getTargets() {
         return targets;
     }
 
-    public void setTargets(ArrayList<String> targets) {
+    public void setTargets(List<String> targets) {
         this.targets = targets;
     }
 

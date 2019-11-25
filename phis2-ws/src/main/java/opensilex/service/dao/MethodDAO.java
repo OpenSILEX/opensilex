@@ -58,6 +58,7 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprList;
 import org.apache.jena.vocabulary.XSD;
+import org.eclipse.rdf4j.model.Value;
 
 /**
  * Method DAO.
@@ -213,10 +214,13 @@ public class MethodDAO extends Rdf4jDAO<Method> {
         
         if (result.hasNext()) {
             BindingSet bindingSet = result.next();
-            return Integer.valueOf(bindingSet.getValue(MAX_ID).stringValue());
-        } else {
-            return 0;
-        }
+            Value maxId = bindingSet.getValue(MAX_ID);
+            if (maxId != null) {
+                return Integer.valueOf(maxId.stringValue());
+            }
+        } 
+        
+        return 0;
     }
     
     /**

@@ -57,13 +57,13 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
                                 "Invalid token")))
                 .type(MediaType.APPLICATION_JSON).build();
         
-        
         final UriInfo uriInfo = requestContext.getUriInfo();
         final String resourcePath = uriInfo.getPath();
         // Swagger.json and token authorized
-        if (resourcePath != null 
-                && !resourcePath.contains("token") 
-                && !resourcePath.contains("calls") 
+        if (resourcePath != null
+                && !resourcePath.contains("token")
+                && !resourcePath.contains("api")
+                && !resourcePath.contains("calls")
                 && !resourcePath.contains("swagger.json")
                 && !(resourceInfo.getResourceClass() == DataResourceService.class && resourceInfo.getResourceMethod().getName().equals("getDataFile"))) {
             // Get request headers

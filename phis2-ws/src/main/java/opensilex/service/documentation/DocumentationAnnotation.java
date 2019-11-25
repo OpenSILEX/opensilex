@@ -30,6 +30,7 @@ public final class DocumentationAnnotation {
     public static final String PAGE_SIZE_MONGO = "Number of elements per page (limited to 1000000)";
 
     // User messages
+    public static final String INTERNAL_SERVER_ERROR = "Internal server error.";
     public static final String ERROR_SEND_DATA = "Server error. Cannot send data.";
     public static final String ERROR_FETCH_DATA = "Server error. Cannot fetch data.";
     public static final String BAD_USER_INFORMATION = "Bad informations send by user";
@@ -138,6 +139,7 @@ public final class DocumentationAnnotation {
 
     // Specific examples
     public static final String EXAMPLE_DATA_FILE_WEB_PATH = "http://www.opensilex.org/images/example.jpg";
+    public static final String EXAMPLE_DATA_RELATIVE_FILEPATH="dir1/data.csv";
     public static final String EXAMPLE_EXPERIMENT_URI = "http://www.opensilex.org/demo/DMO2012-1";
     public static final String EXAMPLE_ACTUATOR_RDF_TYPE = "http://www.opensilex.org/vocabulary/oeso#Actuator";
     public static final String EXAMPLE_ACTUATOR_URI = "http://www.opensilex.org/opensilex/2019/a19001";
@@ -300,6 +302,7 @@ public final class DocumentationAnnotation {
     
     public static final String EXAMPLE_CALL_DATATYPE = "json";
   
+    public static final String ANNOTATION_URI_DEFINITION = "An annotation URI (Unique Resource Identifier)";
     public static final String EXAMPLE_ANNOTATION_URI = "http://www.opensilex.org/platform/id/annotation/8247af37-769c-495b-8e7e-78b1141176c2";
     public static final String EXAMPLE_ANNOTATION_TARGET = "http://www.opensilex.org/demo/id/variable/v0000001";
     public static final String EXAMPLE_ANNOTATION_MOTIVATED_BY = "http://www.w3.org/ns/oa#commenting";
@@ -307,7 +310,7 @@ public final class DocumentationAnnotation {
   
     public static final String EXAMPLE_EXPERIMENT_CROP_SPECIES = "maize";
     public static final String EXAMPLE_ANNOTATION_CREATOR = "http://www.opensilex.org/demo/id/agent/marie_dupond";
-    
+
     public static final String EXAMPLE_GERMPLASM_URI = "http://www.phenome-fppn.fr/platform/id/germplasm/g001";
     public static final String EXAMPLE_GERMPLASM_NAME = "B73_INRA";
     public static final String EXAMPLE_ACCESSION_NUMBER = "B73_INRA";
@@ -315,6 +318,11 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_VARIETY = "B73";
     public static final String EXAMPLE_INSTITUTE_CODE = "INRA_CODE";
     public static final String EXAMPLE_INSTITUTE_NAME = "INRA";
+
+    public static final String EXAMPLE_FACTOR_RDF_TYPE = "http://www.opensilex.org/vocabulary/oeso#Factor";
+    public static final String EXAMPLE_FACTOR_URI = "http://www.opensilex.org/id/factor/f001";
+    public static final String EXAMPLE_FACTOR_LABEL = "Water Exposure";
+    public static final String EXAMPLE_FACTOR_COMMENT = "Change the frequency on water addition";
     
     // API global parameters
     public static final String EXAMPLE_SORTING_ALLOWABLE_VALUES = "asc,desc";
@@ -326,4 +334,11 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_LANGUAGE = "en";
     
     public static final String EXAMPLE_SKOS_REFERECENCE_URI = "http://purl.obolibrary.org/obo/CO_125_0000002";
+    
+    public static final String FACTOR_POST_DATA_DEFINITION = "JSON format of factor";
+    public static final String FACTOR_URI_DEFINITION = "A factor URI (Unique Resource Identifier)";
+
+    public static final String EXAMPLE_API_MAJOR_VERSION = "3";
+    public static final String EXAMPLE_API_BUILD_VERSION = "3.0.0";
+    public static final String EXAMPLE_API_NAME = "opensilex";
 }

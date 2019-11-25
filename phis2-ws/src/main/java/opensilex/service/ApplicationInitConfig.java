@@ -1,4 +1,4 @@
-//******************************************************************************
+//*******************************************************************************
 //                            ApplicationInitConfig.java 
 // SILEX-PHIS
 // Copyright © INRA 2017
@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import opensilex.service.authentication.Session;
 import opensilex.service.authentication.TokenManager;
 import opensilex.service.documentation.StatusCodeMsg;
+import opensilex.service.eventListener.EventListener;
 import opensilex.service.injection.SessionFactory;
 import opensilex.service.injection.SessionInject;
 import opensilex.service.injection.SessionInjectResolver;
@@ -41,7 +42,7 @@ public class ApplicationInitConfig extends ResourceConfig {
 
     final static String PROPERTY_FILE_NAME = "service";
     final static Logger LOGGER = LoggerFactory.getLogger(ApplicationInitConfig.class);
-
+    
     /**
      * Initializes application configuration
      */
@@ -50,14 +51,31 @@ public class ApplicationInitConfig extends ResourceConfig {
                 + "opensilex.service.resource;"
                 + "opensilex.service.json;"
                 + "opensilex.service.resource.request.filter");
-        
+
         //Swagger
         BeanConfig beanConfig = new BeanConfig();
-        beanConfig.setVersion("1.0.2");
+        beanConfig.setVersion(
+            PropertiesFileManager.getConfigFileProperty(PROPERTY_FILE_NAME, "wsVersion")
+        );
+        beanConfig.setTitle(
+            PropertiesFileManager.getConfigFileProperty(PROPERTY_FILE_NAME, "wsApiName")
+        );
         beanConfig.setSchemes(new String[]{"http"});
-        
-        beanConfig.setHost(PropertiesFileManager.getConfigFileProperty("service", "host"));
-        beanConfig.setBasePath(PropertiesFileManager.getConfigFileProperty("service", "basePath"));
+        beanConfig.setLicense(
+            PropertiesFileManager.getConfigFileProperty(PROPERTY_FILE_NAME, "wsLicence")
+        );
+        beanConfig.setLicenseUrl(           
+            PropertiesFileManager.getConfigFileProperty(PROPERTY_FILE_NAME, "wsLicenceUrl")
+        );
+        beanConfig.setDescription(     
+            PropertiesFileManager.getConfigFileProperty(PROPERTY_FILE_NAME, "wsDescription")
+        );
+        beanConfig.setHost(
+            PropertiesFileManager.getConfigFileProperty(PROPERTY_FILE_NAME, "host")
+        );
+        beanConfig.setBasePath(
+            PropertiesFileManager.getConfigFileProperty(PROPERTY_FILE_NAME, "basePath")
+        );
        
         beanConfig.setResourcePackage("opensilex.service.resource");
         beanConfig.setScan(true);
@@ -82,6 +100,7 @@ public class ApplicationInitConfig extends ResourceConfig {
                         .in(Singleton.class);
             }
         });
+        register(EventListener.class);
     }
     
     /**

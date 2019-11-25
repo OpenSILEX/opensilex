@@ -21,13 +21,16 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
+import opensilex.service.dao.exception.DAOPersistenceException;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.MalformedQueryException;
@@ -55,8 +58,6 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.model.ScientificObject;
 import opensilex.service.model.Property;
 import opensilex.service.model.Uri;
-import org.apache.jena.update.UpdateRequest;
-import org.apache.jena.vocabulary.RDFS;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -67,12 +68,13 @@ import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprList;
 import org.apache.jena.sparql.path.PathFactory;
 import org.apache.jena.vocabulary.XSD;
-import opensilex.service.model.GeneticInformation;
-
+import org.eclipse.rdf4j.model.Value;
 
 /**
  * Allows CRUD methods of scientific objects in the triplestore.
  * @update [Morgane Vidal] 29 March, 2019: add update scientific objects and refactor to the new DAO conception.
+ * @update [Renaud COLIN] 20 September, 2019: update create(List<ScientificObject> scientificObjects) method to not create RDF triple
+ * with oeso:isPartOf as property and a literal as object. 
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
@@ -87,9 +89,6 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     private final String PROPERTY_TYPE = "propertyType";
     private final String CHILD = "child";
     private final String RELATION = "relation";
-    private final String GENETIC_RESOURCE = "geneticResource";  
-    
-    private static final String URI_CODE_SCIENTIFIC_OBJECT = "o";
     
     private static final String MAX_ID = "maxID";
     
@@ -171,15 +170,18 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         
         if (result.hasNext()) {
             BindingSet bindingSet = result.next();
-            return Integer.valueOf(bindingSet.getValue(MAX_ID).stringValue());
-        } else {
-            return 0;
-        }
+            Value maxId = bindingSet.getValue(MAX_ID);
+            if (maxId != null) {
+                return Integer.valueOf(maxId.stringValue());
+            }
+        } 
+        
+        return 0;
     }
     
     /**
-     * Generates the sparql ask query to know if a given alias is already 
-     * existing in a given context.
+     * Generates the SPARQL ask query to know if a given alias already 
+     * exists in a given context
      * @param alias
      * @param context
      * @return the query
@@ -197,7 +199,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     }
         
     /**
-     * Check if the scientific objects are accurates.
+     * Checks if the scientific objects are valid.
      * @param scientificObjects
      * @return
      * @throws RepositoryException 
@@ -319,7 +321,8 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     /**
      * Generates the query to get the list of scientific objects which participates in a given experiment.
      * @param experimentURI
-     * @return the query enabling to retrieve the list of scientific objects participating in the experiment and the objects propertiesT
+     * @return the query enabling to retrieve the list of scientific objects participating in the experiment and the 
+     * objects propertiesT
      * SILEX:TODO 
      * filter on the rdfs.type --> scientific object
      * \SILEX:TODO 
@@ -373,7 +376,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     /**
      * Generates the query to get the first scientific objects contained by a given scientific object (geo:contains).
      * @param objectURI
-     * @return The generated query.
+     * @return the first descendants of the element (geo:contains relation)
      */
     private SPARQLQueryBuilder prepareSearchFirstChildrenWithContains(String objectURI) {
         SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
@@ -389,19 +392,17 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     }
      
     /**
-     * 
      * @param layerDTO
-     * @return la liste des enfants de layerDTO.getObjectURI. Retourne tous les
-     *         descendants si layerDTO.getDepth == true. (clé : uri, valeur : type)
+     * @return children of layerDTO.getObjectURI. Returns the descendants if layerDTO.getDepth == true. 
+     * (key: URI, value: type)
      */
     public HashMap<String, ScientificObject> searchChildren(LayerDTO layerDTO) {
         HashMap<String, ScientificObject> children = new HashMap<>(); // uri (clé), type (valeur)
         
-        //Si c'est une expérimentation, le nom du lien n'est pas le même donc, 
-        //on commence par récupérer la liste des enfants directs
+        /* If it's an experiment, the link name isn't the same so we get the direct descendants first*/
         if (layerDTO.getObjectType().equals(Oeso.CONCEPT_EXPERIMENT.toString())) {
             //SILEX:test
-            //Pour les soucis de pool de connexion
+            //For pool connection issues
             rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID); //Stockage triplestore Sesame
             rep.initialize();
             setConnection(rep.getConnection());
@@ -413,7 +414,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             TupleQueryResult result = tupleQuery.evaluate();
                         
             //SILEX:test
-            //Pour les soucis de pool de connexion
+            //For pool connection issues
             getConnection().close();
             //\SILEX:test
             while (result.hasNext()) {
@@ -428,7 +429,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                     }
                     
                     scientificObject.addProperty(property);
-                } else { //Il n'est pas encore dans la liste, il faut le rajouter
+                } else { // not in the list, has to be added
                     scientificObject = new ScientificObject();
                     scientificObject.setUri(bindingSet.getValue(CHILD).stringValue());
                     scientificObject.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
@@ -446,26 +447,27 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             }
         }
         //SILEX:INFO
-        //Pour l'instant, on ne récupère que les propriétés des premiers descendants de l'expérimentation.
-        //Pas les autres
-        //Si il faut aussi tous les descendants
+        //For the moment, get only the first descendants properties, not the others
+        // If all descendants needed
         if (ResourcesUtils.getStringBooleanValue(layerDTO.getDepth())) {
-            //Si c'est les descendants d'un essai, il y a un traitement particulier
+            // Particular treatment if descendants of a trial
             if (layerDTO.getObjectType().equals(Oeso.CONCEPT_EXPERIMENT.toString())) {
-                //On recherche tous les fils des plots de l'experimentation, récupérés précédemment
+                // Get all descendants of the plots of the previously retrieved experimentations
                     //SILEX:test
-                    //Pour les soucis de pool de connexion
-                    rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID); //Stockage triplestore Sesame
+                    //For pool connection issues
+                    rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID);
                     rep.initialize();
                     setConnection(rep.getConnection());
                     //\SILEX:test
                 for (Entry<String, ScientificObject> child : children.entrySet()) {
                    
-                    SPARQLQueryBuilder sparqlQuery = prepareSearchChildrenWithContains(child.getKey(), child.getValue().getRdfType());
-                    TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
+                    SPARQLQueryBuilder sparqlQuery = prepareSearchChildrenWithContains(
+                            child.getKey(), 
+                            child.getValue().getRdfType());
+                    TupleQuery tupleQuery = this.getConnection()
+                            .prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
                     TupleQueryResult result = tupleQuery.evaluate();
                    
-                    
                     while (result.hasNext()) {
                         BindingSet bindingSet = result.next();
                         if (!children.containsKey(bindingSet.getValue(CHILD).stringValue())) {
@@ -477,22 +479,24 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                         }
                     }
                 }
-                 //SILEX:test
-                    //Pour les soucis de pool de connexion
+                    //SILEX:test
+                    //For pool connection issues
                     getConnection().close();
                     //\SILEX:test
-            } else { //Si c'est un objet classique
+            } else { // if standard object
                 //SILEX:test
-                //Pour les soucis de pool de connexion
+                //For pool connection issues
                 rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID); //Stockage triplestore Sesame
                 rep.initialize();
                 setConnection(rep.getConnection());
                 //\SILEX:test
-                SPARQLQueryBuilder sparqlQuery = prepareSearchChildrenWithContains(layerDTO.getObjectUri(), layerDTO.getObjectType());
-                TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
+                SPARQLQueryBuilder sparqlQuery = 
+                        prepareSearchChildrenWithContains(layerDTO.getObjectUri(), layerDTO.getObjectType());
+                TupleQuery tupleQuery = 
+                        this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
                 TupleQueryResult result = tupleQuery.evaluate();
                 //SILEX:test
-                //Pour les soucis de pool de connexion
+                //For pool connection issues
                 getConnection().close();
                 //\SILEX:test
                 
@@ -510,8 +514,8 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         } else if (!layerDTO.getObjectType().equals(Oeso.CONCEPT_EXPERIMENT.toString())) { 
             // If only direct descendants needed and not an experimentation
             //SILEX:test
-            //Pour les soucis de pool de connexion
-            rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID); //Stockage triplestore Sesame
+            //For pool connection issues
+            rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID);
             rep.initialize();
             setConnection(rep.getConnection());
             //\SILEX:test
@@ -519,7 +523,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
             TupleQueryResult result = tupleQuery.evaluate();
             //SILEX:test
-            //Pour les soucis de pool de connexion
+            //For pool connection issues
             getConnection().close();
             //\SILEX:test
             
@@ -603,17 +607,17 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      * @param alias
      * @return scientific objects list, result of the user query, empty if no result
      */
-    public ArrayList<ScientificObject> find(Integer page, Integer pageSize, String uri, String rdfType, String experiment, String alias, String geneticResource) {
+    public ArrayList<ScientificObject> find(Integer page, Integer pageSize, String uri, String rdfType, String experiment, String alias) {
         try {
-            SPARQLQueryBuilder sparqlQuery = prepareSearchQuery(false, page, pageSize, uri, rdfType, experiment, alias, geneticResource);
+            SPARQLQueryBuilder sparqlQuery = prepareSearchQuery(false, page, pageSize, uri, rdfType, experiment, alias);
             //SILEX:test
-            //Pour les soucis de pool de connexion
-            rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID); //Stockage triplestore Sesame
+            //For pool connection issues
+            rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID);
             rep.initialize();
             setConnection(rep.getConnection());
             //\SILEX:test
             
-            TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
+            TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
             Map<String, ScientificObject> foundedScientificObjects = new HashMap<>();
             
             try (TupleQueryResult result = tupleQuery.evaluate()) {
@@ -654,13 +658,6 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                     scientificObject.setProperties(findScientificObjectProperties(actualUri));
                     
                     foundedScientificObjects.put(actualUri, scientificObject);
-                    
-                    //Get genetic Information
-                    if (bindingSet.getValue(GENETIC_RESOURCE) != null) {
-                        String geneticResourceURI = bindingSet.getValue(GENETIC_RESOURCE).stringValue();
-                        scientificObject.setGeneticResource(geneticResourceURI);
-                    }
-                    
                 }
             }
             
@@ -680,7 +677,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             });
             
             return scientificObjects;
-        }   catch (SQLException ex) {
+        } catch (SQLException ex) {
             java.util.logging.Logger.getLogger(ScientificObjectRdf4jDAO.class.getName()).log(Level.SEVERE, null, ex);
             
             if (getConnection() != null) {
@@ -714,7 +711,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      * }
      * @return the generated query
      */
-    protected SPARQLQueryBuilder prepareSearchQuery(boolean count, Integer page, Integer pageSize, String uri, String rdfType, String experiment, String alias, String geneticResource) {    
+    protected SPARQLQueryBuilder prepareSearchQuery(boolean count, Integer page, Integer pageSize, String uri, String rdfType, String experiment, String alias) {    
         SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
         
         sparqlQuery.appendDistinct(true);
@@ -731,7 +728,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             sparqlQuery.beginBodyOptional();
             sparqlQuery.appendToBody("?" + URI + " <" + Rdfs.RELATION_LABEL.toString() + "> " + "?" + ALIAS + " . ");
             sparqlQuery.endBodyOptional();
-        } else if (!count) {
+        } else if(alias != null){
             sparqlQuery.appendTriplet("?" + URI, Rdfs.RELATION_LABEL.toString(), "?" + ALIAS, null);
             sparqlQuery.appendAndFilter("REGEX ( str(?" + ALIAS + "),\".*" + alias + ".*\",\"i\")");
         }
@@ -739,7 +736,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         //Experiment filter
         if (experiment != null) {
               sparqlQuery.appendFrom("<" + Contexts.VOCABULARY.toString() + "> \n FROM <" + experiment + ">");
-        } else if (!count) {
+        } else {
             sparqlQuery.appendSelect("?" + EXPERIMENT);
             sparqlQuery.appendOptional("?" + URI + " <" + Oeso.RELATION_PARTICIPATES_IN.toString() + "> " + "?" + EXPERIMENT + " . ");
         }
@@ -761,26 +758,16 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             sparqlQuery.appendOffset(page * pageSize);
         }
         
-        //GeneticResource filter
-        sparqlQuery.appendSelect("?" + GENETIC_RESOURCE);
-        if (geneticResource != null) {
-            sparqlQuery.appendToBody("?" + URI + " <" + Oeso.RELATION_HAS_GENETIC_RESOURCE.toString() + "> " + "?" + GENETIC_RESOURCE + " . ");
-            sparqlQuery.appendAndFilter("REGEX ( str(?" + GENETIC_RESOURCE + "),\".*" + geneticResource + ".*\",\"i\")");
-        } else {
-            sparqlQuery.beginBodyOptional();
-            sparqlQuery.appendToBody("?" + URI + " <" + Oeso.RELATION_HAS_GENETIC_RESOURCE.toString() + "> " + "?" + GENETIC_RESOURCE + " . ");
-            sparqlQuery.endBodyOptional();
-        }
-        
         LOGGER.debug(SPARQL_QUERY + sparqlQuery.toString());
         
         return sparqlQuery;
     }
     
     /**
-     * checks if the scientific object exists
+     * Checks if the scientific object exists.
      * @param uri
-     * @return 0 if the object uri doesn't exist, 1 if it does exist
+     * @return 0 if the object URI doesn't exist.
+     *         1 if it does exist.
      */
     public boolean existScientificObject(String uri) {        
         SPARQLQueryBuilder query = askExistScientificObject(uri);
@@ -790,8 +777,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     }
 
     /**
-     * generates the sparql ask query to know if the scientific object uri exists
-     * existing in a given context
+     * Generates the SPARQL ASK query to know if the scientific object URI exists.
      * @param uri
      * @return the query
      */
@@ -861,7 +847,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     }
     
     @Override
-    public List create(List<ScientificObject> scientificObjects) throws Exception {
+    public List<ScientificObject> create(List<ScientificObject> scientificObjects) throws Exception {
         
         boolean resultState = false; // To know if the data are ok and have been inserted.
         boolean annotationInsert = true; // True if the insertion have been done.
@@ -896,7 +882,6 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             
             spql.addInsert(graph, scientificObjectUri, RDF.type, scientificObjectType);
             
-            // Properties associated to the scientific object
             for (Property property : scientificObject.getProperties()) {
                 if (property.getRdfType() != null && !property.getRdfType().equals("")) {//Typed properties
                     if (property.getRdfType().equals(Oeso.CONCEPT_VARIETY.toString())) {
@@ -921,7 +906,10 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                         spql.addInsert(graph, propertyNode, RDF.type, propertyType);
                         spql.addInsert(graph, scientificObjectUri, propertyRelation, propertyNode);
                     }
-                } else {
+                } else if(Oeso.RELATION_IS_PART_OF.toString().equals(property.getRelation())){              	
+                	continue; // Oeso:isPartOf relation will be handled just after
+                }
+                else {
                     Literal propertyLiteral = ResourceFactory.createStringLiteral(property.getValue());
                     org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
 
@@ -999,7 +987,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     }
 
     @Override
-    public void delete(List<ScientificObject> objects) throws Exception {
+    public void delete(List<ScientificObject> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
@@ -1011,7 +999,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      *         null if this scientific object does not exist.
      */
     public ScientificObject getScientificObjectInContext(String uri, String context) {
-        ArrayList<ScientificObject> scientificObjects = find(null, null, uri, null, context, null, null);
+        ArrayList<ScientificObject> scientificObjects = find(null, null, uri, null, context, null);
         if (!scientificObjects.isEmpty()) {
             return scientificObjects.get(0);
         } else {
@@ -1206,22 +1194,22 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     }
 
     @Override
-    public List<ScientificObject> update(List<ScientificObject> objects) throws Exception {
+    public List<ScientificObject> update(List<ScientificObject> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public ScientificObject find(ScientificObject object) throws Exception {
+    public ScientificObject find(ScientificObject object) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public ScientificObject findById(String id) throws Exception {
+    public ScientificObject findById(String id) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void validate(List<ScientificObject> objects) throws DAODataErrorAggregateException {
+    public void validate(List<ScientificObject> objects) throws DAOPersistenceException, DAODataErrorAggregateException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
@@ -1245,8 +1233,8 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      *      } 
      * }
      */
-    private SPARQLQueryBuilder prepareCount(String uri, String rdfType, String experimentURI, String alias, String geneticResource) {
-        SPARQLQueryBuilder query = prepareSearchQuery(true, null, null, uri, rdfType, experimentURI, alias, geneticResource);
+    private SPARQLQueryBuilder prepareCount(String uri, String rdfType, String experimentURI, String alias) {
+        SPARQLQueryBuilder query = prepareSearchQuery(true, null, null, uri, rdfType, experimentURI, alias);
         query.clearSelect();
         query.clearLimit();
         query.clearOffset();
@@ -1264,8 +1252,8 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      * @param alias
      * @return The number of scientific objects.
      */
-    public Integer count(String uri, String rdfType, String experimentURI, String alias, String geneticResource) {
-        SPARQLQueryBuilder prepareCount = prepareCount(uri, rdfType, experimentURI, alias, geneticResource);
+    public Integer count(String uri, String rdfType, String experimentURI, String alias) {
+        SPARQLQueryBuilder prepareCount = prepareCount(uri, rdfType, experimentURI, alias);
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
         Integer count = 0;
         try (TupleQueryResult result = tupleQuery.evaluate()) {
@@ -1276,17 +1264,4 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         }
         return count;
     }
-
-    /**
-     * 
-     * @param geneticResourceURI
-     * @return genetic info of the object (genus, species, variety, accession...)
-     * @throws Exception 
-     */
-    private GeneticInformation getGeneticResource(String geneticResourceURI) throws Exception {
-        GeneticInformationDAO geneticInfoDAO = new GeneticInformationDAO(geneticResourceURI);        
-        GeneticInformation geneticInfo = geneticInfoDAO.findById(geneticResourceURI); 
-        return geneticInfo;
-    }
-    
 }

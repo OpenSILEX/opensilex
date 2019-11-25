@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -42,6 +44,7 @@ import opensilex.service.authentication.TokenManager;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.URINamespaces;
+import opensilex.service.dao.UserDAO;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.User;
@@ -68,30 +71,30 @@ import org.eclipse.rdf4j.RDF4JException;
 public abstract class Rdf4jDAO<T> extends DAO<T> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(Rdf4jDAO.class);
-    
-    final private String REPOSITORY_EXCEPTION_GENERIC_MESSAGE_FORMAT 
+
+    final private String REPOSITORY_EXCEPTION_GENERIC_MESSAGE_FORMAT
             = "Error while committing or rolling back triplestore statements: %s";
     final private String MALFORMED_QUERY_EXCEPTION_MESSAGE_FORMAT = "Malformed query: %s";
     final private String QUERY_EVALUATION_EXCEPTION_MESSAGE_FORMAT = "Error evaluating the query: %s";
     final private String UPDATE_EXECUTION_EXCEPTION_MESSAGE_FORMAT = "Error executing the update query: %s";
-    final private String COUNT_VALUE_PARSING_EXCEPTION_MESSAGE_FORMAT 
+    final private String COUNT_VALUE_PARSING_EXCEPTION_MESSAGE_FORMAT
             = "Error parsing value of " + COUNT_ELEMENT_QUERY + "from binding set";
-    
+
     protected static final String PROPERTY_FILENAME = "sesame_rdf_config";
-    
+
     /**
-     * Page size max value used to get the highest number of results of an 
-     * object when getting a list within a list (e.g to get all the concerned
-     * items of all the events)
-     * //SILEX:todo 
-     * Pagination should be handled in this case too (i.e when getting a list
-     * within a list)
-     * For the moment we use only one page by taking the max value
-     * //\SILEX:todo
-     */    
+    * Page size max value used to get the highest number of results of an 
+    * object when getting a list within a list (e.g to get all the concerned
+    * items of all the events)
+    * //SILEX:todo 
+    * Pagination should be handled in this case too (i.e when getting a list
+    * within a list)
+    * For the moment we use only one page by taking the max value
+    * //\SILEX:todo
+    */ 
     protected int pageSizeMaxValue = Integer.parseInt(PropertiesFileManager
             .getConfigFileProperty("service", "pageSizeMax"));
-    
+
     //SILEX:test
     // For the full connection pool issue
     protected static final String SESAME_SERVER = PropertiesFileManager
@@ -102,11 +105,11 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
 
     // used for logger
     protected static final String SPARQL_QUERY = "SPARQL query: ";
-    
+
     protected static final String COUNT_ELEMENT_QUERY = "count";
-    
+
     /**
-     * The following constants are SPARQL variables name used for each subclass 
+     * The following constants are SPARQL variables name used for each subclass
      * to query the triplestore.
      */
     protected static final String URI = "uri";
@@ -115,14 +118,22 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
     protected static final String RDF_TYPE_SELECT_NAME_SPARQL = "?" + RDF_TYPE;
     protected static final String LABEL = "label";
     protected static final String COMMENT = "comment";
-    
+    protected static final String OBJECT = "object";
+    protected static final String OBJECT_SELECT_NAME_SPARQL = "?" + OBJECT;
+    protected static final String PROPERTY = "property";
+    protected static final String PROPERTY_SELECT_NAME_SPARQL = "?" + PROPERTY;
+    protected static final String SUBJECT = "subject";
+    protected static final String SUBJECT_SELECT_NAME_SPARQL =  "?" + SUBJECT;
+    protected static final String SEE_ALSO = "subject";
+    protected static final String SEE_ALSO_SELECT_NAME_SPARQL =  "?" + SEE_ALSO;
+
     protected static final String DATETIMESTAMP_FORMAT_SPARQL = DateFormat.YMDTHMSZZ.toString();
     
     // Triplestore relations
     protected static final URINamespaces ONTOLOGIES = new URINamespaces();
 
     protected static Repository rep;
-    private RepositoryConnection connection;
+    protected RepositoryConnection connection;
 
     protected static String resourceType;
 
@@ -130,18 +141,7 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
     protected Integer pageSize;
 
     public Rdf4jDAO() {
-        try {
-            String triplestoreServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
-            String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "repositoryID");
-            rep = new HTTPRepository(triplestoreServer, repositoryID); //Stockage triplestore
-            rep.initialize();
-            setConnection(rep.getConnection());
-        } catch (RepositoryException e) {
-            ResponseFormPOST postForm = new ResponseFormPOST(
-                    new Status("Can't connect to triplestore", StatusCodeMsg.ERR, e.getMessage()));
-            throw new WebApplicationException(
-                    Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postForm).build());
-        }
+    	this(PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "repositoryID"));  
     }
 
     public Rdf4jDAO(User user) {
@@ -164,6 +164,8 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
     }
 
     public RepositoryConnection getConnection() {
+    	if(connection == null || ! connection.isOpen())
+    		initConnection();
         return connection;
     }
 
@@ -586,29 +588,87 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
         
         return labels;
     }
+    
+    /**
+     * Delete a list of objects into the triplestore. 
+     * @param uris : a {@link List} of objects Uris 
+     * @throws Exception
+     * @throws RepositoryException
+     * @throws UpdateExecutionException
+     */
+    protected void deleteAll(List<String> uris) throws Exception, RepositoryException, UpdateExecutionException {
+    	
+    }
+    
+    /**
+     * Delete a list of objects into the triplestore. 
+     * @param uris : a {@link Iterable} over objects Uris 
+     * @throws IllegalArgumentException if the {@link #user} is not an admin user or if a given uri is not present 
+     * into the TripleStore. 
+     * @throws DAOPersistenceException : if an {@link Exception} related to the {@link Repository} is encountered. 
+     * @throws Exception : for any other encountered {@link Exception}
+     * @see #deleteAll(List)
+     */
+    public void checkAndDeleteAll(List<String> uris) throws IllegalArgumentException, DAOPersistenceException, Exception { 	
+    	if(user == null || StringUtils.isEmpty(user.getAdmin())) {
+    		throw new IllegalArgumentException("No user/bad user provided");
+    	}
+    	if(! new UserDAO().isAdmin(user)) { // the user is not an admin
+    		throw new IllegalArgumentException("Error : only an admin user can delete an object");
+    	}
+    	Exception returnedException = null;
+		try {
+			// #FIXME : make the check of n uris existence more efficient
+			for(String uri : uris) {
+				if(! existUri(uri)) {
+					throw new IllegalArgumentException(uris+" don't belongs to the TripleStore");
+				}
+	    	}
+			startTransaction();    			
+			deleteAll(uris);
+	    	commitTransaction();	
+	    	
+		} catch (RepositoryException | UpdateExecutionException e) {
+			rollbackTransaction();
+			returnedException =  new DAOPersistenceException(e);
+		} catch(Exception e) {
+			rollbackTransaction();
+			returnedException = e;
+		}
+		finally {
+		 	if(returnedException != null)
+		 		throw returnedException;
+		 }
+    }
 
     @Override
-    protected void initConnection() {
-        getConnection().begin();    
+    protected void initConnection() {  
+    	if(connection == null || ! connection.isOpen()) 
+    		connection = rep.getConnection();
     }
 
     @Override
     protected void closeConnection() {
-        getConnection().close();
+        if(connection != null && connection.isOpen())
+            connection.close();
     }
 
     @Override
     protected void startTransaction() {
-        // transactions starts automatically in SPARQL.
+    	initConnection(); // init the connection if not done
+    	if(! connection.isActive())
+    		connection.begin();
     }
 
     @Override
     protected void commitTransaction() {
-        getConnection().commit();
+        if(connection != null && connection.isActive())
+            connection.commit();
     }
 
     @Override
     protected void rollbackTransaction() {
-        getConnection().rollback();
+        if(connection != null && connection.isActive())
+            connection.rollback();
     }
 }

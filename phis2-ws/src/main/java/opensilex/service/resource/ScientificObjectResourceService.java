@@ -259,6 +259,8 @@ public class ScientificObjectResourceService extends ResourceService {
         @ApiParam(value = "Search by geneticResource (genus,species, variety, accession, seedLot)", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_TYPE) @QueryParam("geneticResource") @URL String geneticResource
     ) {
         ArrayList<ScientificObjectDTO> scientificObjectsToReturn = new ArrayList<>();
+        ArrayList<ScientificObject> scientificObjects = new ArrayList<>();
+        
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<ScientificObjectDTO> getResponse;
         
@@ -268,11 +270,17 @@ public class ScientificObjectResourceService extends ResourceService {
         scientificObjectDaoSesame.setPageSize(pageSize);
         
         //1. Get count
-        Integer totalCount = scientificObjectDaoSesame.count(uri, rdfType, experimentURI, alias, geneticResource);
+        Integer totalCount = scientificObjectDaoSesame.count(uri, rdfType, experimentURI, alias);
         
         //2. Get list of scientific objects
-        ArrayList<ScientificObject> scientificObjects = scientificObjectDaoSesame.find(page, pageSize, uri, rdfType, experimentURI, alias, geneticResource);
-        
+        scientificObjects = scientificObjectDaoSesame.find(page, pageSize, uri, rdfType, experimentURI, alias);
+
+        // If scientific objects found
+        if(totalCount > 0){
+            //2. Get list of scientific objects
+            scientificObjects = scientificObjectDaoSesame.find(page, pageSize, uri, rdfType, experimentURI, alias);
+        }
+
         if (scientificObjects == null) { //Request failure
             getResponse = new ResultForm<>(0, 0, scientificObjectsToReturn, true);
             return noResultFound(getResponse, statusList);

@@ -14,12 +14,15 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -36,16 +39,19 @@ import org.slf4j.LoggerFactory;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
+import opensilex.service.dao.AnnotationDAO;
 import opensilex.service.dao.EventDAO;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
+import opensilex.service.resource.dto.DeleteDTO;
 import opensilex.service.resource.dto.event.EventGetDTO;
 import opensilex.service.resource.dto.event.EventPostDTO;
 import opensilex.service.resource.dto.rdfResourceDefinition.RdfResourceDefinitionDTO;
 import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
+import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.model.Event;
 import opensilex.service.resource.dto.event.EventPutDTO;
@@ -159,31 +165,36 @@ public class EventResourceService  extends ResourceService {
                 value = "Search by date - start of the range", 
                 example = DocumentationAnnotation.EXAMPLE_EVENT_SEARCH_START_DATE) 
             @QueryParam("startDate") 
-            @Date(DateFormat.YMDTHMSZZ) String startDate, 
+            @Date({DateFormat.YMDTHMSZZ, DateFormat.YMD}) String startDate, 
         @ApiParam(
                 value = "Search by date - end of the range", 
                 example = DocumentationAnnotation.EXAMPLE_EVENT_SEARCH_END_DATE) 
             @QueryParam("endDate") 
-            @Date(DateFormat.YMDTHMSZZ) String endDate
+            @Date({DateFormat.YMDTHMSZZ, DateFormat.YMD}) String endDate
     ) {
         EventDAO eventDAO = new EventDAO(userSession.getUser());
         
         // Search events with parameters
         ArrayList<Event> events;
         try {
+            java.util.Date start = DateFormat.parseDateOrDateTime(startDate, false);
+            java.util.Date end = DateFormat.parseDateOrDateTime(endDate, true);
+                 
             events = eventDAO.find(
                     uri,
                     type,
                     concernedItemLabel,
                     concernedItemUri,
-                    startDate,
-                    endDate,
+                    start,
+                    end,
                     page,
                     pageSize);
         // handle exceptions
         } catch (DAOPersistenceException ex) {
             LOGGER.error(ex.getMessage(), ex);
             return getResponseWhenPersistenceError(ex);
+        } catch (ParseException ex) {
+            return getResponseWhenInternalError(ex);
         }
 
         if (events == null) {
@@ -193,7 +204,9 @@ public class EventResourceService  extends ResourceService {
         } else {
             // count results
             try {
-                int totalCount = eventDAO.count(uri, type, concernedItemLabel, concernedItemUri, startDate, endDate);
+                java.util.Date start = DateFormat.parseDateOrDateTime(startDate, false);
+                 java.util.Date end = DateFormat.parseDateOrDateTime(endDate, true);
+                int totalCount = eventDAO.count(uri, type, concernedItemLabel, concernedItemUri, start, end);
                 return getGETResponseWhenSuccess(events, pageSize, page, totalCount);
                 
             // handle count exceptions
@@ -332,7 +345,7 @@ public class EventResourceService  extends ResourceService {
         
         AnnotationResourceService annotationResourceService = new AnnotationResourceService();
         annotationResourceService.userSession = userSession;
-        return annotationResourceService.getAnnotationsBySearch(pageSize, page, null, null, uri, null, null);
+        return annotationResourceService.getAnnotationsBySearch(pageSize, page, null, null, uri, null, null, true);
     }
         
     /**
@@ -432,10 +445,60 @@ public class EventResourceService  extends ResourceService {
         // Get POST response
         return getPutResponse(objectDao, eventsDtos, context.getRemoteAddr(), StatusCodeMsg.EMPTY_EVENT_LIST);
     }
+    
+    
+    /**
+     * @example
+     *[
+     *	http://www.phenome-fppn.fr/platform/id/event/8247af37-769c-495b-8e7e-78b1141176c2,
+     *  http://www.phenome-fppn.fr/platform/id/event/8247gt37-769c-495b-8e7e-91jh633151k4
+     *]
+     * 
+     */
+    @DELETE
+    @Path("{uri}")
+    @ApiOperation(
+    	value = "Delete a list of event",
+    	notes = "Delete a list of event. Need URL encoded event URI"
+    	
+    		)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Event(s) deleted", response = ResponseFormPOST.class), 
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.INTERNAL_SERVER_ERROR),
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+    		name = GlobalWebserviceValues.AUTHORIZATION, 
+    		required = true,
+            dataType = GlobalWebserviceValues.DATA_TYPE_STRING, 
+            paramType = GlobalWebserviceValues.HEADER,
+            value = DocumentationAnnotation.ACCES_TOKEN,
+            example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deleteEventUri( 
+    		@ApiParam(
+		        value = DocumentationAnnotation.ANNOTATION_URI_DEFINITION,
+		        required = true, 
+		        example = DocumentationAnnotation.EXAMPLE_ANNOTATION_URI
+		    ) 
+        	@Valid @NotNull DeleteDTO deleteDTO, @Context HttpServletRequest context) {
+    	
+    	EventDAO eventDao = new EventDAO(userSession.getUser());
+		if (context.getRemoteAddr() != null) {
+			 eventDao.setRemoteUserAdress(context.getRemoteAddr());
+	    }
+		Response response = buildDeleteObjectsByUriResponse(eventDao, deleteDTO);
+    	eventDao.getConnection().close();
+    	return response;
+    }
 
     @Override
     protected ArrayList<AbstractVerifiedClass> getDTOsFromObjects(List<? extends Object> objects) {
-        ArrayList<AbstractVerifiedClass> dtos = new ArrayList();
+        ArrayList<AbstractVerifiedClass> dtos = new ArrayList<>();
         objects.forEach((object) -> {
             dtos.add(new EventGetDTO((Event)object));
         });

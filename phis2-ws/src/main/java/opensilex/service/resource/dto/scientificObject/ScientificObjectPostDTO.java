@@ -140,6 +140,5 @@ public class ScientificObjectPostDTO extends AbstractVerifiedClass {
 
     public void setProperties(ArrayList<PropertyPostDTO> properties) {
         this.properties = properties;
-    }   
-    
+    }    
 }

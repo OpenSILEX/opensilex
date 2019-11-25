@@ -47,17 +47,11 @@ public class ScientificObject {
     /**
      * Object which has part the scientific object
      */
-    private String isPartOf;
-    
+    private String isPartOf;    
     //year of the scientific object
-    private String year;
-    
+    private String year;    
     //label of the scientific object
     private String label;
-    
-    //germplasm
-    private String germplasmURI;
-    
     //The properties of the scientific object
     
     private ArrayList<Property> properties = new ArrayList<>();
@@ -144,22 +138,4 @@ public class ScientificObject {
     public void setYear(String year) {
         this.year = year;
     }
-
-    public String getAlias() {
-        return alias;
-    }
-
-    public void setAlias(String alias) {
-        this.alias = alias;
-    }   
-
-    public String getGermplasmURI() {
-        return germplasmURI;
-    }
-
-    public void setGermplasmURI(String germplasmURI) {
-        this.germplasmURI = germplasmURI;
-    }
-    
-    
 }

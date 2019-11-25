@@ -88,7 +88,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     private final String PROPERTY_TYPE = "propertyType";
     private final String CHILD = "child";
     private final String RELATION = "relation";
-
+    
     private static final String MAX_ID = "maxID";
     
     public ScientificObjectRdf4jDAO() {
@@ -651,7 +651,6 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                         } else {
                             scientificObject.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
                         }
-
                     }
                     
                     //Get scientific object properties
@@ -740,7 +739,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             sparqlQuery.appendSelect("?" + EXPERIMENT);
             sparqlQuery.appendOptional("?" + URI + " <" + Oeso.RELATION_PARTICIPATES_IN.toString() + "> " + "?" + EXPERIMENT + " . ");
         }
-                
+        
         //Rdf type filter
         if (rdfType != null) {
             sparqlQuery.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), rdfType, null);
@@ -752,7 +751,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                     "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", 
                     Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString(), null);
         }
-                
+        
         if (page != null && pageSize != null) {
             sparqlQuery.appendLimit(pageSize);
             sparqlQuery.appendOffset(page * pageSize);
@@ -762,7 +761,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         
         return sparqlQuery;
     }
-        
+     
     /**
      * Checks if the scientific object exists.
      * @param uri
@@ -881,12 +880,6 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             }
             
             spql.addInsert(graph, scientificObjectUri, RDF.type, scientificObjectType);
-            
-            if (scientificObject.getGermplasmURI() != null) {
-                Resource germplasmURI = ResourceFactory.createResource(scientificObject.getGermplasmURI());
-                org.apache.jena.rdf.model.Property relationHasGermplasm = ResourceFactory.createProperty(Oeso.RELATION_HAS_GERMPLASM.toString());
-                spql.addInsert(graph, scientificObjectUri, relationHasGermplasm, germplasmURI);                
-            }
             
             // Properties associated to the scientific object
             for (Property property : scientificObject.getProperties()) {

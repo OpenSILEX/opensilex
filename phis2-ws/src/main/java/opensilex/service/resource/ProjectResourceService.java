@@ -32,6 +32,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.apache.commons.lang3.StringUtils;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.ProjectDAO;
@@ -306,6 +307,7 @@ public class ProjectResourceService extends ResourceService {
      * @param shortname
      * @param financialFunding
      * @param financialReference
+     * @param financialFundingLang
      * @param description
      * @param startDate
      * @param endDate
@@ -379,29 +381,31 @@ public class ProjectResourceService extends ResourceService {
         @ApiParam(value = "Search by project name", example = DocumentationAnnotation.EXAMPLE_PROJECT_NAME) @QueryParam("name") String name,
         @ApiParam(value = "Search by shortname", example = DocumentationAnnotation.EXAMPLE_PROJECT_SHORTNAME) @QueryParam("shortname") String shortname,
         @ApiParam(value = "Search by financial funding", example = DocumentationAnnotation.EXAMPLE_PROJECT_FINANCIAL_FUNDING) @QueryParam("financialFunding") String financialFunding,
+    	@ApiParam(value = "Search by financial funding lang", example = DocumentationAnnotation.EXAMPLE_DOCUMENT_LANGUAGE) @QueryParam("financialFundingLang") String financialFundingLang,
         @ApiParam(value = "Search by financial reference", example = DocumentationAnnotation.EXAMPLE_PROJECT_FINANCIAL_REFERENCE) @QueryParam("financialReference") String financialReference,
         @ApiParam(value = "Search by description", example = DocumentationAnnotation.EXAMPLE_PROJECT_DESCRIPTION) @QueryParam("description") String description,
         @ApiParam(value = "Search by start date", example = DocumentationAnnotation.EXAMPLE_PROJECT_DATE_START) @QueryParam("startDate") String startDate,
         @ApiParam(value = "Search by end date", example = DocumentationAnnotation.EXAMPLE_PROJECT_DATE_END) @QueryParam("endDate") String endDate,
         @ApiParam(value = "Search by home page", example = DocumentationAnnotation.EXAMPLE_PROJECT_HOME_PAGE) @QueryParam("homePage") String homePage,
-        @ApiParam(value = "Search by objective", example = DocumentationAnnotation.EXAMPLE_PROJECT_OBJECTIVE) @QueryParam("objective") String objective) {
+        @ApiParam(value = "Search by objective", example = DocumentationAnnotation.EXAMPLE_PROJECT_OBJECTIVE) @QueryParam("objective") String objective)
+
+    {
         
-        ProjectDAO projectDAO = new ProjectDAO();
+        ProjectDAO projectDAO = new ProjectDAO();     
+        if(StringUtils.isEmpty(financialFundingLang))
+        	financialFundingLang = DEFAULT_LANGUAGE;
         
         //1. Get count
-        Integer totalCount = projectDAO.count(uri, name, shortname, financialFunding, financialReference, description, startDate, endDate, homePage, objective);
-        
+        Integer totalCount = projectDAO.count(uri, name, shortname, financialFunding, financialReference, description, startDate, endDate, homePage, objective, financialFundingLang);        
         //2. Get projects
-        ArrayList<Project> projectsFounded = projectDAO.find(page, pageSize, uri, name, shortname, financialFunding, financialReference, description, startDate, endDate, homePage, objective);
+        ArrayList<Project> projectsFounded = projectDAO.find(page, pageSize, uri, name, shortname, financialFunding, financialReference, description, startDate, endDate, homePage, objective,financialFundingLang);
         
         //3. Return result
         ArrayList<Status> statusList = new ArrayList<>();
         ArrayList<ProjectDTO> projectsToReturn = new ArrayList<>();
         ResultForm<ProjectDTO> getResponse;
-        if (projectsFounded == null) { //Request failure
-            getResponse = new ResultForm<>(0, 0, projectsToReturn, true);
-            return noResultFound(getResponse, statusList);
-        } else if (projectsFounded.isEmpty()) { //No result found
+        
+        if (projectsFounded == null || projectsFounded.isEmpty()) { //Request failure || No result found
             getResponse = new ResultForm<>(0, 0, projectsToReturn, true);
             return noResultFound(getResponse, statusList);
         } else { //Results
@@ -416,3 +420,4 @@ public class ProjectResourceService extends ResourceService {
         }
     }
 }
+

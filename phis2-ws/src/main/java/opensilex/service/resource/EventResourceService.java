@@ -39,7 +39,6 @@ import org.slf4j.LoggerFactory;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
-import opensilex.service.dao.AnnotationDAO;
 import opensilex.service.dao.EventDAO;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.documentation.DocumentationAnnotation;
@@ -51,7 +50,6 @@ import opensilex.service.resource.dto.rdfResourceDefinition.RdfResourceDefinitio
 import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
-import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.model.Event;
 import opensilex.service.resource.dto.event.EventPutDTO;
@@ -491,7 +489,7 @@ public class EventResourceService  extends ResourceService {
 		if (context.getRemoteAddr() != null) {
 			 eventDao.setRemoteUserAdress(context.getRemoteAddr());
 	    }
-		Response response = buildDeleteObjectsByUriResponse(eventDao, deleteDTO);
+		Response response = buildDeleteObjectsByUriResponse(eventDao, deleteDTO,"Event(s) deleted");
     	eventDao.getConnection().close();
     	return response;
     }

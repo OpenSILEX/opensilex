@@ -380,14 +380,13 @@ public abstract class ResourceService {
      * @param deleteDTO : a {@link DeleteDTO} which contains a {@link List} of uris.  
      * @return 
      */
-    protected Response buildDeleteObjectsByUriResponse(Rdf4jDAO<?> dao, DeleteDTO deleteDTO) {
+    protected Response buildDeleteObjectsByUriResponse(Rdf4jDAO<?> dao, DeleteDTO deleteDTO,String msg) {
     	
     	Objects.requireNonNull(dao);
-    	Objects.requireNonNull(deleteDTO);
-    	
+    	Objects.requireNonNull(deleteDTO);    	
     	try {
     		dao.checkAndDeleteAll(deleteDTO.getUris());
-        	ResponseFormPOST resp = new ResponseFormPOST(new Status("Annotation(s) deleted",null));
+        	ResponseFormPOST resp = new ResponseFormPOST(new Status(msg,null));
             return buildResponse(Response.Status.OK,resp);
     	} catch(Exception e) {
     		return buildResponseFromException(e);

@@ -610,24 +610,31 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
      * @see #deleteAll(List)
      */
     public void checkAndDeleteAll(List<String> uris) throws IllegalArgumentException, DAOPersistenceException, Exception { 	
+    	
     	if(user == null || StringUtils.isEmpty(user.getAdmin())) {
     		throw new IllegalArgumentException("No user/bad user provided");
     	}
     	if(! new UserDAO().isAdmin(user)) { // the user is not an admin
     		throw new IllegalArgumentException("Error : only an admin user can delete an object");
     	}
+    	
+    	StringBuilder errorMsgs = new StringBuilder();
+    	boolean allUriExists = true;   	
+		for(String uri : uris) { 
+			if(! existUri(uri)) {
+				errorMsgs.append(uri+" , ");
+				allUriExists = false;
+			}
+    	}
+    	if(!allUriExists) {
+    		throw new IllegalArgumentException(errorMsgs.append(" don't belongs to the TripleStore").toString());
+    	}
+    	
     	Exception returnedException = null;
 		try {
-			// #FIXME : make the check of n uris existence more efficient
-			for(String uri : uris) {
-				if(! existUri(uri)) {
-					throw new IllegalArgumentException(uris+" don't belongs to the TripleStore");
-				}
-	    	}
 			startTransaction();    			
 			deleteAll(uris);
-	    	commitTransaction();	
-	    	
+	    	commitTransaction();		    	
 		} catch (RepositoryException | UpdateExecutionException e) {
 			rollbackTransaction();
 			returnedException =  new DAOPersistenceException(e);

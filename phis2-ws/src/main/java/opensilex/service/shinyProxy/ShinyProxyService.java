@@ -3,7 +3,7 @@
 // SILEX-PHIS
 // Copyright © INRA 2019
 // Creation date: 5 sept. 2019
-// Contact: Expression userEmail is undefined on line 6, column 15 in file:///home/charlero/GIT/GITHUB/phis-ws/phis2-ws/licenseheader.txt., anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.shinyProxy;
 
@@ -28,7 +28,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -39,8 +38,9 @@ import opensilex.service.dao.ScientificAppDAO;
 import org.slf4j.LoggerFactory;
 
 /**
- *
- * @author charlero
+ * ShinyProxyService
+ * Manage the link with ShinyProxy Service
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class ShinyProxyService {
 
@@ -105,6 +105,7 @@ public class ShinyProxyService {
         }
         if (isConfigFileWritten && validShinyProxyInstallation) {
             boolean runningShinyProxy = runProxyDockerImage();
+            SHINYPROX_RUN_STATE = true;
             if (runningShinyProxy) {
                 LOGGER.info("Shinyproxy is running");
             }
@@ -129,9 +130,9 @@ public class ShinyProxyService {
         SHINYPROXY_APPS_LIST = new ArrayList<>();
     }
 
-    /**
-     *
-     */
+   /**
+    * Reload ShinyProxy Service
+    */
     public void reload() {
         CompletableFuture<String> completableFuture
                 = new CompletableFuture<>();
@@ -161,12 +162,6 @@ public class ShinyProxyService {
         LOGGER.info("Using default " + INTERNAL_SHINYPROXY_CONFIG_FILEPATH + " config file");
 
         Map<String, Object> proxy = (Map) parsedYAMLFile.get("proxy");
-//        final String shinyHost = PropertiesFileManager.
-//                getConfigFileProperty("data_analysis_config", "shinyproxy.host");
-//        final String shinyPort = PropertiesFileManager.
-//                getConfigFileProperty("data_analysis_config", "shinyproxy.port");
-//        proxy.put("bind-address", shinyHost);
-//        proxy.put("port", Integer.parseInt(shinyPort));
         ArrayList<Map> specs = new ArrayList<>();
         for (ScientificAppDescription shinyAppDescription : SHINYPROXY_APPS_LIST) {
             if (shinyAppDescription.getExtractDockerFilesState()) {
@@ -179,8 +174,8 @@ public class ShinyProxyService {
     }
 
     /**
-     *
-     * @return
+     * Build Shiny proxy docker Image
+     * @return process
      */
     private boolean buildShinyProxyDockerImage() {
 
@@ -291,12 +286,19 @@ public class ShinyProxyService {
         return null;
     }
 
+    /**
+     * Run a list of task in asynchronous or synchronous way
+     * @param callables process
+     * @param parralelism if true run asynchronous tasks
+     *                    if false run synchronous tasks
+     * @return 
+     */
     private boolean runListTask(List<Callable<Process>> callables, boolean parralelism) {
         ExecutorService executor;
         if (parralelism) {
-            executor = Executors.newSingleThreadExecutor();
-        } else {
             executor = Executors.newWorkStealingPool();
+        } else {
+            executor = Executors.newSingleThreadExecutor();
         }
 
         try {
@@ -324,7 +326,7 @@ public class ShinyProxyService {
     }
 
     /**
-     *
+     * Create a directory to save informations to run dockerFile and scientific applications
      * @param shinyProxyAppList
      */
     private void createDockerDirAndFiles(ArrayList<ScientificAppDescription> shinyProxyAppList) {
@@ -332,7 +334,10 @@ public class ShinyProxyService {
             DocumentMongoDAO documentMongoDAO = new DocumentMongoDAO();
             File document = documentMongoDAO.getDocument(shinyAppDescription.getDocumentUri());
             // Create appDirectory
-            File shinyDockerPath = Paths.get(SHINYPROXY_DOCKER_FILES.toString(), File.separator, shinyAppDescription.getId()).toFile();
+            File shinyDockerPath = Paths.get(
+                    SHINYPROXY_DOCKER_FILES.toString(),
+                    File.separator, shinyAppDescription.getId()
+            ).toFile();
             shinyDockerPath.mkdirs();
             shinyAppDescription.setExtractDockerFilesState(
                     unzipFile(document.toString(), shinyDockerPath.toString())
@@ -341,7 +346,7 @@ public class ShinyProxyService {
     }
 
     /**
-     *
+     * Unzip an zip archive
      * @param zipFile
      * @param extractFolder
      * @return
@@ -401,21 +406,24 @@ public class ShinyProxyService {
     }
 
     /**
-     *
-     * @param shinyProxyAppList
+     * Create docker image from application definition
+     * @param shinyProxyAppList Application definition
      */
     private void createWebApplicationsBuildImageProcess(ArrayList<ScientificAppDescription> shinyProxyAppList) {
         List<Callable<Process>> callables = new ArrayList();
         for (ScientificAppDescription shinyAppDescription : shinyProxyAppList) {
             if (shinyAppDescription.getExtractDockerFilesState()) {
                 Callable<Process> callableObj = () -> {
-                    File shinyDockerPath = Paths.get(SHINYPROXY_DOCKER_FILES.toString(), File.separator, shinyAppDescription.getId()).toFile();
+                    File shinyDockerPath = Paths.get(
+                            SHINYPROXY_DOCKER_FILES.toString(),
+                            File.separator, shinyAppDescription.getId()
+                    ).toFile();
                     String[] proccessArgs = {
                         "docker",
                         "build",
                         ".",
                         "-t",
-                        shinyAppDescription.container_image};
+                        shinyAppDescription.containerImageName};
                     return executeProcess(proccessArgs, shinyDockerPath);
                 };
                 callables.add(callableObj);
@@ -424,6 +432,10 @@ public class ShinyProxyService {
        runListTask(callables,true);
     }
 
+    /**
+     * Run shiny Proxy Service 
+     * @return 
+     */
     private boolean runProxyDockerImage() {
         final String shinyproxyPort = PropertiesFileManager.getConfigFileProperty("data_analysis_config", "shinyproxy.port");
         List<Callable<Process>> callables = new ArrayList();

@@ -3,7 +3,7 @@
 // SILEX-PHIS
 // Copyright © INRA 2019
 // Creation date: 15 sept. 2019
-// Contact: Expression userEmail is undefined on line 6, column 15 in file:///home/charlero/GIT/GITHUB/phis-ws/phis2-ws/licenseheader.txt., anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.dao;
 
@@ -23,11 +23,15 @@ import opensilex.service.shinyProxy.ShinyProxyService;
 import static opensilex.service.shinyProxy.ShinyProxyService.SHINYPROXY_APP_DOCTYPE;
 
 /**
- *
- * @author charlero
+ * ScientificAppDAO
+ * Manage Scientific applications in R or Python
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class ScientificAppDAO extends DAO<ScientificAppDescription> {
 
+    /**
+     * User session
+     */
     public Session session;
 
     @Override
@@ -86,16 +90,21 @@ public class ScientificAppDAO extends DAO<ScientificAppDescription> {
     }
 
     /**
-     *
-     * @param id maybe useful
-     * @param label not used for now
+     * Find a specific scientific application metadata
+     * @param id application shinyproxy id
+     * @param label application label (not used for now)
      * @return
      */
     public ArrayList<ScientificAppDescription> find(String id, String label) {
         ArrayList<Document> documentsMetadata = listScientificAppMetadataFromTripleStore(id);
         return getShinyProxyAppListFromDocumentMetadata(documentsMetadata);
     }
-
+    
+    /**
+     * Get scientific application list metadata
+     * @param documentsMetadata file metadata
+     * @return list of scientific applicatiion
+     */
     private ArrayList<ScientificAppDescription> getShinyProxyAppListFromDocumentMetadata(ArrayList<Document> documentsMetadata) {
         File shinyDockersFileDir = ShinyProxyService.SHINYPROXY_DOCKER_FILES.toFile();
         shinyDockersFileDir.mkdirs();
@@ -105,7 +114,6 @@ public class ScientificAppDAO extends DAO<ScientificAppDescription> {
             sessionId = session.getId();
         }
         for (Document documentMetadata : documentsMetadata) {
-
             ScientificAppDescription shinyAppDescription = new ScientificAppDescription(
                     documentMetadata.getUri(),
                     documentMetadata.getTitle(),
@@ -116,6 +124,11 @@ public class ScientificAppDAO extends DAO<ScientificAppDescription> {
         return shinyProxyAppList;
     }
 
+    /**
+     * Find Scientific application metadata in TripleStore 
+     * @param uri id of the application
+     * @return list of document metadata
+     */
     private ArrayList<Document> listScientificAppMetadataFromTripleStore(String uri) {
         ArrayList<Document> documentsMetadata = new ArrayList<>();
         DocumentRdf4jDAO documentRdf4jDao = new DocumentRdf4jDAO();
@@ -131,5 +144,4 @@ public class ScientificAppDAO extends DAO<ScientificAppDescription> {
         documentsMetadata = documentRdf4jDao.allPaginate();
         return documentsMetadata;
     }
-
 }

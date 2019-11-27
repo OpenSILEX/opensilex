@@ -3,7 +3,7 @@
 // SILEX-PHIS
 // Copyright © INRA 2019
 // Creation date: 6 sept. 2019
-// Contact: Expression userEmail is undefined on line 6, column 15 in file:///home/charlero/GIT/GITHUB/phis-ws/phis2-ws/licenseheader.txt., anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.eventListener;
 
@@ -19,8 +19,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
- * @author charlero
+ * EventListener
+ * Represents events that propagate by the webservice
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 public class EventListener implements ApplicationEventListener {
 
@@ -51,13 +52,13 @@ public class EventListener implements ApplicationEventListener {
                         completableFuture.complete("Shiny Proxy Complete");
                         return null;
                     });
-
                 }
                 break;
             case RELOAD_FINISHED:
                 LOGGER.info("Reload OpenSILEX WS completed");
                 break;
             case DESTROY_FINISHED:
+                LOGGER.info("Destroying ShinyProxy Process completed");
                 shinyProxyProcess.stop();
                 LOGGER.info("Destroy OpenSILEX WS completed");
                 break;

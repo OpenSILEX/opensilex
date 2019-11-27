@@ -127,7 +127,8 @@ public class EventDAO extends Rdf4jDAO<Event> {
      * @example SparQL filter added:
      *  SELECT DISTINCT ?rdfType
      *  WHERE {
-     *    ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.opensilex.org/vocabulary/oeev#MoveFrom> . 
+     *    ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.opensilex.org/vocabulary/oeev#Event> .
+     *    ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  .
      *  }
      *  GROUP BY ?rdfType
      * @param query
@@ -140,8 +141,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
         if(inGroupBy){
             query.appendGroupBy(RDF_TYPE_SELECT_NAME_SPARQL);
         }
-        query.appendTriplet(uriSelectNameSparql, Rdf.RELATION_TYPE.toString(), RDF_TYPE_SELECT_NAME_SPARQL, null);
-        if (searchType != null) {
+          if (searchType != null) {
             query.appendTriplet(
                     RDF_TYPE_SELECT_NAME_SPARQL, 
                     "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", 
@@ -153,7 +153,9 @@ public class EventDAO extends Rdf4jDAO<Event> {
                     "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", 
                     Oeev.Event.getURI(), 
                     null);
-        }    
+        }
+        query.appendTriplet(uriSelectNameSparql, Rdf.RELATION_TYPE.toString(), RDF_TYPE_SELECT_NAME_SPARQL, null);
+     
     }
     
     /**

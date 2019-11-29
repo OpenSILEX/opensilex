@@ -216,8 +216,7 @@ public final class CustomJsonWriterReader<T> implements MessageBodyWriter<T>,
         }
         // E.g. opensilex.service.ressource.dto.ProvenancePostDTO
         String[] enstityDTOPath = genericEntityType.split("[.]");
-        String entityType = Arrays.stream(enstityDTOPath).reduce((a, b) -> b)
-            .orElse(null);
+        String entityType = enstityDTOPath[enstityDTOPath.length - 1]; 
 
         // E.g. ProvenancePostDTO
         if(entityType == null){

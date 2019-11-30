@@ -9,6 +9,7 @@ import java.net.*;
 import java.util.*;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.*;
+import org.apache.jena.graph.*;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.sparql.core.*;
 import org.opensilex.sparql.*;
@@ -22,8 +23,8 @@ import org.opensilex.sparql.utils.*;
  */
 class SPARQLProxyListData<T> extends SPARQLProxyList<T> {
 
-    public SPARQLProxyListData(URI uri, Property property, Class<T> genericType, boolean isReverseRelation, SPARQLService service) throws DeserializerNotFoundException {
-        super(uri, property, genericType, isReverseRelation, service);
+    public SPARQLProxyListData(Node graph, URI uri, Property property, Class<T> genericType, boolean isReverseRelation, SPARQLService service) throws SPARQLDeserializerNotFoundException {
+        super(graph, uri, property, genericType, isReverseRelation, service);
     }
 
     @Override
@@ -32,6 +33,7 @@ class SPARQLProxyListData<T> extends SPARQLProxyList<T> {
 
         Var value = makeVar("value");
         select.addVar(value);
+        
         if (isReverseRelation) {
             select.addWhere(value, property, Ontology.nodeURI(uri));
         } else {
@@ -39,7 +41,7 @@ class SPARQLProxyListData<T> extends SPARQLProxyList<T> {
         }
 
         List<T> results = new ArrayList<>();
-        SPARQLDeserializer<T> deserializer = Deserializers.getForClass(genericType);
+        SPARQLDeserializer<T> deserializer = SPARQLDeserializers.getForClass(genericType);
 
         service.executeSelectQuery(select, (SPARQLResult result) -> {
             try {

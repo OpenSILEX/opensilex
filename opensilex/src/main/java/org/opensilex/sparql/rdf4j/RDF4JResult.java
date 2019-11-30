@@ -10,18 +10,11 @@ import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.query.*;
 import org.opensilex.sparql.*;
 
-
 /**
  *
  * @author vincent
  */
 public class RDF4JResult implements SPARQLResult {
-
-    private Statement statement;
-
-    public RDF4JResult(Statement statement) {
-        this.statement = statement;
-    }
 
     private BindingSet bindingSet;
 

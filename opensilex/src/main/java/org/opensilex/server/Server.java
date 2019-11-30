@@ -5,6 +5,7 @@
 //******************************************************************************
 package org.opensilex.server;
 
+import org.opensilex.module.extensions.ServerExtension;
 import java.io.*;
 import java.nio.file.*;
 import org.apache.catalina.*;
@@ -16,7 +17,6 @@ import org.apache.jasper.servlet.*;
 import org.apache.tomcat.*;
 import org.opensilex.*;
 import org.opensilex.fs.*;
-import org.opensilex.module.extensions.*;
 import org.opensilex.utils.*;
 import org.slf4j.*;
 

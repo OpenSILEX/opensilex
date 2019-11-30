@@ -202,6 +202,12 @@
             <version>${rdf4j.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.eclipse.rdf4j</groupId>
+            <artifactId>rdf4j-shacl</artifactId>
+            <version>${rdf4j.version}</version>
+            <scope>test</scope>
+        </dependency>          
         <!--DataNucleus - Big data object mapping--> 
         <dependency>
             <groupId>org.datanucleus</groupId>
@@ -426,6 +432,8 @@
                     <version>${maven.surefire.plugin.version}</version>
                     <configuration>
                         <argLine>-Dfile.encoding=${project.build.sourceEncoding}</argLine>
+                        <trimStackTrace>false</trimStackTrace>
+                        <useFile>false</useFile>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -511,6 +519,12 @@
                     <groupId>com.github.eirslett</groupId>
                     <artifactId>frontend-maven-plugin</artifactId>
                     <version>${frontend.maven.plugin.version}</version>
+                    <configuration>
+                        <nodeVersion>v12.8.0</nodeVersion>
+                        <yarnVersion>v1.18.0</yarnVersion>
+                        <installDirectory>../.ng</installDirectory>
+                        <workingDirectory>front</workingDirectory>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -524,6 +538,7 @@
                 <configuration>
                     <source>${java.compiler.version}</source>
                     <target>${java.compiler.version}</target>
+                    <compilerArgument>-proc:none</compilerArgument>
                     <!-- Add hibernate validation -->
                     <annotationProcessorPaths>
                         <path>
@@ -687,11 +702,128 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>${maven.clean.plugin.version}</version>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>front/dist</directory>
+                            <includes>
+                                <include>**</include>
+                            </includes>
+                        </fileset>
+                        <fileset>
+                            <directory>front/lib/</directory>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
     <!--  Configuration profiles  -->
     <profiles>
+        <!-- cutom section for specific front module build -->
+        <profile>
+            <id>front extension module</id>
+            <activation>
+                <file>
+                    <exists>front/packfdsfsdage.json</exists>
+                </file>
+            </activation>
+
+            <build>
+                <resources>
+                    <resource>
+                        <directory>front</directory>
+                        <excludes>
+                            <exclude>**</exclude>
+                        </excludes>
+                    </resource>
+                    <resource>
+                        <excludes>
+                            <exclude>**/!(opensilex.front.yml)</exclude>
+                        </excludes>
+                        <includes>
+                            <include>**/opensilex.front.yml</include>
+                        </includes>
+                        <directory>front</directory>
+                    </resource>
+                </resources>
+                <plugins>
+                    <plugin>
+                        <groupId>com.github.eirslett</groupId>
+                        <artifactId>frontend-maven-plugin</artifactId>
+                        <version>${frontend.maven.plugin.version}</version>
+                        
+                        <executions>
+                            <execution>
+                                <id>install local dependencies</id>
+                                <goals>
+                                    <goal>yarn</goal>
+                                </goals>
+
+                                <phase>generate-resources</phase>
+                                <configuration>
+                                    <arguments>--network-timeout 1000000 install</arguments>
+                                </configuration>
+                            </execution>
+                    
+                            <execution>
+                                <id>build plugin</id>
+                                <goals>
+                                    <goal>yarn</goal>
+                                </goals>
+
+                                <phase>compile</phase>
+                                <configuration>
+                                    <arguments>run build</arguments>
+                                    <workingDirectory>./front</workingDirectory>
+                                </configuration>
+                            </execution>
+                            
+                            <execution>
+                                <id>check local dependencies security issue</id>
+                                <goals>
+                                    <goal>yarn</goal>
+                                </goals>
+
+                                <phase>generate-resources</phase>
+                                <configuration>
+                                    <arguments>audit</arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <version>${maven.resources.plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>include front plugin</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${project.basedir}/target/classes/front</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>front/dist</directory>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        
         <!-- Profile which enable OWASP security check for libraries, could be VERY slow -->
         <profile>
             <id>with-security-check</id>

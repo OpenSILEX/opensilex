@@ -5,6 +5,7 @@
 //******************************************************************************
 package org.opensilex.sparql;
 
+import org.opensilex.sparql.utils.OrderBy;
 import java.io.*;
 import java.lang.reflect.*;
 import java.net.*;
@@ -24,11 +25,11 @@ import org.opensilex.service.*;
 import org.opensilex.sparql.deserializer.*;
 import org.opensilex.sparql.exceptions.*;
 import org.opensilex.sparql.mapping.*;
+import org.opensilex.sparql.model.*;
 import org.opensilex.sparql.rdf4j.*;
 import org.opensilex.sparql.utils.*;
 import org.opensilex.utils.*;
 import org.slf4j.*;
-
 
 /**
  * Implementation of SPARQLService
@@ -70,15 +71,23 @@ public class SPARQLService implements SPARQLConnection, Service {
     }
 
     @Override
-    public List<SPARQLResult> executeDescribeQuery(DescribeBuilder describe) throws SPARQLQueryException {
+    public List<SPARQLStatement> executeDescribeQuery(DescribeBuilder describe) throws SPARQLQueryException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("SPARQL DESCRIBE\n" + describe.buildString());
         }
         return connection.executeDescribeQuery(describe);
     }
 
+    public List<SPARQLStatement> describe(URI uri) throws SPARQLQueryException {
+        DescribeBuilder describe = new DescribeBuilder();
+        Var uriVar = makeVar("uri");
+        describe.addVar(uriVar);
+        describe.addBind(new ExprFactory().iri(uri), uriVar);
+        return executeDescribeQuery(describe);
+    }
+
     @Override
-    public List<SPARQLResult> executeConstructQuery(ConstructBuilder construct) throws SPARQLQueryException {
+    public List<SPARQLStatement> executeConstructQuery(ConstructBuilder construct) throws SPARQLQueryException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("SPARQL CONSTRUCT\n" + construct.buildString());
         }
@@ -156,13 +165,13 @@ public class SPARQLService implements SPARQLConnection, Service {
         executeUpdateQuery(insertQuery);
     }
 
-    public <T> T getByURI(Class<T> objectClass, URI uri) throws Exception {
+    public <T extends SPARQLModel> T getByURI(Class<T> objectClass, URI uri) throws Exception {
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
         T instance = sparqlObjectMapper.createInstance(uri, this);
         return instance;
     }
 
-    public <T> T loadByURI(Class<T> objectClass, URI uri) throws Exception {
+    public <T extends SPARQLModel> T loadByURI(Class<T> objectClass, URI uri) throws Exception {
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
         SelectBuilder select = sparqlObjectMapper.getSelectBuilder();
         Node nodeURI = NodeFactory.createURI(uri.toString());
@@ -180,12 +189,12 @@ public class SPARQLService implements SPARQLConnection, Service {
         }
     }
 
-    public <T> T getByUniquePropertyValue(Class<T> objectClass, Property property, Object propertyValue) throws Exception {
+    public <T extends SPARQLModel> T getByUniquePropertyValue(Class<T> objectClass, Property property, Object propertyValue) throws Exception {
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
         SelectBuilder select = sparqlObjectMapper.getSelectBuilder();
         Field field = sparqlObjectMapper.getFieldFromUniqueProperty(property);
 
-        SPARQLDeserializer<?> deserializer = Deserializers.getForClass(propertyValue.getClass());
+        SPARQLDeserializer<?> deserializer = SPARQLDeserializers.getForClass(propertyValue.getClass());
         select.addWhereValueVar(field.getName(), deserializer.getNode(propertyValue));
 
         List<SPARQLResult> results = executeSelectQuery(select);
@@ -199,21 +208,33 @@ public class SPARQLService implements SPARQLConnection, Service {
         }
     }
 
-    public <T> boolean existsByUniquePropertyValue(Class<T> objectClass, Property property, Object propertyValue) throws Exception {
+    public <T extends SPARQLModel> boolean existsByUniquePropertyValue(Class<T> objectClass, Property property, Object propertyValue) throws Exception {
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
         AskBuilder ask = sparqlObjectMapper.getAskBuilder();
         Field field = sparqlObjectMapper.getFieldFromUniqueProperty(property);
-        SPARQLDeserializer<?> deserializer = Deserializers.getForClass(propertyValue.getClass());
+        SPARQLDeserializer<?> deserializer = SPARQLDeserializers.getForClass(propertyValue.getClass());
         ask.setVar(field.getName(), deserializer.getNode(propertyValue));
 
         return executeAskQuery(ask);
     }
 
-    public <T> List<T> search(Class<T> objectClass, Consumer<SelectBuilder> filterHandler) throws Exception {
+    public <T extends SPARQLModel> List<T> search(Class<T> objectClass) throws Exception {
+        return search(objectClass, null, null, null, null);
+    }
+
+    public <T extends SPARQLModel> List<T> search(Class<T> objectClass, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
         return search(objectClass, filterHandler, null, null, null);
     }
 
-    public <T> List<T> search(Class<T> objectClass, Consumer<SelectBuilder> filterHandler, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+    public <T extends SPARQLModel> List<T> search(Class<T> objectClass, List<OrderBy> orderByList) throws Exception {
+        return search(objectClass, null, orderByList, null, null);
+    }
+
+    public <T extends SPARQLModel> List<T> search(Class<T> objectClass, ThrowingConsumer<SelectBuilder, Exception> filterHandler, List<OrderBy> orderByList) throws Exception {
+        return search(objectClass, filterHandler, orderByList, null, null);
+    }
+
+    public <T extends SPARQLModel> List<T> search(Class<T> objectClass, ThrowingConsumer<SelectBuilder, Exception> filterHandler, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
         SelectBuilder select = sparqlObjectMapper.getSelectBuilder();
 
@@ -245,7 +266,7 @@ public class SPARQLService implements SPARQLConnection, Service {
         return resultList;
     }
 
-    public <T> int count(Class<T> objectClass, Consumer<SelectBuilder> filterHandler) throws Exception {
+    public <T extends SPARQLModel> int count(Class<T> objectClass, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
         SelectBuilder selectCount = sparqlObjectMapper.getCountBuilder("count");
 
@@ -262,11 +283,13 @@ public class SPARQLService implements SPARQLConnection, Service {
         }
     }
 
-    public <T> ListWithPagination<T> searchWithPagination(Class<T> objectClass, Consumer<SelectBuilder> filterHandler, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+    public <T extends SPARQLModel> ListWithPagination<T> searchWithPagination(Class<T> objectClass, ThrowingConsumer<SelectBuilder, Exception> filterHandler, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
         int total = count(objectClass, filterHandler);
 
         List<T> list;
-        if (total > 0 && (page * pageSize) < total) {
+        if (pageSize == null || pageSize == 0) {
+            list = search(objectClass, filterHandler, orderByList);
+        } else if (total > 0 && (page * pageSize) < total) {
             list = search(objectClass, filterHandler, orderByList, page, pageSize);
         } else {
             list = new ArrayList<T>();
@@ -275,7 +298,7 @@ public class SPARQLService implements SPARQLConnection, Service {
         return new ListWithPagination<T>(list, page, pageSize, total);
     }
 
-    public <T> void create(T instance) throws Exception {
+    public <T extends SPARQLModel> void create(T instance) throws Exception {
         @SuppressWarnings("unchecked")
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass((Class<T>) instance.getClass());
 
@@ -286,7 +309,7 @@ public class SPARQLService implements SPARQLConnection, Service {
         executeUpdateQuery(create);
     }
 
-    public <T> void create(List<T> instances) throws Exception {
+    public <T extends SPARQLModel> void create(List<T> instances) throws Exception {
         UpdateBuilder create = new UpdateBuilder();
         for (T instance : instances) {
             @SuppressWarnings("unchecked")
@@ -298,7 +321,7 @@ public class SPARQLService implements SPARQLConnection, Service {
         executeUpdateQuery(create);
     }
 
-    private <T> void generateUniqueUriIfNullOrValidateCurrent(SPARQLClassObjectMapper<T> sparqlObjectMapper, T instance) throws Exception {
+    private <T extends SPARQLModel> void generateUniqueUriIfNullOrValidateCurrent(SPARQLClassObjectMapper<T> sparqlObjectMapper, T instance) throws Exception {
         URIGenerator<T> uriGenerator = sparqlObjectMapper.getUriGenerator(instance);
         URI uri = sparqlObjectMapper.getURI(instance);
         if (uri == null) {
@@ -316,7 +339,7 @@ public class SPARQLService implements SPARQLConnection, Service {
         }
     }
 
-    public <T> void update(T instance) throws Exception {
+    public <T extends SPARQLModel> void update(T instance) throws Exception {
         @SuppressWarnings("unchecked")
         Class<T> objectClass = (Class<T>) instance.getClass();
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
@@ -327,7 +350,7 @@ public class SPARQLService implements SPARQLConnection, Service {
         executeUpdateQuery(update);
     }
 
-    public <T> void update(List<T> instances) throws Exception {
+    public <T extends SPARQLModel> void update(List<T> instances) throws Exception {
         UpdateBuilder update = new UpdateBuilder();
         for (T instance : instances) {
             @SuppressWarnings("unchecked")
@@ -339,7 +362,7 @@ public class SPARQLService implements SPARQLConnection, Service {
         executeUpdateQuery(update);
     }
 
-    public <T> void delete(Class<T> objectClass, URI uri) throws Exception {
+    public <T extends SPARQLModel> void delete(Class<T> objectClass, URI uri) throws Exception {
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
 
         UpdateBuilder delete = sparqlObjectMapper.getDeleteBuilder(loadByURI(objectClass, uri));
@@ -347,7 +370,7 @@ public class SPARQLService implements SPARQLConnection, Service {
         executeDeleteQuery(delete);
     }
 
-    public <T> void delete(Class<T> objectClass, List<URI> uris) throws Exception {
+    public <T extends SPARQLModel> void delete(Class<T> objectClass, List<URI> uris) throws Exception {
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
 
         UpdateBuilder delete = new UpdateBuilder();
@@ -372,20 +395,20 @@ public class SPARQLService implements SPARQLConnection, Service {
         return executeAskQuery(askQuery);
     }
 
-    public <T> boolean uriExists(Class<T> objectClass, URI uri) throws Exception {
+    public <T extends SPARQLModel> boolean uriExists(Class<T> objectClass, URI uri) throws Exception {
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
-        
+
         AskBuilder askQuery = new AskBuilder();
         Var p = makeVar("p");
         Var o = makeVar("o");
         Var type = makeVar("type");
         Node nodeUri = Ontology.nodeURI(uri);
         askQuery.addWhere(nodeUri, RDF.type, type);
-        
+
         Resource typeDef = sparqlObjectMapper.getRDFType();
-        
+
         askQuery.addWhere(type, Ontology.subClassAny, typeDef);
-        
+
         return executeAskQuery(askQuery);
     }
 

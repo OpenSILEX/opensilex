@@ -5,6 +5,9 @@
 //******************************************************************************
 package org.opensilex;
 
+import org.opensilex.module.dependencies.DependencyManager;
+import org.opensilex.module.base.BaseModule;
+import org.opensilex.module.base.BaseConfig;
 import ch.qos.logback.classic.*;
 import ch.qos.logback.classic.joran.*;
 import ch.qos.logback.core.joran.spi.*;
@@ -16,8 +19,6 @@ import javax.ws.rs.core.*;
 import org.apache.commons.io.*;
 import org.opensilex.config.*;
 import org.opensilex.module.*;
-import org.opensilex.module.base.*;
-import org.opensilex.module.dependency.*;
 import org.opensilex.service.*;
 import org.opensilex.utils.*;
 import org.slf4j.Logger;

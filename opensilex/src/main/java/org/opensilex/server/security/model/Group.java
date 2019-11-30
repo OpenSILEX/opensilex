@@ -8,6 +8,7 @@ package org.opensilex.server.security.model;
 import java.net.*;
 import org.apache.jena.vocabulary.*;
 import org.opensilex.sparql.annotations.*;
+import org.opensilex.sparql.model.*;
 import org.opensilex.sparql.utils.*;
 
 /**
@@ -18,10 +19,7 @@ import org.opensilex.sparql.utils.*;
         ontology = UserOntology.class,
         resource = "Group"
 )
-public class Group implements ClassURIGenerator<Group> {
-
-    @SPARQLResourceURI()
-    private URI uri;
+public class Group extends SPARQLModel implements ClassURIGenerator<Group> {
 
     @SPARQLProperty(
             ontology = DCTerms.class,
@@ -34,14 +32,6 @@ public class Group implements ClassURIGenerator<Group> {
             property = "title"
     )
     private String name;
-
-    public URI getUri() {
-        return uri;
-    }
-
-    public void setUri(URI uri) {
-        this.uri = uri;
-    }
 
     public String getDescription() {
         return description;

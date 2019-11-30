@@ -5,9 +5,11 @@
 //******************************************************************************
 package org.opensilex.module.base;
 
+import org.opensilex.module.extensions.APIExtension;
 import java.util.*;
-import org.opensilex.module.*;
-import org.opensilex.module.extensions.*;
+import org.opensilex.*;
+import org.opensilex.module.ModuleConfig;
+import org.opensilex.module.OpenSilexModule;
 import org.opensilex.sparql.mapping.*;
 
 /**

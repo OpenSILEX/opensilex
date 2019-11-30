@@ -22,9 +22,9 @@ public interface SPARQLConnection extends ServiceConnection {
 
     public boolean executeAskQuery(AskBuilder ask) throws SPARQLQueryException;
 
-    public List<SPARQLResult> executeDescribeQuery(DescribeBuilder describe) throws SPARQLQueryException;
+    public List<SPARQLStatement> executeDescribeQuery(DescribeBuilder describe) throws SPARQLQueryException;
 
-    public List<SPARQLResult> executeConstructQuery(ConstructBuilder construct) throws SPARQLQueryException;
+    public List<SPARQLStatement> executeConstructQuery(ConstructBuilder construct) throws SPARQLQueryException;
 
     public List<SPARQLResult> executeSelectQuery(SelectBuilder select, Consumer<SPARQLResult> resultHandler) throws SPARQLQueryException;
 

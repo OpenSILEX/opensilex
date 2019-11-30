@@ -16,7 +16,8 @@ testB:001
     test:hasStringList "A" ;
     test:hasStringList "B" ;
     test:hasStringList "C" ;
-    test:hasStringList "D" .
+    test:hasStringList "D" ;
+    <http://unknown.com/property> 1234 .
     
 testA:001
     a test:A ;

@@ -18,6 +18,7 @@ import org.apache.jena.sparql.core.*;
 import org.apache.jena.sparql.lang.sparql_11.*;
 import org.apache.jena.vocabulary.*;
 import org.opensilex.sparql.deserializer.*;
+import org.opensilex.sparql.model.*;
 import org.opensilex.sparql.utils.*;
 
 /**
@@ -119,29 +120,49 @@ public class SPARQLClassQueryBuilder {
         return countBuilder.clone();
     }
 
-    public UpdateBuilder getCreateBuilder(Node graph, Object instance) throws Exception {
+    public <T extends SPARQLModel> UpdateBuilder getCreateBuilder(Node graph, T instance) throws Exception {
         UpdateBuilder create = new UpdateBuilder();
         addCreateBuilder(graph, instance, create);
 
         return create;
     }
 
-    public void addCreateBuilder(Node graph, Object instance, UpdateBuilder create) throws Exception {
+    public <T extends SPARQLModel> void addCreateBuilder(Node graph, T instance, UpdateBuilder create) throws Exception {
         executeOnInstanceTriples(instance, (Triple triple, Boolean isReverse) -> {
-            if (graph != null) {
-                if (isReverse) {
-                    create.addInsert(graph, triple.getObject(), triple.getPredicate(), triple.getSubject());
-                } else {
-                    create.addInsert(graph, triple);
-                }
-            } else {
-                if (isReverse) {
-                    create.addInsert(triple.getObject(), triple.getPredicate(), triple.getSubject());
-                } else {
-                    create.addInsert(triple);
-                }
-            }
+            addCreateBuilderHelper(graph, triple, isReverse, create);
         });
+
+        URI uri = instance.getUri();
+
+        for (SPARQLModelRelation relation : instance.getRelations()) {
+
+            Class<?> valueType = relation.getType();
+            Node valueNode = SPARQLDeserializers.getForClass(valueType).getNodeFromString(relation.getValue());
+
+            Triple triple = new Triple(Ontology.nodeURI(uri), relation.getProperty().asNode(), valueNode);
+
+            Node relationGraph = graph;
+            if (relation.getGraph() != null) {
+                relationGraph = Ontology.nodeURI(relation.getGraph());
+            }
+            addCreateBuilderHelper(relationGraph, triple, relation.getReverse(), create);
+        }
+    }
+
+    private void addCreateBuilderHelper(Node graph, Triple triple, Boolean isReverse, UpdateBuilder create) {
+        if (graph != null) {
+            if (isReverse) {
+                create.addInsert(graph, triple.getObject(), triple.getPredicate(), triple.getSubject());
+            } else {
+                create.addInsert(graph, triple);
+            }
+        } else {
+            if (isReverse) {
+                create.addInsert(triple.getObject(), triple.getPredicate(), triple.getSubject());
+            } else {
+                create.addInsert(triple);
+            }
+        }
     }
 
     public UpdateBuilder getDeleteBuilder(Node graph, Object instance) throws Exception {
@@ -151,7 +172,7 @@ public class SPARQLClassQueryBuilder {
         return delete;
     }
 
-    public void addUpdateBuilder(Node graph, Object oldInstance, Object newInstance, UpdateBuilder update) throws Exception {
+    public <T extends SPARQLModel> void addUpdateBuilder(Node graph, T oldInstance, T newInstance, UpdateBuilder update) throws Exception {
         final AtomicInteger i = new AtomicInteger(0);
         executeOnInstanceTriples(oldInstance, (Triple triple, Boolean isReverse) -> {
             String var = "?x" + i.addAndGet(1);
@@ -244,7 +265,7 @@ public class SPARQLClassQueryBuilder {
                 }
             } else {
                 Property property = analyzer.getDataPropertyByField(field);
-                Node fieldNodeValue = Deserializers.getForClass(fieldValue.getClass()).getNode(fieldValue);
+                Node fieldNodeValue = SPARQLDeserializers.getForClass(fieldValue.getClass()).getNode(fieldValue);
                 tripleHandler.accept(new Triple(Ontology.nodeURI(uri), property.asNode(), fieldNodeValue), analyzer.isReverseRelation(field));
             }
         }
@@ -277,7 +298,7 @@ public class SPARQLClassQueryBuilder {
                 Property property = analyzer.getDataListPropertyByField(field);
 
                 for (Object listValue : fieldValues) {
-                    Node listNodeValue = Deserializers.getForClass(listValue.getClass()).getNode(listValue);
+                    Node listNodeValue = SPARQLDeserializers.getForClass(listValue.getClass()).getNode(listValue);
                     tripleHandler.accept(new Triple(Ontology.nodeURI(uri), property.asNode(), listNodeValue), analyzer.isReverseRelation(field));
                 }
             }
@@ -308,5 +329,4 @@ public class SPARQLClassQueryBuilder {
             }
         }
     }
-
 }

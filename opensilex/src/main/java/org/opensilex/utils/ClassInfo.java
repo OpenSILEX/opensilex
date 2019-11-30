@@ -13,10 +13,11 @@ import java.util.*;
 import java.util.zip.*;
 import org.apache.maven.model.*;
 import org.apache.maven.model.io.xpp3.*;
+import org.opensilex.server.rest.*;
+import org.opensilex.sparql.model.*;
 import org.reflections.*;
 import org.reflections.util.*;
 import org.slf4j.*;
-
 
 /**
  *
@@ -247,5 +248,16 @@ public class ClassInfo {
 
     public static Set<Class<?>> getAnnotatedClasses(Class<? extends Annotation> annotation) {
         return getReflectionInstance().getTypesAnnotatedWith(annotation);
+    }
+
+    public static Map<String, Class<?>> getAnnotatedClassesMap(Class<? extends Annotation> annotation) {
+        Map<String, Class<?>> classMap = new HashMap<>();
+
+        getReflectionInstance().getTypesAnnotatedWith(annotation).forEach((Class<?> c) -> {
+            LOGGER.debug("Annoted class found: " + annotation.getCanonicalName());
+            classMap.put(c.getCanonicalName(), c);
+        });
+        
+        return classMap;
     }
 }

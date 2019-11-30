@@ -12,6 +12,7 @@ import org.apache.jena.arq.querybuilder.*;
 import org.apache.jena.graph.*;
 import org.apache.jena.rdf.model.*;
 import org.opensilex.sparql.*;
+import org.opensilex.sparql.model.*;
 import org.opensilex.sparql.utils.*;
 
 
@@ -19,10 +20,10 @@ import org.opensilex.sparql.utils.*;
  *
  * @author vincent
  */
-public class SPARQLProxyListObject<T> extends SPARQLProxyList<T> {
+public class SPARQLProxyListObject<T extends SPARQLModel> extends SPARQLProxyList<T> {
 
-    public SPARQLProxyListObject(URI uri, Property property, Class<T> genericType, boolean isReverseRelation, SPARQLService service) {
-        super(uri, property, genericType, isReverseRelation, service);
+    public SPARQLProxyListObject(Node graph, URI uri, Property property, Class<T> genericType, boolean isReverseRelation, SPARQLService service) {
+        super(graph, uri, property, genericType, isReverseRelation, service);
         
     }
 

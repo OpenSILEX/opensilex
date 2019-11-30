@@ -54,7 +54,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
                 try {
                     URI userURI = authentication.decodeTokenUserURI(tokenValue.replace("Bearer ", ""));
-                    User user = sparql.getByURI(User.class, userURI);
+                    UserModel user = sparql.getByURI(UserModel.class, userURI);
 
                     SecurityContext originalContext = requestContext.getSecurityContext();
 

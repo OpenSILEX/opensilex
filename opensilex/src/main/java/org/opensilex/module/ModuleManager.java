@@ -5,6 +5,7 @@
 //******************************************************************************
 package org.opensilex.module;
 
+import org.opensilex.module.dependencies.DependencyManager;
 import java.io.*;
 import java.lang.reflect.*;
 import java.net.*;
@@ -14,7 +15,6 @@ import java.util.*;
 import java.util.function.*;
 import org.apache.commons.io.*;
 import org.opensilex.config.*;
-import org.opensilex.module.dependency.*;
 import org.opensilex.service.*;
 import org.slf4j.*;
 

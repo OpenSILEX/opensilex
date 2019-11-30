@@ -1,0 +1,12 @@
+{
+    "name": "opensilex-core-front",
+    "version": "0.1.0",
+    "private": true,
+    "main": "./dist/opensilex-core-front.umd.js",
+    "scripts": {
+        "serve": "vue-cli-service build --target lib --watch src/index.ts",
+        "build": "vue-cli-service build --target lib src/index.ts"
+    },
+    "devDependencies": {},
+    "dependencies": {}
+}

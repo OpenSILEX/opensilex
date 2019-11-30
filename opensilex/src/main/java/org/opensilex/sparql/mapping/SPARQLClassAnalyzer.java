@@ -14,6 +14,7 @@ import org.apache.jena.rdf.model.*;
 import org.opensilex.sparql.annotations.*;
 import org.opensilex.sparql.deserializer.*;
 import org.opensilex.sparql.exceptions.*;
+import org.opensilex.sparql.model.*;
 import org.opensilex.sparql.utils.*;
 import org.opensilex.utils.*;
 import org.slf4j.*;
@@ -44,6 +45,8 @@ public class SPARQLClassAnalyzer {
 
     private final Map<Property, Field> fieldsByUniqueProperty = new HashMap<>();
 
+    private final Set<String>  managedProperties = new HashSet<>();
+        
     private final BiMap<Method, Field> fieldsByGetter;
 
     private final BiMap<Method, Field> fieldsBySetter;
@@ -52,7 +55,8 @@ public class SPARQLClassAnalyzer {
 
     private final List<Field> reverseRelationFields = new ArrayList<>();
 
-    private final URIGenerator<Object> uriGenerator;
+    private final URIGenerator<? extends SPARQLModel> uriGenerator;
+
 
     public SPARQLClassAnalyzer(Class<?> objectClass) throws SPARQLInvalidClassDefinitionException {
         LOGGER.debug("Start SPARQL model class analyze for: " + objectClass.getName());
@@ -115,7 +119,7 @@ public class SPARQLClassAnalyzer {
         }
 
         LOGGER.debug("Init fields accessor registry for: " + objectClass.getName());
-        Method[] methods = objectClass.getDeclaredMethods();
+        Method[] methods = objectClass.getMethods();
         fieldsByGetter = HashBiMap.create(fieldsByName.size());
         fieldsBySetter = HashBiMap.create(fieldsByName.size());
         for (Method method : methods) {
@@ -152,7 +156,7 @@ public class SPARQLClassAnalyzer {
             if (ClassInfo.isGenericList(parameterizedType)) {
                 Class<?> genericParameter = (Class<?>) parameterizedType.getActualTypeArguments()[0];
                 LOGGER.debug("Field " + field.getName() + " is a list of: " + genericParameter.getName());
-                if (Deserializers.existsForClass(genericParameter)) {
+                if (SPARQLDeserializers.existsForClass(genericParameter)) {
                     LOGGER.debug("Field " + field.getName() + " is a data property list of: " + objectClass.getName());
                     dataPropertiesLists.put(field, property);
                 } else {
@@ -162,7 +166,7 @@ public class SPARQLClassAnalyzer {
             } else {
                 throw new SPARQLInvalidClassDefinitionException(objectClass, "Field " + field.getName() + " as an unsupported type, only List are allowed as generics");
             }
-        } else if (Deserializers.existsForClass((Class<?>) fieldType)) {
+        } else if (SPARQLDeserializers.existsForClass((Class<?>) fieldType)) {
             LOGGER.debug("Field " + field.getName() + " is a data property of: " + objectClass.getName());
             dataProperties.put(field, property);
         } else if (SPARQLClassObjectMapper.existsForClass((Class<?>) fieldType)) {
@@ -191,6 +195,8 @@ public class SPARQLClassAnalyzer {
 
         LOGGER.debug("Store field " + field.getName() + " in global index by name");
         fieldsByName.put(field.getName(), field);
+        
+        managedProperties.add(property.getURI());
     }
 
     private void analyzeSPARQLResourceURIField(Field field) throws SPARQLInvalidClassDefinitionException {
@@ -407,7 +413,11 @@ public class SPARQLClassAnalyzer {
         }
     }
 
-    public URIGenerator<Object> getUriGenerator() {
+    public URIGenerator<? extends SPARQLModel> getUriGenerator() {
         return uriGenerator;
+    }
+
+    public Set<String> getManagedProperties() {
+        return managedProperties;
     }
 }

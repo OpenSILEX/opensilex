@@ -5,6 +5,7 @@
 //******************************************************************************
 package org.opensilex.server.rest;
 
+import org.opensilex.module.extensions.APIExtension;
 import io.swagger.jaxrs.config.*;
 import java.util.*;
 import javax.inject.*;
@@ -17,7 +18,6 @@ import org.glassfish.jersey.media.multipart.*;
 import org.glassfish.jersey.server.*;
 import org.opensilex.*;
 import org.opensilex.module.*;
-import org.opensilex.module.extensions.*;
 import org.opensilex.service.*;
 import org.slf4j.*;
 

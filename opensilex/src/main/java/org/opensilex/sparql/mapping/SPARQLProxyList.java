@@ -7,6 +7,7 @@ package org.opensilex.sparql.mapping;
 
 import java.net.*;
 import java.util.*;
+import org.apache.jena.graph.*;
 import org.apache.jena.rdf.model.*;
 import org.opensilex.sparql.*;
 
@@ -22,8 +23,8 @@ abstract public class SPARQLProxyList<T> extends SPARQLProxy<List> {
     protected final Class<T> genericType;
     protected final boolean isReverseRelation;
 
-    public SPARQLProxyList(URI uri, Property property, Class<T> genericType, boolean isReverseRelation, SPARQLService service) {
-        super(List.class, service);
+    public SPARQLProxyList(Node graph, URI uri, Property property, Class<T> genericType, boolean isReverseRelation, SPARQLService service) {
+        super(graph, List.class, service);
         this.property = property;
         this.uri = uri;
         this.genericType = genericType;

@@ -16,9 +16,9 @@ import org.opensilex.server.security.model.*;
 public class SecurityContextProxy implements SecurityContext {
 
     SecurityContext parentContext;
-    User user;
+    UserModel user;
 
-    public SecurityContextProxy(SecurityContext parentContext, User user) {
+    public SecurityContextProxy(SecurityContext parentContext, UserModel user) {
         this.parentContext = parentContext;
         this.user = user;
     }

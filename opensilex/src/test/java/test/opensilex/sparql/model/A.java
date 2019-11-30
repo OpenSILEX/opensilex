@@ -8,6 +8,7 @@ package test.opensilex.sparql.model;
 import java.net.*;
 import java.time.*;
 import org.opensilex.sparql.annotations.*;
+import org.opensilex.sparql.model.*;
 
 /**
  *
@@ -17,10 +18,7 @@ import org.opensilex.sparql.annotations.*;
         ontology = TEST_ONTOLOGY.class,
         resource = "A"
 )
-public class A {
-
-    @SPARQLResourceURI()
-    private URI uri;
+public class A extends SPARQLModel {
 
     @SPARQLProperty(
             ontology = TEST_ONTOLOGY.class,
@@ -93,14 +91,6 @@ public class A {
             property = "hasDateTime"
     )
     private OffsetDateTime datetime;
-
-    public URI getUri() {
-        return uri;
-    }
-
-    public void setUri(URI uri) {
-        this.uri = uri;
-    }
 
     public B getB() {
         return b;

@@ -15,13 +15,16 @@
         <version>${revision}</version>
         <relativePath>opensilex-parent/pom.xml</relativePath>
     </parent>
-    
+
     <modules>
+        <!-- Plugin module -->
+        <module>opensilex-swagger-codegen-maven-plugin</module> 
         <!-- Required modules -->
         <module>opensilex-parent</module> 
         <module>opensilex</module> 
-        <module>opensilex-core</module> 
         <module>opensilex-module</module> 
+        <module>opensilex-core</module> 
+        <module>opensilex-front</module> 
         <!-- Extension modules --> 
         <module>phis-ws/phis2-ws</module>
         <!-- Development module -->
@@ -31,6 +34,12 @@
     </modules>
 
     <dependencies>
+        <!-- Plugin dependencies -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-swagger-codegen-maven-plugin</artifactId>
+            <version>${revision}</version>
+        </dependency>
         <!--Required dependencies--> 
         <dependency>
             <groupId>org.opensilex</groupId>
@@ -44,6 +53,11 @@
         </dependency>
         <dependency>
             <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-front</artifactId>
+            <version>${revision}</version>
+        </dependency>        
+        <dependency>
+            <groupId>org.opensilex</groupId>
             <artifactId>phis2ws</artifactId>
             <version>${revision}</version>
         </dependency>
@@ -53,27 +67,9 @@
         <profile>
             <id>sixtine</id>
             <modules>
-                <!-- Required module for angular support -->
-                <module>opensilex-angular</module>
                 <!-- Sixtine extension -->
                 <module>inrae-ues-sixtine</module>
-                <!-- Angular development tools -->
-                <module>opensilex-angular-dev</module> 
             </modules>
-            <dependencies>
-                <!--Required dependency for angular support--> 
-                <dependency>
-                    <groupId>org.opensilex</groupId>
-                    <artifactId>opensilex-angular</artifactId>
-                    <version>${revision}</version>
-                </dependency>
-                <!--Sixtine extension--> 
-                <dependency>
-                    <groupId>org.opensilex</groupId>
-                    <artifactId>inrae-ues-sixtine</artifactId>
-                    <version>${revision}</version>
-                </dependency>
-            </dependencies>
         </profile>
     </profiles>
 

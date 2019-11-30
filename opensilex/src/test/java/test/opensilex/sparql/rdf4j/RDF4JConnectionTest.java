@@ -5,16 +5,14 @@
 //******************************************************************************
 package test.opensilex.sparql.rdf4j;
 
-import java.util.*;
+import test.opensilex.sparql.SPARQLServiceTest;
 import org.eclipse.rdf4j.repository.*;
 import org.eclipse.rdf4j.repository.sail.*;
-import org.eclipse.rdf4j.sail.inferencer.fc.*;
 import org.eclipse.rdf4j.sail.memory.*;
+import org.eclipse.rdf4j.sail.shacl.*;
 import org.junit.*;
-import org.opensilex.*;
 import org.opensilex.sparql.*;
 import org.opensilex.sparql.rdf4j.*;
-import test.opensilex.sparql.*;
 
 /**
  *
@@ -25,11 +23,11 @@ public class RDF4JConnectionTest extends SPARQLServiceTest {
     @BeforeClass
     public static void initialize() throws Exception {
         Repository repository = new SailRepository(
-                new SchemaCachingRDFSInferencer(
+                new ShaclSail(
                         new MemoryStore()));
         repository.init();
 
-        service = new SPARQLService(new RDF4JConnection(repository.getConnection()));
+        SPARQLService localService = new SPARQLService(new RDF4JConnection(repository.getConnection()));
 
 //        RDF4JConfig cfg = new RDF4JConfig() {
 //            @Override
@@ -43,15 +41,9 @@ public class RDF4JConnectionTest extends SPARQLServiceTest {
 //            }
 //
 //        };
-//        
-//        service = new SPARQLService(new RDF4JConnection(cfg));
-//        service.startup();
-        OpenSilex.setup(new HashMap<String, String>() {
-            {
-                put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.TEST_PROFILE_ID);
-            }
-        });
+//
+//        SPARQLService localService = new SPARQLService(new RDF4JConnection(cfg));
 
-        SPARQLServiceTest.initialize();
+        SPARQLServiceTest.initialize(localService);
     }
 }

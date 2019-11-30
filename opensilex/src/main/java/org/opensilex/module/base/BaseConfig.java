@@ -9,6 +9,7 @@ import org.opensilex.bigdata.*;
 import org.opensilex.config.*;
 import org.opensilex.fs.*;
 import org.opensilex.module.*;
+import org.opensilex.module.ModuleConfig;
 import org.opensilex.server.security.*;
 import org.opensilex.sparql.*;
 

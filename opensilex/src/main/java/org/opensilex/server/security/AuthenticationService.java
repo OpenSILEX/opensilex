@@ -49,7 +49,7 @@ public class AuthenticationService implements Service {
         return BCrypt.verifyer().verify(password.getBytes(), passwordHash.getBytes()).verified;
     }
 
-    public String generateToken(User user) {
+    public String generateToken(UserModel user) {
         Date issuedDate = new Date();
         Date expirationDate = Date.from(issuedDate.toInstant().plus(TOKEN_VALIDITY_DURATION, TOKEN_VALIDITY_DURATION_UNIT));
         JWTCreator.Builder tokenBuilder = JWT.create()

@@ -57,15 +57,15 @@ public class RDF4JConnection implements SPARQLConnection {
     }
 
     @Override
-    public List<SPARQLResult> executeDescribeQuery(DescribeBuilder describe) throws SPARQLQueryException {
+    public List<SPARQLStatement> executeDescribeQuery(DescribeBuilder describe) throws SPARQLQueryException {
         GraphQuery describeQuery = rdf4JConnection.prepareGraphQuery(QueryLanguage.SPARQL, describe.buildString());
         GraphQueryResult results = describeQuery.evaluate();
-
+        
         return statementsToSPARQLResultList(results);
     }
 
     @Override
-    public List<SPARQLResult> executeConstructQuery(ConstructBuilder construct) throws SPARQLQueryException {
+    public List<SPARQLStatement> executeConstructQuery(ConstructBuilder construct) throws SPARQLQueryException {
         GraphQuery constructQuery = rdf4JConnection.prepareGraphQuery(QueryLanguage.SPARQL, construct.buildString());
         GraphQueryResult results = constructQuery.evaluate();
 
@@ -117,12 +117,12 @@ public class RDF4JConnection implements SPARQLConnection {
         rdf4JConnection.clear();
     }
 
-    private List<SPARQLResult> statementsToSPARQLResultList(QueryResult<Statement> queryResults) {
-        List<SPARQLResult> resultList = new ArrayList<>();
+    private List<SPARQLStatement> statementsToSPARQLResultList(QueryResult<Statement> queryResults) {
+        List<SPARQLStatement> resultList = new ArrayList<>();
 
         while (queryResults.hasNext()) {
             Statement result = queryResults.next();
-            resultList.add(new RDF4JResult(result));
+            resultList.add(new RDF4JStatement(result));
         }
 
         return resultList;

@@ -5,9 +5,9 @@
 //******************************************************************************
 package test.opensilex.sparql.model;
 
-import java.net.*;
 import java.util.*;
 import org.opensilex.sparql.annotations.*;
+import org.opensilex.sparql.model.*;
 
 
 /**
@@ -19,10 +19,7 @@ import org.opensilex.sparql.annotations.*;
         resource = "B",
         graph = "data"
 )
-public class B {
-    
-    @SPARQLResourceURI()
-    private URI uri;
+public class B extends SPARQLModel {
     
     @SPARQLProperty(
         ontology = TEST_ONTOLOGY.class,
@@ -85,14 +82,6 @@ public class B {
     )
     private List<String> stringList;
     
-    public URI getUri() {
-        return uri;
-    }
-
-    public void setUri(URI uri) {
-        this.uri = uri;
-    }
-
     public A getA() {
         return a;
     }

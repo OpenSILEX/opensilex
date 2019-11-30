@@ -20,4 +20,8 @@ public interface SPARQLDeserializer<T> {
     public default String getNodeString(Object value) throws Exception {
         return getNode(value).toString();
     }
+    
+    public default Node getNodeFromString (String value) throws Exception {
+        return getNode(fromString(value));
+    }
 }

@@ -5,13 +5,19 @@
 //******************************************************************************
 package test.opensilex.sparql;
 
+import test.opensilex.sparql.model.TEST_ONTOLOGY;
+import test.opensilex.sparql.model.A;
+import test.opensilex.sparql.model.B;
 import java.io.*;
 import java.net.*;
 import java.time.*;
 import java.util.*;
 import org.apache.jena.arq.querybuilder.*;
+import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.graph.*;
+import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.*;
+import org.apache.jena.sparql.core.*;
 import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
 import static org.hamcrest.CoreMatchers.*;
@@ -20,7 +26,8 @@ import org.junit.*;
 import org.opensilex.*;
 import org.opensilex.sparql.*;
 import org.opensilex.sparql.exceptions.*;
-import test.opensilex.sparql.model.*;
+import org.opensilex.sparql.mapping.*;
+import org.opensilex.sparql.utils.*;
 
 /**
  *
@@ -30,7 +37,12 @@ public abstract class SPARQLServiceTest {
 
     protected static SPARQLService service;
 
-    public static void initialize() throws Exception {
+    public static void initialize(SPARQLService service) throws Exception {
+        SPARQLServiceTest.service = service;
+        service.startup();
+
+        SPARQLClassObjectMapper.initialize();
+        
         service.clear();
 
         InputStream ontology = SPARQLService.class.getClassLoader().getResourceAsStream(TEST_ONTOLOGY.FILE_PATH.toString());
@@ -103,6 +115,13 @@ public abstract class SPARQLServiceTest {
         assertEquals("B.getShortVar Method should return the configured short", Short.valueOf((short) -2), b.getShortVar());
 
         assertEquals("B.getStringList size should match inserted triple count", 4, b.getStringList().size());
+
+        b.getRelations().forEach((model) -> {
+            System.out.println("------------");
+            System.out.println(model.getProperty().getURI());
+            System.out.println(model.getReverse());
+            System.out.println(model.getValue());
+        });
     }
 
     @Test
@@ -186,7 +205,7 @@ public abstract class SPARQLServiceTest {
     }
 
     @Test
-    public void testSubClassOf() throws Exception {
+    public void testUriExistsWithClass() throws Exception {
         URI bURI = new URI("http://test.opensilex.org/b/001");
 
         assertTrue("URI must exists and be of type B", service.uriExists(B.class, bURI));

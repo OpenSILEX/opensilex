@@ -60,6 +60,21 @@
                     <rulesUri>file:////${project.basedir}/src/main/resources/version-rules.xml</rulesUri>
                 </configuration>
             </plugin>
+            <!-- Install node and yarn package maanger -->
+            <plugin>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <version>${frontend.maven.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>install node and package manager</id>
+                        <goals>
+                            <goal>install-node-and-yarn</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- Generate Full jar with dependencies -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

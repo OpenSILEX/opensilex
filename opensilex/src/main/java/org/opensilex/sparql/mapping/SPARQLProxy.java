@@ -10,6 +10,7 @@ import java.lang.reflect.Method;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.implementation.InvocationHandlerAdapter;
 import net.bytebuddy.matcher.ElementMatchers;
+import org.apache.jena.graph.*;
 import org.opensilex.sparql.SPARQLService;
 
 /**
@@ -18,13 +19,15 @@ import org.opensilex.sparql.SPARQLService;
  */
 abstract class SPARQLProxy<T> implements InvocationHandler {
 
-    public SPARQLProxy(Class<T> type, SPARQLService service) {
+    public SPARQLProxy(Node graph, Class<T> type, SPARQLService service) {
         this.type = type;
         this.service = service;
+        this.graph = graph;
     }
 
-    protected Class<T> type;
-    protected SPARQLService service;
+    protected final Class<T> type;
+    protected final SPARQLService service;
+    protected final Node graph;
     protected T instance;
 
     public T getInstance() {

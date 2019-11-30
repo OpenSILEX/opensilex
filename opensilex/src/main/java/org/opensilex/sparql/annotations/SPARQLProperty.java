@@ -8,6 +8,7 @@ package org.opensilex.sparql.annotations;
 import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.*;
 import java.lang.annotation.*;
+import org.apache.jena.rdf.model.*;
 
 
 /**

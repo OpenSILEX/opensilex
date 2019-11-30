@@ -6,17 +6,19 @@
 package org.opensilex.sparql.mapping;
 
 import java.net.*;
+import org.apache.jena.graph.*;
 import org.opensilex.sparql.*;
+import org.opensilex.sparql.model.*;
 
 /**
  *
  * @author vincent
  */
-class SPARQLProxyResource<T> extends SPARQLProxy<T> {
+class SPARQLProxyResource<T extends SPARQLModel> extends SPARQLProxy<T> {
     
     
-    SPARQLProxyResource(URI uri, Class<T> type, SPARQLService service) {
-        super(type, service);
+    SPARQLProxyResource(Node graph, URI uri, Class<T> type, SPARQLService service) {
+        super(graph, type, service);
         this.uri = uri;
     }
     

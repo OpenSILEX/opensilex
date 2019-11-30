@@ -1,0 +1,185 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.opensilex</groupId>
+    <artifactId>opensilex-front</artifactId>
+    <packaging>jar</packaging>
+    <name>opensilex-front</name>
+    
+    <url>https://www.opensilex.org/</url>
+    
+    <parent>
+        <groupId>org.opensilex</groupId>
+        <artifactId>opensilex-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>../opensilex-parent/pom.xml</relativePath>
+    </parent>
+    
+    <dependencies>
+        <!-- OpenSilex Base -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <!-- OpenSilex Core -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-core</artifactId>
+            <version>${revision}</version>
+        </dependency>  
+        <!-- OpenSilex Base test -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+        </dependency>
+    </dependencies>
+    
+    <build>
+        <resources>
+            <resource>
+                <directory>front</directory>
+                <excludes>
+                    <exclude>**</exclude>
+                </excludes>
+            </resource>
+        </resources>
+        <plugins>
+            <!-- Generate swagger.json file -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <executions>
+                    <execution>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <mainClass>org.opensilex.server.rest.SwaggerAPIGenerator</mainClass>
+                    <arguments>
+                        <argument>${project.basedir}/src/main/java/</argument>
+                        <argument>${project.basedir}/front/lib/swagger.json</argument>
+                    </arguments>
+                </configuration>
+            </plugin>
+            <!-- Generate TypeScript library from swagger.json file -->
+            <plugin>
+                <groupId>org.opensilex</groupId>
+                <artifactId>opensilex-swagger-codegen-maven-plugin</artifactId>
+                <version>${revision}</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${project.basedir}/front/lib/swagger.json</inputSpec>
+                            <templateDirectory>${project.basedir}/../opensilex/src/main/resources/swagger/templates/typescript-inversify</templateDirectory>
+                            <language>typescript-inversify</language>
+                            <output>${project.basedir}/front/lib/${project.name}</output>
+                            <configOptions>
+                                <packageName>${project.name}</packageName>
+                                <packageVersion>${revision}</packageVersion>
+                                <npmName>${project.name}</npmName>
+                                <modelPropertyNaming>original</modelPropertyNaming>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <version>${frontend.maven.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>install TypeScript lib dependencies</id>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <arguments>--network-timeout 1000000 install</arguments>
+                            <workingDirectory>front/lib</workingDirectory>
+                        </configuration>
+                    </execution>
+        
+                    <execution>
+                        <id>install Vue application dependencies</id>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <arguments>--network-timeout 1000000 install</arguments>
+                        </configuration>
+                    </execution>
+                    
+                    <execution>
+                        <id>build Vue application</id>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <arguments>run build</arguments>
+                        </configuration>
+                    </execution>
+                    
+                    <execution>
+                        <id>check available updates for Vue application dependencies</id>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <phase>verify</phase>
+                        <configuration>
+                            <arguments>run check:outdated</arguments>
+                        </configuration>
+                    </execution>
+                    
+                    <execution>
+                        <id>check security issues for Vue application dependencies</id>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <phase>verify</phase>
+                        <configuration>
+                            <arguments>audit</arguments>
+                        </configuration>
+                    </execution>
+                    
+                </executions>
+            </plugin>
+            
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>${maven.resources.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>Copy Vue application dist files</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/classes/front</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>front/dist</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

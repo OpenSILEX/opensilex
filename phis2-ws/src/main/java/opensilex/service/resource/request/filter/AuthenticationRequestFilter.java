@@ -39,7 +39,7 @@ import opensilex.service.view.brapi.form.ResponseFormGET;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.security.AuthenticationService;
 import org.opensilex.server.security.SecurityContextProxy;
-import org.opensilex.server.security.user.User;
+import org.opensilex.server.security.model.UserModel;
 import org.opensilex.sparql.SPARQLService;
 import org.opensilex.utils.ClassInfo;
 
@@ -120,7 +120,7 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
             
             try {
                 URI userURI = authentication.decodeTokenUserURI(userToken);
-                User user = sparql.getByURI(User.class, userURI);
+                UserModel user = sparql.getByURI(UserModel.class, userURI);
 
                 SecurityContext originalContext = requestContext.getSecurityContext();
 

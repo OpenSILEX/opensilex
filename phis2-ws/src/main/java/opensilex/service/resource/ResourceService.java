@@ -26,72 +26,71 @@ import opensilex.service.result.ResultForm;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
-import org.opensilex.server.security.user.User;
+import org.opensilex.server.security.model.UserModel;
 
 /**
  * Resource service mother class.
- * @update [Andréas Garcia] 8 Apr. 2019: Refactor resource service classes generic functions (get a response from a GET
- * request, get responses from POST requests, etc.). Add unimplemented functions (as getDTOsFromObjects) to make them
- * implemented by the child classes to permit specific behaviours.
+ *
+ * @update [Andréas Garcia] 8 Apr. 2019: Refactor resource service classes
+ * generic functions (get a response from a GET request, get responses from POST
+ * requests, etc.). Add unimplemented functions (as getDTOsFromObjects) to make
+ * them implemented by the child classes to permit specific behaviours.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public abstract class ResourceService {
-    
-    // User session.
-    @Context ContainerRequestContext context;
-    
-    
-    protected Session userSession = new Session() {
-        @Override
-        public opensilex.service.model.User getUser() {
-            User user = (User) context.getSecurityContext().getUserPrincipal();
-            opensilex.service.model.User userPhis = new opensilex.service.model.User(user.getEmail().toString());
-            return userPhis;
-        }
+
+    // UserModel session.
+    @Context
+    ContainerRequestContext context;
+
+    protected Session userSession = () -> {
+        UserModel user = (UserModel) context.getSecurityContext().getUserPrincipal();
+        opensilex.service.model.User userPhis = new opensilex.service.model.User(user.getEmail().toString());
+        return userPhis;
     };
-    
+
     // The default language of the application.
     protected static final String DEFAULT_LANGUAGE = PropertiesFileManager.getConfigFileProperty("service", "defaultLanguage");
-    
+
     /**
-     * Gets a DTO list from a list of objects.
-     * //SILEX:todo
-     * This function should be abstract but we would need to implement it on all the resource service classes.
-     * We focus on event and annotation for the moment.
-     * \SILEX
+     * Gets a DTO list from a list of objects. //SILEX:todo This function should
+     * be abstract but we would need to implement it on all the resource service
+     * classes. We focus on event and annotation for the moment. \SILEX
+     *
      * @param objects
-     * @return 
+     * @return
      */
-    protected ArrayList<AbstractVerifiedClass> getDTOsFromObjects (List<? extends Object> objects) {
+    protected ArrayList<AbstractVerifiedClass> getDTOsFromObjects(List<? extends Object> objects) {
         throw new UnsupportedOperationException("Not supported yet: getDTOsFromObjects function.");
     }
-    
+
     /**
-     * Gets a list of objects from a list of DTOs.
-     * //SILEX:todo 
-     * This function should be abstract but we would need to implement it on all the resource service classes.
-     * We focus on event and annotation for the moment.
-     * \SILEX
+     * Gets a list of objects from a list of DTOs. //SILEX:todo This function
+     * should be abstract but we would need to implement it on all the resource
+     * service classes. We focus on event and annotation for the moment. \SILEX
+     *
      * @param dtos
-     * @throws java.lang.Exception 
+     * @throws java.lang.Exception
      * @return the objects list.
      */
-    protected List<? extends Object> getObjectsFromDTOs (List<? extends AbstractVerifiedClass> dtos) 
+    protected List<? extends Object> getObjectsFromDTOs(List<? extends AbstractVerifiedClass> dtos)
             throws Exception {
         throw new UnsupportedOperationException("Not supported yet: getObjectsFromDTOs function.");
     }
-    
+
     /**
      * Gets a URI list from a list of objects having a URI.
+     *
      * @param objectsWithUris
      * @return the objects list.
      */
-    protected List<String> getUrisFromObjects (List<? extends Object> objectsWithUris) {
+    protected List<String> getUrisFromObjects(List<? extends Object> objectsWithUris) {
         throw new UnsupportedOperationException("Not supported yet: getUrisCreatedFromObjects function.");
     }
-    
+
     /**
      * Gets the response when no result found.
+     *
      * @param getResponse
      * @param insertStatusList
      * @return the Response with the error message
@@ -104,6 +103,7 @@ public abstract class ResourceService {
 
     /**
      * Gets the response when a SQL error message occured.
+     *
      * @param getResponse
      * @param insertStatusList
      * @return the Response with the error message
@@ -116,8 +116,9 @@ public abstract class ResourceService {
 
     /**
      * Gets a response when an internal error occured during the operation.
+     *
      * @param exception
-     * @return the response. 
+     * @return the response.
      */
     protected Response getResponseWhenInternalError(Exception exception) {
         return getPostPutResponseFromSingleOperationStatus(
@@ -129,8 +130,9 @@ public abstract class ResourceService {
 
     /**
      * Gets a response in the case of a persistence system error.
+     *
      * @param exception
-     * @return the response. 
+     * @return the response.
      */
     protected Response getResponseWhenPersistenceError(DAOPersistenceException exception) {
         return getPostPutResponseFromSingleOperationStatus(
@@ -142,6 +144,7 @@ public abstract class ResourceService {
 
     /**
      * Gets a response for a GET operation in success.
+     *
      * @param objects
      * @param pageSize
      * @param page
@@ -156,18 +159,20 @@ public abstract class ResourceService {
 
     /**
      * Gets a response for a GET operation returns no result.
+     *
      * @return the response.
      */
     protected Response getGETResponseWhenNoResult() {
         ResultForm<? extends AbstractVerifiedClass> getResponse = new ResultForm<>(0, 0, new ArrayList(), true);
         return noResultFound(getResponse, new ArrayList<>());
     }
-    
+
     /**
      * Gets a response from a search by URI using a DAO.
+     *
      * @param dao
      * @param uri
-     * @return 
+     * @return
      */
     protected Response getGETByUriResponseFromDAOResults(DAO dao, String uri) {
         ArrayList<Object> objects = new ArrayList();
@@ -178,7 +183,7 @@ public abstract class ResourceService {
             if (object == null) { // Request failure
                 return getGETResponseWhenNoResult();
             } else if (objects.isEmpty()) {
-                    return getGETResponseWhenNoResult();
+                return getGETResponseWhenNoResult();
             } else {
                 return getGETResponseWhenSuccess(objects, 0, 0, 0);
             }
@@ -187,55 +192,57 @@ public abstract class ResourceService {
             return getResponseWhenInternalError(ex);
         }
     }
-    
+
     /**
      * Gets a response for a POST request depending on the results.
+     *
      * @param objectDao DAO of the manipulated object.
      * @param objectsDtos DTOs sent through the POST.
      * @param userIpAddress
      * @param statusMessageIfEmptyDtosSent
-     * @return a success response when success.
-     *         an internal error response when an non handled exception occured.
-     *         an access denied response when the resource isn't available for the user.
-     *         a data error response when the data sent is incorrect.
+     * @return a success response when success. an internal error response when
+     * an non handled exception occured. an access denied response when the
+     * resource isn't available for the user. a data error response when the
+     * data sent is incorrect.
      */
-    protected Response getPostResponse (DAO objectDao, ArrayList<? extends AbstractVerifiedClass> objectsDtos, String userIpAddress, String statusMessageIfEmptyDtosSent) {
+    protected Response getPostResponse(DAO objectDao, ArrayList<? extends AbstractVerifiedClass> objectsDtos, String userIpAddress, String statusMessageIfEmptyDtosSent) {
         return getPostPutResponse(objectDao, objectsDtos, userIpAddress, statusMessageIfEmptyDtosSent, true);
     }
-    
+
     /**
      * Gets a response for a PUT request depending on the results.
+     *
      * @param objectDao DAO of the manipulated object.
      * @param objectsDtos DTOs sent through the PUT.
      * @param userIpAddress
      * @param statusMessageIfEmptyDtosSent
-     * @return a success response when success.
-     *         an internal error response when an non handled exception occured.
-     *         an access denied response when the resource isn't available for the user.
-     *         a data error response when the data sent is incorrect.
+     * @return a success response when success. an internal error response when
+     * an non handled exception occured. an access denied response when the
+     * resource isn't available for the user. a data error response when the
+     * data sent is incorrect.
      */
-    protected Response getPutResponse (DAO objectDao, ArrayList<? extends AbstractVerifiedClass> objectsDtos, String userIpAddress, String statusMessageIfEmptyDtosSent) {
+    protected Response getPutResponse(DAO objectDao, ArrayList<? extends AbstractVerifiedClass> objectsDtos, String userIpAddress, String statusMessageIfEmptyDtosSent) {
         return getPostPutResponse(objectDao, objectsDtos, userIpAddress, statusMessageIfEmptyDtosSent, false);
     }
-    
+
     /**
      * Gets a response for a POST or PUT request depending on the results.
+     *
      * @param objectDao DAO of the manipulated object.
      * @param objectsDtos DTOs sent through the POST or PUT.
      * @param userIpAddress
      * @param statusMessageIfEmptyDtosSent
      * @param isPost is the operation a POST or a PUT.
-     * @return a success response when success.
-     *         an internal error response when an non handled exception occured.
-     *         an access denied response when the resource isn't available for the user.
-     *         a data error response when the data sent is incorrect.
+     * @return a success response when success. an internal error response when
+     * an non handled exception occured. an access denied response when the
+     * resource isn't available for the user. a data error response when the
+     * data sent is incorrect.
      */
-    protected Response getPostPutResponse (DAO objectDao, ArrayList<? extends AbstractVerifiedClass> objectsDtos, String userIpAddress, String statusMessageIfEmptyDtosSent, boolean isPost) {
+    protected Response getPostPutResponse(DAO objectDao, ArrayList<? extends AbstractVerifiedClass> objectsDtos, String userIpAddress, String statusMessageIfEmptyDtosSent, boolean isPost) {
         if (objectsDtos == null || objectsDtos.isEmpty()) {
             // Empty object list
             return getPostPutResponseWhenEmptyListGiven(statusMessageIfEmptyDtosSent);
-        } 
-        else {
+        } else {
             try {
                 // Process operation
                 objectDao.remoteUserAdress = userIpAddress;
@@ -243,41 +250,41 @@ public abstract class ResourceService {
                 List<? extends Object> impactedObjects;
                 if (isPost) { // POST
                     impactedObjects = objectDao.validateAndCreate(objectsToImpact);
-                }
-                else { // PUT
+                } else { // PUT
                     impactedObjects = objectDao.validateAndUpdate(objectsToImpact);
                 }
-                
+
                 // Return according to operation results
                 List<String> impactedUris = getUrisFromObjects(impactedObjects);
                 return getPostPutResponseWhenSuccess(impactedUris);
-                
+
             } catch (ResourceAccessDeniedException ex) {
                 LOGGER.error(ex.getMessage(), ex);
                 return getPostPutResponseWhenResourceAccessDenied(ex);
-                
+
             } catch (DAODataErrorAggregateException ex) {
                 ex.getExceptions().forEach((exception) -> {
-                        LOGGER.error(ex.getMessage(), exception);
+                    LOGGER.error(ex.getMessage(), exception);
                 });
                 return getPostPutResponseFromDAODataErrorExceptions(ex);
-                
+
             } catch (Exception ex) {
                 LOGGER.error(ex.getMessage(), ex);
                 return getResponseWhenInternalError(ex);
-            }  
+            }
         }
     }
 
     /**
      * Gets a response for a POST operation in success.
+     *
      * @param urisCreated
-     * @return the response. 
+     * @return the response.
      */
     private Response getPostPutResponseWhenSuccess(List<String> urisCreated) {
         ResponseFormPOST postResponse = new ResponseFormPOST(new Status(
-                StatusCodeMsg.RESOURCES_CREATED, 
-                StatusCodeMsg.INFO, 
+                StatusCodeMsg.RESOURCES_CREATED,
+                StatusCodeMsg.INFO,
                 String.format(POSTResultsReturn.NEW_RESOURCES_CREATED_MESSAGE, urisCreated.size())));
         postResponse.getMetadata().setDatafiles(urisCreated);
         return buildResponse(Response.Status.CREATED, postResponse);
@@ -285,15 +292,16 @@ public abstract class ResourceService {
 
     /**
      * Gets a response from data exceptions thrown by a DAO.
+     *
      * @param aggregateException
-     * @return the response. 
+     * @return the response.
      */
     private Response getPostPutResponseFromDAODataErrorExceptions(DAODataErrorAggregateException aggregateException) {
         List<Status> statusList = new ArrayList<>();
         aggregateException.getExceptions().forEach((ex) -> {
             statusList.add(new Status(
-                    ex.getGenericMessage(), 
-                    StatusCodeMsg.DATA_ERROR, 
+                    ex.getGenericMessage(),
+                    StatusCodeMsg.DATA_ERROR,
                     ex.getMessage()));
         });
         return getPostPutResponseFromMultipleOperationStatus(Response.Status.BAD_REQUEST, statusList);
@@ -301,8 +309,9 @@ public abstract class ResourceService {
 
     /**
      * Gets a response when an empty list is received by a POST.
+     *
      * @param statusMessageDetails
-     * @return the response. 
+     * @return the response.
      */
     private Response getPostPutResponseWhenEmptyListGiven(String statusMessageDetails) {
         return getPostPutResponseFromSingleOperationStatus(
@@ -314,8 +323,9 @@ public abstract class ResourceService {
 
     /**
      * Gets a response when an empty list is received by a POST.
+     *
      * @param exception
-     * @return the response. 
+     * @return the response.
      */
     private Response getPostPutResponseWhenResourceAccessDenied(ResourceAccessDeniedException exception) {
         return getPostPutResponseFromSingleOperationStatus(
@@ -324,35 +334,39 @@ public abstract class ResourceService {
                 StatusCodeMsg.ERR,
                 exception.getMessage());
     }
-    
+
     /**
      * Gets a response with the HTTP status given and a single operation status.
+     *
      * @param httpStatus
      * @param responseFormMessage
      * @param responseFormCode
      * @param responseFormDetails
-     * @return the response. 
+     * @return the response.
      */
-    private Response getPostPutResponseFromSingleOperationStatus (Response.Status httpStatus, String responseFormMessage, String responseFormCode, String responseFormDetails) {
+    private Response getPostPutResponseFromSingleOperationStatus(Response.Status httpStatus, String responseFormMessage, String responseFormCode, String responseFormDetails) {
         return buildResponse(httpStatus, new ResponseFormPOST(
                 new Status(responseFormMessage, responseFormCode, responseFormDetails)));
     }
-    
+
     /**
-     * Gets a response with the HTTP status given and a list of operation status.
+     * Gets a response with the HTTP status given and a list of operation
+     * status.
+     *
      * @param httpStatus
      * @param statusList
-     * @return the response. 
+     * @return the response.
      */
-    private Response getPostPutResponseFromMultipleOperationStatus (Response.Status httpStatus, List<Status> statusList) {
+    private Response getPostPutResponseFromMultipleOperationStatus(Response.Status httpStatus, List<Status> statusList) {
         return buildResponse(httpStatus, new ResponseFormPOST(statusList));
     }
-    
+
     /**
      * Builds a response from a status and a result form.
+     *
      * @param status
      * @param resultForm
-     * @return the response. 
+     * @return the response.
      */
     private Response buildResponse(Response.Status status, AbstractResultForm resultForm) {
         return Response.status(status).entity(resultForm).build();

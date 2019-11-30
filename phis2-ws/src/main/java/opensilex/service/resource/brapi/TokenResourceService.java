@@ -150,15 +150,15 @@ public class TokenResourceService implements BrapiCall{
         }
         if ((password != null && username != null) || (isJWT && validJWTToken && username != null)) {
             // Is user authorized ?
-//            User user = new User(username, password);
+//            UserModel user = new UserModel(username, password);
             try {
                 //SILEX:info
                 // if we have a jwt the password is not verified because it means that the
                 // user is already logged
                 // we trust the client
                 //\SILEX:info
-                org.opensilex.core.dal.user.UserDAO userDAO = new org.opensilex.core.dal.user.UserDAO(sparql, authentication);
-                org.opensilex.server.security.user.User user;
+                org.opensilex.core.user.dal.UserDAO userDAO = new org.opensilex.core.user.dal.UserDAO(sparql, authentication);
+                org.opensilex.server.security.model.UserModel user;
                 try {
                     user = userDAO.getByEmail(new InternetAddress(username));
 

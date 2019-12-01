@@ -46,7 +46,6 @@ import org.opensilex.utils.ClassInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  *
  * @author Vincent Migot
@@ -82,11 +81,11 @@ public class DependencyManager {
         return serviceLocator.getService(RepositorySystem.class);
     }
 
-    private static DefaultRepositorySystemSession getRepositorySystemSession(RepositorySystem system) {
+    private static DefaultRepositorySystemSession getRepositorySystemSession(RepositorySystem system, String repositoryPath) {
         DefaultRepositorySystemSession repositorySystemSession = MavenRepositorySystemUtils
                 .newSession();
 
-        LocalRepository localRepository = new LocalRepository(".maven-dependencies");
+        LocalRepository localRepository = new LocalRepository(repositoryPath);
         repositorySystemSession.setLocalRepositoryManager(
                 system.newLocalRepositoryManager(repositorySystemSession, localRepository));
 
@@ -112,11 +111,21 @@ public class DependencyManager {
 
     private RepositorySystem system;
     private RepositorySystemSession session;
+    private String repositoryPath = System.getProperty("user.home") + "/.m2/";
 
     private final List<String> loadedDependencies = new ArrayList<>();
     private final List<String> buildinDependencies = new ArrayList<>();
 
     public DependencyManager(File mainPom) throws ModelBuildingException, DependencyResolutionException, MalformedURLException {
+        init(mainPom);
+    }
+
+    public DependencyManager(File mainPom, String repositoryPath) throws ModelBuildingException, DependencyResolutionException, MalformedURLException {
+        this.repositoryPath = repositoryPath;
+        init(mainPom);
+    }
+
+    private void init(File mainPom) throws ModelBuildingException, DependencyResolutionException, MalformedURLException {
         initRegistries();
         loadDependencies(mainPom, false);
         buildinDependencies.addAll(loadedDependencies);
@@ -124,7 +133,7 @@ public class DependencyManager {
 
     private void initRegistries() {
         system = getRepositorySystem();
-        session = getRepositorySystemSession(system);
+        session = getRepositorySystemSession(system, repositoryPath);
     }
 
     private Model registerPom(File pom) throws ModelBuildingException {

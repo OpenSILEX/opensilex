@@ -67,6 +67,72 @@
                     <rulesUri>file:////${project.basedir}/src/main/resources/version-rules.xml</rulesUri>
                 </configuration>
             </plugin>
+            <!-- Front Node & Yarn management -->
+            <plugin>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <version>${frontend.maven.plugin.version}</version>
+                <executions>
+                    <!-- install node and yarn -->
+                    <execution>
+                        <id>install node and package manager</id>
+                        <goals>
+                            <goal>install-node-and-yarn</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                    </execution>
+                    
+                    <execution>
+                        <id>install typescript globally</id>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>global add typescript</arguments>
+                        </configuration>
+                        <phase>initialize</phase>
+                    </execution>
+
+                    <execution>
+                        <id>install common js dependencies</id>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>--network-timeout 1000000 install</arguments>
+                            <workingDirectory>../</workingDirectory>
+                        </configuration>
+                        <phase>generate-sources</phase>
+                    </execution>
+                    
+                    <execution>
+                        <id>check common js outdated dependencies</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+
+                        <configuration>
+                            <arguments>run check:outdated</arguments>
+                             <workingDirectory>../</workingDirectory>
+                        </configuration>
+                    </execution>
+                            
+                    <execution>
+                        <id>check common js dependencies security issues</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+
+                        <configuration>
+                            <arguments>audit</arguments>
+                             <workingDirectory>../</workingDirectory>
+                        </configuration>
+                    </execution>
+                    
+                </executions>
+            </plugin>
             <!-- Generate swagger.json file -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>

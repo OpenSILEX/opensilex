@@ -5,6 +5,7 @@
 //******************************************************************************
 package org.opensilex.cli.help;
 
+import org.opensilex.cli.MainCommand;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.HelpCommand;
@@ -26,7 +27,8 @@ import picocli.CommandLine.Mixin;
         parameterListHeading = HelpFactory.CLI_PARAMETER_LIST_HEADING,
         optionListHeading = HelpFactory.CLI_OPTION_LIST_HEADING,
         commandListHeading = HelpFactory.CLI_COMMAND_LIST_HEADING,
-        footer = HelpFactory.CLI_FOOTER
+        footer = HelpFactory.CLI_FOOTER,
+        versionProvider = MainCommand.class
 )
 public abstract class HelpPrinterCommand implements Runnable {
 

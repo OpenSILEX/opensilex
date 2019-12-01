@@ -21,7 +21,7 @@
       
     <modules>
         <!-- Maven Plugin module -->
-        <module>opensilex-swagger-codegen-maven-plugin</module>
+
     
         <!-- Main modules -->
         <module>opensilex-parent</module>
@@ -34,8 +34,9 @@
         <module>phis-ws/phis2-ws</module>
             
         <!-- Development module -->
-        <module>opensilex-release</module>
         <module>opensilex-dev-tools</module>
+        
+                <module>opensilex-swagger-codegen-maven-plugin</module>
     </modules>
     
     <dependencies>
@@ -111,6 +112,14 @@
     </reporting>
     
     <profiles>
+        <!-- Profile to produce release build -->
+        <profile>
+            <id>release</id>
+            <modules>
+                <module>opensilex-release</module>
+            </modules>
+        </profile>
+        
         <!-- Profile which enable Jacoco Code coverage -->
         <profile>
             <id>with-test-report</id>

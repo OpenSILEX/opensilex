@@ -1,0 +1,20 @@
+{
+    "name": "opensilex-vue-extension",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "serve": "vue-cli-service serve",
+        "build": "vue-cli-service build --mode production --target lib --formats umd-min src/index.ts",
+        "lint": "vue-cli-service lint",
+        "check:outdated": "yarn outdated || cd ."
+    },
+    "devDependencies": {
+        "@vue/cli-plugin-babel": "^4.1.0",
+        "@vue/cli-plugin-eslint": "^4.1.0",
+        "@vue/cli-plugin-router": "^4.1.0",
+        "@vue/cli-plugin-typescript": "^4.1.0",
+        "@vue/cli-plugin-vuex": "^4.1.0",
+        "@vue/cli-service": "^4.1.0",
+        "@vue/eslint-config-typescript": "^5.0.1"
+    }
+}

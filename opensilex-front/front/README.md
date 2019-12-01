@@ -1,4 +1,4 @@
-# opensilex-vue-app
+# front
 
 ## Project setup
 ```

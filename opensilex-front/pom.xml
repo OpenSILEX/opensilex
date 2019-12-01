@@ -60,8 +60,7 @@
                 <artifactId>opensilex-swagger-codegen-maven-plugin</artifactId>
                 <version>${revision}</version>
             </plugin>
-            <!--            
-            
+                        
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>${maven.resources.plugin.version}</version>
@@ -82,7 +81,7 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>-->
+            </plugin>
         </plugins>
     </build>
 </project>

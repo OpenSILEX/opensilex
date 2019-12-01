@@ -36,7 +36,7 @@ public class StartServerWithFront {
 
         // Start process to automatically rebuild front modular app
         List<String> appPluginBuilderArgs = new ArrayList<>();
-        appPluginBuilderArgs.add(currentDirectory.resolve("../.ng/node/" + nodeBin).toFile().getCanonicalPath());
+        appPluginBuilderArgs.add(currentDirectory.resolve("../.node/node/" + nodeBin).toFile().getCanonicalPath());
         appPluginBuilderArgs.add(currentDirectory.resolve("../opensilex-front/front/build-debug.js").toFile().getCanonicalPath());
 
         Set<String> modulesPluginBuilderArgs = new HashSet<>();

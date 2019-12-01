@@ -270,6 +270,7 @@ public class OpenSilex {
             ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
             root.setLevel(Level.DEBUG);
         }
+        
         LOGGER.debug("Creating OpenSilex instance");
         LOGGER.debug("Base directory:" + baseDirectory.toFile().getAbsolutePath());
         LOGGER.debug("Configuration profile: " + profileId);
@@ -321,7 +322,7 @@ public class OpenSilex {
                 LOGGER.warn("Error while trying to load logback configuration file: " + logConfigFile.getAbsolutePath(), ex);
             }
         } else {
-            LOGGER.debug("Logger configuration file doe not exists: " + logConfigFile.getAbsolutePath());
+            LOGGER.debug("Logger configuration file does not exists: " + logConfigFile.getAbsolutePath());
         }
     }
 

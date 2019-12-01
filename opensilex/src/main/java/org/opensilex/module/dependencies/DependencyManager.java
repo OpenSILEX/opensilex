@@ -111,7 +111,7 @@ public class DependencyManager {
 
     private RepositorySystem system;
     private RepositorySystemSession session;
-    private String repositoryPath = System.getProperty("user.home") + "/.m2/";
+    private String repositoryPath = System.getProperty("user.home") + "/.m2/repository/";
 
     private final List<String> loadedDependencies = new ArrayList<>();
     private final List<String> buildinDependencies = new ArrayList<>();

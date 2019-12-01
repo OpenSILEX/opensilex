@@ -21,8 +21,8 @@
         <!-- flag to disable Front build -->
         <skip.front.build>false</skip.front.build>
         
-        <node.version>v12.8.0</node.version>
-        <yarn.version>v1.18.0</yarn.version>
+        <node.version>v12.13.1</node.version>
+        <yarn.version>v1.19.2</yarn.version>
         <!-- Java supported version -->
         <java.compiler.version>1.8</java.compiler.version>
         <!-- Minimal maven version -->
@@ -454,10 +454,6 @@
                     </configuration>
                 </plugin>
                 <plugin>
-                    <artifactId>maven-resources-plugin</artifactId>
-                    <version>${maven.resources.plugin.version}</version>
-                </plugin>
-                <plugin>
                     <artifactId>maven-assembly-plugin</artifactId>
                     <version>${maven.assembly.plugin.version}</version>
                 </plugin>
@@ -529,7 +525,7 @@
                                 <mainClass>org.opensilex.server.rest.SwaggerAPIGenerator</mainClass>
                                 <arguments>
                                     <argument>${project.basedir}/src/main/java/</argument>
-                                    <argument>${project.basedir}/front/lib/swagger.json</argument>
+                                    <argument>${project.basedir}/front/src/lib/swagger.json</argument>
                                 </arguments>
                             </configuration>
                         </execution>
@@ -553,10 +549,10 @@
                                 <goal>generate</goal>
                             </goals>
                             <configuration>
-                                <inputSpec>${project.basedir}/front/lib/swagger.json</inputSpec>
+                                <inputSpec>${project.basedir}/front/src/lib/swagger.json</inputSpec>
                                 <templateDirectory>${project.basedir}/../opensilex/src/main/resources/swagger/templates/typescript-inversify</templateDirectory>
                                 <language>typescript-inversify</language>
-                                <output>${project.basedir}/front/lib/</output>
+                                <output>${project.basedir}/front/src/lib/</output>
                                 <configOptions>
                                     <packageName>${project.name}</packageName>
                                     <packageVersion>${revision}</packageVersion>
@@ -577,7 +573,7 @@
                         <skip>${skip.front.build}</skip>
                         <nodeVersion>${node.version}</nodeVersion>
                         <yarnVersion>${yarn.version}</yarnVersion>
-                        <installDirectory>../.ng</installDirectory>
+                        <installDirectory>../.node</installDirectory>
                         <workingDirectory>front</workingDirectory>
                     </configuration>
                     
@@ -600,21 +596,10 @@
                             </configuration>
                             <phase>initialize</phase>
                         </execution>
-                    
-                        <execution>
-                            <id>install lib dependencies and build typescript sources</id>
-                            <phase>prepare-package</phase>
-                            <goals>
-                                <goal>yarn</goal>
-                            </goals>
 
-                            <configuration>
-                                <arguments>--network-timeout 1000000 install</arguments>
-                                <workingDirectory>front/lib/</workingDirectory>
-                            </configuration>
-                        </execution>
                     </executions>
                 </plugin>
+                
             </plugins>
         </pluginManagement>
         

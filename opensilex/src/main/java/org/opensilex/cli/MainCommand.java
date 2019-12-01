@@ -78,6 +78,7 @@ public class MainCommand extends HelpPrinterCommand implements IVersionProvider 
     public String[] getVersion() throws Exception {
         List<String> versionList = new ArrayList<>();
         ModuleManager moduleManager = new ModuleManager();
+        
         moduleManager.forEachModule((OpenSilexModule module) -> {
             versionList.add(module.getClass().getCanonicalName() + ": " + module.getOpenSilexVersion());
         });

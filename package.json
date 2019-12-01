@@ -39,5 +39,24 @@
         "typescript": "~3.7.2",
         "uglifyjs-webpack-plugin": "^2.2.0",
         "vue-template-compiler": "^2.6.10"
-    }
+    },
+    "eslintConfig": {
+        "root": true,
+        "env": {
+            "node": true
+        },
+        "extends": [
+            "plugin:vue/essential",
+            "eslint:recommended",
+            "@vue/typescript"
+        ],
+        "rules": {},
+        "parserOptions": {
+            "parser": "@typescript-eslint/parser"
+        }
+    },
+    "browserslist": [
+        "> 1%",
+        "last 2 versions"
+    ]
 }

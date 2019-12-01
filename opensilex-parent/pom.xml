@@ -854,6 +854,11 @@
             </build>
         </profile>
 
+        <profile>
+            <id>clean-vue-app</id>
+            
+        </profile>
+        
         <!-- Profile which enable OWASP security check for libraries, could be VERY slow -->
         <profile>
             <id>with-security-check</id>

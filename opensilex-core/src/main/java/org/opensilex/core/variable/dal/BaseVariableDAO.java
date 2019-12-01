@@ -5,14 +5,14 @@
 //******************************************************************************
 package org.opensilex.core.variable.dal;
 
+import java.net.URI;
+import java.util.List;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.sparql.expr.Expr;
+import org.opensilex.sparql.SPARQLService;
+import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.utils.OrderBy;
-import java.net.*;
-import java.util.*;
-import org.apache.jena.arq.querybuilder.*;
-import org.apache.jena.sparql.expr.*;
-import org.opensilex.sparql.*;
-import org.opensilex.sparql.mapping.*;
-import org.opensilex.utils.*;
+import org.opensilex.utils.ListWithPagination;
 
 /**
  *

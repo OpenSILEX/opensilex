@@ -5,21 +5,26 @@
 //******************************************************************************
 package org.opensilex.sparql.mapping;
 
-import java.lang.reflect.*;
-import java.net.*;
-import java.util.*;
-import java.util.concurrent.atomic.*;
-import java.util.function.*;
+import java.lang.reflect.Field;
+import java.net.URI;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
-import org.apache.jena.arq.querybuilder.*;
-import org.apache.jena.graph.*;
-import org.apache.jena.rdf.model.*;
-import org.apache.jena.sparql.core.*;
-import org.apache.jena.sparql.lang.sparql_11.*;
-import org.apache.jena.vocabulary.*;
-import org.opensilex.sparql.deserializer.*;
-import org.opensilex.sparql.model.*;
-import org.opensilex.sparql.utils.*;
+import org.apache.jena.arq.querybuilder.AskBuilder;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.Triple;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.lang.sparql_11.ParseException;
+import org.apache.jena.vocabulary.RDF;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.model.SPARQLModel;
+import org.opensilex.sparql.model.SPARQLModelRelation;
+import org.opensilex.sparql.utils.Ontology;
+
 
 /**
  *

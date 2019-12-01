@@ -5,21 +5,25 @@
 //******************************************************************************
 package org.opensilex.server.rest;
 
+import io.swagger.jaxrs.config.BeanConfig;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import javax.inject.Singleton;
+import javax.servlet.ServletContext;
+import javax.ws.rs.ApplicationPath;
+import javax.ws.rs.core.Context;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.jackson.JacksonFeature;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.ServerProperties;
+import org.opensilex.OpenSilex;
+import org.opensilex.module.OpenSilexModule;
 import org.opensilex.module.extensions.APIExtension;
-import io.swagger.jaxrs.config.*;
-import java.util.*;
-import javax.inject.*;
-import javax.servlet.*;
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
-import org.glassfish.hk2.utilities.binding.*;
-import org.glassfish.jersey.jackson.*;
-import org.glassfish.jersey.media.multipart.*;
-import org.glassfish.jersey.server.*;
-import org.opensilex.*;
-import org.opensilex.module.*;
-import org.opensilex.service.*;
-import org.slf4j.*;
+import org.opensilex.service.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is the main entry point of OpenSILEX application It extends Jersey

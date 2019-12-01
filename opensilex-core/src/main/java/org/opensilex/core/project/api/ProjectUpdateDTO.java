@@ -5,7 +5,8 @@
 //******************************************************************************
 package org.opensilex.core.project.api;
 
-import org.opensilex.core.project.dal.*;
+import org.opensilex.core.project.dal.ProjectModel;
+
 
 public class ProjectUpdateDTO {
 

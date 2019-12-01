@@ -5,21 +5,28 @@
 //******************************************************************************
 package org.opensilex.server;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import org.apache.catalina.Context;
+import org.apache.catalina.LifecycleException;
+import org.apache.catalina.WebResourceRoot;
+import org.apache.catalina.startup.Tomcat;
+import org.apache.catalina.util.IOTools;
+import org.apache.catalina.webresources.StandardRoot;
+import org.apache.commons.io.FileUtils;
+import org.apache.jasper.servlet.JasperInitializer;
+import org.apache.tomcat.JarScanType;
+import org.opensilex.OpenSilex;
 import org.opensilex.module.extensions.ServerExtension;
-import java.io.*;
-import java.nio.file.*;
-import org.apache.catalina.*;
-import org.apache.catalina.startup.*;
-import org.apache.catalina.util.*;
-import org.apache.catalina.webresources.*;
-import org.apache.commons.io.*;
-import org.apache.jasper.servlet.*;
-import org.apache.tomcat.*;
-import org.opensilex.*;
-import org.opensilex.fs.*;
-import org.opensilex.utils.*;
-import org.slf4j.*;
-
+import org.opensilex.utils.ClassInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.opensilex.fs.FileStorageService;
 
 
 /**

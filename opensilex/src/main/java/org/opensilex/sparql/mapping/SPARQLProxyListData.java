@@ -5,16 +5,21 @@
 //******************************************************************************
 package org.opensilex.sparql.mapping;
 
-import java.net.*;
-import java.util.*;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
-import org.apache.jena.arq.querybuilder.*;
-import org.apache.jena.graph.*;
-import org.apache.jena.rdf.model.*;
-import org.apache.jena.sparql.core.*;
-import org.opensilex.sparql.*;
-import org.opensilex.sparql.deserializer.*;
-import org.opensilex.sparql.utils.*;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.graph.Node;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.sparql.core.Var;
+import org.opensilex.sparql.SPARQLResult;
+import org.opensilex.sparql.SPARQLService;
+import org.opensilex.sparql.deserializer.SPARQLDeserializer;
+import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.utils.Ontology;
+
 
 
 /**

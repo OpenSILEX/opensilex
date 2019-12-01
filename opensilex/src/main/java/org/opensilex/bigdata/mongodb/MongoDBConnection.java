@@ -5,15 +5,11 @@
 //******************************************************************************
 package org.opensilex.bigdata.mongodb;
 
-import java.util.*;
-import org.opensilex.bigdata.datanucleus.*;
-import org.opensilex.service.*;
+import java.util.HashMap;
+import org.opensilex.bigdata.datanucleus.AbstractDataNucleusConnection;
+import org.opensilex.service.ServiceConnection;
 
-/**
- *
- * @author Vincent Migot
- */
-public class MongoDBConnection extends AbstractDataNucleusConnection implements ServiceConnection{
+public class MongoDBConnection extends AbstractDataNucleusConnection implements ServiceConnection {
 
     public MongoDBConnection(MongoDBConfig config) {
         super(new HashMap<>());

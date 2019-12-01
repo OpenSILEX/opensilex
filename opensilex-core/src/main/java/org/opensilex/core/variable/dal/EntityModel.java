@@ -5,10 +5,11 @@
 //******************************************************************************
 package org.opensilex.core.variable.dal;
 
-import java.net.*;
-import org.opensilex.core.ontology.*;
-import org.opensilex.sparql.annotations.*;
-import org.opensilex.sparql.utils.*;
+import java.net.URI;
+import org.opensilex.core.ontology.Oeso;
+import org.opensilex.sparql.annotations.SPARQLResource;
+import org.opensilex.sparql.utils.ClassURIGenerator;
+
 
 /**
  *

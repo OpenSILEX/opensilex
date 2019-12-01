@@ -5,8 +5,9 @@
 //******************************************************************************
 package org.opensilex.server.response;
 
-import java.util.*;
-import org.opensilex.utils.*;
+import java.util.List;
+import org.opensilex.utils.ListWithPagination;
+
 
 /**
  *

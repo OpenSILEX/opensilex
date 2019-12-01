@@ -5,8 +5,9 @@
 //******************************************************************************
 package org.opensilex.module.extensions;
 
-import java.util.*;
-import org.opensilex.server.rest.*;
+import java.util.ArrayList;
+import java.util.List;
+import org.opensilex.server.rest.RestApplication;
 
 /**
  *

@@ -5,7 +5,8 @@
 //******************************************************************************
 package org.opensilex.sparql.utils;
 
-import org.apache.jena.arq.querybuilder.*;
+import org.apache.jena.arq.querybuilder.Order;
+
 
 /**
  *

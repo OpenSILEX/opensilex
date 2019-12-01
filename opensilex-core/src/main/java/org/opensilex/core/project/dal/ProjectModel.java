@@ -5,17 +5,19 @@
  */
 package org.opensilex.core.project.dal;
 
-import java.net.*;
-import java.time.*;
-import java.util.*;
-import javax.mail.internet.*;
+import java.net.URI;
+import java.time.LocalDate;
+import java.util.List;
+import javax.mail.internet.InternetAddress;
 import org.apache.jena.sparql.vocabulary.FOAF;
-import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.DCTerms;
-import org.opensilex.core.ontology.*;
-import org.opensilex.sparql.annotations.*;
-import org.opensilex.sparql.model.*;
-import org.opensilex.sparql.utils.*;
+import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.core.ontology.Oeso;
+import org.opensilex.sparql.annotations.SPARQLProperty;
+import org.opensilex.sparql.annotations.SPARQLResource;
+import org.opensilex.sparql.model.SPARQLModel;
+import org.opensilex.sparql.utils.ClassURIGenerator;
+
 
 @SPARQLResource(
         ontology = Oeso.class,

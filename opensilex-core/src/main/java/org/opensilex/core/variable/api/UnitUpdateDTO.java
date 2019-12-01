@@ -5,10 +5,11 @@
 //******************************************************************************
 package org.opensilex.core.variable.api;
 
-import java.util.*;
-import org.opensilex.core.ontology.*;
-import org.opensilex.core.variable.dal.*;
-import org.opensilex.server.validation.*;
+import java.util.List;
+import org.opensilex.core.ontology.OntologyReference;
+import org.opensilex.core.variable.dal.UnitModel;
+import org.opensilex.server.validation.Required;
+
 
 public class UnitUpdateDTO {
 

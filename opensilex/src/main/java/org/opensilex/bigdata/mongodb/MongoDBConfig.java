@@ -5,8 +5,8 @@
 //******************************************************************************
 package org.opensilex.bigdata.mongodb;
 
-import java.util.*;
-import org.opensilex.config.*;
+import java.util.Map;
+import org.opensilex.config.ConfigDescription;
 
 /**
  *

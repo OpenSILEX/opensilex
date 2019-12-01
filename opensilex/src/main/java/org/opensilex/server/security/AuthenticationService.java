@@ -5,19 +5,26 @@
 //******************************************************************************
 package org.opensilex.server.security;
 
-import at.favre.lib.crypto.bcrypt.*;
-import com.auth0.jwt.*;
+import at.favre.lib.crypto.bcrypt.BCrypt;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.algorithms.*;
-import com.auth0.jwt.exceptions.*;
-import com.auth0.jwt.interfaces.*;
-import java.net.*;
-import java.security.*;
-import java.security.interfaces.*;
-import java.time.temporal.*;
-import java.util.*;
-import org.opensilex.server.security.model.*;
-import org.opensilex.service.*;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
+import java.util.Date;
+import org.opensilex.service.Service;
+import org.opensilex.user.dal.UserModel;
+
 
 /**
  *

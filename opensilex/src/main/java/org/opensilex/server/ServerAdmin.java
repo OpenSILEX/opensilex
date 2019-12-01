@@ -5,8 +5,12 @@
 //******************************************************************************
 package org.opensilex.server;
 
-import java.io.*;
-import java.net.*;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+
 
 /**
  * Server administration tool used to execute recieved commands from the command

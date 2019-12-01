@@ -16,7 +16,7 @@ public class InvalidConfigException extends Exception {
     public InvalidConfigException(Exception ex) {
         super(ex);
     }
-    
+
     public InvalidConfigException(String message) {
         super(message);
     }

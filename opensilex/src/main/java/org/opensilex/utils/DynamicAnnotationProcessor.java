@@ -5,14 +5,16 @@
 //******************************************************************************
 package org.opensilex.utils;
 
-import java.util.*;
-import javax.annotation.processing.*;
-import javax.lang.model.element.*;
+import java.util.Set;
+import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.lang.model.element.TypeElement;
 
-// TODO Vérifier si ça sert à quelque chose
 
 /**
- *
+ * // TODO Vérifier si ça sert à quelque chose
+ * 
  * @author vincent
  * https://www.baeldung.com/java-annotation-processing-builder
  */

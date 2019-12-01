@@ -5,12 +5,15 @@
 //******************************************************************************
 package org.opensilex.fs;
 
-import java.io.*;
-import java.nio.file.*;
-import java.util.function.*;
-import org.opensilex.service.*;
-import org.slf4j.*;
-
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.function.Consumer;
+import org.opensilex.service.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FileStorageService implements Service {
 

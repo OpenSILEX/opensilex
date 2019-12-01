@@ -5,10 +5,12 @@
 //******************************************************************************
 package test.opensilex.sparql.model;
 
-import java.net.*;
-import java.time.*;
-import org.opensilex.sparql.annotations.*;
-import org.opensilex.sparql.model.*;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import org.opensilex.sparql.annotations.SPARQLProperty;
+import org.opensilex.sparql.annotations.SPARQLResource;
+import org.opensilex.sparql.model.SPARQLModel;
+
 
 /**
  *

@@ -5,22 +5,39 @@
 //******************************************************************************
 package org.opensilex.sparql.mapping;
 
-import java.lang.reflect.*;
-import java.net.*;
-import java.util.*;
-import org.apache.jena.arq.querybuilder.*;
-import org.apache.jena.graph.*;
-import org.apache.jena.rdf.model.*;
-import org.apache.jena.sparql.expr.*;
-import org.opensilex.*;
-import org.opensilex.sparql.*;
-import org.opensilex.sparql.annotations.*;
-import org.opensilex.sparql.deserializer.*;
-import org.opensilex.sparql.exceptions.*;
-import org.opensilex.sparql.model.*;
-import org.opensilex.sparql.utils.*;
-import org.opensilex.utils.*;
-import org.slf4j.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import org.apache.jena.arq.querybuilder.AskBuilder;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.sparql.expr.E_Regex;
+import org.apache.jena.sparql.expr.E_StrLowerCase;
+import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.ExprVar;
+import org.opensilex.OpenSilex;
+import org.opensilex.sparql.SPARQLResult;
+import org.opensilex.sparql.SPARQLService;
+import org.opensilex.sparql.annotations.SPARQLResource;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
+import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
+import org.opensilex.sparql.exceptions.SPARQLUnknownFieldException;
+import org.opensilex.sparql.model.SPARQLModel;
+import org.opensilex.sparql.utils.URIGenerator;
+import org.opensilex.utils.ClassInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  *

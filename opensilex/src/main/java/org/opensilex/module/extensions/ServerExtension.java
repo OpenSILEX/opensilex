@@ -5,7 +5,7 @@
 //******************************************************************************
 package org.opensilex.module.extensions;
 
-import org.opensilex.server.*;
+import org.opensilex.server.Server;
 
 /**
  *

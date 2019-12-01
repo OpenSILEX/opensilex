@@ -6,9 +6,10 @@
 //******************************************************************************
 package org.opensilex.server.validation;
 
-import java.net.*;
-import java.util.*;
-import javax.validation.*;
+import java.net.MalformedURLException;
+import java.util.List;
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
 
 
 /**

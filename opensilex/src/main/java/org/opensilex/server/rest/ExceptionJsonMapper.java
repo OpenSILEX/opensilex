@@ -5,12 +5,14 @@
 //******************************************************************************
 package org.opensilex.server.rest;
 
-import javax.ws.rs.*;
-import org.opensilex.server.response.*;
-import javax.ws.rs.core.*;
-import javax.ws.rs.core.Response.*;
-import javax.ws.rs.ext.*;
-import org.slf4j.*;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
+import org.opensilex.server.response.ErrorResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**

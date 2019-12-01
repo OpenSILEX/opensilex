@@ -5,13 +5,14 @@
 //******************************************************************************
 package org.opensilex.core.project.dal;
 
-import java.net.*;
-import java.util.*;
-import org.apache.jena.arq.querybuilder.*;
-import org.opensilex.sparql.*;
-import org.opensilex.sparql.mapping.*;
-import org.opensilex.sparql.utils.*;
-import org.opensilex.utils.*;
+import java.net.URI;
+import java.util.List;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.opensilex.sparql.SPARQLService;
+import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
+import org.opensilex.sparql.utils.OrderBy;
+import org.opensilex.utils.ListWithPagination;
+
 
 /**
  *

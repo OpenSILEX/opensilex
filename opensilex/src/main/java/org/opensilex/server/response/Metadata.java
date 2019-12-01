@@ -5,9 +5,11 @@
 //******************************************************************************
 package org.opensilex.server.response;
 
-import io.swagger.annotations.*;
-import java.net.*;
-import java.util.*;
+import io.swagger.annotations.ApiModel;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * Request metadata model.

@@ -5,29 +5,35 @@
 //******************************************************************************
 package test.opensilex.sparql;
 
-import test.opensilex.sparql.model.TEST_ONTOLOGY;
-import test.opensilex.sparql.model.A;
-import test.opensilex.sparql.model.B;
-import java.io.*;
-import java.net.*;
-import java.time.*;
-import java.util.*;
-import org.apache.jena.arq.querybuilder.*;
-import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
-import org.apache.jena.graph.*;
-import org.apache.jena.query.*;
-import org.apache.jena.rdf.model.*;
-import org.apache.jena.sparql.core.*;
+import java.io.InputStream;
+import java.net.URI;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
+import org.apache.jena.arq.querybuilder.AskBuilder;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-import org.junit.*;
-import org.opensilex.*;
-import org.opensilex.sparql.*;
-import org.opensilex.sparql.exceptions.*;
-import org.opensilex.sparql.mapping.*;
-import org.opensilex.sparql.utils.*;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
+import org.opensilex.OpenSilex;
+import org.opensilex.sparql.SPARQLService;
+import org.opensilex.sparql.exceptions.SPARQLQueryException;
+import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
+import test.opensilex.sparql.model.A;
+import test.opensilex.sparql.model.B;
+import test.opensilex.sparql.model.TEST_ONTOLOGY;
+
 
 /**
  *
@@ -116,12 +122,6 @@ public abstract class SPARQLServiceTest {
 
         assertEquals("B.getStringList size should match inserted triple count", 4, b.getStringList().size());
 
-        b.getRelations().forEach((model) -> {
-            System.out.println("------------");
-            System.out.println(model.getProperty().getURI());
-            System.out.println(model.getReverse());
-            System.out.println(model.getValue());
-        });
     }
 
     @Test

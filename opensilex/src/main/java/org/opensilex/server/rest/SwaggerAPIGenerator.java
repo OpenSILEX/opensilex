@@ -1,17 +1,20 @@
 package org.opensilex.server.rest;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.*;
-import io.swagger.annotations.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.annotations.Api;
 import io.swagger.jaxrs.Reader;
-import io.swagger.jaxrs.config.*;
-import io.swagger.models.*;
-import java.io.*;
-import java.nio.file.*;
+import io.swagger.jaxrs.config.SwaggerContextService;
+import io.swagger.models.Swagger;
+import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
-import java.util.stream.*;
-import org.opensilex.utils.*;
+import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
+import org.opensilex.utils.ClassInfo;
 
 public class SwaggerAPIGenerator {
 

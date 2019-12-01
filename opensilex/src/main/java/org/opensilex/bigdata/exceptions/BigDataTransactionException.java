@@ -5,10 +5,6 @@
 //******************************************************************************
 package org.opensilex.bigdata.exceptions;
 
-/**
- *
- * @author Vincent Migot
- */
 public class BigDataTransactionException extends Exception {
 
     private static final long serialVersionUID = -6461996605159308270L;

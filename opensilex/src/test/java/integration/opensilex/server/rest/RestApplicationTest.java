@@ -3,16 +3,17 @@
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package test.integration.opensilex.server.rest;
+package integration.opensilex.server.rest;
 
-import java.util.*;
-import javax.servlet.http.*;
-import org.glassfish.jersey.internal.inject.*;
-import org.glassfish.jersey.server.*;
-import org.glassfish.jersey.test.*;
-import org.mockito.*;
-import org.opensilex.*;
-import org.opensilex.server.rest.*;
+import java.util.HashMap;
+import javax.servlet.http.HttpServletRequest;
+import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.test.JerseyTest;
+import org.mockito.Mockito;
+import org.opensilex.OpenSilex;
+import org.opensilex.server.rest.RestApplication;
+
 
 /**
  * The application test class. Initialize the required environment for the

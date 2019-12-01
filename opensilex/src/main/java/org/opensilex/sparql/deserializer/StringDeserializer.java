@@ -5,7 +5,9 @@
 //******************************************************************************
 package org.opensilex.sparql.deserializer;
 
-import org.apache.jena.graph.*;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+
 
 /**
  *

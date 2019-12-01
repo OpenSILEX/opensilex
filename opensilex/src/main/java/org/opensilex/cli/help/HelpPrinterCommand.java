@@ -6,7 +6,10 @@
 package org.opensilex.cli.help;
 
 import picocli.CommandLine;
-import picocli.CommandLine.*;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.HelpCommand;
+import picocli.CommandLine.Mixin;
+
 
 /**
  * Utility class used as super class for commands which are only a regroup of 

@@ -5,17 +5,25 @@
 //******************************************************************************
 package org.opensilex.cli;
 
-import java.io.*;
-import java.net.*;
-import java.nio.file.*;
-import org.apache.catalina.*;
-import org.apache.commons.io.*;
-import org.opensilex.*;
-import org.opensilex.cli.help.*;
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import org.apache.catalina.LifecycleException;
+import org.apache.commons.io.FileUtils;
+import org.opensilex.OpenSilex;
+import org.opensilex.cli.help.HelpOption;
+import org.opensilex.cli.help.HelpPrinterCommand;
 import org.opensilex.server.Server;
-import org.opensilex.server.*;
-import org.slf4j.*;
-import picocli.CommandLine.*;
+import org.opensilex.server.ServerAdminClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Mixin;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
+
 
 /**
  * This class regroup all commands concerning OpenSilex server operation 

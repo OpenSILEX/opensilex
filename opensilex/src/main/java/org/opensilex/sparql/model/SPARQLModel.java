@@ -5,9 +5,12 @@
  */
 package org.opensilex.sparql.model;
 
-import java.net.*;
-import java.util.*;
-import org.opensilex.sparql.annotations.*;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import org.opensilex.sparql.annotations.SPARQLResourceURI;
+
 
 /**
  *

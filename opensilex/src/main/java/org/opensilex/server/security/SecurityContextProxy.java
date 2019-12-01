@@ -5,9 +5,9 @@
 //******************************************************************************
 package org.opensilex.server.security;
 
-import java.security.*;
-import javax.ws.rs.core.*;
-import org.opensilex.server.security.model.*;
+import java.security.Principal;
+import javax.ws.rs.core.SecurityContext;
+import org.opensilex.user.dal.UserModel;
 
 /**
  *

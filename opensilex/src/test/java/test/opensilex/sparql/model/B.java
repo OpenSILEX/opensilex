@@ -5,9 +5,11 @@
 //******************************************************************************
 package test.opensilex.sparql.model;
 
-import java.util.*;
-import org.opensilex.sparql.annotations.*;
-import org.opensilex.sparql.model.*;
+import java.util.List;
+import org.opensilex.sparql.annotations.SPARQLProperty;
+import org.opensilex.sparql.annotations.SPARQLResource;
+import org.opensilex.sparql.model.SPARQLModel;
+
 
 
 /**

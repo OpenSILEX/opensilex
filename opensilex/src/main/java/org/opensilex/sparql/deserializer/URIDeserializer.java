@@ -5,9 +5,10 @@
 //******************************************************************************
 package org.opensilex.sparql.deserializer;
 
-import java.net.*;
-import org.apache.jena.graph.*;
-import org.opensilex.sparql.utils.*;
+import java.net.URI;
+import org.apache.jena.graph.Node;
+import org.opensilex.sparql.utils.Ontology;
+
 
 /**
  *

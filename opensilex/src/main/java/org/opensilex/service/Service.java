@@ -5,7 +5,7 @@
 //******************************************************************************
 package org.opensilex.service;
 
-import org.opensilex.utils.*;
+import org.opensilex.utils.ClassInfo;
 
 /**
  *

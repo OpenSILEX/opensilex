@@ -5,9 +5,10 @@
  */
 package org.opensilex.core.variable.dal;
 
-import org.apache.jena.vocabulary.*;
-import org.opensilex.sparql.annotations.*;
-import org.opensilex.sparql.model.*;
+import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.sparql.annotations.SPARQLProperty;
+import org.opensilex.sparql.model.SPARQLModel;
+
 
 public abstract class BaseVariableModel extends SPARQLModel {
     

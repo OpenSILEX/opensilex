@@ -5,10 +5,12 @@
 //******************************************************************************
 package org.opensilex.sparql.deserializer;
 
-import java.time.*;
-import java.time.format.*;
-import org.apache.jena.datatypes.xsd.*;
-import org.apache.jena.graph.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+
 
 /**
  *

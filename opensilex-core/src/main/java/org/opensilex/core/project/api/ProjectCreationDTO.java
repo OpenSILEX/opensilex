@@ -5,8 +5,9 @@
  */
 package org.opensilex.core.project.api;
 
-import java.net.*;
-import org.opensilex.core.project.dal.*;
+import java.net.URI;
+import org.opensilex.core.project.dal.ProjectModel;
+
 
 /**
  *

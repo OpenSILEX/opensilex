@@ -5,15 +5,12 @@
 //******************************************************************************
 package org.opensilex.module.base;
 
-import org.opensilex.bigdata.*;
-import org.opensilex.config.*;
-import org.opensilex.fs.*;
-import org.opensilex.module.*;
+import org.opensilex.bigdata.BigDataService;
+import org.opensilex.config.ConfigDescription;
 import org.opensilex.module.ModuleConfig;
-import org.opensilex.server.security.*;
-import org.opensilex.sparql.*;
-
-
+import org.opensilex.server.security.AuthenticationService;
+import org.opensilex.fs.FileStorageService;
+import org.opensilex.sparql.SPARQLService;
 
 /**
  *

@@ -5,12 +5,17 @@
 //******************************************************************************
 package org.opensilex.sparql;
 
-import java.net.*;
-import java.util.*;
-import java.util.function.*;
-import org.apache.jena.arq.querybuilder.*;
-import org.opensilex.service.*;
-import org.opensilex.sparql.exceptions.*;
+import java.net.URI;
+import java.util.List;
+import java.util.function.Consumer;
+import org.apache.jena.arq.querybuilder.AskBuilder;
+import org.apache.jena.arq.querybuilder.ConstructBuilder;
+import org.apache.jena.arq.querybuilder.DescribeBuilder;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.opensilex.service.ServiceConnection;
+import org.opensilex.sparql.exceptions.SPARQLQueryException;
+import org.opensilex.sparql.exceptions.SPARQLTransactionException;
 
 
 

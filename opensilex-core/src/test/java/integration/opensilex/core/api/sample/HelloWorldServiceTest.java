@@ -5,11 +5,14 @@
 //******************************************************************************
 package integration.opensilex.core.api.sample;
 
-import test.integration.opensilex.server.rest.RestApplicationTest;
-import javax.ws.rs.core.*;
+import integration.opensilex.server.rest.RestApplicationTest;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import static org.junit.Assert.*;
-import org.junit.*;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
+
 
 
 /**

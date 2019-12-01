@@ -11,7 +11,8 @@
   "typings": "dist/index.d.ts",
   "scripts": {
     "build": "tsc --outDir dist/",
-    "postinstall": "echo export interface ModelObject {}; > ./model/modelObject.ts && npm run build"
+    "postinstall": "echo export interface ModelObject {}; > ./model/modelObject.ts && yarn run build",
+    "check:outdated": "yarn outdated || cd ."
   },
   "dependencies": {
     "inversify": "^4.3.0",

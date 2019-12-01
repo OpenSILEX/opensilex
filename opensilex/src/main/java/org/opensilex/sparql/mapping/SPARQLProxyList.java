@@ -5,11 +5,11 @@
 //******************************************************************************
 package org.opensilex.sparql.mapping;
 
-import java.net.*;
-import java.util.*;
-import org.apache.jena.graph.*;
-import org.apache.jena.rdf.model.*;
-import org.opensilex.sparql.*;
+import java.net.URI;
+import java.util.List;
+import org.apache.jena.graph.Node;
+import org.apache.jena.rdf.model.Property;
+import org.opensilex.sparql.SPARQLService;
 
 /**
  *

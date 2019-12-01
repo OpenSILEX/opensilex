@@ -1,12 +1,34 @@
 {
-    "name": "opensilex-core-front",
+    "name": "opensilex-vue-core-extension",
     "version": "0.1.0",
     "private": true,
-    "main": "./dist/opensilex-core-front.umd.js",
+    "main": "./dist/opensilex-vue-core-extension.umd.js",
     "scripts": {
-        "serve": "vue-cli-service build --target lib --watch src/index.ts",
-        "build": "vue-cli-service build --target lib src/index.ts"
+        "serve": "vue-cli-service build src/index.ts --target lib --name opensilex-vue-core-extension--mode development --watch ",
+        "build": "vue-cli-service build src/index.ts --target lib --name opensilex-vue-core-extension --mode production",
+        "lint": "vue-cli-service lint",
+        "check:outdated": "yarn outdated || cd ."
     },
-    "devDependencies": {},
-    "dependencies": {}
+    "dependencies": {},
+    "devDependencies": {
+        "core-js": "^3.4.3",
+        "vue": "^2.6.10",
+        "vue-class-component": "^7.0.2",
+        "vue-property-decorator": "^8.3.0",
+        "vue-router": "^3.1.3",
+        "vuex": "^3.1.2",
+        "@vue/cli-plugin-babel": "^4.1.0",
+        "@vue/cli-plugin-eslint": "^4.1.0",
+        "@vue/cli-plugin-router": "^4.1.0",
+        "@vue/cli-plugin-typescript": "^4.1.0",
+        "@vue/cli-plugin-vuex": "^4.1.0",
+        "@vue/cli-service": "^4.1.0",
+        "@vue/eslint-config-typescript": "^4.0.0",
+        "eslint": "^5.16.0",
+        "eslint-plugin-vue": "^5.0.0",
+        "sass": "^1.23.7",
+        "sass-loader": "^8.0.0",
+        "typescript": "~3.5.3",
+        "vue-template-compiler": "^2.6.10"
+    }
 }

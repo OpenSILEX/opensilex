@@ -5,8 +5,10 @@
 //******************************************************************************
 package org.opensilex.core.ontology;
 
-import org.apache.jena.rdf.model.*;
-import org.opensilex.sparql.utils.*;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
+import org.opensilex.sparql.utils.Ontology;
+
 
 /**
  *

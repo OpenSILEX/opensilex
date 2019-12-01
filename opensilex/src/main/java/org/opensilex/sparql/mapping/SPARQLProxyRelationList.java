@@ -5,13 +5,16 @@
  */
 package org.opensilex.sparql.mapping;
 
-import java.net.*;
-import java.util.*;
-import org.apache.jena.graph.*;
-import org.apache.jena.rdf.model.*;
-import org.opensilex.sparql.*;
-import org.opensilex.sparql.model.*;
-import org.opensilex.sparql.utils.*;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import org.apache.jena.graph.Node;
+import org.opensilex.sparql.SPARQLService;
+import org.opensilex.sparql.SPARQLStatement;
+import org.opensilex.sparql.model.SPARQLModelRelation;
+import org.opensilex.sparql.utils.Ontology;
+
 
 /**
  *

@@ -40,7 +40,7 @@ public class Pagination {
      *
      * @param pageSize
      * @param currentPage
-     * @param listSize
+     * @param totalCount
      */
     public Pagination(long pageSize, long currentPage, long totalCount) {
         this.pageSize = pageSize;

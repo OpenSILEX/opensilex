@@ -5,10 +5,9 @@
 //******************************************************************************
 package org.opensilex.bigdata.datanucleus;
 
-import java.util.*;
-import org.opensilex.bigdata.*;
-import org.opensilex.bigdata.exceptions.*;
-
+import java.util.Map;
+import org.opensilex.bigdata.BigDataConnection;
+import org.opensilex.bigdata.exceptions.BigDataTransactionException;
 
 /**
  *

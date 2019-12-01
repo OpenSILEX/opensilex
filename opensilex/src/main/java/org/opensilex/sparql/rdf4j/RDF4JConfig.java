@@ -5,7 +5,8 @@
 //******************************************************************************
 package org.opensilex.sparql.rdf4j;
 
-import org.opensilex.config.*;
+import org.opensilex.config.ConfigDescription;
+
 
 /**
  * RDF4J configuration interface

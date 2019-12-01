@@ -5,7 +5,8 @@
 //******************************************************************************
 package org.opensilex.service;
 
-import org.opensilex.config.*;
+import org.opensilex.config.ConfigDescription;
+
 
 /**
  *

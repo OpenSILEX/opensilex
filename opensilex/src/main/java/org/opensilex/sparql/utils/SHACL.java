@@ -5,9 +5,13 @@
 //******************************************************************************
 package org.opensilex.sparql.utils;
 
-import org.apache.jena.graph.*;
-import org.apache.jena.rdf.model.*;
-import org.apache.jena.riot.*;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFLanguages;
+
 
 /**
  *

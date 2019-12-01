@@ -5,12 +5,17 @@
 //******************************************************************************
 package org.opensilex.core.variable.api;
 
-import java.net.*;
-import java.util.*;
-import javax.validation.constraints.*;
-import org.opensilex.core.ontology.*;
-import org.opensilex.core.variable.dal.*;
-import org.opensilex.server.validation.*;
+import java.net.URI;
+import java.util.List;
+import javax.validation.constraints.NotNull;
+import org.opensilex.core.ontology.OntologyReference;
+import org.opensilex.core.variable.dal.EntityModel;
+import org.opensilex.core.variable.dal.MethodModel;
+import org.opensilex.core.variable.dal.QualityModel;
+import org.opensilex.core.variable.dal.UnitModel;
+import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.server.validation.Required;
+
 
 public class VariableUpdateDTO {
 

@@ -5,11 +5,17 @@
 //******************************************************************************
 package org.opensilex.sparql.utils;
 
-import java.net.*;
-import org.apache.jena.graph.*;
-import org.apache.jena.rdf.model.*;
-import org.apache.jena.sparql.path.*;
-import org.apache.jena.vocabulary.*;
+import java.net.URI;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.sparql.path.P_Link;
+import org.apache.jena.sparql.path.P_ZeroOrMore1;
+import org.apache.jena.sparql.path.Path;
+import org.apache.jena.vocabulary.RDFS;
+
 
 /**
  *

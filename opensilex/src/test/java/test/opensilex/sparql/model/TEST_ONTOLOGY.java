@@ -5,10 +5,13 @@
 //******************************************************************************
 package test.opensilex.sparql.model;
 
-import java.nio.file.*;
-import org.apache.jena.rdf.model.*;
-import org.apache.jena.riot.*;
-import org.opensilex.sparql.utils.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFLanguages;
+import org.opensilex.sparql.utils.Ontology;
 
 /**
  *

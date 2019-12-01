@@ -1,0 +1,27 @@
+{
+  "name": "opensilex",
+  "version": "",
+  "description": "swagger client for opensilex",
+  "author": "Swagger Codegen Contributors",
+  "keywords": [
+    "swagger-client"
+  ],
+  "license": "Unlicense",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc --outDir dist/",
+    "postinstall": "echo export interface ModelObject {}; > ./model/modelObject.ts && yarn run build",
+    "check:outdated": "yarn outdated || cd ."
+  },
+  "dependencies": {
+    "inversify": "^4.3.0",
+    "node-fetch": "^2.6.0",
+    "rxjs": "~5.5.7",
+    "whatwg-fetch": "~2.0.1",
+    "reflect-metadata": "0.1.8"
+  },
+  "devDependencies": {
+    "@types/node": "^12.12.14"
+  }
+}

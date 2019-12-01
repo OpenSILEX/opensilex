@@ -5,18 +5,27 @@
 //******************************************************************************
 package org.opensilex.module;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.ServiceLoader;
+import java.util.function.Consumer;
+import org.apache.commons.io.FileUtils;
+import org.opensilex.config.ConfigManager;
 import org.opensilex.module.dependencies.DependencyManager;
-import java.io.*;
-import java.lang.reflect.*;
-import java.net.*;
-import java.nio.charset.*;
-import java.nio.file.*;
-import java.util.*;
-import java.util.function.*;
-import org.apache.commons.io.*;
-import org.opensilex.config.*;
-import org.opensilex.service.*;
-import org.slf4j.*;
+import org.opensilex.service.Service;
+import org.opensilex.service.ServiceManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  *

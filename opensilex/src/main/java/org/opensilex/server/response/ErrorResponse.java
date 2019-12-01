@@ -5,9 +5,10 @@
 //******************************************************************************
 package org.opensilex.server.response;
 
-import com.fasterxml.jackson.annotation.*;
-import com.fasterxml.jackson.annotation.JsonInclude.*;
-import javax.ws.rs.core.Response.*;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import javax.ws.rs.core.Response.Status;
+
 
 /**
  * Internal class used to format the exception, removing useless information.

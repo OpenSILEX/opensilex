@@ -5,8 +5,9 @@
 //******************************************************************************
 package org.opensilex.bigdata;
 
-import org.opensilex.bigdata.exceptions.*;
-import org.opensilex.service.*;
+import org.opensilex.bigdata.exceptions.BigDataTransactionException;
+import org.opensilex.service.ServiceConnection;
+
 
 public interface BigDataConnection extends ServiceConnection {
 

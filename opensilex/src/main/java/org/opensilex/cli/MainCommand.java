@@ -5,12 +5,19 @@
 //******************************************************************************
 package org.opensilex.cli;
 
-import java.util.*;
-import org.opensilex.*;
-import org.opensilex.cli.help.*;
-import org.opensilex.module.*;
-import picocli.*;
-import picocli.CommandLine.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ServiceLoader;
+import org.opensilex.OpenSilex;
+import org.opensilex.cli.help.HelpFactory;
+import org.opensilex.cli.help.HelpPrinterCommand;
+import org.opensilex.module.ModuleManager;
+import org.opensilex.module.OpenSilexModule;
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.IVersionProvider;
+import picocli.CommandLine.Option;
+
 
 /**
  * This class is the main entry point for the CLI application It uses the

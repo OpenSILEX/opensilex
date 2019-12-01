@@ -5,7 +5,8 @@
 //******************************************************************************
 package org.opensilex.core.variable.dal;
 
-import org.opensilex.sparql.*;
+import org.opensilex.sparql.SPARQLService;
+
 
 /**
  *

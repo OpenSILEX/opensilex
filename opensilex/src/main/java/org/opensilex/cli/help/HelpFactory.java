@@ -5,9 +5,11 @@
 //******************************************************************************
 package org.opensilex.cli.help;
 
-import picocli.CommandLine.*;
-import picocli.CommandLine.Help.*;
-import picocli.CommandLine.Model.*;
+import picocli.CommandLine.Help;
+import picocli.CommandLine.Help.ColorScheme;
+import picocli.CommandLine.IHelpFactory;
+import picocli.CommandLine.Model.CommandSpec;
+
 
 /**
  * This class implements picocli.CommandLine.IHelpFactory to generate good

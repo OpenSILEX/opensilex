@@ -5,9 +5,11 @@
 //******************************************************************************
 package org.opensilex.sparql.utils;
 
-import java.net.*;
-import java.util.*;
-import javax.ws.rs.core.*;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import javax.ws.rs.core.UriBuilder;
+
 
 /**
  *

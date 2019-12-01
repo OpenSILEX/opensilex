@@ -16,28 +16,35 @@
         <revision>4.0.0-SNAPSHOT</revision>
         <!-- global encoding -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- generated doc site output directory -->
+        <generated.doc.site.directory>${maven.multiModuleProjectDirectory}/../opensilex-site-doc</generated.doc.site.directory>
+        <!-- flag to disable Front build -->
+        <skip.front.build>false</skip.front.build>
+        
+        <node.version>v12.8.0</node.version>
+        <yarn.version>v1.18.0</yarn.version>
         <!-- Java supported version -->
         <java.compiler.version>1.8</java.compiler.version>
         <!-- Minimal maven version -->
         <maven.minimal.version>3.5</maven.minimal.version>
         <!-- dependencies version -->
         <jersey.version>2.29.1</jersey.version>
+        <tomcat.version>9.0.29</tomcat.version>
         <hibernate.validator.version>6.1.0.Final</hibernate.validator.version>
         <jackson.version>2.10.1</jackson.version>
-        <tomcat.version>9.0.27</tomcat.version>
         <javax.servlet.api.version>4.0.1</javax.servlet.api.version>
-        <swagger.jersey2.jaxrs.version>1.5.24</swagger.jersey2.jaxrs.version>
+        <swagger.jersey2.jaxrs.version>1.6.0</swagger.jersey2.jaxrs.version>
         <maven.resolver.version>1.4.1</maven.resolver.version>
-        <maven.resolver.provider.version>3.6.2</maven.resolver.provider.version>
-        <rdf4j.version>3.0.2</rdf4j.version>
+        <maven.resolver.provider.version>3.6.3</maven.resolver.provider.version>
+        <rdf4j.version>3.0.3</rdf4j.version>
         <jena.query.builder.version>3.13.1</jena.query.builder.version>
         <data.nucleus.version>5.2.2</data.nucleus.version>
         <data.nucleus.jdo.version>3.2.0-m12</data.nucleus.jdo.version>
         <data.nucleus.jta.version>5.10.0.Final</data.nucleus.jta.version>
         <data.nucleus.mongodb.version>5.2.0-release</data.nucleus.mongodb.version>
-        <bytebuddy.version>1.10.3</bytebuddy.version>
+        <bytebuddy.version>1.10.4</bytebuddy.version>
         <java.jwt.version>3.8.3</java.jwt.version>
-        <picocli.version>4.0.4</picocli.version>
+        <picocli.version>4.1.1</picocli.version>
         <bcript.version>0.9.0</bcript.version>
         <commons.io.version>2.6</commons.io.version>
         <logback.version>1.2.3</logback.version>
@@ -49,9 +56,13 @@
         <jaxb.version>2.3.0.1</jaxb.version>
         <jaxb.impl.version>2.3.2</jaxb.impl.version>
         <javax.activation.api.version>1.2.0</javax.activation.api.version>
+        <reflections.version>0.9.11</reflections.version>
+        <httpclient.version>4.5.10</httpclient.version>
+        <httpcore.version>4.4.12</httpcore.version>
+        <javaee.web.api.version>8.0.1</javaee.web.api.version>
         <!-- test only dependencies version -->
         <junit.version>4.12</junit.version>
-        <mockito.version>3.1.0</mockito.version>
+        <mockito.version>3.2.0</mockito.version>
         <!-- maven plugins versions -->
         <maven.clean.plugin.version>3.1.0</maven.clean.plugin.version>
         <maven.deploy.plugin.version>3.0.0-M1</maven.deploy.plugin.version>
@@ -74,6 +85,7 @@
         <frontend.maven.plugin.version>1.8.0</frontend.maven.plugin.version>
         <maven.project.info.reports.plugin.version>3.0.0</maven.project.info.reports.plugin.version>
         <maven.javadoc.plugin.version>3.1.1</maven.javadoc.plugin.version>
+        <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -90,11 +102,6 @@
     </dependencyManagement>
 
     <dependencies>
-        <dependency>
-            <groupId>org.reflections</groupId>
-            <artifactId>reflections</artifactId>
-            <version>0.9.11</version>
-        </dependency>
         <!--CLI--> 
         <dependency>
             <groupId>info.picocli</groupId>
@@ -112,11 +119,6 @@
             <artifactId>tomcat-embed-jasper</artifactId>
             <version>${tomcat.version}</version>
         </dependency>
-        <!--        <dependency>
-            <groupId>org.apache.tomcat.embed</groupId>
-            <artifactId>tomcat-embed-el</artifactId>
-            <version>${tomcat.version}</version>
-        </dependency>-->
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-websocket</artifactId>
@@ -158,6 +160,12 @@
             <groupId>at.favre.lib</groupId>
             <artifactId>bcrypt</artifactId>
             <version>${bcript.version}</version>
+        </dependency>
+        <!-- Reflection utils -->
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>${reflections.version}</version>
         </dependency>
         <!--Proxy class library--> 
         <dependency>
@@ -288,9 +296,19 @@
             <version>${hibernate.validator.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>${httpclient.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>${httpcore.version}</version>
+        </dependency>
+        <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-web-api</artifactId>
-            <version>8.0.1</version>
+            <version>${javaee.web.api.version}</version>
             <scope>provided</scope>
         </dependency>
         <!--Jackson JSON & YAML--> 
@@ -387,19 +405,18 @@
             <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpcore</artifactId>
-            <version>4.4.12</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.5.10</version>
-        </dependency>
     </dependencies>
 
     <build>
+        <!-- define front resources folder -->
+        <resources>
+            <resource>
+                <directory>front</directory>
+                <excludes>
+                    <exclude>**</exclude>
+                </excludes>
+            </resource>
+        </resources>
         <!-- Used maven plugins definitions -->
         <pluginManagement>
             <plugins>
@@ -441,18 +458,6 @@
                     <version>${maven.resources.plugin.version}</version>
                 </plugin>
                 <plugin>
-                    <artifactId>maven-site-plugin</artifactId>
-                    <version>${maven.site.plugin.version}</version>
-                    <configuration>
-                        <source>8</source>
-                        <locales>en</locales>
-                        <!-- see below to enable multilang doc -->
-                        <!--<locales>en,fr</locales>-->
-                        <generateReports>true</generateReports>
-                        <outputDirectory>${maven.multiModuleProjectDirectory}/site/${project.name}/</outputDirectory>
-                    </configuration>
-                </plugin>
-                <plugin>
                     <artifactId>maven-assembly-plugin</artifactId>
                     <version>${maven.assembly.plugin.version}</version>
                 </plugin>
@@ -477,6 +482,7 @@
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>versions-maven-plugin</artifactId>
                     <version>${versions.maven.plugin.version}</version>
+              
                     <executions>
                         <execution>
                             <phase>generate-resources</phase>
@@ -503,28 +509,110 @@
                     <version>${serviceloader.maven.plugin.version}</version>
                 </plugin>
                 <plugin>
-                    <groupId>org.jacoco</groupId>
-                    <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>${jacoco.maven.plugin.version}</version>
-                    <configuration>
-                        <outputDirectory>${maven.multiModuleProjectDirectory}/site/${project.name}/jacoco/</outputDirectory>
-                    </configuration>
-                </plugin>
-                <plugin>
                     <groupId>org.owasp</groupId>
                     <artifactId>dependency-check-maven</artifactId>
                     <version>${owasp.dependency.check.maven.plugin.version}</version>
                 </plugin>
+                <!-- Generate swagger.json file -->
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>${maven.exec.plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <phase>process-classes</phase>
+                            <goals>
+                                <goal>java</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <skip>${skip.front.build}</skip>
+                        <mainClass>org.opensilex.server.rest.SwaggerAPIGenerator</mainClass>
+                        <arguments>
+                            <argument>${project.basedir}/src/main/java/</argument>
+                            <argument>${project.basedir}/front/lib/swagger.json</argument>
+                        </arguments>
+                    </configuration>
+                </plugin>
+                <!-- Generate TypeScript library from swagger.json file -->
+                <plugin>
+                    <groupId>org.opensilex</groupId>
+                    <artifactId>opensilex-swagger-codegen-maven-plugin</artifactId>
+                    <version>${revision}</version>
+                    
+                    <configuration>
+                        <skip>${skip.front.build}</skip>
+                    </configuration>
+                    
+                    <executions>
+                        <execution>
+                            <phase>process-classes</phase>
+                            <goals>
+                                <goal>generate</goal>
+                            </goals>
+                            <configuration>
+                                <inputSpec>${project.basedir}/front/lib/swagger.json</inputSpec>
+                                <templateDirectory>${project.basedir}/../opensilex/src/main/resources/swagger/templates/typescript-inversify</templateDirectory>
+                                <language>typescript-inversify</language>
+                                <output>${project.basedir}/front/lib/</output>
+                                <configOptions>
+                                    <packageName>${project.name}</packageName>
+                                    <packageVersion>${revision}</packageVersion>
+                                    <npmName>${project.name}</npmName>
+                                    <modelPropertyNaming>original</modelPropertyNaming>
+                                </configOptions>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <!-- Front Node & Yarn management -->
                 <plugin>
                     <groupId>com.github.eirslett</groupId>
                     <artifactId>frontend-maven-plugin</artifactId>
                     <version>${frontend.maven.plugin.version}</version>
+                        
                     <configuration>
-                        <nodeVersion>v12.8.0</nodeVersion>
-                        <yarnVersion>v1.18.0</yarnVersion>
+                        <skip>${skip.front.build}</skip>
+                        <nodeVersion>${node.version}</nodeVersion>
+                        <yarnVersion>${yarn.version}</yarnVersion>
                         <installDirectory>../.ng</installDirectory>
                         <workingDirectory>front</workingDirectory>
                     </configuration>
+                    
+                    <executions>
+                        <execution>
+                            <id>install node and package manager</id>
+                            <goals>
+                                <goal>install-node-and-yarn</goal>
+                            </goals>
+                            <phase>initialize</phase>
+                        </execution>
+                    
+                        <execution>
+                            <id>install typescript globally</id>
+                            <goals>
+                                <goal>yarn</goal>
+                            </goals>
+                            <configuration>
+                                <arguments>global add typescript</arguments>
+                            </configuration>
+                            <phase>initialize</phase>
+                        </execution>
+                    
+                        <execution>
+                            <id>install lib dependencies and build typescript sources</id>
+                            <phase>prepare-package</phase>
+                            <goals>
+                                <goal>yarn</goal>
+                            </goals>
+
+                            <configuration>
+                                <arguments>--network-timeout 1000000 install</arguments>
+                                <workingDirectory>front/lib/</workingDirectory>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -662,168 +750,124 @@
                 </executions>
             </plugin>
             
-            <!--Code coverage @see https://www.eclemma.org/jacoco/trunk/index.html --> 
+            <!-- site plugin -->
             <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>${maven.site.plugin.version}</version>
                 <configuration>
-                    <excludes>
-                        <exclude>**/*.war</exclude>
-                    </excludes>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>report</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>merge</id>
-                        <goals>
-                            <goal>merge</goal>
-                        </goals>
-                        <configuration>
-                            <fileSets>
-                                <fileSet implementation="org.apache.maven.shared.model.fileset.FileSet">
-                                    <directory>${project.basedir}</directory>
-                                    <includes>
-                                        <include>**/*.exec</include>
-                                    </includes>
-                                </fileSet>
-                            </fileSets>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-clean-plugin</artifactId>
-                <version>${maven.clean.plugin.version}</version>
-                <configuration>
-                    <filesets>
-                        <fileset>
-                            <directory>front/dist</directory>
-                            <includes>
-                                <include>**</include>
-                            </includes>
-                        </fileset>
-                        <fileset>
-                            <directory>front/lib/</directory>
-                            <includes>
-                                <include>**/*</include>
-                            </includes>
-                        </fileset>
-                    </filesets>
+                    <source>8</source>
+                    <locales>en</locales>
+                    <!-- see below to enable multilang doc -->
+                    <!--<locales>en,fr</locales>-->
+                    <generateReports>true</generateReports>
+                    <outputDirectory>${generated.doc.site.directory}/${project.name}/</outputDirectory>
                 </configuration>
             </plugin>
+            
         </plugins>
     </build>
 
+    <!-- Standart maven site reports -->
+    <reporting>
+        <plugins>
+            <plugin>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>${maven.project.info.reports.plugin.version}</version>
+            </plugin>
+            <plugin> 
+                <groupId>org.apache.maven.plugins</groupId> 
+                <artifactId>maven-javadoc-plugin</artifactId> 
+                <version>${maven.javadoc.plugin.version}</version> 
+                <configuration>
+                    <source>8</source>
+                    <quiet>true</quiet>
+                    <javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-report-plugin</artifactId>   
+                <version>3.0.0-M3</version>   
+            </plugin>  
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jxr-plugin</artifactId>
+                <version>3.0.0</version>
+            </plugin>
+        </plugins>
+    </reporting>
+    
     <!--  Configuration profiles  -->
     <profiles>
-        <!-- cutom section for specific front module build -->
+        <!-- Build Vue app if present -->
         <profile>
-            <id>front extension module</id>
+            <id>with-vue-app</id>
             <activation>
                 <file>
-                    <exists>front/packfdsfsdage.json</exists>
+                    <exists>front/package.json</exists>
                 </file>
             </activation>
-
             <build>
-                <resources>
-                    <resource>
-                        <directory>front</directory>
-                        <excludes>
-                            <exclude>**</exclude>
-                        </excludes>
-                    </resource>
-                    <resource>
-                        <excludes>
-                            <exclude>**/!(opensilex.front.yml)</exclude>
-                        </excludes>
-                        <includes>
-                            <include>**/opensilex.front.yml</include>
-                        </includes>
-                        <directory>front</directory>
-                    </resource>
-                </resources>
                 <plugins>
                     <plugin>
                         <groupId>com.github.eirslett</groupId>
                         <artifactId>frontend-maven-plugin</artifactId>
                         <version>${frontend.maven.plugin.version}</version>
-                        
                         <executions>
                             <execution>
-                                <id>install local dependencies</id>
+                                <id>install Vue application dependencies</id>
+                                <phase>prepare-package</phase>
                                 <goals>
                                     <goal>yarn</goal>
                                 </goals>
 
-                                <phase>generate-resources</phase>
                                 <configuration>
                                     <arguments>--network-timeout 1000000 install</arguments>
                                 </configuration>
                             </execution>
-                    
+                            
                             <execution>
-                                <id>build plugin</id>
+                                <id>build Vue application</id>
+                                <phase>prepare-package</phase>
                                 <goals>
                                     <goal>yarn</goal>
                                 </goals>
 
-                                <phase>compile</phase>
                                 <configuration>
                                     <arguments>run build</arguments>
-                                    <workingDirectory>./front</workingDirectory>
                                 </configuration>
                             </execution>
                             
                             <execution>
-                                <id>check local dependencies security issue</id>
+                                <id>check Vue application outdated dependencies</id>
+                                <phase>verify</phase>
                                 <goals>
                                     <goal>yarn</goal>
                                 </goals>
 
-                                <phase>generate-resources</phase>
+                                <configuration>
+                                    <arguments>run check:outdated</arguments>
+                                </configuration>
+                            </execution>
+                            
+                            <execution>
+                                <id>check Vue application security issues</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>yarn</goal>
+                                </goals>
+
                                 <configuration>
                                     <arguments>audit</arguments>
                                 </configuration>
                             </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <artifactId>maven-resources-plugin</artifactId>
-                        <version>${maven.resources.plugin.version}</version>
-                        <executions>
-                            <execution>
-                                <id>include front plugin</id>
-                                <phase>prepare-package</phase>
-                                <goals>
-                                    <goal>copy-resources</goal>
-                                </goals>
-                                <configuration>
-                                    <outputDirectory>${project.basedir}/target/classes/front</outputDirectory>
-                                    <resources>
-                                        <resource>
-                                            <directory>front/dist</directory>
-                                        </resource>
-                                    </resources>
-                                </configuration>
-                            </execution>
+                            
                         </executions>
                     </plugin>
                 </plugins>
             </build>
         </profile>
-        
+
         <!-- Profile which enable OWASP security check for libraries, could be VERY slow -->
         <profile>
             <id>with-security-check</id>
@@ -842,6 +886,72 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        
+        <!-- Profile which enable Jacoco Code coverage -->
+        <profile>
+            <id>with-test-report</id>
+            <build>
+                <plugins>
+                    <!--Code coverage @see https://www.eclemma.org/jacoco/trunk/index.html --> 
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>${jacoco.maven.plugin.version}</version>
+                        <configuration>
+                            <outputDirectory>${generated.doc.site.directory}/${project.name}/jacoco/</outputDirectory>
+                            <excludes>
+                                <exclude>**/*.war</exclude>
+                            </excludes>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>report</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>merge</id>
+                                <goals>
+                                    <goal>merge</goal>
+                                </goals>
+                                <configuration>
+                                    <fileSets>
+                                        <fileSet implementation="org.apache.maven.shared.model.fileset.FileSet">
+                                            <directory>${project.basedir}</directory>
+                                            <includes>
+                                                <include>**/*.exec</include>
+                                            </includes>
+                                        </fileSet>
+                                    </fileSets>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+            <reporting>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <reportSets>
+                            <reportSet>
+                                <reports>
+                                    <report>report</report>
+                                </reports>
+                            </reportSet>
+                        </reportSets>
+                    </plugin>
+                </plugins>  
+            </reporting>
         </profile>
         
         <!-- Profile to enable in eclipse to avoid build errors -->
@@ -884,44 +994,4 @@
             </build>
         </profile>
     </profiles>
-    
-    <reporting>
-        <plugins>
-            <plugin>
-                <artifactId>maven-project-info-reports-plugin</artifactId>
-                <version>${maven.project.info.reports.plugin.version}</version>
-                <!--                <reportSets>
-                    <reportSet>
-                        <reports>
-                            <report>index</report>
-                        </reports>
-                    </reportSet>
-                </reportSets>-->
-            </plugin>
-            <plugin> 
-                <groupId>org.apache.maven.plugins</groupId> 
-                <artifactId>maven-javadoc-plugin</artifactId> 
-                <version>${maven.javadoc.plugin.version}</version> 
-                <configuration>
-                    <source>8</source>
-                    <quiet>true</quiet>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-report-plugin</artifactId>   
-                <version>3.0.0-M3</version>   
-            </plugin>  
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>${jacoco.maven.plugin.version}</version>
-            </plugin> 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jxr-plugin</artifactId>
-                <version>3.0.0</version>
-            </plugin>
-        </plugins>
-    </reporting>
 </project>

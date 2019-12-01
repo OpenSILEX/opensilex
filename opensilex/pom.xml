@@ -49,6 +49,13 @@
                 </includes>
                 <targetPath>webapp</targetPath>
             </resource>
+            <!-- define front resources folder -->
+            <resource>
+                <directory>front</directory>
+                <excludes>
+                    <exclude>**</exclude>
+                </excludes>
+            </resource>
         </resources>
         <plugins>
             <!-- Check plugin and dependencies available updates -->
@@ -60,21 +67,52 @@
                     <rulesUri>file:////${project.basedir}/src/main/resources/version-rules.xml</rulesUri>
                 </configuration>
             </plugin>
-            <!-- Install node and yarn package maanger -->
+            <!-- Generate swagger.json file -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>${maven.exec.plugin.version}</version>
+            </plugin>
+            <!-- Generate TypeScript library from swagger.json file -->
+            <plugin>
+                <groupId>org.opensilex</groupId>
+                <artifactId>opensilex-swagger-codegen-maven-plugin</artifactId>
+                <version>${revision}</version>
+            </plugin>
+            <!-- Check typescript lib template outdated dependencies and security issues -->
             <plugin>
                 <groupId>com.github.eirslett</groupId>
                 <artifactId>frontend-maven-plugin</artifactId>
                 <version>${frontend.maven.plugin.version}</version>
                 <executions>
                     <execution>
-                        <id>install node and package manager</id>
+                        <id>check lib template outdated dependencies</id>
+                        <phase>verify</phase>
                         <goals>
-                            <goal>install-node-and-yarn</goal>
+                            <goal>yarn</goal>
                         </goals>
-                        <phase>initialize</phase>
+
+                        <configuration>
+                            <arguments>run check:outdated</arguments>
+                            <workingDirectory>front/lib/</workingDirectory>
+                        </configuration>
+                    </execution>
+                    
+                    <execution>
+                        <id>check lib template dependencies security issues</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+
+                        <configuration>
+                            <arguments>audit</arguments>
+                            <workingDirectory>front/lib/</workingDirectory>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
+            
             <!-- Generate Full jar with dependencies -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

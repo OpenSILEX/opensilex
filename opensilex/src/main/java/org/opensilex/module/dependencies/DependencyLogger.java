@@ -5,9 +5,10 @@
 //******************************************************************************
 package org.opensilex.module.dependencies;
 
-import org.eclipse.aether.*;
-import org.slf4j.*;
-
+import org.eclipse.aether.AbstractRepositoryListener;
+import org.eclipse.aether.RepositoryEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *

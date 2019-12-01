@@ -32,15 +32,19 @@
     </dependencies>
     
     <build>
-        <resources>
-            <resource>
-                <directory>front</directory>
-                <excludes>
-                    <exclude>**</exclude>
-                </excludes>
-            </resource>
-        </resources>
         <plugins>
+            <!-- Generate swagger.json file -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>${maven.exec.plugin.version}</version>
+            </plugin>
+            <!-- Generate TypeScript library from swagger.json file -->
+            <plugin>
+                <groupId>org.opensilex</groupId>
+                <artifactId>opensilex-swagger-codegen-maven-plugin</artifactId>
+                <version>${revision}</version>
+            </plugin>
             <!-- Check plugin and dependencies available updates -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -55,73 +59,6 @@
                         <version>${revision}</version>
                     </dependency>
                 </dependencies>
-            </plugin>
-            <!-- Generate swagger.json file -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>1.6.0</version>
-                <executions>
-                    <execution>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>java</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <mainClass>org.opensilex.server.rest.SwaggerAPIGenerator</mainClass>
-                    <arguments>
-                        <argument>${project.basedir}/src/main/java/</argument>
-                        <argument>${project.basedir}/front/lib/swagger.json</argument>
-                    </arguments>
-                </configuration>
-            </plugin>
-            <!-- Generate TypeScript library from swagger.json file -->
-            <plugin>
-                <groupId>org.opensilex</groupId>
-                <artifactId>opensilex-swagger-codegen-maven-plugin</artifactId>
-                <version>${revision}</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <inputSpec>${project.basedir}/front/lib/swagger.json</inputSpec>
-                            <templateDirectory>${project.basedir}/../opensilex/src/main/resources/swagger/templates/typescript-inversify</templateDirectory>
-                            <language>typescript-inversify</language>
-                            <output>${project.basedir}/front/lib/${project.name}</output>
-                            <configOptions>
-                                <packageName>${project.name}</packageName>
-                                <packageVersion>${revision}</packageVersion>
-                                <npmName>${project.name}</npmName>
-                                <modelPropertyNaming>original</modelPropertyNaming>
-                            </configOptions>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>com.github.eirslett</groupId>
-                <artifactId>frontend-maven-plugin</artifactId>
-                <version>${frontend.maven.plugin.version}</version>
-                        
-                <executions>
-                    <execution>
-                        <id>install lib dependencies</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>yarn</goal>
-                        </goals>
-
-                        <configuration>
-                            <arguments>--network-timeout 1000000 install</arguments>
-                            <workingDirectory>front/lib/${project.name}</workingDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

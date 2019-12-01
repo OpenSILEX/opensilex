@@ -24,8 +24,7 @@
                 <artifactId>maven-site-plugin</artifactId>
                 <version>${maven.site.plugin.version}</version>
                 <configuration>
-                    <templateFile combine.self="override"></templateFile>
-                    <outputDirectory>${maven.multiModuleProjectDirectory}/site/${project.name}/</outputDirectory>
+                    <skip>true</skip>
                 </configuration>
             </plugin>
         </plugins>

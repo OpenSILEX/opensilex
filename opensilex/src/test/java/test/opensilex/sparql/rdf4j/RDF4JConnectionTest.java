@@ -5,14 +5,14 @@
 //******************************************************************************
 package test.opensilex.sparql.rdf4j;
 
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.sail.SailRepository;
+import org.eclipse.rdf4j.sail.memory.MemoryStore;
+import org.eclipse.rdf4j.sail.shacl.ShaclSail;
+import org.junit.BeforeClass;
+import org.opensilex.sparql.SPARQLService;
+import org.opensilex.sparql.rdf4j.RDF4JConnection;
 import test.opensilex.sparql.SPARQLServiceTest;
-import org.eclipse.rdf4j.repository.*;
-import org.eclipse.rdf4j.repository.sail.*;
-import org.eclipse.rdf4j.sail.memory.*;
-import org.eclipse.rdf4j.sail.shacl.*;
-import org.junit.*;
-import org.opensilex.sparql.*;
-import org.opensilex.sparql.rdf4j.*;
 
 /**
  *

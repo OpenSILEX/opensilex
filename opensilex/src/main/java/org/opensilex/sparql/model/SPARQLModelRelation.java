@@ -5,8 +5,9 @@
  */
 package org.opensilex.sparql.model;
 
-import java.net.*;
-import org.apache.jena.rdf.model.*;
+import java.net.URI;
+import org.apache.jena.rdf.model.Property;
+
 
 /**
  *

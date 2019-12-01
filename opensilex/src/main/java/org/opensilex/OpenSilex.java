@@ -5,36 +5,50 @@
 //******************************************************************************
 package org.opensilex;
 
-import org.opensilex.module.dependencies.DependencyManager;
-import org.opensilex.module.base.BaseModule;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.core.joran.spi.JoranException;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import javax.ws.rs.core.UriBuilder;
+import org.apache.commons.io.FileUtils;
+import org.opensilex.config.ConfigManager;
+import org.opensilex.module.ModuleManager;
+import org.opensilex.module.ModuleNotFoundException;
+import org.opensilex.module.OpenSilexModule;
 import org.opensilex.module.base.BaseConfig;
-import ch.qos.logback.classic.*;
-import ch.qos.logback.classic.joran.*;
-import ch.qos.logback.core.joran.spi.*;
-import java.io.*;
-import java.net.*;
-import java.nio.file.*;
-import java.util.*;
-import javax.ws.rs.core.*;
-import org.apache.commons.io.*;
-import org.opensilex.config.*;
-import org.opensilex.module.*;
-import org.opensilex.service.*;
-import org.opensilex.utils.*;
+import org.opensilex.module.base.BaseModule;
+import org.opensilex.module.dependencies.DependencyManager;
+import org.opensilex.service.Service;
+import org.opensilex.service.ServiceManager;
+import org.opensilex.utils.ClassInfo;
 import org.slf4j.Logger;
-import org.slf4j.*;
+import org.slf4j.LoggerFactory;
 
 /**
- * This is the main class for OpenSilex Application It's a configurable and
- * extensible module system. This class use the singleton pattern. After
- * initialization with a directory, a main config file and a profile identifier,
- * it loads all jar files in "modules" subfolder, and then it initialize all
- * existing modules in application classpath with their own configuration and
- * services. see: OpenSilex.setup static method for more details on
- * initialization mechanism Nodes: Module management code is delegate to
- * org.opensilex.module.ModuleManager class Configuration management code is
- * delegate to org.opensilex.config.ConfigManager class Service management code
- * is delegate to org.opensilex.service.ServiceManager
+ * <pre>
+ * This is the main class for OpenSilex Application
+ * 
+ * It's a configurable and extensible module system.
+ * This class use the singleton pattern.
+ * After initialization with a directory, a main config file and a profile identifier,
+ * it loads all jar files in "modules" subfolder, and then it initialize all existing modules
+ * in application classpath with their own configuration and services.
+ *
+ * see: OpenSilex.setup static method for more details on initialization mechanism  *
+ * Notes:
+ * Module management code is delegate to org.opensilex.module.ModuleManager
+ * Class Configuration management code is delegate to org.opensilex.config.ConfigManager
+ * Class Service management code is delegate to org.opensilex.service.ServiceManager
+ * </pre>
  */
 public class OpenSilex {
 
@@ -94,6 +108,7 @@ public class OpenSilex {
     public final static String CONFIG_FILE_ARG_KEY = "CONFIG_FILE";
 
     /**
+     * <pre>
      * Main method to setup Opensilex instance based on command line arguments,
      * using the following algorithm:
      *
@@ -129,7 +144,7 @@ public class OpenSilex {
      * modules at shutdown
      *
      * - Returns all remaining arguments for cli execution
-     *
+     *  </pre>
      * @param args Command line arguments array
      * @return The command line arguments array without the Opensilex parameters
      */
@@ -255,12 +270,16 @@ public class OpenSilex {
     }
 
     /**
-     * Method to override application logback logger configuration, if not reset
-     * flag merge configuration file with previously existing configuration
-     * otherwise override it. See the following link for logback xml file manual
-     * and examples: https://logback.qos.ch/manual/configuration.html
+     * <pre>
+     * Method to override application logback logger configuration, 
+     * if not reset flag merge configuration file with previously existing configuration
+     * otherwise override it. 
+     * 
+     * See the following link for logback xml file manual and examples: 
+     * https://logback.qos.ch/manual/configuration.html
      * https://www.mkyong.com/logging/logback-xml-example/
-     *
+     * </pre>
+     * 
      * @param logConfigFile Logback configuration file to merge or override
      * @param reset Flag to determine if configuration must be merge or erase
      * existing
@@ -278,7 +297,7 @@ public class OpenSilex {
                 // Load new logger configuration file
                 JoranConfigurator configurator = new JoranConfigurator();
                 configurator.setContext(loggerContext);
-                try (InputStream configStream = FileUtils.openInputStream(logConfigFile)) {
+                try ( InputStream configStream = FileUtils.openInputStream(logConfigFile)) {
                     configurator.doConfigure(configStream);
                 }
             } catch (JoranException | IOException ex) {
@@ -348,9 +367,13 @@ public class OpenSilex {
     }
 
     /**
-     * Initialize application Load all modules and their configuration load
-     * services and initialize them Setup cleaning call for modules on
-     * application shutdown
+     * <pre>
+     * Initialize application 
+     * 
+     * Load all modules and their configuration 
+     * Load services and initialize them 
+     * Setup cleaning call for modules on application shutdown
+     * </pre>
      */
     private void init() throws Exception {
         LOGGER.debug("Load modules with dependencies");
@@ -514,6 +537,11 @@ public class OpenSilex {
         return this.baseDirectory;
     }
 
+    /**
+     * Return configured platform base URI
+     * 
+     * @return plateform URI
+     */
     public static URI getPlatformURI() {
         try {
             if (OpenSilex.getInstance() == null) {
@@ -530,6 +558,11 @@ public class OpenSilex {
         }
     }
 
+    /**
+     * Construct an URI with base configured platform URI and a list of subpath
+     * 
+     * @return Constructed URI relative to platform base
+     */
     public static URI getPlatformURI(String... suffixes) {
         return UriBuilder.fromUri(getPlatformURI()).segment(suffixes).build();
     }

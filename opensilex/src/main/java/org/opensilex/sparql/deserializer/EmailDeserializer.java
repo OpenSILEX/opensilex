@@ -5,21 +5,26 @@
 //******************************************************************************
 package org.opensilex.sparql.deserializer;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.databind.*;
-import java.io.*;
-import javax.mail.internet.*;
-import org.apache.jena.graph.*;
-
+import com.fasterxml.jackson.core.JsonLocation;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
+import java.io.IOException;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 
 /**
  *
  * @author vincent
  */
-public class EmailDeserializer 
+public class EmailDeserializer
         extends JsonDeserializer<InternetAddress>
         implements SPARQLDeserializer<InternetAddress> {
-    
+
     @Override
     public InternetAddress deserialize(JsonParser jp, DeserializationContext dc) throws IOException, JsonProcessingException {
         JsonNode node = jp.getCodec().readTree(jp);
@@ -43,9 +48,10 @@ public class EmailDeserializer
     private class EmailDeserializationException extends JsonProcessingException {
 
         private static final long serialVersionUID = 1L;
+
         private EmailDeserializationException(String message, JsonLocation location, Throwable cause) {
             super(message, location, cause);
         }
     }
-    
+
 }

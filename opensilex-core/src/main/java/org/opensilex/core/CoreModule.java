@@ -5,8 +5,8 @@
 //******************************************************************************
 package org.opensilex.core;
 
+import org.opensilex.module.OpenSilexModule;
 import org.opensilex.module.extensions.APIExtension;
-import org.opensilex.module.*;
 
 /**
  * Core OpenSILEX module implementation

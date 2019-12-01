@@ -6,9 +6,9 @@
 //******************************************************************************
 package org.opensilex.server.validation;
 
-import java.net.*;
-import javax.validation.*;
-
+import java.net.MalformedURLException;
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
 
 /**
  * Class used by URL annotation to validate that a string value is an URL.

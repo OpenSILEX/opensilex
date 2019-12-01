@@ -5,24 +5,37 @@
 //******************************************************************************
 package org.opensilex.core.variable.api;
 
-import io.swagger.annotations.*;
-import java.net.*;
-import java.util.*;
-import javax.inject.*;
-import javax.validation.*;
-import javax.validation.constraints.*;
-import javax.ws.rs.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import java.net.URI;
+import java.util.List;
+import javax.inject.Inject;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
-import javax.ws.rs.core.*;
-import org.opensilex.core.variable.dal.*;
-import org.opensilex.server.response.*;
-import org.opensilex.server.rest.*;
-import org.opensilex.server.security.*;
-import org.opensilex.sparql.*;
-import org.opensilex.sparql.exceptions.*;
-import org.opensilex.sparql.utils.*;
-import org.opensilex.utils.*;
-
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import org.opensilex.core.variable.dal.UnitDAO;
+import org.opensilex.core.variable.dal.UnitModel;
+import org.opensilex.server.response.ErrorResponse;
+import org.opensilex.server.response.MultipleObjectsResponse;
+import org.opensilex.server.response.ObjectUriResponse;
+import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.rest.RestApplicationAPI;
+import org.opensilex.server.security.ApiProtected;
+import org.opensilex.sparql.SPARQLService;
+import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
+import org.opensilex.sparql.utils.OrderBy;
+import org.opensilex.utils.ListWithPagination;
 
 
 @Api("Variables")

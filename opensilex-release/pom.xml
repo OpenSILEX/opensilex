@@ -64,27 +64,15 @@
                     </execution>
                 </executions>
             </plugin>
+            <!-- Disable doc generation for development modules -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
                 <version>${maven.site.plugin.version}</version>
                 <configuration>
-                    <templateFile combine.self="override"></templateFile>
-                    <outputDirectory>${maven.multiModuleProjectDirectory}/site/${project.name}/</outputDirectory>
+                    <skip>true</skip>
                 </configuration>
             </plugin>
         </plugins>
     </build>
-    
-    
-    <!--    <profiles>
-<profile>
-    <id>with-javadoc</id>-->
-    <!--            <build>
-        <plugins>
-            
-        </plugins>
-    </build>-->
-    <!--        </profile>
-    </profiles>-->
 </project>

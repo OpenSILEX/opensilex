@@ -5,15 +5,27 @@
 //******************************************************************************
 package test.opensilex.config;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.util.*;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.UndeclaredThrowableException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import org.apache.commons.lang3.*;
-import static org.junit.Assert.*;
-import org.junit.*;
-import org.opensilex.*;
-import org.opensilex.config.*;
+import org.apache.commons.lang3.StringUtils;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import org.junit.Test;
+import org.opensilex.OpenSilex;
+import org.opensilex.config.ConfigDescription;
+import org.opensilex.config.ConfigManager;
+import org.opensilex.config.InvalidConfigException;
+
 
 /**
  *

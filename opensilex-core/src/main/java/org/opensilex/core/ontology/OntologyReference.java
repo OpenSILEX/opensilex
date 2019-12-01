@@ -5,11 +5,12 @@
 //******************************************************************************
 package org.opensilex.core.ontology;
 
-import java.net.*;
+import java.net.URI;
+
 
 /**
  * Ontology reference model.
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Morgane Vidal
  */
 public class OntologyReference {
     

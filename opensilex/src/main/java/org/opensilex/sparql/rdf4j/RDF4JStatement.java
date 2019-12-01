@@ -6,7 +6,7 @@
 package org.opensilex.sparql.rdf4j;
 
 import org.eclipse.rdf4j.model.Statement;
-import org.opensilex.sparql.*;
+import org.opensilex.sparql.SPARQLStatement;
 
 /**
  *

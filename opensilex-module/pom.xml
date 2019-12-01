@@ -22,7 +22,7 @@
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex</artifactId>
             <version>${revision}</version>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <!-- OpenSilex Base test -->
         <dependency>
@@ -36,7 +36,7 @@
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-core</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
             <version>${revision}</version>
         </dependency>
         <!-- OpenSilex Core test -->
@@ -51,13 +51,32 @@
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-front</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
             <version>${revision}</version>
         </dependency>
     </dependencies>
     
     <build>
         <plugins>
+            <!-- Generate swagger.json file -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>${maven.exec.plugin.version}</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.opensilex</groupId>
+                        <artifactId>opensilex</artifactId>
+                        <version>${revision}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <!-- Generate TypeScript library from swagger.json file -->
+            <plugin>
+                <groupId>org.opensilex</groupId>
+                <artifactId>opensilex-swagger-codegen-maven-plugin</artifactId>
+                <version>${revision}</version>
+            </plugin>
             <!-- Check plugin and dependencies available updates -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>

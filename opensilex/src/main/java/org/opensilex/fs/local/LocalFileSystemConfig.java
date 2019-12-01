@@ -5,7 +5,7 @@
 //******************************************************************************
 package org.opensilex.fs.local;
 
-import org.opensilex.config.*;
+import org.opensilex.config.ConfigDescription;
 
 public interface LocalFileSystemConfig {
     

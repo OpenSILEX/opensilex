@@ -1,38 +1,43 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <artifactId>opensilex-dev</artifactId>
     <packaging>pom</packaging>
     
     <name>opensilex-dev</name>
-    
+      
     <url>https://www.opensilex.org/</url>
-
+      
     <parent>
         <groupId>org.opensilex</groupId>
         <artifactId>opensilex-parent</artifactId>
         <version>${revision}</version>
         <relativePath>opensilex-parent/pom.xml</relativePath>
     </parent>
-
+      
+    <properties>
+        <skip.front.build>true</skip.front.build>
+    </properties>
+      
     <modules>
-        <!-- Plugin module -->
-        <module>opensilex-swagger-codegen-maven-plugin</module> 
-        <!-- Required modules -->
-        <module>opensilex-parent</module> 
-        <module>opensilex</module> 
-        <module>opensilex-module</module> 
-        <module>opensilex-core</module> 
-        <module>opensilex-front</module> 
-        <!-- Extension modules --> 
+        <!-- Maven Plugin module -->
+        <module>opensilex-swagger-codegen-maven-plugin</module>
+    
+        <!-- Main modules -->
+        <module>opensilex-parent</module>
+        <module>opensilex</module>
+        <module>opensilex-module</module>
+        <module>opensilex-core</module>
+        <module>opensilex-front</module>
+        
+        <!-- Extension modules -->
         <module>phis-ws/phis2-ws</module>
+            
         <!-- Development module -->
         <module>opensilex-release</module>
         <module>opensilex-dev-tools</module>
-        <module>opensilex-dev-module-generator</module> 
     </modules>
-
+    
     <dependencies>
         <!-- Plugin dependencies -->
         <dependency>
@@ -40,100 +45,126 @@
             <artifactId>opensilex-swagger-codegen-maven-plugin</artifactId>
             <version>${revision}</version>
         </dependency>
-        <!--Required dependencies--> 
+            
+        <!--Required dependencies-->
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex</artifactId>
             <version>${revision}</version>
         </dependency>
+            
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-core</artifactId>
             <version>${revision}</version>
         </dependency>
+            
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-front</artifactId>
             <version>${revision}</version>
-        </dependency>        
+        </dependency>
+        
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>phis2ws</artifactId>
             <version>${revision}</version>
         </dependency>
     </dependencies>
-    
-    <profiles>
-        <profile>
-            <id>sixtine</id>
-            <modules>
-                <!-- Sixtine extension -->
-                <module>inrae-ues-sixtine</module>
-            </modules>
-        </profile>
-    </profiles>
-
+      
     <build>
         <plugins>
             <!-- Documentation site generation plugin -->
             <plugin>
                 <artifactId>maven-site-plugin</artifactId>
                 <version>${maven.site.plugin.version}</version>
-                <inherited>false</inherited>     
+                <inherited>false</inherited>
+                
                 <configuration>
-                    <outputDirectory>${project.basedir}/site/</outputDirectory>
+                    <outputDirectory>${generated.doc.site.directory}</outputDirectory>
                 </configuration>
-            </plugin>
-            <!--Code coverage @see https://www.eclemma.org/jacoco/trunk/index.html --> 
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <inherited>false</inherited>     
-                <configuration>
-                    <excludes>
-                        <exclude>**/*.war</exclude>
-                    </excludes>
-                    <outputDirectory>${project.basedir}/site/jacoco/</outputDirectory>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>report-aggregate</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>report-aggregate</goal>
-                        </goals>
-                        <configuration>
-                            <title>JaCoCo</title>
-                            <footer>Code Coverage Report for JaCoCo ${project.version}</footer>
-                            <includes>
-                                <!-- Analyze class files only to exclude shaded agent JAR from report -->
-                                <include>**/*.class</include>
-                            </includes>
-                            <outputDirectory>${project.basedir}/site/jacoco/</outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
+              
     <reporting>
         <plugins>
-            <plugin> 
-                <groupId>org.apache.maven.plugins</groupId> 
-                <artifactId>maven-javadoc-plugin</artifactId> 
-                <version>${maven.javadoc.plugin.version}</version> 
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${maven.javadoc.plugin.version}</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>
             </plugin>
+                  
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jxr-plugin</artifactId>
                 <version>3.0.0</version>
                 <configuration>
-                    <javadocDir>${basedir}/site/apidocs</javadocDir>
+                    <javadocDir>${generated.doc.site.directory}/apidocs</javadocDir>
                 </configuration>
             </plugin>
+              
         </plugins>
     </reporting>
+    
+    <profiles>
+        <!-- Profile which enable Jacoco Code coverage -->
+        <profile>
+            <id>with-test-report</id>
+            <build>
+                <plugins>
+                    <!--Code coverage @see https://www.eclemma.org/jacoco/trunk/index.html -->
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <inherited>false</inherited>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/*.war</exclude>
+                            </excludes>
+                            <outputDirectory>${generated.doc.site.directory}/jacoco/</outputDirectory>
+                        </configuration>
+                                    
+                        <executions>
+                            <execution>
+                                <id>report-aggregate</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>report-aggregate</goal>
+                                </goals>
+                                <configuration>
+                                    <title>JaCoCo</title>
+                                    <footer>Code Coverage Report for JaCoCo ${project.version}</footer>
+                                    <includes>
+                                        <!-- Analyze class files only to exclude shaded agent JAR from report -->
+                                        <include>**/*.class</include>
+                                    </includes>
+                                    <outputDirectory>${generated.doc.site.directory}/jacoco/</outputDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+                  
+            <reporting>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <reportSets>
+                            <reportSet>
+                                <reports>
+                                    <report>report-aggregate</report>
+                                </reports>
+                            </reportSet>
+                        </reportSets>
+                    </plugin>
+                </plugins>
+            </reporting>
+        </profile>
+    </profiles>
 </project>

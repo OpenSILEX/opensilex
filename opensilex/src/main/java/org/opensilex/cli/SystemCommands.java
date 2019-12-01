@@ -5,20 +5,34 @@
 //******************************************************************************
 package org.opensilex.cli;
 
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.node.*;
-import com.fasterxml.jackson.dataformat.yaml.*;
-import java.io.*;
-import java.time.*;
-import java.time.format.*;
-import java.util.*;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import org.opensilex.*;
-import org.opensilex.cli.help.*;
-import org.opensilex.module.*;
-import org.opensilex.utils.*;
-import org.slf4j.*;
-import picocli.CommandLine.*;
+import java.util.ServiceLoader;
+import java.util.Set;
+import org.opensilex.OpenSilex;
+import org.opensilex.cli.help.HelpPrinterCommand;
+import org.opensilex.module.ModuleUpdate;
+import org.opensilex.module.OpenSilexModule;
+import org.opensilex.utils.ClassInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Parameters;
 
 /**
  * <pre>

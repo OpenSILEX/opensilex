@@ -5,10 +5,12 @@
 //******************************************************************************
 package org.opensilex.sparql.rdf4j;
 
-import java.util.function.*;
-import org.eclipse.rdf4j.model.*;
-import org.eclipse.rdf4j.query.*;
-import org.opensilex.sparql.*;
+import java.util.function.BiConsumer;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.query.Binding;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.opensilex.sparql.SPARQLResult;
+
 
 /**
  *

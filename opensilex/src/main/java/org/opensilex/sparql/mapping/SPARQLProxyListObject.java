@@ -5,15 +5,16 @@
 //******************************************************************************
 package org.opensilex.sparql.mapping;
 
-import java.net.*;
-import java.util.*;
+import java.net.URI;
+import java.util.List;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
-import org.apache.jena.arq.querybuilder.*;
-import org.apache.jena.graph.*;
-import org.apache.jena.rdf.model.*;
-import org.opensilex.sparql.*;
-import org.opensilex.sparql.model.*;
-import org.opensilex.sparql.utils.*;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.graph.Node;
+import org.apache.jena.rdf.model.Property;
+import org.opensilex.sparql.SPARQLService;
+import org.opensilex.sparql.model.SPARQLModel;
+import org.opensilex.sparql.utils.Ontology;
+
 
 
 /**

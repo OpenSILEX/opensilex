@@ -5,8 +5,9 @@
  */
 package org.opensilex.core.variable.api;
 
-import java.net.*;
-import org.opensilex.core.variable.dal.*;
+import java.net.URI;
+import org.opensilex.core.variable.dal.QualityModel;
+
 
 /**
  *

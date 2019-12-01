@@ -5,10 +5,10 @@
 //******************************************************************************
 package org.opensilex.sparql.deserializer;
 
-import java.math.*;
-import org.apache.jena.graph.*;
-import org.apache.jena.sparql.expr.*;
-import org.apache.jena.sparql.expr.nodevalue.*;
+import java.math.BigInteger;
+import org.apache.jena.graph.Node;
+import org.apache.jena.sparql.expr.NodeValue;
+import org.apache.jena.sparql.expr.nodevalue.NodeValueInteger;
 
 
 /**

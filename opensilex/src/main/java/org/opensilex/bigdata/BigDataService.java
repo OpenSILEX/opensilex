@@ -5,9 +5,11 @@
 //******************************************************************************
 package org.opensilex.bigdata;
 
-import org.opensilex.bigdata.exceptions.*;
-import org.opensilex.bigdata.mongodb.*;
-import org.opensilex.service.*;
+import org.opensilex.bigdata.exceptions.BigDataTransactionException;
+import org.opensilex.bigdata.mongodb.MongoDBConfig;
+import org.opensilex.bigdata.mongodb.MongoDBConnection;
+import org.opensilex.service.Service;
+import org.opensilex.service.ServiceConfigDefault;
 
 /*
  * To change this license header, choose License Headers in Project Properties.

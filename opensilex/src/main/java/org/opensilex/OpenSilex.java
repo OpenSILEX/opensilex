@@ -5,6 +5,7 @@
 //******************************************************************************
 package org.opensilex;
 
+import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
@@ -36,7 +37,7 @@ import org.slf4j.LoggerFactory;
 /**
  * <pre>
  * This is the main class for OpenSilex Application
- * 
+ *
  * It's a configurable and extensible module system.
  * This class use the singleton pattern.
  * After initialization with a directory, a main config file and a profile identifier,
@@ -108,6 +109,11 @@ public class OpenSilex {
     public final static String CONFIG_FILE_ARG_KEY = "CONFIG_FILE";
 
     /**
+     * Command line argument key for OpenSilex debug flag
+     */
+    public final static String DEBUG_ARG_KEY = "DEBUG";
+
+    /**
      * <pre>
      * Main method to setup Opensilex instance based on command line arguments,
      * using the following algorithm:
@@ -144,7 +150,8 @@ public class OpenSilex {
      * modules at shutdown
      *
      * - Returns all remaining arguments for cli execution
-     *  </pre>
+     * </pre>
+     *
      * @param args Command line arguments array
      * @return The command line arguments array without the Opensilex parameters
      */
@@ -157,6 +164,8 @@ public class OpenSilex {
         String configFile = System.getenv(CONFIG_FILE_ENV_KEY);
         String profileId = System.getenv(PROFILE_ID_ENV_KEY);
 
+        boolean debug = false;
+
         // Override with command line arguments values
         for (String arg : args) {
             if (arg.startsWith("--" + BASE_DIR_ARG_KEY + "=")) {
@@ -168,6 +177,10 @@ public class OpenSilex {
             } else if (arg.startsWith("--" + CONFIG_FILE_ARG_KEY + "=")) {
                 // For configuration file
                 configFile = arg.split("=", 2)[1];
+            } else if (arg.equals("--" + DEBUG_ARG_KEY)) {
+                // For configuration file
+                debug = true;
+
             } else {
                 // Otherwise add argument to the remaining list
                 cliArgsList.add(arg);
@@ -186,9 +199,9 @@ public class OpenSilex {
         try {
             // Create OpenSilex instance with these values depending if configuration file is defined or not.
             if (configFile == null || configFile.equals("")) {
-                instance = createInstance(Paths.get(baseDirectory), profileId, null);
+                instance = createInstance(Paths.get(baseDirectory), profileId, null, debug);
             } else {
-                instance = createInstance(Paths.get(baseDirectory), profileId, Paths.get(configFile).toFile());
+                instance = createInstance(Paths.get(baseDirectory), profileId, Paths.get(configFile).toFile(), debug);
             }
 
             LOGGER.debug("Initialize instance");
@@ -235,7 +248,7 @@ public class OpenSilex {
      *
      * @return An instance of OpenSilex
      */
-    private static OpenSilex createInstance(Path baseDirectory, String profileId, File configFile) throws Exception {
+    private static OpenSilex createInstance(Path baseDirectory, String profileId, File configFile, boolean debug) throws Exception {
 
         if (profileId.equals(PROD_PROFILE_ID)) {
             // In production mode, enable logger with files
@@ -253,6 +266,10 @@ public class OpenSilex {
         File logProfileConfigFile = baseDirectory.resolve("logback-" + profileId + ".xml").toFile();
         loadLoggerConfig(logProfileConfigFile, false);
 
+        if (debug) {
+            ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
+            root.setLevel(Level.DEBUG);
+        }
         LOGGER.debug("Creating OpenSilex instance");
         LOGGER.debug("Base directory:" + baseDirectory.toFile().getAbsolutePath());
         LOGGER.debug("Configuration profile: " + profileId);
@@ -271,15 +288,15 @@ public class OpenSilex {
 
     /**
      * <pre>
-     * Method to override application logback logger configuration, 
+     * Method to override application logback logger configuration,
      * if not reset flag merge configuration file with previously existing configuration
-     * otherwise override it. 
-     * 
-     * See the following link for logback xml file manual and examples: 
+     * otherwise override it.
+     *
+     * See the following link for logback xml file manual and examples:
      * https://logback.qos.ch/manual/configuration.html
      * https://www.mkyong.com/logging/logback-xml-example/
      * </pre>
-     * 
+     *
      * @param logConfigFile Logback configuration file to merge or override
      * @param reset Flag to determine if configuration must be merge or erase
      * existing
@@ -368,10 +385,10 @@ public class OpenSilex {
 
     /**
      * <pre>
-     * Initialize application 
-     * 
-     * Load all modules and their configuration 
-     * Load services and initialize them 
+     * Initialize application
+     *
+     * Load all modules and their configuration
+     * Load services and initialize them
      * Setup cleaning call for modules on application shutdown
      * </pre>
      */
@@ -539,7 +556,7 @@ public class OpenSilex {
 
     /**
      * Return configured platform base URI
-     * 
+     *
      * @return plateform URI
      */
     public static URI getPlatformURI() {
@@ -560,7 +577,7 @@ public class OpenSilex {
 
     /**
      * Construct an URI with base configured platform URI and a list of subpath
-     * 
+     *
      * @return Constructed URI relative to platform base
      */
     public static URI getPlatformURI(String... suffixes) {

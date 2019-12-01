@@ -37,7 +37,7 @@ public class DependencyLogger
 
     @Override
     public void artifactDownloading(RepositoryEvent event) {
-        LOGGER.debug(String.format("Downloading artifact %s from repository %s", event.getArtifact(),
+        LOGGER.info(String.format("Downloading artifact %s from repository %s", event.getArtifact(),
                 event.getRepository()));
     }
 
@@ -79,7 +79,7 @@ public class DependencyLogger
 
     @Override
     public void metadataDownloading(RepositoryEvent event) {
-        LOGGER.debug(String.format("Downloading artifact %s metadata", event.getArtifact()));
+        LOGGER.info(String.format("Downloading artifact %s metadata", event.getArtifact()));
     }
 
     @Override

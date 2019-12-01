@@ -38,7 +38,6 @@ import org.opensilex.utils.ClassInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  *
  * @author vincent
@@ -59,17 +58,22 @@ public class SPARQLClassObjectMapper<T extends SPARQLModel> {
     }
 
     public static void initialize() throws SPARQLInvalidClassDefinitionException {
-        SPARQL_CLASSES_LIST = ClassInfo.getAnnotatedClasses(SPARQLResource.class);
+        if (SPARQL_CLASSES_LIST == null) {
+            SPARQL_CLASSES_LIST = ClassInfo.getAnnotatedClasses(SPARQLResource.class);
 
-        for (Class<?> sparqlModelClass : SPARQL_CLASSES_LIST) {
-            SPARQLClassObjectMapper<?> sparqlObjectMapper = new SPARQLClassObjectMapper<>((Class<? extends SPARQLModel>) sparqlModelClass);
-            SPARQL_CLASSES_MAPPER.put(sparqlModelClass, sparqlObjectMapper);
-            SPARQL_RESOURCES_MAPPER.put(sparqlObjectMapper.getRDFType(), sparqlObjectMapper);
+            for (Class<?> sparqlModelClass : SPARQL_CLASSES_LIST) {
+                SPARQLClassObjectMapper<?> sparqlObjectMapper = new SPARQLClassObjectMapper<>((Class<? extends SPARQLModel>) sparqlModelClass);
+                SPARQL_CLASSES_MAPPER.put(sparqlModelClass, sparqlObjectMapper);
+                SPARQL_RESOURCES_MAPPER.put(sparqlObjectMapper.getRDFType(), sparqlObjectMapper);
+            }
         }
+
     }
 
     @SuppressWarnings("unchecked")
-    public static synchronized <T extends SPARQLModel> SPARQLClassObjectMapper<T> getForClass(Class<?> objectClass) throws SPARQLMapperNotFoundException {
+    public static synchronized <T extends SPARQLModel> SPARQLClassObjectMapper<T> getForClass(Class<?> objectClass) throws SPARQLMapperNotFoundException, SPARQLInvalidClassDefinitionException {
+        initialize();
+
         Class<T> concreteObjectClass = (Class<T>) getConcreteClass(objectClass);
 
         if (SPARQL_CLASSES_MAPPER.containsKey(concreteObjectClass)) {
@@ -80,8 +84,8 @@ public class SPARQLClassObjectMapper<T extends SPARQLModel> {
     }
 
     @SuppressWarnings("unchecked")
-    public static synchronized <T extends SPARQLModel> SPARQLClassObjectMapper<T> getForResource(Resource resource) throws SPARQLMapperNotFoundException {
-
+    public static synchronized <T extends SPARQLModel> SPARQLClassObjectMapper<T> getForResource(Resource resource) throws SPARQLMapperNotFoundException, SPARQLInvalidClassDefinitionException {
+        initialize();
         if (SPARQL_RESOURCES_MAPPER.containsKey(resource)) {
             return (SPARQLClassObjectMapper<T>) SPARQL_RESOURCES_MAPPER.get(resource);
         } else {
@@ -90,11 +94,12 @@ public class SPARQLClassObjectMapper<T extends SPARQLModel> {
 
     }
 
-    public static Node getGraph(Class<? extends SPARQLModel> c) throws SPARQLMapperNotFoundException {
+    public static Node getGraph(Class<? extends SPARQLModel> c) throws SPARQLMapperNotFoundException, SPARQLInvalidClassDefinitionException {
         return getForClass(c).getDefaultGraph();
     }
 
-    public static boolean existsForClass(Class<?> c) {
+    public static boolean existsForClass(Class<?> c) throws SPARQLInvalidClassDefinitionException {
+        initialize();
         return SPARQL_CLASSES_LIST.contains(c);
     }
 
@@ -165,7 +170,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLModel> {
                     throw new Exception("No deserializer for field: " + field.getName());
                 }
             }
-            
+
         }
 
         for (Field field : classAnalizer.getObjectPropertyFields()) {

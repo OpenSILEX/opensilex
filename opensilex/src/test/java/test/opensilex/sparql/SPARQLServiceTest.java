@@ -47,8 +47,6 @@ public abstract class SPARQLServiceTest {
         SPARQLServiceTest.service = service;
         service.startup();
 
-        SPARQLClassObjectMapper.initialize();
-        
         service.clear();
 
         InputStream ontology = SPARQLService.class.getClassLoader().getResourceAsStream(TEST_ONTOLOGY.FILE_PATH.toString());

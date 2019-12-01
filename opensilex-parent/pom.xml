@@ -524,16 +524,17 @@
                             <goals>
                                 <goal>java</goal>
                             </goals>
+                            <configuration>
+                                <skip>${skip.front.build}</skip>
+                                <mainClass>org.opensilex.server.rest.SwaggerAPIGenerator</mainClass>
+                                <arguments>
+                                    <argument>${project.basedir}/src/main/java/</argument>
+                                    <argument>${project.basedir}/front/lib/swagger.json</argument>
+                                </arguments>
+                            </configuration>
                         </execution>
                     </executions>
-                    <configuration>
-                        <skip>${skip.front.build}</skip>
-                        <mainClass>org.opensilex.server.rest.SwaggerAPIGenerator</mainClass>
-                        <arguments>
-                            <argument>${project.basedir}/src/main/java/</argument>
-                            <argument>${project.basedir}/front/lib/swagger.json</argument>
-                        </arguments>
-                    </configuration>
+                  
                 </plugin>
                 <!-- Generate TypeScript library from swagger.json file -->
                 <plugin>

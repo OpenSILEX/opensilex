@@ -33,7 +33,7 @@
         ]
       },
        "created": {
-        "$id": "#/properties/created",
+        "$id": "#/items/properties/created",
         "type": "string",
         "title": "The Created Schema",
         "default": "",

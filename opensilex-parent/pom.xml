@@ -729,6 +729,33 @@
                 </configuration>
             </plugin>
             
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>${maven.clean.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>clean Vue front lib</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skip.front.build}</skip>
+                            <filesets>
+                                <fileset>
+                                    <directory>front/src/lib</directory>
+                                    <includes>
+                                        <include>**/*</include>
+                                    </includes>
+                                    <excludes>
+                                        <exclude>.gitkeep</exclude>
+                                    </excludes>
+                                </fileset>
+                            </filesets>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
@@ -833,11 +860,6 @@
             </build>
         </profile>
 
-        <profile>
-            <id>clean-vue-app</id>
-            
-        </profile>
-        
         <!-- Profile which enable OWASP security check for libraries, could be VERY slow -->
         <profile>
             <id>with-security-check</id>

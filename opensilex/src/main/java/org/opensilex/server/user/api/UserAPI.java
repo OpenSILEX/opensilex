@@ -3,7 +3,7 @@
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.user.api;
+package org.opensilex.server.user.api;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -24,12 +24,12 @@ import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.rest.RestApplicationAPI;
 import org.opensilex.server.security.AuthenticationService;
 import org.opensilex.sparql.SPARQLService;
-import org.opensilex.user.dal.UserDAO;
-import org.opensilex.user.dal.UserModel;
+import org.opensilex.server.user.dal.UserDAO;
+import org.opensilex.server.user.dal.UserModel;
 
 
 @Api("Users")
-@Path("/core/user")
+@Path("/user")
 public class UserAPI implements RestApplicationAPI {
 
     @Inject

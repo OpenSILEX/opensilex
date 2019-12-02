@@ -8,7 +8,7 @@ package test.opensilex.sparql.model;
 import java.util.List;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.model.SPARQLModel;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 
 
 
@@ -21,7 +21,7 @@ import org.opensilex.sparql.model.SPARQLModel;
         resource = "B",
         graph = "data"
 )
-public class B extends SPARQLModel {
+public class B extends SPARQLResourceModel {
     
     @SPARQLProperty(
         ontology = TEST_ONTOLOGY.class,

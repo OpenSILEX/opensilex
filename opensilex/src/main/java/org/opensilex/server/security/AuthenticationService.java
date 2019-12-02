@@ -23,7 +23,7 @@ import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
 import java.util.Date;
 import org.opensilex.service.Service;
-import org.opensilex.user.dal.UserModel;
+import org.opensilex.server.user.dal.UserModel;
 
 
 /**

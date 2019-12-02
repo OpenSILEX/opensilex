@@ -53,7 +53,7 @@ public class EntityUpdateDTO {
 
     public EntityModel updateModel(EntityModel model) {
         if (getLabel() != null) {
-            model.setName(getLabel());
+            model.setLabel(getLabel());
         }
         if (getComment() != null) {
             model.setComment(getComment());

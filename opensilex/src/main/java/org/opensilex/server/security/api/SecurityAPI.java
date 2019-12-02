@@ -3,7 +3,7 @@
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.user.api;
+package org.opensilex.server.security.api;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -30,13 +30,13 @@ import org.opensilex.server.rest.RestApplicationAPI;
 import org.opensilex.server.security.ApiProtected;
 import org.opensilex.server.security.AuthenticationService;
 import org.opensilex.sparql.SPARQLService;
-import org.opensilex.user.dal.UserDAO;
-import org.opensilex.user.dal.UserModel;
+import org.opensilex.server.user.dal.UserDAO;
+import org.opensilex.server.user.dal.UserModel;
 
 
-@Api("Authentication")
-@Path("/core/authenticate")
-public class AuthenticationAPI implements RestApplicationAPI {
+@Api("Security")
+@Path("/security")
+public class SecurityAPI implements RestApplicationAPI {
 
     @Inject
     private SPARQLService sparql;
@@ -45,6 +45,7 @@ public class AuthenticationAPI implements RestApplicationAPI {
     private AuthenticationService authentication;
 
     @POST
+    @Path("authenticate")
     @ApiOperation("Authenticate a user and return an access token")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "User sucessfully authenticated"),
@@ -53,7 +54,7 @@ public class AuthenticationAPI implements RestApplicationAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response authenticate(
-            @ApiParam("User authentication informations") @Valid UserAuthenticationDTO authenticationDTO
+            @ApiParam("User authentication informations") @Valid AuthenticationDTO authenticationDTO
     ) throws Exception {
 
         UserDAO userDAO = new UserDAO(sparql, authentication);

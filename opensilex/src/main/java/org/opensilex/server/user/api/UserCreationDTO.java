@@ -3,7 +3,7 @@
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.user.api;
+package org.opensilex.server.user.api;
 
 import io.swagger.annotations.ApiModelProperty;
 import javax.validation.constraints.Email;

@@ -3,7 +3,7 @@
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.user.api;
+package org.opensilex.server.security.api;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.server.validation.Required;
@@ -12,7 +12,7 @@ import org.opensilex.server.validation.Required;
  *
  * @author vincent
  */
-public class UserAuthenticationDTO {
+public class AuthenticationDTO {
 
     private String identifier;
 

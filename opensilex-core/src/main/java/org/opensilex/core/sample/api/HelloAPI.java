@@ -17,7 +17,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
 import org.opensilex.server.rest.RestApplicationAPI;
 import org.opensilex.server.security.ApiProtected;
-import org.opensilex.user.dal.UserModel;
+import org.opensilex.server.user.dal.UserModel;
 
 
 

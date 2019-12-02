@@ -35,7 +35,7 @@ public class EntityModel extends BaseVariableModel implements ClassURIGenerator<
         return new String[]{
             "variable",
             "entity",
-            instance.getName()
+            instance.getLabel()
         };
     }
 }

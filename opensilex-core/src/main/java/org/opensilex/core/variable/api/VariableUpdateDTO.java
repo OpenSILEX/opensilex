@@ -100,7 +100,7 @@ public class VariableUpdateDTO {
 
     public VariableModel updateModel(VariableModel model) {
         if (getLabel() != null) {
-            model.setName(getLabel());
+            model.setLabel(getLabel());
         }
         if (getComment() != null) {
             model.setComment(getComment());

@@ -3,28 +3,27 @@
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.user.dal;
+package org.opensilex.server.user.dal;
 
+import org.opensilex.server.security.SecurityOntology;
 import java.security.Principal;
-import java.util.List;
 import javax.mail.internet.InternetAddress;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.model.SPARQLModel;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.utils.ClassURIGenerator;
-
 
 /**
  *
  * @author Vincent Migot
  */
 @SPARQLResource(
-        ontology = UserOntology.class,
-        resource = "User",
+        ontology = FOAF.class,
+        resource = "Agent",
         graph = "users"
 )
-public class UserModel extends SPARQLModel implements Principal, ClassURIGenerator<UserModel> {
+public class UserModel extends SPARQLResourceModel implements Principal, ClassURIGenerator<UserModel> {
 
     @SPARQLProperty(
             ontology = FOAF.class,
@@ -32,6 +31,7 @@ public class UserModel extends SPARQLModel implements Principal, ClassURIGenerat
             required = true
     )
     private String firstName;
+    public static final String FIRST_NAME_FIELD = "firstName";
 
     @SPARQLProperty(
             ontology = FOAF.class,
@@ -39,6 +39,7 @@ public class UserModel extends SPARQLModel implements Principal, ClassURIGenerat
             required = true
     )
     private String lastName;
+    public static final String LAST_NAME_FIELD = "firstName";
 
     @SPARQLProperty(
             ontology = FOAF.class,
@@ -46,18 +47,13 @@ public class UserModel extends SPARQLModel implements Principal, ClassURIGenerat
             required = true
     )
     private InternetAddress email;
-
+    public static final String EMAIL_FIELD = "email";
+    
     @SPARQLProperty(
-            ontology = UserOntology.class,
+            ontology = SecurityOntology.class,
             property = "hasPasswordHash"
     )
     private String passwordHash;
-
-    @SPARQLProperty(
-            ontology = UserOntology.class,
-            property = "hasGroup"
-    )
-    private List<Group> groups;
 
     public String getFirstName() {
         return firstName;
@@ -83,14 +79,6 @@ public class UserModel extends SPARQLModel implements Principal, ClassURIGenerat
         this.email = email;
     }
 
-    public List<Group> getGroups() {
-        return groups;
-    }
-
-    public void setGroups(List<Group> groups) {
-        this.groups = groups;
-    }
-
     public String getPasswordHash() {
         return passwordHash;
     }
@@ -106,7 +94,7 @@ public class UserModel extends SPARQLModel implements Principal, ClassURIGenerat
 
     @Override
     public String[] getUriSegments(UserModel instance) {
-        return new String[] {
+        return new String[]{
             "agent",
             instance.getFirstName() + "_" + instance.getLastName()
         };

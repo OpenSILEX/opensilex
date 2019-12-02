@@ -21,7 +21,7 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.vocabulary.RDF;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.model.SPARQLModel;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.utils.Ontology;
 
@@ -125,14 +125,14 @@ public class SPARQLClassQueryBuilder {
         return countBuilder.clone();
     }
 
-    public <T extends SPARQLModel> UpdateBuilder getCreateBuilder(Node graph, T instance) throws Exception {
+    public <T extends SPARQLResourceModel> UpdateBuilder getCreateBuilder(Node graph, T instance) throws Exception {
         UpdateBuilder create = new UpdateBuilder();
         addCreateBuilder(graph, instance, create);
 
         return create;
     }
 
-    public <T extends SPARQLModel> void addCreateBuilder(Node graph, T instance, UpdateBuilder create) throws Exception {
+    public <T extends SPARQLResourceModel> void addCreateBuilder(Node graph, T instance, UpdateBuilder create) throws Exception {
         executeOnInstanceTriples(instance, (Triple triple, Boolean isReverse) -> {
             addCreateBuilderHelper(graph, triple, isReverse, create);
         });
@@ -177,7 +177,7 @@ public class SPARQLClassQueryBuilder {
         return delete;
     }
 
-    public <T extends SPARQLModel> void addUpdateBuilder(Node graph, T oldInstance, T newInstance, UpdateBuilder update) throws Exception {
+    public <T extends SPARQLResourceModel> void addUpdateBuilder(Node graph, T oldInstance, T newInstance, UpdateBuilder update) throws Exception {
         final AtomicInteger i = new AtomicInteger(0);
         executeOnInstanceTriples(oldInstance, (Triple triple, Boolean isReverse) -> {
             String var = "?x" + i.addAndGet(1);

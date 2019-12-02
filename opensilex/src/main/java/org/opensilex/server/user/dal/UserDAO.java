@@ -3,14 +3,19 @@
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.user.dal;
+package org.opensilex.server.user.dal;
 
 import java.net.URI;
+import java.util.List;
 import javax.mail.internet.InternetAddress;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.server.security.AuthenticationService;
+import org.opensilex.sparql.SPARQLQueryHelper;
 import org.opensilex.sparql.SPARQLService;
-
+import org.opensilex.sparql.utils.OrderBy;
+import org.opensilex.utils.ListWithPagination;
 
 /**
  * @author vincent
@@ -68,4 +73,33 @@ public class UserDAO {
         return sparql.getByURI(UserModel.class, uri);
     }
 
+    public void delete(URI instanceURI) throws Exception {
+        sparql.delete(UserModel.class, instanceURI);
+    }
+
+    public UserModel update(UserModel instance) throws Exception {
+        sparql.update(instance);
+        return instance;
+    }
+
+    public ListWithPagination<UserModel> find(String stringPattern, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+
+        Expr stringFilter = SPARQLQueryHelper.or(
+                SPARQLQueryHelper.regexFilter(UserModel.FIRST_NAME_FIELD, stringPattern),
+                SPARQLQueryHelper.regexFilter(UserModel.LAST_NAME_FIELD, stringPattern),
+                SPARQLQueryHelper.regexFilter(UserModel.EMAIL_FIELD, stringPattern)
+        );
+
+        return sparql.searchWithPagination(
+                UserModel.class,
+                (SelectBuilder select) -> {
+                    if (stringFilter != null) {
+                        select.addFilter(stringFilter);
+                    }
+                },
+                orderByList,
+                page,
+                pageSize
+        );
+    }
 }

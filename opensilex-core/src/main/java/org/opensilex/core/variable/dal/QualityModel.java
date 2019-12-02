@@ -31,7 +31,7 @@ public class QualityModel extends BaseVariableModel implements ClassURIGenerator
         return new String[]{
             "variable",
             "quality",
-            instance.getName()
+            instance.getLabel()
         };
     }
 }

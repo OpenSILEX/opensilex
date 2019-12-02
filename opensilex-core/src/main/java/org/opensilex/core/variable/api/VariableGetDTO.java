@@ -88,7 +88,7 @@ public class VariableGetDTO {
     public static VariableGetDTO fromModel(VariableModel model) {
         VariableGetDTO dto = new VariableGetDTO();
 
-        dto.setLabel(model.getName());
+        dto.setLabel(model.getLabel());
         dto.setComment(model.getComment());
 
         dto.setEntity(EntityGetDTO.fromModel(model.getEntity()));

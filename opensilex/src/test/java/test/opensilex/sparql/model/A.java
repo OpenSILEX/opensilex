@@ -9,7 +9,7 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.model.SPARQLModel;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 
 
 /**
@@ -20,7 +20,7 @@ import org.opensilex.sparql.model.SPARQLModel;
         ontology = TEST_ONTOLOGY.class,
         resource = "A"
 )
-public class A extends SPARQLModel {
+public class A extends SPARQLResourceModel {
 
     @SPARQLProperty(
             ontology = TEST_ONTOLOGY.class,

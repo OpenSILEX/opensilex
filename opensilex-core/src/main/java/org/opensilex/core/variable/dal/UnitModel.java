@@ -31,7 +31,7 @@ public class UnitModel extends BaseVariableModel implements ClassURIGenerator<Un
         return new String[]{
             "variable",
             "unit",
-            instance.getName()
+            instance.getLabel()
         };
     }
 }

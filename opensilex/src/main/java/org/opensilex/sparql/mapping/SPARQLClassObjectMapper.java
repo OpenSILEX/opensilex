@@ -19,11 +19,11 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.sparql.expr.E_Regex;
 import org.apache.jena.sparql.expr.E_StrLowerCase;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprVar;
 import org.opensilex.OpenSilex;
+import org.opensilex.sparql.SPARQLQueryHelper;
 import org.opensilex.sparql.SPARQLResult;
 import org.opensilex.sparql.SPARQLService;
 import org.opensilex.sparql.annotations.SPARQLResource;
@@ -32,7 +32,7 @@ import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
 import org.opensilex.sparql.exceptions.SPARQLUnknownFieldException;
-import org.opensilex.sparql.model.SPARQLModel;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.utils.URIGenerator;
 import org.opensilex.utils.ClassInfo;
 import org.slf4j.Logger;
@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author vincent
  */
-public class SPARQLClassObjectMapper<T extends SPARQLModel> {
+public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLClassObjectMapper.class);
     private static Set<Class<?>> SPARQL_CLASSES_LIST;
@@ -62,7 +62,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLModel> {
             SPARQL_CLASSES_LIST = ClassInfo.getAnnotatedClasses(SPARQLResource.class);
 
             for (Class<?> sparqlModelClass : SPARQL_CLASSES_LIST) {
-                SPARQLClassObjectMapper<?> sparqlObjectMapper = new SPARQLClassObjectMapper<>((Class<? extends SPARQLModel>) sparqlModelClass);
+                SPARQLClassObjectMapper<?> sparqlObjectMapper = new SPARQLClassObjectMapper<>((Class<? extends SPARQLResourceModel>) sparqlModelClass);
                 SPARQL_CLASSES_MAPPER.put(sparqlModelClass, sparqlObjectMapper);
                 SPARQL_RESOURCES_MAPPER.put(sparqlObjectMapper.getRDFType(), sparqlObjectMapper);
             }
@@ -71,7 +71,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLModel> {
     }
 
     @SuppressWarnings("unchecked")
-    public static synchronized <T extends SPARQLModel> SPARQLClassObjectMapper<T> getForClass(Class<?> objectClass) throws SPARQLMapperNotFoundException, SPARQLInvalidClassDefinitionException {
+    public static synchronized <T extends SPARQLResourceModel> SPARQLClassObjectMapper<T> getForClass(Class<?> objectClass) throws SPARQLMapperNotFoundException, SPARQLInvalidClassDefinitionException {
         initialize();
 
         Class<T> concreteObjectClass = (Class<T>) getConcreteClass(objectClass);
@@ -84,7 +84,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLModel> {
     }
 
     @SuppressWarnings("unchecked")
-    public static synchronized <T extends SPARQLModel> SPARQLClassObjectMapper<T> getForResource(Resource resource) throws SPARQLMapperNotFoundException, SPARQLInvalidClassDefinitionException {
+    public static synchronized <T extends SPARQLResourceModel> SPARQLClassObjectMapper<T> getForResource(Resource resource) throws SPARQLMapperNotFoundException, SPARQLInvalidClassDefinitionException {
         initialize();
         if (SPARQL_RESOURCES_MAPPER.containsKey(resource)) {
             return (SPARQLClassObjectMapper<T>) SPARQL_RESOURCES_MAPPER.get(resource);
@@ -94,7 +94,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLModel> {
 
     }
 
-    public static Node getGraph(Class<? extends SPARQLModel> c) throws SPARQLMapperNotFoundException, SPARQLInvalidClassDefinitionException {
+    public static Node getGraph(Class<? extends SPARQLResourceModel> c) throws SPARQLMapperNotFoundException, SPARQLInvalidClassDefinitionException {
         return getForClass(c).getDefaultGraph();
     }
 
@@ -178,7 +178,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLModel> {
             if (result.getStringValue(field.getName()) != null) {
                 URI objURI = new URI(result.getStringValue(field.getName()));
 
-                Class<? extends SPARQLModel> fieldType = (Class<? extends SPARQLModel>) field.getType();
+                Class<? extends SPARQLResourceModel> fieldType = (Class<? extends SPARQLResourceModel>) field.getType();
                 SPARQLProxyResource<?> proxy = new SPARQLProxyResource<>(getDefaultGraph(), objURI, fieldType, service);
                 setter.invoke(instance, proxy.getInstance());
             }
@@ -194,8 +194,8 @@ public class SPARQLClassObjectMapper<T extends SPARQLModel> {
         for (Field field : classAnalizer.getObjectListPropertyFields()) {
             Method setter = classAnalizer.getSetterFromField(field);
 
-            Class<? extends SPARQLModel> model = (Class<? extends SPARQLModel>) ClassInfo.getGenericTypeFromField(field);
-            SPARQLProxyListObject<? extends SPARQLModel> proxy = new SPARQLProxyListObject<>(getDefaultGraph(), uri, classAnalizer.getObjectListPropertyByField(field), model, classAnalizer.isReverseRelation(field), service);
+            Class<? extends SPARQLResourceModel> model = (Class<? extends SPARQLResourceModel>) ClassInfo.getGenericTypeFromField(field);
+            SPARQLProxyListObject<? extends SPARQLResourceModel> proxy = new SPARQLProxyListObject<>(getDefaultGraph(), uri, classAnalizer.getObjectListPropertyByField(field), model, classAnalizer.isReverseRelation(field), service);
             setter.invoke(instance, proxy.getInstance());
         }
 
@@ -332,9 +332,9 @@ public class SPARQLClassObjectMapper<T extends SPARQLModel> {
 
     @SuppressWarnings("unchecked")
     public URIGenerator<T> getUriGenerator(T instance) {
-        URIGenerator<? extends SPARQLModel> generator = classAnalizer.getUriGenerator();
+        URIGenerator<? extends SPARQLResourceModel> generator = classAnalizer.getUriGenerator();
         if (generator == null) {
-            generator = (URIGenerator<? extends SPARQLModel>) instance;
+            generator = (URIGenerator<? extends SPARQLResourceModel>) instance;
         }
         return (URIGenerator<T>) generator;
     }
@@ -343,22 +343,4 @@ public class SPARQLClassObjectMapper<T extends SPARQLModel> {
         return classAnalizer.getRDFType();
     }
 
-    public Expr getRegexFilter(String fieldName, String regexPattern) throws SPARQLException {
-        return (getRegexFilter(fieldName, regexPattern, null));
-    }
-
-    public Expr getRegexFilter(String fieldName, String regexPattern, String regexFlag) throws SPARQLException {
-        if (regexPattern == null || regexPattern.equals("")) {
-            return null;
-        }
-
-        if (regexFlag == null) {
-            regexFlag = "i";
-        }
-
-        ExprVar name = getFieldExprVar(fieldName);
-        Expr filter = new E_Regex(name, regexPattern, regexFlag);
-
-        return filter;
-    }
 }

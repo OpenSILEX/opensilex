@@ -12,7 +12,7 @@ import java.util.List;
  *
  * @author vincent
  */
-public class FrontPluginConfigDTO {
+public class FrontExtensionConfigDTO {
     String name;
     
     String path;

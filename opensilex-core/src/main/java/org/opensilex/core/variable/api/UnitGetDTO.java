@@ -49,7 +49,7 @@ public class UnitGetDTO {
         UnitGetDTO dto = new UnitGetDTO();
 
         dto.setUri(model.getUri());
-        dto.setLabel(model.getName());
+        dto.setLabel(model.getLabel());
         dto.setComment(model.getComment());
 
         return dto;

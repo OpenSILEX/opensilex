@@ -13,7 +13,7 @@ import java.util.Map;
  */
 public class FrontConfigDTO {
 
-    private Map<String, FrontPluginConfigDTO> plugins;
+    private Map<String, FrontExtensionConfigDTO> plugins;
 
     String welcomeComponent;
     
@@ -31,11 +31,11 @@ public class FrontConfigDTO {
 
     private Map<String, String> menu;
 
-    public Map<String, FrontPluginConfigDTO> getPlugins() {
+    public Map<String, FrontExtensionConfigDTO> getPlugins() {
         return plugins;
     }
 
-    public void setPlugins(Map<String, FrontPluginConfigDTO> plugins) {
+    public void setPlugins(Map<String, FrontExtensionConfigDTO> plugins) {
         this.plugins = plugins;
     }
 

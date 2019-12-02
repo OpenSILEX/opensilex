@@ -8,7 +8,7 @@ This repository contains source code for Phenotyping Hybrid Information System (
 First you need to have these software installed :
 
 - [Java JDK 8](https://jdk.java.net/java-se-ri/8)
-- [Maven 3.6.1](https://maven.apache.org/install.html)
+- [Maven 3.6.2](https://maven.apache.org/install.html)
 - [Git 2.17.1](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 
 The install process is tested with these versions of the software.
@@ -19,7 +19,10 @@ You should create also a directory where you have full read/write permissions wh
 
 ```
 cd <BASE_DIR>
-git clone --recurse-submodules https://github.com/OpenSILEX/opensilex-dev.git
+git clone --recurse-submodules https://github.com/vincentmigot/opensilex-dev.git
+cd opensilex-dev/phis-ws
+git pull origin modularity
+cd ..
 ```
 
 # Install Databases
@@ -37,26 +40,15 @@ Then download OpenSILEX docker repository and start images (the last command may
 cd <BASE_DIR>
 cd opensilex-dev/src/main/docker
 docker-compose up -d
-docker exec -it --user root rdf4j /bin/bash /tmp/seed-data.sh
 ```
 
 You now should have a running RDF4J and MongoDB servers.
 
-## Install manually
-
-Install RDF4J and MongoDB:
-
-- [RDF4J](https://rdf4j.eclipse.org/documentation/server-workbench-console/)
-- [MongoDB](https://docs.mongodb.com/manual/installation/)
-
-Once MongoDB is installed you must [enable Replica Set feature](https://docs.mongodb.com/manual/tutorial/deploy-replica-set/)
-
 # Build project
 
 ```
-cd <BASE_DIR>
-cd opensilex-dev
-mvn clean install
+cd <BASE_DIR>/opensilex-dev
+mvn install
 ```
 
 # Initialize configuration

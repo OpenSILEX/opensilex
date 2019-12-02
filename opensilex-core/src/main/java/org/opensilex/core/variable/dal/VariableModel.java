@@ -86,7 +86,7 @@ public class VariableModel extends BaseVariableModel implements ClassURIGenerato
     public String[] getUriSegments(VariableModel instance) {
         return new String[]{
             "variable",
-            instance.getName()
+            instance.getLabel()
         };
     }
 }

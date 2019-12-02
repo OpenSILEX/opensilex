@@ -15,7 +15,7 @@ import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.model.SPARQLModel;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.utils.ClassURIGenerator;
 
 
@@ -24,7 +24,7 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
         resource = "Project",
         graph = "project"
 )
-public class ProjectModel extends SPARQLModel implements ClassURIGenerator<ProjectModel> {
+public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerator<ProjectModel> {
 
     @SPARQLProperty(
             ontology = RDFS.class,

@@ -44,18 +44,18 @@ import org.opensilex.front.FrontPluginMenuConfig;
 /**
  * Service to produce angular application configuration
  */
-@Api("Angular")
-@Path("/angular")
+@Api("Front")
+@Path("/front")
 public class FrontAPI implements RestApplicationAPI {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(FrontAPI.class);
 
-    private final static String ANGULAR_PLUGINS_DIRECTORY = "angular/plugins/";
+    private final static String FRONT_EXTENSIONS_DIRECTORY = "front/extensions/";
     @Inject
     OpenSilex app;
 
     @Inject
-    FrontModule angularModule;
+    FrontModule frontModule;
 
     @Context
     HttpServletRequest request;
@@ -68,11 +68,11 @@ public class FrontAPI implements RestApplicationAPI {
         @ApiResponse(code = 500, message = "Internal error")
     })
     @Produces(MediaType.APPLICATION_JSON)
-    public Response config() throws Exception {
+    public Response getConfig() throws Exception {
 
         FrontConfigDTO config = new FrontConfigDTO();
 
-        FrontConfig angularConfig = angularModule.getConfig(FrontConfig.class);
+        FrontConfig angularConfig = frontModule.getConfig(FrontConfig.class);
         config.setWelcomeComponent(angularConfig.welcomeComponent());
         config.setHomeComponent(angularConfig.homeComponent());
         config.setNotFoundComponent(angularConfig.notFoundComponent());
@@ -97,8 +97,8 @@ public class FrontAPI implements RestApplicationAPI {
 
     private Map<String, FrontPluginConfig> pluginsConfig;
 
-    private Map<String, FrontPluginConfigDTO> getPluginsConfig() throws Exception {
-        Map<String, FrontPluginConfigDTO> result = new HashMap<>();
+    private Map<String, FrontExtensionConfigDTO> getPluginsConfig() throws Exception {
+        Map<String, FrontExtensionConfigDTO> result = new HashMap<>();
 
         ConfigManager cfgManager = new ConfigManager();
         pluginsConfig = new HashMap<>();
@@ -117,12 +117,12 @@ public class FrontAPI implements RestApplicationAPI {
                     FrontPluginConfig cfg = cfgManager.loadConfig(pluginName, FrontPluginConfig.class);
                     pluginsConfig.put(pluginName, cfg);
 
-                    FrontPluginConfigDTO pluginConfigDTO = new FrontPluginConfigDTO();
+                    FrontExtensionConfigDTO pluginConfigDTO = new FrontExtensionConfigDTO();
                     pluginConfigDTO.setName(pluginName);
 
                     String path = ClassInfo.getProjectIdFromClass(angularExtension.getClass());
                     if (!path.isEmpty()) {
-                        long modifiedTime = module.getLastModified(ANGULAR_PLUGINS_DIRECTORY + pluginName + ".js").getTime();
+                        long modifiedTime = module.getLastModified(FRONT_EXTENSIONS_DIRECTORY + pluginName + ".js").getTime();
                         pluginConfigDTO.setPath(getRestAPI() + "angular/plugin/" + ClassInfo.getProjectIdFromClass(angularExtension.getClass()) + "/" + pluginName + ".js?" + modifiedTime);
 
                         if (!pluginName.equals("shared")) {
@@ -147,7 +147,7 @@ public class FrontAPI implements RestApplicationAPI {
         @ApiResponse(code = 500, message = "Internal error")
     })
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response pluginByName(
+    public Response getPluginByName(
             @PathParam("module") String moduleId,
             @PathParam("plugin") String pluginId,
             @Context Request request
@@ -159,7 +159,7 @@ public class FrontAPI implements RestApplicationAPI {
             OpenSilexModule module = modules.get(0);
 
             String fileName = pluginId + ".js";
-            String filePath = ANGULAR_PLUGINS_DIRECTORY + fileName;
+            String filePath = FRONT_EXTENSIONS_DIRECTORY + fileName;
             if (module.fileExists(filePath)) {
 
                 EntityTag etag = new EntityTag(Hashing.sha256().hashUnencodedChars(module.getClass().getName() + "_" + fileName + "_" + module.getLastModified(filePath).toString()).toString());

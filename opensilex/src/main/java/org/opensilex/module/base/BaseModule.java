@@ -38,4 +38,11 @@ public class BaseModule extends OpenSilexModule implements APIExtension {
         return list;
     }
 
+    @Override
+    public void init() throws Exception {
+        
+    }
+    
+    
+
 }

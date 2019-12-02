@@ -49,7 +49,7 @@ public class QualityUpdateDTO {
 
     public QualityModel updateModel(QualityModel model) {
         if (getLabel() != null) {
-            model.setName(getLabel());
+            model.setLabel(getLabel());
         }
         if (getComment() != null) {
             model.setComment(getComment());

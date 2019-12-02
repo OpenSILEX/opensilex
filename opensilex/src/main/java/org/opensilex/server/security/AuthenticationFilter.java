@@ -25,7 +25,7 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.sparql.SPARQLService;
-import org.opensilex.user.dal.UserModel;
+import org.opensilex.server.user.dal.UserModel;
 
 
 /**

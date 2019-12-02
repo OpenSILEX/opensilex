@@ -557,6 +557,7 @@
                                     <packageName>${project.name}</packageName>
                                     <packageVersion>${revision}</packageVersion>
                                     <npmName>${project.name}</npmName>
+                                    <usePromise>true</usePromise>
                                     <modelPropertyNaming>original</modelPropertyNaming>
                                 </configOptions>
                             </configuration>

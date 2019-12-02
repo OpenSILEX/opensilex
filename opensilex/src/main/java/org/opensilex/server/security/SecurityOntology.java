@@ -3,7 +3,7 @@
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.user.dal;
+package org.opensilex.server.security;
 
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
@@ -13,22 +13,24 @@ import org.opensilex.sparql.utils.Ontology;
  *
  * @author Vincent Migot
  */
-public class UserOntology {
-    
+public class SecurityOntology {
+
     public static final String DOMAIN = "http://www.opensilex.org/users";
-            
+
     public static final String NS = DOMAIN + "#";
 
-    public static String getURI() {return NS;}
+    public static String getURI() {
+        return NS;
+    }
 
     public static final Resource NAMESPACE = Ontology.resource(NS);
-    
-    public static final Resource User = Ontology.resource(NS, "User");
-    
-    public static final Resource Group = Ontology.resource(NS, "Group");
 
-    public static final Property hasGroup = Ontology.property(NS, "hasGroup");
-    
+    public static final Resource Group = Ontology.resource(NS, "Group");
+    public static final Resource SecurityProfile = Ontology.resource(NS, "GroupProfile");
+
     public static final Property hasPasswordHash = Ontology.property(NS, "hasPasswordHash");
+    public static final Property hasUser = Ontology.property(NS, "hasUser");
+    public static final Property hasProfile = Ontology.property(NS, "hasProfile");
+    public static final Property hasAccess = Ontology.property(NS, "hasAccess");
 
 }

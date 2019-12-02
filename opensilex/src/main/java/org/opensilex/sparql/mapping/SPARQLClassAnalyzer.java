@@ -27,7 +27,7 @@ import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.annotations.SPARQLResourceURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
-import org.opensilex.sparql.model.SPARQLModel;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.utils.URIGenerator;
 import org.opensilex.utils.ClassInfo;
 import org.slf4j.Logger;
@@ -70,7 +70,7 @@ public class SPARQLClassAnalyzer {
 
     private final List<Field> reverseRelationFields = new ArrayList<>();
 
-    private final URIGenerator<? extends SPARQLModel> uriGenerator;
+    private final URIGenerator<? extends SPARQLResourceModel> uriGenerator;
 
 
     public SPARQLClassAnalyzer(Class<?> objectClass) throws SPARQLInvalidClassDefinitionException {
@@ -428,7 +428,7 @@ public class SPARQLClassAnalyzer {
         }
     }
 
-    public URIGenerator<? extends SPARQLModel> getUriGenerator() {
+    public URIGenerator<? extends SPARQLResourceModel> getUriGenerator() {
         return uriGenerator;
     }
 

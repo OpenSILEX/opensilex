@@ -31,7 +31,7 @@ public class MethodModel extends BaseVariableModel implements ClassURIGenerator<
         return new String[]{
             "variable",
             "method",
-            instance.getName()
+            instance.getLabel()
         };
     }
 }

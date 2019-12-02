@@ -49,7 +49,7 @@ public class UnitUpdateDTO {
 
     public UnitModel updateModel(UnitModel model) {
         if (getLabel() != null) {
-            model.setName(getLabel());
+            model.setLabel(getLabel());
         }
         if (getComment() != null) {
             model.setComment(getComment());

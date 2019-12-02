@@ -7,18 +7,18 @@ package org.opensilex.core.variable.dal;
 
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.annotations.SPARQLProperty;
-import org.opensilex.sparql.model.SPARQLModel;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 
 
-public abstract class BaseVariableModel extends SPARQLModel {
+public abstract class BaseVariableModel extends SPARQLResourceModel {
     
     @SPARQLProperty(
             ontology = RDFS.class,
             property = "label",
             required = true
     )
-    private String name;
-    public static final String LABEL_FIELD_NAME = "label";
+    private String label;
+    public static final String LABEL_FIELD = "label";
 
     @SPARQLProperty(
             ontology = RDFS.class,
@@ -26,14 +26,14 @@ public abstract class BaseVariableModel extends SPARQLModel {
             required = true
     )
     private String comment;
-    public static final String COMMENT_FIELD_NAME = "comment";
+    public static final String COMMENT_FIELD = "comment";
 
-    public String getName() {
-        return name;
+    public String getLabel() {
+        return label;
     }
 
-    public void setName(String label) {
-        this.name = label;
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     public String getComment() {

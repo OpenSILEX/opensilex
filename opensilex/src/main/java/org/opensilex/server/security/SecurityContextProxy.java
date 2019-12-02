@@ -7,7 +7,7 @@ package org.opensilex.server.security;
 
 import java.security.Principal;
 import javax.ws.rs.core.SecurityContext;
-import org.opensilex.user.dal.UserModel;
+import org.opensilex.server.user.dal.UserModel;
 
 /**
  *

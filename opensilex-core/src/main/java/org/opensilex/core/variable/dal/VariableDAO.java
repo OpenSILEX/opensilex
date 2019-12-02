@@ -9,10 +9,10 @@ import java.net.URI;
 import java.util.List;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.expr.Expr;
+import org.opensilex.sparql.SPARQLQueryHelper;
 import org.opensilex.sparql.SPARQLService;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
@@ -38,10 +38,8 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
             Integer page,
             Integer pageSize
     ) throws Exception {
-        SPARQLClassObjectMapper<VariableModel> mapper = SPARQLClassObjectMapper.getForClass(objectClass);
-
-        Expr labelFilter = mapper.getRegexFilter(BaseVariableModel.LABEL_FIELD_NAME, labelPattern);
-        Expr commentFilter = mapper.getRegexFilter(BaseVariableModel.COMMENT_FIELD_NAME, commentPattern);
+        Expr labelFilter = SPARQLQueryHelper.regexFilter(BaseVariableModel.LABEL_FIELD, labelPattern);
+        Expr commentFilter = SPARQLQueryHelper.regexFilter(BaseVariableModel.COMMENT_FIELD, commentPattern);
 
         SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
 

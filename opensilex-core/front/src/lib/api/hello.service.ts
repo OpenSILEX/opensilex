@@ -35,16 +35,32 @@ export class HelloService {
             this.basePath = this.APIConfiguration.basePath;
     }
     /**
+     * Say hello to the world !
+     * 
+     
+     */
+    public world(observe?: 'body', headers?: Headers): Observable<any>;
+    public world(observe?: 'response', headers?: Headers): Observable<HttpResponse<any>>;
+    public world(observe: any = 'body', headers: Headers = {}): Observable<any> {
+        headers['Accept'] = 'text/plain';
+
+        const response: Observable<HttpResponse<any>> = this.httpClient.get(`${this.basePath}/hello/world`, headers);
+        if (observe == 'body') {
+               return response.map(httpResponse => <any>(httpResponse.response));
+        }
+        return response;
+    }
+    /**
      * Say hello to the user !
      * 
      * @param Authorization Authentication token
      
      */
-    public world(Authorization: string, observe?: 'body', headers?: Headers): Observable<any>;
-    public world(Authorization: string, observe?: 'response', headers?: Headers): Observable<HttpResponse<any>>;
-    public world(Authorization: string, observe: any = 'body', headers: Headers = {}): Observable<any> {
+    public world1(Authorization: string, observe?: 'body', headers?: Headers): Observable<any>;
+    public world1(Authorization: string, observe?: 'response', headers?: Headers): Observable<HttpResponse<any>>;
+    public world1(Authorization: string, observe: any = 'body', headers: Headers = {}): Observable<any> {
         if (!Authorization){
-            throw new Error('Required parameter Authorization was null or undefined when calling world.');
+            throw new Error('Required parameter Authorization was null or undefined when calling world1.');
         }
 
         if (Authorization) {
@@ -54,22 +70,6 @@ export class HelloService {
         headers['Accept'] = 'text/plain';
 
         const response: Observable<HttpResponse<any>> = this.httpClient.get(`${this.basePath}/hello/user`, headers);
-        if (observe == 'body') {
-               return response.map(httpResponse => <any>(httpResponse.response));
-        }
-        return response;
-    }
-    /**
-     * Say hello to the world !
-     * 
-     
-     */
-    public world1(observe?: 'body', headers?: Headers): Observable<any>;
-    public world1(observe?: 'response', headers?: Headers): Observable<HttpResponse<any>>;
-    public world1(observe: any = 'body', headers: Headers = {}): Observable<any> {
-        headers['Accept'] = 'text/plain';
-
-        const response: Observable<HttpResponse<any>> = this.httpClient.get(`${this.basePath}/hello/world`, headers);
         if (observe == 'body') {
                return response.map(httpResponse => <any>(httpResponse.response));
         }

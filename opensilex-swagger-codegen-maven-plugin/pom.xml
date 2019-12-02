@@ -65,7 +65,7 @@
                 <executions>
                     <execution>
                         <id>opensilex-standard-services</id>
-                        <phase>node</phase>
+                        <phase>none</phase>
                     </execution>
                 </executions>
             </plugin>

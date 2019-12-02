@@ -271,12 +271,6 @@
             <artifactId>jena-querybuilder</artifactId>
             <version>3.9.0</version>
         </dependency>
-        <!-- Json schema validator https://github.com/worldturner/medeia-validator-->
-        <dependency>
-            <groupId>com.worldturner.medeia</groupId>
-            <artifactId>medeia-validator-gson</artifactId>
-            <version>1.1.0</version>
-        </dependency>
     </dependencies>
 
     <build>

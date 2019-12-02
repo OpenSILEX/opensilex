@@ -39,8 +39,8 @@ import opensilex.service.view.brapi.form.ResponseFormGET;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.security.AuthenticationService;
 import org.opensilex.server.security.SecurityContextProxy;
-import org.opensilex.server.security.model.UserModel;
 import org.opensilex.sparql.SPARQLService;
+import org.opensilex.user.dal.UserModel;
 import org.opensilex.utils.ClassInfo;
 
 /**

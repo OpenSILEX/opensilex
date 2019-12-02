@@ -104,13 +104,24 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-site-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>-->
+            
+              <plugin>
+                    <groupId>org.opensilex</groupId>
+                    <artifactId>opensilex-swagger-codegen-maven-plugin</artifactId>
+                    <version>${revision}</version>
+                    
+                    <executions>
+                        <execution>
+                            <phase>process-classes</phase>
+                            <goals>
+                                <goal>generate</goal>
+                            </goals>
+                            <configuration>
+                                <templateDirectory>${project.basedir}/../../opensilex/src/main/resources/swagger/templates/typescript-inversify</templateDirectory>
+                            </configuration>
+                        </execution>
+                    </executions>
+              </plugin>
         </plugins>
     </build>
     

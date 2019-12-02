@@ -157,8 +157,8 @@ public class TokenResourceService implements BrapiCall{
                 // user is already logged
                 // we trust the client
                 //\SILEX:info
-                org.opensilex.user.dal.UserDAO userDAO = new org.opensilex.user.dal.UserDAO(sparql, authentication);
-                org.opensilex.user.dal.UserModel user;
+                org.opensilex.server.user.dal.UserDAO userDAO = new org.opensilex.server.user.dal.UserDAO(sparql, authentication);
+                org.opensilex.server.user.dal.UserModel user;
                 try {
                     user = userDAO.getByEmail(new InternetAddress(username));
 

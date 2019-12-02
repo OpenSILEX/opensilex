@@ -32,6 +32,16 @@
           "In this provenance we have count the number of leaf per plant"
         ]
       },
+       "created": {
+        "$id": "#/properties/created",
+        "type": "string",
+        "title": "The Created Schema",
+        "default": "",
+        "examples": [
+          "2019-11-18T13:30:26+0100"
+        ],
+        "pattern": "^(.*)$"
+      },
       "metadata": {
         "$id": "#/items/properties/metadata",
         "type": "object",

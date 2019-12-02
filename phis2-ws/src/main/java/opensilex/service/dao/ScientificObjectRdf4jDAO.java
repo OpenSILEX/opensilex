@@ -631,7 +631,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                     }
                     
                     ScientificObject scientificObject = null;
-                                        
+                                      
                     if (alreadyFoundedUri) {
                         scientificObject = foundedScientificObjects.get(actualUri);
                     } else {

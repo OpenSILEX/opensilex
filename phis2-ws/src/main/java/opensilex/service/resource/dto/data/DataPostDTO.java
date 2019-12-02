@@ -57,7 +57,8 @@ public class DataPostDTO extends AbstractVerifiedClass {
     protected Object value;
 
     @URL
-    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_URI)
+    @Required
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SENSOR_URI)
     public String getObjectUri() {
         return objectUri;
     }

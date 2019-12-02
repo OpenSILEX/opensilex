@@ -38,6 +38,9 @@ import java.io.OutputStreamWriter;
 import java.net.URL;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
@@ -67,11 +70,21 @@ public final class CustomJsonWriterReader<T> implements MessageBodyWriter<T>,
     /**
      * JsonSchema validator
      */
-    private static MedeiaGsonApi api = new MedeiaGsonApi();
+    private static final MedeiaGsonApi VALIDATION_GSON_API = new MedeiaGsonApi();
     /**
      * Serializer/deserializer object
      */
-    private static Gson gson = new Gson();
+    private static final Gson GSON = new Gson();
+    
+    /**
+     * Extract class from List generic string type
+     */
+    private static final Pattern EXTRACT_CLASS_PATTERN = Pattern.compile(".*<(.*)>");
+    
+    /**
+     * Validation schema internal ressources directory
+     */
+    private static final String INTERNAL_VALIDATION_SCHEMAS_DIR = "validationSchemas";
     
     /**
      * Permits to filter visible classes.
@@ -106,14 +119,16 @@ public final class CustomJsonWriterReader<T> implements MessageBodyWriter<T>,
         try {
             // 1. read input
             final BufferedReader reader = new BufferedReader(new InputStreamReader(entityStream));
+
             // 2. load validation schema if it exists
-            SchemaValidator entitySchemaValidator = this.loadSchema(genericType.getTypeName());
+            SchemaValidator entitySchemaValidator = this.loadSchema(type,genericType.getTypeName());
+            
             // 3. read input with or without schema
             if(entitySchemaValidator != null){
-                JsonReader validatedReader = api.createJsonReader(entitySchemaValidator, reader);
-                return gson.fromJson(validatedReader, genericType);
+                JsonReader validatedReader = VALIDATION_GSON_API.createJsonReader(entitySchemaValidator, reader);
+                return GSON.fromJson(validatedReader, genericType);
             }else{
-                return gson.fromJson(reader, genericType);
+                return GSON.fromJson(reader, genericType);
             }
         } catch (JsonIOException | JsonSyntaxException | ValidationFailedException e) {
             LOGGER.warn(e.getMessage(), e);
@@ -185,34 +200,37 @@ public final class CustomJsonWriterReader<T> implements MessageBodyWriter<T>,
     
     /**
      * Load validation schema corresponding to Input entity type
+     * @param type type of generic entity to test if it is a list or other collection
      * @param genericEntityTypetype of the entity can be a class type or an array of this class type
-     * @return A java schema validator
+     * @return A java json schema validator
+     * @see https://github.com/worldturner/medeia-validator
      */
-    private SchemaValidator loadSchema(String genericEntityType) {
+    private SchemaValidator loadSchema(Class<T> type, String genericEntityType) {
         // 1. get class name from class type
         // E.g. java.util.ArrayList<opensilex.service.ressource.dto.ProvenancePostDTO>
-        if(genericEntityType.contains("java.util.ArrayList")){
-            genericEntityType = genericEntityType.replaceFirst("java.util.ArrayList<", "");
-            genericEntityType = genericEntityType.substring(0, genericEntityType.length() - 1);
+        if(List.class.isAssignableFrom(type)){
+            Matcher matcher = EXTRACT_CLASS_PATTERN.matcher(genericEntityType);
+            if (matcher.find()) {
+               genericEntityType = matcher.group(1);
+            }
         }
         // E.g. opensilex.service.ressource.dto.ProvenancePostDTO
         String[] enstityDTOPath = genericEntityType.split("[.]");
-        String entityType = Arrays.stream(enstityDTOPath).reduce((a, b) -> b)
-            .orElse(null);
+        String entityType = enstityDTOPath[enstityDTOPath.length - 1]; 
 
         // E.g. ProvenancePostDTO
         if(entityType == null){
             return null;
         }
         
-        // 2. load corresponding schema
-        URL schemaResource = getClass().getResource("/validationSchemas/" + entityType + ".json");
+        // 2. load corresponding schema or return null
+        URL schemaResource = getClass().getResource("/" + INTERNAL_VALIDATION_SCHEMAS_DIR +"/" + entityType + ".json");
 
         if (schemaResource == null) {
             return null;
         } else {
             SchemaSource source = new UrlSchemaSource(schemaResource);
-            return api.loadSchema(source);
+            return VALIDATION_GSON_API.loadSchema(source);
         }
     }
 }

@@ -7,7 +7,7 @@
   "items": {
     "$id": "#/items",
     "type": "object",
-    "title": "The Items Schema",
+    "title": "The Provenances Schema",
     "required": [
       "label",
       "metadata"
@@ -25,22 +25,18 @@
       },
       "comment": {
         "$id": "#/items/properties/comment",
-        "type": "string",
+        "type":  [ "string", "null" ],
         "title": "The Comment Schema",
         "default": "",
         "examples": [
           "In this provenance we have count the number of leaf per plant"
-        ],
-        "pattern": "^(.*)$"
+        ]
       },
       "metadata": {
         "$id": "#/items/properties/metadata",
         "type": "object",
         "title": "The Metadata Schema",
         "required": [
-          "namespaces",
-          "creationDate",
-          "prov:Agent"
         ],
         "properties": {
           "namespaces": {
@@ -48,9 +44,6 @@
             "type": "object",
             "title": "The Namespaces Schema",
             "required": [
-              "prov",
-              "oeso",
-              "rdf"
             ],
             "properties": {
               "prov": {
@@ -100,8 +93,6 @@
             "type": "object",
             "title": "The Prov:agent Schema",
             "required": [
-              "oeso:SensingDevice",
-              "oeso:Operator"
             ],
             "properties": {
               "oeso:SensingDevice": {

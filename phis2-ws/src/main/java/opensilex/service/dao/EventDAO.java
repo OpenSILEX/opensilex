@@ -54,10 +54,10 @@ import org.joda.time.format.DateTimeFormatter;
  * Events DAO.
  * @update [Andreas Garcia] 14 Feb. 2019: Add event detail service.
  * @update [Andreas Garcia] 5 Mar. 2019: Add events insertion service.
- * @update [Andréas Garcia] 5 Mar. 2019: 
+ * @update [Andréas Garcia] 5 Mar. 2019: 
  *      Move the generic function to get a string value from a binding set to mother class.
  *      Move concerned items accesses handling into a new ConcernedItemDAO class.
- * @update [Andréas Garcia] 8 Apr. 2019: Use DAO generic function create, update, checkBeforeCreation and use exceptions 
+ * @update [Andréas Garcia] 8 Apr. 2019: Use DAO generic function create, update, checkBeforeCreation and use exceptions 
  * to handle errors.
  * @author Andreas Garcia <andreas.garcia@inra.fr>
  */
@@ -372,7 +372,8 @@ public class EventDAO extends Rdf4jDAO<Event> {
                         null, 
                         event.getUri(), 
                         null, 
-                        null, 
+                        null,
+                        true,
                         0, 
                         pageSizeMaxValue));
             }

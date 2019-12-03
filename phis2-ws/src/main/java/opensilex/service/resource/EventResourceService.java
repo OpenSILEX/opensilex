@@ -60,7 +60,7 @@ import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
  * @update [Andréas Garcia] 14 Feb. 2019: Add GET detail service
  * @update [Andréas Garcia] 5 Mar. 2019: Add POST service
  * @update [Andréas Garcia] 15 Mar. 2019: Add GET {uri}/annotations service
- * @update [Andréas Garcia] 8 Apr. 2019: Refactor generic functions into the ResourceService class
+ * @update [Andréas Garcia] 8 Apr. 2019: Refactor generic functions into the ResourceService class
  * @author Andréas Garcia <andreas.garcia@inra.fr>
  */
 @Api("/events")

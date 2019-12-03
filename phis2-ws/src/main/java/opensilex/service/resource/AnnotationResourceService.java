@@ -54,7 +54,7 @@ import org.slf4j.LoggerFactory;
  * class attributes but parameters sent through the search functions.
  * @update [Andreas Garcia] 19 Mar. 2019: make getAnnotations public to be 
  * able to use it from another service.
- * @update [Andréas Garcia] 8 Apr. 2019: Refactor generic functions into the ResourceService class
+ * @update [Andréas Garcia] 8 Apr. 2019: Refactor generic functions into the ResourceService class
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 @Api("/annotations")

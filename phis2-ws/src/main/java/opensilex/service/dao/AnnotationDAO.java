@@ -62,7 +62,7 @@ import opensilex.service.model.Annotation;
  * Annotations DAO.
  * @update [Andréas Garcia] 15 Feb. 2019: search parameters are no longer class 
  * attributes but parameters sent through search functions
- * @update [Andréas Garcia] 8 Apr. 2019: Use DAO generic function create, update, checkBeforeCreation and use exceptions 
+ * @update [Andréas Garcia] 8 Apr. 2019: Use DAO generic function create, update, checkBeforeCreation and use exceptions 
  * to handle errors.
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */

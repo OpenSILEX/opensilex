@@ -20,6 +20,7 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.vocabulary.RDF;
+import static org.opensilex.sparql.SPARQLQueryHelper.typeDefVar;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.SPARQLModelRelation;
@@ -42,8 +43,6 @@ public class SPARQLClassQueryBuilder {
         this.analyzer = analyzer;
     }
 
-    public static final Var typeDef = makeVar("__type");
-
     public SelectBuilder getSelectBuilder(Node graph) {
         if (selectBuilder == null) {
             selectBuilder = new SelectBuilder();
@@ -54,9 +53,9 @@ public class SPARQLClassQueryBuilder {
 
             String uriFieldName = analyzer.getURIFieldName();
             selectBuilder.addVar(uriFieldName);
-            selectBuilder.addVar(typeDef);
-            selectBuilder.addWhere(makeVar(uriFieldName), RDF.type, typeDef);
-            selectBuilder.addWhere(typeDef, Ontology.subClassAny, analyzer.getRDFType());
+            selectBuilder.addVar(typeDefVar);
+            selectBuilder.addWhere(makeVar(uriFieldName), RDF.type, typeDefVar);
+            selectBuilder.addWhere(typeDefVar, Ontology.subClassAny, analyzer.getRDFType());
 
             analyzer.forEachDataProperty((Field field, Property property) -> {
                 selectBuilder.addVar(field.getName());
@@ -81,8 +80,8 @@ public class SPARQLClassQueryBuilder {
             }
 
             String uriFieldName = analyzer.getURIFieldName();
-            askBuilder.addWhere(makeVar(uriFieldName), RDF.type, typeDef);
-            askBuilder.addWhere(typeDef, Ontology.subClassAny, analyzer.getRDFType());
+            askBuilder.addWhere(makeVar(uriFieldName), RDF.type, typeDefVar);
+            askBuilder.addWhere(typeDefVar, Ontology.subClassAny, analyzer.getRDFType());
             analyzer.forEachDataProperty((Field field, Property property) -> {
                 addAskProperty(askBuilder, uriFieldName, property, field);
             });
@@ -110,8 +109,8 @@ public class SPARQLClassQueryBuilder {
                 // Should not append
                 // TODO generate properly count/distinct trought Jena API (see 
             }
-            countBuilder.addWhere(makeVar(uriFieldName), RDF.type, typeDef);
-            countBuilder.addWhere(typeDef, Ontology.subClassAny, analyzer.getRDFType());
+            countBuilder.addWhere(makeVar(uriFieldName), RDF.type, typeDefVar);
+            countBuilder.addWhere(typeDefVar, Ontology.subClassAny, analyzer.getRDFType());
 
             analyzer.forEachDataProperty((Field field, Property property) -> {
                 addSelectProperty(countBuilder, uriFieldName, property, field);

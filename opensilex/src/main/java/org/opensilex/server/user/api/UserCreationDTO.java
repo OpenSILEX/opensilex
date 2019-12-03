@@ -22,6 +22,8 @@ public class UserCreationDTO {
 
     private String lastName;
 
+    private boolean admin;
+    
     private String password;
 
     @Email
@@ -62,6 +64,14 @@ public class UserCreationDTO {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public boolean isAdmin() {
+        return admin;
+    }
+
+    public void setAdmin(boolean admin) {
+        this.admin = admin;
     }
 
 }

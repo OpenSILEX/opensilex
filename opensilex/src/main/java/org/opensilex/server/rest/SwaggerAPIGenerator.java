@@ -10,6 +10,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -17,6 +18,27 @@ import java.util.stream.Stream;
 import org.opensilex.utils.ClassInfo;
 
 public class SwaggerAPIGenerator {
+
+    public static synchronized Swagger getFullApi() {
+        Swagger swagger = null;
+
+        SwaggerContextService ctx = new SwaggerContextService();
+
+        swagger = ctx.getSwagger();
+
+        Map<String, Class<?>> availableAPI = ClassInfo.getAnnotatedClassesMap(Api.class);
+
+        Set<Class<?>> classes = new HashSet<>(availableAPI.values());
+        if (classes.size() > 0) {
+
+            Reader reader = new Reader(swagger);
+            swagger = reader.read(classes);
+
+            return swagger;
+        }
+
+        return null;
+    }
 
     private static synchronized Swagger generate(String source) throws Exception {
         Swagger swagger = null;
@@ -29,29 +51,33 @@ public class SwaggerAPIGenerator {
 
         Map<String, Class<?>> availableAPI = ClassInfo.getAnnotatedClassesMap(Api.class);
 
-        Path sourcePath = Paths.get(source);
-        if (sourcePath.toFile().exists()) {
-            try (Stream<Path> walk = Files.walk(sourcePath)) {
+        if (source != null) {
+            Path sourcePath = Paths.get(source);
+            if (sourcePath.toFile().exists()) {
+                try (Stream<Path> walk = Files.walk(sourcePath)) {
 
-                walk.filter(Files::isRegularFile)
-                        .forEach((Path p) -> {
-                            String filename = p.getFileName().toString();
+                    walk.filter(Files::isRegularFile)
+                            .forEach((Path p) -> {
+                                String filename = p.getFileName().toString();
 
-                            File filePath = p.toFile();
-                            if (filePath.exists()) {
-                                String absoluteDirectory = filePath.getParent();
-                                String packageId = absoluteDirectory.substring(source.length()).replaceAll("\\\\|\\/", ".");
+                                File filePath = p.toFile();
+                                if (filePath.exists()) {
+                                    String absoluteDirectory = filePath.getParent();
+                                    String packageId = absoluteDirectory.substring(source.length()).replaceAll("\\\\|\\/", ".");
 
-                                if (filename.endsWith(".java")) {
-                                    String className = packageId + "." + filename.substring(0, filename.length() - 5);
-                                    if (availableAPI.containsKey(className)) {
-                                        classes.add(availableAPI.get(className));
+                                    if (filename.endsWith(".java")) {
+                                        String className = packageId + "." + filename.substring(0, filename.length() - 5);
+                                        if (availableAPI.containsKey(className)) {
+                                            classes.add(availableAPI.get(className));
+                                        }
                                     }
                                 }
-                            }
-                        });
+                            });
 
+                }
             }
+        } else {
+            classes.addAll(availableAPI.values());
         }
 
         if (classes.size() > 0) {

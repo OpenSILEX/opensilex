@@ -14,19 +14,19 @@ import javax.annotation.Priority;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.Priorities;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
-import org.opensilex.server.response.ErrorResponse;
+import org.opensilex.server.exceptions.ForbiddenException;
+import org.opensilex.server.exceptions.UnauthorizedException;
+import org.opensilex.server.exceptions.UnexpectedErrorException;
+import org.opensilex.server.security.dal.SecurityAccessDAO;
+import org.opensilex.server.user.dal.UserDAO;
 import org.opensilex.sparql.SPARQLService;
 import org.opensilex.server.user.dal.UserModel;
-
 
 /**
  *
@@ -58,12 +58,22 @@ public class AuthenticationFilter implements ContainerRequestFilter {
                 String tokenValue = requestContext.getHeaderString(ApiProtected.HEADER_NAME);
 
                 if (tokenValue == null) {
-                    throw getAccessDeniedException();
+                    throw new UnauthorizedException();
                 }
 
                 try {
-                    URI userURI = authentication.decodeTokenUserURI(tokenValue.replace("Bearer ", ""));
-                    UserModel user = sparql.getByURI(UserModel.class, userURI);
+                    URI userURI = authentication.decodeTokenUserURI(tokenValue.replace(ApiProtected.TOKEN_PARAMETER_PREFIX, ""));
+                    UserDAO userDAO = new UserDAO(sparql, authentication);
+                    UserModel user = userDAO.getByURI(userURI);
+
+                    if (!user.isAdmin()) {
+                        SecurityAccessDAO securityDao = new SecurityAccessDAO(sparql);
+                        String accessId = securityDao.getSecurityAccessIdFromMethod(apiMethod, requestContext.getMethod());
+
+                        if (!securityDao.checkUserAccess(user, accessId)) {
+                            throw new ForbiddenException("You don't have credentials to access this API");
+                        }
+                    }
 
                     SecurityContext originalContext = requestContext.getSecurityContext();
 
@@ -72,32 +82,12 @@ public class AuthenticationFilter implements ContainerRequestFilter {
                     requestContext.setSecurityContext(newContext);
 
                 } catch (JWTVerificationException | URISyntaxException ex) {
-                    throw getAccessDeniedException();
+                    throw new UnauthorizedException();
                 } catch (Throwable ex) {
-                    throw getUnexpectedErrorException(ex);
+                    throw new UnexpectedErrorException(ex);
                 }
 
             }
         }
     }
-
-    private static WebApplicationException getAccessDeniedException() {
-        return new WebApplicationException(
-                Response.status(Response.Status.UNAUTHORIZED)
-                        .entity(new ErrorResponse(
-                                Response.Status.UNAUTHORIZED,
-                                "Access denied",
-                                "You must be authenticate and having the right authorizations to access this URL"))
-                        .type(MediaType.APPLICATION_JSON)
-                        .build());
-    }
-
-    private static WebApplicationException getUnexpectedErrorException(Throwable ex) {
-        return new WebApplicationException(
-                Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                        .entity(new ErrorResponse(ex))
-                        .type(MediaType.APPLICATION_JSON)
-                        .build());
-    }
-
 }

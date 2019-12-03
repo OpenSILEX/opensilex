@@ -26,7 +26,8 @@ public class SecurityProfileModel extends SPARQLResourceModel implements ClassUR
             required = true
     )
     private String name;
-
+    public final static String NAME_FIELD = "name";
+    
     @SPARQLProperty(
             ontology = SecurityOntology.class,
             property = "hasAccess"

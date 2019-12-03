@@ -134,18 +134,18 @@ public class ProjectAPI implements RestApplicationAPI {
     }
 
     @GET
-    @Path("find")
-    @ApiOperation("Find entities corresponding to given criteria")
+    @Path("search")
+    @ApiOperation("Search entities corresponding to given criteria")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response find(
+    public Response search(
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc") @QueryParam("orderBy") List<OrderBy> orderByList,
             @ApiParam(value = "Page number") @QueryParam("page") int page,
             @ApiParam(value = "Page size") @QueryParam("pageSize") int pageSize
     ) throws Exception {
         ProjectDAO dao = new ProjectDAO(sparql);
-        ListWithPagination<ProjectModel> resultList = dao.find(
+        ListWithPagination<ProjectModel> resultList = dao.search(
                 orderByList, 
                 page, 
                 pageSize

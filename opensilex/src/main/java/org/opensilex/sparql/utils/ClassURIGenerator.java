@@ -15,7 +15,7 @@ public interface ClassURIGenerator<T> extends URIGenerator<T> {
 
     @Override
     public default URI generateURI(URI platformUri, T instance) throws Exception {
-        return URIGenerator.normalize(platformUri, (Object) getUriSegments(instance));
+        return URIGenerator.normalize(platformUri, (Object[]) getUriSegments(instance));
     }
 
     public String[] getUriSegments(T instance);

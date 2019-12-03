@@ -6,8 +6,12 @@
 package org.opensilex.module.extensions;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import javax.ws.rs.Path;
 import org.opensilex.server.rest.RestApplication;
+import org.opensilex.utils.ClassInfo;
 
 /**
  *
@@ -35,18 +39,22 @@ public interface APIExtension {
      *
      * @return List of packages to scan for web services
      */
-    public default List<String> apiPackages() {
-        List<String> list = new ArrayList<>();
-        list.add(getClass().getPackage().getName());
+    public default Set<String> apiPackages() {
+        Set<String> packageSet = new HashSet<>();
+        Set<Class<?>> classes = ClassInfo.getAnnotatedClasses(Path.class);
+        classes.forEach((Class<?> clazz) -> {
+            packageSet.add(clazz.getPackage().getName());
+        });
 
-        return list;
+        return packageSet;
     }
 
     /**
      * This entry point allow module to initialize anything in application after
      * all configuration is loaded at the end of application loading
-     * 
-     * @param resourceConfig API main entry point instance extending Jersey {@code org.glassfish.jersey.server.ResourceConfig}
+     *
+     * @param resourceConfig API main entry point instance extending Jersey
+     * {@code org.glassfish.jersey.server.ResourceConfig}
      */
     public default void initAPI(RestApplication resourceConfig) {
         // Do nothing by default; 

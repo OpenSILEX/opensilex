@@ -6,12 +6,15 @@
 package org.opensilex.server.user.dal;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import javax.mail.internet.InternetAddress;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.server.security.AuthenticationService;
+import org.opensilex.server.security.dal.SecurityProfileModel;
+import org.opensilex.server.security.dal.SecurityProfileModelDAO;
 import org.opensilex.sparql.SPARQLQueryHelper;
 import org.opensilex.sparql.SPARQLService;
 import org.opensilex.sparql.utils.OrderBy;
@@ -41,13 +44,15 @@ public class UserDAO {
             InternetAddress email,
             String firstName,
             String lastName,
+            boolean admin,
             String password
     ) throws Exception {
         UserModel user = new UserModel();
         user.setEmail(email);
         user.setFirstName(firstName);
         user.setLastName(lastName);
-
+        user.setAdmin(admin);
+        
         if (password != null) {
             user.setPasswordHash(authentication.getPasswordHash(password));
         }
@@ -82,7 +87,19 @@ public class UserDAO {
         return instance;
     }
 
-    public ListWithPagination<UserModel> find(String stringPattern, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+    public List<String> getAccessList(URI uri) throws Exception {
+        SecurityProfileModelDAO profileDAO = new SecurityProfileModelDAO(sparql);
+        List<SecurityProfileModel> userProfiles = profileDAO.getByUserURI(uri);
+        
+        List<String> accessList = new ArrayList<>();
+        userProfiles.forEach((SecurityProfileModel profile) -> {
+            accessList.addAll(profile.getAccessList());
+        });
+        
+        return accessList;
+    }
+
+    public ListWithPagination<UserModel> search(String stringPattern, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
 
         Expr stringFilter = SPARQLQueryHelper.or(
                 SPARQLQueryHelper.regexFilter(UserModel.FIRST_NAME_FIELD, stringPattern),

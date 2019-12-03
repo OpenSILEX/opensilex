@@ -54,6 +54,12 @@ public class UserModel extends SPARQLResourceModel implements Principal, ClassUR
             property = "hasPasswordHash"
     )
     private String passwordHash;
+    
+        @SPARQLProperty(
+            ontology = SecurityOntology.class,
+            property = "isAdmin"
+    )
+    private Boolean admin = Boolean.FALSE;
 
     public String getFirstName() {
         return firstName;
@@ -87,10 +93,19 @@ public class UserModel extends SPARQLResourceModel implements Principal, ClassUR
         this.passwordHash = passwordHash;
     }
 
+    public Boolean isAdmin() {
+        return admin;
+    }
+
+    public void setAdmin(Boolean admin) {
+        this.admin = admin;
+    }
+    
     @Override
     public String getName() {
         return getFirstName() + " " + getLastName() + " <" + getEmail().toString() + ">";
     }
+
 
     @Override
     public String[] getUriSegments(UserModel instance) {

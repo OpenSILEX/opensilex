@@ -267,7 +267,7 @@ public class ClassInfo {
         Map<String, Class<?>> classMap = new HashMap<>();
 
         getReflectionInstance().getTypesAnnotatedWith(annotation).forEach((Class<?> c) -> {
-            LOGGER.debug("Annoted class found: " + annotation.getCanonicalName());
+            LOGGER.debug("Annoted class found: " + annotation.getCanonicalName() + " in " + c.getCanonicalName());
             classMap.put(c.getCanonicalName(), c);
         });
         

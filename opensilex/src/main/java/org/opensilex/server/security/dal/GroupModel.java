@@ -26,14 +26,16 @@ public class GroupModel extends SPARQLResourceModel implements ClassURIGenerator
             property = "description"
     )
     private String description;
-
+    public final static String DESCRIPTION_FIELD = "description";
+    
     @SPARQLProperty(
             ontology = DCTerms.class,
             property = "title",
             required = true
     )
     private String name;
-
+    public final static String NAME_FIELD = "name";
+    
     @SPARQLProperty(
             ontology = SecurityOntology.class,
             property = "hasProfile",

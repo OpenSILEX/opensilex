@@ -134,8 +134,8 @@ public class QualityAPI implements RestApplicationAPI {
     }
 
     @GET
-    @Path("find")
-    @ApiOperation("Find entities corresponding to given criteria")
+    @Path("search")
+    @ApiOperation("Search entities corresponding to given criteria")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -147,7 +147,7 @@ public class QualityAPI implements RestApplicationAPI {
             @ApiParam(value = "Page size") @QueryParam("pageSize") int pageSize
     ) throws Exception {
         QualityDAO dao = new QualityDAO(sparql);
-        ListWithPagination<QualityModel> resultList = dao.find(
+        ListWithPagination<QualityModel> resultList = dao.search(
                 namePattern,
                 commentPattern,
                 orderByList, 

@@ -45,7 +45,7 @@ public class ProjectDAO  {
         return sparql.getByURI(ProjectModel.class, instanceURI);
     }
 
-    public ListWithPagination<ProjectModel> find(List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+    public ListWithPagination<ProjectModel> search(List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
         SPARQLClassObjectMapper<ProjectModel> mapper = SPARQLClassObjectMapper.getForClass(ProjectModel.class);
         
         return sparql.searchWithPagination(

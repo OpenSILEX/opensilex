@@ -5,11 +5,17 @@
  */
 package org.opensilex.sparql;
 
+import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
+import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.E_LogicalAnd;
 import org.apache.jena.sparql.expr.E_LogicalOr;
 import org.apache.jena.sparql.expr.E_Regex;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprVar;
+import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
+import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
+import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 
 /**
  *
@@ -20,10 +26,17 @@ public class SPARQLQueryHelper {
     private SPARQLQueryHelper() {
     }
 
+    public static final Var typeDefVar = makeVar("__type");
+    
+    public static final <T> Var getUriFieldVar(Class<T> objectClass) throws SPARQLMapperNotFoundException, SPARQLInvalidClassDefinitionException {
+        SPARQLClassObjectMapper<SPARQLResourceModel> mapper = SPARQLClassObjectMapper.getForClass(objectClass);
+        return makeVar(mapper.getURIFieldName());
+    };
+
     public static Expr regexFilter(String fieldName, String regexPattern) {
         return regexFilter(fieldName, regexPattern, null);
     }
-    
+
     public static Expr regexFilter(String fieldName, String regexPattern, String regexFlag) {
         if (regexPattern == null || regexPattern.equals("")) {
             return null;

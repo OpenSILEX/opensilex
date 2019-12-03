@@ -27,5 +27,5 @@ import java.lang.annotation.Target;
 public @interface ApiProtected {
 
     public final static String HEADER_NAME = "Authorization";
-
+    public final static String TOKEN_PARAMETER_PREFIX = "Bearer ";
 }

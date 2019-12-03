@@ -27,7 +27,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         super(VariableModel.class, sparql);
     }
 
-    public ListWithPagination<VariableModel> find(
+    public ListWithPagination<VariableModel> search(
             String labelPattern,
             String commentPattern,
             URI entity,

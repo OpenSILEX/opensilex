@@ -47,7 +47,7 @@ public class BaseVariableDAO<T extends BaseVariableModel> {
         return sparql.getByURI(objectClass, instanceURI);
     }
 
-    public ListWithPagination<T> find(String labelPattern, String commentPattern, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+    public ListWithPagination<T> search(String labelPattern, String commentPattern, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
         Expr labelFilter = SPARQLQueryHelper.regexFilter(BaseVariableModel.LABEL_FIELD, labelPattern);
         Expr commentFilter = SPARQLQueryHelper.regexFilter(BaseVariableModel.COMMENT_FIELD, commentPattern);
 

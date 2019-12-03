@@ -31,6 +31,7 @@ import org.opensilex.module.dependencies.DependencyManager;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceManager;
 import org.opensilex.utils.ClassInfo;
+import org.opensilex.utils.LogFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -177,7 +178,7 @@ public class OpenSilex {
             } else if (arg.startsWith("--" + CONFIG_FILE_ARG_KEY + "=")) {
                 // For configuration file
                 configFile = arg.split("=", 2)[1];
-            } else if (arg.equals("--" + DEBUG_ARG_KEY)) {
+            } else if (arg.startsWith("--" + DEBUG_ARG_KEY) && !arg.equalsIgnoreCase("--DEBUG=false")) {
                 // For configuration file
                 debug = true;
 
@@ -269,6 +270,7 @@ public class OpenSilex {
         if (debug) {
             ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
             root.setLevel(Level.DEBUG);
+            LogFilter.forceDebug();
         }
         
         LOGGER.debug("Creating OpenSilex instance");

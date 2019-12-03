@@ -27,6 +27,13 @@
             <groupId>io.swagger</groupId>
             <artifactId>swagger-codegen-maven-plugin</artifactId>
             <version>2.4.10</version>
+            
+            <exclusions>
+                <exclusion> 
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-simple</artifactId>
+                </exclusion>
+            </exclusions> 
         </dependency>
     </dependencies>
     <build>

@@ -16,12 +16,16 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
+import org.opensilex.server.exceptions.ForbiddenException;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.rest.RestApplicationAPI;
+import org.opensilex.server.security.ApiProtected;
 import org.opensilex.server.security.AuthenticationService;
 import org.opensilex.sparql.SPARQLService;
 import org.opensilex.server.user.dal.UserDAO;
@@ -43,15 +47,22 @@ public class UserAPI implements RestApplicationAPI {
     @ApiOperation("Create a user and return it's URI")
     @ApiResponses({
         @ApiResponse(code = 201, message = "User sucessfully created"),
+        @ApiResponse(code = 403, message = "Current user can't create other users with given parameters"),
         @ApiResponse(code = 409, message = "User already exists (duplicate email)")
     })
-//    @ApiProtected
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response create(
-            @ApiParam("User creation informations") UserCreationDTO userDTO
+            @ApiParam("User creation informations") UserCreationDTO userDTO,
+            @Context SecurityContext securityContext
     ) throws Exception {
 
+        UserModel currentUser = authentication.getCurrentUser(securityContext);
+        if (userDTO.isAdmin() && (currentUser == null || !currentUser.isAdmin())) {
+            throw new ForbiddenException("You must be an admin to create other admin users");
+        }
+        
         UserDAO userDAO = new UserDAO(sparql, authentication);
 
         InternetAddress userEmail = new InternetAddress(userDTO.getEmail());
@@ -61,6 +72,7 @@ public class UserAPI implements RestApplicationAPI {
                     userEmail,
                     userDTO.getFirstName(),
                     userDTO.getLastName(),
+                    userDTO.isAdmin(),
                     userDTO.getPassword()
             );
 

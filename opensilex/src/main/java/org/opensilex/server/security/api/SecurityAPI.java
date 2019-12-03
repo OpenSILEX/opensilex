@@ -12,11 +12,14 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Map;
 import javax.inject.Inject;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -29,14 +32,21 @@ import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.RestApplicationAPI;
 import org.opensilex.server.security.ApiProtected;
 import org.opensilex.server.security.AuthenticationService;
+import org.opensilex.server.security.dal.SecurityAccessDAO;
 import org.opensilex.sparql.SPARQLService;
 import org.opensilex.server.user.dal.UserDAO;
 import org.opensilex.server.user.dal.UserModel;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Api("Security")
 @Path("/security")
 public class SecurityAPI implements RestApplicationAPI {
+
+    /**
+     * Logger
+     */
+    private final static Logger LOGGER = LoggerFactory.getLogger(SecurityAPI.class);
 
     @Inject
     private SPARQLService sparql;
@@ -73,21 +83,38 @@ public class SecurityAPI implements RestApplicationAPI {
         }
 
         if (userDAO.authenticate(user, authenticationDTO.getPassword())) {
-            return new SingleObjectResponse<String>(authentication.generateToken(user)).getResponse();
+            List<String> accessList = userDAO.getAccessList(user.getUri());
+            return new SingleObjectResponse<String>(authentication.generateToken(user, accessList)).getResponse();
         } else {
             return new ErrorResponse(Status.FORBIDDEN, "Invalid credentials", "User does not exists or password is invalid").getResponse();
         }
     }
-    
+
     @POST
     @Path("logout")
     @ApiOperation("Logout by discarding a user token")
     @ApiResponses({
-        @ApiResponse(code = 200, message = "User sucessfully logout"),
-    })
+        @ApiResponse(code = 200, message = "User sucessfully logout"),})
     @ApiProtected
     public Response logout(@HeaderParam(ApiProtected.HEADER_NAME) String userToken) {
         // TODO should implement a proper blacklist mechanism in AuthenticationService
         return Response.ok().build();
     }
+
+    @GET
+    @Path("access-list")
+    @ApiOperation("Get list of available access rights")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "List of available access rights")
+    })
+    public Response getAccestList() {
+        if (accessMap == null) {
+            SecurityAccessDAO securityDAO = new SecurityAccessDAO(sparql);
+            accessMap = securityDAO.getSecurityAccessMap();
+        }
+        
+        return Response.ok().entity(accessMap).build();
+    }
+
+    private static Map<String, Map<String, String>> accessMap;
 }

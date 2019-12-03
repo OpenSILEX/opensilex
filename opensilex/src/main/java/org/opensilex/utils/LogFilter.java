@@ -18,6 +18,11 @@ import java.util.List;
  */
 public class LogFilter extends Filter<ILoggingEvent> {
 
+    public static void forceDebug() {
+        levelOverride = Level.DEBUG;
+    }
+    private static Level levelOverride;
+    
     private Level level;
     private List<String> loggerIncludeList = new ArrayList<String>();
     private List<String> loggerExcludeList = new ArrayList<String>();
@@ -29,15 +34,15 @@ public class LogFilter extends Filter<ILoggingEvent> {
         }
 
         boolean hasMatch = (loggerIncludeList.size() == 0);
-        for (String logger: loggerIncludeList) {
+        for (String logger : loggerIncludeList) {
             if (event.getLoggerName().startsWith(logger)) {
                 hasMatch = true;
                 break;
             }
         }
-        
+
         if (hasMatch) {
-            for (String logger: loggerExcludeList) {
+            for (String logger : loggerExcludeList) {
                 if (event.getLoggerName().startsWith(logger)) {
                     hasMatch = false;
                     break;
@@ -45,8 +50,7 @@ public class LogFilter extends Filter<ILoggingEvent> {
             }
         }
 
-
-        if (hasMatch && event.getLevel().isGreaterOrEqual(level)) {
+        if (hasMatch && event.getLevel().isGreaterOrEqual(getLevel())) {
             return FilterReply.ACCEPT;
         } else {
             return FilterReply.NEUTRAL;
@@ -57,6 +61,13 @@ public class LogFilter extends Filter<ILoggingEvent> {
         this.level = level;
     }
 
+    public Level getLevel() {
+        if (levelOverride != null) {
+            return levelOverride;
+        }
+        return level;
+    }
+
     public void setInclude(String logger) {
         this.loggerIncludeList.add(logger);
     }
@@ -64,9 +75,9 @@ public class LogFilter extends Filter<ILoggingEvent> {
     public void setExclude(String logger) {
         this.loggerExcludeList.add(logger);
     }
-        
+
     public void start() {
-        if (this.level != null) {
+        if (this.getLevel() != null) {
             super.start();
         }
     }

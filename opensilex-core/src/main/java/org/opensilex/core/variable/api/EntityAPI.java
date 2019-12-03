@@ -133,12 +133,12 @@ public class EntityAPI implements RestApplicationAPI {
     }
 
     @GET
-    @Path("find")
-    @ApiOperation("Find entities corresponding to given criteria")
+    @Path("search")
+    @ApiOperation("Search entities corresponding to given criteria")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response find(
+    public Response search(
             @ApiParam(value = "Name regex pattern") @QueryParam("name") String namePattern,
             @ApiParam(value = "Comment regex pattern") @QueryParam("comment") String commentPattern,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc") @QueryParam("orderBy") List<OrderBy> orderByList,
@@ -146,7 +146,7 @@ public class EntityAPI implements RestApplicationAPI {
             @ApiParam(value = "Page size") @QueryParam("pageSize") int pageSize
     ) throws Exception {
         EntityDAO dao = new EntityDAO(sparql);
-        ListWithPagination<EntityModel> resultList = dao.find(
+        ListWithPagination<EntityModel> resultList = dao.search(
                 namePattern,
                 commentPattern,
                 orderByList, 

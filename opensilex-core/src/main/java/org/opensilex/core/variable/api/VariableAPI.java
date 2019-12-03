@@ -134,8 +134,8 @@ public class VariableAPI implements RestApplicationAPI {
     }
 
     @GET
-    @Path("find")
-    @ApiOperation("Find variables corresponding to given criteria")
+    @Path("search")
+    @ApiOperation("Search variables corresponding to given criteria")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -151,7 +151,7 @@ public class VariableAPI implements RestApplicationAPI {
             @ApiParam(value = "Page size") @QueryParam("pageSize") int pageSize
     ) throws Exception {
         VariableDAO dao = new VariableDAO(sparql);
-        ListWithPagination<VariableModel> resultList = dao.find(
+        ListWithPagination<VariableModel> resultList = dao.search(
                 namePattern,
                 commentPattern,
                 entity,

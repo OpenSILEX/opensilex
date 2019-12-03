@@ -28,7 +28,6 @@ import org.opensilex.sparql.SPARQLResult;
 import org.opensilex.sparql.SPARQLService;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
 import org.opensilex.sparql.exceptions.SPARQLUnknownFieldException;
@@ -147,7 +146,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     }
 
     public T createInstance(SPARQLResult result, SPARQLService service) throws Exception {
-        String realType = result.getStringValue(SPARQLClassQueryBuilder.typeDef.getName());
+        String realType = result.getStringValue(SPARQLQueryHelper.typeDefVar.getName());
         if (!realType.equals(getRDFType().toString())) {
             // TODO gérer les sous-classes
         }
@@ -303,7 +302,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     public String getURIFieldName() {
         return classAnalizer.getURIFieldName();
     }
-
+    
     public ExprVar getFieldExprVar(String fieldName) throws SPARQLUnknownFieldException {
         Field f = classAnalizer.getFieldFromName(fieldName);
         if (f != null) {

@@ -39,6 +39,8 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
+import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
 import org.opensilex.sparql.exceptions.SPARQLQueryException;
 import org.opensilex.sparql.exceptions.SPARQLTransactionException;
 import org.opensilex.sparql.exceptions.SPARQLUnknownFieldException;
@@ -419,20 +421,20 @@ public class SPARQLService implements SPARQLConnection, Service {
     }
 
     public <T extends SPARQLResourceModel> boolean uriExists(Class<T> objectClass, URI uri) throws Exception {
+        return executeAskQuery(getUriExistsQuery(objectClass, uri));
+    }
+
+    public <T extends SPARQLResourceModel> AskBuilder getUriExistsQuery(Class<T> objectClass, URI uri) throws SPARQLMapperNotFoundException, SPARQLInvalidClassDefinitionException {
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
 
         AskBuilder askQuery = new AskBuilder();
-        Var p = makeVar("p");
-        Var o = makeVar("o");
-        Var type = makeVar("type");
         Node nodeUri = Ontology.nodeURI(uri);
-        askQuery.addWhere(nodeUri, RDF.type, type);
+        askQuery.addWhere(nodeUri, RDF.type, SPARQLQueryHelper.typeDefVar);
 
         Resource typeDef = sparqlObjectMapper.getRDFType();
 
-        askQuery.addWhere(type, Ontology.subClassAny, typeDef);
-
-        return executeAskQuery(askQuery);
+        askQuery.addWhere(SPARQLQueryHelper.typeDefVar, Ontology.subClassAny, typeDef);
+        return askQuery;
     }
 
     public void deleteObjectRelation(Node g, URI s, Property p, URI o) throws SPARQLQueryException {

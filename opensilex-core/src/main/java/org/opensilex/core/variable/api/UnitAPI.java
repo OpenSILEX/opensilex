@@ -132,8 +132,8 @@ public class UnitAPI implements RestApplicationAPI {
     }
 
     @GET
-    @Path("find")
-    @ApiOperation("Find entities corresponding to given criteria")
+    @Path("search")
+    @ApiOperation("Search entities corresponding to given criteria")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -145,7 +145,7 @@ public class UnitAPI implements RestApplicationAPI {
             @ApiParam(value = "Page size") @QueryParam("pageSize") int pageSize
     ) throws Exception {
         UnitDAO dao = new UnitDAO(sparql);
-        ListWithPagination<UnitModel> resultList = dao.find(
+        ListWithPagination<UnitModel> resultList = dao.search(
                 namePattern,
                 commentPattern,
                 orderByList, 

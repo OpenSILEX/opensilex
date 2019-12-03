@@ -22,4 +22,5 @@ public class ForbiddenException extends WebApplicationException {
                 .build()
         );
     }
+
 }

@@ -19,7 +19,7 @@ import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.Var;
-import org.opensilex.server.rest.SwaggerAPIGenerator;
+import org.opensilex.utils.SwaggerAPIGenerator;
 import org.opensilex.server.security.ApiProtected;
 import org.opensilex.server.security.SecurityOntology;
 import org.opensilex.server.user.dal.UserModel;

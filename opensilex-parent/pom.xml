@@ -522,7 +522,7 @@
                             </goals>
                             <configuration>
                                 <skip>${skip.front.build}</skip>
-                                <mainClass>org.opensilex.server.rest.SwaggerAPIGenerator</mainClass>
+                                <mainClass>org.opensilex.utils.SwaggerAPIGenerator</mainClass>
                                 <arguments>
                                     <argument>${project.basedir}/src/main/java/</argument>
                                     <argument>${project.basedir}/front/src/lib/swagger.json</argument>

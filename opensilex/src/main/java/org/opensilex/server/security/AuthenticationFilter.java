@@ -83,6 +83,8 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
                 } catch (JWTVerificationException | URISyntaxException ex) {
                     throw new UnauthorizedException();
+                } catch (ForbiddenException ex) {
+                    throw ex;
                 } catch (Throwable ex) {
                     throw new UnexpectedErrorException(ex);
                 }

@@ -217,7 +217,7 @@ public class DataDAO extends MongoDAO<Data> {
             } catch (MongoException ex) {
                 // Define that an error occurs
                 hasError.set(true);
-
+                LOGGER.error("Exception during data insertion", ex);
                 // Error check if it's because of a duplicated data error
                 // Add status according to the error type (duplication or unexpected)
                 if (ex.getCode() == MongoDAO.DUPLICATE_KEY_ERROR_CODE) {

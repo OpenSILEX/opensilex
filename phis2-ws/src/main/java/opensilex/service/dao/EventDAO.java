@@ -308,26 +308,29 @@ public class EventDAO extends Rdf4jDAO<Event> {
             TupleQueryResult eventsResult = eventsTupleQuery.evaluate();
             while (eventsResult.hasNext()) {
                 BindingSet bindingSet = eventsResult.next();
-                Event event = getEventFromBindingSet(bindingSet);
+                int i = bindingSet.size();
+                    if (i > 0) { // Graphdb fix 
+                    Event event = getEventFromBindingSet(bindingSet);
 
                     // Instant
                     event.setInstant(getInstantFromBindingSet(
-                            bindingSet,
-                            INSTANT_SELECT_NAME, 
-                            DATETIMESTAMP_SELECT_NAME));
+                                bindingSet,
+                                INSTANT_SELECT_NAME, 
+                                DATETIMESTAMP_SELECT_NAME));
 
                     // Properties
                     setEventProperties(event);
 
                     // Concerned items
                     event.setConcernedItems(concernedItemDao.find(
-                            event.getUri(), 
-                            null, 
-                            null, 
-                            0, 
-                            pageSizeMaxValue));
+                                event.getUri(), 
+                                null, 
+                                null, 
+                                0, 
+                                pageSizeMaxValue));
 
                     events.add(event);
+                    }
                 }
         } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
             handleTriplestoreException(ex);

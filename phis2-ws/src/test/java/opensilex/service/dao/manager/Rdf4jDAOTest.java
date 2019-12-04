@@ -44,7 +44,6 @@ import opensilex.service.utils.UriGenerator;
 
 public abstract class Rdf4jDAOTest {
 	
-	protected static String userUri = "http://www.opensilex.org/demo/id/agent/admin_phis";
 	
 	private static Repository memoryRepository;
 	
@@ -153,17 +152,15 @@ public abstract class Rdf4jDAOTest {
 	 * @throws DAOPersistenceException
 	 * @throws Exception
 	 */
-	protected Annotation createAndGetAnnotation(String... targetUri) throws DAOPersistenceException, Exception {
+	protected Annotation createAndGetAnnotation(ArrayList<String> targets, String creatorUri) throws DAOPersistenceException, Exception {
 		
 		AnnotationDAO annotationDao = new AnnotationDAO();
 		initDaoWithInMemoryStoreConnection(annotationDao);
 		
 		ArrayList<String> bodyValues = new ArrayList<String>();
 		bodyValues.add("annotate an event");
-		ArrayList<String> targets = new ArrayList<String>();
-		targets.addAll(Arrays.asList(targetUri));
 		
-		Annotation a = new Annotation(null,DateTime.now(),userUri,bodyValues,Oa.INSTANCE_DESCRIBING.toString(),targets);	
+		Annotation a = new Annotation(null,DateTime.now(),creatorUri,bodyValues,Oa.INSTANCE_DESCRIBING.toString(),targets);	
 		return annotationDao.create(Arrays.asList(a)).get(0);	
 	}
 	
@@ -174,12 +171,12 @@ public abstract class Rdf4jDAOTest {
 	 * @throws Exception 
 	 * @throws DAOPersistenceException 
 	 */
-	protected Event createAndGetEvent(String... uris) throws DAOPersistenceException, Exception {
+	protected Event createAndGetEvent(ArrayList<String> uris) throws DAOPersistenceException, Exception {
 		
 		EventDAO eventDao = new EventDAO(null);
 		initDaoWithInMemoryStoreConnection(eventDao);
 		
-		Event event  = new Event(null, Oeev.Event.getURI(),Arrays.asList(uris), new DateTime(), new ArrayList<>(1),new ArrayList<>(1));
+		Event event  = new Event(null, Oeev.Event.getURI(),uris, new DateTime(), new ArrayList<>(1),new ArrayList<>(1));
 		eventDao.create(Arrays.asList(event));
 		return event;	
 	}

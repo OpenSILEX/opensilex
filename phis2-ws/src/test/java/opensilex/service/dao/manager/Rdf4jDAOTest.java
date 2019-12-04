@@ -24,7 +24,6 @@ import opensilex.service.dao.EventDAO;
 import opensilex.service.dao.ExperimentRdf4jDAO;
 import opensilex.service.dao.ProjectDAO;
 import opensilex.service.dao.ScientificObjectRdf4jDAO;
-import opensilex.service.dao.UserDAO;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.model.Annotation;
 import opensilex.service.model.Event;
@@ -152,7 +151,7 @@ public abstract class Rdf4jDAOTest {
 	 * @throws DAOPersistenceException
 	 * @throws Exception
 	 */
-	protected Annotation createAndGetAnnotation(ArrayList<String> targets, String creatorUri) throws DAOPersistenceException, Exception {
+	protected Annotation createAndGetAnnotation(String creatorUri, String... targetUris) throws DAOPersistenceException, Exception {
 		
 		AnnotationDAO annotationDao = new AnnotationDAO();
 		initDaoWithInMemoryStoreConnection(annotationDao);
@@ -160,7 +159,11 @@ public abstract class Rdf4jDAOTest {
 		ArrayList<String> bodyValues = new ArrayList<String>();
 		bodyValues.add("annotate an event");
 		
-		Annotation a = new Annotation(null,DateTime.now(),creatorUri,bodyValues,Oa.INSTANCE_DESCRIBING.toString(),targets);	
+		ArrayList<String> targetsList = new ArrayList<String>(targetUris.length);
+		for(String target : targetUris)
+			targetsList.add(target);
+		
+		Annotation a = new Annotation(null,DateTime.now(),creatorUri,bodyValues,Oa.INSTANCE_DESCRIBING.toString(),targetsList);	
 		return annotationDao.create(Arrays.asList(a)).get(0);	
 	}
 	
@@ -171,12 +174,13 @@ public abstract class Rdf4jDAOTest {
 	 * @throws Exception 
 	 * @throws DAOPersistenceException 
 	 */
-	protected Event createAndGetEvent(ArrayList<String> uris) throws DAOPersistenceException, Exception {
+	protected Event createAndGetEvent(String... concernedItemUris) throws DAOPersistenceException, Exception {
 		
 		EventDAO eventDao = new EventDAO(null);
 		initDaoWithInMemoryStoreConnection(eventDao);
 		
-		Event event  = new Event(null, Oeev.Event.getURI(),uris, new DateTime(), new ArrayList<>(1),new ArrayList<>(1));
+		ArrayList<String> concernedUrisList = new ArrayList<String>(concernedItemUris.length);	
+		Event event  = new Event(null, Oeev.Event.getURI(),concernedUrisList, new DateTime(), new ArrayList<>(1),new ArrayList<>(1));
 		eventDao.create(Arrays.asList(event));
 		return event;	
 	}

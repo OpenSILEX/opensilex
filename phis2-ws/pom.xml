@@ -105,23 +105,34 @@
                 </executions>
             </plugin>
             
-              <plugin>
-                    <groupId>org.opensilex</groupId>
-                    <artifactId>opensilex-swagger-codegen-maven-plugin</artifactId>
-                    <version>${revision}</version>
+            <plugin>
+                <groupId>org.opensilex</groupId>
+                <artifactId>opensilex-swagger-codegen-maven-plugin</artifactId>
+                <version>${revision}</version>
                     
-                    <executions>
-                        <execution>
-                            <phase>process-classes</phase>
-                            <goals>
-                                <goal>generate</goal>
-                            </goals>
-                            <configuration>
-                                <templateDirectory>${project.basedir}/../../opensilex/src/main/resources/swagger/templates/typescript-inversify</templateDirectory>
-                            </configuration>
-                        </execution>
-                    </executions>
-              </plugin>
+                <executions>
+                    <execution>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <templateDirectory>${project.basedir}/../../opensilex/src/main/resources/swagger/templates/typescript-inversify</templateDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+              
+            <!-- Front Node & Npm management -->
+            <plugin>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <version>${frontend.maven.plugin.version}</version>
+                        
+                <configuration>
+                    <installDirectory>../../.node</installDirectory>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
     

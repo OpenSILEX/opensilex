@@ -73,13 +73,6 @@ public abstract class Rdf4jDAOTest {
 		System.out.println("Connection to repository [OK]");
 	}
 	
-	/**
-	 * 
-	 * @return
-	 */
-	protected abstract Rdf4jDAO<?> getDao();
-	
-	
 	@AfterEach
 	public void cleanStore() {
 		assert(memoryRepository != null);		

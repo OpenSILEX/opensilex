@@ -45,7 +45,6 @@ import opensilex.service.utils.UriGenerator;
 public abstract class Rdf4jDAOTest {
 	
 	protected static String userUri = "http://www.opensilex.org/demo/id/agent/admin_phis";
-	protected static UserDAO userDao = new UserDAO();
 	
 	private static Repository memoryRepository;
 	

@@ -1,5 +1,3 @@
-import {interfaces} from "inversify";
-
 {{#apiInfo}}
 {{#apis}}
 import { {{classname}} } from './{{importPath}}';
@@ -10,10 +8,10 @@ import { {{classname}}Interface }  from './{{importPath}}Interface';
 {{/apiInfo}}
 
 export class ApiServiceBinder {
-    public static with(container: interfaces.Container) {
+    public static with(container: any) {
         {{#apiInfo}}
         {{#apis}}
-        container.bind<{{classname}}{{#withInterfaces}}Interface{{/withInterfaces}}>("{{classname}}").to({{classname}}).inSingletonScope();
+        container.bind("{{classname}}").to({{classname}}).inSingletonScope();
         {{/apis}}
         {{/apiInfo}}
     }

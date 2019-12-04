@@ -12,7 +12,8 @@
   "scripts": {
     "build": "tsc --outDir dist/",
     "postinstall": "echo export interface ModelObject {}; > ./model/modelObject.ts && yarn run build",
-    "check:outdated": "yarn outdated || cd ."
+    "check:outdated": "yarn outdated || cd .",
+    "build:types": "dts-generator --project ./ --out ../../types/{{{npmName}}}.d.ts --prefix {{{npmName}}}"
   },
   "dependencies": {
     "inversify": "^4.3.0",
@@ -22,7 +23,8 @@
     "reflect-metadata": "0.1.8"
   },
   "devDependencies": {
-    "@types/node": "^12.12.14"
+    "@types/node": "^12.12.14",
+    "dts-generator": "^3.0.0"
   }{{#npmRepository}},{{/npmRepository}}
 {{#npmRepository}}
   "publishConfig": {

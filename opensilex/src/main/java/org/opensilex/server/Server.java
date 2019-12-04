@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.WebResourceRoot;
+import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.catalina.util.IOTools;
 import org.apache.catalina.webresources.StandardRoot;
@@ -27,7 +28,6 @@ import org.opensilex.utils.ClassInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.opensilex.fs.FileStorageService;
-
 
 /**
  * This class extends Tomcat server to embbeded it and load OpenSilex services,
@@ -71,6 +71,7 @@ public class Server extends Tomcat {
         setPort(port);
         setHostname(host);
         getHost().setAppBase(baseDir);
+
         getServer().setParentClassLoader(Thread.currentThread().getContextClassLoader());
 
         initApp("", "/", "/webapp", getClass());
@@ -91,7 +92,7 @@ public class Server extends Tomcat {
             LOGGER.error("Errow while loading war applications", t);
         }
 
-        getConnector();
+        enableGzip(getConnector());
 
         initAdminThread(adminPort);
 
@@ -177,6 +178,17 @@ public class Server extends Tomcat {
         } catch (IOException ex) {
             LOGGER.warn("Can't initialize admin thread, tomcat must be killed in another way", ex);
         }
+    }
+
+    /**
+     * Enable GZIP compression for current Tomcat service connector
+     * @param connector 
+     */
+    private void enableGzip(Connector connector) {
+        connector.setProperty("compression", "on");
+        connector.setProperty("compressionMinSize", "1024");
+        connector.setProperty("noCompressionUserAgents", "gozilla, traviata");
+        connector.setProperty("compressableMimeType", "text/html,text/xml, text/css, application/json, application/javascript");
     }
 
 }

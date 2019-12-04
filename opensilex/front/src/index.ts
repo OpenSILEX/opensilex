@@ -1,13 +1,8 @@
 import { ApiServiceBinder } from './lib'
 
-const OpensilexExtension = {
+export default {
     install(Vue, options) {
         ApiServiceBinder.with(Vue.opensilex.getServiceContainer());
-        
-        Vue.opensilex.registerComponents([
-            
-        ]);
+        // TODO register components
     }
 };
-
-export default OpensilexExtension;

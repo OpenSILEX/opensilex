@@ -5,18 +5,8 @@
  */
 package org.opensilex.front.api;
 
-import java.util.Map;
-
-/**
- *
- * @author vincent
- */
 public class FrontConfigDTO {
 
-    private Map<String, FrontExtensionConfigDTO> plugins;
-
-    String welcomeComponent;
-    
     String homeComponent;
     
     String notFoundComponent;
@@ -29,24 +19,6 @@ public class FrontConfigDTO {
     
     String footerComponent;
 
-    private Map<String, String> menu;
-
-    public Map<String, FrontExtensionConfigDTO> getPlugins() {
-        return plugins;
-    }
-
-    public void setPlugins(Map<String, FrontExtensionConfigDTO> plugins) {
-        this.plugins = plugins;
-    }
-
-    public String getWelcomeComponent() {
-        return welcomeComponent;
-    }
-
-    public void setWelcomeComponent(String welcomeComponent) {
-        this.welcomeComponent = welcomeComponent;
-    }
-    
     public String getHomeComponent() {
         return homeComponent;
     }
@@ -95,13 +67,4 @@ public class FrontConfigDTO {
         this.loginComponent = loginComponent;
     }
 
-    public Map<String, String>  getMenu() {
-        return menu;
-    }
-    
-    public void setMenu(Map<String, String> menu) {
-        this.menu = menu;
-    }
-
-    
 }

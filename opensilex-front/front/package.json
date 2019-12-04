@@ -1,5 +1,5 @@
 {
-    "name": "opensilex-vue-app",
+    "name": "opensilex-front",
     "version": "0.1.0",
     "private": true,
     "scripts": {
@@ -9,6 +9,7 @@
         "check:outdated": "yarn outdated || cd ."
     },
     "dependencies": {
+        "systemjs": "^6.1.7"
     },
     "devDependencies": {
         "@vue/cli-plugin-babel": "^4.1.0",

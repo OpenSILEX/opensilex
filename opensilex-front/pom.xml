@@ -60,25 +60,15 @@
                 <artifactId>opensilex-swagger-codegen-maven-plugin</artifactId>
                 <version>${revision}</version>
             </plugin>
-                        
+            <!-- Disable types generation for front module -->
             <plugin>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>${maven.resources.plugin.version}</version>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <version>${frontend.maven.plugin.version}</version>
                 <executions>
                     <execution>
-                        <id>Copy Vue application dist files</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${basedir}/target/classes/front</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>front/dist</directory>
-                                </resource>
-                            </resources>
-                        </configuration>
+                        <id>build typescript defintion</id>
+                        <phase>none</phase>
                     </execution>
                 </executions>
             </plugin>

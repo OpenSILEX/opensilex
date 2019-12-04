@@ -16,8 +16,10 @@ import javax.ws.rs.core.Context;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
+import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
+import org.glassfish.jersey.server.filter.EncodingFilter;
 import org.opensilex.OpenSilex;
 import org.opensilex.module.OpenSilexModule;
 import org.opensilex.module.extensions.APIExtension;
@@ -69,6 +71,10 @@ public class RestApplication extends ResourceConfig {
 
         // Enable Jackson JSON serialier/deserializer for Jersey
         register(JacksonFeature.class);
+        
+        // Enable GZIP for web services
+        register(GZipEncoder.class);
+        register(EncodingFilter.class);
 
         // Register all module packages needed for service initialization
         registerAPI();

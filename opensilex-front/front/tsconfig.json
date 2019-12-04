@@ -12,8 +12,10 @@
     "noImplicitAny": false,
     "sourceMap": true,
     "baseUrl": ".",
+    "typeRoots": ["node_modules"],
     "types": [
-      "webpack-env"
+      "webpack-env",
+      "system"
     ],
     "paths": {
       "@/*": [

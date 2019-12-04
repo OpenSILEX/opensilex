@@ -7,3 +7,4 @@ node_modules/
 **/site/
 **/front/dist
 **/front/src/lib
+**/front/types

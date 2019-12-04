@@ -5,6 +5,7 @@
  */
 package org.opensilex.front;
 
+import java.util.List;
 import org.opensilex.config.ConfigDescription;
 import org.opensilex.module.ModuleConfig;
 
@@ -15,49 +16,39 @@ import org.opensilex.module.ModuleConfig;
 public interface FrontConfig extends ModuleConfig {
 
     @ConfigDescription(
-            value = "Front welcome component if unlogged",
-            defaultString = "sixtine#SixtineWelcomeComponent"
-    //            defaultString = "shared#DefaultHomeComponent"
+            value = "Front login component definition",
+            defaultString = "opensilex-front#DefaultLoginComponent"
     )
-    String welcomeComponent();
+    String loginComponent();
 
     @ConfigDescription(
             value = "Front home component once logged",
-            defaultString = "sixtine#SixtineHomeComponent"
-//            defaultString = "shared#DefaultHomeComponent"
+            defaultString = "opensilex-front#DefaultHomeComponent"
     )
     String homeComponent();
 
     @ConfigDescription(
             value = "Front not found component",
-            defaultString = "shared#DefaultNotFoundComponent"
+            defaultString = "opensilex-front#DefaultNotFoundComponent"
     )
     String notFoundComponent();
 
     @ConfigDescription(
             value = "Front header component definition",
-            defaultString = "sixtine#SixtineHeaderComponent"
-    //            defaultString = "organization#OrganizationComponent"
-
+            defaultString = "opensilex-front#DefaultHeaderComponent"
     )
     String headerComponent();
 
     @ConfigDescription(
-            value = "Front login component definition",
-            defaultString = "sixtine#SixtineLoginComponent"
-    //            defaultString = "shared#DefaultMenuComponent"
-    )
-    String loginComponent();
-
-    @ConfigDescription(
             value = "Front menu component definition",
-            defaultString = "shared#DefaultMenuComponent"
+            defaultString = "opensilex-front#DefaultMenuComponent"
     )
     String menuComponent();
 
     @ConfigDescription(
             value = "Front footer component definition",
-            defaultString = "shared#DefaultFooterComponent"
+            defaultString = "opensilex-front#DefaultFooterComponent"
     )
     String footerComponent();
+
 }

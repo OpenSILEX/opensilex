@@ -9,12 +9,7 @@ module.exports = {
             'vue-property-decorator': 'vue-property-decorator',
             'vue-router': 'vue-router',
             'vuex': 'vuex',
-            'inversify': 'inversify',
             'node-fetch': 'node-fetch',
-            'whatwg-fetch': 'whatwg-fetch',
-            'reflect-metadata': 'reflect-metadata',
-            'rxjs': 'rxjs',
-            'rxjs-compat': 'rxjs-compat'
         },
         performance: {
             hints: false

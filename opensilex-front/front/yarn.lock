@@ -7161,6 +7161,11 @@ svgo@^1.0.0:
     unquote "~1.1.1"
     util.promisify "~1.0.0"
 
+systemjs@^6.1.7:
+  version "6.1.7"
+  resolved "https://registry.yarnpkg.com/systemjs/-/systemjs-6.1.7.tgz#631474f8d0d33412be215ab39a294663a90157d9"
+  integrity sha512-v2tDs5HV7Ql8iZd7eBupzTOPIV6OUzNyJ1wNCAlQ7Et73yfQm4dbfQOSNLzcESLY2YEsLbn0K9WAnNsqwK7OFg==
+
 tapable@^1.0.0, tapable@^1.1.3:
   version "1.1.3"
   resolved "https://registry.yarnpkg.com/tapable/-/tapable-1.1.3.tgz#a1fccc06b58db61fd7a45da2da44f5f3a3e67ba2"

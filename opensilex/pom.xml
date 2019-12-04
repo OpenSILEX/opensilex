@@ -73,7 +73,7 @@
                 <artifactId>frontend-maven-plugin</artifactId>
                 <version>${frontend.maven.plugin.version}</version>
                 <executions>
-                    <!-- install node and yarn -->
+                    <!-- install node and yarn globally -->
                     <execution>
                         <id>install node and package manager</id>
                         <goals>
@@ -83,12 +83,12 @@
                     </execution>
                     
                     <execution>
-                        <id>install typescript globally</id>
+                        <id>install typescript and dts-generator globally</id>
                         <goals>
                             <goal>yarn</goal>
                         </goals>
                         <configuration>
-                            <arguments>global add typescript</arguments>
+                            <arguments>global add typescript dts-generator</arguments>
                         </configuration>
                         <phase>initialize</phase>
                     </execution>

@@ -751,6 +751,12 @@
                                         <exclude>.gitkeep</exclude>
                                     </excludes>
                                 </fileset>
+                                <fileset>
+                                    <directory>front/types</directory>
+                                    <includes>
+                                        <include>**/*</include>
+                                    </includes>
+                                </fileset>
                             </filesets>
                         </configuration>
                     </execution>
@@ -819,6 +825,19 @@
                             </execution>
                             
                             <execution>
+                                <id>build typescript defintion</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>yarn</goal>
+                                </goals>
+
+                                <configuration>
+                                    <arguments>run build:types</arguments>
+                                    <workingDirectory>front/src/lib</workingDirectory>
+                                </configuration>
+                            </execution>
+                            
+                            <execution>
                                 <id>build Vue application</id>
                                 <phase>prepare-package</phase>
                                 <goals>
@@ -854,6 +873,28 @@
                                 </configuration>
                             </execution>
                             
+                        </executions>
+                    </plugin>
+                    
+                    <plugin>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <version>${maven.resources.plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>Copy Vue application dist files</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${basedir}/target/classes/front</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>front/dist</directory>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
                 </plugins>

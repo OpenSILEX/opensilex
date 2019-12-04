@@ -10,12 +10,10 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.Pattern;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -32,14 +30,10 @@ import org.opensilex.OpenSilex;
 import org.opensilex.front.FrontModule;
 import org.opensilex.module.OpenSilexModule;
 import org.opensilex.server.rest.RestApplicationAPI;
-import org.opensilex.utils.ClassInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.opensilex.config.ConfigManager;
 import org.opensilex.front.FrontConfig;
-import org.opensilex.front.FrontExtension;
-import org.opensilex.front.FrontPluginConfig;
-import org.opensilex.front.FrontPluginMenuConfig;
+import org.opensilex.server.exceptions.NotFoundException;
 
 /**
  * Service to produce angular application configuration
@@ -50,7 +44,7 @@ public class FrontAPI implements RestApplicationAPI {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(FrontAPI.class);
 
-    private final static String FRONT_EXTENSIONS_DIRECTORY = "front/extensions/";
+    private final static String FRONT_EXTENSIONS_DIRECTORY = "front/";
     @Inject
     OpenSilex app;
 
@@ -72,84 +66,26 @@ public class FrontAPI implements RestApplicationAPI {
 
         FrontConfigDTO config = new FrontConfigDTO();
 
-        FrontConfig angularConfig = frontModule.getConfig(FrontConfig.class);
-        config.setWelcomeComponent(angularConfig.welcomeComponent());
-        config.setHomeComponent(angularConfig.homeComponent());
-        config.setNotFoundComponent(angularConfig.notFoundComponent());
-        config.setHeaderComponent(angularConfig.headerComponent());
-        config.setLoginComponent(angularConfig.loginComponent());
-        config.setMenuComponent(angularConfig.menuComponent());
-        config.setFooterComponent(angularConfig.footerComponent());
-
-        config.setPlugins(getPluginsConfig());
-
-        Map<String, String> menu = new HashMap<>();
-        pluginsConfig.forEach((String pluginName, FrontPluginConfig cfg) -> {
-            for (FrontPluginMenuConfig menuEntry : cfg.menu()) {
-                menu.put(menuEntry.path(), menuEntry.label());
-            }
-        });
-        config.setMenu(menu);
+        FrontConfig frontConfig = frontModule.getConfig(FrontConfig.class);
+        config.setHomeComponent(frontConfig.homeComponent());
+        config.setNotFoundComponent(frontConfig.notFoundComponent());
+        config.setHeaderComponent(frontConfig.headerComponent());
+        config.setLoginComponent(frontConfig.loginComponent());
+        config.setMenuComponent(frontConfig.menuComponent());
+        config.setFooterComponent(frontConfig.footerComponent());
 
         return Response.ok().entity(config).build();
-
-    }
-
-    private Map<String, FrontPluginConfig> pluginsConfig;
-
-    private Map<String, FrontExtensionConfigDTO> getPluginsConfig() throws Exception {
-        Map<String, FrontExtensionConfigDTO> result = new HashMap<>();
-
-        ConfigManager cfgManager = new ConfigManager();
-        pluginsConfig = new HashMap<>();
-
-        for (FrontExtension angularExtension : app.getModulesImplementingInterface(FrontExtension.class)) {
-            OpenSilexModule module = (OpenSilexModule) angularExtension;
-
-            if (module.fileExists("opensilex.ng.yml")) {
-                cfgManager.addSource(module.getFileInputStream("opensilex.ng.yml"));
-            }
-
-            for (String pluginFileName : module.listResourceDirectory("angular/plugins")) {
-                if (pluginFileName.endsWith(".js")) {
-                    String pluginName = pluginFileName.substring(0, pluginFileName.length() - 3);
-
-                    FrontPluginConfig cfg = cfgManager.loadConfig(pluginName, FrontPluginConfig.class);
-                    pluginsConfig.put(pluginName, cfg);
-
-                    FrontExtensionConfigDTO pluginConfigDTO = new FrontExtensionConfigDTO();
-                    pluginConfigDTO.setName(pluginName);
-
-                    String path = ClassInfo.getProjectIdFromClass(angularExtension.getClass());
-                    if (!path.isEmpty()) {
-                        long modifiedTime = module.getLastModified(FRONT_EXTENSIONS_DIRECTORY + pluginName + ".js").getTime();
-                        pluginConfigDTO.setPath(getRestAPI() + "angular/plugin/" + ClassInfo.getProjectIdFromClass(angularExtension.getClass()) + "/" + pluginName + ".js?" + modifiedTime);
-
-                        if (!pluginName.equals("shared")) {
-                            pluginConfigDTO.getDeps().add("shared");
-                        }
-                        
-                        pluginConfigDTO.getDeps().addAll(cfg.dependencies());
-
-                        result.put(pluginName, pluginConfigDTO);
-                    }
-                }
-            }
-        }
-        return result;
     }
 
     @GET
-    @Path("/plugin/{module}/{plugin}.js")
-    @ApiOperation(value = "Return the angular plugin sources")
+    @Path("/extension/{module}.js")
+    @ApiOperation(value = "Return the front Vue JS extension file to include")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Plugin source"),
-        @ApiResponse(code = 500, message = "Internal error")
+        @ApiResponse(code = 200, message = "Return the extension")
     })
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getPluginByName(
-            @PathParam("module") String moduleId,
-            @PathParam("plugin") String pluginId,
+    public Response getExtension(
+            @PathParam("module") @Pattern(regexp = "([a-zA-Z0-9-]+$)") String moduleId,
             @Context Request request
     ) throws Exception {
 
@@ -158,7 +94,8 @@ public class FrontAPI implements RestApplicationAPI {
         if (modules.size() > 0) {
             OpenSilexModule module = modules.get(0);
 
-            String fileName = pluginId + ".js";
+            String fileName = moduleId + ".umd.min.js";
+            
             String filePath = FRONT_EXTENSIONS_DIRECTORY + fileName;
             if (module.fileExists(filePath)) {
 
@@ -189,19 +126,7 @@ public class FrontAPI implements RestApplicationAPI {
             }
         }
 
-        // TODO return not found
-        return null;
+        throw new NotFoundException("No Vue JS extension found for module: " + moduleId);
     }
 
-    private String getRestAPI() {
-        String scheme = request.getScheme();
-        String proxyScheme = request.getHeader("x-forwarded-proto");
-        if (proxyScheme != null && !proxyScheme.equals(scheme)) {
-            scheme = proxyScheme;
-        }
-
-        String host = request.getHeader("host");
-
-        return scheme + "://" + host + "/rest/";
-    }
 }

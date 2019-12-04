@@ -3,7 +3,7 @@ import { Container } from 'inversify';
 import IHttpClient from '@/lib/IHttpClient';
 import HttpClient from '@/lib/HttpClient';
 
-export class OpenSilexPlugin {
+export class ModuleFrontVuePlugin {
 
     private container: Container;
 
@@ -36,4 +36,4 @@ export class OpenSilexPlugin {
 
         // ]);
     }
-};
+}

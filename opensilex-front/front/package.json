@@ -9,7 +9,7 @@
         "check:outdated": "yarn outdated || cd ."
     },
     "dependencies": {
-        "systemjs": "^6.1.7"
+
     },
     "devDependencies": {
         "@vue/cli-plugin-babel": "^4.1.0",
@@ -18,7 +18,9 @@
         "@vue/cli-plugin-typescript": "^4.1.0",
         "@vue/cli-plugin-vuex": "^4.1.0",
         "@vue/cli-service": "^4.1.0",
-        "@vue/eslint-config-typescript": "^5.0.1"
+        "@vue/eslint-config-typescript": "^5.0.1",
+        "yargs-parser": "^16.1.0",
+        "chokidar": "^3.3.0"
     },
     "eslintConfig": {
         "root": true,

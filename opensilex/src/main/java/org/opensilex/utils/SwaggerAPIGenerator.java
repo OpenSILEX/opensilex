@@ -43,9 +43,9 @@ public class SwaggerAPIGenerator {
         Swagger swagger = null;
 
         SwaggerContextService ctx = new SwaggerContextService();
-
         swagger = ctx.getSwagger();
-
+        swagger.setHost("${host}");
+        
         Set<Class<?>> classes = new HashSet<>();
 
         Map<String, Class<?>> availableAPI = ClassInfo.getAnnotatedClassesMap(Api.class);

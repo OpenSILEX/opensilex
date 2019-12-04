@@ -1,16 +1,18 @@
 /// <reference path="../../../opensilex/front/types/opensilex.d.ts" />
+import { SecurityService } from 'opensilex/index'
 import "reflect-metadata"
 import Vue from 'vue'
 import App from './App.vue'
+import { FrontConfigDTO, FrontService } from './lib'
+import { ModuleLoader } from './models/ModuleLoader'
+import { ModuleFrontVuePlugin } from './models/ModuleFrontVuePlugin'
 import router from './router'
 import store from './store'
-import { Container } from 'inversify'
-import IHttpClient from './lib/IHttpClient'
-import HttpClient from './lib/HttpClient'
-import { IAPIConfiguration, ApiServiceBinder, FrontService, FrontConfigDTO } from './lib'
-import { ModuleLoader } from './models/ModuleLoader'
-import { SecurityService } from 'opensilex/index'
-import { OpenSilexPlugin } from './models/OpenSilexPlugin'
+
+import * as IGNORE_ME from "./opensilex.dev";
+console.log(IGNORE_ME.default);
+
+declare var document: any;
 
 Vue.config.productionTip = false
 
@@ -29,11 +31,11 @@ if (window["webpackHotUpdate"]) {
   baseApi = splitURI[0] + "//" + splitURI[2] + "/rest/"
 }
 
-let opensilex = new OpenSilexPlugin(baseApi);
-Vue.use(opensilex);
+let frontPlugin = new ModuleFrontVuePlugin(baseApi);
+Vue.use(frontPlugin);
 
 // Load application configuration
-const frontService = opensilex.getService<FrontService>("FrontService");
+const frontService = frontPlugin.getService<FrontService>("FrontService");
 
 let moduleLoader = new ModuleLoader(DEV_BASE_API_PATH, frontService);
 
@@ -44,9 +46,10 @@ frontService.getConfig()
     moduleLoader.loadComponentModules([
       "opensilex#test"
     ]).then(function () {
-      const securityService = opensilex.getService<SecurityService>("SecurityService");
+      const securityService = frontPlugin.getService<SecurityService>("SecurityService");
       console.log(securityService);
-      securityService.getAccestList()
+      securityService.getAccestList();
+      document.getElementById('opensilex-loader').style.visibility = 'hidden';
     }).catch(console.error);
 
     // TODO Check user
